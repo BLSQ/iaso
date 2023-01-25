@@ -1,29 +1,44 @@
-import gspread.utils
+import json
+
+import gspread.utils  # type: ignore
 from django.contrib import admin
+from django.contrib.admin import widgets
+from django.db import models
 from django.utils.safestring import mark_safe
 
+from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
 from .models import (
     Campaign,
-    Preparedness,
     Surge,
     Round,
     Config,
     CountryUsersGroup,
     URLCache,
     SpreadSheetImport,
-    LQASIMCache,
-    IMStatsCache,
+    CampaignGroup,
 )
 
 
 class CampaignAdmin(admin.ModelAdmin):
     raw_id_fields = ("initial_org_unit",)
-    list_filter = ["virus", "vacine", "detection_status", "risk_assessment_status", "budget_status"]
+    formfield_overrides = {
+        models.ForeignKey: {"widget": widgets.AdminTextInputWidget},
+    }
+    list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status"]
 
+    def save_model(self, request, obj: Campaign, form, change):
+        obj.update_geojson_field()
+        super().save_model(request, obj, form, change)
 
-class PreparednessAdmin(admin.ModelAdmin):
-    list_filter = ["campaign"]
-    list_display = ["campaign", "created_at"]
+    @admin.action(description="Force update of geojson field")
+    def force_update_campaign_shape(self, request, queryset):
+        c: Campaign
+        for c in queryset:
+            c.update_geojson_field()
+            c.save()
+        self.message_user(request, f"GeoJson of {queryset.count()} campaign updated")
+
+    actions = [force_update_campaign_shape]
 
 
 class SpreadSheetImportAdmin(admin.ModelAdmin):
@@ -71,13 +86,54 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
         return mark_safe(html)
 
 
+class CampaignGroupAdmin(admin.ModelAdmin):
+    pass
+
+
+class MailTemplateAdmin(admin.ModelAdmin):
+    pass
+
+
+class BudgetStepLinkAdminInline(admin.TabularInline):
+    model = BudgetStepLink
+    extra = 0
+
+
+class BudgetStepFileAdminInline(admin.TabularInline):
+    model = BudgetStepFile
+    extra = 0
+
+
+class BudgetStepAdmin(admin.ModelAdmin):
+    inlines = [
+        BudgetStepFileAdminInline,
+        BudgetStepLinkAdminInline,
+    ]
+    list_display = ["campaign", "transition_key", "created_by", "created_at", "deleted_at"]
+
+
+class WorkflowAdmin(admin.ModelAdmin):
+    readonly_fields = [
+        "pretty_json",
+    ]
+
+    def pretty_json(self, obj: WorkflowModel):
+        try:
+            d = json.dumps(obj.definition, indent=2)
+            html = f"<pre>{d}</pre>"
+            return mark_safe(html)
+        except Exception as e:
+            print(e)
+
+
 admin.site.register(Campaign, CampaignAdmin)
-admin.site.register(Preparedness, PreparednessAdmin)
+admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config)
 admin.site.register(Surge)
 admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
-admin.site.register(LQASIMCache)
-admin.site.register(IMStatsCache)
+admin.site.register(BudgetStep, BudgetStepAdmin)
+admin.site.register(MailTemplate, MailTemplateAdmin)
+admin.site.register(WorkflowModel, WorkflowAdmin)

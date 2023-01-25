@@ -1,10 +1,9 @@
-import json
 import typing
 
-from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
+from iaso.api.common import CONTENT_TYPE_XLSX
 from iaso.models import Form
 from iaso.test import APITestCase
 
@@ -180,7 +179,7 @@ class FormsAPITestCase(APITestCase):
         self.assertFileResponse(
             response,
             200,
-            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            CONTENT_TYPE_XLSX,
             expected_attachment_filename="forms.xlsx",
         )
 

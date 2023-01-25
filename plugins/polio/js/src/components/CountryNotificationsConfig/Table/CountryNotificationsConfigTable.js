@@ -5,10 +5,10 @@ import {
 } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { withRouter } from 'react-router';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
 import MESSAGES from '../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { CONFIG_BASE_URL } from '../../../constants/routes';
 
 const makeUserNameToDisplay = user => {
@@ -29,7 +29,7 @@ const CountryNotificationsConfigTable = ({ params }) => {
         () => ({
             order: params.order ?? 'country__name', // Watch out, needs 2 underscores
             page: params.page ?? 1,
-            pageSize: params.pageSize ?? 60,
+            pageSize: params.pageSize ?? 50,
         }),
         [params.order, params.page, params.pageSize],
     );
@@ -71,6 +71,7 @@ const CountryNotificationsConfigTable = ({ params }) => {
                         countryName={settings.row.original.country_name}
                         language={settings.row.original.language}
                         users={settings.row.original.users}
+                        teams={settings.row.original.teams}
                         allUsers={allUsers?.profiles}
                         allLanguages={allLanguages}
                         renderTrigger={({ openDialog }) => (

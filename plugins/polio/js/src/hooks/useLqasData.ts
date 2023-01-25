@@ -14,6 +14,7 @@ import { formatForRfaChart, formatForNfmChart } from '../utils/LqasIm';
 export const useLqasData = (
     campaign: string,
     country: string,
+    selectedRounds: [number, number] = [1, 2],
 ): Record<string, unknown> => {
     const { data: LQASData, isFetching } = useLqasIm('lqas', country);
 
@@ -24,82 +25,87 @@ export const useLqasData = (
             countries: [country],
             enabled: Boolean(country),
         }).query;
+
     const debugData = useDebugData(LQASData, campaign);
 
     const hasScope = debugData[campaign]?.hasScope;
 
-    const [nfmRound1, nfmRound2] = useVerticalChartData({
+    const [nfmLeft, nfmRight] = useVerticalChartData({
         data: LQASData?.stats,
         campaign,
         formatter: formatForNfmChart,
         type: 'lqas',
+        selectedRounds,
     });
 
-    const [nfmTitle1, nfmTitle2] = useNfmTitle({
+    const [nfmTitleLeft, nfmTitleRight] = useNfmTitle({
         data: LQASData?.stats,
         campaign,
         type: 'lqas',
+        selectedRounds,
     });
 
-    const [rfaRound1, rfaRound2] = useVerticalChartData({
+    const [rfaLeft, rfaRight] = useVerticalChartData({
         data: LQASData?.stats,
         campaign,
         formatter: formatForRfaChart,
         type: 'lqas',
+        selectedRounds,
     });
 
     const [rfaTitle1, rfaTitle2] = useRfaTitle({
         data: LQASData?.stats,
         campaign,
         type: 'lqas',
+        selectedRounds,
     });
-
     const chartData = useMemo(
         () => ({
             nfm: [
                 {
-                    chartKey: 'nfmRound1',
-                    data: nfmRound1,
-                    title: nfmTitle1,
+                    chartKey: 'nfmLeft',
+                    data: nfmLeft,
+                    title: nfmTitleLeft,
                 },
                 {
-                    chartKey: 'nfmRound2',
-                    data: nfmRound2,
-                    title: nfmTitle2,
+                    chartKey: 'nfmRight',
+                    data: nfmRight,
+                    title: nfmTitleRight,
                 },
             ],
             rfa: [
                 {
-                    chartKey: 'rfaRound1',
-                    data: rfaRound1,
+                    chartKey: 'rfaLeft',
+                    data: rfaLeft,
                     title: rfaTitle1,
                 },
                 {
-                    chartKey: 'rfaRound2',
-                    data: rfaRound2,
+                    chartKey: 'rfaRight',
+                    data: rfaRight,
                     title: rfaTitle2,
                 },
             ],
             cg: [
                 {
-                    chartKey: 'rfaRound1',
-                    round: 'round_1',
+                    chartKey: 'rfaLeft',
+                    round: selectedRounds[0],
                 },
                 {
-                    chartKey: 'rfaRound2',
-                    round: 'round_2',
+                    chartKey: 'rfaRight',
+                    round: selectedRounds[1],
                 },
             ],
         }),
         [
-            nfmRound1,
-            nfmRound2,
-            nfmTitle1,
-            nfmTitle2,
-            rfaRound1,
-            rfaRound2,
+            nfmLeft,
+            nfmRight,
+            nfmTitleLeft,
+            nfmTitleRight,
+            rfaLeft,
+            rfaRight,
             rfaTitle1,
             rfaTitle2,
+            selectedRounds,
         ],
     );
     return {

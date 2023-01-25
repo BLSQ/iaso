@@ -36,6 +36,7 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["id", "name", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
         read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
+        ref_name = "iaso_group_serializer"
 
     source_version = SourceVersionSerializerForGroup(read_only=True)
     org_unit_count = serializers.IntegerField(read_only=True)
@@ -68,7 +69,7 @@ class GroupsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_org_units"),
+        HasPermission("menupermissions.iaso_org_units"),  # type: ignore
         HasGroupPermission,
     ]
     serializer_class = GroupSerializer

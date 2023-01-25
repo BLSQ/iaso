@@ -1,7 +1,7 @@
 from functools import wraps
 import traceback
 from django.utils import timezone
-from lazy_services import LazyService
+from lazy_services import LazyService  # type: ignore
 import sentry_sdk
 from logging import getLogger
 
@@ -9,7 +9,7 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 
-task_service = LazyService("BEANSTALK_TASK_SERVICE")
+task_service = LazyService("BACKGROUND_TASK_SERVICE")
 
 
 def task_decorator(task_name=""):

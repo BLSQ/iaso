@@ -1,8 +1,10 @@
 import React, { ReactElement } from 'react';
+// @ts-ignore
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import Workflow from '../../../components/svg/Workflow';
 
 import MESSAGES from './messages';
 
@@ -56,10 +58,10 @@ export const columns = ({
         Cell: (settings): ReactElement => (
             // TODO: limit to user permissions
             <section>
-                {settings.row.original?.defining_form && (
+                {settings.row.original?.reference_form && (
                     <IconButtonComponent
                         id={`form-link-${settings.row.original.id}`}
-                        url={`/${baseUrls.formDetail}/formId/${settings.row.original.defining_form}`}
+                        url={`/${baseUrls.formDetail}/formId/${settings.row.original.reference_form}`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.viewForm}
                     />
@@ -70,6 +72,7 @@ export const columns = ({
                             id={`edit-button-${settings.row.original.id}`}
                             onClick={openDialog}
                             icon="edit"
+                            dataTestId="edit-button"
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
@@ -88,6 +91,13 @@ export const columns = ({
                         }
                     />
                 )}
+                <IconButtonComponent
+                    id={`workflow-link-${settings.row.original.id}`}
+                    url={`/${baseUrls.workflows}/entityTypeId/${settings.row.original.id}`}
+                    icon="remove-red-eye"
+                    tooltipMessage={MESSAGES.workflow}
+                    overrideIcon={Workflow}
+                />
             </section>
         ),
     },

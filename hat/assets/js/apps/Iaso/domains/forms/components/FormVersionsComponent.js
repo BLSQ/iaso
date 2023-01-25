@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import { Box, Typography } from '@material-ui/core';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
+    selectionInitialState,
+    setTableSelection,
 } from 'bluesquare-components';
 import { fetchList } from '../../../utils/requests';
 
@@ -26,12 +28,17 @@ const FormVersionsComponent = ({
     formId,
 }) => {
     const intl = useSafeIntl();
+    const [selection, setSelection] = useState(selectionInitialState);
 
     if (!formId) return null;
 
     return (
         <Box mt={4}>
-            <Typography color="primary" variant="h5">
+            <Typography
+                color="primary"
+                variant="h5"
+                data-test="form-versions-title"
+            >
                 <FormattedMessage {...MESSAGES.versions} />
             </Typography>
             <SingleTable
@@ -41,12 +48,13 @@ const FormVersionsComponent = ({
                 exportButtons={false}
                 dataKey="form_versions"
                 defaultPageSize={20}
-                fetchItems={(d, url) =>
+                fetchItems={(d, url, signal) =>
                     fetchList(
                         d,
                         `${url}&form_id=${formId}`,
                         'fetchFormVersionsError',
                         'form versions',
+                        signal,
                     )
                 }
                 defaultSorted={[{ id: defaultOrder, desc: true }]}
@@ -56,6 +64,18 @@ const FormVersionsComponent = ({
                     formId,
                     periodType,
                 )}
+                multiSelect
+                selection={selection}
+                setTableSelection={(selectionType, items, totalCount) => {
+                    setSelection(
+                        setTableSelection(
+                            selection,
+                            selectionType,
+                            items,
+                            totalCount,
+                        ),
+                    );
+                }}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
             />

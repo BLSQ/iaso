@@ -27,8 +27,8 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
             "units_count",
-            "form_defining",
-            "form_defining_id",
+            "reference_form",
+            "reference_form_id",
         ]
         read_only_fields = ["id", "projects", "sub_unit_types", "created_at", "updated_at", "units_count"]
 
@@ -43,11 +43,17 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
-    form_defining = serializers.SerializerMethodField(read_only=True)
-    form_defining_id = serializers.PrimaryKeyRelatedField(
-        source="form_defining", write_only=True, required=False, many=False, queryset=Form.objects.all()
+    reference_form = serializers.SerializerMethodField(read_only=True)
+    reference_form_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
+        source="reference_form",
+        write_only=True,
+        required=False,
+        many=False,
+        allow_null=True,
+        queryset=Form.objects.all(),
     )
 
+    # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
         orgUnits = OrgUnit.objects.filter_for_user_and_app_id(
             self.context["request"].user, self.context["request"].query_params.get("app_id")
@@ -55,9 +61,10 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         orgunits_count = orgUnits.count()
         return orgunits_count
 
-    def get_form_defining(self, obj: Form):
-        app_id = self.context["request"].query_params.get("app_id")
-        form_def = Form.objects.filter(id=obj.form_defining_id, projects__app_id=app_id)
+    def get_reference_form(self, obj: OrgUnitType):
+        form_def = Form.objects.filter_for_user_and_app_id(
+            self.context["request"].user, self.context["request"].query_params.get("app_id")
+        ).filter(id=obj.reference_form_id)
         return FormSerializer(
             form_def.first(),
             fields=["id", "form_id", "created_at", "updated_at", "projects"],
@@ -84,10 +91,10 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
         # validate if form is linked to the right project
-        form_defining = data.get("form_defining", None)
-        if form_defining:
-            projects_form = Form.objects.filter(id=form_defining.id, projects__in=data.get("projects", []))
+        reference_form = data.get("reference_form", None)
+        if reference_form:
+            projects_form = Form.objects.filter(id=reference_form.id, projects__in=data.get("projects", []))
             if not projects_form:
-                raise serializers.ValidationError({"form_defining_id": "Invalid form defining id"})
+                raise serializers.ValidationError({"reference_form_id": "Invalid reference form id"})
 
         return data

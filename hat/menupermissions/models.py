@@ -3,14 +3,12 @@ from django.utils.translation import gettext_lazy as _
 
 MODIFICATIONS = _("Modifications")
 
-TEAMS = _("Teams")
 USERS = _("Users")
 FORMS = _("Formulaires")
 MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
 LINKS = _("Correspondances sources")
-USERS = _("Utilisateurs")
 PAGES = _("Pages")
 PROJECTS = _("Projets")
 SOURCES = _("Sources")
@@ -18,11 +16,26 @@ TASKS = _("Tâches")
 POLIO = _("Polio")
 POLIO_CONFIG = _("Polio config")
 SUBMISSIONS = _("Soumissions")
+UPDATE_SUBMISSIONS = _("Editer soumissions")
+DHIS2_LINK = _("Show dhis2 link")
+PLANNING = _("Planning")
+TEAMS = _("Equipes")
+ASSIGNMENTS = _("Attributions")
+POLIO_BUDGET = _("Budget Polio")
+POLIO_BUDGET_ADMIN = _("Budget Polio Admin")
+ENTITIES = _("Entities")
+BENEFICIARIES = _("Beneficiaries")
+STORAGES = _("Storages")
+COMPLETENESS_STATS = _("Completeness stats")
+WORKFLOWS = _("Workflows")
+REPORTS = _("Reports")
 
 
-# When adding a new permissions, it also need to be added in
+# When adding a new permission, it also needs to be added in
 # hat/assets/js/apps/Iaso/domains/users/messages.js
 # so that it display properly in both lang
+#
+# Also, don't forget to generate a migration
 
 
 class CustomPermissionSupport(models.Model):
@@ -38,10 +51,10 @@ class CustomPermissionSupport(models.Model):
         "iaso_projects",
         "iaso_sources",
         "iaso_data_tasks",
+        "iaso_reports",
     ]
 
     class Meta:
-
         managed = False  # No database table creation or deletion operations \
         # will be performed for this model.
 
@@ -62,4 +75,15 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio", POLIO),
             ("iaso_polio_config", POLIO_CONFIG),
             ("iaso_submissions", SUBMISSIONS),
+            ("iaso_update_submission", UPDATE_SUBMISSIONS),
+            ("iaso_planning", PLANNING),
+            ("iaso_reports", REPORTS),
+            ("iaso_teams", TEAMS),
+            ("iaso_assignments", ASSIGNMENTS),
+            ("iaso_polio_budget", POLIO_BUDGET),
+            ("iaso_entities", ENTITIES),
+            ("iaso_storages", STORAGES),
+            ("iaso_completeness_stats", COMPLETENESS_STATS),
+            ("iaso_workflows", WORKFLOWS),
+            ("iaso_polio_budget_admin", POLIO_BUDGET_ADMIN),
         )

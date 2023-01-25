@@ -11,7 +11,7 @@ from rest_framework import serializers, permissions
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from .common import ModelViewSet
 from .instance_filters import parse_instance_filters
-from iaso.dhis2.datavalue_exporter import DataValueExporter
+from iaso.dhis2.datavalue_exporter import DataValueExporter  # type: ignore
 
 
 class ExportRequestSerializer(serializers.ModelSerializer):
@@ -38,7 +38,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
         # FIXME: Temporary fix till we reimplement this in the new task system, timeout old queued requests.
         REQUEST_TIMEOUT_S = 15 * 60  # 15 minutes
         export_requests = ExportRequest.objects.filter(status=QUEUED).filter(
-            queued_at__gt=now() - timedelta(seconds=REQUEST_TIMEOUT_S)
+            queued_at__lt=now() - timedelta(seconds=REQUEST_TIMEOUT_S)
         )
         for export_request in export_requests:
             logger.warning(f"Timeouting {export_request}")

@@ -1,18 +1,14 @@
+import { accessArrayRound } from './LqasIm.tsx';
+
 export const findDataForShape = ({ shape, data, round, campaign }) => {
     if (!data || !data[campaign]) return null;
-    const dataForRound = data[campaign][round];
+    const dataForRound = accessArrayRound(data[campaign], round);
     const result = dataForRound.filter(d => d.district === shape.id)[0];
     return result;
 };
-// export const findShapeForData = ({ shape, data, round, campaign }) => {
-//     if (!data || !data[campaign]) return null;
-//     const dataForRound = data[campaign][round];
-//     const result = dataForRound.filter(d => d.district === shape.id)[0];
-//     return result;
-// };
 
 // TODO have exhaustive sorting function
-const sortCampaignNames = (nameA, nameB) => {
+export const sortCampaignNames = (nameA, nameB) => {
     const [countryCodeA, referenceA] = nameA?.label.split('-');
     const [countryCodeB, referenceB] = nameB?.label.split('-');
     const comparison = countryCodeA.localeCompare(countryCodeB, undefined, {
@@ -29,13 +25,26 @@ const sortCampaignNames = (nameA, nameB) => {
 };
 export const makeCampaignsDropDown = campaigns =>
     campaigns
-        .map(campaign => {
+        ?.map(campaign => {
             return {
                 label: campaign.obr_name,
                 value: campaign.obr_name,
             };
         })
         .sort(sortCampaignNames);
+
+export const makeCampaignsDropDownWithUUID = campaigns => {
+    return (
+        campaigns
+            ?.map(campaign => {
+                return {
+                    label: campaign.obr_name,
+                    value: campaign.id,
+                };
+            })
+            .sort(sortCampaignNames) ?? []
+    );
+};
 
 export const defaultShapeStyle = {
     color: 'grey',
@@ -60,20 +69,31 @@ export const getScopeStyle = (shape, scope) => {
     return defaultShapeStyle;
 };
 
-export const findScopeIds = (obrName, campaigns) => {
-    let scopeIds = [];
-    if (obrName) {
-        scopeIds = campaigns
-            .filter(campaign => campaign.obr_name === obrName)
-            .filter(campaign => campaign.group)
-            .map(campaign => campaign.group.org_units)
-            .flat();
-    } else {
-        scopeIds = campaigns
-            .filter(campaign => campaign.group)
-            .map(campaign => campaign.group.org_units)
-            .flat();
-    }
+export const findScopeIds = (obrName, campaigns, currentRound) => {
+    let scopeIds = obrName
+        ? campaigns.filter(campaign => campaign.obr_name === obrName)
+        : campaigns;
+
+    scopeIds = scopeIds
+        .map(campaign => {
+            if (!campaign.separate_scopes_per_round) {
+                return campaign.scopes
+                    .filter(scope => scope.group)
+                    .map(scope => scope.group.org_units)
+                    .flat();
+            }
+            const fullRound = campaign.rounds.find(
+                round => round.number === currentRound,
+            );
+            if (fullRound) {
+                return fullRound.scopes
+                    .filter(scope => scope.group)
+                    .map(scope => scope.group.org_units)
+                    .flat();
+            }
+            return [];
+        })
+        .flat();
     return scopeIds;
 };
 
@@ -83,9 +103,6 @@ export const makeLegendItem = ({ message, value, color }) => {
         value: `${message}: ${value}`,
         color,
     };
-};
-export const findRegion = (orgUnit, regions) => {
-    return regions?.filter(region => region.id === orgUnit.parent_id)[0]?.name;
 };
 
 export const convertWidth = width => {
@@ -107,3 +124,7 @@ export const convertObjectToString = value =>
     Object.entries(value)
         .map(([key, entry]) => `${key}-${String(entry)}`)
         .toString();
+
+export const findCampaignRound = (campaign, round) => {
+    return campaign.rounds.find(rnd => rnd.number === round);
+};

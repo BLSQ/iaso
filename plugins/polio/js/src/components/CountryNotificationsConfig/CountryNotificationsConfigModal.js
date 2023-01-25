@@ -2,16 +2,22 @@ import React, { useCallback, useEffect } from 'react';
 import { isEqual } from 'lodash';
 import { arrayOf, func, number, object, string } from 'prop-types';
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
-import MESSAGES from '../../constants/messages';
-import { usePutCountryMutation } from './requests';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useFormState } from 'Iaso/hooks/form';
+import { usePutCountryMutation } from './requests';
+import MESSAGES from '../../constants/messages';
+import { useGetTeamsDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams';
+import { TeamType } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants';
 
 const makeDropDownListItem = user => {
+    const userName =
+        user.first_name && user.last_name
+            ? `${user.first_name} ${user.last_name}`
+            : user.user_name;
     return {
         value: user.user_id,
-        label: user.email,
+        label: `${userName} - ${user.email}`,
     };
 };
 
@@ -22,9 +28,10 @@ const makeDropDownList = allUsers => {
         .sort((a, b) => a.label >= b.label);
 };
 
-const initialState = (language, users) => ({
+const initialState = (language, users, teams) => ({
     language: language ?? '',
     users: users ?? [],
+    teams: teams ?? [],
 });
 
 export const CountryNotificationsConfigModal = ({
@@ -35,24 +42,34 @@ export const CountryNotificationsConfigModal = ({
     users,
     allUsers,
     allLanguages,
+    teams,
 }) => {
-    const [config, setConfig] = useFormState(initialState(language, users));
+    const [config, setConfig] = useFormState(
+        initialState(language, users, teams),
+    );
     const { mutateAsync } = usePutCountryMutation();
+    const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
+        useGetTeamsDropdown({
+            type: TeamType.TEAM_OF_USERS,
+        });
 
     const onConfirm = async closeDialog => {
         const result = await mutateAsync({
             id: countryId,
             users: config.users.value,
             language: config.language.value,
+            teams: config.teams.value,
         });
         setConfig('users', result.users);
         setConfig('language', result.language);
+        setConfig('teams', result.teams);
         closeDialog();
     };
 
     const syncStateWithProps = useCallback(() => {
         setConfig('users', users);
         setConfig('language', language);
+        setConfig('teams', teams);
     }, [language, users, setConfig]);
 
     const reset = useCallback(() => {
@@ -62,7 +79,8 @@ export const CountryNotificationsConfigModal = ({
     let allowConfirm = false;
     if (
         config.language.value === language &&
-        isEqual(config.users.value, users)
+        isEqual(config.users.value, users) &&
+        isEqual(config.teams.value, teams)
     ) {
         allowConfirm = false;
     } else {
@@ -111,6 +129,19 @@ export const CountryNotificationsConfigModal = ({
                     options={allLanguages}
                     multi={false}
                     clearable={false}
+                />
+                <InputComponent
+                    type="select"
+                    keyValue="teams"
+                    onChange={(key, value) =>
+                        setConfig(key, commaSeparatedIdsToArray(value))
+                    }
+                    value={config.teams.value}
+                    errors={config.teams.error}
+                    label={MESSAGES.teams}
+                    options={teamsDropdown ?? []}
+                    loading={isFetchingTeams}
+                    multi
                 />
             </div>
         </ConfirmCancelDialogComponent>

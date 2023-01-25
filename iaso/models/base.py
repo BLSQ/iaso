@@ -1,35 +1,41 @@
-import random
 import operator
-import typing
+import random
 import re
+import typing
 from copy import copy
-from urllib.request import urlopen
 from functools import reduce
-from django.db import models, transaction
-from django.core.paginator import Paginator
-from django.contrib.gis.db.models.fields import PointField
-from django.contrib.postgres.aggregates import ArrayAgg
+from logging import getLogger
+from urllib.request import urlopen
+
 from django.contrib.auth.models import User
+from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
+from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.paginator import Paginator
+from django.core.validators import MinLengthValidator
+from django.db import models
+from django.db.models import Q, FilteredRelation, Count
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
+
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
-from django.db.models import Q
-from django.utils import timezone
-
+from iaso.models.org_unit import OrgUnit
+from iaso.models.data_source import SourceVersion, DataSource
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
+from .. import periods
 
-from logging import getLogger
+from ..utils.jsonlogic import jsonlogic_to_q
 
 logger = getLogger(__name__)
 
 
-YEAR = "YEAR"
-QUARTER = "QUARTER"
-MONTH = "MONTH"
-SIX_MONTH = "SIX_MONTH"
+# For compat
+QUARTER = periods.PERIOD_TYPE_QUARTER
+MONTH = periods.PERIOD_TYPE_MONTH
+SIX_MONTH = periods.PERIOD_TYPE_SIX_MONTH
 
 
 AGGREGATE = "AGGREGATE"
@@ -88,7 +94,9 @@ class AccountFeatureFlag(models.Model):
 
 
 class Account(models.Model):
-    name = models.TextField(null=True, blank=True)
+    """Account represent a tenant (=roughly a client organisation or a country)"""
+
+    name = models.TextField(unique=True, validators=[MinLengthValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     users = models.ManyToManyField(User, blank=True)
@@ -107,99 +115,6 @@ class Account(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
-
-
-class DataSource(models.Model):
-    name = models.CharField(max_length=255, unique=True)
-    read_only = models.BooleanField(default=False)
-    projects = models.ManyToManyField("Project", related_name="data_sources", blank=True)
-    credentials = models.ForeignKey(
-        "ExternalCredentials",
-        on_delete=models.SET_NULL,
-        related_name="data_sources",
-        null=True,
-        blank=True,
-    )
-
-    description = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return "%s " % (self.name,)
-
-    def as_dict(self):
-        versions = SourceVersion.objects.filter(data_source_id=self.id)
-        return {
-            "name": self.name,
-            "description": self.description,
-            "id": self.id,
-            "url": self.credentials.url if self.credentials else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "versions": [v.as_dict_without_data_source() for v in versions],
-        }
-
-    def as_list(self):
-        return {"name": self.name, "id": self.id}
-
-
-class SourceVersion(models.Model):
-    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE, related_name="versions")
-    number = models.IntegerField()
-    description = models.TextField(null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "%s %d" % (self.data_source, self.number)
-
-    def as_dict(self):
-        return {
-            "data_source": self.data_source.as_dict(),
-            "number": self.number,
-            "description": self.description,
-            "id": self.id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-        }
-
-    def as_list(self):
-        return {
-            "data_source": self.data_source.as_list(),
-            "number": self.number,
-            "id": self.id,
-        }
-
-    def as_dict_without_data_source(self):
-        return {
-            "number": self.number,
-            "description": self.description,
-            "id": self.id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "org_units_count": self.orgunit_set.count(),
-        }
-
-    def as_report_dict(self):
-        report = {}
-        report["org_units"] = self.orgunit_set.count()
-        report["org_units_with_location"] = self.orgunit_set.exclude(location=None).count()
-        report["org_units_with_shapes"] = self.orgunit_set.filter(simplified_geom__isnull=False).count()
-        org_unit_types = self.orgunit_set.values_list("org_unit_type__name", "org_unit_type__id").distinct()
-        org_unit_types_report = {}
-        for t in org_unit_types:
-            name, ident = t
-            org_unit_types_report[name] = self.orgunit_set.filter(org_unit_type_id=ident).count()
-        report["types"] = org_unit_types_report
-        group_report = {}
-        groups = self.orgunit_set.values_list("groups__name", "groups__id").distinct()
-        for group in groups:
-            name, ident = group
-            group_report[name] = self.orgunit_set.filter(groups__id=ident).count()
-        report["groups"] = group_report
-        return report
 
 
 class RecordType(models.Model):
@@ -285,6 +200,8 @@ class AlgorithmRun(models.Model):
 
 
 class Task(models.Model):
+    """Represents an asynchronous function that will be run by a background worker for things like a data import"""
+
     created_at = models.DateTimeField(auto_now_add=True)
     started_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
@@ -333,7 +250,7 @@ class Task(models.Model):
 
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
         """Save progress and check if we have been killed
-        We use a separate transaction so we can report the progress even from a transaction, see services.py
+        We use a separate transaction, so we can report the progress even from a transaction, see services.py
         """
         logger.info(f"Task {self} reported {progress_message}")
         self.refresh_from_db()
@@ -444,6 +361,10 @@ class DomainGroupManager(models.Manager):
 
 
 class Group(models.Model):
+    """Group of OrgUnit.
+
+    Linked to a source_version, which is also used for tenancy"""
+
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
@@ -458,6 +379,9 @@ class Group(models.Model):
     objects = DefaultGroupManager()
     all_objects = models.Manager()
     domain_objects = DomainGroupManager()
+
+    class Meta:
+        base_manager_name = "all_objects"
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
@@ -577,11 +501,44 @@ class ExternalCredentials(models.Model):
 
 
 class InstanceQuerySet(models.QuerySet):
+    def with_lock_info(self, user):
+        """
+        Annotate the QuerySet with the lock info for the given user.
+
+        The following fields are added to the queryset:
+        - lock_applying_to_user
+        - count_lock_applying_to_user: number of locks that prevent user to modify the instance
+        - count_active_lock: number of locks on instance that are not unlocked
+
+        Implementation: we decided to make the lock calculation via annotations, so it's a lot faster with large querysets.
+        """
+
+        return (
+            self.annotate(
+                lock_applying_to_user=FilteredRelation(
+                    "instancelock",
+                    condition=Q(
+                        ~Q(instancelock__top_org_unit__in=OrgUnit.objects.filter_for_user(user)),
+                        Q(instancelock__unlocked_by__isnull=True),
+                    ),
+                )
+            )
+            .annotate(count_lock_applying_to_user=Count("lock_applying_to_user"))
+            .annotate(count_active_lock=Count("instancelock", Q(instancelock__unlocked_by__isnull=True)))
+        )
+
     def with_status(self):
         duplicates_subquery = (
             self.values("period", "form", "org_unit")
             .annotate(ids=ArrayAgg("id"))
-            .annotate(c=models.Func("ids", models.Value(1), function="array_length"))
+            .annotate(
+                c=models.Func(
+                    "ids",
+                    models.Value(1, output_field=models.IntegerField()),
+                    function="array_length",
+                    output_field=models.IntegerField(),
+                )
+            )
             .filter(form__in=Form.objects.filter(single_per_period=True))
             .filter(c__gt=1)
             .annotate(id=models.Func("ids", function="unnest"))
@@ -674,12 +631,15 @@ class InstanceQuerySet(models.QuerySet):
         org_unit_parent_id=None,
         org_unit_id=None,
         period_ids=None,
+        periods_bound=None,
         status=None,
         instance_id=None,
         search=None,
         from_date=None,
         to_date=None,
         show_deleted=None,
+        entity_id=None,
+        json_content=None,
     ):
         queryset = self
 
@@ -693,6 +653,11 @@ class InstanceQuerySet(models.QuerySet):
             if isinstance(period_ids, str):
                 period_ids = period_ids.split(",")
             queryset = queryset.filter(period__in=period_ids)
+        if periods_bound:
+            if periods_bound[0]:
+                queryset = queryset.filter(period__gte=periods_bound[0])
+            if periods_bound[1]:
+                queryset = queryset.filter(period__lte=periods_bound[1])
 
         if instance_id:
             queryset = queryset.filter(id=instance_id)
@@ -703,16 +668,11 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(org_unit_id=org_unit_id)
 
         if org_unit_parent_id:
-            queryset = queryset.filter(
-                Q(org_unit__id=org_unit_parent_id)
-                | Q(org_unit__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            )
+            # Local import to avoid loop
+            from iaso.models import OrgUnit
+
+            parent = OrgUnit.objects.get(id=org_unit_parent_id)
+            queryset = queryset.filter(org_unit__path__descendants=parent.path)
 
         if with_location == "true":
             queryset = queryset.filter(location__isnull=False)
@@ -738,6 +698,9 @@ class InstanceQuerySet(models.QuerySet):
         else:
             # whatever don't show deleted submissions
             queryset = queryset.exclude(deleted=True)
+
+        if entity_id:
+            queryset = queryset.filter(entity_id=entity_id)
 
         if search:
             if search.startswith("ids:"):
@@ -765,6 +728,11 @@ class InstanceQuerySet(models.QuerySet):
         if status:
             statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
+
+        if json_content:
+            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
+            queryset = queryset.filter(q)
+
         return queryset
 
     def for_org_unit_hierarchy(self, org_unit):
@@ -784,19 +752,28 @@ class InstanceQuerySet(models.QuerySet):
 
     def filter_for_user(self, user):
         profile = user.iaso_profile
+        # Do a relative import to avoid an import loop
         from .org_unit import OrgUnit
+
+        new_qs = self
 
         # If user is restricted to some org unit, filter on thoses
         if profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
 
-            self = self.filter(org_unit__in=orgunits)
-        self = self.filter(project__account=profile.account)
-        return self
+            new_qs = new_qs.filter(org_unit__in=orgunits)
+        new_qs = new_qs.filter(project__account=profile.account_id)
+        return new_qs
+
+
+InstanceManager = models.Manager.from_queryset(InstanceQuerySet)
 
 
 class Instance(models.Model):
-    """A series of answers by an individual for a specific form"""
+    """A series of answers by an individual for a specific form
+
+    Note that instances are called "Submissions" in the UI
+    """
 
     UPLOADED_TO = "instances/"
 
@@ -804,7 +781,15 @@ class Instance(models.Model):
     STATUS_DUPLICATED = "DUPLICATED"
     STATUS_EXPORTED = "EXPORTED"
 
+    ALWAYS_ALLOWED_PATHS_XML = set(
+        ["formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"]
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
+    last_modified_by = models.ForeignKey(
+        User, on_delete=models.PROTECT, blank=True, null=True, related_name="last_modified_by"
+    )
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
@@ -823,17 +808,21 @@ class Instance(models.Model):
     )
     project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
     json = models.JSONField(null=True, blank=True)
-    accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
+    accuracy = models.DecimalField(null=True, blank=True, decimal_places=2, max_digits=7)
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
+    entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
-    objects = InstanceQuerySet.as_manager()
+    objects = InstanceManager()
 
+    # Is instance SoftDeleted. It doesn't use the SoftDeleteModel deleted_at like the rest for historical reason.
     deleted = models.BooleanField(default=False)
+    # See public_create_url workflow in enketo/README.md. used to tell we should export immediately
     to_export = models.BooleanField(default=False)
 
+    # Used by Django Admin to link to the submission page in the dashboard
     def get_absolute_url(self):
         return f"/dashboard/forms/submission/instanceId/{self.pk}"
 
@@ -842,7 +831,6 @@ class Instance(models.Model):
         if f is None:
             f = self.form.location_field
 
-        if self.json and f:
             location = self.json.get(f, None)
             if location:
                 latitude, longitude, altitude, accuracy = [float(x) for x in location.split(" ")]
@@ -875,32 +863,54 @@ class Instance(models.Model):
             self.correlation_id = identifier + random_number + suffix
             self.save()
 
+    def xml_file_to_json(self, file: typing.TextIO) -> typing.Dict[str, typing.Any]:
+        soup = as_soup(file)
+        form_version_id = extract_form_version_id(soup)
+        if form_version_id:
+            # TODO: investigate: can self.form be None here? What's the expected behavior?
+            form_versions = self.form.form_versions.filter(version_id=form_version_id)  # type: ignore
+            form_version = form_versions.first()
+            if form_version:
+                questions_by_path = form_version.questions_by_path()
+                allowed_paths = set(questions_by_path.keys())
+                allowed_paths.update(self.ALWAYS_ALLOWED_PATHS_XML)
+                flat_results = flat_parse_xml_soup(
+                    soup, [rg["name"] for rg in form_version.repeat_groups()], allowed_paths
+                )
+                if len(flat_results["skipped_paths"]) > 0:
+                    logger.warning(
+                        f"skipped {len(flat_results['skipped_paths'])} paths while parsing instance {self.id}",
+                        flat_results,
+                    )
+                return flat_results["flat_json"]
+            else:
+                # warn old form, but keep it working ? or throw error
+                return flat_parse_xml_soup(soup, [], None)["flat_json"]
+        else:
+            return flat_parse_xml_soup(soup, [], None)["flat_json"]
+
     def get_and_save_json_of_xml(self):
+        """
+        Convert the xml file to json and save it to the instance (if necessary)
+
+        :return: in all cases, return the JSON representation of the instance
+        """
         if self.json:
-            file_content = self.json
+            # already converted, we can use this one
+            return self.json
         elif self.file:
+            # not converted yet, but we have a file, so we can convert it
             if "amazonaws" in self.file.url:
                 file = urlopen(self.file.url)
             else:
                 file = self.file
-            soup = as_soup(file)
-            form_version_id = extract_form_version_id(soup)
-            if form_version_id:
-                form_versions = self.form.form_versions.filter(version_id=form_version_id)
-                form_version = form_versions.first()
-                if form_version:
 
-                    self.json = flat_parse_xml_soup(soup, [rg["name"] for rg in form_version.repeat_groups()])
-                else:
-                    # warn old form, but keep it working ? or throw error
-                    self.json = flat_parse_xml_soup(soup, [])
-            else:
-                self.json = flat_parse_xml_soup(soup, [])
-            file_content = self.json
+            self.json = self.xml_file_to_json(file)
             self.save()
+            return self.json
         else:
-            file_content = {}
-        return file_content
+            # no file, no json, when/why does this happen?
+            return {}
 
     def get_form_version(self):
         json = self.get_and_save_json_of_xml()
@@ -953,6 +963,13 @@ class Instance(models.Model):
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
+            "created_by": {
+                "first_name": self.created_by.first_name,
+                "user_name": self.created_by.username,
+                "last_name": self.created_by.last_name,
+            }
+            if self.created_by
+            else None,
         }
 
     def as_dict_with_parents(self):
@@ -980,8 +997,15 @@ class Instance(models.Model):
         file_content = self.get_and_save_json_of_xml()
         form_version = self.get_form_version()
 
+        last_modified_by = None
+
+        if self.last_modified_by is not None:
+            last_modified_by = self.last_modified_by.username
+
         return {
             "uuid": self.uuid,
+            "last_modified_by": last_modified_by,
+            "modification": True,
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
             "file_name": self.file_name,
@@ -1038,11 +1062,37 @@ class Instance(models.Model):
         }
 
     def soft_delete(self, user: typing.Optional[User] = None):
-        with transaction.atomic():
-            original = copy(self)
-            self.deleted = True
-            self.save()
-            log_modification(original, self, INSTANCE_API, user=user)
+        original = copy(self)
+        self.deleted = True
+        self.save()
+        log_modification(original, self, INSTANCE_API, user=user)
+
+    def restore(self, user: typing.Optional[User] = None):
+        original = copy(self)
+        self.deleted = False
+        self.save()
+        log_modification(original, self, INSTANCE_API, user=user)
+
+    def can_user_modify(self, user):
+        """Check only for lock, assume user have other perms"""
+        # active locks for instance
+        locks = self.instancelock_set.filter(unlocked_by__isnull=True)
+        # highest lock
+        highest_lock = locks.order_by("top_org_unit__path__depth").first()
+        if not highest_lock:
+            # No lock anyone can modify
+            return True
+
+        # can user access this orgunit
+        from iaso.models import OrgUnit  # Local import to prevent loop
+
+        if OrgUnit.objects.filter_for_user(user).filter(id=highest_lock.top_org_unit_id).exists():
+            return True
+        return False
+
+    @property
+    def has_org_unit(self):
+        return self.org_unit if self.org_unit else None
 
 
 class InstanceFile(models.Model):
@@ -1062,9 +1112,11 @@ class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
     external_user_id = models.CharField(max_length=512, null=True, blank=True)
+    # Each profile/user has access to multiple orgunits. Having access to OU also give access to all its children
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
     language = models.CharField(max_length=512, null=True, blank=True)
     dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")
+    home_page = models.CharField(max_length=512, null=True, blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1088,6 +1140,7 @@ class Profile(models.Model):
             "language": self.language,
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,
+            "home_page": self.home_page,
         }
 
     def as_short_dict(self):
@@ -1100,6 +1153,12 @@ class Profile(models.Model):
             "language": self.language,
             "user_id": self.user.id,
         }
+
+    def has_a_team(self):
+        team = self.user.teams.filter(deleted_at=None).first()
+        if team:
+            return True
+        return False
 
 
 class ExportRequest(models.Model):
@@ -1205,3 +1264,35 @@ class FeatureFlag(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class BulkCreateUserCsvFile(models.Model):
+    file = models.FileField(blank=False, null=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
+    account = models.ForeignKey(Account, on_delete=models.PROTECT, null=True)
+
+
+class InstanceLockQueryset(models.QuerySet):
+    def actives(self):
+        """Lock that don't have been unlocked"""
+        return self.filter(unlocked_by__isnull=True)
+
+
+class InstanceLock(models.Model):
+    instance = models.ForeignKey("Instance", on_delete=models.CASCADE)
+    locked_at = models.DateTimeField(auto_now_add=True)
+    locked_by = models.ForeignKey(User, on_delete=models.PROTECT)
+    unlocked_at = models.DateTimeField(blank=True, null=True)
+    unlocked_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True, related_name="+")
+    top_org_unit = models.ForeignKey("OrgUnit", on_delete=models.PROTECT, related_name="instance_lock")
+
+    # We CASCADE if we delete the instance because the lock don't make sense then
+    # but if the user or orgunit is deleted we should probably worry hence protect
+    def __str__(self):
+        return (
+            f"{self.instance} - {self.locked_by} " + f"UNLOCKED by {self.unlocked_by}" if self.unlocked_by else "LOCKED"
+        )
+
+    class Meta:
+        ordering = ["-locked_at"]

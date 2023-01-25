@@ -12,6 +12,8 @@ import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
 
+export const baseUrl = baseUrls.groups;
+
 const getUrl = groupId => {
     const defaultChipColor = getChipColors(0).replace('#', '');
     return (
@@ -20,11 +22,14 @@ const getUrl = groupId => {
         `/searches/[{"validation_status":"all", "color":"${defaultChipColor}", "group":"${groupId}", "source": null}]`
     );
 };
-const TableColumns = (formatMessage, component) => [
+const TableColumns = (formatMessage, params, deleteGroup, saveGroup) => [
+    {
+        Header: 'Id',
+        accessor: 'id',
+    },
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
-        align: 'left',
     },
     {
         Header: formatMessage(MESSAGES.updatedAt),
@@ -70,18 +75,14 @@ const TableColumns = (formatMessage, component) => [
                     )}
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.update}
-                    key={settings.row.original.updated_at}
-                    params={component.props.params}
+                    params={params}
+                    saveGroup={saveGroup}
                 />
                 <DeleteDialog
                     keyName="group"
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
-                    onConfirm={closeDialog =>
-                        component
-                            .deleteGroup(settings.row.original)
-                            .then(closeDialog)
-                    }
+                    onConfirm={() => deleteGroup(settings.row.original)}
                 />
             </section>
         ),

@@ -4,7 +4,6 @@ import logging
 
 logger = logging.getLogger(__name__)
 from django.core.files.uploadedfile import UploadedFile
-from collections import namedtuple
 from django.test import TestCase
 from django.contrib.gis.geos import Point
 from iaso.models import (

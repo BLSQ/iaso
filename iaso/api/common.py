@@ -1,12 +1,15 @@
+import enum
 import logging
-from datetime import datetime
+from datetime import datetime, date
 from functools import wraps
 from traceback import format_exc
 
+import pytz
+from django.contrib.auth.models import User
 from django.db import transaction
-from django.db.models import ProtectedError
+from django.db.models import ProtectedError, Q
 from django.utils.timezone import make_aware
-from rest_framework import serializers, pagination, exceptions, permissions
+from rest_framework import serializers, pagination, exceptions, permissions, filters, compat
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
@@ -29,6 +32,17 @@ REQUEST_HEADER_INFO_KEYS = [
     "QUERY_STRING",
     "HTTP_AUTHORIZATION",
 ]
+
+CONTENT_TYPE_XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+CONTENT_TYPE_CSV = "text/csv"
+
+EXPORTS_DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username"]
 
 
 def safe_api_import(key: str, fallback_status=200):
@@ -71,11 +85,12 @@ def safe_api_import(key: str, fallback_status=200):
     return decorator
 
 
+# Typing: it seems quite hard to type this, so I'm not doing it for now. Use "type: ignore" comment to silence mypy
 class HasPermission:
     """
     Permission class factory for simple permission checks.
 
-    If the user has any of the the provided permissions, he will be granted access
+    If the user has any of the provided permissions, he will be granted access
 
     Usage:
 
@@ -87,6 +102,33 @@ class HasPermission:
     def __init__(self, *perms):
         class PermissionClass(permissions.BasePermission):
             def has_permission(self, request, view):
+                return request.user and any(request.user.has_perm(perm) for perm in perms)
+
+        self._permission_class = PermissionClass
+
+    def __call__(self, *args, **kwargs) -> permissions.BasePermission:
+        return self._permission_class()
+
+
+class ReadOnlyOrHasPermission:
+    """
+    Permission class factory for simple permission checks.
+
+    Grant read only access to all and need permission to edit
+
+    Usage:
+
+    > class SomeViewSet(viewsets.ViewSet):
+    >     permission_classes=[HasPermission("perm_1", "perm_2)]
+    >     ...
+    """
+
+    def __init__(self, *perms):
+        class PermissionClass(permissions.BasePermission):
+            def has_permission(self, request, view):
+                if request.method in permissions.SAFE_METHODS:
+                    return True
+
                 return request.user and any(request.user.has_perm(perm) for perm in perms)
 
         self._permission_class = PermissionClass
@@ -159,6 +201,18 @@ class TimestampField(serializers.Field):
         return make_aware(datetime.utcfromtimestamp(data))
 
 
+class DateTimestampField(serializers.Field):
+    """Represent a date as a timestampfield
+
+    Use only for mobile APIs"""
+
+    def to_representation(self, value: date):
+        return datetime(value.year, value.month, value.day, 0, 0, 0, tzinfo=pytz.utc).timestamp()
+
+    def to_internal_value(self, data: float):
+        return make_aware(datetime.utcfromtimestamp(data)).date()
+
+
 class Paginator(pagination.PageNumberPagination):
     page_size_query_param = "limit"
 
@@ -180,7 +234,7 @@ class Paginator(pagination.PageNumberPagination):
 
 
 class ModelViewSet(BaseModelViewSet):
-    results_key = None
+    results_key = "results"
     # FIXME Contrary to name it remove result key if NOT paginated
     remove_results_key_if_paginated = False
 
@@ -207,7 +261,7 @@ class ModelViewSet(BaseModelViewSet):
         return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
-        """Override to return responses with {"result_key": data} structure"""
+        # """Override to return responses with {"result_key": data} structure"""
 
         queryset = self.filter_queryset(self.get_queryset())
 
@@ -235,3 +289,61 @@ class ModelViewSet(BaseModelViewSet):
                 self.request.method,
                 f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )
+
+
+class ChoiceEnum(enum.Enum):
+    active = "active"
+    all = "all"
+    deleted = "deleted"
+
+
+class DeletionFilterBackend(filters.BaseFilterBackend):
+    def get_schema_fields(self, view):
+        # Used to generate the swagger / browsable api
+        return [
+            compat.coreapi.Field(
+                name="deletion_status",
+                required=False,
+                location="query",
+                # schema=compat.coreschema.Enum(enum=ChoiceEnum),
+                schema=compat.coreschema.String(
+                    description="Filter on deleted item: all|active|deleted. Default:active"
+                ),
+            )
+        ]
+
+    def get_schema_operation_parameters(self, view):
+        # Used to generate the swagger / browsable api
+        return [
+            {
+                "name": "deletion_status",
+                "required": False,
+                "in": "query",
+                "description": "Filter on deleted item: all|active|deleted. Default:active",
+                "schema": {"type": "string", "enum": [c.name for c in ChoiceEnum]},
+            }
+        ]
+
+    def filter_queryset(self, request, queryset, view):
+        # by default in list view filter deleted record
+        # but don't outside of list view
+        # otherwise we can't access, and undelete deleted object
+        default_filter = "active" if view.action == "list" else "all"
+        query_param = request.query_params.get("deletion_status", default_filter)
+
+        if query_param == "deleted":
+            query = Q(deleted_at__isnull=False)
+            return queryset.filter(query)
+
+        if query_param == "active":
+            query = Q(deleted_at__isnull=True)
+            return queryset.filter(query)
+
+        if query_param == "all":
+            return queryset
+        return queryset
+
+
+class FileFormatEnum(enum.Enum):
+    CSV: str = "csv"
+    XLSX: str = "xlsx"

@@ -1,14 +1,20 @@
-"""Generation of the Preparedness Google Sheet
+"""Generation of the Preparedness Google Sheet for a Campaign
 
-Use a template configured in polio.Config preparedness_template_id
+Use a template configured in polio.Config preparedness_template_id.
+
+The general logic is that we copy a template Spreadsheet file stored in Google Spreadsheet,
+and we adapt the value for the particular campaign we are generating to.
+We copy the Regional worksheet for each region in the Campaign scope, then add a column for each district.
 """
 import copy
+from typing import Optional
 
-import gspread
+import gspread  # type: ignore
 from django.utils.translation import gettext_lazy as _
-from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range
+from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range  # type: ignore
 from rest_framework import exceptions
 
+from iaso.models import OrgUnit
 from plugins.polio.models import CountryUsersGroup, Campaign
 from plugins.polio.preparedness.client import get_client, get_google_config
 
@@ -18,7 +24,7 @@ logger = getLogger(__name__)
 
 # you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
-TEMPLATE_VERSION = "v3"
+TEMPLATE_VERSION = "v3.1"
 
 
 def create_spreadsheet(title: str, lang: str):
@@ -42,11 +48,11 @@ def create_spreadsheet(title: str, lang: str):
     return spreadsheet
 
 
-def update_national_worksheet(sheet: gspread.Worksheet, country=None, payment_mode="", vacine=""):
+def update_national_worksheet(sheet: gspread.Worksheet, vaccines: str, country=None, payment_mode=""):
     country_name = country.name if country else ""
     updates = [
         {"range": "C4", "values": [[payment_mode]]},
-        {"range": "C11", "values": [[vacine]]},
+        {"range": "C11", "values": [[vaccines]]},
         {"range": "C6", "values": [[country_name]]},
     ]
 
@@ -111,22 +117,36 @@ def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
     for template_protected_range in template_protected_ranges:
         new_protected_range = copy.deepcopy(template_protected_range)
         del new_protected_range["protectedRangeId"]
-        # skip those as they are added when copy the file but don't work because of permissions issue.
+        # Parameter "requestingUserCanEdit" is read only
         if "requestingUserCanEdit" in new_protected_range:
             del new_protected_range["requestingUserCanEdit"]
-        if "editors" in new_protected_range:
-            del new_protected_range["editors"]
+        # Editor property not allowed in warningOnly protection
+        #  The original editors list from the template is keep otherwise the protection is listed but don't actually
+        #  prevent edition. Seems a bug in Google Sheet, probably related to the fact that the new owner is a Service
+        #  Account.
+        if new_protected_range.get("warningOnly"):
+            if "editors" in new_protected_range:
+                del new_protected_range["editors"]
         new_protected_range["range"]["sheetId"] = new_sheet_id
+        if "unprotectedRanges" in new_protected_range:
+            for unprotected_range in new_protected_range["unprotectedRanges"]:
+                unprotected_range["sheetId"] = new_sheet_id
         new_protected_ranges.append(new_protected_range)
-    # Return request don't execute them so we can do all of them at the end
+    # Return requests, don't execute them in order to batch execute all of them at the end
     requests = []
     for pr in new_protected_ranges:
         requests.append({"addProtectedRange": {"protectedRange": pr}})
     return requests
 
 
-def generate_spreadsheet_for_campaign(campaign: Campaign):
+def get_region_from_district(districts):
+    # May not be the most efficient
+    return OrgUnit.objects.filter(id__in=districts.values_list("parent_id", flat=True).distinct())
+
+
+def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional[int]):
     lang = "EN"
+
     try:
         country = campaign.country
         if not country:
@@ -139,7 +159,7 @@ def generate_spreadsheet_for_campaign(campaign: Campaign):
     spreadsheet = create_spreadsheet(campaign.obr_name, lang)
     update_national_worksheet(
         spreadsheet.worksheet("National"),
-        vacine=campaign.vacine,
+        vaccines=campaign.vaccines,
         payment_mode=campaign.payment_mode,
         country=campaign.country,
     )
@@ -147,8 +167,9 @@ def generate_spreadsheet_for_campaign(campaign: Campaign):
     meta = spreadsheet.fetch_sheet_metadata()
     template_range = meta["sheets"][regional_template_worksheet.index]["protectedRanges"]  # regional_template_worksheet
     batched_requests = []
-    districts = campaign.get_districts()
-    regions = campaign.get_regions()
+    districts = campaign.get_districts_for_round_number(round_number)
+    regions = get_region_from_district(districts)
+
     current_index = 2
     for index, region in enumerate(regions):
         regional_worksheet = regional_template_worksheet.duplicate(current_index, None, region.name)

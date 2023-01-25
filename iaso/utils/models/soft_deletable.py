@@ -1,5 +1,5 @@
 from django.db import models
-from django.db.models.functions import Now
+from django.utils.timezone import now
 
 
 class DefaultSoftDeletableManager(models.Manager):
@@ -27,7 +27,7 @@ class SoftDeletableModel(models.Model):
         return super().delete(using, keep_parents)
 
     def delete(self, using=None, keep_parents=False):
-        self.deleted_at = Now()
+        self.deleted_at = now()
         self.save()
 
     def restore(self):

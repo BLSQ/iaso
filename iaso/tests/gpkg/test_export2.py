@@ -1,11 +1,10 @@
-from django.contrib.gis.geos import Point, Polygon, MultiPolygon
+from pathlib import Path
 
-from iaso.gpkg.export_gpkg import source_to_gpkg, org_units_to_gpkg_bytes
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+from iaso import models as m
+from iaso.gpkg.export_gpkg import org_units_to_gpkg_bytes, source_to_gpkg
 from iaso.gpkg.import_gpkg import import_gpkg_file
 from iaso.test import TestCase
-from iaso import models as m
-
-from pathlib import Path
 
 
 class GPKGExport(TestCase):
@@ -55,6 +54,7 @@ class GPKGExport(TestCase):
             source_name=self.source_name,
             version_number=2,
             validation_status="new",
+            description="",
         )
         print(m.SourceVersion.objects.all())
 
@@ -103,6 +103,7 @@ class GPKGExport(TestCase):
             source_name=self.source_name,
             version_number=2,
             validation_status="new",
+            description="",
         )
         v2 = m.SourceVersion.objects.get(data_source__name=self.source_name, number=2)
         self.assertEqual(v2.orgunit_set.all().count(), 5)

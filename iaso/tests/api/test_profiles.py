@@ -1,10 +1,13 @@
 import typing
 
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.sites.models import Site
 from django.test import tag
-
+from django.core import mail
+from iaso.models import Profile
 from iaso.test import APITestCase
 from iaso import models as m
+from django.conf import settings
 
 
 class ProfileAPITestCase(APITestCase):
@@ -52,6 +55,42 @@ class ProfileAPITestCase(APITestCase):
             source_ref="PvtAI4RUMkr",
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
+
+        cls.jedi_council_corruscant_child = m.OrgUnit.objects.create(
+            org_unit_type=cls.jedi_council,
+            version=sw_version_1,
+            name="Corruscant Jedi Council",
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
+            location=cls.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+            parent=cls.jedi_council_corruscant,
+        )
+
+    def test_can_delete_dhis2_id(self):
+        self.client.force_authenticate(self.john)
+        jim = Profile.objects.get(user=self.jim)
+        jim.dhis2_id = "fsdgdfsgsdg"
+        jim.save()
+
+        data = {
+            "id": str(self.jim.id),
+            "user_name": "jim",
+            "first_name": "",
+            "last_name": "",
+            "email": "",
+            "password": "",
+            "permissions": [],
+            "org_units": [],
+            "language": "fr",
+            "dhis2_id": "",
+        }
+
+        response = self.client.patch("/api/profiles/{0}/".format(jim.id), data=data, format="json")
+
+        self.assertEqual(response.status_code, 200, response)
 
     def test_profile_me_without_auth(self):
         """GET /profiles/me/ without auth should result in a 403"""
@@ -156,6 +195,19 @@ class ProfileAPITestCase(APITestCase):
         response_data = response.json()
         self.assertEqual(response_data["errorKey"], "user_name")
 
+    def test_create_profile_duplicate_user_with_capitale_letters(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "JaNeDoE",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        response_data = response.json()
+        self.assertEqual(response_data["errorKey"], "user_name")
+
     def test_create_profile_then_delete(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -225,6 +277,47 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(org_units.count(), 1)
         self.assertEqual(org_units[0].name, "Corruscant Jedi Council")
 
+    def test_create_profile_with_send_email(self):
+        site = Site.objects.first()
+        site.name = "Iaso Dev"
+        site.save()
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "userTest",
+            "password": "",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "send_email_invitation": True,
+            "email": "test@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        domain = site.name
+        from_email = settings.DEFAULT_FROM_EMAIL
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f"Set up a password for your new account on {domain}")
+        self.assertEqual(mail.outbox[0].from_email, from_email)
+        self.assertEqual(mail.outbox[0].to, ["test@test.com"])
+
+    def test_create_profile_with_no_password_and_not_send_email(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "userTest",
+            "password": "",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "send_email_invitation": False,
+            "email": "test@test.com",
+        }
+
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+
+        response_data = response.json()
+        self.assertEqual(response_data["errorKey"], "password")
+
     def assertValidProfileData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
         self.assertHasField(project_data, "first_name", str)
@@ -236,6 +329,35 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.delete("/api/profiles/1/")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_profile_error_dhis2_constraint(self):
+        # Test for regression of IA-1249
+        self.client.force_authenticate(self.jim)
+        data = {"user_name": "unittest_user1", "password": "unittest_password", "dhis2_id": ""}
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": ""}
+        response = self.client.post("/api/profiles/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 200, response.content)
+        profile1 = m.Profile.objects.get(user__username="unittest_user1")
+        profile2 = m.Profile.objects.get(user__username="unittest_user2")
+        self.assertNotEqual(profile1.account_id, None)
+        self.assertEqual(profile2.account_id, profile1.account_id)
+        self.assertEqual(profile2.dhis2_id, None)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "", "first_name": "test"}
+        response = self.client.patch(f"/api/profiles/{profile2.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        profile2.refresh_from_db()
+        self.assertEqual(profile2.dhis2_id, None)
+
+        data = {"user_name": "unittest_user2", "password": "unittest_password", "dhis2_id": "test_dhis2_id"}
+        response = self.client.patch(f"/api/profiles/{profile2.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200, response.content)
+        profile2.refresh_from_db()
+        self.assertEqual(profile2.dhis2_id, "test_dhis2_id")
 
     def test_account_feature_flags_is_included(self):
         aff = m.AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")
@@ -268,3 +390,54 @@ class ProfileAPITestCase(APITestCase):
         self.assertIn("account", response_data)
         print(response_data["account"])
         self.assertEqual(response_data["account"]["feature_flags"], [])
+
+    def test_search_user_by_permissions(self):
+        self.client.force_authenticate(self.jane)
+
+        response = self.client.get("/api/profiles/?permissions=iaso_users")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "jim")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_org_units(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        response = self.client.get(f"/api/profiles/?location={self.jedi_council_corruscant.pk}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_org_units_type(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_children_ou(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant_child])
+
+        response = self.client.get(
+            f"/api/profiles/?location={self.jedi_council_corruscant.pk}&ouParent=false&ouChildren=true"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_parent_ou(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        response = self.client.get(
+            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)

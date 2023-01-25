@@ -28,21 +28,15 @@ import {
     sidebarMenuInitialState,
 } from './sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from './snackBarsReducer';
-import { devicesInitialState, devicesReducer } from './devicesReducer';
 import { routerInitialState, routerReducer } from './routerReducer';
 import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
-import {
-    groupsInitialState,
-    reducer as groupsReducer,
-} from '../domains/orgUnits/groups/reducer';
 import {
     orgUnitsTypesInitialState,
     reducer as orgUnitsTypesReducer,
 } from '../domains/orgUnits/orgUnitTypes/reducer';
 import { localeMiddleware } from '../domains/app/middleware';
 
-// TODO pass baseUrl without hardcoding it
 // eslint-disable-next-line react-hooks/rules-of-hooks
 let storeHistory = useRouterHistory(createHistory)({
     basename: '/dashboard',
@@ -55,13 +49,11 @@ const store = createStore(
         instances: instancesInitialState,
         snackBar: snackBarsInitialState,
         map: mapInitialState,
-        devices: devicesInitialState,
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
         projects: projectsInitialState,
         mappings: mappingsInitialState,
-        groups: groupsInitialState,
         orgUnitsTypes: orgUnitsTypesInitialState,
     },
     {
@@ -71,18 +63,16 @@ const store = createStore(
         instances: instancesReducer,
         snackBar: snackBarsReducer,
         map: mapReducer,
-        devices: devicesReducer,
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,
         projects: projectsReducer,
         mappings: mappingReducer,
-        groups: groupsReducer,
         orgUnitsTypes: orgUnitsTypesReducer,
     },
     [routerMiddleware(storeHistory), thunk, localeMiddleware],
 );
-// TODO: see if mutation necessary. If not don't reassign history and initialize history const here
+
 storeHistory = syncHistoryWithStore(storeHistory, store);
 
 const history = storeHistory;

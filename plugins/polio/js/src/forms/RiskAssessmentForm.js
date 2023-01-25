@@ -9,12 +9,14 @@ import {
     ResponsibleField,
     RABudgetStatusField,
     TextInput,
+    NumberInput,
 } from '../components/Inputs';
 
 export const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    useFormikContext();
+    const { values } = useFormikContext();
+    const { rounds = [] } = values;
 
     return (
         <>
@@ -36,8 +38,10 @@ export const RiskAssessmentForm = () => {
                         <Field
                             label={formatMessage(MESSAGES.verificationScore)}
                             name="verification_score"
-                            component={TextInput}
+                            component={NumberInput}
                             className={classes.input}
+                            min={0}
+                            max={20}
                         />
                     </Grid>
                 </Grid>
@@ -55,7 +59,9 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label={formatMessage(MESSAGES.firstDraftSubmission)}
+                        label={formatMessage(
+                            MESSAGES.risk_assessment_first_draft_submitted_at,
+                        )}
                         name="risk_assessment_first_draft_submitted_at"
                         component={DateInput}
                         fullWidth
@@ -67,7 +73,7 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label={formatMessage(MESSAGES.agNopvGroup)}
+                        label={formatMessage(MESSAGES.ag_nopv_group_met_at)}
                         name="ag_nopv_group_met_at"
                         component={DateInput}
                         fullWidth
@@ -78,24 +84,36 @@ export const RiskAssessmentForm = () => {
                         component={DateInput}
                         fullWidth
                     />
-                    <Field
-                        label={formatMessage(MESSAGES.targetpopulationRoundOne)}
-                        name="round_one.target_population"
-                        component={TextInput}
-                        className={classes.input}
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.targetpopulationRoundTwo)}
-                        name="round_two.target_population"
-                        component={TextInput}
-                        className={classes.input}
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.dosesRequested)}
-                        name="doses_requested"
-                        component={TextInput}
-                        className={classes.input}
-                    />
+                </Grid>
+                <Grid item md={6}>
+                    {rounds.map((round, i) => {
+                        return (
+                            <Field
+                                key={round.number}
+                                label={`${formatMessage(
+                                    MESSAGES.dosesRequested,
+                                )} ${formatMessage(MESSAGES.round)} ${
+                                    round.number
+                                }`}
+                                name={`rounds[${i}].doses_requested`}
+                                component={TextInput}
+                                className={classes.input}
+                            />
+                        );
+                    })}
+                    {rounds.map((round, i) => {
+                        return (
+                            <Field
+                                key={round.number}
+                                label={`${formatMessage(
+                                    MESSAGES.target_population,
+                                )} ${round.number}`}
+                                name={`rounds[${i}].target_population`}
+                                component={TextInput}
+                                className={classes.input}
+                            />
+                        );
+                    })}
                 </Grid>
             </Grid>
         </>

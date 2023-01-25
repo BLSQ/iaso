@@ -28,7 +28,7 @@ const defaultQuery = {
 };
 
 const goToPage = ({
-    formQuery,
+    formQuery = {},
     fakeUser = superUser,
     fixture = listFixture,
 }) => {
@@ -60,7 +60,7 @@ const openDialogForIndex = index => {
     const actionCol = row.find('td').last();
     const editButton = actionCol.find('button').first();
     editButton.click();
-    cy.get('#groups-dialog').should('be.visible');
+    cy.get('[data-test="groups-dialog"]').should('be.visible');
 };
 
 const testDialogContent = group => {
@@ -75,15 +75,16 @@ const testRowContent = (index, group = listFixture.groups[index]) => {
 
     cy.get('table').as('table');
     cy.get('@table').find('tbody').find('tr').eq(index).as('row');
-    cy.get('@row').find('td').eq(0).should('contain', group.name);
-    cy.get('@row').find('td').eq(1).should('contain', updatedAt);
+    cy.get('@row').find('td').eq(0).should('contain', group.id);
+    cy.get('@row').find('td').eq(1).should('contain', group.name);
+    cy.get('@row').find('td').eq(2).should('contain', updatedAt);
 
     cy.get('@row')
         .find('td')
-        .eq(2)
+        .eq(3)
         .should('contain', group.source_version.data_source.name);
-    cy.get('@row').find('td').eq(3).should('contain', group.source_ref);
-    cy.get('@row').find('td').eq(4).should('contain', group.org_unit_count);
+    cy.get('@row').find('td').eq(4).should('contain', group.source_ref);
+    cy.get('@row').find('td').eq(5).should('contain', group.org_unit_count);
 };
 
 const mockListCall = (keyName, body) => {
@@ -131,7 +132,7 @@ describe('Groups', () => {
             cy.wait('@getGroups').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/name/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/name/pageSize/20/page/1`,
                 );
             });
         });
@@ -166,8 +167,8 @@ describe('Groups', () => {
             });
         });
         it('should be enabled while searching', () => {
-            cy.get('#search-search').type(search);
             cy.wait('@getGroups').then(() => {
+                cy.get('#search-search').type(search);
                 cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);
@@ -178,7 +179,7 @@ describe('Groups', () => {
                 cy.get('#search-search').type(search);
 
                 cy.get('[data-test="search-button"]').click();
-                cy.url().should('contain', `${baseUrl}/search/${search}`);
+                cy.url().should('contain', `/search/${search}`);
             });
         });
     });
@@ -204,7 +205,12 @@ describe('Groups', () => {
             );
         });
 
-        testTablerender(baseUrl, listFixture.groups.length, 6);
+        testTablerender({
+            baseUrl,
+            rows: listFixture.groups.length,
+            columns: 7,
+            apiKey: 'groups',
+        });
         testPagination({
             baseUrl,
             apiPath: '/api/groups/**',
@@ -239,7 +245,7 @@ describe('Groups', () => {
                     '/dashboard/orgunits/list/locationLimit/3000/order/id/pageSize/50/page/1/searchTabIndex/0/searchActive/true/searches/[{"validation_status":"all", "color":"f4511e", "group":"1", "source": null}]';
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
-                const orgUnitLinkCol = row.find('td').eq(4);
+                const orgUnitLinkCol = row.find('td').eq(5);
                 orgUnitLinkCol.find('a').should('have.attr', 'href', href);
             });
         });
@@ -254,7 +260,7 @@ describe('Groups', () => {
             // this will be tested when creation will be enabled
             cy.wait('@getGroups').then(() => {
                 cy.get('[data-test="add-group-button"]').click();
-                cy.get('#groups-dialog').should('be.visible');
+                cy.get('[data-test="groups-dialog"]').should('be.visible');
 
                 cy.testInputValue('#input-text-name', '');
                 cy.testInputValue('#input-text-source_ref', '');
@@ -322,7 +328,6 @@ describe('Groups', () => {
                 const index = 0;
                 cy.get('[data-test="add-group-button"]').click();
                 let newGroup = {
-                    id: null,
                     name: 'create',
                     source_ref: 'zu18',
                 };
@@ -354,6 +359,51 @@ describe('Groups', () => {
                         testRowContent(0, newGroup);
                     });
                 });
+            });
+        });
+    });
+
+    describe('Save button in Dialog', () => {
+        beforeEach(() => {
+            goToPage({});
+        });
+
+        it('should be disabled if name value is an empty string', () => {
+            cy.wait('@getGroups').then(() => {
+                // on create
+                cy.get('[data-test="add-group-button"]').click();
+                cy.get('[data-test="groups-dialog"]').should('be.visible');
+                cy.get('.MuiDialogActions-root')
+                    .find('button')
+                    .last()
+                    .as('saveButton');
+                cy.get('@saveButton').should('be.disabled');
+
+                const name = 'Lucius';
+                cy.get('#input-text-name').type(name).clear();
+                cy.testInputValue('#input-text-name', '');
+                cy.get('.MuiDialogActions-root')
+                    .find('button')
+                    .last()
+                    .as('saveButton');
+                cy.get('@saveButton').should('be.disabled');
+                cy.get('.MuiDialogActions-root')
+                    .find('button')
+                    .first()
+                    .as('cancelButton');
+                cy.get('@cancelButton').click();
+
+                // on edit
+                table = cy.get('table');
+                row = table.find('tbody').find('tr').eq(0);
+                const actionCol = row.find('td').last();
+                actionCol.find('button').first().as('editButton');
+                cy.get('@editButton').click();
+                cy.get('[data-test="groups-dialog"]').should('be.visible');
+                cy.get('@saveButton').should('not.be.disabled');
+
+                cy.get('#input-text-name').clear();
+                cy.get('@saveButton').should('be.disabled');
             });
         });
     });

@@ -1,11 +1,10 @@
-import MESSAGES from './messages';
 import { DateTimeCell } from 'Iaso/components/Cells/DateTimeCell';
+import MESSAGES from './messages';
 
 const TableColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.titleCol),
         accessor: 'title',
-        style: { justifyContent: 'left' },
     },
     {
         Header: formatMessage(MESSAGES.author),

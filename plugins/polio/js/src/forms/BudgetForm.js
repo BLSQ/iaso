@@ -1,7 +1,8 @@
-import React from 'react';
-import { Grid, Typography, Box } from '@material-ui/core';
+import React, { useMemo } from 'react';
+import { Grid, Typography, Box, Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
+
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import {
@@ -11,72 +12,214 @@ import {
     TextInput,
     PaymentField,
 } from '../components/Inputs';
+import {
+    BUDGET_REQUEST,
+    RRT_REVIEW,
+    ORPG_REVIEW,
+    REVIEW_FOR_APPROVAL,
+    WORKFLOW_SUFFIX,
+} from '../constants/budget.ts';
+import { ExpandableItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem.tsx';
+import { hasFormikFieldError } from '../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 const defaultToZero = value => (value === '' ? 0 : value);
+const getRoundData = round => {
+    const cost = parseInt(defaultToZero(round.cost ?? 0), 10);
+    const population = parseInt(
+        defaultToZero(round.target_population ?? 0),
+        10,
+    );
+    const calculateRound = cost > 0 && population > 0;
+    return {
+        cost,
+        population,
+        calculateRound: cost > 0 && population > 0,
+        costRoundPerChild: calculateRound ? (cost / population).toFixed(2) : 0,
+    };
+};
+
+const findErrorInFieldList = (keys, errors, touched) => {
+    return Boolean(
+        keys.find(key =>
+            hasFormikFieldError(`${key}${WORKFLOW_SUFFIX}`, errors, touched),
+        ),
+    );
+};
 
 export const BudgetForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    const { touched, errors } = useFormikContext();
 
     const { values } = useFormikContext();
+    const { rounds = [] } = values;
 
-    const round1Cost = parseInt(
-        defaultToZero(values?.round_one?.cost ?? 0),
-        10,
+    const totalCostPerChild = useMemo(() => {
+        let totalCost = 0;
+        let totalPopulation = 0;
+        rounds.forEach(r => {
+            const roundData = getRoundData(r);
+            totalCost += roundData.calculateRound ? roundData.cost : 0;
+            totalPopulation += roundData.calculateRound
+                ? roundData.population
+                : 0;
+        });
+        return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
+    }, [rounds]);
+    const hasRequestFieldsError = findErrorInFieldList(
+        BUDGET_REQUEST,
+        errors,
+        touched,
     );
-    const round2Cost = parseInt(
-        defaultToZero(values?.round_two?.cost ?? 0),
-        10,
+    const hasRRTReviewError = findErrorInFieldList(RRT_REVIEW, errors, touched);
+    const hasORPGReviewError = findErrorInFieldList(
+        ORPG_REVIEW,
+        errors,
+        touched,
     );
-
-    const round1Population = parseInt(
-        defaultToZero(values?.round_one?.target_population ?? 0),
-        10,
+    const hasApprovalFieldsError = findErrorInFieldList(
+        REVIEW_FOR_APPROVAL,
+        errors,
+        touched,
     );
-    const round2Population = parseInt(
-        defaultToZero(values?.round_two?.target_population ?? 0),
-        10,
-    );
-
-    const calculateRound1 = round1Cost > 0 && round1Population > 0;
-    const calculateRound2 = round2Cost > 0 && round2Population > 0;
-
-    const totalCost =
-        (calculateRound1 ? round1Cost : 0) + (calculateRound2 ? round2Cost : 0);
-
-    const totalPopulation =
-        (calculateRound1 ? round1Population : 0) +
-        (calculateRound2 ? round2Population : 0);
-
-    const costRound1PerChild = calculateRound1
-        ? (round1Cost / round1Population).toFixed(2)
-        : 0;
-
-    const costRound2PerChild = calculateRound2
-        ? (round2Cost / round2Population).toFixed(2)
-        : 0;
-
-    const totalCostPerChild = (totalCost / totalPopulation).toFixed(2);
 
     return (
         <>
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
+                        <Box mb={2}>
+                            <Typography variant="button">
+                                {formatMessage(MESSAGES.budgetApproval)}
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </Box>
+                    </Grid>
+                    <Grid xs={12} md={3} item>
+                        <Box mb={2}>
+                            <Typography variant="button">
+                                {formatMessage(MESSAGES.fundsRelease)}
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </Box>
+                    </Grid>
+                    <Grid xs={12} md={3} item>
+                        <Box mb={2}>
+                            <Typography variant="button">
+                                {formatMessage(MESSAGES.costPerChild)}
+                            </Typography>
+                        </Box>
+                        <Box mb={2}>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </Box>
+                    </Grid>
+                </Grid>
+
+                <Grid item md={3}>
+                    <Box mb={2}>
                         <Field
                             name="budget_status"
                             component={RABudgetStatusField}
                         />
-                    </Grid>
-                    <Grid xs={12} md={6} item>
+                    </Box>
+                    <Box mt={2}>
+                        <Divider style={{ height: '1px', width: '100%' }} />
+                    </Box>
+                    <ExpandableItem
+                        label={formatMessage(MESSAGES.budgetRequest)}
+                        preventCollapse={hasRequestFieldsError}
+                    >
+                        {BUDGET_REQUEST.map((node, index) => {
+                            return (
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
+                                    <Field
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
+                            );
+                        })}
+                    </ExpandableItem>
+                    <Divider style={{ height: '1px', width: '100%' }} />
+                    <ExpandableItem
+                        label={formatMessage(MESSAGES.RRTReview)}
+                        preventCollapse={hasRRTReviewError}
+                    >
+                        {RRT_REVIEW.map((node, index) => {
+                            return (
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
+                                    <Field
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
+                            );
+                        })}
+                    </ExpandableItem>
+                    <Box mb={2}>
+                        <Divider style={{ height: '1px', width: '100%' }} />
+                    </Box>
+                </Grid>
+                <Grid item md={3}>
+                    <Box mb={2}>
                         <Field
                             name="budget_responsible"
                             component={ResponsibleField}
                         />
-                    </Grid>
+                    </Box>
+                    <Box mt={2}>
+                        <Divider style={{ height: '1px', width: '100%' }} />
+                    </Box>
+                    <ExpandableItem
+                        label={formatMessage(MESSAGES.ORPGReview)}
+                        preventCollapse={hasORPGReviewError}
+                    >
+                        {ORPG_REVIEW.map((node, index) => {
+                            return (
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
+                                    <Field
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
+                            );
+                        })}
+                    </ExpandableItem>
+                    <Box>
+                        <Divider style={{ height: '1px', width: '100%' }} />
+                    </Box>
+                    <ExpandableItem
+                        label={formatMessage(MESSAGES.approval)}
+                        preventCollapse={hasApprovalFieldsError}
+                    >
+                        {REVIEW_FOR_APPROVAL.map((node, index) => {
+                            return (
+                                <Box mt={index === 0 ? 2 : 0} key={node}>
+                                    <Field
+                                        label={formatMessage(MESSAGES[node])}
+                                        name={`${node}${WORKFLOW_SUFFIX}`}
+                                        component={DateInput}
+                                        fullWidth
+                                    />
+                                </Box>
+                            );
+                        })}
+                    </ExpandableItem>
+                    <Box mb={2}>
+                        <Divider style={{ height: '1px', width: '100%' }} />
+                    </Box>
                 </Grid>
-
-                <Grid xs={12} md={6} item>
+                <Grid item md={3}>
                     <Box mb={2}>
                         <Field
                             name="payment_mode"
@@ -108,32 +251,8 @@ export const BudgetForm = () => {
                         component={DateInput}
                         fullWidth
                     />
-                </Grid>
-
-                <Grid item md={6}>
                     <Field
-                        label={formatMessage(MESSAGES.rrtOprttApproval)}
-                        name="budget_rrt_oprtt_approval_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-
-                    <Field
-                        label={formatMessage(MESSAGES.eomgGroup)}
-                        name="eomg"
-                        component={DateInput}
-                        fullWidth
-                    />
-
-                    <Field
-                        label={formatMessage(MESSAGES.budgetSubmittedAt)}
-                        name="budget_submitted_at"
-                        component={DateInput}
-                        fullWidth
-                    />
-
-                    <Field
-                        label={formatMessage(MESSAGES.districtCount)}
+                        label={formatMessage(MESSAGES.district_count)}
                         name="district_count"
                         component={TextInput}
                         className={classes.input}
@@ -145,34 +264,38 @@ export const BudgetForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
-
-                    <Field
-                        label={formatMessage(MESSAGES.costRoundOne)}
-                        name="round_one.cost"
-                        component={TextInput}
-                        className={classes.input}
-                    />
-
-                    <Field
-                        label={formatMessage(MESSAGES.costRoundTwo)}
-                        name="round_two.cost"
-                        component={TextInput}
-                        className={classes.input}
-                    />
+                </Grid>
+                <Grid xs={12} md={3} item>
+                    {rounds.map((round, i) => {
+                        const roundData = getRoundData(round);
+                        return (
+                            <Box key={round.number}>
+                                <Field
+                                    label={`${formatMessage(MESSAGES.cost)} ${
+                                        round.number
+                                    }`}
+                                    name={`rounds[${i}].cost`}
+                                    component={TextInput}
+                                    className={classes.input}
+                                />
+                                <Box mb={2}>
+                                    <Typography>
+                                        {formatMessage(
+                                            MESSAGES.costPerChildRound,
+                                        )}
+                                        {` ${round.number}: $`}
+                                        {roundData.calculateRound
+                                            ? roundData.costRoundPerChild
+                                            : ' -'}
+                                    </Typography>
+                                </Box>
+                            </Box>
+                        );
+                    })}
 
                     <Typography>
-                        {formatMessage(MESSAGES.costPerChildRoundOne)}
-                        {calculateRound1 ? costRound1PerChild : ' -'}
-                    </Typography>
-                    <Typography>
-                        {formatMessage(MESSAGES.costPerChildRoundTwo)}
-                        {calculateRound2 ? costRound2PerChild : ' -'}
-                    </Typography>
-                    <Typography>
-                        {formatMessage(MESSAGES.costPerChildTotal)}
-                        {calculateRound1 || calculateRound2
-                            ? totalCostPerChild
-                            : ' -'}
+                        {formatMessage(MESSAGES.costPerChildTotal)}: $
+                        {totalCostPerChild}
                     </Typography>
                 </Grid>
             </Grid>

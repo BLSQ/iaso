@@ -1,0 +1,106 @@
+"""JsonLogic(https://jsonlogic.com/)-related utilities."""
+
+import operator
+from functools import reduce
+from typing import Dict, Any
+
+from django.db.models import Q, Transform
+from django.db.models.fields.json import KeyTransformTextLookupMixin, JSONField
+
+
+# This is used to be able to force cast as json value into a float. Didn't find a simple way that would work
+# with our django version. From Django version 4.0 We can apparently use lookup directly in filter which might simplfy
+# things.
+# With this by using a __forcefloat in a json field name it is cast as a double precision
+# e.g:
+# `Instance.objects.filter(json__usable_vials_physical__forcefloat__gte= 1)`
+# see
+# https://docs.djangoproject.com/en/4.1/ref/models/lookups/#django.db.models.Transform
+# /django/db/models/fields/json.py
+# /django/db/models/functions/datetime.py class Extract
+# https://medium.com/nerd-for-tech/custom-lookups-in-django-69fd13e35bdb
+
+# Another alternative would have been to use an annotate in this way. But that complicate the filter flow because we
+# would have to annotate every field we are casting for.
+# Instance.objects.annotate(b=Cast(KeyTextTransform('usable_vials_physical', "json"), FloatField())).filter(b__gte=2)
+
+
+class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
+    lookup_name = "forcefloat"
+    # KeyTransformTextLookupMixin
+    # tell it to use ->> to extract the value as text otherwhise it can't be casted
+
+    def as_sql(self, compiler, connection):
+        if not connection.ops.extract_trunc_lookup_pattern.fullmatch(self.lookup_name):
+            raise ValueError("Invalid lookup_name: %s" % self.lookup_name)
+        sql, params = compiler.compile(self.lhs)
+        sql = "CAST(%s AS DOUBLE PRECISION)" % sql
+
+        return sql, params
+
+
+JSONField.register_lookup(ExtractForceFloat)
+
+
+def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
+    """Converts a JsonLogic query to a Django Q object.
+
+    :param jsonlogic: The JsonLogic query to convert, stored in a Python dict. Example: {"and": [{"==": [{"var": "gender"}, "F"]}, {"<": [{"var": "age"}, 25]}]}
+    :param field_prefix: A prefix to add to all fields in the generated query. Useful to follow a relationship or to dig in a JSONField
+
+    :return: A Django Q object.
+    """
+
+    if "and" in jsonlogic:
+        return reduce(
+            operator.and_,
+            (jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["and"]),
+        )
+    elif "or" in jsonlogic:
+        return reduce(
+            operator.or_,
+            (jsonlogic_to_q(subquery, field_prefix) for subquery in jsonlogic["or"]),
+        )
+
+    elif "!" in jsonlogic:
+        return ~jsonlogic_to_q(jsonlogic["!"], field_prefix)
+
+    if not jsonlogic.keys():
+        return Q()
+
+    # Binary operators
+    op = list(jsonlogic.keys())[0]
+    params = jsonlogic[op]
+    if len(params) != 2:
+        raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
+    if "var" not in params[0]:
+        raise ValueError(f"Unsupported JsonLogic. First argument must be a variable : {jsonlogic}")
+
+    lookups = {
+        "==": "exact",
+        "!=": "exact",
+        ">": "gt",
+        ">=": "gte",
+        "<": "lt",
+        "<=": "lte",
+    }
+
+    if op not in lookups.keys():
+        raise ValueError(
+            f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
+        )
+
+    field_name = params[0]["var"]
+
+    extract = ""
+    if isinstance(params[1], (int, float)) and field_prefix:
+        # Since inside the json everything is casted as string we cast back as int
+        extract = "__forcefloat"
+
+    lookup = lookups[op]
+    f = f"{field_prefix}{field_name}{extract}__{lookup}"
+    q = Q(**{f: params[1]})
+    if op == "!=":
+        # invert the filter
+        q = ~q
+    return q

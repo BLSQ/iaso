@@ -31,8 +31,8 @@ const mappingsTableColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.name),
         id: 'form_version__form__name',
-        style: { justifyContent: 'left' },
         accessor: row => row.form_version.form.name,
+        align: 'left',
     },
     {
         Header: formatMessage(MESSAGES.version),

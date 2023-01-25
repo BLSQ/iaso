@@ -1,6 +1,5 @@
 import typing
 
-from django.test import tag
 from django.utils.timezone import now
 
 from iaso import models as m
@@ -197,8 +196,8 @@ class GroupsAPITestCase(APITestCase):
         for group_data in list_data["groups"]:
             self.assertValidGroupData(group_data)
 
-    def assertValidGroupData(self, group_data: typing.Mapping, skip: typing.Sequence = None):
-        skip = skip if skip is not None else {}
+    def assertValidGroupData(self, group_data: typing.Mapping, skip: typing.Optional[typing.List] = None):
+        skip = skip if skip is not None else []
 
         self.assertHasField(group_data, "id", int)
         self.assertHasField(group_data, "name", str)

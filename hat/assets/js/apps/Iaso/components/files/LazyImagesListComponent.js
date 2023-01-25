@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import LazyImage from 'react-lazy-progressive-image';
 import isEqual from 'lodash/isEqual';
 
 import { Grid, withStyles } from '@material-ui/core';
@@ -7,7 +6,7 @@ import grey from '@material-ui/core/colors/grey';
 
 import PropTypes from 'prop-types';
 
-import { LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, LazyImage } from 'bluesquare-components';
 import { getFileName } from '../../utils/filesUtils';
 
 const styles = () => ({

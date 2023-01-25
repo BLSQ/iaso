@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux';
 
 import { Grid, Button, makeStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
-
+// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from '../../../../components/forms/InputComponent';
@@ -58,10 +58,11 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         },
         [filters],
     );
+
     return (
         <>
-            <Grid container spacing={4}>
-                <Grid item xs={3}>
+            <Grid container spacing={2}>
+                <Grid item xs={12} sm={6} md={4}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -71,22 +72,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                     />
                 </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={4}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
+
                 <Grid
                     item
-                    xs={2}
+                    xs={12}
+                    sm={6}
+                    md={8}
                     container
                     justifyContent="flex-end"
                     alignItems="center"
                 >
                     <Button
-                        id="search-button"
+                        data-test="search-button"
                         disabled={!filtersUpdated}
                         variant="contained"
                         className={classes.button}

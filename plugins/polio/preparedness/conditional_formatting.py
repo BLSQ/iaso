@@ -1,6 +1,6 @@
 from typing import List
 
-from gspread_formatting import BooleanRule, BooleanCondition, CellFormat, Color, TextFormat, NumberFormat
+from gspread_formatting import BooleanRule, BooleanCondition, CellFormat, Color, TextFormat, NumberFormat  # type: ignore
 
 LIGHT_BLUE = Color(0.7882353, 0.85490197, 0.972549)
 

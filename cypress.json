@@ -1,6 +1,7 @@
 {
+    "projectId": "Iaso",
     "fixturesFolder": "hat/assets/js/cypress/fixtures",
-    "integrationFolder": "hat/assets/js/cypress/integration",
+    "integrationFolder": "./",
     "pluginsFile": "hat/assets/js/cypress/plugins/index.js",
     "screenshotsFolder": "hat/assets/js/cypress/screenshots",
     "videosFolder": "hat/assets/js/cypress/videos",
@@ -8,5 +9,7 @@
     "supportFile": "hat/assets/js/cypress/support/index.js",
     "experimentalSessionSupport": true,
     "viewportWidth": 1280,
-    "viewportHeight": 800
+    "viewportHeight": 800,
+    "testFiles": ["hat/assets/js/cypress/integration/**/*.js", "plugins/**/cypress/integration/**/*.js"],
+    "retries": 2
 }

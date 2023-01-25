@@ -29,6 +29,11 @@ const styles = theme => ({
     listItemIcon: {
         minWidth: 35,
     },
+    linkButton: {
+        color: 'inherit',
+        textDecoration: 'none',
+        display: 'flex',
+    },
 });
 
 function MenuItem(props) {
@@ -41,11 +46,18 @@ function MenuItem(props) {
         subMenuLevel,
         currentPath,
         currentUser,
+        url,
     } = props;
-    const path = `${currentPath}/${menuItem.key}`;
+
+    const urlLink = url;
+    const path = urlLink ? `${currentPath}` : `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
     const isMenuActive = path === activePath;
-    const fullPath = menuItem.extraPath ? `${path}${menuItem.extraPath}` : path;
+    const fullPath = `${
+        menuItem.extraPath
+            ? `${path}/accountId/${currentUser.account.id}${menuItem.extraPath}`
+            : path
+    }`;
     const [open, setOpen] = React.useState(isMenuActive);
     const toggleOpen = () => {
         setOpen(!open);
@@ -65,11 +77,14 @@ function MenuItem(props) {
             <Link
                 className={classes.linkButton}
                 to={!hasSubMenu ? fullPath : ''}
+                target={urlLink ? '_blank' : ''}
             >
                 <ListItem
                     style={itemStyle}
                     button
-                    onClick={() => (!hasSubMenu ? onClick(path) : toggleOpen())}
+                    onClick={() =>
+                        !hasSubMenu ? onClick(path, url) : toggleOpen()
+                    }
                 >
                     <ListItemIcon className={classes.listItemIcon}>
                         {menuItem.icon({ color })}
@@ -121,6 +136,7 @@ function MenuItem(props) {
 MenuItem.defaultProps = {
     subMenuLevel: 1,
     currentPath: '',
+    url: '',
 };
 
 MenuItem.propTypes = {
@@ -132,6 +148,7 @@ MenuItem.propTypes = {
     subMenuLevel: PropTypes.number,
     currentPath: PropTypes.string,
     currentUser: PropTypes.object.isRequired,
+    url: PropTypes.string,
 };
 
 export default withStyles(styles)(injectIntl(MenuItem));

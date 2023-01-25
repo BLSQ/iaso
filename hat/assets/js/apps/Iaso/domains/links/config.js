@@ -11,7 +11,7 @@ import {
     displayDateFromTimestamp,
 } from 'bluesquare-components';
 
-import getDisplayName from '../../utils/usersUtils';
+import getDisplayName from '../../utils/usersUtils.ts';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import StarsComponent from '../../components/stars/StarsComponent';
@@ -29,7 +29,6 @@ export const linksTableColumns = (formatMessage, validateLink) => [
             <Box display="flex" justifyContent="center">
                 <StarsComponent
                     score={settings.row.original.similarity_score}
-                    bgColor={settings.row.index % 2 ? 'white' : '#f7f7f7'}
                     displayCount
                 />
             </Box>

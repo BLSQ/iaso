@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.title',
     },
     entityTypesTitle: {
-        defaultMessage: 'Entity types',
+        defaultMessage: 'Beneficiary types',
         id: 'iaso.entityTypes.title',
     },
     submissionsTitle: {
@@ -25,6 +25,26 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    formList: {
+        defaultMessage: 'Form List',
+        id: 'iaso.label.formList',
+    },
+    orgUnitList: {
+        defaultMessage: 'Org unit List',
+        id: 'iaso.label.orgUnitList',
+    },
+    dataSourceList: {
+        defaultMessage: 'Data Sources List',
+        id: 'iaso.label.dataSourceList',
+    },
+    beneficiariesList: {
+        defaultMessage: 'Beneficiaries List',
+        id: 'iaso.label.beneficiariesList',
+    },
+    planningList: {
+        defaultMessage: 'Planning List',
+        id: 'iaso.label.planningList',
+    },
     dhis2Mappings: {
         defaultMessage: 'DHIS mappings',
         id: 'iaso.label.dhis2Mappings',
@@ -32,6 +52,10 @@ const MESSAGES = defineMessages({
     completeness: {
         defaultMessage: 'Completeness',
         id: 'iaso.completeness.title',
+    },
+    completenessStats: {
+        defaultMessage: 'Completeness Stats',
+        id: 'iaso.completenessStats.title',
     },
     archived: {
         defaultMessage: 'Archived',
@@ -92,6 +116,46 @@ const MESSAGES = defineMessages({
     pages: {
         defaultMessage: 'Pages',
         id: 'iaso.label.pages',
+    },
+    planning: {
+        defaultMessage: 'Planning',
+        id: 'iaso.label.planning',
+    },
+    teams: {
+        defaultMessage: 'Teams',
+        id: 'iaso.label.teams',
+    },
+    assignments: {
+        defaultMessage: 'Assignments',
+        id: 'iaso.label.assignments',
+    },
+    dhis2: {
+        defaultMessage: 'Go to DHIS2',
+        id: 'iaso.label.dhis2Link',
+    },
+    legend: {
+        defaultMessage: 'Legend',
+        id: 'iaso.label.map.legend',
+    },
+    unselected: {
+        defaultMessage: 'Not assigned',
+        id: 'iaso.assignment.map.unselected',
+    },
+    disabled: {
+        defaultMessage: 'Already assigned',
+        id: 'iaso.assignment.map.disabled',
+    },
+    parent: {
+        defaultMessage: 'Parent',
+        id: 'iaso.assignment.map.parent',
+    },
+    beneficiaries: {
+        defaultMessage: 'Beneficiaries',
+        id: 'iaso.label.beneficiaries',
+    },
+    storages: {
+        defaultMessage: 'Storages',
+        id: 'iaso.label.storages',
     },
 });
 

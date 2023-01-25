@@ -3,7 +3,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.models import SourceVersion
-from .common import ModelViewSet
+from .common import ModelViewSet, CONTENT_TYPE_CSV, HasPermission
 from iaso.models import DataSource
 from rest_framework import serializers, permissions
 
@@ -19,12 +19,14 @@ class SourceVersionSerializer(serializers.ModelSerializer):
     GET /api/sourceversions/
     """
 
-    data_source_name = serializers.SlugRelatedField(source="data_source", slug_field="name", read_only=True)
+    data_source_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
+        source="data_source", slug_field="name", read_only=True
+    )
 
     # Default version for source not global
     is_default = serializers.SerializerMethodField()
 
-    def get_is_default(self, source_version: SourceVersion):
+    def get_is_default(self, source_version: SourceVersion) -> bool:
         return source_version.data_source.default_version == source_version
 
     class Meta:
@@ -64,11 +66,14 @@ class SourceVersionViewSet(ModelViewSet):
     This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
     "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
 
-    GET /api/datasources/
-    GET /api/datasources/<id>
+    GET /api/sourceversions/
+    GET /api/sourceversions/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),  # type: ignore
+    ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"
     queryset = DataSource.objects.all()
@@ -95,7 +100,7 @@ class SourceVersionViewSet(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         # FIXME: FileResponse don't work, no idea why, not a priority
         filename = "comparison.csv"
-        response = HttpResponse(serializer.generate_csv(), content_type="text/csv")
+        response = HttpResponse(serializer.generate_csv(), content_type=CONTENT_TYPE_CSV)
         response["Content-Disposition"] = "attachment; filename=%s" % filename
         return response
 

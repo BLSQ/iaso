@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
 
@@ -12,21 +14,46 @@ PATIENT_API = "patient_api"
 ORG_UNIT_API = "org_unit_api"
 ORG_UNIT_API_BULK = "org_unit_api_bulk"
 INSTANCE_API = "instance_api"
+FORM_API = "form_api"
 GPKG_IMPORT = "gpkg_import"
+CAMPAIGN_API = "campaign_api"
+
+
+def dict_compare(d1, d2):
+    d1_keys = set(d1.keys())
+    d2_keys = set(d2.keys())
+    shared_keys = d1_keys.intersection(d2_keys)
+    added = d2_keys - d1_keys
+    removed = d1_keys - d2_keys
+    modified_values = {k: {"before": d1.get(k), "after": d2.get(k)} for k in shared_keys if d1[k] != d2[k]}
+    added_values = {k: {"before": None, "after": d2[k]} for k in added}
+    removed_values = {k: {"before": d1[k], "after": None} for k in removed}
+    return {"added": added_values, "removed": removed_values, "modified": modified_values}
+
+
+class IasoJsonEncoder(json.JSONEncoder):
+    """This Encoder is needed for object that use UUID as their primary id
+    e.g Campaign"""
+
+    def default(self, o):
+        if isinstance(o, uuid.UUID):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
 
 
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
-    object_id = models.PositiveIntegerField()
+    # This is a charField and not a number field so it can also fit uuid
+    object_id = models.CharField(max_length=40, db_index=True)
     content_object = GenericForeignKey("content_type", "object_id")
-    past_value = models.JSONField()
-    new_value = models.JSONField()
+    past_value = models.JSONField(encoder=IasoJsonEncoder)
+    new_value = models.JSONField(encoder=IasoJsonEncoder)
     source = models.TextField()
     user = models.ForeignKey(User, null=True, blank=True, on_delete=models.DO_NOTHING)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %d - %s - %s" % (
+        return "%s - %s - %s - %s" % (
             self.content_type,
             self.object_id,
             self.user,
@@ -45,15 +72,32 @@ class Modification(models.Model):
             "created_at": self.created_at,
         }
 
-    def as_list(self):
-        return {
+    def as_list(self, fields):
+        dict_list = {
             "id": self.id,
             "content_type": self.content_type.app_label,
             "object_id": self.object_id,
             "source": self.source,
-            "user": self.user.iaso_profile.as_dict() if self.user else None,
+            "user": self.user.iaso_profile.as_short_dict() if self.user else None,
             "created_at": self.created_at,
         }
+        if "past_value" in fields:
+            dict_list["past_value"] = self.past_value
+        if "new_value" in fields:
+            dict_list["new_value"] = self.new_value
+        if "field_diffs" in fields:
+            dict_list["field_diffs"] = self.field_diffs()
+
+        return dict_list
+
+    def field_diffs(self):
+        past_values = self.past_value or []
+        new_values = self.new_value or []
+        past_value = past_values[0] if len(past_values) > 0 else {}
+        new_value = new_values[0] if len(new_values) > 0 else {}
+        past_fields = past_value.get("fields") or {}
+        new_fields = new_value.get("fields") or {}
+        return dict_compare(past_fields, new_fields)
 
 
 def log_modification(v1, v2, source, user=None):
@@ -73,3 +117,4 @@ def log_modification(v1, v2, source, user=None):
     modification.source = source
     modification.user = user
     modification.save()
+    return modification

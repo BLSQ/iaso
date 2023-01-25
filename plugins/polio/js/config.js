@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
@@ -5,27 +6,37 @@ import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
 import AssessmentIcon from '@material-ui/icons/Assessment';
 import DonutSmallIcon from '@material-ui/icons/DonutSmall';
+import GroupWork from '@material-ui/icons/GroupWork';
 import HomeWorkIcon from '@material-ui/icons/HomeWork';
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
+import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import { Dashboard } from './src/pages/Dashboard';
 import { Calendar } from './src/pages/Calendar';
+import { CampaignHistory } from './src/components/campaignHistory/CampaignHistory.tsx';
 import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
+    CAMPAIGN_HISTORY_URL,
+    GROUPED_CAMPAIGNS,
     CALENDAR_BASE_URL,
     CONFIG_BASE_URL,
     LQAS_BASE_URL,
     IM_GLOBAL,
     IM_IHH,
     IM_OHH,
+    BUDGET,
+    BUDGET_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
+import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
+import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
+import { BudgetList } from './src/pages/Budget/index.tsx';
 
 const campaignsFilters = [
     {
@@ -38,11 +49,11 @@ const campaignsFilters = [
     },
     {
         isRequired: false,
-        key: 'r1StartFrom',
+        key: 'roundStartFrom',
     },
     {
         isRequired: false,
-        key: 'r1StartTo',
+        key: 'roundStartTo',
     },
     {
         isRequired: false,
@@ -52,12 +63,54 @@ const campaignsFilters = [
         isRequired: false,
         key: 'campaignType',
     },
+    {
+        isRequired: false,
+        key: 'campaignGroups',
+    },
+    {
+        isRequired: false,
+        key: 'show_test',
+    },
 ];
 
 const routes = [
     {
         baseUrl: DASHBOARD_BASE_URL,
         component: props => <Dashboard {...props} />,
+        permissions: ['iaso_polio'],
+        isRootUrl: true,
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'campaignId',
+            },
+            ...campaignsFilters,
+            {
+                isRequired: false,
+                key: 'fieldset',
+            },
+        ],
+    },
+    {
+        baseUrl: CAMPAIGN_HISTORY_URL,
+        component: props => <CampaignHistory {...props} />,
+        permissions: ['iaso_polio'],
+        isRootUrl: true,
+        params: [
+            {
+                isRequired: true,
+                key: 'campaignId',
+            },
+            {
+                isRequired: false,
+                key: 'logId',
+            },
+        ],
+    },
+    {
+        baseUrl: GROUPED_CAMPAIGNS,
+        component: props => <GroupedCampaigns {...props} />,
         permissions: ['iaso_polio'],
         params: [
             ...paginationPathParams,
@@ -97,6 +150,10 @@ const routes = [
                 isRequired: false,
                 key: 'country',
             },
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
         ],
     },
     {
@@ -116,6 +173,10 @@ const routes = [
                 isRequired: false,
                 key: 'country',
             },
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
         ],
     },
     {
@@ -131,6 +192,10 @@ const routes = [
                 isRequired: false,
                 key: 'country',
             },
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
         ],
     },
     {
@@ -145,6 +210,79 @@ const routes = [
             {
                 isRequired: false,
                 key: 'country',
+            },
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
+        ],
+    },
+    {
+        baseUrl: BUDGET,
+        component: props => <BudgetList {...props} />,
+        permissions: ['iaso_polio_budget'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'search',
+            },
+            {
+                isRequired: false,
+                key: 'current_state__key',
+            },
+            {
+                isRequired: false,
+                key: 'roundStartFrom',
+            },
+            {
+                isRequired: false,
+                key: 'roundStartTo',
+            },
+            {
+                isRequired: false,
+                key: 'countries',
+            },
+        ],
+    },
+    {
+        baseUrl: BUDGET_DETAILS,
+        component: props => <BudgetDetails {...props} />,
+        permissions: ['iaso_polio_budget'],
+        params: [
+            ...paginationPathParams,
+
+            {
+                isRequired: false,
+                key: 'campaignName',
+            },
+            {
+                isRequired: false,
+                key: 'campaignId',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+            {
+                isRequired: false,
+                key: 'show_hidden',
+            },
+            {
+                isRequired: false,
+                key: 'action',
+            },
+            {
+                isRequired: false,
+                key: 'quickTransition',
+            },
+            {
+                isRequired: false,
+                key: 'previousStep',
+            },
+            {
+                isRequired: false,
+                key: 'transition_key',
             },
         ],
     },
@@ -199,6 +337,12 @@ const menu = [
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
+                label: MESSAGES.groupedCampaigns,
+                key: 'groupedcampaigns',
+                permissions: ['iaso_polio'],
+                icon: props => <GroupWork {...props} />,
+            },
+            {
                 label: MESSAGES.calendar,
                 key: 'calendar',
                 permissions: ['iaso_polio'],
@@ -213,7 +357,6 @@ const menu = [
             {
                 label: MESSAGES.im,
                 key: 'im',
-                // permissions: ['iaso_polio'],
                 icon: props => <DonutSmallIcon {...props} />,
                 subMenu: [
                     {
@@ -237,6 +380,12 @@ const menu = [
                 ],
             },
             {
+                label: MESSAGES.budget,
+                key: 'budget',
+                permissions: ['iaso_polio_budget'],
+                icon: props => <AccountBalanceWalletIcon {...props} />,
+            },
+            {
                 label: MESSAGES.configuration,
                 key: 'config',
                 permissions: ['iaso_polio_config'],
@@ -251,8 +400,11 @@ const translations = {
     en,
 };
 
+const overrideLanding = DASHBOARD_BASE_URL;
+
 export default {
     routes,
     menu,
     translations,
+    overrideLanding,
 };

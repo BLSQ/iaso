@@ -1,16 +1,22 @@
 import MESSAGES from '../../constants/messages';
 import {
     BarChartData,
+    ConvertedLqasImData,
     FormatForNFMArgs,
+    IntlFormatMessage,
     LqasImCampaign,
-    LqasImCampaignData,
-    NfmRoundString,
-    RoundString,
+    LqasImDistrictData,
 } from '../../constants/types';
 import { IM_PASS, IM_FAIL, IM_WARNING, imNfmKeys } from './constants';
 import { makeLegendItem } from '../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
-import { sortGraphKeys, convertStatToPercentNumber } from '../../utils/LqasIm';
+import {
+    sortGraphKeys,
+    convertStatToPercentNumber,
+    accessDictRound,
+    accessNfmStats,
+    accessArrayRound,
+} from '../../utils/LqasIm';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -21,11 +27,17 @@ export const determineStatusForDistrict = district => {
     return IM_FAIL;
 };
 
-export const getImStatsForRound = (imData, campaign, round) => {
-    if (!imData[campaign]) return [[], [], []];
-    const allStatuses = [...imData[campaign][round]].map(district => {
-        return determineStatusForDistrict(district);
-    });
+export const getImStatsForRound = (
+    imData: Record<string, ConvertedLqasImData>,
+    campaign: string | undefined,
+    round: number,
+): ('1imOK' | '2imWarning' | '3imFail' | null)[][] => {
+    if (!campaign || !imData[campaign]) return [[], [], []];
+    const allStatuses = accessArrayRound(imData[campaign], round).map(
+        district => {
+            return determineStatusForDistrict(district);
+        },
+    );
     const passed = allStatuses.filter(status => status === IM_PASS);
     const disqualified = allStatuses.filter(status => status === IM_WARNING);
     const failed = allStatuses.filter(status => status === IM_FAIL);
@@ -34,7 +46,12 @@ export const getImStatsForRound = (imData, campaign, round) => {
 };
 
 export const makeImMapLegendItems =
-    formatMessage => (imData, campaign, round) => {
+    (formatMessage: IntlFormatMessage) =>
+    (
+        imData: Record<string, ConvertedLqasImData>,
+        campaign: string | undefined,
+        round: number,
+    ): { label: string; value: string; color: unknown }[] => {
         const [passed, failed, disqualified] = getImStatsForRound(
             imData,
             campaign,
@@ -60,7 +77,10 @@ export const makeImMapLegendItems =
     };
 
 export const formatImDataForChart = ({ data, campaign, round, regions }) => {
-    const dataForRound = data[campaign] ? [...data[campaign][round]] : [];
+    const dataForRound =
+        campaign && data[campaign]
+            ? accessArrayRound(data[campaign], round)
+            : [];
     const regionsList: any[] = [];
     regions.forEach(region => {
         const regionData = dataForRound.filter(
@@ -101,7 +121,7 @@ export const formatImDataForChart = ({ data, campaign, round, regions }) => {
 
 export const imTooltipFormatter = formatMessage => (_value, _name, props) => {
     // eslint-disable-next-line react/prop-types
-    const ratio = `${props.payload.checked}/${props.payload.marked}`;
+    const ratio = `${props.payload.marked}/${props.payload.checked}`;
     return [ratio, formatMessage(MESSAGES.vaccinated)];
 };
 
@@ -112,8 +132,11 @@ export const formatImDataForNFMChart = ({
     formatMessage,
 }: FormatForNFMArgs<'lqas' | 'im'>): BarChartData[] => {
     if (!data || !campaign || !data[campaign]) return [] as BarChartData[];
-    const roundString: string = NfmRoundString[round];
-    const campaignData: Record<string, number> = data[campaign][roundString];
+    const campaignData: Record<string, number> = accessNfmStats(
+        data[campaign],
+        round,
+    );
+
     const totalChildrenNotMarked = Object.values(campaignData).reduce(
         (total, current) => total + current,
         0,
@@ -144,13 +167,13 @@ export const formatImDataForNFMChart = ({
 };
 
 export const sumChildrenCheckedIm = (
-    round: RoundString,
+    round: number,
     data?: Record<string, LqasImCampaign>,
     campaign?: string,
 ): number => {
     if (!data || !campaign || !data[campaign]) return 0;
-    const roundData: LqasImCampaignData[] = Object.values(
-        data[campaign][round],
+    const roundData: LqasImDistrictData[] = Object.values(
+        accessDictRound(data[campaign], round),
     );
     return roundData.reduce(
         (total, current) => total + current.total_child_checked,

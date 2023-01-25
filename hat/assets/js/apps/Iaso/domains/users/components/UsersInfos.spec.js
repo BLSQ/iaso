@@ -20,6 +20,7 @@ const currentUser = {
     org_units: [],
     language: { value: 'fr', errors: [] },
     dhis2_id: '1',
+    home_page: '/settings/users',
 };
 
 const renderComponent = initialData => {
@@ -34,7 +35,7 @@ const renderComponent = initialData => {
     );
 };
 
-describe.only('UsersInfos', () => {
+describe('UsersInfos', () => {
     beforeEach(() => {
         renderComponent();
         component.update();
@@ -52,18 +53,26 @@ describe.only('UsersInfos', () => {
                 target: { value: 'en' },
             });
         }
-        expect(setFieldValue.getCalls().length).to.equal(6);
+        expect(setFieldValue.getCalls().length).to.equal(7);
     });
     it('triggerd callback when changing language', () => {
         const select = component.find(Select).at(0);
         select.props().onChange();
         expect(setFieldValue).to.have.been.calledOnce;
     });
-    it('displays "new password" message if initialData is set', () => {
-        renderComponent({});
+    it('displays "new password" message if initialData is set and not empty', () => {
+        renderComponent({ notEmpty: true });
         const password = component.find(PasswordInput).at(0);
         expect(password.props().label).to.equal(
             MESSAGES.newPassword.defaultMessage,
+        );
+    });
+
+    it('displays "new password" message if initialData is set but empty', () => {
+        renderComponent({});
+        const password = component.find(PasswordInput).at(0);
+        expect(password.props().label).to.equal(
+            MESSAGES.password.defaultMessage,
         );
     });
 });

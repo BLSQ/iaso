@@ -1,8 +1,9 @@
 from io import StringIO
+from typing import Union
 
 from django.core import management
 from os import environ
-import responses
+import responses  # type: ignore
 import json
 
 from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS, Project
@@ -14,6 +15,8 @@ from iaso import models as m
 
 
 class DHIS2TestMixin:
+    old_counts: dict  # To be implemented in the class I'm being mixed into
+
     def fixture_json(self, name):
         with open("./iaso/tests/fixtures/dhis2/" + name + ".json") as json_file:
             return json.load(json_file)
@@ -58,7 +61,7 @@ class DHIS2TestMixin:
     def assertNoCreation(self):
         self.assertEqual(self.old_counts, self.counts())
 
-    def assertCreated(self: TestCase, createds: dict):
+    def assertCreated(self, createds: dict) -> None:
         new_counts = self.counts()
         diff = {}
 
@@ -67,7 +70,7 @@ class DHIS2TestMixin:
             if model not in createds and diff[model] == 0:
                 del diff[model]
 
-        self.assertDictEqual(createds, diff, diff)
+        self.assertDictEqual(createds, diff, diff)  # type: ignore
 
 
 class CommandTests(TestCase, DHIS2TestMixin):
@@ -120,7 +123,11 @@ class CommandTests(TestCase, DHIS2TestMixin):
 
         # assert location and geometry and parent relationships
         healthcenter = created_orgunits_qs.get(name="Bambara Kaima CHP")
-        self.assertEquals(healthcenter.location.wkt, "POINT Z (-11.3596 8.531700000000001 0)")
+
+        location_coords = healthcenter.location.coords
+        self.assertAlmostEqual(location_coords[0], -11.3596)
+        self.assertAlmostEqual(location_coords[1], 8.5317)
+        self.assertEqual(location_coords[2], 0)
         self.assertEquals(healthcenter.parent.name, "Gorama Mende")
 
         # assert has a simplified geometry
@@ -265,7 +272,10 @@ class TaskTests(TestCase, DHIS2TestMixin):
 
         # assert location and geometry and parent relationships
         healthcenter = created_orgunits_qs.get(name="Bambara Kaima CHP")
-        self.assertEquals(healthcenter.location.wkt, "POINT Z (-11.3596 8.531700000000001 0)")
+        location_coords = healthcenter.location.coords
+        self.assertAlmostEqual(location_coords[0], -11.3596)
+        self.assertAlmostEqual(location_coords[1], 8.5317)
+        self.assertEqual(location_coords[2], 0)
         self.assertEquals(healthcenter.parent.name, "Gorama Mende")
 
         # assert has a simplified geometry
@@ -288,7 +298,12 @@ class TaskTests(TestCase, DHIS2TestMixin):
             ],
         )
         facility_type = groupsets_qs.get(name="Facility Type")
-        self.assertEquals([x.name for x in facility_type.groups.all()], ["CHP", "MCHP", "Clinic", "Hospital", "CHC"])
+        self.assertQuerysetEqual(
+            facility_type.groups.all(),
+            ["CHP", "MCHP", "Clinic", "Hospital", "CHC"],
+            transform=lambda x: x.name,
+            ordered=False,
+        )
 
         # assert that path has been generated for all org units
         self.assertEquals(0, OrgUnit.objects.filter(path=None).count())

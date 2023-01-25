@@ -2,6 +2,7 @@ import React from 'react';
 import { useSafeIntl, useTranslatedOptions } from 'bluesquare-components';
 import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
+import { BUDGET_STATES } from '../../constants/budget.ts';
 
 const statuses = [
     {
@@ -31,24 +32,10 @@ export const StatusField = props => {
     );
 };
 
-const RABudgetstatuses = [
-    {
-        value: 'REVIEWED',
-        label: MESSAGES.reviewedByRrt,
-    },
-    {
-        value: 'SUBMITTED',
-        label: MESSAGES.submitted,
-    },
-    {
-        value: 'TO_SUBMIT',
-        label: MESSAGES.toSubmit,
-    },
-    {
-        value: 'APPROVED',
-        label: MESSAGES.approved,
-    },
-];
+const RABudgetstatuses = BUDGET_STATES.map(state => ({
+    value: state,
+    label: MESSAGES[state],
+}));
 
 export const RABudgetStatusField = props => {
     const { formatMessage } = useSafeIntl();

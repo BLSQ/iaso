@@ -10,31 +10,26 @@ import {
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { push } from 'react-router-redux';
-import { Box } from '@material-ui/core';
+import { Box, Tooltip } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
 import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
-import { getApiParamDateString } from 'Iaso/utils/dates.ts';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { useGetCampaigns, useCampaignParams } from '../hooks/useGetCampaigns';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-
 import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
 import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
-
-const DEFAULT_PAGE_SIZE = 40;
-const DEFAULT_PAGE = 1;
-const DEFAULT_ORDER = '-cvdpv2_notified_at';
+import { useSingleTableParams } from '../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -48,27 +43,29 @@ const Dashboard = ({ router }) => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const classes = useStyles();
 
-    // Add the defaults. put in a memo for comparison.
-    // Need a better way to handle default in the routing
-    const apiParams = useMemo(() => {
-        return {
-            order: params?.order ?? DEFAULT_ORDER,
-            pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
-            page: params?.page ?? DEFAULT_PAGE,
-            countries: params.countries,
-            search: params.search,
-            r1StartFrom: getApiParamDateString(params.r1StartFrom),
-            r1StartTo: getApiParamDateString(params.r1StartTo),
-            showOnlyDeleted: params.showOnlyDeleted,
-            campaignType: params.campaignType,
-        };
-    }, [params]);
+    const paramsToUse = useSingleTableParams(params);
+    const apiParams = useCampaignParams(paramsToUse);
 
     const [resetPageToOne, setResetPageToOne] = useState('');
 
     const { query, exportToCSV } = useGetCampaigns(apiParams);
 
-    const { data: campaigns, isFetching } = query;
+    // TODO remove when select is fixed. beurk lol.
+    const { data: rawCampaigns, isFetching } = query;
+
+    const campaigns = useMemo(() => {
+        if (!rawCampaigns) return rawCampaigns;
+        return {
+            ...rawCampaigns,
+            campaigns: rawCampaigns.campaigns.map(campaign => ({
+                ...campaign,
+                grouped_campaigns:
+                    campaign.grouped_campaigns.length > 0
+                        ? campaign.grouped_campaigns
+                        : null,
+            })),
+        };
+    }, [rawCampaigns]);
 
     const { mutate: removeCampaign } = useRemoveCampaign();
     const { mutate: restoreCampaign } = useRestoreCampaign();
@@ -169,8 +166,8 @@ const Dashboard = ({ router }) => {
         apiParams.pageSize,
         apiParams.countries,
         apiParams.search,
-        apiParams.r1StartFrom,
-        apiParams.r1StartTo,
+        apiParams.roundStartFrom,
+        apiParams.roundStartTo,
     ]);
     const columns = useMemo(() => {
         const cols = [
@@ -181,7 +178,7 @@ const Dashboard = ({ router }) => {
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.name),
+                Header: formatMessage(MESSAGES.obrName),
                 accessor: 'obr_name',
             },
             {
@@ -189,19 +186,34 @@ const Dashboard = ({ router }) => {
                 accessor: 'cvdpv2_notified_at',
             },
             {
-                Header: formatMessage(MESSAGES.roundOne),
-                id: 'round_one__started_at',
-                accessor: row => row.round_one?.started_at,
-            },
-            {
-                Header: formatMessage(MESSAGES.roundTwo),
-                id: 'round_two__started_at',
-                accessor: row => row.round_two?.started_at,
+                Header: formatMessage(MESSAGES.lastRound),
+                id: `last_round_started_at`,
+                accessor: row => {
+                    const allRounds = (
+                        <>
+                            {row.rounds.map(r => (
+                                <li key={`${r.number}-${r.started_at}`}>
+                                    {`${r.number}. ${r.started_at} -> ${r.ended_at}`}
+                                    <br />
+                                </li>
+                            ))}
+                        </>
+                    );
+                    return (
+                        <Tooltip title={allRounds}>
+                            <span>
+                                {row.rounds &&
+                                    row.rounds[row.rounds.length - 1]
+                                        ?.started_at}
+                            </span>
+                        </Tooltip>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.status),
                 sortable: false,
-                accessor: row => formatMessage(MESSAGES[row.general_status]),
+                accessor: row => row.general_status,
             },
             {
                 Header: formatMessage(MESSAGES.actions),
@@ -263,7 +275,7 @@ const Dashboard = ({ router }) => {
                 displayBackButton={false}
             />
             <CreateEditDialog
-                selectedCampaign={selectedCampaign}
+                campaignId={selectedCampaign?.id}
                 isOpen={isCreateEditDialogOpen}
                 onClose={closeCreateEditDialog}
             />
@@ -305,7 +317,7 @@ const Dashboard = ({ router }) => {
                     data={campaigns?.campaigns ?? []}
                     count={campaigns?.count}
                     pages={campaigns?.pages}
-                    params={params}
+                    params={apiParams}
                     columns={columns}
                     baseUrl={DASHBOARD_BASE_URL}
                     marginTop={false}

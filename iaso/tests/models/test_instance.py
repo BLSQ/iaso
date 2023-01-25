@@ -2,12 +2,9 @@ from hat.audit.models import Modification, INSTANCE_API
 from django.core.files import File
 from iaso.test import TestCase
 from django.utils.timezone import now
-from django.test import tag
 from django.core.files.uploadedfile import UploadedFile
 from iaso import models as m
 from iaso.odk import parsing
-
-import json
 
 
 class InstanceModelTestCase(TestCase):
@@ -221,7 +218,11 @@ class InstanceModelTestCase(TestCase):
         )
 
     def test_xml_to_json_with_repeat_group(self):
+        """Test that the repeat group is correctly handled
 
+        Note: this also indirectly tests that some paths are always allowed in the XML (see ALWAYS_ALLOWED_PATHS_XML):
+        if not, the JSON representation will lack the uuid field.
+        """
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
@@ -290,6 +291,39 @@ class InstanceModelTestCase(TestCase):
 
         json_instance = instance.get_and_save_json_of_xml()
         self.assertTrue("_version" not in json_instance)
+
+    def test_xml_to_json_should_omit_older_answers(self):
+
+        with open("iaso/tests/fixtures/edit_existing_submission_xlsform.xlsx", "rb") as form_1_version_1_file:
+            survey = parsing.parse_xls_form(form_1_version_1_file)
+            form_version = m.FormVersion.objects.create_for_form_and_survey(
+                form=self.form_1, survey=survey, xls_file=File(form_1_version_1_file)
+            )
+            form_version.version_id = "2022051101"  # force version to match instance files
+            form_version.save()
+
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_coruscant,
+            file=UploadedFile(open("iaso/tests/fixtures/edit_existing_submission.xml")),
+        )
+
+        json_instance = instance.get_and_save_json_of_xml()
+
+        # as described in https://bluesquare.atlassian.net/browse/IA-1351
+        #
+        # these pmns_qlte_cs_rdc_14_total_max and pmns_qlte_cs_rdc_14_total_point
+        # were twice in the xml
+        #
+        # but in the newer version of the form
+        #    grp14/synthesis/pmns_qlte_cs_rdc_14_total_max 26
+        # and
+        #    grp14/synthesis14/pmns_qlte_cs_rdc_14_total_max 13
+        # should be ignored (previous version calculate)
+
+        self.assertEquals(json_instance["pmns_qlte_cs_rdc_14_total_max"], "26")
+        self.assertEquals(json_instance["pmns_qlte_cs_rdc_14_total_point"], "26")
 
     def test_instances_for_org_unit_hierarchy(self):
         """Test the querying instances within a specific org unit hierarchy"""
@@ -384,7 +418,7 @@ class InstanceModelTestCase(TestCase):
         modification = Modification.objects.first()
         self.assertIsNone(modification.user)
         self.assertEqual(INSTANCE_API, modification.source)
-        self.assertEqual(instance.id, modification.object_id)
+        self.assertEqual(instance.id, int(modification.object_id))
         self.assertNotEqual(modification.past_value, modification.new_value)
         self.assertFalse(modification.past_value[0]["fields"]["deleted"])
         self.assertTrue(modification.new_value[0]["fields"]["deleted"])

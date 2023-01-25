@@ -1,7 +1,6 @@
 import React, { useContext } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-
 import ExitIcon from '@material-ui/icons/ExitToApp';
 import {
     withStyles,
@@ -13,9 +12,11 @@ import {
     Divider,
     Typography,
     Tooltip,
+    useMediaQuery,
+    useTheme,
 } from '@material-ui/core';
 
-import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
@@ -33,6 +34,7 @@ import MESSAGES from './messages';
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { PluginsContext } from '../../../utils';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -50,6 +52,9 @@ const styles = theme => ({
     },
     list: {
         width: SIDEBAR_WIDTH,
+        '& a': {
+            textDecoration: 'none !important',
+        },
     },
     user: {
         marginTop: 'auto',
@@ -87,16 +92,37 @@ const SidebarMenu = ({
     isOpen,
     toggleSidebar,
     location,
-    currentUser,
     intl,
     activeLocale,
 }) => {
-    const onClick = () => {
+    const onClick = url => {
         toggleSidebar();
+        if (url) {
+            window.open(url);
+        }
     };
+    const currentUser = useCurrentUser();
+
+    const getMenuItem = menuItem => {
+        return (
+            <MenuItem
+                location={location}
+                key={menuItem.key}
+                menuItem={menuItem}
+                onClick={(path, url) => onClick(url)}
+                currentUser={currentUser}
+                url={menuItem.url}
+                target="_blank"
+            />
+        );
+    };
+
     const { plugins } = useContext(PluginsContext);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     const menuItems = getMenuItems(currentUser, plugins, defaultSourceVersion);
+    const theme = useTheme();
+    const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
+
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
@@ -107,7 +133,7 @@ const SidebarMenu = ({
                     aria-label="Menu"
                     onClick={toggleSidebar}
                 >
-                    <ArrowForwardIcon />
+                    <ArrowBackIcon />
                 </IconButton>
             </div>
             <Divider />
@@ -115,29 +141,24 @@ const SidebarMenu = ({
                 {menuItems.map(menuItem => {
                     const permissionsList = listMenuPermission(menuItem);
                     if (userHasOneOfPermissions(permissionsList, currentUser)) {
-                        return (
-                            <MenuItem
-                                location={location}
-                                key={menuItem.key}
-                                menuItem={menuItem}
-                                onClick={path => onClick(path)}
-                                currentUser={currentUser}
-                            />
-                        );
+                        return getMenuItem(menuItem);
                     }
                     return null;
                 })}
             </List>
             <Box className={classes.user}>
                 <LanguageSwitch />
-                <Typography
-                    variant="body2"
-                    color="textSecondary"
-                    className={classes.userName}
-                >
-                    {currentUser.user_name}
-                </Typography>
-                {currentUser.account && (
+                {isMobileLayout && (
+                    <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        className={classes.userName}
+                    >
+                        {currentUser.user_name}
+                    </Typography>
+                )}
+
+                {currentUser.account && isMobileLayout && (
                     <Typography
                         variant="body2"
                         color="textSecondary"
@@ -209,14 +230,12 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
-    currentUser: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     activeLocale: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
-    currentUser: state.users.current,
     activeLocale: state.app.locale,
 });
 

@@ -1,5 +1,4 @@
 from iaso.test import TestCase
-from django.test import tag
 
 import iaso.periods as periods
 

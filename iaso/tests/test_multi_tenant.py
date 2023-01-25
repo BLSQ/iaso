@@ -1,4 +1,3 @@
-from django.test import tag
 from ..models import OrgUnit, Form, Instance, OrgUnitType, Account, Project, DataSource, SourceVersion
 
 from rest_framework.test import APIClient

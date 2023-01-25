@@ -10,6 +10,7 @@ import { errorSnackBar } from '../../constants/snackBars';
 import snackBarMessages from '../../components/snackBars/messages';
 import { fetchCurrentUser } from '../users/actions';
 import { getValues } from '../../hooks/form';
+import MESSAGES from './messages';
 
 /**
  *
@@ -150,7 +151,6 @@ export const csvPreview = async data => {
                 ),
             );
             console.error(`Error while fetching CSV:`, error);
-            throw error;
         });
 };
 
@@ -209,7 +209,6 @@ export const useSaveDataSource = setFieldErrors => {
                 );
             }
             setIsSaving(false);
-            throw error;
         }
 
         // eslint-disable-next-line camelcase
@@ -312,8 +311,37 @@ export const useCopyDataSourceVersion = () => {
                 force: false,
             });
         },
-        undefined,
-        undefined,
+        MESSAGES.copyVersionSuccessMessage,
+        MESSAGES.copyVersionSuccessMessage,
         'dataSources',
+    );
+};
+
+const updateSourceVersion = async ({
+    sourceVersionId,
+    description,
+    dataSourceId,
+    sourceVersionNumber,
+}) => {
+    return putRequest(`/api/sourceversions/${sourceVersionId}/`, {
+        id: sourceVersionId,
+        description,
+        data_source: dataSourceId,
+        number: sourceVersionNumber,
+    });
+};
+
+export const usePutSourceVersion = () => {
+    return useSnackMutation(
+        ({ sourceVersionId, description, dataSourceId, sourceVersionNumber }) =>
+            updateSourceVersion({
+                sourceVersionId,
+                description,
+                dataSourceId,
+                sourceVersionNumber,
+            }),
+        undefined,
+        undefined,
+        [['dataSourceVersions'], ['dataSources']],
     );
 };

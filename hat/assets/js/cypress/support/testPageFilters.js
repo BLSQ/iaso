@@ -7,11 +7,15 @@
  * @property {string} filters.type         - type of the filter (text, multi, tree)
  */
 
-export const testPageFilters = filters => {
+export const testPageFilters = (
+    filters,
+    buttonSelector = '[data-test="search-button"]',
+) => {
     Object.keys(filters).forEach(keyName => {
         const { value, type, selector } = filters[keyName];
         switch (type) {
             case 'text': {
+                // cy.wait(0); // prevent an error on line below because the element is still animating when trying to clear
                 cy.get(selector).clear().type(value);
                 break;
             }
@@ -27,8 +31,7 @@ export const testPageFilters = filters => {
                 break;
         }
     });
-
-    cy.get('#search-button').click();
+    cy.get(buttonSelector).click();
 
     Object.keys(filters).forEach(keyName => {
         const { urlValue } = filters[keyName];

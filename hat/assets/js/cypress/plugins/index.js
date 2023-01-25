@@ -29,5 +29,7 @@ module.exports = (on, config) => {
     config.env.sessionCookie = 'sessionid';
     config.env.langageCookie = 'django_language';
 
+    config.env.plugins = process.env.PLUGINS;
+
     return config;
 };

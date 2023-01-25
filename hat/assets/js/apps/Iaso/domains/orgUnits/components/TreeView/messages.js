@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         id: 'blsq.treeview.search.cancel',
         defaultMessage: 'Cancel',
     },
+    error: {
+        id: 'blsq.treeview.error',
+        defaultMessage: 'Please select an org unit',
+    },
 });
 
 export { MESSAGES };

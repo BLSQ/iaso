@@ -20,7 +20,7 @@ import json
 import time
 
 try:  # only in 3.8
-    from typing import TypedDict
+    from typing import TypedDict  # type: ignore
 except ImportError:
     TypedDict = type
 
@@ -206,14 +206,13 @@ def get_group_set(dhis2_group_set, group_set_dict, source_version):
 
 
 def load_groupsets(api: Api, version, group_dict):
-    group_set_dict = {}
     dhis2_group_sets = api.get(
         "organisationUnitGroupSets", params={"paging": "false", "fields": "id,name,organisationUnitGroups[id,name]"}
     )
     dhis2_group_sets = dhis2_group_sets.json()["organisationUnitGroupSets"]
 
     for dhis2_group_set in dhis2_group_sets:
-        group_set = get_group_set(dhis2_group_set, group_set_dict, version)
+        group_set = get_group_set(dhis2_group_set, {}, version)
 
         for ougroup in dhis2_group_set["organisationUnitGroups"]:
             group = get_or_create_group(ougroup, group_dict, version)
@@ -245,8 +244,8 @@ def get_api_config(
 @task_decorator(task_name="dhis2_ou_importer")
 def dhis2_ou_importer(
     source_id: int,
-    source_version_number: Optional[str],
-    force: bool,
+    source_version_number: Optional[int],
+    force: bool,  # FIXME: force parameter is not used?
     validate: bool,
     continue_on_error: bool,
     url: Optional[str],
@@ -254,6 +253,7 @@ def dhis2_ou_importer(
     password: Optional[str],
     update_mode: bool = False,
     task: Task = None,
+    description="",
 ) -> Task:
     the_task = task
     start = time.time()
@@ -263,12 +263,15 @@ def dhis2_ou_importer(
     connection_config = get_api_config(url, login, password, source)
     api = get_api(connection_config)
 
-    the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")
+    # FIXME: the task parameter (of dhis2_ou_importer) is optional, but the code seems to assume it is not
+    the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")  # type: ignore
 
     if source_version_number is None:
         last_version = source.versions.all().order_by("number").last()
         source_version_number = last_version.number + 1 if last_version else 0
-        version = SourceVersion.objects.create(number=source_version_number, data_source=source)
+        version = SourceVersion.objects.create(
+            number=source_version_number, data_source=source, description=description
+        )
     else:
         version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
     if OrgUnit.objects.filter(version=version).count() > 0 and not update_mode:
@@ -276,10 +279,13 @@ def dhis2_ou_importer(
     if not source.default_version:
         source.default_version = version
         source.save()
-    account = source.projects.first().account
-    if not account.default_version:
-        account.default_version = version
-        account.save()
+
+    # TODO: investigate: what happens if source.projects is None here?
+    account = source.projects.first().account  # type: ignore
+    # TODO: investigate: what happens if account is None here?
+    if not account.default_version:  # type: ignore
+        account.default_version = version  # type: ignore
+        account.save()  # type: ignore
 
     # name of group to a orgunit type. If a orgunit belong to one of these group it will get that type
     group_type_dict: Dict[str, OrgUnitType] = {}
@@ -297,8 +303,9 @@ def dhis2_ou_importer(
     if error_count:
         logger.error(f"{error_count} import errors were ignored")
 
-    the_task.report_success(message=res_string)
-    return the_task
+    # TODO: investigate type errors on next two lines
+    the_task.report_success(message=res_string)  # type: ignore
+    return the_task  # type: ignore
 
 
 def import_orgunits_and_groups(

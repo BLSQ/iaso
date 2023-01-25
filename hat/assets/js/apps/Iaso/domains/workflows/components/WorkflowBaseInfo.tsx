@@ -1,0 +1,119 @@
+import {
+    makeStyles,
+    Table,
+    TableBody,
+    TableRow,
+    TableCell,
+    Divider,
+    Box,
+} from '@material-ui/core';
+import React, { FunctionComponent, ReactNode } from 'react';
+// @ts-ignore
+import { useSafeIntl } from 'bluesquare-components';
+
+import MESSAGES from '../messages';
+
+import { WorkflowVersionDetail } from '../types/workflows';
+
+import { StatusCell } from './StatusCell';
+import { DetailsForm } from './DetailsForm';
+import { LinkToForm } from '../../forms/components/LinkToForm';
+
+import { PublishVersionModal } from './PublishVersionModal';
+
+const useStyles = makeStyles(theme => ({
+    leftCell: {
+        // @ts-ignore
+        borderRight: `1px solid ${theme.palette.ligthGray.border}`,
+        fontWeight: 'bold',
+    },
+}));
+
+type RowProps = {
+    label: string;
+    value?: string | ReactNode;
+};
+
+const Row: FunctionComponent<RowProps> = ({ label, value }) => {
+    const classes = useStyles();
+    return (
+        <TableRow>
+            <TableCell className={classes.leftCell}>{label}</TableCell>
+            <TableCell>{value}</TableCell>
+        </TableRow>
+    );
+};
+
+type Props = {
+    workflowVersion: WorkflowVersionDetail;
+};
+export const WorkflowBaseInfo: FunctionComponent<Props> = ({
+    workflowVersion,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    return (
+        <>
+            {workflowVersion?.status === 'DRAFT' && (
+                <>
+                    <DetailsForm workflowVersion={workflowVersion} />
+                    <Divider />
+                </>
+            )}
+            <Table size="small">
+                <TableBody>
+                    {workflowVersion?.status &&
+                        workflowVersion?.status !== 'DRAFT' && (
+                            <Row
+                                label={formatMessage(MESSAGES.name)}
+                                value={workflowVersion?.name}
+                            />
+                        )}
+                    <Row
+                        label={formatMessage(MESSAGES.type)}
+                        value={workflowVersion?.entity_type.name}
+                    />
+                    <Row
+                        label={formatMessage(MESSAGES.referenceForm)}
+                        value={
+                            workflowVersion ? (
+                                <LinkToForm
+                                    formId={workflowVersion.reference_form.id}
+                                    formName={
+                                        workflowVersion.reference_form.name
+                                    }
+                                />
+                            ) : (
+                                ''
+                            )
+                        }
+                    />
+                    <Row
+                        label={formatMessage(MESSAGES.version)}
+                        value={workflowVersion?.version_id}
+                    />
+                    <Row
+                        label={formatMessage(MESSAGES.status)}
+                        value={
+                            workflowVersion ? (
+                                <StatusCell status={workflowVersion.status} />
+                            ) : (
+                                ''
+                            )
+                        }
+                    />
+                </TableBody>
+            </Table>
+            {workflowVersion?.status === 'DRAFT' && (
+                <>
+                    <Divider />
+                    <Box p={2} display="flex" justifyContent="flex-end">
+                        <PublishVersionModal
+                            workflowVersion={workflowVersion}
+                            invalidateQueryKey="workflowVersion"
+                        />
+                    </Box>
+                </>
+            )}
+        </>
+    );
+};

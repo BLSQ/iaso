@@ -16,7 +16,6 @@ import ConfirmCancelDialogComponent from '../../../../components/dialogs/Confirm
 import { MESSAGES } from './messages';
 import { getRootData, getChildrenData, searchOrgUnits } from './requests';
 import { OrgUnitLabel, getOrgUnitAncestors } from '../../utils';
-
 import { OrgUnitTreeviewPicker } from './OrgUnitTreeviewPicker';
 import {
     formatInitialSelectedIds,
@@ -44,8 +43,10 @@ const OrgUnitTreeviewModal = ({
     showStatusIconInPicker,
     clearable,
     allowedTypes,
+    errors,
 }) => {
     const classes = useStyles();
+
     const [selectedOrgUnits, setSelectedOrgUnits] = useState(initialSelection);
 
     const [selectedOrgUnitsIds, setSelectedOrgUnitsIds] = useState(
@@ -113,7 +114,7 @@ const OrgUnitTreeviewModal = ({
 
     const searchOrgUnitsWithSource = useCallback(
         async (value, count) => {
-            return searchOrgUnits({value, count, source, version});
+            return searchOrgUnits({ value, count, source, version });
         },
         [source, version],
     );
@@ -171,6 +172,7 @@ const OrgUnitTreeviewModal = ({
                     disabled={disabled}
                     label={makeTreeviewLabel(classes, showStatusIconInPicker)}
                     clearable={clearable}
+                    errors={errors}
                 />
             )}
             titleMessage={titleMessage}
@@ -200,7 +202,8 @@ const OrgUnitTreeviewModal = ({
                 onUpdate={onUpdate}
                 allowSelection={item => {
                     if (allowedTypes.length === 0) return true;
-                    if (allowedTypes.includes(item.org_unit_type_id)) return true;
+                    if (allowedTypes.includes(item.org_unit_type_id))
+                        return true;
                     return false;
                 }}
             />
@@ -224,6 +227,7 @@ OrgUnitTreeviewModal.propTypes = {
     showStatusIconInPicker: bool,
     clearable: bool,
     allowedTypes: array,
+    errors: arrayOf(string),
 };
 
 OrgUnitTreeviewModal.defaultProps = {
@@ -241,6 +245,7 @@ OrgUnitTreeviewModal.defaultProps = {
     showStatusIconInPicker: true,
     clearable: true,
     allowedTypes: [],
+    errors: [],
 };
 
 export { OrgUnitTreeviewModal };

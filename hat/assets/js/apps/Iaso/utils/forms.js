@@ -1,3 +1,5 @@
+import { get } from 'lodash';
+
 /**
  * Convert a comma-separated list of ids to an array of ids
  * This is a workaround to map the comma-separated string used by InputComponent with type=select
@@ -29,4 +31,50 @@ export const convertFormStateToDict = formState => {
         result[field] = formState[field].value;
     });
     return result;
+};
+
+export const isFieldValid = (keyValue, value, requiredFields) => {
+    const field = requiredFields.find(f => f.key === keyValue);
+    if (field) {
+        switch (field.type) {
+            case 'string': {
+                if (value === '') {
+                    return false;
+                }
+                return true;
+            }
+            case 'array': {
+                if (!value || value.length === 0) {
+                    return false;
+                }
+                return true;
+            }
+            case 'boolean': {
+                if (value === null) {
+                    return false;
+                }
+                return true;
+            }
+
+            default:
+                return true;
+        }
+    }
+    return true;
+};
+
+export const isFormValid = (requiredFields, currentForm) => {
+    return !requiredFields.find(
+        field =>
+            !isFieldValid(
+                field.key,
+                currentForm[field.key].value,
+                requiredFields,
+            ),
+    );
+};
+
+export const hasFormikFieldError = (key, errors, touched) => {
+    if (!errors) return false;
+    return Boolean(get(errors, key) && get(touched, key));
 };

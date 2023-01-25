@@ -1,5 +1,7 @@
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 import typing
+
+from django.db import connection
 
 from hat.audit.models import Modification
 from iaso import models as m
@@ -17,23 +19,24 @@ class OrgUnitAPITestCase(APITestCase):
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
-        sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_1 = sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
 
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
-        cls.form_defining = m.Form.objects.create(name="Form defining", period_type=m.MONTH, single_per_period=True)
-        cls.form_not_defining = m.Form.objects.create(
-            name="Form not defining", period_type=m.MONTH, single_per_period=True
+        cls.reference_form = m.Form.objects.create(name="Reference form", period_type=m.MONTH, single_per_period=True)
+        cls.not_a_reference_form = m.Form.objects.create(
+            name="Not a reference form", period_type=m.MONTH, single_per_period=True
         )
         cls.jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc", form_defining=cls.form_defining
+            name="Jedi Council", short_name="Cnc", reference_form=cls.reference_form
         )
         cls.jedi_council.sub_unit_types.add(cls.jedi_squad)
 
         cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
         cls.mock_point = Point(x=4, y=50, z=100)
+        cls.mock_multipolygon_empty = GEOSGeometry("MULTIPOLYGON EMPTY", srid=4326)
 
         cls.elite_group = m.Group.objects.create(name="Elite councils", source_version=sw_version_1)
         cls.unofficial_group = m.Group.objects.create(name="Unofficial Jedi councils")
@@ -44,19 +47,17 @@ class OrgUnitAPITestCase(APITestCase):
             version=sw_version_1,
             name="Corruscant Jedi Council",
             geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
         )
 
-        cls.instance_related_to_form_defining = cls.create_form_instance(
-            form=cls.form_defining, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_related_to_reference_form = cls.create_form_instance(
+            form=cls.reference_form, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
-        cls.instance_not_related_to_form_defining = cls.create_form_instance(
-            form=cls.form_not_defining, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_not_related_to_reference_form = cls.create_form_instance(
+            form=cls.not_a_reference_form, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
         )
 
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
@@ -65,33 +66,41 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit_type=cls.jedi_council,
             version=sw_version_1,
             name="Endor Jedi Council",
-            geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
-            catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
+            geom=cls.mock_multipolygon_empty,
+            simplified_geom=cls.mock_multipolygon_empty,
+            catchment=cls.mock_multipolygon_empty,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
+
+        # I am really sorry to have to rely on this ugly hack to set the location field to an empty point, but
+        # unfortunately GEOS doesn't seem to support empty 3D geometries yet:
+        # see: https://trac.osgeo.org/geos/ticket/1129, https://trac.osgeo.org/geos/ticket/1005 and
+        # https://code.djangoproject.com/ticket/33787 for example
+        with connection.cursor() as cursor:
+            cursor.execute(
+                "UPDATE iaso_orgunit SET location=ST_GeomFromText('POINT Z EMPTY') WHERE id = %s",
+                [cls.jedi_council_endor.pk],
+            )
+
         cls.jedi_squad_endor = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
             name="Endor Jedi Squad 1",
             geom=cls.mock_multipolygon,
-            simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="F9w3VW1cQmb",
         )
-        cls.jedi_squad_endor = m.OrgUnit.objects.create(
+        cls.jedi_squad_endor_2 = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
-            name="Endor Jedi Squad 1",
+            name="Endor Jedi Squad 2",
             geom=cls.mock_multipolygon,
             simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
-            location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
@@ -137,6 +146,33 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
 
+    def test_org_unit_list_depth(self):
+        """GET /orgunits/ with a search based on refs"""
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"2"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 2)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"1"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 3)
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"0"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 0)
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","depth":"3"}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 0)
+
     def test_org_unit_search_with_ref(self):
         """GET /orgunits/ with a search based on ids"""
 
@@ -166,6 +202,143 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["count"], 1)
         ou_id = response.json()["orgunits"][0]["id"]
         self.assertEqual(ou_id, self.jedi_council_corruscant.id)
+
+    def test_org_unit_search_geography_any(self):
+        """GET /orgunits/ filtered so only OUs with geolocation are returned.
+
+        This is what happens when a dashboard user choose "Données géographiques - avec point ou territoire"
+
+        With geolocation meaning:
+            - the OU has a point location in the location field
+            - OR the OU has a shape in the simplified_geom field
+            - OR both
+
+        Empty geometries (POINT EMPTY, ...) and NULL values are both considered as "no geolocation" (see IA-1141)
+        """
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"any","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Without filters there would be 5 OU, but 2 are filtered because they lack geolocation: Corruscant jedi council
+        # (null values) and Endor Jedi council: empty geometries
+        self.assertEqual(json_response["count"], 3)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertNotIn(self.jedi_council_corruscant.id, returned_ou_ids)
+        self.assertNotIn(self.jedi_council_endor.id, returned_ou_ids)
+
+    def test_org_unit_search_geography_none(self):
+        """GET /orgunits/ filtered so only OUs without geolocation are returned.
+
+        This is what happens when a dashboard user choose "Données géographiques - Sans données géographiques".
+        This tests the opposite than test_org_unit_search_geography_any()
+        """
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"none","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Without filters there would be 5 OU, but 3 are filtered because they have geolocation: only Corruscant jedi
+        # council and Endor Jedi council are kept
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id})
+
+    def test_org_unit_search_geography_location(self):
+        """GET /orgunits/ filtered so only OUs with a point location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"location","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Only Endor Jedi Squad 1 have non-empty points inthe location field
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_shape(self):
+        """GET /orgunits/ filtered so only OUs with a shape location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","geography":"shape","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Only Endor Jedi Squad 1 have non-empty points in the simplified_geom field
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor_2.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_with_shape_true(self):
+        """GET /orgunits/ filtered so only OUs with a shape location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withShape":"true","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+
+        # Only Endor Jedi Squad 1 have non-empty points in the simplified_geom field
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor_2.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_with_shape_false(self):
+        """GET /orgunits/ filtered so only OUs without a shape location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withShape":"false","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        self.assertEqual(json_response["count"], 3)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(
+            returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_corruscant.id, self.jedi_council_endor.id}
+        )
+
+    def test_org_unit_search_geography_with_location_true(self):
+        """GET /orgunits/ filtered so only OUs with a point location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withLocation":"true","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        self.assertEqual(json_response["count"], 2)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(returned_ou_ids, {self.jedi_squad_endor.id, self.jedi_council_brussels.id})
+
+    def test_org_unit_search_geography_with_location_false(self):
+        """GET /orgunits/ filtered so only OUs without a point location are returned"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"f4511e","withLocation":"false","dateFrom":null,"dateTo":null}]&limit=50'
+        )
+
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        self.assertEqual(json_response["count"], 3)
+        returned_ou_ids = {ou["id"] for ou in json_response["orgunits"]}
+        self.assertEqual(
+            returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id, self.jedi_squad_endor_2.id}
+        )
 
     def test_org_unit_instance_duplicate_search(self):
         """GET /orgunits/ with a search based on duplicates"""
@@ -405,7 +578,7 @@ class OrgUnitAPITestCase(APITestCase):
         # we didn't create any new orgunit
         self.assertNoCreation()
 
-    def test_create_org_unit_group_not_in_same_version(self):
+    def test_create_org_unit_group_not_in_same_version_2(self):
         group = m.Group.objects.create(name="bla")
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
@@ -441,16 +614,16 @@ class OrgUnitAPITestCase(APITestCase):
             ou.groups.all().order_by("name"), ["<Group: bla | Evil Empire  1 >", "<Group: bla2 | Evil Empire  1 >"]
         )
 
-    def test_create_org_unit_with_instance_defining(self):
+    def test_create_org_unit_with_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
-                "name": "Test ou with defining instance",
+                "name": "Test ou with the reference instance",
                 "org_unit_type_id": self.jedi_council.pk,
-                "instance_defining_id": self.instance_related_to_form_defining.id,
+                "reference_instance_id": self.instance_related_to_reference_form.id,
                 "groups": [],
                 "sub_source": "",
                 "status": False,
@@ -464,18 +637,18 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.instance_defining, self.instance_related_to_form_defining)
+        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
 
-    def test_create_org_unit_with_not_linked_instance_defining(self):
+    def test_create_org_unit_with_not_linked_reference_instance(self):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
             format="json",
             data={
                 "id": None,
-                "name": "Test ou with no defining instance",
+                "name": "Test ou with no reference instance",
                 "org_unit_type_id": self.jedi_council.pk,
-                "instance_defining_id": self.instance_not_related_to_form_defining.id,
+                "reference_instance_id": self.instance_not_related_to_reference_form.id,
                 "groups": [],
                 "sub_source": "",
                 "status": False,
@@ -489,7 +662,7 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.instance_defining, None)
+        self.assertEqual(ou.reference_instance, None)
 
     def test_edit_org_unit_retrieve_put(self):
         """Retrieve a orgunit data and then resend back mostly unmodified and ensure that nothing burn
@@ -518,15 +691,15 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.created_at, old_ou.created_at)
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
-    def test_edit_org_unit_link_to_instance_defining(self):
-        """Retrieve a orgunit data and modify the instance_defining_id"""
+    def test_edit_org_unit_link_to_reference_instance(self):
+        """Retrieve a orgunit data and modify the reference_instance_id"""
         old_ou = self.jedi_council_corruscant
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
         data = self.assertJSONResponse(response, 200)
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
-        data["instance_defining_id"] = self.instance_related_to_form_defining.id
+        data["reference_instance_id"] = self.instance_related_to_reference_form.id
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
@@ -537,34 +710,61 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.instance_defining, self.instance_related_to_form_defining)
+        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
 
-    def test_edit_org_unit_not_link_to_instance_defining(self):
-        """Retrieve a orgunit data and modify the instance_defining_id with a no form defining"""
+    def test_edit_org_unit_not_link_to_reference_instance(self):
+        """Retrieve a orgunit data and modify the reference_instance_id with a no reference form"""
         old_ou = self.jedi_council_corruscant
+        old_modification_date = old_ou.updated_at
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
         data = self.assertJSONResponse(response, 200)
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
-        data["instance_defining_id"] = self.instance_not_related_to_form_defining.id
+        data["reference_instance_id"] = self.instance_not_related_to_reference_form.id
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
             data=data,
         )
+        jr = self.assertJSONResponse(response, 400)
+        self.assertTrue("reference_form" in (error["errorKey"] for error in jr))
+        old_ou.refresh_from_db()
+        # check the orgunit has not beee modified
+        self.assertEqual(old_modification_date, old_ou.updated_at)
+
+    def test_edit_org_unit_partial_update(self):
+        """Check tha we can only modify a part of the fille"""
+        ou = m.OrgUnit(version=self.sw_version_1)
+        ou.name = "test ou"
+        ou.source_ref = "b"
+        group_a = m.Group.objects.create(name="test group a")
+        group_b = m.Group.objects.create(name="test group b")
+        ou.geom = MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)]))
+        ou.save()
+        ou.groups.set([group_a, group_b])
+        ou.save()
+        old_modification_date = ou.updated_at
+        self.client.force_authenticate(self.yoda)
+        data = {"source_ref": "new source ref"}
+        response = self.client.patch(
+            f"/api/orgunits/{ou.id}/",
+            format="json",
+            data=data,
+        )
         jr = self.assertJSONResponse(response, 200)
-        self.assertValidOrgUnitData(jr)
-        self.assertCreated({Modification: 1})
-        ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.instance_defining, None)
+        ou.refresh_from_db()
+        # check the orgunit has not beee modified
+        self.assertGreater(ou.updated_at, old_modification_date)
+        self.assertEqual(ou.name, "test ou")
+        self.assertEqual(ou.source_ref, "new source ref")
+        self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
+        self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
 
     def test_edit_org_unit_edit_bad_group_fail(self):
-        """FIXME this test Document current behaviour but we want to change how to handle this
-
-        If a org unit already has a bad group we can't edit it anymore from the interface
-        we should just not have this case"""
+        """Check for a previous bug if an org unit is already member of a bad group
+        it couldn't be  edited anymore from the interface
+        """
 
         old_ou = m.OrgUnit.objects.create(
             name="hey",
@@ -575,6 +775,7 @@ class OrgUnitAPITestCase(APITestCase):
         # group on wrong version
         bad_group = m.Group.objects.create(name="bad")
         old_ou.groups.set([bad_group, good_group])
+        old_modification_date = old_ou.updated_at
 
         self.old_counts = self.counts()
 
@@ -584,20 +785,52 @@ class OrgUnitAPITestCase(APITestCase):
 
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
+        data["name"] = "new name"
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
             data=data,
         )
-        self.assertJSONResponse(response, 400)
-        self.assertNoCreation()
+        self.assertJSONResponse(response, 200)
+        self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
-        # Verify Nothing has changed
+        # Verify group was not modified but the rest was modified
         self.assertQuerysetEqual(
             ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
         )
         self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.name, old_ou.name)
+        self.assertEqual(ou.name, "new name")
         self.assertEqual(ou.parent, old_ou.parent)
         self.assertEqual(ou.created_at, old_ou.created_at)
-        self.assertEqual(ou.updated_at, old_ou.updated_at)
+
+        self.assertNotEqual(ou.updated_at, old_modification_date)
+
+    def test_edit_with_apply_directly_instance_gps_into_org_unit(self):
+        """Retrieve a orgunit data and push instance_gps_to_org_unit"""
+        org_unit = self.jedi_council_corruscant
+        org_unit.latitude = 8.32842671
+        org_unit.longitude = -11.681191
+        org_unit.altitude = 3
+        org_unit.save()
+        org_unit.refresh_from_db()
+        self.client.force_authenticate(self.yoda)
+        form_latitude = 8.21958686
+        form_longitude = -11.50405884
+        form_altitude = 1
+        data = {}
+        data["altitude"] = form_altitude
+        data["latitude"] = form_latitude
+        data["longitude"] = form_longitude
+
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(jr)
+        self.assertCreated({Modification: 1})
+        ou = m.OrgUnit.objects.get(id=jr["id"])
+        self.assertEqual(ou.as_dict()["latitude"], form_latitude)
+        self.assertEqual(ou.as_dict()["longitude"], form_longitude)
+        self.assertEqual(ou.as_dict()["altitude"], form_altitude)

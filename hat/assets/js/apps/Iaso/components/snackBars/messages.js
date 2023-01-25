@@ -102,11 +102,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchDevicesError',
         defaultMessage: 'An error occurred while fetching devices list',
     },
-    fetchDevicesOwnershipError: {
-        id: 'iaso.snackBar.fetchDevicesOwnershipError',
-        defaultMessage:
-            'An error occurred while fetching devices ownerships list',
-    },
     fetchInstanceError: {
         id: 'iaso.snackBar.fetchInstanceError',
         defaultMessage: 'An error occurred while fetching instance detail',
@@ -217,10 +212,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cannot find an instance with geolocation',
         id: 'iaso.instance.missingGeolocation',
     },
-    fetchPermissions: {
-        defaultMessage: 'An error occurred while fetching permissions list',
-        id: 'iaso.snackBar.fetchPermissions',
-    },
     saveUserSuccessful: {
         defaultMessage: 'User saved',
         id: 'iaso.snackBar.saveUserSuccessful',
@@ -268,11 +259,11 @@ const MESSAGES = defineMessages({
     },
 
     patchTaskError: {
-        defaultMessage: 'Error Patching task',
+        defaultMessage: 'An error occurred while updating the task.',
         id: 'iaso.snackBar.patchTaskError',
     },
     patchTaskSuccess: {
-        defaultMessage: 'Task patched successfully',
+        defaultMessage: 'The task has been updated.',
         id: 'iaso.snackBar.patchTaskSuccess',
     },
     createDataSourceError: {
@@ -310,10 +301,6 @@ const MESSAGES = defineMessages({
     generateCSVError: {
         id: 'iaso.snackBar.generateCSVError',
         defaultMessage: 'An error occurred while generating CSV file',
-    },
-    exportToDHIS2Error: {
-        id: 'iaso.snackBar.exportToDHIS2Error',
-        defaultMessage: 'An error occurred while exporting to DHIS2',
     },
     getRootDataError: {
         id: 'iaso.snackBar.getRootDataError',

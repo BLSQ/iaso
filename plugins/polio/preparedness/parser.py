@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
@@ -104,10 +104,13 @@ class RoundNumber(str, Enum):
 
 def get_national_level_preparedness(spread: CachedSpread):
     for worksheet in spread.worksheets():
+        if worksheet.is_hidden:
+            continue
         cell = worksheet.find_one_of(
             "Summary of National Level Preparedness",
             "Résumé du niveau de préparation au niveau national ",
             "Résumé de la préparation au niveau national",
+            "Resumo da preparação em Nível Central",
         )
         if not cell:
             print(f"No national data found on worksheet: {worksheet.title}")
@@ -124,7 +127,7 @@ def get_national_level_preparedness(spread: CachedSpread):
         elif round_name == "Tour 2 / Rnd 2":
             round = RoundNumber.round2
         else:
-            round = RoundNumber.unkown
+            round = RoundNumber.unknown
 
         kv["round"] = round
         return {**kv, **score}
@@ -147,6 +150,8 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
     sheet: CachedSheet
     for sheet in spread.worksheets():
+        if sheet.is_hidden:
+            continue
         # detect if we are in a Regional Spreadsheet form the title
         # and find position of the total score box
         cell = sheet.find_one_of(
@@ -154,6 +159,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
             "Résumé du niveau de préparation",
             "Résumé du niveau de préparation Lomé Commune",
             "Résumé de la préparation au niveau régional",
+            "Resumo da preparação em Nível Regional",
         )
         if not cell:
             print(f"No regional data found on worksheet: {sheet.title}")
@@ -173,7 +179,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
         region_districts = sheet.get_line_start(start_region[0], start_region[1])
         # ignore last column since it the comments
         region_districts = region_districts[:-1]
-        districts_indicators = {}
+        districts_indicators: Dict[str, Any] = {}
 
         for rownum, colnum, name in region_districts:
             if not name:

@@ -22,7 +22,7 @@ import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 
 import { baseUrls } from '../../../constants/urls';
 
-import tableColumns from './config';
+import tableColumns from './config/tableColumns';
 import MESSAGES from './messages';
 
 import { redirectTo as redirectToAction } from '../../../routing/actions';

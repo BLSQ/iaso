@@ -1,15 +1,19 @@
 import MESSAGES from '../../constants/messages';
 import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from '../IM/constants';
 import {
-    RoundString,
-    LqasImCampaignDataWithNameAndRegion,
+    LqasImDistrictDataWithNameAndRegion,
     ConvertedLqasImData,
     LqasImCampaign,
-    LqasImCampaignData,
+    LqasImDistrictData,
+    IntlFormatMessage,
 } from '../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 import { makeLegendItem } from '../../utils';
-import { convertStatToPercent } from '../../utils/LqasIm';
+import {
+    accessArrayRound,
+    accessDictRound,
+    convertStatToPercent,
+} from '../../utils/LqasIm';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -24,12 +28,18 @@ export const determineStatusForDistrict = district => {
     return LQAS_DISQUALIFIED;
 };
 
-export const getLqasStatsForRound = (lqasData, campaign, round) => {
-    if (!lqasData[campaign]) return [[], [], [], []];
-    const totalEvaluated = lqasData[campaign][round].map(district => ({
-        ...district,
-        id: district.district,
-    }));
+export const getLqasStatsForRound = (
+    lqasData: Record<string, ConvertedLqasImData>,
+    campaign: string | undefined,
+    round: number,
+): ('1lqasOK' | '3lqasFail' | '2lqasDisqualified' | null)[][] => {
+    if (!campaign || !lqasData[campaign]) return [[], [], [], []];
+    const totalEvaluated = accessArrayRound(lqasData[campaign], round).map(
+        district => ({
+            ...district,
+            id: district.district,
+        }),
+    );
     const allStatuses = totalEvaluated.map(district => {
         return determineStatusForDistrict(district);
     });
@@ -43,7 +53,16 @@ export const getLqasStatsForRound = (lqasData, campaign, round) => {
 };
 
 export const makeLqasMapLegendItems =
-    formatMessage => (lqasData, campaign, round) => {
+    (formatMessage: IntlFormatMessage) =>
+    (
+        lqasData: Record<string, ConvertedLqasImData>,
+        campaign: string | undefined,
+        round: number,
+    ): {
+        label: string;
+        value: string;
+        color: any;
+    }[] => {
         const [passed, failed, disqualified] = getLqasStatsForRound(
             lqasData,
             campaign,
@@ -70,7 +89,7 @@ export const makeLqasMapLegendItems =
 
 export const getLqasStatsWithStatus = ({ data, campaign, round }) => {
     if (!data[campaign]) return [];
-    return [...data[campaign][round]].map(district => ({
+    return [...accessArrayRound(data[campaign], round)].map(district => ({
         ...district,
         status: determineStatusForDistrict(district),
     }));
@@ -89,7 +108,7 @@ export const formatLqasDataForChart = ({ data, campaign, round, regions }) => {
         );
         if (regionData.length > 0) {
             const passing = regionData.filter(
-                district => parseInt(district.status, 10) === 1,
+                district => parseInt(district.status ?? '', 10) === 1,
             ).length;
             const percentSuccess =
                 // fallback to 1 to avoid dividing by zero
@@ -119,13 +138,13 @@ export const lqasChartTooltipFormatter =
     };
 
 export const sumChildrenCheckedLqas = (
-    round: RoundString,
+    round: number,
     data?: Record<string, LqasImCampaign>,
     campaign?: string,
 ): number => {
     if (!data || !campaign || !data[campaign]) return 0;
-    const roundData: LqasImCampaignData[] = Object.values(
-        data[campaign][round],
+    const roundData: LqasImDistrictData[] = Object.values(
+        accessDictRound(data[campaign], round),
     );
     return roundData
         .filter(rd => rd.total_child_checked === 60)
@@ -135,10 +154,10 @@ export const sumChildrenCheckedLqas = (
 export const makeDataForTable = (
     data: Record<string, ConvertedLqasImData>,
     campaign: string,
-    round: RoundString,
-): LqasImCampaignDataWithNameAndRegion[] => {
+    round: number,
+): LqasImDistrictDataWithNameAndRegion[] => {
     if (!data || !campaign || !data[campaign]) return [];
-    return data[campaign][round];
+    return accessArrayRound(data[campaign], round);
 
     // removed the filter so that the table reflects the total numbers of its title/header
     // we should probably filter the not found everywhere, but we would have inconsistencies anyway because of the current backend implementation of nfm
@@ -148,14 +167,14 @@ export const makeDataForTable = (
 };
 
 export const makeCaregiversRatio = (
-    data: LqasImCampaignDataWithNameAndRegion[],
+    data: LqasImDistrictDataWithNameAndRegion[],
 ): string => {
     const { caregiversInformed, childrenChecked } = data.reduce(
         (total, current) => {
             return {
                 caregiversInformed:
                     total.caregiversInformed +
-                    current.care_giver_stats.caregivers_informed,
+                    (current.care_giver_stats?.caregivers_informed ?? 0),
                 childrenChecked:
                     total.childrenChecked + current.total_child_checked,
             };

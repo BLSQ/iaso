@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit org unit type',
         id: 'iaso.orgUnits.editOrgUnitType',
     },
+    validationStatus: {
+        id: 'iaso.forms.validationStatus',
+        defaultMessage: 'Validation status',
+    },
     new: {
         id: 'iaso.forms.new',
         defaultMessage: 'new',
@@ -137,6 +141,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
     },
+    group: {
+        defaultMessage: 'Group',
+        id: 'iaso.label.group',
+    },
     addToGroups: {
         defaultMessage: 'Add to group(s)',
         id: 'iaso.orgUnits.addToGroups',
@@ -164,6 +172,10 @@ const MESSAGES = defineMessages({
     created_at: {
         defaultMessage: 'Created',
         id: 'iaso.label.created_at',
+    },
+    creator: {
+        defaultMessage: 'Created By',
+        id: 'iaso.orgUnits.createdBy',
     },
     details: {
         defaultMessage: 'Details',
@@ -405,6 +417,102 @@ const MESSAGES = defineMessages({
     ouCurrent: {
         id: 'iaso.label.currentOu',
         defaultMessage: 'Current org unit',
+    },
+    linkOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to link this submission to the orgUnit as a reference one ?',
+    },
+    linkOffOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to unlink this reference submission from the orgUnit ?',
+    },
+    linkOrgUnitToInstanceReferenceWarning: {
+        id: 'iaso.instance.linkOrgUnitToInstanceReferenceWarning',
+        defaultMessage: 'This operation can still be undone',
+    },
+    selectParentOrgUnit: {
+        defaultMessage: 'Select parent Org Unit',
+        id: 'iaso.label.selectParentOrgUnit',
+    },
+    org_unit_type_id: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
+    detailTitle: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
+
+    anyGeography: {
+        id: 'iaso.label.anyGeography',
+        defaultMessage: 'With point or territory',
+    },
+    withLocation: {
+        id: 'iaso.label.withLocation',
+        defaultMessage: 'With point only',
+    },
+    withShape: {
+        id: 'iaso.label.withShape',
+        defaultMessage: 'With territory only',
+    },
+    noGeographicalData: {
+        id: 'iaso.label.noGeographicalData',
+        defaultMessage: 'Without geography',
+    },
+    geographicalData: {
+        id: 'iaso.label.geographicalData',
+        defaultMessage: 'Geographical data',
+    },
+    with: {
+        id: 'iaso.label.with',
+        defaultMessage: 'With',
+    },
+    without: {
+        id: 'iaso.label.without',
+        defaultMessage: 'Without',
+    },
+    duplicates: {
+        id: 'iaso.label.duplicates',
+        defaultMessage: 'Duplicates',
+    },
+    hasInstances: {
+        id: 'iaso.forms.hasInstances',
+        defaultMessage: 'Form submissions',
+    },
+    saveMultiEditOrgUnitsSuccesfull: {
+        defaultMessage: 'Selected org unit saved successfully',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsSuccesfull',
+    },
+    saveMultiEditOrgUnitsError: {
+        defaultMessage: 'An error occurred while saving selected org units',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsError',
+    },
+    saveMultiEditOrgUnitsLaunched: {
+        defaultMessage:
+            'The modifications to the org units will take a few minutes to take effect',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsLaunched',
+    },
+    latitudeLongitude: {
+        id: 'iaso.label.latitudeLongitude',
+        defaultMessage: 'Latitude & Longitude',
+    },
+    hasGeometry: {
+        id: 'iaso.label.hasGeometry',
+        defaultMessage: 'With Geography',
+    },
+    hasNoGeometryAndGps: {
+        id: 'iaso.label.hasNoGeometryAndGps',
+        defaultMessage: 'Without geographic data',
+    },
+    depth: {
+        id: 'iaso.orgUnits.depth',
+        defaultMessage: 'Depth',
     },
 });
 

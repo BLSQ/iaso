@@ -1,11 +1,23 @@
 from django.db import InternalError, connections
 
 from iaso.test import TestCase
-from django.test import tag
 from iaso import models as m
 
 
+class OrgUnitTypeModelTestCase(TestCase):
+    """OrgUnitType: tests at the business logic/model level"""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.account = m.Account.objects.create(name="a")
+        cls.project = m.Project.objects.create(name="Project 1", account=cls.account, app_id="test_app_id")
+        cls.setup_out = m.OrgUnitType.objects.create(name="AS", depth=4)
+        cls.setup_out.projects.add(cls.project)
+
+
 class OrgUnitModelTestCase(TestCase):
+    """OrgUnit: tests at the business logic/model level"""
+
     @classmethod
     def setUpTestData(cls):
         cls.sector = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")
@@ -163,6 +175,8 @@ class OrgUnitModelTestCase(TestCase):
 
 
 class OrgUnitModelDbTestCase(TestCase):
+    """OrgUnit: tests at the database (constraints, ...) level"""
+
     @classmethod
     def setUpTestData(cls):
         cls.sector = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")

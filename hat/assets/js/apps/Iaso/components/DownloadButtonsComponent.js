@@ -1,9 +1,8 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import { Button, withStyles } from '@material-ui/core';
-import SaveAlt from '@material-ui/icons/SaveAlt';
-import { ExcellSvg } from 'bluesquare-components';
 import PublicIcon from '@material-ui/icons/Public';
+import { ExcellSvg, CsvSvg } from 'bluesquare-components';
+import PropTypes from 'prop-types';
+import React from 'react';
 
 const styles = theme => ({
     button: {
@@ -23,46 +22,40 @@ function DownloadButtonsComponent(props) {
     const { csvUrl, xlsxUrl, gpkgUrl, classes } = props;
 
     return (
-        <>
+        <div data-test="download-buttons">
             <Button
-                id="csv-export-button"
+                data-test="csv-export-button"
                 variant="contained"
                 className={classes.button}
                 color="primary"
-                onClick={() => {
-                    window.location.href = csvUrl;
-                }}
+                href={csvUrl}
             >
-                <SaveAlt />
+                <CsvSvg />
                 CSV
             </Button>
             <Button
-                id="xlsx-export-button"
+                data-test="xlsx-export-button"
                 variant="contained"
                 className={classes.button}
                 color="primary"
-                onClick={() => {
-                    window.location.href = xlsxUrl;
-                }}
+                href={xlsxUrl}
             >
                 <ExcellSvg className={classes.icon} />
                 XLSX
             </Button>
             {gpkgUrl !== null && (
                 <Button
-                    id="gpkg-export-button"
+                    data-test="gpkg-export-button"
                     variant="contained"
                     className={classes.button}
                     color="primary"
-                    onClick={() => {
-                        window.location.href = gpkgUrl;
-                    }}
+                    href={gpkgUrl}
                 >
                     <PublicIcon className={classes.icon} />
                     GPKG
                 </Button>
             )}
-        </>
+        </div>
     );
 }
 

@@ -1,3 +1,12 @@
+# [Iaso : a geospatial data management platform](https://www.bluesquarehub.com/iaso/)
+![Iaso license](https://img.shields.io/github/license/BLSQ/iaso)
+![Python version](https://img.shields.io/badge/python-3.6%2C%203.7%2C%203.8-blue)
+![Commit activity](https://img.shields.io/github/commit-activity/m/BLSQ/iaso)
+![Contributors](https://img.shields.io/github/contributors-anon/BLSQ/iaso)
+![Python tests](https://img.shields.io/github/actions/workflow/status/BLSQ/iaso/main.yml?label=python%20tests)
+![Cypress tests](https://img.shields.io/github/actions/workflow/status/BLSQ/iaso/cypress.yml?label=cypress%20tests)
+
+
 Introduction
 ============
 
@@ -16,7 +25,7 @@ The main tasks it allows accomplishing are:
 -   Exports of the Org Units' trees and form data, either in csv, xlsx,
     [GeoPackage](https://www.geopackage.org/) or through an api.
 
-[Video presentation of IASO](https://fosdem.org/2021/schedule/event/iaso/) at Fosdem 2021, with slides.
+[Video presentation of IASO](https://fosdem.org/2021/schedule/event/iaso/) at FOSDEM 2021, with slides.
 
 Long Intro
 ----------
@@ -82,7 +91,7 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
     * a OrgUnit may geographically be outside its parent.
 * `DataSource` links OrgUnit and Group imported from the same source, e.g a DHIS2 instance, a CSV or a GeoPackage.
    * A `source_ref` on the imported instance is used to keep the reference from the original source, so we can match it again in the future (when updating the import or exporting it back)
-   * `SourceVersion` is used to keep each version separated. e.g each time we import from DHIS2 we create a new version.
+   * `SourceVersion` is used to keep each version separated. e.g. each time we import from DHIS2 we create a new version.
    * OrgUnit (for their parent) and Group should only reference other OrgUnit and Group in the same version. (This is not enforced everywhere yet)
 * `Task` are asynchronous function that will be run by a background worker in production. eg: Importing Data from DHIS2. see Worker section below for more info.
 * `Form` is the definition of a Form (list of question and their presentation).
@@ -93,7 +102,9 @@ This is not (yet) the complete Data Model, but here are the main concepts/model 
     * Instance can be GeoTagged and/or linked to a OrgUnit
     * Note: We are moving to use Submission everywhere in the UI, but it is still in progress. please submit PR.
     * Submission cannot be done via the Iaso UI itself but through Enketo or the Mobile App.
-* `APIImport` are used to log some request from the mobile app so we can replay them in case of error. See [vector_control Readme](hat/vector_control/README.md)
+* `EntityType` represents a type of person or object to which we want to attach multiple submissions to track said submissions in time and across OrgUnits.
+* `Entity` represents an actual person or object, defined by its `EntityType`. A concrete example is given in the docstrings of [iaos.models.entity](iaso/models/entity.py)
+* `APIImport` are used to log some request from the mobile app, so we can replay them in case of error. See [vector_control Readme](hat/vector_control/README.md)
 * `audit.Modification` are used to keep a history of modification on some models (mainly orgunit). See [audit readme](hat/audit/README.md)
 * `Link` are used to match two OrgUnit (in different sources or not) that should be the same in the real world. Links have a confidence score indicating how much we trust that the two OrgUnit are actually the same.
 
@@ -155,6 +166,8 @@ docker-compose up db
 
 ### 4. Run migrations
 
+In a separate bash (without closing yet the started db), launch the migrations
+
 ``` {.sourceCode .bash}
 docker-compose run --rm iaso manage migrate
 ```
@@ -167,6 +180,7 @@ then type
 create database iaso; 
 ```
 to create the missing database.)
+
 ### 5. Start the server
 
 To start all the containers (backend, frontend, db)
@@ -182,14 +196,14 @@ The `docker-compose.yml` file describes the setup of the containers. See section
 
 ### 6. Create a superuser
 
-To login to the app or the Django admin, a superuser needs to be created
+To log in to the app or the Django admin, a superuser needs to be created
 with:
 
 ``` {.sourceCode .bash}
 docker-compose exec iaso ./manage.py createsuperuser
 ```
 
-You can now login in the admin at `http://localhost:8081/admin`.
+You can now log in at the admin section: `http://localhost:8081/admin`.
 
 Then additional users with custom groups and permissions can be added
 through the Django admin or loaded via fixtures.
@@ -215,7 +229,7 @@ docker-compose exec iaso ./manage.py tree_importer \
      --main_org_unit_name maternelle
 ```
 
-You can now login on `http://localhost:8081`
+You can now log in on `http://localhost:8081`
 
 Alternatively to this step and following steps you can import data from DHIS2 see section below.
 
@@ -245,11 +259,17 @@ You can now start to develop additional features on Iaso!
 
 Alternatively or in addition to steps 7-8, you can import data from the DHIS2 demo server (play.dhis2.org).
 
-By running the command
+First find a running version from play.dhis2.org.
+Go to https://play.dhis2.org/2.37
+Then watch the redirection : ex : https://play.dhis2.org/2.37.7.1/dhis-web-commons/security/login.action 
+To find the current active version : 2.37.7.1
+That you will pass to the next docker-compose run
+
+In a new bash, run the command
 
 
 ``` {.sourceCode .bash}
-docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.35.3
+docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.37.7.1
 ```
 
 The hierarchy of OrgUnit, group of OrgUnit, Forms, and their Submissions will be imported. Type of OrgUnit are not
@@ -257,8 +277,8 @@ handled at the moment
 
 you can then log in through <http://127.0.0.1:8081/dashboard> with :
 
- -   user : testemail2.35.3
- -   password: testemail2.35.3
+ -   user : testemail2.37.7.1
+ -   password: testemail2.37.7.1
 
 ### 11. Activating the Polio plugin (optional)
 
@@ -283,6 +303,7 @@ pattern to run a command is
 The following are some examples:
 
 * Run tests                    `docker-compose exec iaso ./manage.py test`
+* Check type hints             `docker-compose exec iaso mypy .`
 * Create a shell inside the container    `docker-compose run iaso bash`
 * Run a shell command          `docker-compose run iaso eval curl http://google.com`
 * Run Django manage.py         `docker-compose exec iaso ./manage.py help`
@@ -352,20 +373,28 @@ docker-compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
 
 The dumpfile will be created on your host. The `-Fc` meant it will use an optimised Postgres format (which take less place). If you want the plain sql command use `-Fp`
 
-To restore a dump file that you made or that somebody sent you:
+### To restore a dump file that you made or that somebody sent you
+0. Ensure the database server is running but not the rest. Close your docker-compose, ensure it is down with `docker-compose down`
+1. Launch the database server with `docker-compose up db` 
+2. Choose a name for you database. In this example  it will be `iaso5`
+   You can list existing databases using `docker-compose exec db psql -U postgres -l`
+3. Create the database `docker-compose exec db psql -U postgres -c "create database iaso5"`
+4. Restore the dump file to put the data in your database
 ```
-docker-compose exec db psql -U postgres -c "create database iaso5"
 cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
 ```
+5. Edit your `.env` file to use to this database in the `RDS_DB_NAME` settings.
+6. Start Iaso. Cut your docker-compose (see 0) and relaunch it fully. Warning: Modification in your .env file are not taken into account unless you entirely stop your docker-compose
 
-This will put the data in a database called iaso5. You can choose in your .env file which database is used by editing
-the `RDS_DB_NAME` settings.
+Health
+------
+On the /health/ url you can find listed the Iaso version number, environment, deployment time, etc... that might help you understand how this server instance is deployed for debugging. e.g.  https://iaso.bluesquare.org/health/
 
 Local DHIS2
 -----------
 Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
 
-Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g to launch the cluster:
+Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g. to launch the cluster:
 ```
 docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
 ```
@@ -394,12 +423,12 @@ docker-compose up dhis2 db_dhis2
 ```
 
 ### Setting up Single Sign On (SSO) with you local DHIS2
-If you want to test the feature with your local dhis2 you can use the following step. This assume you are running everything in Dockers
+If you want to test the feature with your local dhis2 you can use the following step. This assumes you are running everything in Dockers
 
 0. Launch DHIS2 with iaso within docker compose
 `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up`
  With the default docker compose setup, iaso is on port 8081 and dhis2 on port 8081 on your machine
-1. These step assume you have loaded your DHIS2 with the play test data but it's not mandatory. To see how to do it, look at previous section
+1. These step assume you have loaded your DHIS2 with the play test data, but it's not mandatory. To see how to do it, look at previous section
 2. Configure an Oauth client in DHIS2: open http://localhost:8080/dhis-web-settings/index.html#/oauth2
 3. Add new client:
    - Name : what you want
@@ -422,11 +451,11 @@ If you want to test the feature with your local dhis2 you can use the following 
 
 6. In DHIS2 retrieve the id for the user
      - Current way I have found it is to go to http://localhost:8080/api/me and copy the id field
-     - But you can also find a user here and it's in the url http://localhost:8080/dhis-web-user/index.html#/users
+     - But you can also find a user here, and it's in the url http://localhost:8080/dhis-web-user/index.html#/users
 
 7. Add the dhis2 id to the Iaso user : Open the target user in the iaso Admin http://localhost:8081/admin/iaso/profile/ and add it to the dhis2 id field, save.
 
-8. Unlog from iaso or in a separate session/container
+8. Log out from iaso or in a separate session/container
 9. Try the feature by opening : http://localhost:8080/uaa/oauth/authorize?client_id={your_dhis2_client_id}&response_type=code
 
 
@@ -450,7 +479,7 @@ shown on the following lines :
 "xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None
 ```
 
-### 2 - Setup the mobile app
+### 2 - Set up the mobile app
 Once Ngrok installed and running you have to run the app in developer mode (tap 10 times on the Iaso icon at start ) and connect the mobile app to your server
 by selecting the 3 dots in the top right corner and select "change server url". When connected to your server, refresh
 all data and your app will be ready and connected to your development server.
@@ -462,7 +491,7 @@ You can use DHIS2 as identity provider to login on Iaso. It requires a little co
 to achieve that. 
 
 ### 1 - Setup OAuth2 clients in DHIS2
-In DHIS2 settings you must setup your Iaso instance as Oauth2 Clients. Client ID and Grant types must be :
+In DHIS2 settings you must set up your Iaso instance as Oauth2 Clients. Client ID and Grant types must be :
 * Client ID : What you want (Must be the same as your external credential name in Iaso)
 * Grant Types : Authorization code
 
@@ -470,9 +499,9 @@ Redirect URIs is your iaso server followed by : ```/api/dhis2/{your_dhis2_client
 
 For example : https://myiaso.com/api/dhis2/dhis2_client_id/login/
 
-### 2 - Setup OAuth2 clients in DHIS2
-In iaso you must setup your dhis2 server credentials. 
-To do so, go to ```/admin``` and setup as follow :  
+### 2 - Configure the OAuth2 connection in Iaso
+In iaso you must set up your dhis2 server credentials. 
+To do so, go to ```/admin``` and setup as follows :  
 
 * Name: {your_dhis2_client_id} ( It must be exactly as it is in your DHIS2 client_id and DHIS2 Redirect URIs)
 * Login: Your DHIS2 url (Ex : https://sandbox.dhis2.org/ )
@@ -480,6 +509,32 @@ To do so, go to ```/admin``` and setup as follow :
 * Url: Your Iaso Url (Ex: https://myiaso.com/)
 
 Don't forget the ```/``` at the end of the urls.
+
+### Workflow for Single Sign On as a sequence diagram
+```mermaid
+sequenceDiagram
+    autonumber
+    Note right of Browser: user open url to login
+    Browser->>DHIS2: GET /uaa/oauth/authorize<br>?client_id={your_dhis2_client_id}
+    loop if not logged
+        DHIS2->>Browser: Login screen
+        Browser->>DHIS2: Enter credentials
+        DHIS2->>Browser: Login ok
+    end
+    DHIS2 -->> Browser: 200 Authorize Iaso? Authorize/Deny
+    Browser ->> DHIS2: POST /authorize
+    DHIS2 -->> Browser: 303  redirect
+    Browser ->> IASO: GET /api/dhis2/<dhis2_slug>/login/?code=
+    IASO ->> DHIS2: POST /uaa/oauth/token/
+    DHIS2 -->> IASO: access token
+    IASO ->> DHIS2 : GET /api/me
+    DHIS2 -->> IASO: credential info
+    Note right of IASO: find matching IASO user
+    Note right of IASO: Log in session
+    IASO -->> Browser: 303 Redirect & set cookies
+    Browser ->> IASO: Use iaso normally as logged user.
+```
+
 
 Live Bluesquare components
 --------------------------
@@ -539,7 +594,7 @@ Code formatting
 We have adopted Black [](https://github.com/psf/black) as our code
 formatting tool. Line length is 120.
 
-The easiest way to use is is to install the pre-commit hook:
+The easiest way to use it is to install the pre-commit hook:
 1. Install pre-commit: pip install pre-commit
 2. Execute pre-commit install to install git hooks in your .git/ directory.
 
@@ -561,7 +616,7 @@ docker-compose exec iaso ./manage.py test
 Translations
 ------------
 
-The few translation for the Django side (login and reset password email etc..)
+The few translation for the Django side (login and reset password email etc...)
 are separated from the test. We only translate the template for now
 not the python code (string on model or admin).
 
@@ -573,10 +628,28 @@ regenerate the translations:
 This will update `hat/locale/fr/LC_MESSAGES/django.po` with the new strings to
 translate.
 
+If you get an error about `/opt/app` or cannot accessing docker:
+Change in settings.py LOCALE_PATHS to
+```python
+LOCALE_PATHS = [ "hat/locale/"]
+```
+
+And specify --ignore
+```sh
+makemessages --locale=fr --extension txt --extension html --ignore /opt/app --ignore docker --ignore node_modules
+```
+
+
 After updating it with the translation you need to following command to have
 them reflected in the interface:
 
 ```manage.py compilemessages```
+
+This is done automatically when you launch the docker image so if new translations
+you just pulled in git don't appear, relaunch the iaso docker.
+
+
+You do not need to manage local for English as it is the default language
 
 
 Code reloading
@@ -615,6 +688,48 @@ To run a Jupyter Notebook, just copy the env variable from runaisasdev.sh, activ
 ``` {.sourceCode .bash}
 python manage.py shell_plus --notebook
 ```
+
+Deployment in Production
+========================
+
+System requirements
+-------------------
+
+Recommended:
+  * Linux System X86_64 system
+  * Latest Ubuntu LTS Server (> 20.04)
+  * 16 GB ram
+  * 4 Threads @ 3 Ghz
+  * Docker
+
+External service dependencies:
+* PostgreSQL Server > 10.
+* Enketo > 4.0
+* Access to an SMTP server to send e-mail.
+
+
+The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
+
+Each of these services have their own requirements, that are available on their own documentation.
+
+Area of notice for configuration
+--------------------------------
+
+### E-mails
+
+The reset e-mail functionality use django builtin site framework to generate
+the url. When setting a new server, got to the admin and modify the example.com
+site to point to your server url.
+You can do so at `/admin/sites/site/1/change/`
+
+Some part of the code use DNS_DOMAIN environment variable, please fill it 
+with the same value.
+
+Please also check the `# Email configuration` section in settings.py and check
+everything is set correctly. Notably the sending address. See the
+[sending email](https://docs.djangoproject.com/en/4.1/topics/email/) section
+in the Django documentation for the possible backends and tweak. 
+`
 
 Deployment on AWS Elastic Beanstalk
 ====================================
@@ -674,27 +789,32 @@ If you need to test s3 storage in development, you have to:
 These are actually exactly the same steps we use on AWS.
 
 ### Testing prod js assets in development
-Run `TEST_PROD=true docker-compose up`
 
-to have a local environment serving you the production assets (minified
-and with the same compilation option as in production). This can be
-useful to reproduce production only bugs.
+During local development, by default, the Javascript and CSS will be loaded from
+a webpack server with live reloading of the code. To locally test the compiled
+version as it is in production ( minified and with the same compilation option).
+You can launch docker-compose with the `TEST_PROD=true` environment variable
+set.
+
+e.g `TEST_PROD=true docker-compose up`
+
+This can be useful to reproduce production only bugs. Please also test with this
+configuration whenever you modify webpack.prod.js to validate your changes.
+
+Alternatively this can be done outside of docker by running:
+
+1. `npm run webpack-prod` to do the build
+2. Launching the django server with `TEST_PROD`
+   e.g. `TEST_PROD=true python manage.py runserver`.
 
 # Background tasks & worker
 
-Iaso  queue certains functions (task) for later execution, so they can run
-outside an HTTP request. This is used for functions that take a long time to execute
+Iaso queue certain functions (task) for later execution, so they can run
+outside an HTTP request. This is used for functions that take a long time to execute,
 so they don't canceled in the middle by a timeout of a connection closed.
 e.g: bulk import, modifications or export of OrgUnits.  Theses are the functions
 marked by the decorator @task_decorator, when called they get added to a Queue
 and get executed by a worker.
-
-
-The logic is based on a fork of the library
-[django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/)
-from tolomea, please consult it's doc for reference.
-
-In production on AWS, we use Elastic Beanstalk workers which use a SQS queue.
 
 In local development, you can run a worker by using the command:
 ```
@@ -712,3 +832,17 @@ the task. At execution time the task will receive a iaso.models.Task
 instance in argument that should be used to report progress. It's
 mandatory for the function, at the end of a successful execution to call
 task.report_success() to mark its proper completion.
+
+We have two background workers mechanisms: a postgres backed one, and a SQS backed one. You can choose which one to use with the `BACKGROUND_TASK_SERVICE` environment variable, use either `SQS` or `POSTGRES` (it defaults to `SQS` in production).
+
+## AWS SQS
+
+The logic is based on a fork of the library [django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/) from tolomea, please consult its doc for reference.
+
+In production on AWS, we use Elastic Beanstalk workers which use a SQS queue. They use the SQS queue for enqueuing and persisting the tasks, but rely on the Elastic Beanstalk Worker environment to poll from that queue and push it to the webapp, at `tasks/task`. [AWS Elastic Beanstalk Worker docs](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features-managing-env-tiers.html#worker-daemon)
+
+## Postgres
+
+This is also the one that you get when running locally with `docker-compose run iaso manage tasks_worker`, instead of enqueuing the tasks to SQS, we now enqueue them to our postgres server.
+
+Our tasks_worker process (which runs indefinitely) will listen for new tasks and run them when it gets notified (using PostgreSQL NOTIFY/LISTEN features)

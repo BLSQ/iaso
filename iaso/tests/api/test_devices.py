@@ -1,5 +1,4 @@
 import typing
-from django.test import tag
 
 from iaso.test import APITestCase
 from iaso import models as m

@@ -17,7 +17,11 @@ export const PageActions = ({ children, params }) => {
             alignItems="center"
         >
             <Grid item xs={12}>
-                <Filters params={params} baseUrl={DASHBOARD_BASE_URL} />
+                <Filters
+                    params={params}
+                    baseUrl={DASHBOARD_BASE_URL}
+                    showTest
+                />
             </Grid>
             <Grid
                 item

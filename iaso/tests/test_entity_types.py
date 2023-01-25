@@ -3,14 +3,15 @@ from unittest import mock
 
 
 from iaso import models as m
-from iaso.models import EntityType, Instance, Entity
+from iaso.models import EntityType
 from iaso.test import APITestCase
 
 
-class EntitiesAPITestCase(APITestCase):
+class EntityTypeAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
+        cls.the_gang = m.Account.objects.create(name="The Gang")
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
         cls.sw_source = sw_source
@@ -105,7 +106,8 @@ class EntitiesAPITestCase(APITestCase):
 
         payload = {
             "name": "New Entity Type",
-            "defining_form": self.form_1.id,
+            "reference_form": self.form_1.id,
+            "account": self.yoda.iaso_profile.account.pk,
         }
 
         response = self.client.post("/api/entitytype/", data=payload, format="json")
@@ -117,7 +119,7 @@ class EntitiesAPITestCase(APITestCase):
 
         payload = {
             "name": "New Entity Type",
-            "defining_form": self.form_1.id,
+            "reference_form": self.form_1.id,
         }
 
         self.client.post("/api/entitytype/", data=payload, format="json")
@@ -130,19 +132,55 @@ class EntitiesAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         post_payload = {
-            "name": "New Entity Type",
-            "defining_form": self.form_1.id,
+            "name": "New Entity Type_test",
+            "reference_form": self.form_1.id,
+            "account": self.yoda.iaso_profile.account.pk,
         }
 
         self.client.post("/api/entitytype/", data=post_payload, format="json")
 
-        post_payload = {
-            "name": "New Entity Type-2",
-            "defining_form": self.form_1.id,
+        patch_payload = {
+            "name": "New Entity Type_test_2",
+            "reference_form": self.form_1.id,
+            "account": self.yoda.iaso_profile.account.pk,
         }
 
         response = self.client.patch(
-            "/api/entitytype/{0}/".format(EntityType.objects.last().pk), data=post_payload, format="json"
+            "/api/entitytype/{0}/".format(EntityType.objects.last().pk), data=patch_payload, format="json"
+        )
+        print(response.json())
+        self.assertEqual(response.status_code, 200)
+
+    def test_entity_type_are_unique_per_account(self):
+        self.client.force_authenticate(self.yoda)
+
+        EntityType.objects.create(
+            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
         )
 
-        self.assertEqual(response.status_code, 200)
+        payload = {
+            "name": "beneficiary",
+            "reference_form": self.form_1.id,
+            "account": self.yoda.iaso_profile.account.pk,
+        }
+
+        response = self.client.post("/api/entitytype/", data=payload, format="json")
+
+        print(response.json())
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_entity_types_are_multitenancy(self):
+
+        self.client.force_authenticate(self.yoda)
+        EntityType.objects.create(
+            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        payload = {"name": "beneficiary", "reference_form": self.form_1.id, "account": self.the_gang.pk}
+
+        response = self.client.post("/api/entitytype/", data=payload, format="json")
+        get_response = self.client.get("/api/entitytype/")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(get_response.json()), 1)

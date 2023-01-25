@@ -1,11 +1,18 @@
 name: Iaso Automated CI testing
-# This workflow run automatically for every commit on github it checks the syntax and launch the tests.
+# This workflow run automatically for every PR on github it checks the syntax and launch the tests.
 on:
-  workflow_dispatch: { }
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   test_js:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Use node.js 14
@@ -15,23 +22,15 @@ jobs:
           cache: npm
       - name: upgrade npm
         run: |
-          npm install --global npm
+          npm install --global npm@8.5
       - name: Environment info
         run: |
           node --version
           npm --version
       - name: npm install and test
         run: |
-          npm install
+          npm ci
           npm test
-      - name: npm build (but don't commit)
-        run: |
-          npm run webpack-prod
-      - name: Artifact the builded JS
-        uses: actions/upload-artifact@v2
-        with:
-          name: jsbuild
-          path: hat/assets/webpack/
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2.1.3
         env:
@@ -44,8 +43,45 @@ jobs:
           SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           MSG_MINIMAL: true
         if: failure()
+  build-and-push-image:
+    runs-on: ubuntu-20.04
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+      - name: Determining version ${{ github.ref_name }}
+        id: version
+        run: |
+          export GITHUB_BRANCH=${GITHUB_REF##*heads/}
+          echo $GITHUB_BRANCH
+          git describe --tags
+          export VERSION_NAME=$(git describe --tags)--$GITHUB_BRANCH
+          echo "::set-output name=VERSION_NAME::$VERSION_NAME"
+          echo "::set-output name=IMAGE_TAG::${{ env.REGISTRY }}/blsq/iaso:$GITHUB_SHA"
+      - name: Log in to the Container registry
+        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v2
+        with:
+          push: true
+          tags: ${{ steps.version.outputs.IMAGE_TAG }}
+          target: dev
+          file: docker/bundle/Dockerfile
+          cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
+          cache-to: type=registry,ref=ghcr.io/blsq/iaso:buildcache,mode=max
   test_python:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     services:
       postgres:
         image: mdillon/postgis:10
@@ -62,26 +98,34 @@ jobs:
       - name: Set up Python 3.8
         uses: actions/setup-python@2
         with:
-          cache: pip
           python-version: 3.8
       - name: Install GDAL
         run: sudo apt install gdal-bin
-      - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
+      - uses: actions/cache@v2
+        id: cache-venv
+        with:
+          path: ./venv/
+          # The cache key depends on requirements.txt
+          key: ${{ runner.os }}-venv-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-venv-
+          # Build a virtualenv, but only if it doesn't already exist
+      - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
           pip install -r requirements.txt
+        if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |
           pip list
-      - name: Check formatting with black
+      - name: Check formatting with Black
         run: |
-          black --check .
+          . ./venv/bin/activate && black --check .
       - name: Django tests
         run: |
-          python manage.py migrate
-          python manage.py test
+          . ./venv/bin/activate &&  python manage.py migrate
+          . ./venv/bin/activate &&  python manage.py createcachetable
+          . ./venv/bin/activate &&  python manage.py test
           # check we don't have missing migration
-          python manage.py makemigrations --check
+          . ./venv/bin/activate &&  python manage.py makemigrations --check
         env:
           IASO_ENVIRONMENT: development
           RDS_DB_NAME: github_actions
@@ -99,60 +143,10 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
-      - name: Slack notification
-        uses: rtCamp/action-slack-notify@v2.1.3
-        env:
-          SLACK_USERNAME: ${{ github.workflow }}
-          SLACK_ICON_EMOJI: ":robot_face:"
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: iaso-dev
-          SLACK_COLOR: ${{ job.status }}
-          SLACK_TITLE: ${{ format('Job {0} failed on {1}', github.job, github.ref) }}
-          SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
-          MSG_MINIMAL: true
-        if: failure()
-  test_cypress:
-    runs-on: ubuntu-latest
-    needs: [ test_js ]
-    services:
-      postgres:
-        image: mdillon/postgis:10
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: github_actions
-        ports:
-          - 5432:5432
-        # needed because the postgres container does not provide a health check
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python 3.6
-        uses: actions/setup-python@v2
-        with:
-          cache: pip
-          python-version: 3.6
-      - name: Install GDAL
-        run: sudo apt install gdal-bin
-      - name: Install Python dependencies
+      - name: Check types with mypy
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Download the builded JS
-        uses: actions/download-artifact@v2
-        with:
-          name: jsbuild
-          path: hat/assets/webpack/
-      - name: Cypress run
-        uses: cypress-io/github-action@v2
-        with:
-          start: python manage.py testserver --noinput iaso/fixtures/user.yaml
-          wait-on: 'http://localhost:8000'
-        env:
-          CYPRESS_USERNAME: "test"
-          CYPRESS_PASSWORD: "test"
-          CYPRESS_BASE_URL: "http://localhost:8000"
-          TEST_PROD: true
+          . ./venv/bin/activate &&  mypy .
+        env: # Apparently mypy (Django specific plugins) need to have proper Django env?
           IASO_ENVIRONMENT: development
           RDS_DB_NAME: github_actions
           SECRET_KEY: secret
@@ -182,20 +176,3 @@ jobs:
           SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           MSG_MINIMAL: true
         if: failure()
-      # after the test run completes
-      # store videos and any screenshots
-      # NOTE: screenshots will be generated only if E2E test failed
-      # thus we store screenshots only on failures
-      # Alternative: create and commit an empty cypress/screenshots folder
-      # to always have something to upload
-      - uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: cypress-screenshots
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/screenshots/
-      # Test run video was always captured, so this action uses "always()" condition
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: cypress-videos
-          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/

@@ -1,10 +1,23 @@
+- model: iaso.project
+  pk: 1
+  fields:
+    name: Fixtures
+    account: 4
+    app_id: com.fixtures.app
+    needs_authentication: false
+    created_at: 2022-09-13 13:03:39.236559+00:00
+    updated_at: 2022-09-13 13:03:39.236582+00:00
+    external_token: b54a07af-12fa-4660-80c6-5c09fb979c6b
+    min_version: null
+    forms: []
+    feature_flags: []
 - model: auth.user
   fields:
-    username: test
     # test
-    password: pbkdf2_sha256$216000$Bn7oN4bEreZs$0mUWcg4sAwSnfTfAZ6uumBT7UcBlXtRyetS1iPUYVVM=
-    last_login: 2021-10-15 10:42:33.731021+00:00
+    password: pbkdf2_sha256$260000$LR0NEctHEEz9ATx8Za96hQ$bY8pmjN1A5BZp8BKUlI8z+SEOQeHSVLR1XVv7qT5QLU=
+    last_login: 2022-09-13 13:02:48.782964+00:00
     is_superuser: false
+    username: test
     first_name: test
     last_name: test
     email: ''
@@ -46,7 +59,7 @@
     name: test
     created_at: 2021-10-15 10:42:13.542692+00:00
     updated_at: 2021-10-15 10:42:13.542709+00:00
-    default_version:
+    default_version: null
     users:
     - - test
     feature_flags: []
@@ -58,4 +71,6 @@
     - test
     external_user_id: null
     language: null
+    dhis2_id: null
+    home_page: null
     org_units: []

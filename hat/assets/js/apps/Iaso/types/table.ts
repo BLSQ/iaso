@@ -1,13 +1,16 @@
+/* eslint-disable camelcase */
 import { ReactElement } from 'react';
 
 export type Column = {
     Header: string;
     id?: string;
-    accessor: string;
+    accessor?: string;
     sortable?: boolean;
     resizable?: boolean;
+    width?: number;
     // eslint-disable-next-line no-unused-vars
     Cell?: (s: any) => ReactElement;
+    align?: string;
 };
 export type Pagination = {
     pages: number;
@@ -17,6 +20,10 @@ export type Pagination = {
     has_next: boolean;
     has_previous: boolean;
 };
+
+export interface Paginated<T> extends Pagination {
+    results: T[];
+}
 
 export type UrlParams = {
     pageSize: string;

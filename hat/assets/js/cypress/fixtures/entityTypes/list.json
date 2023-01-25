@@ -4,7 +4,7 @@
         "name": "Entity type 2",
         "created_at": 1643624771.550368,
         "updated_at": 1643704356.809497,
-        "defining_form": null,
+        "reference_form": null,
         "entities_count": 3
     },
     {
@@ -12,7 +12,7 @@
         "name": "Entity type",
         "created_at": 1643631246.886191,
         "updated_at": 1643723319.83953,
-        "defining_form": null,
+        "reference_form": null,
         "entities_count": 2
     },
     {
@@ -20,7 +20,7 @@
         "name": "empty",
         "created_at": 1643723863.427132,
         "updated_at": 1643723863.427164,
-        "defining_form": null,
+        "reference_form": null,
         "entities_count": 0
     },
     {
@@ -28,7 +28,7 @@
         "name": "Entity type3",
         "created_at": 1643704882.579437,
         "updated_at": 1643724694.460157,
-        "defining_form": 7,
+        "reference_form": 7,
         "entities_count": 1
     }
 ]

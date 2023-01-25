@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Grid, Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
-import { LoadingSpinner } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import MESSAGES from '../messages';
@@ -12,7 +12,8 @@ import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
-import { useSnackMutation } from '../../../libs/apiHooks';
+import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import InputComponent from '../../../components/forms/InputComponent';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -21,6 +22,7 @@ const initialFormState = sourceCredentials => {
         dhis2_password: null,
         validate_status: false,
         continue_on_error: false,
+        versionDescription: '',
     };
 };
 
@@ -30,6 +32,7 @@ const AddTask = ({
     sourceVersionNumber,
     sourceCredentials,
 }) => {
+    const { formatMessage } = useSafeIntl();
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, _, setFormState] = useFormState(
         initialFormState(sourceCredentials),
@@ -37,8 +40,13 @@ const AddTask = ({
     const [withExistingDhis2Settings, setWithExistingDhis2Settings] = useState(
         sourceCredentials.is_valid,
     );
+
     const dispatch = useDispatch();
-    const mutation = useSnackMutation(sendDhisOuImporterRequest);
+    const mutation = useSnackMutation(
+        sendDhisOuImporterRequest,
+        MESSAGES.importFromDhis2Success,
+        MESSAGES.importFromDhis2Error,
+    );
 
     const reset = () => {
         setFormState(initialFormState(sourceCredentials));
@@ -52,12 +60,14 @@ const AddTask = ({
             force: false,
             validate_status: form.validate_status.value,
             continue_on_error: form.continue_on_error.value,
+            description: form.versionDescription.value || null,
         };
         if (!withExistingDhis2Settings) {
             body.dhis2_password = form.dhis2_password.value;
             body.dhis2_url = form.dhis2_url.value;
             body.dhis2_login = form.dhis2_login.value;
         }
+
         await mutation.mutateAsync(body);
         closeDialogCallBack();
         if (redirect) {
@@ -99,7 +109,7 @@ const AddTask = ({
     );
     const allowConfirm = !mutation.isLoading && formIsValid;
 
-    const renderDefaultLayout = showDefaultOverride => {
+    const renderDefaultLayout = (showDefaultOverride, versionNumber) => {
         const checkboxes = [
             {
                 keyValue: 'continue_on_error',
@@ -126,7 +136,24 @@ const AddTask = ({
                 onChange: setWithExistingDhis2Settings,
             });
         }
-        return <Checkboxes checkboxes={checkboxes} />;
+        return (
+            <>
+                {!versionNumber && (
+                    <InputComponent
+                        type="text"
+                        keyValue="versionDescription"
+                        labelString={formatMessage(
+                            MESSAGES.dataSourceDescription,
+                        )}
+                        value={form.versionDescription.value}
+                        onChange={(field, value) => {
+                            setFormField(field, value);
+                        }}
+                    />
+                )}
+                <Checkboxes checkboxes={checkboxes} />
+            </>
+        );
     };
 
     const renderWithOptionalFields = () => (
@@ -202,7 +229,10 @@ const AddTask = ({
                 <Grid xs={12} item>
                     {!withExistingDhis2Settings &&
                         renderWithOptionalFields(sourceCredentials.is_valid)}
-                    {renderDefaultLayout(sourceCredentials.is_valid)}
+                    {renderDefaultLayout(
+                        sourceCredentials.is_valid,
+                        sourceVersionNumber,
+                    )}
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

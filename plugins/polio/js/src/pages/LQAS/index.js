@@ -1,10 +1,16 @@
-import React from 'react';
+/* eslint-disable react/no-array-index-key */
+import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    commonStyles,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 import { Grid, Box, makeStyles, Paper } from '@material-ui/core';
-
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
+import { useDispatch } from 'react-redux';
+import { push } from 'react-router-redux';
 import { Filters } from '../../components/LQAS-IM/Filters.tsx';
 import { CaregiversTable } from '../../components/LQAS-IM/CaregiversTable.tsx';
 import { GraphTitle } from '../../components/LQAS-IM/GraphTitle.tsx';
@@ -14,13 +20,14 @@ import { DatesIgnored } from '../../components/LQAS-IM/DatesIgnored.tsx';
 import { HorizontalDivider } from '../../components/HorizontalDivider.tsx';
 import { LqasImVerticalChart } from '../../components/LQAS-IM/LqasImVerticalChart.tsx';
 import { MapContainer } from '../../components/LQAS-IM/MapContainer.tsx';
-
 import { useLqasData } from '../../hooks/useLqasData.ts';
-
 import MESSAGES from '../../constants/messages';
 import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
+import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
+import { genUrl } from '../../utils/routing';
+import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { defaultRounds } from '../IM/constants.ts';
 
-const rounds = ['round_1', 'round_2'];
 const paperElevation = 2;
 
 const styles = theme => ({
@@ -33,7 +40,12 @@ const useStyles = makeStyles(styles);
 export const Lqas = ({ router }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { campaign, country } = router.params;
+    const dispatch = useDispatch();
+    const { campaign, country, rounds } = router.params;
+    const [selectedRounds, setSelectedRounds] = useState(
+        rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
+    );
+
     const {
         LQASData,
         isFetching,
@@ -43,11 +55,32 @@ export const Lqas = ({ router }) => {
         debugData,
         hasScope,
         chartData,
-    } = useLqasData(campaign, country);
+    } = useLqasData(campaign, country, selectedRounds);
+
+    const dropDownOptions = useMemo(() => {
+        return makeDropdownOptions(LQASData.stats, campaign, selectedRounds);
+    }, [LQASData, campaign, selectedRounds]);
+
+    const onRoundChange = useCallback(
+        index => value => {
+            const updatedSelection = [...selectedRounds];
+            updatedSelection[index] = value;
+            setSelectedRounds(updatedSelection);
+            const url = genUrl(router, {
+                rounds: updatedSelection,
+            });
+            dispatch(push(url));
+        },
+        [dispatch, router, selectedRounds],
+    );
 
     const divider = (
         <HorizontalDivider mt={6} mb={4} ml={-4} mr={-4} displayTrigger />
     );
+    useSkipEffectOnMount(() => {
+        setSelectedRounds(defaultRounds);
+    }, [campaign, country]);
+
     return (
         <>
             <TopBar
@@ -61,10 +94,10 @@ export const Lqas = ({ router }) => {
                     campaignsFetching={campaignsFetching}
                 />
                 <Grid container spacing={2} direction="row">
-                    {rounds.map(r => (
-                        <Grid item xs={6} key={r}>
+                    {selectedRounds.map((rnd, index) => (
+                        <Grid item xs={6} key={`round_${rnd}_${index}`}>
                             <MapContainer
-                                round={r}
+                                round={parseInt(rnd, 10)} // parsing the rnd because it willl be a string when coming from params
                                 campaign={campaign}
                                 campaigns={campaigns}
                                 country={country}
@@ -73,6 +106,8 @@ export const Lqas = ({ router }) => {
                                 debugData={debugData}
                                 paperElevation={paperElevation}
                                 type="lqas"
+                                onRoundChange={onRoundChange(index)}
+                                options={dropDownOptions}
                             />
                         </Grid>
                     ))}
@@ -88,12 +123,16 @@ export const Lqas = ({ router }) => {
                                     displayTrigger
                                 />
                             </Grid>
-                            {rounds.map(r => (
-                                <Grid item xs={6} key={r}>
+                            {selectedRounds.map((rnd, index) => (
+                                <Grid
+                                    item
+                                    xs={6}
+                                    key={`horiz-chart-${rnd}_${index}`}
+                                >
                                     <Paper elevation={paperElevation}>
                                         <LqasImHorizontalChart
                                             type="lqas"
-                                            round={r}
+                                            round={parseInt(rnd, 10)}
                                             campaign={campaign}
                                             countryId={parseInt(country, 10)}
                                             data={convertedData}

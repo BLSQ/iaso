@@ -1,5 +1,6 @@
 import pathlib
 import typing
+
 from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
@@ -37,7 +38,7 @@ class FormQuerySet(models.QuerySet):
 
         return False
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser], app_id: str):
+    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser], app_id: typing.Optional[str] = None):
         if user.is_anonymous and app_id is None:
             return self.none()
 
@@ -58,7 +59,13 @@ class FormQuerySet(models.QuerySet):
 
 
 class Form(SoftDeletableModel):
+    """Metadata about a form
+
+    Forms are versioned, see the FormVersion model
+    """
+
     PERIOD_TYPE_CHOICES = (
+        (periods.PERIOD_TYPE_DAY, _("Day")),
         (periods.PERIOD_TYPE_MONTH, _("Month")),
         (periods.PERIOD_TYPE_QUARTER, _("Quarter")),
         (periods.PERIOD_TYPE_SIX_MONTH, _("Six-month")),
@@ -127,6 +134,12 @@ class Form(SoftDeletableModel):
 
         return res
 
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+        }
+
     def update_possible_fields(self: "Form"):
         """Keep accumulated list of all the flat fields that were present at some point in a version of the form.
         This is used to build a table view of the form answers without having to parse the xml files
@@ -153,7 +166,7 @@ def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
 
 
 class FormVersionQuerySet(models.QuerySet):
-    def latest_version(self, form: Form):
+    def latest_version(self, form: Form) -> "typing.Optional[FormVersion]":
         try:
             return self.filter(form=form).latest("created_at")
         except FormVersion.DoesNotExist:
@@ -161,7 +174,7 @@ class FormVersionQuerySet(models.QuerySet):
 
 
 def _reformat_questions(questions):
-    """ "Return all questions as a list instead of dict
+    """Return all questions as a list instead of dict
     remove fields of type 'note'
     keep only fields : name, label, type.
     label can contain html, to prevent injection and make them presentable in list we strip the tags
@@ -181,10 +194,11 @@ def _reformat_questions(questions):
     return r
 
 
+# TODO: check if we really need a manager and a queryset for this model - some simplification would be good
 class FormVersionManager(models.Manager):
     def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
-            latest_version = self.latest_version(form)
+            latest_version = self.latest_version(form)  # type: ignore
 
             form_version = super().create(
                 **kwargs,
@@ -204,6 +218,11 @@ class FormVersionManager(models.Manager):
 
 
 class FormVersion(models.Model):
+    """A version of a Form
+
+    The actual form definition (list of questions and their presentation) are kept in files (file/xls_file attribute)
+    """
+
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
@@ -239,6 +258,9 @@ class FormVersion(models.Model):
                 repeats.append(value)
 
         return repeats
+
+    def questions_by_path(self):
+        return parsing.to_questions_by_path(self.get_or_save_form_descriptor())
 
     def as_dict(self):
         return {

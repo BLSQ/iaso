@@ -14,7 +14,7 @@ class CompletenessViewSet(viewsets.ViewSet):
     GET /api/completeness/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness")]  # type: ignore
 
     def list(self, request):
         profile = request.user.iaso_profile

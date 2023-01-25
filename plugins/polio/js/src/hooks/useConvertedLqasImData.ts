@@ -1,18 +1,19 @@
 import { useMemo } from 'react';
 import {
     ConvertedLqasImData,
-    LqasImCampaignData,
+    LqasImDistrictData,
     LqasImData,
 } from '../constants/types';
 
 const convertRoundDataToArray = roundDataAsDict => {
     const roundData = Object.entries(roundDataAsDict);
-    return roundData.map((entry: [string, LqasImCampaignData]) => {
+    const result = roundData.map((entry: [string, LqasImDistrictData]) => {
         return {
             ...entry[1],
             name: entry[0],
         };
     });
+    return result;
 };
 
 export const convertAPIData = (
@@ -25,8 +26,10 @@ export const convertAPIData = (
     campaignKeys.forEach(key => {
         if (stats[key]) {
             result[key] = {};
-            result[key].round_1 = convertRoundDataToArray(stats[key].round_1);
-            result[key].round_2 = convertRoundDataToArray(stats[key].round_2);
+            result[key].rounds = stats[key].rounds.map(round => ({
+                ...round,
+                data: convertRoundDataToArray(round.data),
+            }));
         }
     });
     return result;

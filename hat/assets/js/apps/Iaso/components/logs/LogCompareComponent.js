@@ -1,7 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-import moment from 'moment';
 
 import {
     makeStyles,
@@ -18,17 +16,12 @@ import {
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-import {
-    textPlaceholder,
-    useSafeIntl,
-    commonStyles,
-} from 'bluesquare-components';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
-import { getPolygonPositionsFromSimplifiedGeom } from '../../domains/orgUnits/utils';
 
-import PolygonMap from '../maps/PolygonMapComponent';
-import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
+
+import ValueWithErrorBoundary from './ValueWithErrorBoundary';
 
 import MESSAGES from '../../domains/forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
@@ -56,53 +49,7 @@ const useStyles = makeStyles(theme => ({
         marginRight: theme.spacing(2),
         display: 'inline-block',
     },
-    cellMap: {
-        margin: -theme.spacing(2),
-    },
 }));
-
-const renderValue = (fieldKey, value, fields, classes) => {
-    if (!value || value.toString().length === 0) return textPlaceholder;
-    try {
-        switch (fieldKey) {
-            case 'geom':
-            case 'catchment':
-            case 'simplified_geom': {
-                const polygonPositions =
-                    getPolygonPositionsFromSimplifiedGeom(value);
-                return (
-                    <div className={classes.cellMap}>
-                        <PolygonMap polygonPositions={polygonPositions} />
-                    </div>
-                );
-            }
-
-            case 'updated_at': {
-                return moment(value).format('LTS');
-            }
-
-            case 'location': {
-                if (!fields.latitude || !fields.longitude) {
-                    return value.toString();
-                }
-                return (
-                    <div className={classes.cellMap}>
-                        <MarkerMap
-                            latitude={fields.latitude}
-                            longitude={fields.longitude}
-                        />
-                    </div>
-                );
-            }
-            default:
-                return value.toString();
-        }
-    } catch (e) {
-        // eslint-disable-next-line no-console
-        console.error('Could not parse', e);
-        return value.toString();
-    }
-};
 
 const getArrayfields = objectItem =>
     Object.keys(objectItem).map(fieldKey => ({
@@ -196,9 +143,8 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                         </Tooltip>
                     </Grid>
                 </Grid>
-                {showFields.length === 0 && (
-                    <FormattedMessage {...LOG_MESSAGES.noDifference} />
-                )}
+                {showFields.length === 0 &&
+                    formatMessage(LOG_MESSAGES.noDifference)}
                 <Table className={classes.table}>
                     <TableBody>
                         {fields.map(({ fieldKey, value }) => (
@@ -215,12 +161,10 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                                             : null
                                     }
                                 >
-                                    {renderValue(
-                                        fieldKey,
-                                        value,
-                                        l.fields,
-                                        classes,
-                                    )}
+                                    <ValueWithErrorBoundary
+                                        fieldKey={fieldKey}
+                                        value={value}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -235,41 +179,29 @@ const LogCompareComponent = ({ log, compareLog, goToRevision, title }) => {
                 >
                     <Grid xs={6} item>
                         <ConfirmDialog
-                            btnMessage={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevision}
-                                />
-                            }
-                            question={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionQuestion}
-                                />
-                            }
-                            message={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionText}
-                                />
-                            }
+                            btnMessage={formatMessage(
+                                LOG_MESSAGES.goToRevision,
+                            )}
+                            question={formatMessage(
+                                LOG_MESSAGES.goToRevisionQuestion,
+                            )}
+                            message={formatMessage(
+                                LOG_MESSAGES.goToRevisionText,
+                            )}
                             confirm={() => goToRevision(l)}
                         />
                     </Grid>
                     <Grid xs={6} item>
                         <ConfirmDialog
-                            btnMessage={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionChanges}
-                                />
-                            }
-                            question={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionQuestion}
-                                />
-                            }
-                            message={
-                                <FormattedMessage
-                                    {...LOG_MESSAGES.goToRevisionTextChanges}
-                                />
-                            }
+                            btnMessage={formatMessage(
+                                LOG_MESSAGES.goToRevisionChanges,
+                            )}
+                            question={formatMessage(
+                                LOG_MESSAGES.goToRevisionQuestion,
+                            )}
+                            message={formatMessage(
+                                LOG_MESSAGES.goToRevisionTextChanges,
+                            )}
                             confirm={() =>
                                 goToRevision({
                                     fields: differenceArray[i],

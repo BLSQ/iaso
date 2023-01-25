@@ -1,17 +1,25 @@
 import typing
-from django.test import tag
 
 from iaso.test import APITestCase
 from iaso import models as m
 
 
 class AppsAPITestCase(APITestCase):
+    yoda: m.User
+    project_1: m.Project
+    project_2: m.Project
+    flag_1: m.FeatureFlag
+    flag_2: m.FeatureFlag
+    flag_3: m.FeatureFlag
+
     @classmethod
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")
         cls.yoda = cls.create_user_with_profile(username="yoda", account=account, permissions=["iaso_forms"])
         cls.project_1 = m.Project.objects.create(name="Project 1", account=account, app_id="org.ghi.p1")
-        cls.project_2 = m.Project.objects.create(name="Project 2", account=account, app_id="org.ghi.p2")
+        cls.project_2 = m.Project.objects.create(
+            name="Project 2", account=account, app_id="org.ghi.p2", min_version=1234
+        )
         cls.flag_1 = m.FeatureFlag.objects.create(
             code="send_location", name="Send GPS location", description="Send GPS location every time etc"
         )
@@ -107,7 +115,7 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertEqual(1, len(response_data["feature_flags"]))
 
-    def test_app_create_ok_with_auth(self):
+    def test_app_create_ok_with_auth_2(self):
         candidated_app = {
             "name": "This is a new app",
             "app_id": "com.this.is.new.app",
@@ -198,7 +206,7 @@ class AppsAPITestCase(APITestCase):
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidated_app, format="json")
         self.assertJSONResponse(response, 200)
 
-    def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self):
+    def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self) -> None:
         candidated_app = {
             "name": "This is a new app",
             "app_id": "com.this.is.new.app",
@@ -212,10 +220,11 @@ class AppsAPITestCase(APITestCase):
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
         self.assertEqual(True, response_data["needs_authentication"])
 
-    def assertValidAppData(self, app_data: typing.Mapping):
+    def assertValidAppData(self, app_data: typing.Mapping) -> None:
         self.assertHasField(app_data, "id", str)
         self.assertHasField(app_data, "name", str)
         self.assertHasField(app_data, "feature_flags", list)
+        self.assertHasField(app_data, "min_version", int, optional=True)
         self.assertHasField(app_data, "needs_authentication", bool)
         self.assertHasField(app_data, "created_at", float)
         self.assertHasField(app_data, "updated_at", float)

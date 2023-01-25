@@ -12,7 +12,7 @@ import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
-import InstancePopover from './InstancePopoverComponent';
+import InstancePopover from './InstancePopoverComponent.tsx';
 
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
@@ -101,19 +101,22 @@ class InstancesFilesList extends Component {
     }
 
     openLightbox(index) {
+        const { onLightBoxToggled } = this.props;
         this.setCurrentIndex(index, 'images');
         this.setState({
             viewerIsOpen: true,
         });
+        onLightBoxToggled(true);
     }
 
     closeLightbox() {
-        const { fetchDetails, instanceDetail } = this.props;
+        const { fetchDetails, instanceDetail, onLightBoxToggled } = this.props;
         this.setCurrentIndex(-1, 'images');
         this.setState({
             viewerIsOpen: false,
             instanceDetail: fetchDetails ? null : instanceDetail,
         });
+        onLightBoxToggled(false);
     }
 
     render() {
@@ -226,6 +229,7 @@ InstancesFilesList.defaultProps = {
     fetching: false,
     instanceDetail: null,
     files: [],
+    onLightBoxToggled: () => null,
 };
 
 InstancesFilesList.propTypes = {
@@ -236,6 +240,7 @@ InstancesFilesList.propTypes = {
     dispatch: PropTypes.func.isRequired,
     fetchDetails: PropTypes.bool,
     instanceDetail: PropTypes.object,
+    onLightBoxToggled: PropTypes.func,
 };
 
 const MapStateToProps = () => ({});

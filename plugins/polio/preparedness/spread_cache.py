@@ -1,5 +1,6 @@
-import gspread
-import gspread.utils
+import gspread  # type: ignore
+import gspread.utils  # type: ignore
+import gspread.utils  # type: ignore
 
 
 class CachedSpread:
@@ -14,6 +15,10 @@ class CachedSpread:
         dict_spread["properties"] = spread._properties
         dict_spread["sheets"] = sheets = []
         for sheet in spread.worksheets():
+            # Google sheet has some kind of special "chart" as a sheet
+            # which will fail import. their sheetType is "OBJECT"
+            if sheet._properties["sheetType"] != "GRID":
+                continue
             dict_sheet = {
                 "title": sheet.title,
                 "id": sheet.id,
@@ -22,6 +27,7 @@ class CachedSpread:
                     value_render_option=gspread.utils.ValueRenderOption.unformatted,
                     date_time_render_option="SERIAL_NUMBER",
                 ),
+                "properties": sheet._properties,
             }
             sheets.append(dict_sheet)
         return CachedSpread(dict_spread)
@@ -39,6 +45,7 @@ class CachedSheet:
         self.c = cache_dict
         self.values = cache_dict["values"]
         self.formulas = cache_dict["formulas"]
+        self.properties = cache_dict.get("properties", {})
 
     def _cache_get(self, linenum, colnum):
         if linenum >= len(self.values):
@@ -65,6 +72,10 @@ class CachedSheet:
     @property
     def title(self):
         return self.c["title"]
+
+    @property
+    def is_hidden(self) -> bool:
+        return self.properties.get("hidden", False)
 
     def __repr__(self):
         return f'<CachedSheet title="{self.c["title"]}">'

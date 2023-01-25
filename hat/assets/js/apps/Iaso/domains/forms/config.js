@@ -11,6 +11,8 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../components/Cells/YesNoCell';
 
+export const baseUrl = baseUrls.forms;
+
 export const formVersionsTableColumns = (
     formatMessage,
     setForceRefresh,
@@ -95,7 +97,7 @@ const formsTableColumns = ({
         {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
-            style: { justifyContent: 'left' },
+            align: 'left',
         },
         {
             Header: formatMessage(MESSAGES.created_at),
@@ -134,7 +136,6 @@ const formsTableColumns = ({
             Header: formatMessage(MESSAGES.form_id),
             accessor: 'form_id',
             sortable: false,
-            style: { justifyContent: 'left' },
         },
         {
             Header: formatMessage(MESSAGES.latest_version_files),
@@ -255,4 +256,26 @@ const formsTableColumns = ({
     return cols;
 };
 
+export const requiredFields = [
+    {
+        type: 'string',
+        key: 'name',
+    },
+    {
+        type: 'array',
+        key: 'project_ids',
+    },
+    {
+        type: 'string',
+        key: 'periods_before_allowed',
+    },
+    {
+        type: 'string',
+        key: 'periods_after_allowed',
+    },
+    {
+        type: 'boolean',
+        key: 'single_per_period',
+    },
+];
 export default formsTableColumns;

@@ -413,10 +413,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.label.search',
     },
-    selectParentOrgUnit: {
-        defaultMessage: 'Select parent Org Unit',
-        id: 'iaso.label.selectParentOrgUnit',
-    },
     from: {
         id: 'iaso.label.from',
         defaultMessage: 'From',
@@ -516,6 +512,22 @@ const MESSAGES = defineMessages({
     formsHelperText: {
         id: 'iaso.orgUnits.formsHelperText',
         defaultMessage: 'Form submissions',
+    },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    forbiddenChars: {
+        id: 'iaso.label.forbiddenChars',
+        defaultMessage: 'Forbidden characters: "&", "/","?"," "" " and "%"',
+    },
+    formChangeLog: {
+        id: 'iaso.form.label.formChangeLog',
+        defaultMessage: 'Link to changes log',
     },
 });
 

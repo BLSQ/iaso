@@ -7,7 +7,7 @@ import { any } from 'lodash/fp';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
 import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
-import { makePopup } from '../../utils/LqasIm.tsx';
+import { makePopup } from './LqasImPopUp';
 import {
     determineStatusForDistrict as imDistrictStatus,
     makeImMapLegendItems,
@@ -45,6 +45,10 @@ export const LqasImMap = ({
     const { formatMessage } = useSafeIntl();
     const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
         useGetGeoJson(countryId, 'DISTRICT');
+    const {
+        data: regionShapes = defaultShapes,
+        isFetching: isFetchingRegions,
+    } = useGetGeoJson(countryId, 'REGION');
 
     const legendItems = useMemo(() => {
         if (type === 'lqas') {
@@ -66,7 +70,7 @@ export const LqasImMap = ({
         if (!selectedCampaign) return [];
         const determineStatusForDistrict =
             type === 'lqas' ? lqasDistrictStatus : imDistrictStatus;
-        const scopeIds = findScopeIds(selectedCampaign, campaigns);
+        const scopeIds = findScopeIds(selectedCampaign, campaigns, round);
         const hasScope = scopeIds.length > 0;
         const shapesInScope = hasScope
             ? shapes.filter(shape => scopeIds.includes(shape.id))
@@ -124,12 +128,12 @@ export const LqasImMap = ({
                     />
                 </MapLegendContainer>
                 {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                {(isFetching || isFetchingGeoJson) && (
+                {(isFetching || isFetchingGeoJson || isFetchingRegions) && (
                     <LoadingSpinner fixed={false} absolute />
                 )}
                 <MapComponent
                     name={`LQASIMMap${round}-${type}`}
-                    backgroundLayer={shapes}
+                    backgroundLayer={regionShapes}
                     mainLayer={mainLayer}
                     onSelectShape={() => null}
                     getMainLayerStyle={getMainLayerStyles}
@@ -156,7 +160,7 @@ export const LqasImMap = ({
 };
 
 LqasImMap.propTypes = {
-    round: oneOf(['round_1', 'round_2']).isRequired,
+    round: number.isRequired,
     campaigns: array,
     selectedCampaign: string,
     type: oneOf(['imGlobal', 'imOHH', 'imIHH', 'lqas']).isRequired,

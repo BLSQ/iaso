@@ -179,7 +179,7 @@ class Exporter:
                         + ", ".join(list(map(lambda x: x["id"], dhis2_payloads)))
                     )
                 diff = diff[0]
-                for comparison in diff.comparisons:
+                for comparison in diff.comparisons:  # type: ignore
                     if comparison.status != "same" and not comparison.field.startswith("groupset:"):
                         self.apply_comparison(dhis2_payload, comparison)
             self.iaso_logger.info(f"will post slice for {', '.join(ids)}")
@@ -205,7 +205,7 @@ class Exporter:
             pprint(report)
 
             if resp.status_code == 200 and report["status"] == "ERROR":
-                exc = dhis2.exceptions.RequestException(code=resp.status_code, url=resp.url, description=resp.text)
+                my_exc = dhis2.exceptions.RequestException(code=resp.status_code, url=resp.url, description=resp.text)
                 errors = []
                 try:
                     for type_report in report.get("typeReports", []):
@@ -214,9 +214,9 @@ class Exporter:
                                 errors.append(error_report.get("message", str(error_report)))
                 except:
                     pass
-                exc.message = format_error(f"updating Org Units {','.join(ids)}", exc, errors)
-                exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
-                raise exc
+                my_exc.message = format_error(f"updating Org Units {','.join(ids)}", my_exc, errors)
+                my_exc.extra = {"payload": json.dumps(payload, indent=4), "response": resp.text}
+                raise my_exc
 
             index = index + 1
             if task and index % 10 == 0:

@@ -1,16 +1,18 @@
 import React, { FunctionComponent } from 'react';
 
-import { Paper, Divider } from '@material-ui/core';
+import { Paper, Divider, Box } from '@material-ui/core';
 
 import { LqasImMap } from './LqasImMap';
 
 import { LqasSummary } from './LqasSummary';
 import { LqasImMapHeader, LqasImRefDate } from './LqasImMapHeader';
-import { RoundString, ConvertedLqasImData } from '../../constants/types';
+import { ConvertedLqasImData } from '../../constants/types';
 import { ImSummary } from './ImSummary';
+import { findCampaignRound } from '../../utils';
+import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type Props = {
-    round: RoundString;
+    round: number;
     campaign: string;
     campaigns: Array<unknown>;
     country: string;
@@ -19,18 +21,26 @@ type Props = {
     debugData: Record<string, unknown> | null | undefined;
     paperElevation: number;
     type: 'lqas' | 'imIHH' | 'imOHH' | 'imGlobal';
+    options: DropdownOptions<number>[];
+    // eslint-disable-next-line no-unused-vars
+    onRoundChange: (value: number) => void;
 };
 
 const determineLqasImDates = (
     campaign,
-    round: RoundString,
+    round: number,
     type,
 ):
     | { start: LqasImRefDate; end: LqasImRefDate }
     | Record<string, LqasImRefDate> => {
     if (!campaign) return {};
-    const roundData =
-        round === 'round_1' ? campaign.round_one : campaign.round_two;
+    const roundData = findCampaignRound(campaign, round);
+    if (!roundData) {
+        console.warn(
+            `No data found for round ${round} in campaign ${campaign.obr_name}`,
+        );
+        return {};
+    }
     const lqasImStart =
         type === 'lqas' ? roundData.lqas_started_at : roundData.im_started_at;
     const lqasImEnd =
@@ -62,6 +72,8 @@ export const MapContainer: FunctionComponent<Props> = ({
     debugData,
     paperElevation,
     type,
+    options,
+    onRoundChange,
 }) => {
     const campaignObject = campaigns.filter(
         (c: Record<string, unknown>) => c.obr_name === campaign,
@@ -73,11 +85,15 @@ export const MapContainer: FunctionComponent<Props> = ({
     );
     return (
         <Paper elevation={paperElevation}>
-            <LqasImMapHeader
-                round={round}
-                startDate={startDate}
-                endDate={endDate}
-            />
+            <Box mb={2}>
+                <LqasImMapHeader
+                    round={round}
+                    startDate={startDate}
+                    endDate={endDate}
+                    options={options}
+                    onRoundSelect={onRoundChange}
+                />
+            </Box>
             <Divider />
             {type === 'lqas' && (
                 <LqasSummary round={round} campaign={campaign} data={data} />

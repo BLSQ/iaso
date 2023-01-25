@@ -7,11 +7,13 @@ from iaso.models import Account
 RAW = "RAW"
 TEXT = "TEXT"
 IFRAME = "IFRAME"
+POWERBI = "POWERBI"
 
 PAGES_TYPES = [
     (RAW, _("Raw html")),
     (TEXT, _("Text")),
     (IFRAME, _("Iframe")),
+    (POWERBI, _("PowerBI report")),
 ]
 
 
@@ -35,6 +37,10 @@ class Page(models.Model):
         blank=False,
         default=RAW,
     )
+
+    powerbi_group_id = models.TextField(blank=True, null=True)
+    powerbi_report_id = models.TextField(blank=True, null=True)
+    powerbi_filters = models.JSONField(blank=True, null=True)
 
     def __str__(self):
         return "%s " % (self.name,)

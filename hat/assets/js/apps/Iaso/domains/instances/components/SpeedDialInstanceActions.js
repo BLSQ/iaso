@@ -4,7 +4,8 @@ import SpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import PropTypes from 'prop-types';
 import EditIcon from '@material-ui/icons/Edit';
-import { injectIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+import classnames from 'classnames';
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
@@ -21,11 +22,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const SpeedDialInstanceActions = props => {
-    const {
-        intl: { formatMessage },
-        actions,
-        onActionSelected,
-    } = props;
+    const { onActionSelected, speedDialClasses, actions } = props;
+    const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
 
@@ -45,7 +43,7 @@ const SpeedDialInstanceActions = props => {
         <div className={classes.root}>
             <SpeedDial
                 ariaLabel="Instance actions"
-                className={classes.speedDial}
+                className={classnames(classes.speedDial, speedDialClasses)}
                 icon={<EditIcon />}
                 onClose={handleClose}
                 onOpen={handleOpen}
@@ -59,7 +57,7 @@ const SpeedDialInstanceActions = props => {
                         tooltipPlacement="bottom"
                         icon={action.icon}
                         tooltipTitle={formatMessage(MESSAGES[action.id])}
-                        disabled={action.disabled}
+                        disabled={action.disabled ?? false}
                         onClick={() => handleClick(action)}
                     />
                 ))}
@@ -69,9 +67,12 @@ const SpeedDialInstanceActions = props => {
 };
 
 SpeedDialInstanceActions.propTypes = {
-    intl: PropTypes.object.isRequired,
     actions: PropTypes.array.isRequired,
     onActionSelected: PropTypes.func.isRequired,
+    speedDialClasses: PropTypes.string,
+};
+SpeedDialInstanceActions.defaultProps = {
+    speedDialClasses: '',
 };
 
-export default injectIntl(SpeedDialInstanceActions);
+export default SpeedDialInstanceActions;

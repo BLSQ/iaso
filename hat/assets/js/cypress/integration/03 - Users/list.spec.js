@@ -65,7 +65,7 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/user__username/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/user__username/pageSize/20/page/1`,
                 );
             });
         });
@@ -87,7 +87,7 @@ describe('Users', () => {
         it('should enabled search button', () => {
             cy.wait('@getUsers').then(() => {
                 cy.get('#search-search').type(search);
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);
             });
@@ -100,7 +100,7 @@ describe('Users', () => {
         });
         it('should be disabled', () => {
             cy.wait('@getUsers').then(() => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', 'disabled');
             });
@@ -108,7 +108,7 @@ describe('Users', () => {
         it('should be enabled while searching', () => {
             cy.get('#search-search').type(search);
             cy.wait('@getUsers').then(() => {
-                cy.get('#search-button')
+                cy.get('[data-test="search-button"]')
                     .invoke('attr', 'disabled')
                     .should('equal', undefined);
             });
@@ -117,8 +117,8 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 cy.get('#search-search').type(search);
 
-                cy.get('#search-button').click();
-                cy.url().should('contain', `${baseUrl}/search/${search}`);
+                cy.get('[data-test="search-button"]').click();
+                cy.url().should('contain', `/search/${search}`);
             });
         });
     });
@@ -284,7 +284,7 @@ describe('Users', () => {
                 },
             ).as('getUsersSearch');
             cy.get('#search-search').type(search);
-            cy.get('#search-button').click();
+            cy.get('[data-test="search-button"]').click();
             cy.wait('@getUsersSearch').then(() => {
                 cy.wrap(interceptFlag).should('eq', true);
             });

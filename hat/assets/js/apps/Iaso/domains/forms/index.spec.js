@@ -40,7 +40,7 @@ const requests = [
 const requestsForArchivedForms = [
     ...baseRequests,
     {
-        url: '/api/forms/?&all=true&only_deleted=1&limit=10&page=1&order=-created_at',
+        url: '/api/forms/?&all=true&showDeleted=true&limit=10&page=1&order=-created_at',
         body: {
             forms: [],
             pages: 0,
@@ -53,15 +53,17 @@ const requestForDeletedForms = [
     {
         url: '/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true',
         body: {
-            forms : [],
+            forms: [],
             pages: 0,
-        }
-    }
-]
+        },
+    },
+];
 
 const userWithFormPermission = {
     users: {
         current: {
+            id: 1,
+            account: { name: '' },
             permissions: ['iaso_forms'],
         },
     },

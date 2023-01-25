@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 class ImportGpkgSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImportGPKG
-        fields = ["id", "file", "project", "data_source", "version_number", "created_at", "updated_at"]
+        fields = ["id", "file", "project", "data_source", "version_number", "description", "created_at", "updated_at"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
     def validate_project(self, project):
@@ -45,7 +45,7 @@ class ImportGpkgSerializer(serializers.ModelSerializer):
 
 # noinspection PyMethodMayBeStatic
 class ImportGPKGViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
     serializer_class = ImportGpkgSerializer
 
     def create(self, request):

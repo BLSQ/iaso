@@ -1,14 +1,20 @@
+from typing import Union, List
+
 from django.conf.urls import url
-from django.urls import path, include
+from django.urls import path, include, URLPattern, URLResolver
 from django.contrib import auth
 from rest_framework import routers
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.authentication import WfpLogin, wfp_callback
+from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.comment import CommentViewSet
+from .api.completeness_stats import CompletenessStatsViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
+from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
+from .api.mobile.reports import MobileReportsViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
@@ -22,6 +28,7 @@ from .api.data_sources import DataSourceViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from .api.reports import ReportsViewSet
 from .api.setup_account import SetupAccountViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
@@ -34,6 +41,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
+from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
 
 from .api.tasks import TaskSourceViewSet
 from .api.accounts import AccountViewSet
@@ -55,11 +63,20 @@ from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
 from .api.permissions import PermissionsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.check_version import CheckVersionViewSet
 from iaso import matching
 import pkgutil
 
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
-from .dhis2.authentication import dhis2_callback
+from .dhis2.authentication import dhis2_callback  # type: ignore
+from hat.api.token_authentication import token_auth
+
+from .api.workflows.versions import WorkflowVersionViewSet
+from .api.workflows.followups import WorkflowFollowupViewSet
+from .api.workflows.mobile import MobileWorkflowViewSet
+
+URL = Union[URLPattern, URLResolver]
+URLList = List[URL]
 
 router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
@@ -86,6 +103,7 @@ router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
+router.register(r"completeness_stats", CompletenessStatsViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
 router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
@@ -93,6 +111,7 @@ router.register(r"permissions", PermissionsViewSet, basename="permissions")
 router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances")
 router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
+router.register(r"mobile/checkversion", CheckVersionViewSet, basename="checkversion")
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
@@ -102,10 +121,27 @@ router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
+# At the moment we use the same view set but separate it for the future for when we want to be able to
+# change the format in the future
+router.register(r"mobile/entitytype", EntityTypeViewSet, basename="entitytype")
+router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
+router.register(r"microplanning/teams", TeamViewSet, basename="teams")
+router.register(r"microplanning/planning", PlanningViewSet, basename="planning")
+router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
+router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
+router.register(r"storage", StorageViewSet, basename="storage")
+router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
+router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
+
+router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
+router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")
+router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
+router.register(r"reports", ReportsViewSet, basename="report")
+router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 
 router.registry.extend(plugins_router.registry)
 
-urlpatterns = [
+urlpatterns: URLList = [
     path(
         "fill/<form_uuid>/<org_unit_id>/<period>",
         view=enketo_public_launch,
@@ -141,6 +177,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 urlpatterns = urlpatterns + [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
+    path("storage/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
     path("", include(router.urls)),
 ]
 # External Auth
@@ -149,6 +186,7 @@ urlpatterns = urlpatterns + [
     path("", include("allauth.urls")),
     path("auth0/login/", WfpLogin.as_view(), name="openid"),
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
+    path("token_auth/", token_auth),
 ]
 
 

@@ -61,6 +61,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    deleteError: {
+        id: 'iaso.snackBar.deleteGroupError',
+        defaultMessage: 'An error occurred while deleting group',
+    },
+    deleteSuccess: {
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
+    },
 });
 
 export default MESSAGES;

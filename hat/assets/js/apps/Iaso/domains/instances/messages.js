@@ -61,6 +61,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.viewOrgUnit',
         defaultMessage: 'View Org Unit',
     },
+    linkOrgUnitReferenceSubmission: {
+        id: 'iaso.label.linkOrgUnitReferenceSubmission',
+        defaultMessage: 'Link reference submission to org unit',
+    },
+    linkOffOrgUnitReferenceSubmission: {
+        id: 'iaso.label.linkOffOrgUnitReferenceSubmission',
+        defaultMessage: 'Unlink reference submission from orgUnit',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',
@@ -112,6 +120,10 @@ const MESSAGES = defineMessages({
     updated_at: {
         id: 'iaso.instance.updated_at',
         defaultMessage: 'Updated',
+    },
+    last_modified_by: {
+        id: 'iaso.instance.last_modified_by',
+        defaultMessage: 'Modified By',
     },
     files: {
         id: 'iaso.instance.files',
@@ -165,6 +177,10 @@ const MESSAGES = defineMessages({
     infos: {
         defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
+    },
+    submission: {
+        defaultMessage: 'Submission',
+        id: 'iaso.instance.titleSingle',
     },
     form: {
         defaultMessage: 'Form',
@@ -362,7 +378,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Device ownership',
     },
     showDeleted: {
-        id: 'iaso.forms.showDeleted',
+        id: 'iaso.instances.showDeleted',
         defaultMessage: 'Show deleted',
     },
     org_unit_type_id: {
@@ -385,6 +401,134 @@ const MESSAGES = defineMessages({
         id: 'iaso.restricted_submissions_by_orgunits',
         defaultMessage:
             'Your user can only see submissions for the following orgunits: ',
+    },
+    linkOrgUnitToInstanceReferenceWarning: {
+        id: 'iaso.instance.linkOrgUnitToInstanceReferenceWarning',
+        defaultMessage: 'This operation can still be undone',
+    },
+    linkOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to link this submission to the orgUnit as a reference one ?',
+    },
+    linkOffOrgUnitToInstanceReferenceTitle: {
+        id: 'iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle',
+        defaultMessage:
+            'Are you sure you want to unlink this reference submission from the orgUnit ?',
+    },
+    lockActionTooltip: {
+        id: 'iaso.instance.lockActionTooltip',
+        defaultMessage: 'Lock the instance',
+    },
+    lockAction: {
+        id: 'iaso.instance.lockAction',
+        defaultMessage: 'Lock the instance?',
+    },
+    removeLockAction: {
+        id: 'iaso.instance.removeLockAction',
+        defaultMessage: 'Open this lock',
+    },
+    lockedCanModify: {
+        id: 'iaso.instance.dialog.lockedCanModify',
+        defaultMessage:
+            'Instance modification is locked for some users however you have the right to modify still modify it',
+    },
+    lockedCannotModify: {
+        id: 'iaso.instance.dialog.lockedCannotModify',
+        defaultMessage:
+            'There is a lock on the instance and you cannot modify it',
+    },
+    lockSuccess: {
+        id: 'iaso.instance.dialog.lockSuccess',
+        defaultMessage: 'Lock added on the instance',
+    },
+    lockOpened: {
+        id: 'iaso.instance.dialog.lockOpened',
+        defaultMessage: 'This lock has been opened',
+    },
+    lockActionDescription: {
+        id: 'iaso.instance.dialog.lockActionDescription',
+        defaultMessage:
+            'This will preventing modification on the instance by any user having lower access than you.',
+    },
+    lockActionExistingLockDescription: {
+        id: 'iaso.instance.dialog.lockActionExistingLockDescription',
+        defaultMessage:
+            'This submission is already locked by one or mocked locks, locking again will add a supplementary lock.' +
+            ' Use the unlock action in the lock table on the bottom right to remove the lock on the submission',
+    },
+    patchInstanceSuccesfull: {
+        id: 'iaso.instance.patchInstanceSuccesfull',
+        defaultMessage: 'Submission saved successfully',
+    },
+    patchInstanceError: {
+        id: 'iaso.instance.patchInstanceError',
+        defaultMessage: 'An error occurred while saving submission',
+    },
+    instanceLocks: {
+        id: 'iaso.label.instanceLocks',
+        defaultMessage: 'Instance locks',
+    },
+    lockAuthorLabel: {
+        id: 'iaso.instance.lockAuthorLabel',
+        defaultMessage: 'Author',
+    },
+    lockTopOrgUnitLabel: {
+        id: 'iaso.instance.lockTopOrgUnitLabel',
+        defaultMessage: 'High level org unit',
+    },
+    lockStatusLabel: {
+        id: 'iaso.instance.lockStatusLabel',
+        defaultMessage: 'Status',
+    },
+    lockedTitle: {
+        id: 'iaso.instance.lockedTitle',
+        defaultMessage: 'Locked',
+    },
+    unlockedTitle: {
+        id: 'iaso.instance.unlockedTitle',
+        defaultMessage: 'Unlocked',
+    },
+    NoLocksHistory: {
+        defaultMessage: 'There is no locks History',
+        id: 'iaso.instance.NoLocksHistory',
+    },
+    history: {
+        id: 'iaso.label.history',
+        defaultMessage: 'History',
+    },
+    onlyOneExistingVersion: {
+        id: 'iaso.label.onlyOneExisitingVersion',
+        defaultMessagbe: 'Only one existing version',
+    },
+    seeAllVersions: {
+        id: 'iaso.label.seeAllVersions',
+        defaultMessage: 'See all versions',
+    },
+    editLocationWithInstanceGps: {
+        id: 'iaso.instances.editLocationWithInstanceGps',
+        defaultMessage: 'Push GPS from submission',
+    },
+    editGpsFromInstanceTitle: {
+        id: 'iaso.instance.dialog.editGpsFromInstanceTitle',
+        defaultMessage:
+            'Are you sure you want to apply GPS from submission into org unit. ?',
+    },
+    confirmApplyFormGpsToOrgUnit: {
+        id: 'iaso.label.confirmApplyFormGpsToOrgUnit',
+        defaultMessage: 'Apply directly gps from form to org unit',
+    },
+    editGpsFromInstanceWarning: {
+        id: 'iaso.instance.editGpsFromInstanceWarning',
+        defaultMessage: 'This operation can still be undone',
+    },
+    queryBuilder: {
+        id: 'iaso.instance.queryBuilder',
+        defaultMessage: 'Search in submitted fields',
+    },
+    initialPeriodError: {
+        id: 'iaso.instance.initialPeriodError',
+        defaultMessage: 'Current period on submission is invalid: {period}',
     },
 });
 

@@ -7,7 +7,7 @@ import {
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
-import getDisplayName from '../../utils/usersUtils';
+import getDisplayName from '../../utils/usersUtils.ts';
 import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
 import {
@@ -172,3 +172,5 @@ export const orgUnitsLogsColumns = formatMessage => [
         Expander,
     },
 ];
+
+export const staleTime = 60000;

@@ -1,4 +1,4 @@
-import { useSnackQuery } from '../../../../libs/apiHooks';
+import { useSnackQuery } from '../../../../libs/apiHooks.ts';
 import { getRequest } from '../../../../libs/Api';
 import { dispatch } from '../../../../redux/store';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
@@ -26,7 +26,6 @@ export const getChildrenData = id => {
                 'Error while fetching Treeview item children:',
                 error,
             );
-            throw error;
         });
 };
 
@@ -56,14 +55,12 @@ export const getRootData = (id, type = 'source') => {
                 enqueueSnackbar(errorSnackBar('getRootDataError', null, error)),
             );
             console.error('Error while fetching Treeview items:', error);
-            throw error;
         });
 };
 
-
 const endpoint = '/api/orgunits/';
 const search = (input1, input2, type) => {
-    switch(type){
+    switch (type) {
         case 'source':
             return `searches=[{"validation_status":"all","search":"${input1}","source":${input2}}]`;
         case 'version':
@@ -71,25 +68,34 @@ const search = (input1, input2, type) => {
         default:
             return `searches=[{"validation_status":"all","search":"${input1}","defaultVersion":"true"}]`;
     }
-}
-const sortingAndPaging = resultsCount => `order=name&page=1&limit=${resultsCount}&smallSearch=true`;
+};
+const sortingAndPaging = resultsCount =>
+    `order=name&page=1&limit=${resultsCount}&smallSearch=true`;
 
-const makeSearchUrl = ({value,count,source,version}) => {
+const makeSearchUrl = ({ value, count, source, version }) => {
     if (source) {
-        return `${endpoint}?${search(value,source,'source')}&${sortingAndPaging(count)}`;
+        return `${endpoint}?${search(
+            value,
+            source,
+            'source',
+        )}&${sortingAndPaging(count)}`;
     }
     if (version) {
-        return `${endpoint}?${search(value,version,'version')}&${sortingAndPaging(count)}`;
+        return `${endpoint}?${search(
+            value,
+            version,
+            'version',
+        )}&${sortingAndPaging(count)}`;
     }
-    return`${endpoint}?${search(value)}&${sortingAndPaging(count)}`;
-}
+    return `${endpoint}?${search(value)}&${sortingAndPaging(count)}`;
+};
 
 /**
  * @param {string} searchValue
  * @param {number} resultsCount
  */
-export const searchOrgUnits = ({value, count, source, version}) => {
-   const url = makeSearchUrl({value,count,source,version});
+export const searchOrgUnits = ({ value, count, source, version }) => {
+    const url = makeSearchUrl({ value, count, source, version });
     return getRequest(url)
         .then(result => result.orgunits)
         .catch(error => {

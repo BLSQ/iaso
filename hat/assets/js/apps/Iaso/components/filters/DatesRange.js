@@ -1,10 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 
-import { FormControl, Grid, useTheme, useMediaQuery } from '@material-ui/core';
-import { injectIntl, IconButton } from 'bluesquare-components';
+import { Grid, useTheme, useMediaQuery, Box } from '@material-ui/core';
+import {
+    injectIntl,
+    IconButton,
+    FormControl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 import EventIcon from '@material-ui/icons/Event';
 import MESSAGES from './messages';
 import {
@@ -14,11 +19,6 @@ import {
 } from '../../utils/dates.ts';
 
 const useStyles = makeStyles(theme => ({
-    formControl: {
-        width: '100%',
-        marginBottom: theme.spacing(),
-        marginTop: theme.spacing(),
-    },
     clearDateButton: {
         marginRight: theme.spacing(2),
         padding: 0,
@@ -49,6 +49,13 @@ const useCurrentBreakPointSpacing = (xs, sm, md, lg) => {
 
     return 0;
 };
+/**
+ * There's a conflict of format between the way we display it in the picker (DD-MM-YYY) and the way we should send it to the server (YYY-MM-DD)
+ * The workaround is to convert the output (DD-MM-YYYY) to the YYY-MM-DD expected format when saving the form/when sending the request to the backend
+ * with `dateRangePickerToDateApi` /iaso/hat/assets/js/apps/Iaso/utils/dates.ts.
+ * Similarly, when setting the value of the `dateFrom `and `dateTo` props from url params, it should be converted using dateApiToDateRangePicker from the same file.
+ *
+ */
 
 const DatesRange = ({
     dateFrom,
@@ -61,122 +68,149 @@ const DatesRange = ({
     sm,
     md,
     lg,
+    keyDateFrom = 'dateFrom',
+    keyDateTo = 'dateTo',
+    errors,
+    blockInvalidDates,
+    marginTop,
 }) => {
     const classes = useStyles();
     const [from, setFrom] = useState(dateFrom);
     const [to, setTo] = useState(dateTo);
+
+    const handleChange = useCallback(
+        (keyValue, date) => {
+            if (blockInvalidDates) {
+                onChangeDate(
+                    keyValue,
+                    date && date.isValid()
+                        ? date.format(dateFormat)
+                        : undefined,
+                );
+            } else {
+                onChangeDate(keyValue, date?.format(dateFormat));
+            }
+        },
+        [blockInvalidDates, onChangeDate],
+    );
+    useSkipEffectOnMount(() => {
+        if (from !== dateFrom) {
+            setFrom(dateFrom);
+        }
+    }, [dateFrom]);
+    useSkipEffectOnMount(() => {
+        if (to !== dateTo) {
+            setTo(dateTo);
+        }
+    }, [dateTo]);
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <FormControl className={classes.formControl}>
-                    <KeyboardDatePicker
-                        autoOk
-                        disableToolbar
-                        variant="inline"
-                        maxDate={
-                            dateTo === '' || dateTo === null
-                                ? undefined
-                                : getUrlParamDateObject(dateTo)
-                        }
-                        InputLabelProps={{
-                            shrink: Boolean(from),
-                        }}
-                        InputProps={{
-                            'data-test': 'start-date',
-                        }}
-                        KeyboardButtonProps={{
-                            size: 'small',
-                        }}
-                        keyboardIcon={<EventIcon size="small" />}
-                        format={getLocaleDateFormat('L')}
-                        label={formatMessage(labelFrom)}
-                        helperText=""
-                        inputVariant="outlined"
-                        value={
-                            from === '' || from === null
-                                ? null
-                                : getUrlParamDateObject(from)
-                        }
-                        onChange={date => {
-                            setFrom(date);
-                            onChangeDate(
-                                'dateFrom',
-                                date && date.isValid()
-                                    ? date.format(dateFormat)
-                                    : undefined,
-                            );
-                        }}
-                    />
-                    {dateFrom && (
-                        <span className={classes.clearDateButton}>
-                            <IconButton
-                                size="small"
-                                icon="clear"
-                                tooltipMessage={MESSAGES.clear}
-                                onClick={() => {
-                                    setFrom('');
-                                    onChangeDate('dateFrom', undefined);
-                                }}
-                            />
-                        </span>
-                    )}
-                </FormControl>
+                <Box mt={marginTop}>
+                    <FormControl errors={errors[0]}>
+                        <KeyboardDatePicker
+                            autoOk
+                            disableToolbar
+                            variant="inline"
+                            maxDate={
+                                dateTo === '' || dateTo === null
+                                    ? undefined
+                                    : getUrlParamDateObject(dateTo)
+                            }
+                            InputLabelProps={{
+                                shrink: Boolean(from),
+                            }}
+                            InputProps={{
+                                'data-test': 'start-date',
+                            }}
+                            KeyboardButtonProps={{
+                                size: 'small',
+                            }}
+                            keyboardIcon={<EventIcon size="small" />}
+                            format={getLocaleDateFormat('L')}
+                            label={formatMessage(labelFrom)}
+                            helperText=""
+                            inputVariant="outlined"
+                            value={
+                                from === '' || from === null
+                                    ? null
+                                    : getUrlParamDateObject(from)
+                            }
+                            onChange={date => {
+                                setFrom(date);
+                                handleChange(keyDateFrom, date);
+                            }}
+                            error={errors[0].length > 0}
+                        />
+                        {dateFrom && (
+                            <span className={classes.clearDateButton}>
+                                <IconButton
+                                    size="small"
+                                    icon="clear"
+                                    tooltipMessage={MESSAGES.clear}
+                                    onClick={() => {
+                                        setFrom('');
+                                        onChangeDate(keyDateFrom, undefined);
+                                    }}
+                                />
+                            </span>
+                        )}
+                    </FormControl>
+                </Box>
             </Grid>
             <Grid item xs={xs} sm={sm} md={md} lg={lg}>
-                <FormControl className={classes.formControl}>
-                    <KeyboardDatePicker
-                        autoOk
-                        disableToolbar
-                        inputVariant="outlined"
-                        variant="inline"
-                        minDate={
-                            dateFrom === '' || dateFrom === null
-                                ? undefined
-                                : getUrlParamDateObject(dateFrom)
-                        }
-                        InputLabelProps={{
-                            shrink: Boolean(to),
-                        }}
-                        InputProps={{
-                            'data-test': 'end-date',
-                        }}
-                        KeyboardButtonProps={{
-                            size: 'small',
-                        }}
-                        keyboardIcon={<EventIcon size="small" />}
-                        format={getLocaleDateFormat('L')}
-                        label={formatMessage(labelTo)}
-                        helperText=""
-                        value={
-                            to === '' || to === null
-                                ? null
-                                : getUrlParamDateObject(to)
-                        }
-                        onChange={date => {
-                            setTo(date);
-                            onChangeDate(
-                                'dateTo',
-                                date && date.isValid()
-                                    ? date.format(dateFormat)
-                                    : undefined,
-                            );
-                        }}
-                    />
-                    {dateTo && (
-                        <span className={classes.clearDateButton}>
-                            <IconButton
-                                size="small"
-                                icon="clear"
-                                tooltipMessage={MESSAGES.clear}
-                                onClick={() => {
-                                    setTo('');
-                                    onChangeDate('dateTo', undefined);
-                                }}
-                            />
-                        </span>
-                    )}
-                </FormControl>
+                <Box mt={marginTop}>
+                    <FormControl errors={errors[1]}>
+                        <KeyboardDatePicker
+                            autoOk
+                            disableToolbar
+                            inputVariant="outlined"
+                            variant="inline"
+                            minDate={
+                                dateFrom === '' || dateFrom === null
+                                    ? undefined
+                                    : getUrlParamDateObject(dateFrom)
+                            }
+                            InputLabelProps={{
+                                shrink: Boolean(to),
+                            }}
+                            InputProps={{
+                                'data-test': 'end-date',
+                            }}
+                            KeyboardButtonProps={{
+                                size: 'small',
+                            }}
+                            keyboardIcon={<EventIcon size="small" />}
+                            format={getLocaleDateFormat('L')}
+                            label={formatMessage(labelTo)}
+                            helperText=""
+                            value={
+                                to === '' || to === null
+                                    ? null
+                                    : getUrlParamDateObject(to)
+                            }
+                            onChange={date => {
+                                setTo(date);
+                                handleChange(keyDateTo, date);
+                            }}
+                            error={errors[1].length > 0}
+                        />
+                        {dateTo && (
+                            <span className={classes.clearDateButton}>
+                                <IconButton
+                                    size="small"
+                                    icon="clear"
+                                    tooltipMessage={MESSAGES.clear}
+                                    onClick={() => {
+                                        setTo('');
+                                        onChangeDate(keyDateTo, undefined);
+                                    }}
+                                />
+                            </span>
+                        )}
+                    </FormControl>
+                </Box>
             </Grid>
         </Grid>
     );
@@ -192,6 +226,11 @@ DatesRange.defaultProps = {
     sm: 6,
     md: 6,
     lg: 6,
+    keyDateFrom: 'dateFrom',
+    keyDateTo: 'dateTo',
+    errors: [[], []],
+    blockInvalidDates: true,
+    marginTop: 2,
 };
 
 DatesRange.propTypes = {
@@ -205,6 +244,11 @@ DatesRange.propTypes = {
     sm: PropTypes.number,
     md: PropTypes.number,
     lg: PropTypes.number,
+    keyDateFrom: PropTypes.string,
+    keyDateTo: PropTypes.string,
+    errors: PropTypes.array,
+    blockInvalidDates: PropTypes.bool,
+    marginTop: PropTypes.number,
 };
 
 const DatesRangeIntl = injectIntl(DatesRange);

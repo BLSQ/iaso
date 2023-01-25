@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-08-10 12:56+0000\n"
+"POT-Creation-Date: 2022-10-24 15:30+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Olivier Le Thanh Duong <olivier@lethanh.be>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,20 +17,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: hat/templates/iaso/base.html:8 plugins/polio/templates/polio/base.html:13
-msgid "Iaso Dashboard"
-msgstr "Dashboard Iaso"
-
-#: hat/templates/iaso/base.html:34 plugins/polio/templates/polio/base.html:24
-msgid "Welcome to the IASO Dashboard"
-msgstr "Bienvenue dans Iaso"
-
-#: hat/templates/iaso/forgot_password.html:10
-#: hat/templates/iaso/reset_password_confirmation.html:10
+#: hat/templates/iaso/forgot_password.html:9
+#: hat/templates/iaso/reset_password_confirmation.html:9
 msgid "Submit"
 msgstr "Envoyer"
 
-#: hat/templates/iaso/forgot_password.html:11
+#: hat/templates/iaso/forgot_password.html:10
 #: hat/templates/iaso/forgot_password_confirmation.html:10
 msgid "Go back to login"
 msgstr "Retour a la connection"
@@ -51,12 +43,7 @@ msgstr ""
 "Si vous ne recevez pas de courriel, verifiez que vous avez bien entrez votre "
 "addresse d'enregistrement et verifiez votre dossier spam."
 
-#: hat/templates/iaso/login.html:9
-msgid ""
-"An offspring of the <a href=\"https://www.trypelim.org\">Trypelim</a> project"
-msgstr "Né du projet <a href=\"https://www.trypelim.org\">Trypelim</a>."
-
-#: hat/templates/iaso/login.html:16
+#: hat/templates/iaso/login.html:15
 msgid ""
 "Your account doesn't have access to this page. To proceed, please login with "
 "an account that has access.\n"
@@ -66,15 +53,15 @@ msgstr ""
 "avec un autre utilisateur.\n"
 "          "
 
-#: hat/templates/iaso/login.html:21
+#: hat/templates/iaso/login.html:20
 msgid "Please login to see this page."
 msgstr "Veuillez vous connecter pour voir cette page"
 
-#: hat/templates/iaso/login.html:27
+#: hat/templates/iaso/login.html:26
 msgid "Your username and password didn't match. Please try again."
 msgstr "Nom d'utilisateur ou mot de passe incorrect."
 
-#: hat/templates/iaso/login.html:33
+#: hat/templates/iaso/login.html:32
 msgid "Login"
 msgstr "Connexion"
 
@@ -82,7 +69,7 @@ msgstr "Connexion"
 msgid "Forgot password"
 msgstr "Oublié votre mot de passe?"
 
-#: hat/templates/iaso/reset_password_complete.html:10
+#: hat/templates/iaso/reset_password_complete.html:9
 #, python-format
 msgid ""
 "\n"
@@ -101,7 +88,8 @@ msgid ""
 "\n"
 "Hello,\n"
 "\n"
-"A password reset has been request for your Iaso account \"%(username)s\",\n"
+"A password reset has been request for your account \"%(username)s\" on "
+"%(site_name)s,\n"
 "to proceed please click the link below:\n"
 "\n"
 "%(protocol)s://%(domain)s%(reset_url)s\n"
@@ -114,25 +102,40 @@ msgid ""
 "passwords will be changed.\n"
 "\n"
 "Sincerely,\n"
-"The Iaso Team.\n"
+"The %(site_name)s Team.\n"
 msgstr ""
 "\n"
 "Bonjour,\n"
 "\n"
 "Une demande de réinitialisation de mot de passe a été effectuée pour votre "
-"compte Iaso \"%(username)s\",\n"
-"pour continuer, veuillez clicker sur le lien suivant :\n"
+"compte \"%(username)s\" sur %(site_name)s,\n"
+"pour continuer, veuillez cliquer sur le lien suivant :\n"
 "\n"
 "%(protocol)s://%(domain)s%(reset_url)s\n"
 "\n"
-"Si clicker sur le lien ne fonctionne pas, veuillez copier coller l'url dans "
+"Si cliquer sur le lien ne fonctionne pas, veuillez copier coller l'url dans "
 "une fenêtre de votre navigateur à la place.\n"
 "\n"
 "Si vous n'avez pas demandé cette réinitialisation, vous pouvez ignorer ce "
 "mail, aucun mot de passe ne sera modifié\n"
 "Sincèrement,\n"
-"L'équipe Iaso.\n"
+"L'équipe %(site_name)s.\n"
 
-#: hat/templates/iaso/reset_password_subject.txt:1
-msgid "Iaso password reset"
-msgstr "Réinitialisation du mot de passe Iaso"
+#: hat/templates/iaso/reset_password_subject.txt:2
+#, python-format
+msgid "Password reset on %(site_name)s"
+msgstr "Réinitialisation du mot de passe sur %(site_name)s"
+
+#~ msgid "Iaso password reset"
+#~ msgstr "Réinitialisation du mot de passe Iaso"
+
+#~ msgid "Iaso Dashboard"
+#~ msgstr "Dashboard Iaso"
+
+#~ msgid "Welcome to the IASO Dashboard"
+#~ msgstr "Bienvenue dans Iaso"
+
+#~ msgid ""
+#~ "An offspring of the <a href=\"https://www.trypelim.org\">Trypelim</a> "
+#~ "project"
+#~ msgstr "Né du projet <a href=\"https://www.trypelim.org\">Trypelim</a>."

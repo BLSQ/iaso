@@ -1,174 +1,127 @@
-import React, { Component } from 'react';
+import React, { useState, useEffect } from 'react';
 import get from 'lodash/get';
-import isEqual from 'lodash/isEqual';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
-import { bindActionCreators } from 'redux';
 
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
 
-import {
-    saveGroup as saveGroupAction,
-    fetchGroups as fetchGroupsAction,
-    createGroup as createGroupAction,
-} from '../actions';
+const initialGroup = currentGroup => {
+    return {
+        id: { value: get(currentGroup, 'id', null), errors: [] },
+        name: { value: get(currentGroup, 'name', ''), errors: [] },
+        source_ref: {
+            value: get(currentGroup, 'source_ref', ''),
+            errors: [],
+        },
+    };
+};
 
-class GroupDialogComponent extends Component {
-    constructor(props) {
-        super(props);
+const GroupDialog = ({
+    titleMessage,
+    initialData,
+    renderTrigger,
+    saveGroup,
+}) => {
+    const [group, setGroup] = useState(initialGroup(null));
 
-        this.state = this.initialState();
-    }
-
-    componentDidUpdate(prevProps) {
-        if (!isEqual(prevProps.initialData, this.props.initialData)) {
-            this.setInitialState();
-        }
-    }
-
-    onConfirm(closeDialog) {
-        const { params, fetchGroups, saveGroup, createGroup, initialData } =
-            this.props;
-        const currentGroup = {};
-        Object.keys(this.state).forEach(key => {
-            currentGroup[key] = this.state[key].value;
+    const setFieldValue = (fieldName, fieldValue) => {
+        setGroup({
+            ...group,
+            [fieldName]: {
+                value: fieldValue,
+                errors: [],
+            },
         });
+    };
 
-        let saveGroupTemp;
+    const setFieldErrors = (fieldName, fieldError) => {
+        setGroup({
+            ...group,
+            [fieldName]: {
+                value: group[fieldName].value,
+                errors: [fieldError],
+            },
+        });
+    };
 
-        if (initialData) {
-            saveGroupTemp = saveGroup(currentGroup);
-        } else {
-            saveGroupTemp = createGroup(currentGroup);
-        }
-        saveGroupTemp
-            .then(newGroup => {
+    const onConfirm = closeDialog => {
+        const currentGroup = {
+            id: initialData?.id,
+            name: group.name.value,
+            source_ref: group.source_ref.value,
+        };
+        saveGroup(currentGroup)
+            .then(() => {
                 closeDialog();
-                this.setState(this.initialState(newGroup));
-                fetchGroups(params);
+                setGroup(initialGroup(null));
             })
             .catch(error => {
                 if (error.status === 400) {
-                    Object.entries(error.details).forEach(
-                        ([errorKey, errorMessages]) => {
-                            this.setFieldErrors(errorKey, errorMessages);
-                        },
-                    );
+                    Object.keys(error.details).forEach(errorKey => {
+                        setFieldErrors(errorKey, error.details[errorKey]);
+                    });
                 }
             });
-    }
+    };
 
-    setFieldValue(fieldName, fieldValue) {
-        this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
-    }
+    useEffect(() => {
+        setGroup(initialGroup(initialData));
+    }, [initialData]);
 
-    setFieldErrors(fieldName, fieldErrors) {
-        this.setState({
-            [fieldName]: {
-                value: this.state[fieldName].value,
-                errors: fieldErrors,
-            },
-        });
-    }
+    const allowConfirm = group && group.name && group.name.value !== '';
 
-    setInitialState() {
-        this.setState(this.initialState());
-    }
+    const onClosed = () => {
+        setGroup(initialGroup(initialData));
+    };
 
-    initialState(group) {
-        let initialData = this.props.initialData ? this.props.initialData : {};
-        if (group) {
-            initialData = group;
-        }
-        return {
-            id: { value: get(initialData, 'id', null), errors: [] },
-            name: { value: get(initialData, 'name', ''), errors: [] },
-            source_ref: {
-                value: get(initialData, 'source_ref', ''),
-                errors: [],
-            },
-        };
-    }
-
-    render() {
-        const { titleMessage, renderTrigger } = this.props;
-
-        return (
-            <ConfirmCancelDialogComponent
-                id="groups-dialog"
-                titleMessage={titleMessage}
-                onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                cancelMessage={MESSAGES.cancel}
-                confirmMessage={MESSAGES.save}
-                onClosed={() => this.setState(this.initialState())}
-                renderTrigger={renderTrigger}
-                maxWidth="sm"
-            >
-                <Grid container spacing={4} justifyContent="flex-start">
-                    <Grid xs={12} item>
-                        <InputComponent
-                            keyValue="name"
-                            onChange={(key, value) =>
-                                this.setFieldValue(key, value)
-                            }
-                            value={this.state.name.value}
-                            errors={this.state.name.errors}
-                            type="text"
-                            label={MESSAGES.name}
-                            required
-                        />
-                        <InputComponent
-                            keyValue="source_ref"
-                            onChange={(key, value) =>
-                                this.setFieldValue(key, value)
-                            }
-                            value={this.state.source_ref.value}
-                            errors={this.state.source_ref.errors}
-                            type="text"
-                            label={MESSAGES.sourceRef}
-                        />
-                    </Grid>
+    return (
+        <ConfirmCancelDialogComponent
+            allowConfirm={allowConfirm}
+            dataTestId="groups-dialog"
+            titleMessage={titleMessage}
+            onConfirm={closeDialog => onConfirm(closeDialog)}
+            cancelMessage={MESSAGES.cancel}
+            confirmMessage={MESSAGES.save}
+            onClosed={() => onClosed()}
+            renderTrigger={renderTrigger}
+            maxWidth="sm"
+        >
+            <Grid container spacing={4} justifyContent="flex-start">
+                <Grid xs={12} item>
+                    <InputComponent
+                        keyValue="name"
+                        onChange={(key, value) => setFieldValue(key, value)}
+                        value={group.name.value}
+                        errors={group.name.errors}
+                        type="text"
+                        label={MESSAGES.name}
+                        required
+                    />
+                    <InputComponent
+                        keyValue="source_ref"
+                        onChange={(key, value) => setFieldValue(key, value)}
+                        value={group.source_ref.value}
+                        errors={group.source_ref.errors}
+                        type="text"
+                        label={MESSAGES.sourceRef}
+                    />
                 </Grid>
-            </ConfirmCancelDialogComponent>
-        );
-    }
-}
+            </Grid>
+        </ConfirmCancelDialogComponent>
+    );
+};
 
-GroupDialogComponent.defaultProps = {
+GroupDialog.defaultProps = {
     initialData: null,
 };
 
-GroupDialogComponent.propTypes = {
+GroupDialog.propTypes = {
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
-    fetchGroups: PropTypes.func.isRequired,
     saveGroup: PropTypes.func.isRequired,
-    createGroup: PropTypes.func.isRequired,
-    params: PropTypes.object.isRequired,
 };
-
-const MapStateToProps = state => ({
-    count: state.groups.count,
-    pages: state.groups.pages,
-    fetching: state.groups.fetching,
-});
-
-const mapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            fetchGroups: fetchGroupsAction,
-            saveGroup: saveGroupAction,
-            createGroup: createGroupAction,
-        },
-        dispatch,
-    ),
-});
-export default connect(
-    MapStateToProps,
-    mapDispatchToProps,
-)(GroupDialogComponent);
+export default GroupDialog;

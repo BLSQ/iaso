@@ -17,6 +17,7 @@ import { useSnackMutation } from '../../../libs/apiHooks';
 const initialFormState = () => ({
     file: null,
     project: null,
+    versionDescription: '',
 });
 
 const ImportGeoPkgDialog = ({
@@ -32,7 +33,11 @@ const ImportGeoPkgDialog = ({
     );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const mutation = useSnackMutation(postGeoPkg);
+    const mutation = useSnackMutation(
+        postGeoPkg,
+        MESSAGES.importGpkgSuccess,
+        MESSAGES.importGpkgError,
+    );
     const reset = () => {
         setFormState(initialFormState());
     };
@@ -46,6 +51,7 @@ const ImportGeoPkgDialog = ({
                 versionNumber !== null && versionNumber !== undefined
                     ? versionNumber.toString()
                     : '',
+            description: form.versionDescription.value || '',
         };
         await mutation.mutateAsync(body);
         closeDialogCallBack();
@@ -132,6 +138,19 @@ const ImportGeoPkgDialog = ({
                         required
                         onChange={setFormField}
                     />
+                    {!versionNumber && (
+                        <InputComponent
+                            type="text"
+                            keyValue="versionDescription"
+                            labelString={formatMessage(
+                                MESSAGES.dataSourceDescription,
+                            )}
+                            value={form.versionDescription.value}
+                            onChange={(field, value) => {
+                                setFormField(field, value);
+                            }}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

@@ -2,7 +2,7 @@ import React from 'react';
 import { getParamsKey } from 'bluesquare-components';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
-import getDisplayName from '../utils/usersUtils';
+import getDisplayName from '../utils/usersUtils.ts';
 import { usePrettyPeriod } from '../domains/periods/utils';
 import { orgUnitLabelString } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
@@ -16,11 +16,10 @@ export const containsForbiddenCharacter = value => {
     return false;
 };
 
-export const search = (urlKey = 'search', withMarginTop = true) => ({
+export const search = (urlKey = 'search') => ({
     urlKey,
     label: MESSAGES.textSearch,
     type: 'search',
-    withMarginTop,
 });
 
 // CAUTION: value ALL has to be converted to empty string before being sent to API
@@ -112,23 +111,25 @@ export const orgUnitLevel = (
     value,
 });
 
-export const orgUnitType = (
-    orgunitTypesList,
+export const orgUnitType = ({
+    orgUnitTypes,
     urlKey = 'orgUnitTypeId',
     labelString = '',
     label = MESSAGES.org_unit_type_id,
-) => ({
-    urlKey,
-    isMultiSelect: true,
-    isClearable: true,
-    options: orgunitTypesList.map(t => ({
-        label: t.name,
-        value: t.id,
-    })),
-    label: labelString !== '' ? null : label,
-    type: 'select',
-    labelString,
-});
+}) => {
+    return {
+        urlKey,
+        isMultiSelect: true,
+        isClearable: true,
+        options: orgUnitTypes.map(t => ({
+            label: t.name,
+            value: t.id,
+        })),
+        label: labelString !== '' ? null : label,
+        type: 'select',
+        labelString,
+    };
+};
 
 const renderColoredOption = item => (
     <div>
@@ -431,7 +432,10 @@ export const orgUnitFilters = (
             column: 1,
         },
         {
-            ...orgUnitType(orgUnitTypes),
+            ...orgUnitType({
+                orgUnitTypes,
+                labelString: formatMessage(MESSAGES.orgUnitsTypes),
+            }),
             column: 1,
         },
         {
@@ -648,7 +652,10 @@ export const linksFilters = props => {
             column: 1,
         },
         {
-            ...orgUnitType(orgUnitTypes),
+            ...orgUnitType({
+                orgUnitTypes,
+                labelString: formatMessage(MESSAGES.org_unit_type_id),
+            }),
             loading: fetchingOrgUnitTypes,
             column: 1,
         },
@@ -703,7 +710,7 @@ export const linksFilters = props => {
                 'destination',
                 formatMessage(MESSAGES.sourcedestination),
             ),
-            column: 3,
+            column: 4,
         },
         {
             ...version(
@@ -718,7 +725,7 @@ export const linksFilters = props => {
                 'destinationVersion',
                 formatMessage(MESSAGES.sourcedestinationversion),
             ),
-            column: 3,
+            column: 4,
         },
     ];
     return filters;

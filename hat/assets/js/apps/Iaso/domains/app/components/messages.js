@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View user manual',
         id: 'iaso.tooltip.viewUserManual',
     },
+    iasoVersion: {
+        defautMessage: 'App version',
+        id: 'iaso.label.iasoVersion',
+    },
 });
 
 export default MESSAGES;

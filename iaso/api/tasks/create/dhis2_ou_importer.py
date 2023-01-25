@@ -2,7 +2,7 @@ from rest_framework.response import Response
 
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from iaso.api.tasks import TaskSerializer
-from iaso.models import DataSource
+from iaso.models import DataSource, SourceVersion
 from rest_framework import viewsets, permissions, serializers
 from iaso.api.common import HasPermission
 import logging
@@ -19,6 +19,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
     force = serializers.BooleanField(required=False, default=False)
     validate_status = serializers.BooleanField(required=False, default=False)
     continue_on_error = serializers.BooleanField(required=False, default=False)
+    description = serializers.CharField(max_length=200, required=False, allow_null=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -47,7 +48,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
     serializer_class = Dhis2OuImporterSerializer
 
     def create(self, request):
@@ -57,6 +58,7 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
         source_version_number = data.get("source_version_number", None)
         update_mode = source_version_number is not None
 
+        # TODO: investigate: the task parameter (of dhis2_ou_importer) is not passed (which is allowed by the signature), but on the other hand the code seems to assume it's not None...
         task = dhis2_ou_importer(
             source_id=data["source_id"],
             source_version_number=source_version_number,
@@ -68,5 +70,6 @@ class Dhis2OuImporterViewSet(viewsets.ViewSet):
             password=data.get("dhis2_password", None),
             update_mode=update_mode,
             user=request.user,
+            description=data.get("description", ""),
         )
         return Response({"task": TaskSerializer(instance=task).data})

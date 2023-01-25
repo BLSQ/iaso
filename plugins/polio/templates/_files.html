@@ -1,0 +1,20 @@
+{%if attachments %}
+    <tr>
+        <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+    </tr>
+    <tr>
+        <td align="left" style="padding:0px 5px;">
+            Attachments:
+        </td>
+    </tr>
+    <tr>
+        <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+    </tr>
+    {% for attachment in attachments %}
+        <tr>
+            <td align="left" style="padding:0px 5px;">
+                {{ forloop.counter }}. <a href={{attachment.url}}>{{attachment.name}}</a>
+            </td>
+        </tr>
+    {% endfor %}
+{%endif%}

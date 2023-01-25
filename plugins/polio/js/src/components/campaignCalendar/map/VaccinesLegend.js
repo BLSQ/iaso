@@ -4,7 +4,7 @@ import { Grid, Paper, Box, Typography } from '@material-ui/core';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../constants/messages';
-import { polioVacines } from '../../../constants/virus';
+import { polioVaccines } from '../../../constants/virus.ts';
 
 const VaccinesLegend = () => {
     const classes = useStyles();
@@ -17,7 +17,7 @@ const VaccinesLegend = () => {
                 >
                     <FormattedMessage {...MESSAGES.vaccines} />
                 </Typography>
-                {polioVacines.map(vaccine => (
+                {polioVaccines.map(vaccine => (
                     <Grid container spacing={1} key={vaccine.value}>
                         <Grid item sm={6} container justifyContent="flex-start">
                             <span

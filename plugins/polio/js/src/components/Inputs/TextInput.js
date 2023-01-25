@@ -1,9 +1,27 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { TextField } from '@material-ui/core';
 import { get } from 'lodash';
 
-export const TextInput = ({ field = {}, form = {}, value, ...props } = {}) => {
+export const TextInput = ({
+    field = {},
+    form = {},
+    value,
+    touchOnFocus = true,
+    ...props
+} = {}) => {
+    const hasError =
+        form.errors &&
+        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
+
+    const handleChangeAndFocus = useCallback(
+        e => {
+            form?.setFieldTouched(field.name, true);
+            field?.onChange(e);
+        },
+        [form, field],
+    );
+
     return (
         <TextField
             InputLabelProps={{
@@ -14,9 +32,16 @@ export const TextInput = ({ field = {}, form = {}, value, ...props } = {}) => {
             size="medium"
             {...props}
             {...field}
+            onFocus={
+                touchOnFocus
+                    ? () => form.setFieldTouched(field.name, true)
+                    : () => null
+            }
+            onBlur={touchOnFocus ? field.onBlur : undefined}
+            onChange={touchOnFocus ? field.onChange : handleChangeAndFocus}
             value={field.value ?? value ?? ''}
-            error={form.errors && Boolean(get(form.errors, field.name))}
-            helperText={form.errors && get(form.errors, field.name)}
+            error={hasError}
+            helperText={hasError ? get(form.errors, field.name) : undefined}
         />
     );
 };
@@ -25,10 +50,12 @@ TextInput.defaultProps = {
     field: {},
     form: {},
     value: undefined,
+    touchOnFocus: true,
 };
 
 TextInput.propTypes = {
     field: PropTypes.object,
     form: PropTypes.object,
     value: PropTypes.any,
+    touchOnFocus: PropTypes.bool,
 };

@@ -37,7 +37,7 @@ class CommentApiTestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_setupaccount_post_no_perm(self):
-        account = m.Account.objects.create(name="test account")
+        account = m.Account.objects.create(name="test account #2")
         bad_user = self.create_user_with_profile(username="bad_user", account=account)
 
         self.client.force_authenticate(bad_user)
@@ -74,7 +74,7 @@ class CommentApiTestCase(APITestCase):
         self.assertEqual(response.status_code, 201, response.content)
         self.assertIn("id", response.json())
 
-        # Attempt to re read it
+        # Attempt to reread it
         response = self.client.get(
             "/api/comments/", data={"content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}, format="json"
         )

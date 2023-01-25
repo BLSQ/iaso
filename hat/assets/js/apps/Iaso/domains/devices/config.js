@@ -1,4 +1,3 @@
-import React from 'react';
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../components/Cells/YesNoCell';

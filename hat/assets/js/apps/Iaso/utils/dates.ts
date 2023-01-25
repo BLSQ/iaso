@@ -10,6 +10,8 @@ export const getUrlParamDateObject = (
 ): moment.Moment => {
     return moment(date, dateFormat);
 };
+// this is the date time format used in api calls
+export const apiTimeFormat = 'HH:mm';
 
 // this is the date time format used in api calls
 export const apiDateTimeFormat = 'YYYY-MM-DD HH:mm';
@@ -97,4 +99,23 @@ export const setLocale = (code: 'en' | 'fr') => {
 export const getLocaleDateFormat = longType => {
     const locale = moment.locale();
     return longDateFormats[locale][longType];
+};
+
+// Convert from Api format to format expected by DateRange picker
+export const dateApiToDateRangePicker = (dateStr?: string): string | null => {
+    if (!dateStr) {
+        return null;
+    }
+    return moment(dateStr, apiDateFormat).format(getLocaleDateFormat('L'));
+};
+
+// Convert from Api format to format expected by DateRange picker
+export const dateRangePickerToDateApi = (
+    dateStr?: string,
+    nullable = false,
+): string | undefined | null => {
+    if (!dateStr) {
+        return nullable ? null : undefined;
+    }
+    return moment(dateStr, getLocaleDateFormat('L')).format(apiDateFormat);
 };

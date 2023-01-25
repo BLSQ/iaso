@@ -6,15 +6,17 @@ import { TableCell, TableRow } from '@material-ui/core';
 
 import { useStyles } from './Styles';
 import MESSAGES from '../../constants/messages';
-import { colsCount, colSpanTitle, staticFields } from './constants';
+import { colsCount, colSpanTitle } from './constants';
+import { useStaticFields } from '../../hooks/useStaticFields';
 
 const PlaceholderRow = ({ loadingCampaigns }) => {
     const classes = useStyles();
+    const fields = useStaticFields();
     return (
         <TableRow className={classes.tableRow}>
             <TableCell
                 className={classes.noCampaign}
-                colSpan={colsCount * 7 + staticFields.length * colSpanTitle}
+                colSpan={colsCount * 7 + fields.length * colSpanTitle}
             >
                 {!loadingCampaigns && (
                     <FormattedMessage {...MESSAGES.noCampaign} />

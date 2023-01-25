@@ -7,6 +7,7 @@ import { useStyles } from './Styles';
 import { getCells } from './utils';
 import { StaticFieldsCells } from './cells/StaticFields';
 import { PlaceholderRow } from './PlaceholderRow';
+import { RoundPopperContextProvider } from './contexts/RoundPopperContext.tsx';
 
 const Body = ({
     campaigns,
@@ -14,30 +15,36 @@ const Body = ({
     firstMonday,
     lastSunday,
     loadingCampaigns,
+    isPdf,
 }) => {
     const classes = useStyles();
     return (
-        <TableBody>
-            {campaigns.length === 0 && (
-                <PlaceholderRow loadingCampaigns={loadingCampaigns} />
-            )}
-            {campaigns.map(campaign => {
-                return (
-                    <TableRow
-                        className={classes.tableRow}
-                        key={`row-${campaign.id}}`}
-                    >
-                        <StaticFieldsCells campaign={campaign} />
-                        {getCells(
-                            campaign,
-                            currentWeekIndex,
-                            firstMonday,
-                            lastSunday,
-                        )}
-                    </TableRow>
-                );
-            })}
-        </TableBody>
+        <RoundPopperContextProvider>
+            <TableBody>
+                {campaigns.length === 0 && (
+                    <PlaceholderRow loadingCampaigns={loadingCampaigns} />
+                )}
+                {campaigns.map(campaign => {
+                    return (
+                        <TableRow
+                            className={classes.tableRow}
+                            key={`row-${campaign.id}}`}
+                        >
+                            <StaticFieldsCells
+                                campaign={campaign}
+                                isPdf={isPdf}
+                            />
+                            {getCells(
+                                campaign,
+                                currentWeekIndex,
+                                firstMonday,
+                                lastSunday,
+                            )}
+                        </TableRow>
+                    );
+                })}
+            </TableBody>
+        </RoundPopperContextProvider>
     );
 };
 
@@ -47,6 +54,7 @@ Body.propTypes = {
     firstMonday: PropTypes.object.isRequired,
     lastSunday: PropTypes.object.isRequired,
     loadingCampaigns: PropTypes.bool.isRequired,
+    isPdf: PropTypes.bool.isRequired,
 };
 
 export { Body };

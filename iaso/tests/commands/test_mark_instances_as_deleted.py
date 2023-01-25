@@ -1,6 +1,5 @@
 from io import StringIO
 from django.core import management
-from django.test import tag
 
 from iaso import models as m
 from iaso.test import APITestCase

@@ -8,6 +8,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.relations import RelatedField
 from rest_framework.viewsets import GenericViewSet
 
+from iaso.api.common import UserSerializer
 from iaso.models import OrgUnit
 from iaso.models.comment import CommentIaso
 from django.utils.translation import ugettext_lazy as _
@@ -38,10 +39,10 @@ class ContentTypeField(RelatedField):
         return f"{obj.app_label}-{obj.model}"
 
 
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ["id", "username", "first_name", "last_name"]
+class UserSerializerForComment(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        fields = UserSerializer.Meta.fields + ["id"]
+        ref_name = "comment_user_serializer"
 
 
 class CommentMiniSerializer(serializers.ModelSerializer):
@@ -52,7 +53,7 @@ class CommentMiniSerializer(serializers.ModelSerializer):
         fields = ["id", "user", "comment", "content_type", "object_pk", "site", "submit_date"]
         read_only_fields = ["user"]
 
-    user = UserSerializer(read_only=True)
+    user = UserSerializerForComment(read_only=True)
     content_type = ContentTypeField(queryset=ContentType.objects.filter(model="orgunit"))
 
 
@@ -63,7 +64,7 @@ class CommentSerializer(serializers.ModelSerializer):
         read_only_fields = ["user", "children", "site"]
 
     children = CommentMiniSerializer(many=True, read_only=True)
-    user = UserSerializer(read_only=True)
+    user = UserSerializerForComment(read_only=True)
     content_type = ContentTypeField(queryset=ContentType.objects.filter(model="orgunit"))
 
     def validate(self, attrs):

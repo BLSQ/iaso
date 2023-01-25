@@ -7,7 +7,7 @@ from os import environ
 import responses
 import json
 
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet
+from iaso.models import OrgUnit, DataSource, SourceVersion, Group
 
 
 class CommandTests(TestCase):

@@ -274,6 +274,42 @@ const MESSAGES = defineMessages({
         id: 'iaso.datasources.label.chooseVersionNumber',
         defaultMessage: 'Choose version number',
     },
+    editSourceVersion: {
+        id: 'iaso.datasources.label.editSourceVersion',
+        defaultMessage: 'Edit source version',
+    },
+    copyVersionSuccessMessage: {
+        defaultMessage: 'The task has been created',
+        id: 'iaso.snackBar.copyVersionSuccessMessage',
+    },
+    copyVersionErrorMessage: {
+        defaultMessage: 'An error occurred while creating the task',
+        id: 'iaso.snackBar.copyVersionErrorMessage',
+    },
+    importFromDhis2Success: {
+        defaultMessage: 'Import from DHIS2 was planned with success',
+        id: 'iaso.snackBar.importFromDhis2Success',
+    },
+    importFromDhis2Error: {
+        defaulteEssage: 'An error occurred while importing from DHIS2',
+        id: 'iaso.snackBar.importFromDhis2Error',
+    },
+    exportToDhis2Success: {
+        defaultMessage: 'Export to DHIS2 was planned with success',
+        id: 'iaso.snackBar.exportToDhis2Success',
+    },
+    exportToDhis2Error: {
+        defaultMessage: 'An error occurred while exporting to DHIS2',
+        id: 'iaso.snackBar.exportToDhis2Error',
+    },
+    importGpkgSuccess: {
+        defaultMessage: 'Import of gpkg file was planned with success',
+        id: 'iaso.snackBar.importGpkgSuccess',
+    },
+    importGpkgError: {
+        defaultMEssage: 'An error occurred while importing the gpkg file',
+        id: 'iaso.snackBar.importGpkgError',
+    },
 });
 
 export default MESSAGES;

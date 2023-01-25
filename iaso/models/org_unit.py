@@ -6,16 +6,58 @@ from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
-from django.db.models import Q
+from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django_ltree.fields import PathField
-from django_ltree.models import TreeModel
+from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
-from django_ltree.managers import TreeManager
-from django_ltree.models import TreeModel
+from django_ltree.models import TreeModel  # type: ignore
 
-from .base import SourceVersion
+from iaso.models.data_source import SourceVersion
 from .project import Project
+from ..utils.expressions import ArraySubquery
+
+try:  # for typing
+    from .base import Account
+except:
+    pass
+
+
+def get_or_create_org_unit_type(name: str, depth: int, account: "Account", preferred_project: Project) -> "OrgUnitType":
+    """
+    Get or create the OUT (in the scope of the account).
+
+    OUT are considered identical if they have the same name, depth and account.
+
+    Since the existing data is messy (sometimes there are multiple similar OUT in a given account) we are trying to be
+    smart but careful here: we first try to find an existing OUT for the preferred project, if not we look for another
+    one in the account, if not we create a new one.
+
+    :raises ValueError: if the preferred_project account is not consistent with the account parameter
+    """
+
+    if preferred_project.account != account:
+        raise ValueError("preferred_project.account and account parameters are inconsistent")
+
+    out_defining_fields = {"name": name, "depth": depth}
+
+    try:
+        # Let's first try to find a single entry for the preferred project
+        return OrgUnitType.objects.get(**out_defining_fields, projects=preferred_project)
+    except OrgUnitType.DoesNotExist:
+        # Nothing for the preferred project, let's try to find one in the account
+        all_projects_from_account = Project.objects.filter(account=preferred_project.account)
+        try:
+            # Maybe we have a single entry for the account?
+            return OrgUnitType.objects.get(**out_defining_fields, projects__in=all_projects_from_account)
+        except OrgUnitType.MultipleObjectsReturned:
+            # We have multiple similar OUT in the account and no way to choose the better one, so let's pick the first
+            return OrgUnitType.objects.filter(**out_defining_fields, projects__in=all_projects_from_account).first()  # type: ignore
+        except OrgUnitType.DoesNotExist:
+            # We have no similar OUT in the account, so let's create a new one
+            return OrgUnitType.objects.create(**out_defining_fields, short_name=name[:4])
+    except OrgUnitType.MultipleObjectsReturned:
+        # We have multiple similar OUT for the preferred project, so let's pick the first
+        return OrgUnitType.objects.filter(**out_defining_fields, projects=preferred_project).first()  # type: ignore
 
 
 class OrgUnitTypeQuerySet(models.QuerySet):
@@ -42,6 +84,11 @@ class OrgUnitTypeQuerySet(models.QuerySet):
 
 
 class OrgUnitType(models.Model):
+    """A type of org unit, such as a country, a province, a district, a health facility, etc.
+
+    Note: they are scope at the account level: for a given name and depth, there can be only one OUT per account
+    """
+
     CATEGORIES = [
         ("COUNTRY", _("Country")),
         ("REGION", _("Region")),
@@ -54,7 +101,7 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
-    form_defining = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
@@ -82,6 +129,24 @@ class OrgUnitType(models.Model):
             res["sub_unit_types"] = sub_unit_types
         return res
 
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+        }
+
+
+# def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
+#     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
+#
+#     :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
+#     :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
+#     """
+#     all_projects_from_account = Project.objects.filter(account=account)
+#     return OrgUnitType.objects.get_or_create(
+#         projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
+#     )
+
 
 # noinspection PyTypeChecker
 class OrgUnitQuerySet(models.QuerySet):
@@ -92,15 +157,19 @@ class OrgUnitQuerySet(models.QuerySet):
         return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
     def hierarchy(
-        self, org_unit: typing.Union[typing.List["OrgUnit"], "OrgUnitQuerySet", "OrgUnit"]
+        self, org_unit: typing.Union[typing.List["OrgUnit"], "QuerySet[OrgUnit]", "OrgUnit"]
     ) -> "OrgUnitQuerySet":
         """The OrgunitS and all their descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
-        if isinstance(org_unit, (list, models.QuerySet)):
-            query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
-        else:
+        if isinstance(org_unit, OrgUnit):
             query = models.Q(path__descendants=str(org_unit.path))
+        elif isinstance(org_unit, models.QuerySet):
+            org_unit_qs = org_unit
+            query = models.Q(path__descendants=ArraySubquery(org_unit_qs.values("path")))
+        elif isinstance(org_unit, (list,)):
+            org_unit = org_unit.only("path") if isinstance(org_unit, models.QuerySet) else org_unit
+            query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
 
         return self.filter(query)
 
@@ -110,10 +179,13 @@ class OrgUnitQuerySet(models.QuerySet):
         # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def query_for_related_org_units(self, org_units) -> "RawSQL":
+    def query_for_related_org_units(self, org_units):
         ltree_list = ", ".join(list(map(lambda org_unit: f"'{org_unit.pk}'::ltree", org_units)))
 
         return RawSQL(f"array[{ltree_list}]", []) if len(ltree_list) > 0 else ""
+
+    def filter_for_user(self, user):
+        return self.filter_for_user_and_app_id(user, None)
 
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
@@ -156,6 +228,9 @@ class OrgUnitQuerySet(models.QuerySet):
         return queryset
 
 
+OrgUnitManager = models.Manager.from_queryset(OrgUnitQuerySet)
+
+
 class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
@@ -187,7 +262,7 @@ class OrgUnit(TreeModel):
     simplified_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
-    instance_defining = models.ForeignKey("Instance", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_instance = models.ForeignKey("Instance", on_delete=models.DO_NOTHING, null=True, blank=True)
 
     gps_source = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
@@ -195,7 +270,7 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitQuerySet.as_manager()
+    objects = OrgUnitManager()  # type: ignore
 
     class Meta:
         indexes = [GistIndex(fields=["path"], buffering=True)]
@@ -291,6 +366,8 @@ class OrgUnit(TreeModel):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
+            "aliases": self.aliases,
         }
 
     def as_dict(self, with_groups=True):
@@ -314,6 +391,7 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
+            "reference_instance_id": self.reference_instance_id if self.reference_instance_id else None,
         }
 
         if hasattr(self, "search_index"):
@@ -345,6 +423,10 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
+            "reference_instance_id": self.reference_instance_id,
+            "creator": None
+            if self.creator is None
+            else f"{self.creator.username} ({self.creator.first_name} {self.creator.last_name})",
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -386,12 +468,19 @@ class OrgUnit(TreeModel):
             "org_unit_type": self.org_unit_type.name,
         }
 
-    def as_location(self):
+    def as_dict_for_completeness_stats(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+        }
+
+    def as_location(self, with_parents):
         res = {
             "id": self.id,
             "name": self.name,
             "short_name": self.name,
             "parent_id": self.parent_id,
+            "parent_name": self.parent.name if self.parent else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
@@ -404,6 +493,8 @@ class OrgUnit(TreeModel):
         }
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
+        if with_parents:
+            res["parent"] = self.parent.as_dict_with_parents(light=True, light_parents=True) if self.parent else None
         return res
 
     def source_path(self):
@@ -419,12 +510,9 @@ class OrgUnit(TreeModel):
             return "/" + ("/".join(path_components))
         return None
 
-
-class OrgunitAsLocationCache(models.Model):
-    user_id = models.IntegerField()
-    response = models.JSONField()
-    updated_at = models.DateTimeField(auto_now=True, editable=True, blank=True, null=True)
-    params = models.TextField()
-
-    def __str__(self):
-        return str(self.params)
+    def get_reference_form_id(self):
+        """Return the form id of the reference form for this org unit, or None"""
+        if self.org_unit_type:
+            return self.org_unit_type.reference_form_id
+        else:
+            return None

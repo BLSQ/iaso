@@ -37,6 +37,7 @@ const renderTrigger = ({ openDialog }) => (
         onClick={openDialog}
         overrideIcon={FileCopyIcon}
         tooltipMessage={MESSAGES.copyVersion}
+        dataTestId="copyversion-button"
     />
 );
 
@@ -47,15 +48,19 @@ const change = setter => (_keyValue, value) => {
 };
 
 const makeVersionsDropDown = (sourceVersions, dataSourceId, formatMessage) => {
-    const existingVersions = sourceVersions
-        .filter(sourceVersion => sourceVersion.data_source === dataSourceId)
-        .map(sourceVersion => {
-            return {
-                label: sourceVersion.number.toString(),
-                value: sourceVersion.number.toString(),
-            };
-        })
-        .sort((a, b) => parseInt(a.number, 10) > parseInt(b.number, 10));
+    const existingVersions =
+        sourceVersions
+            ?.filter(
+                sourceVersion => sourceVersion.data_source === dataSourceId,
+            )
+            .map(sourceVersion => {
+                return {
+                    label: sourceVersion.number.toString(),
+                    value: sourceVersion.number.toString(),
+                };
+            })
+            .sort((a, b) => parseInt(a.number, 10) > parseInt(b.number, 10)) ??
+        [];
     // can't deduce the last version number from the index, since there can be a version 0
     const lastVersionIndex = existingVersions.length - 1;
     const nextVersionNumber =
@@ -174,6 +179,7 @@ export const CopySourceVersion: FunctionComponent<Props> = ({
             additionalMessage={MESSAGES.goToCurrentTask}
             onAdditionalButtonClick={onRedirect}
             onCancel={onCancel}
+            dataTestId="copy-source-version-modal"
             allowConfirm={allowConfirm}
             allowConfimAdditionalButton={allowConfirm}
         >

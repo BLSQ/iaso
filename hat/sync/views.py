@@ -1,4 +1,7 @@
+import jwt
+from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
+from jwt import DecodeError
 from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from django.http.request import HttpRequest
 from django.http import HttpResponse
@@ -6,25 +9,44 @@ from django.http import JsonResponse
 
 import logging
 
+from hat.audit.models import log_modification, INSTANCE_API
+from hat.settings import SECRET_KEY
 from iaso.models import Instance, InstanceFile, FeatureFlag
+import re
 
 logger = logging.getLogger(__name__)
 
 
+def detect_user_request(request):
+    """Check if we can infer a user from the Authorization header of the upload request."""
+
+    try:
+        user = User.objects.get(
+            pk=jwt.decode(request.headers["Authorization"][7:], SECRET_KEY, algorithms=["HS256"])["user_id"]
+        )
+        return user
+    except:
+        return None
+
+
 @csrf_exempt
 @api_view(http_method_names=["POST"])
-# @throttle_classes([AnonRateThrottle])
 @authentication_classes([])
 @permission_classes([])
 def form_upload(request: HttpRequest) -> HttpResponse:
     main_file = request.FILES["xml_submission_file"]
     instances = Instance.objects.filter(file_name=main_file.name)
+    i: Instance
     if instances:
-        i = instances.first()
+        # TODO: investigate: can we have an empty QS here?
+        i = instances.first()  # type: ignore
     else:
         i = Instance(file_name=main_file.name)
 
     i.file = request.FILES["xml_submission_file"]
+    user = request.user if not request.user.is_anonymous else detect_user_request(request)
+    i.created_by = user
+    i.last_modified_by = user
     i.save()
 
     try:
@@ -48,5 +70,7 @@ def form_upload(request: HttpRequest) -> HttpResponse:
 
     if i.project and i.project.has_feature(FeatureFlag.INSTANT_EXPORT):
         i.export()
+
+    log_modification(i, i, source=INSTANCE_API, user=user)
 
     return JsonResponse({"result": "success"}, status=201)

@@ -1,4 +1,8 @@
-from bs4 import BeautifulSoup as Soup
+"""This module provides various utils and helpers for IASO"""
+
+from typing import Dict, Any, TextIO, List, Optional, Iterable
+
+from bs4 import BeautifulSoup as Soup  # type: ignore
 from datetime import datetime
 from django.utils.text import slugify
 
@@ -8,19 +12,33 @@ def timestamp_to_datetime(timestamp):
     return date.strftime("%Y-%m-%d %H:%M:%S")
 
 
-def get_flat_children_tree(el, flat_xml_dict, repeat_groups):
+def get_flat_children_tree(current_path, el, flat_xml_dict, repeat_groups, allowed_paths, skipped_path):
     for children in el.findChildren(None, {}, False):
+        if el.name == "[document]":
+            node_current_path = ""
+        elif el.name == "data":
+            node_current_path = children.name
+        else:
+            node_current_path = current_path + "/" + children.name
+
         if children.name in repeat_groups:
             if children.name not in flat_xml_dict:
                 flat_xml_dict[children.name] = []
             child_dict = {}
-            get_flat_children_tree(children, child_dict, repeat_groups)
+            get_flat_children_tree(current_path, children, child_dict, repeat_groups, None, skipped_path)
             flat_xml_dict[children.name].append(child_dict)
         elif len(children.findChildren(None, {}, False)) > 0:
-
-            get_flat_children_tree(children, flat_xml_dict, repeat_groups)
+            get_flat_children_tree(
+                node_current_path, children, flat_xml_dict, repeat_groups, allowed_paths, skipped_path
+            )
         else:
-            flat_xml_dict[children.name] = children.text
+            if allowed_paths:
+                if node_current_path in allowed_paths:
+                    flat_xml_dict[children.name] = children.text
+                else:
+                    skipped_path.append(node_current_path)
+            else:
+                flat_xml_dict[children.name] = children.text
 
 
 def get_children_tree(el):
@@ -38,7 +56,7 @@ def parse_xml_file(file):
     return get_children_tree(soup)
 
 
-def as_soup(file):
+def as_soup(file: TextIO):
     return Soup(file.read(), "xml")
 
 
@@ -53,16 +71,20 @@ def extract_form_version_id(soup):
     return None
 
 
-def flat_parse_xml_soup(soup, repeat_groups):
+def flat_parse_xml_soup(soup: Soup, repeat_groups: List[Any], allowed_paths: Optional[Iterable[str]]) -> Dict[str, Any]:
+    """
+    Parse XML data in a BeautifulSoup and return a flattened JSON-serializable representation of the data.
 
-    flat_xml_dict = {}
-    get_flat_children_tree(soup, flat_xml_dict, repeat_groups)
+    :return: a dict with two keys: the flattened xml data in "flat_json", and a list of skipped paths in "skipped_paths"
+    """
+    flat_xml_dict: Dict[str, Any] = {}
+    get_flat_children_tree("", soup, flat_xml_dict, repeat_groups, allowed_paths, [])
 
     version_id = extract_form_version_id(soup)
     if version_id:
         flat_xml_dict["_version"] = version_id
 
-    return flat_xml_dict
+    return {"flat_json": flat_xml_dict, "skipped_paths": []}
 
 
 def slugify_underscore(filename):
@@ -75,13 +97,16 @@ sql_injection_geom_regex = re.compile(r"[^a-zA-Z0-9_]")
 
 
 def geojson_queryset(queryset, geometry_field, pk_field="id", fields=[]):
+    # FIXME: the "fields" (not currently used by consuming code) parameter probably doesn't work as expected (see https://florimond.dev/en/posts/2018/08/python-mutable-defaults-are-the-source-of-all-evil/)
     """
-    This method is fast way to serialize to GeoJSON a queryset. The regular serializer is extremely slow and will need
-    to be parsed from text to return in a Response object. This method is roughly 20x faster.
+    This method is a faster way to serialize to GeoJSON a queryset. The regular serializer is extremely slow and will
+    need to be parsed from text to return in a Response object. This method is roughly 20x faster.
+
     :param queryset: queryset to return data from
     :param geometry_field: the field to be serialized to geojson
     :param pk_field: GeoJSON requires a primary key value, defaults to 'id'
     :param fields: List of fields to include in the result
+
     :return: a GeoJSON FeatureCollection with the requested data.
     """
     all_fields = [pk_field, *fields, "geojson_queryset_result"]

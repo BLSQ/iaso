@@ -22,6 +22,16 @@ export PYTHONPATH="/opt/app:$PYTHONPATH"
 export DJANGO_SETTINGS_MODULE=hat.settings
 
 case "$1" in
+  "start")
+    ./scripts/wait_for_dbs.sh
+    ./manage.py migrate --noinput
+    ./manage.py runserver 0.0.0.0:8081
+    ;;
+  "start_gunicorn")
+    ./scripts/wait_for_dbs.sh
+    ./manage.py migrate --noinput
+    gunicorn hat.wsgi --bind=0.0.0.0:8081
+  ;;
   "test" )
     export TESTING=true
     # Linting tasks first
@@ -51,6 +61,7 @@ case "$1" in
     export DEV_SERVER=true
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
+    ./manage.py createcachetable
     ./manage.py compilemessages
     ./manage.py runserver 0.0.0.0:8081
   ;;

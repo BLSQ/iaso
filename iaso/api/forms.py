@@ -3,13 +3,17 @@ import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions
+from rest_framework import serializers, permissions, status
 from rest_framework.request import Request
+from rest_framework.generics import get_object_or_404
+from rest_framework.response import Response
+from copy import copy
 
 from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
 from iaso.utils import timestamp_to_datetime
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import log_modification, FORM_API
 from .projects import ProjectSerializer
 
 
@@ -141,6 +145,17 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
         return data
 
+    def update(self, form, validated_data):
+        original = copy(form)
+        form = super(FormSerializer, self).update(form, validated_data)
+        log_modification(original, form, FORM_API, user=self.context["request"].user)
+        return form
+
+    def create(self, validated_data):
+        form = super(FormSerializer, self).create(validated_data)
+        log_modification(None, form, FORM_API, user=self.context["request"].user)
+        return form
+
 
 class FormsViewSet(ModelViewSet):
     """Forms API
@@ -176,7 +191,8 @@ class FormsViewSet(ModelViewSet):
         if self.request.query_params.get("only_deleted", None):
             form_objects = Form.objects_only_deleted
 
-        if self.request.query_params.get("showDeleted", ""):
+        show_deleted = self.request.query_params.get("showDeleted", "false")
+        if show_deleted == "true":
             form_objects = Form.objects_only_deleted
 
         queryset = form_objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
@@ -259,7 +275,7 @@ class FormsViewSet(ModelViewSet):
     def list_to_csv(self):
         response = StreamingHttpResponse(
             streaming_content=(iter_items(self.get_queryset(), Echo(), self.EXPORT_TABLE_COLUMNS, self._get_table_row)),
-            content_type="text/csv",
+            content_type=CONTENT_TYPE_CSV,
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
 
@@ -268,7 +284,7 @@ class FormsViewSet(ModelViewSet):
     def list_to_xlsx(self):
         response = HttpResponse(
             generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, self.get_queryset(), self._get_table_row),
-            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            content_type=CONTENT_TYPE_XLSX,
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
 
@@ -291,6 +307,13 @@ class FormsViewSet(ModelViewSet):
             created_at,
             updated_at,
         ]
+
+    def destroy(self, request, *args, **kwargs):
+        original = get_object_or_404(Form, pk=self.kwargs["pk"])
+        response = super(FormsViewSet, self).destroy(request, *args, **kwargs)
+        destroyed_form = Form.objects_only_deleted.get(pk=original.id)
+        log_modification(original, destroyed_form, FORM_API, user=request.user)
+        return response
 
 
 class MobileFormViewSet(FormsViewSet):

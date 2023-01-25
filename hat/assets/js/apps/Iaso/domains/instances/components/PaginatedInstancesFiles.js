@@ -33,7 +33,7 @@ export const PaginatedInstanceFiles = ({ params, updateParams }) => {
                 files={instancesFiles?.results}
                 fetching={loadingFiles}
             />
-            {instancesFiles && (
+            {instancesFiles?.count > 0 && (
                 <TablePagination
                     rowsPerPageOptions={[20, 50, 100, 200, 500]}
                     component="div"

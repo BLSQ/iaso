@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from typing import Dict, Any
+
 import sentry_sdk
 from datetime import timedelta
 from django.utils.translation import ugettext_lazy as _
@@ -22,10 +24,16 @@ import hashlib
 import html
 import re
 import urllib.parse
+from urllib.parse import urlparse
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
-DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "bluesquare.org")
+# This should the the naked domain (no http or https prefix) that is
+# hosting Iaso, this is used when sending out emails that need a link
+# back to the Iaso application.
+#
+# This should be the same as the one set on: `/admin/sites/site/1/change/`
+DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
@@ -38,9 +46,20 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_S3 = os.getenv("USE_S3") == "true"
+# Specifying the `STATIC_URL` means that the assets are available at that URL
+#
+# Currently WFP is deploying this way, where the assets are put on a
+# S3 in a seperate process, and a CDN (Cloudfront) is in front of
+# it. So we parse out the hostname, and then set that as the
+# CDN_URL, so that Django knows where to fetch them from.
+static_url = os.environ.get("STATIC_URL")
+if static_url:
+    CDN_URL = urlparse(static_url).hostname
+else:
+    CDN_URL = None
 
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
-ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
+ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
 
 ALLOWED_HOSTS = ["*"]
@@ -54,14 +73,12 @@ AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 # Default site for django contrib site framework
 SITE_ID = 1
 
-
 # Logging
 
 LOGGING_LEVEL = os.getenv("DJANGO_LOGGING_LEVEL", "INFO")
 if TESTING:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
-
 
 ENKETO = {
     "ENKETO_DEV": os.getenv("ENKETO_DEV"),
@@ -73,7 +90,7 @@ ENKETO = {
 
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
-LOGGING = {
+LOGGING: Dict[str, Any] = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {"default": {"format": "%(levelname)-8s %(asctime)s %(name)s -- %(message)s"}},
@@ -93,14 +110,18 @@ LOGGING = {
         "iaso": {"level": LOGGING_LEVEL},
         "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
-        #  Uncomment to print all sql query
-        # 'django.db.backends': {'level': 'DEBUG'},
         "": {"handlers": ["console"]},
     },
 }
 
+
+if os.getenv("DEBUG_SQL") == "true":
+    LOGGING["loggers"]["django.db.backends"] = {"level": "DEBUG"}
+
+
 # AWS expects python logs to be stored in this folder
 AWS_LOG_FOLDER = "/var/app/log"
+
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
         print("Logging to django log")
@@ -144,13 +165,14 @@ INSTALLED_APPS = [
     "beanstalk_worker",
     "django_comments",
     "django_filters",
+    "drf_yasg",
 ]
 
 # needed because we customize the comment model
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"
 
-print("Enabled plugins:", PLUGINS)
+print("Enabled plugins:", PLUGINS, end=" ")
 for plugin_name in PLUGINS:
     INSTALLED_APPS.append(f"plugins.{plugin_name}")
 
@@ -168,12 +190,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = "hat.urls"
 
-
-# Allow cors for all origins but only for the sync endpoint
+# Allow CORS for all origins but don't transmit the session cookies or other credentials (which is the default)
+# see https://github.com/adamchainz/django-cors-headers#cors_allow_credentials-bool
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_ALL_ORIGINS = True
-# CORS_URLS_REGEX = r"^/sync/.*$"
-
+CORS_ALLOW_ALL_ORIGINS = True  # name used in the new version of django-cors-header, for forward compat
+CORS_ALLOW_CREDENTIALS = False
 
 TEMPLATES = [
     {
@@ -188,7 +209,6 @@ TEMPLATES = [
                 "django.template.context_processors.media",
                 "django.contrib.messages.context_processors.messages",
                 "hat.common.context_processors.appversions",
-                "hat.common.context_processors.environment",
                 "hat.common.context_processors.app_title",
                 "hat.common.context_processors.favicon_path",
                 "hat.common.context_processors.logo_path",
@@ -200,7 +220,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "hat.wsgi.application"
 
-
 # Database
 
 DB_NAME = os.environ.get("RDS_DB_NAME", "iaso")
@@ -210,6 +229,10 @@ DB_HOST = os.environ.get("RDS_HOSTNAME", "db")
 DB_PORT = os.environ.get("RDS_PORT", 5432)
 SNS_NOTIFICATION_TOPIC = os.environ.get("SNS_NOTIFICATION_TOPIC", None)
 
+print(
+    "DB_NAME",
+    DB_NAME,
+)
 DATABASES = {
     "default": {
         "ENGINE": "django.contrib.gis.db.backends.postgis",
@@ -229,7 +252,7 @@ if os.environ.get("DB_READONLY_USERNAME"):
         "PASSWORD": os.environ.get("DB_READONLY_PASSWORD", None),
         "HOST": DB_HOST,
         "PORT": DB_PORT,
-        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},
+        "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")
@@ -240,6 +263,11 @@ DATABASE_ROUTERS = [
 ]
 # This database settings which duplicate the main db settings, will be used by the background task worker so that they
 # can have a connexion outside of the transaction to report the progress on a Task. see Comments in services.py
+
+# New django 3.2 settings to control which type of field is used by default for primary key
+# Added to remove unecessary warning
+# https://docs.djangoproject.com/en/4.0/releases/3.2/#customizing-type-of-auto-created-primary-keys
+DEFAULT_AUTO_FIELD = "django.db.models.AutoField"
 
 
 def is_superuser(u):
@@ -254,7 +282,6 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
-
 
 # Internationalization
 
@@ -279,7 +306,6 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
-
 
 AUTH_CLASSES = [
     "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
@@ -308,24 +334,42 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
 
-AWS_S3_REGION_NAME = "eu-central-1"
+AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
 if USE_S3:
+    # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
     AWS_IS_GZIPPED = True
     AWS_S3_FILE_OVERWRITE = False
     S3_USE_SIGV4 = True
     AWS_S3_SIGNATURE_VERSION = "s3v4"
-    AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+    AWS_S3_HOST = "s3.%s.amazonaws.com" % AWS_S3_REGION_NAME
     AWS_DEFAULT_ACL = None
+    S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
 
     # s3 static settings
-    STATIC_LOCATION = "iasostatics"
-    STATICFILES_STORAGE = "iaso.storage.StaticStorage"
-    STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+    if CDN_URL:
+        # Only static files, not media files
+        STATIC_URL = "//%s/static/" % (CDN_URL)
+    else:
+        STATIC_LOCATION = "iasostatics"
+        STATICFILES_STORAGE = "iaso.storage.StaticStorage"
+        STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+
     MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
+
+    if S3_ENDPOINT_URL:
+        AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
+        STATIC_LOCATION = "iasostatics"
+        STATIC_URL = S3_ENDPOINT_URL + "/" + AWS_STORAGE_BUCKET_NAME + "/" + STATIC_LOCATION + "/"
+        MEDIA_URL = S3_ENDPOINT_URL + "/" + AWS_STORAGE_BUCKET_NAME + "/"
+
+        print("using s3 alternative", AWS_S3_ENDPOINT_URL)
+        print(" STATIC_URL", STATIC_URL)
+        print(" MEDIA_URL", MEDIA_URL)
+
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
     MEDIA_URL = "/media/"
@@ -352,7 +396,6 @@ WEBPACK_LOADER = {
     }
 }
 
-
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
 try:
@@ -361,28 +404,39 @@ except Exception as e:
     print("error importing hat.__version", e)
     VERSION = "undetected_version"
 
-
 if SENTRY_URL:
     sentry_sdk.init(
-        SENTRY_URL, traces_sample_rate=1.0, integrations=[DjangoIntegration()], send_default_pii=True, release=VERSION
+        SENTRY_URL, traces_sample_rate=0.1, integrations=[DjangoIntegration()], send_default_pii=True, release=VERSION
     )
 
 # Workers configuration
+#
+# Define if this environment is a worker (not in use)
+IS_BACKGROUND_WORKER = bool(os.environ.get("WORKER", False))
 
-BEANSTALK_WORKER = bool(os.environ.get("WORKER", False))
-BEANSTALK_SQS_URL = os.environ.get(
-    "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
-)
-BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
+# Define the backend to be used:
+#   Needs to be one of: POSTGRES, SQS
+#   Defaulting to SQS in production and Postgres in DEBUG
+DEFAULT_BACKGROUND_BACKEND = "POSTGRES" if DEBUG else "SQS"
+BACKGROUND_BACKEND = os.environ.get("BACKGROUND_TASK_SERVICE", DEFAULT_BACKGROUND_BACKEND)
 
-if DEBUG:
-    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
+if BACKGROUND_BACKEND == "POSTGRES":
+    # Postgres backed background jobs
+    BEANSTALK_WORKER = False
+    BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.PostgresTaskService"
+elif BACKGROUND_BACKEND == "SQS":
+    # SQS backed background jobs, SQS will send job payloads to `tasks/task`
+    BEANSTALK_WORKER = IS_BACKGROUND_WORKER  # Used to expose extra URLs
+    BACKGROUND_TASK_SERVICE = "beanstalk_worker.services.TaskService"
+    BEANSTALK_SQS_URL = os.environ.get(
+        "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
+    )
+    BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_REGION", "eu-central-1")
 else:
-    BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
+    raise Exception("BACKGROUND_TASK_SERVICE needs to one of: POSTGRES, SQS")
 
-# BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
-
-SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
+DISABLE_SSL_REDIRECT = bool(os.environ.get("DISABLE_SSL_REDIRECT", False))
+SSL_ON = not (DEBUG or BEANSTALK_WORKER or DISABLE_SSL_REDIRECT)
 if SSL_ON:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 SECURE_SSL_REDIRECT = SSL_ON
@@ -399,7 +453,6 @@ EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_PORT = os.environ.get("EMAIL_PORT", "8025")
 EMAIL_USE_TLS = os.environ.get("EMAIL_TLS", "true") == "true"
 
-
 # Application customizations
 APP_TITLE = os.environ.get("APP_TITLE", "Iaso")
 FAVICON_PATH = os.environ.get("FAVICON_PATH", "images/iaso-favicon.png")
@@ -408,7 +461,6 @@ THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
-
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
@@ -432,3 +484,7 @@ SOCIALACCOUNT_PROVIDERS = {
         "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
     }
 }
+
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}
+
+DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore

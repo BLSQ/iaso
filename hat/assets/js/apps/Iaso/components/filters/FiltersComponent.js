@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { replace } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { createUrl } from 'bluesquare-components';
-
 import InputComponent from '../forms/InputComponent';
 
 class FiltersComponent extends React.Component {
@@ -71,13 +70,17 @@ class FiltersComponent extends React.Component {
 
     render() {
         const { filters, params, onEnterPressed } = this.props;
+
         if (!filters) {
             return null;
         }
+
         return (
             <section>
                 {filters.map(filter => {
-                    let filterValue = filter.value || params[filter.urlKey];
+                    let filterValue =
+                        filter.value || params[filter.urlKey] || '';
+
                     if (filter.useKeyParam === false) {
                         filterValue = filter.value;
                     }
@@ -105,6 +108,7 @@ class FiltersComponent extends React.Component {
                                         value={filterValue}
                                         type="number"
                                         label={filter.label}
+                                        withMarginTop={filter.withMarginTop}
                                     />
                                 )}
                                 {filter.type === 'select' && (
@@ -131,6 +135,7 @@ class FiltersComponent extends React.Component {
                                         }
                                         getOptionLabel={filter.getOptionLabel}
                                         renderOption={filter.renderOption}
+                                        withMarginTop={filter.withMarginTop}
                                     />
                                 )}
 
@@ -157,6 +162,7 @@ class FiltersComponent extends React.Component {
 
                                 {filter.type === 'checkbox' && ( // TODO: check with team
                                     <InputComponent
+                                        withMarginTop={filter.withMarginTop}
                                         disabled={filter.isDisabled || false}
                                         keyValue={filter.urlKey}
                                         onChange={(key, checked) =>

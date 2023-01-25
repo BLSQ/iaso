@@ -5,6 +5,7 @@ import { renderWithStore } from '../../../../../test/utils/redux';
 import UsersDialog from './UsersDialog';
 import MESSAGES from '../messages';
 import { mockRequest } from '../../../../../test/utils/requests';
+import { withQueryClientProvider } from '../../../../../test/utils';
 
 let component;
 let inputComponent;
@@ -23,6 +24,7 @@ const user = {
 
 const renderComponent = () => {
     component = mount(
+        withQueryClientProvider(
         renderWithStore(
             <UsersDialog
                 titleMessage={MESSAGES.updateUser}
@@ -38,7 +40,7 @@ const renderComponent = () => {
                 params={{}}
                 saveProfile={() => null}
             />,
-        ),
+        ),)
     );
     inputComponent = component.find('#open-dialog').at(0);
     inputComponent.props().onClick();

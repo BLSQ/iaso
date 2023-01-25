@@ -1,11 +1,11 @@
 import typing
 
-from django.http.response import HttpResponseBadRequest
 from rest_framework import serializers, parsers, permissions, exceptions
+from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
-from django.db.models import Value, Count
+from django.db.models import Value, Count, TextField
 from django.db.models import BooleanField
 from django.db.models.expressions import Case, When
 
@@ -61,7 +61,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "descriptor",
         ]
 
-    form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
+    form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     form_name = serializers.SerializerMethodField()
     xls_file = serializers.FileField(required=False, allow_empty_file=False)  # field is not required in model
     mapped = serializers.BooleanField(read_only=True)
@@ -147,7 +147,7 @@ class FormVersionsViewSet(ModelViewSet):
     serializer_class = FormVersionSerializer
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),
+        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
     ]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
@@ -167,8 +167,13 @@ class FormVersionsViewSet(ModelViewSet):
         form_id = self.request.query_params.get("form_id", None)
         if form_id:
             queryset = queryset.filter(form__id=form_id)
+        version_id = self.request.query_params.get("version_id", None)
+        if version_id:
+            queryset = queryset.filter(version_id=version_id)
 
-        queryset = queryset.annotate(full_name=Concat("form__name", Value(" - V"), "version_id"))
+        queryset = queryset.annotate(
+            full_name=Concat("form__name", Value(" - V"), "version_id", output_field=TextField())
+        )
 
         queryset = queryset.annotate(mapping_versions_count=Count("mapping_versions"))
 

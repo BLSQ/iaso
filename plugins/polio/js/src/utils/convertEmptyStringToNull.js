@@ -5,7 +5,7 @@ const convertEmptyStringToNull = values => {
         if (values[key] === '') {
             converted[key] = null;
         }
-        if (key.includes('round_')) {
+        if (key.includes('round_') && values[key]) {
             converted[key] = convertEmptyStringToNull(values[key]);
         }
     });

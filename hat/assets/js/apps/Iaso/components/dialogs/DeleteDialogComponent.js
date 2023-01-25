@@ -14,6 +14,7 @@ export default function DeleteDialog({
     onConfirm,
     disabled,
     keyName,
+    iconColor,
 }) {
     const closeThenOnConfirm = useCallback(
         closeDialog => {
@@ -37,6 +38,7 @@ export default function DeleteDialog({
                     disabled={disabled}
                     icon="delete"
                     tooltipMessage={MESSAGES.delete}
+                    color={iconColor}
                     {...iconButtonExtraProps}
                 />
             )}
@@ -56,6 +58,7 @@ DeleteDialog.defaultProps = {
     disabled: false,
     keyName: 'key',
     message: null,
+    iconColor: 'action',
 };
 DeleteDialog.propTypes = {
     titleMessage: PropTypes.object.isRequired,
@@ -63,4 +66,5 @@ DeleteDialog.propTypes = {
     onConfirm: PropTypes.func.isRequired,
     disabled: PropTypes.bool,
     keyName: PropTypes.string,
+    iconColor: PropTypes.string,
 };

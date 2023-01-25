@@ -22,6 +22,7 @@ services:
       - ./README.md:/opt/app/README.md
       - ./tsconfig.json:/opt/app/tsconfig.json
       - ./babel-register.js:/opt/app/babel-register.js
+      - ./mypy.ini:/opt/app/mypy.ini
       # test data
       - ./testdata:/opt/app/testdata
       # jupyter notebooks
@@ -35,7 +36,7 @@ services:
       PREPAREDNESS_TEMPLATE_FR_ID:
       PLUGINS:
       GOOGLE_API_KEY_BASE64:
-      IASO_ENVIRONMENT: "development"
+      SENTRY_ENVIRONMENT: "development"
       RDS_HOSTNAME: db
       RDS_DB_NAME:
       THEME_PRIMARY_COLOR:
@@ -50,6 +51,7 @@ services:
       DB_READONLY_USERNAME: postgres
       DB_READONLY_PASSWORD: postgres
       DEBUG: "true"
+      DEBUG_SQL:
       TEST_PROD:
       SECRET_KEY: secret
       AWS_STORAGE_BUCKET_NAME:

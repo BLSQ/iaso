@@ -1,22 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
     useSnackQuery,
     useSnackMutation,
     useSnackQueries,
-} from 'Iaso/libs/apiHooks';
+} from 'Iaso/libs/apiHooks.ts';
 import { getRequest, patchRequest, postRequest } from 'Iaso/libs/Api';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQueryClient } from 'react-query';
 import MESSAGES from './messages';
 import { getOtChipColors, getChipColors } from '../../constants/chipColors';
-import { fetchOrgUnitsTypes } from '../../utils/requests';
-import { setOrgUnitTypes } from './actions';
-import { useFetchOnMount } from '../../hooks/fetchOnMount';
 
 export const useOrgUnitDetailData = (
     isNewOrgunit,
     orgUnitId,
     setCurrentOrgUnit,
 ) => {
+    const { data: originalOrgUnit, isFetching: isFetchingDetail } =
+        useSnackQuery(
+            ['currentOrgUnit', orgUnitId],
+            () => getRequest(`/api/orgunits/${orgUnitId}/`),
+            MESSAGES.fetchOrgUnitError,
+            {
+                enabled: !isNewOrgunit,
+                onSuccess: ou => setCurrentOrgUnit(ou),
+            },
+        );
+
+    const groupsUrl = useMemo(() => {
+        const basUrl = '/api/groups/';
+        if (isNewOrgunit) {
+            return `${basUrl}?&defaultVersion=true`;
+        }
+        if (originalOrgUnit?.source_id) {
+            return `${basUrl}?&dataSource=${originalOrgUnit.source_id}`;
+        }
+        return basUrl;
+    }, [isNewOrgunit, originalOrgUnit?.source_id]);
     const [
         { data: algorithms = [], isFetching: isFetchingAlgorithm },
         { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
@@ -42,12 +60,7 @@ export const useOrgUnitDetailData = (
         },
         {
             queryKey: ['groups'],
-            queryFn: () =>
-                getRequest(
-                    `/api/groups/${
-                        isNewOrgunit ? '?&defaultVersion=true' : ''
-                    }`,
-                ),
+            queryFn: () => getRequest(groupsUrl),
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
@@ -117,18 +130,6 @@ export const useOrgUnitDetailData = (
         ? isFetchingPlainSources
         : isFetchingAssociatedDataSources;
 
-    const { data: originalOrgUnit, isFetching: isFetchingDetail } =
-        useSnackQuery(
-            ['currentOrgUnit', orgUnitId],
-            () => getRequest(`/api/orgunits/${orgUnitId}/`),
-            MESSAGES.fetchOrgUnitError,
-            {
-                enabled:
-                    !isNewOrgunit && !isFetchingSources && !isFetchingLinks,
-                onSuccess: ou => setCurrentOrgUnit(ou),
-            },
-        );
-
     return {
         algorithms,
         algorithmRuns,
@@ -147,10 +148,12 @@ export const useOrgUnitDetailData = (
         sources: isNewOrgunit ? sources : associatedDataSources,
         originalOrgUnit,
         isFetchingDetail,
+        isFetchingOrgUnitTypes,
+        isFetchingGroups,
     };
 };
 
-export const useSaveOrgUnit = onSuccess =>
+export const useSaveOrgUnit = (onSuccess, invalidateQueryKey) =>
     useSnackMutation(
         body =>
             body.id
@@ -158,7 +161,7 @@ export const useSaveOrgUnit = onSuccess =>
                 : postRequest('/api/orgunits/create_org_unit/', body),
         MESSAGES.saveOrgUnitSuccesfull,
         MESSAGES.saveOrgUnitError,
-        undefined,
+        invalidateQueryKey,
         { onSuccess },
     );
 
@@ -167,7 +170,6 @@ const makeGroupsQueryParams = ({ dataSourceId, sourceVersionId }) => {
     if (dataSourceId) return `?dataSource=${dataSourceId}`;
     return '?defaultVersion=true';
 };
-const getOrgUnitTypes = () => getRequest(`/api/orgunittypes/`);
 
 export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
     const [enabled, setEnabled] = useState(false);
@@ -200,21 +202,4 @@ export const useGetGroups = ({ dataSourceId, sourceVersionId }) => {
 export const useRefreshOrgUnit = () => {
     const queryClient = useQueryClient();
     return data => queryClient.setQueryData(['forms', data.id], data);
-};
-
-export const useGetOrgUnitTypes = () => {
-    return useQuery(['orgUnitTypes'], getOrgUnitTypes, {
-        select: data => data.orgUnitTypes,
-    });
-};
-
-export const useOrgUnitsFiltersData = (dispatch, setFetchingOrgUnitTypes) => {
-    useFetchOnMount([
-        {
-            fetch: fetchOrgUnitsTypes,
-            setFetching: fetching =>
-                dispatch(setFetchingOrgUnitTypes(fetching)),
-            setData: setOrgUnitTypes,
-        },
-    ]);
 };

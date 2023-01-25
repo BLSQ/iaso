@@ -121,7 +121,7 @@ export const updateAction = (
     if (setIsLoading !== null) {
         dispatch(setIsLoading(true));
     }
-    return putRequest(`/api/${apiPath}/${item.id}/`, item, true)
+    return putRequest(`/api/${apiPath}/${item.id}/`, item)
         .then(res => {
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
             return res;
@@ -157,7 +157,7 @@ export const saveAction = (
     if (setIsLoading !== null) {
         dispatch(setIsLoading(true));
     }
-    return patchRequest(`/api/${apiPath}/${item.id}/`, item, true)
+    return patchRequest(`/api/${apiPath}/${item.id}/`, item)
         .then(res => {
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
             return res;

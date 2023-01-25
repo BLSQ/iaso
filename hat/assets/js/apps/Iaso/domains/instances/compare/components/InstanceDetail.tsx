@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-
+// @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box, Typography } from '@material-ui/core';
@@ -16,7 +16,7 @@ import ErrorPaperComponent from '../../../../components/papers/ErrorPaperCompone
 import MESSAGES from '../messages';
 
 type Props = {
-    instanceId: string;
+    instanceId: string | undefined;
 };
 
 const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
@@ -26,6 +26,7 @@ const InstanceDetail: FunctionComponent<Props> = ({ instanceId }) => {
         isError,
     }: { data?: Instance; isLoading: boolean; isError: boolean } =
         useGetInstance(instanceId);
+
     const { formatMessage } = useSafeIntl();
     if (isLoading)
         return (

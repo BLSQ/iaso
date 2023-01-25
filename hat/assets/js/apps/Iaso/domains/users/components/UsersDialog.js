@@ -1,6 +1,6 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import get from 'lodash/get';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
@@ -11,7 +11,8 @@ import UsersInfos from './UsersInfos';
 import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
-import PermissionsSwitches from './PermissionsSwitches';
+import PermissionsSwitches from './PermissionsSwitches.tsx';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -40,8 +41,9 @@ const UserDialogComponent = ({
     renderTrigger,
     initialData = {},
     saveProfile,
+    allowSendEmailInvitation,
 }) => {
-    const connectedUser = useSelector(state => state.users.current);
+    const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const classes = useStyles();
@@ -76,8 +78,16 @@ const UserDialogComponent = ({
                 value: get(newInitialData, 'language', ''),
                 errors: [],
             },
+            home_page: {
+                value: get(newInitialData, 'home_page', ''),
+                errors: [],
+            },
             dhis2_id: {
                 value: get(newInitialData, 'dhis2_id', ''),
+                errors: [],
+            },
+            send_email_invitation: {
+                value: get(newInitialData, 'send_email_invitation', false),
                 errors: [],
             },
         };
@@ -190,6 +200,7 @@ const UserDialogComponent = ({
                         }
                         initialData={initialData}
                         currentUser={user}
+                        allowSendEmailInvitation={allowSendEmailInvitation}
                     />
                 )}
                 <div
@@ -220,6 +231,7 @@ const UserDialogComponent = ({
 
 UserDialogComponent.defaultProps = {
     initialData: null,
+    allowSendEmailInvitation: false,
 };
 
 UserDialogComponent.propTypes = {
@@ -227,6 +239,7 @@ UserDialogComponent.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
     saveProfile: PropTypes.func.isRequired,
+    allowSendEmailInvitation: PropTypes.bool,
 };
 
 export default UserDialogComponent;

@@ -51,6 +51,9 @@ export const INSTANCE_METAS_FIELDS = [
         sortable: false,
         tableOrder: 2,
         type: 'info',
+        renderValue: data => {
+            return data.file_content?._version || '--';
+        },
         Cell: settings => {
             const data = settings.row.original;
             return data.file_content?._version || '--';
@@ -124,6 +127,10 @@ export const INSTANCE_METAS_FIELDS = [
             ),
         active: true,
         tableOrder: 6,
+        type: 'info',
+    },
+    {
+        key: 'last_modified_by',
         type: 'info',
     },
 ];

@@ -18,6 +18,7 @@ function FileInputComponent({
     onChange,
     required,
     errors,
+    multiple,
 }) {
     const labelText =
         labelString !== ''
@@ -27,7 +28,7 @@ function FileInputComponent({
     const hasErrors = errors.length > 0;
 
     return (
-        <FormControlComponent errors={errors} withMarginTop>
+        <FormControlComponent errors={errors}>
             <InputLabelComponent
                 htmlFor={`input-text-${keyValue}`}
                 label={labelText}
@@ -40,7 +41,13 @@ function FileInputComponent({
                 id={`input-text-${keyValue}`}
                 type="file"
                 error={hasErrors}
-                onChange={event => onChange(keyValue, event.target.files[0])}
+                inputProps={{ multiple }}
+                onChange={event => {
+                    onChange(
+                        keyValue,
+                        multiple ? event.target.files : event.target.files[0],
+                    );
+                }}
             />
         </FormControlComponent>
     );
@@ -51,6 +58,7 @@ FileInputComponent.defaultProps = {
     labelString: '',
     disabled: false,
     required: false,
+    multiple: false,
 };
 FileInputComponent.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -61,5 +69,6 @@ FileInputComponent.propTypes = {
     disabled: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
     required: PropTypes.bool,
+    multiple: PropTypes.bool,
 };
 export default injectIntl(FileInputComponent);

@@ -82,8 +82,20 @@ const MESSAGES = defineMessages({
         id: 'iaso.tasks.killTask',
     },
     killSignalSent: {
-        defaultMessage: "Signal d'arrêt envoyé",
+        defaultMessage: `Signal d'arrêt envoyé`,
         id: 'iaso.tasks.killSignalSent',
+    },
+    patchTaskError: {
+        defaultMessage: 'An error occurred while updating the task',
+        id: 'iaso.snackBar.patchTaskError',
+    },
+    patchTaskSuccess: {
+        defaultMessage: 'The task has been updated.',
+        id: 'iaso.snackBar.patchTaskSuccess',
+    },
+    fetchTasksError: {
+        defaultMessage: 'An error occurred while fetching tasks list',
+        id: 'iaso.snackBar.fetchTasksError',
     },
 });
 

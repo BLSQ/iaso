@@ -4,19 +4,22 @@ from time import gmtime, strftime
 
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework.serializers import ValidationError
+from django.conf import settings
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
-from iaso.api.common import safe_api_import
+from iaso.api.common import safe_api_import, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
@@ -57,7 +60,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     GET /api/orgunits/
     GET /api/orgunits/<id>
-    POST /api/orgunits/
+    POST /api/orgunits/ Create org units, used by mobile app
+    POST /api/orgunits/create_org_unit Create org unit, used by web app
     PATCH /api/orgunits/<id>
     """
 
@@ -85,7 +89,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
          These parameter can totally conflict and the result is undocumented
         """
         queryset = self.get_queryset()
-
         forms = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -180,8 +183,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []
+
                 for unit in page.object_list:
-                    temp_org_unit = unit.as_location()
+                    temp_org_unit = unit.as_location(with_parents=request.GET.get("withParents", None))
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
                         shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
@@ -198,8 +202,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             #  In order to get the all groups independently of filters, we should get the groups
             # based on the org_unit FK.
 
-            org_ids = queryset.order_by("pk").values_list("pk", flat=True).distinct()
-            groups = Group.objects.filter(org_units__id__in=list(org_ids)).only("id", "name").distinct("id")
+            org_ids = queryset.order_by("pk").values_list("pk", flat=True)
+            groups = Group.objects.filter(org_units__id__in=set(org_ids)).only("id", "name").distinct("id")
 
             columns = [
                 {"title": "ID", "width": 10},
@@ -249,8 +253,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "instances_count",
             )
 
+            user_account_name = profile.account.name if profile else ""
+            environment = settings.ENVIRONMENT
             filename = "org_units"
-            filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+            filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(org_unit, **kwargs):
                 location = org_unit.get("location", None)
@@ -276,11 +282,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 filename = filename + ".xlsx"
                 response = HttpResponse(
                     generate_xlsx("Forms", columns, queryset, get_row),
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    content_type=CONTENT_TYPE_XLSX,
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
@@ -301,104 +307,138 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         original_copy = deepcopy(org_unit)
 
-        name = request.data.get("name", None)
-        if not name:
-            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
-        org_unit.name = name
+        if "name" in request.data:
+            org_unit.name = request.data["name"]
+        if "source_ref" in request.data:
+            org_unit.source_ref = request.data["source_ref"]
 
-        source_ref = request.data.get("source_ref", None)
-        org_unit.source_ref = source_ref
+        if "short_name" in request.data:
+            org_unit.short_name = request.data["short_name"]
+        if "source" in request.data:
+            org_unit.source = request.data["source"]
+        if "validation_status" in request.data:
+            validation_status = request.data["validation_status"]
+            valid_validations_status = ["NEW", "VALID", "REJECTED"]
 
-        org_unit.short_name = request.data.get("short_name", "")
-        org_unit.source = request.data.get("source", "")
-
-        validation_status = request.data.get("validation_status", None)
-        if validation_status is None:
-            org_unit.validation_status = OrgUnit.VALIDATION_NEW
-        else:
             org_unit.validation_status = validation_status
-        geo_json = request.data.get("geo_json", None)
-        catchment = request.data.get("catchment", None)
-        simplified_geom = request.data.get("simplified_geom", None)
-        org_unit_type_id = request.data.get("org_unit_type_id", None)
-        instance_defining_id = request.data.get("instance_defining_id", None)
-        parent_id = request.data.get("parent_id", None)
-        groups = request.data.get("groups")
 
-        if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
-            org_unit.simplified_geom = MultiPolygon(
-                *[Polygon(*coord) for coord in geo_json["features"][0]["geometry"]["coordinates"]]
-            )
-        elif simplified_geom:
-            org_unit.simplified_geom = simplified_geom
-        else:
-            org_unit.simplified_geom = None
+            if validation_status not in valid_validations_status:
+                errors.append(
+                    {
+                        "errorKey": "validation_status",
+                        "errorMessage": _(f"Invalid validation status : {validation_status}"),
+                    }
+                )
 
-        org_unit.geom = org_unit.simplified_geom
+        if "geo_json" in request.data:
+            geo_json = request.data["geo_json"]
+            if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
+                org_unit.simplified_geom = MultiPolygon(
+                    *[Polygon(*coord) for coord in geo_json["features"][0]["geometry"]["coordinates"]]
+                )
+            else:
+                org_unit.simplified_geom = None
+        elif "simplified_geom" in request.data:
+            org_unit.simplified_geom = request.data["simplified_geom"]
+        if "geo_json" in request.data or "simplified_geom" in request.data:
+            org_unit.geom = org_unit.simplified_geom
 
-        if catchment and catchment["features"][0]["geometry"] and catchment["features"][0]["geometry"]["coordinates"]:
-            org_unit.catchment = MultiPolygon(
-                *[Polygon(*coord) for coord in catchment["features"][0]["geometry"]["coordinates"]]
-            )
-        else:
-            org_unit.catchment = None
+        if "catchment" in request.data:
+            catchment = request.data["catchment"]
+            if (
+                catchment
+                and catchment["features"][0]["geometry"]
+                and catchment["features"][0]["geometry"]["coordinates"]
+            ):
+                org_unit.catchment = MultiPolygon(
+                    *[Polygon(*coord) for coord in catchment["features"][0]["geometry"]["coordinates"]]
+                )
+            else:
+                org_unit.catchment = None
 
-        latitude = request.data.get("latitude", None)
-        longitude = request.data.get("longitude", None)
-        altitude = request.data.get("altitude", None)
-        if latitude and longitude:
-            org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        else:
-            org_unit.location = None
+        if "latitude" in request.data and "longitude" in request.data:
+            latitude = request.data["latitude"]
+            longitude = request.data["longitude"]
+            altitude = request.data["altitude"]
+            if latitude and longitude:
+                org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+            else:
+                org_unit.location = None
+
         # doing reassignment below to avoid a test fail. Assigning a default value doesn't prevent the test to fail
-        aliases = request.data.get("aliases")
-        if aliases is None:
-            aliases = []
+        if "aliases" in request.data:
+            aliases = request.data.get("aliases")
+            if aliases is None:
+                aliases = []
+            org_unit.aliases = list(filter(lambda x: x != "", aliases))
 
-        org_unit.aliases = list(filter(lambda x: x != "", aliases))
-
-        if org_unit_type_id:
+        if "org_unit_type_id" in request.data:
+            org_unit_type_id = request.data["org_unit_type_id"]
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
-        else:
-            errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
 
-        if instance_defining_id:
-            instance = Instance.objects.get(pk=instance_defining_id)
-            # Check if the instance has as form the form_defining for the orgUnittype
-            # if the form_defining is the same as the form related to the instance one,
-            # assign the instance to the orgUnit as instance defining
-            if org_unit.org_unit_type.form_defining == instance.form:
-                org_unit.instance_defining = instance
-
-        if parent_id != org_unit.parent_id:
-            # This check is a fix for when a user is restricted to certain org units hierarchy.
-            # When a user want to modify his "root" orgunit, the parent_id is included by the frontend even if
-            # not modified (the field is not present but the front send all fields)
-            #  Since the can't access the parent it 404ed
-            if parent_id:
-                parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
-                org_unit.parent = parent_org_unit
-            else:
-                # User that are restricted to parts of the hierarchy cannot create root orgunit
-                profile = request.user.iaso_profile
-                if profile.org_units.all():
+        if "reference_instance_id" in request.data:
+            reference_instance_id = request.data["reference_instance_id"]
+            if reference_instance_id:
+                instance = Instance.objects.get(pk=reference_instance_id)
+                # Check if the instance has as form the reference_form for the orgUnittype
+                # if the reference_form is the same as the form related to the instance one,
+                # assign the instance to the orgUnit as reference instance
+                if org_unit.org_unit_type.reference_form != instance.form:
                     errors.append(
-                        {"errorKey": "parent_id", "errorMessage": _("You cannot create an Org Unit without a parent")}
+                        {
+                            "errorKey": "reference_form",
+                            "errorMessage": _("Form of submssion is not allowed on this type of org unit"),
+                        }
                     )
-                org_unit.parent = None
+                else:
+                    org_unit.reference_instance = instance
+            else:
+                instance = None
+                org_unit.reference_instance = instance
 
-        new_groups = []
-        for group_id in groups:
-            temp_group = get_object_or_404(Group, id=group_id)
-            if temp_group.source_version != org_unit.version:
-                errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
-                continue
-            new_groups.append(temp_group)
+        if "parent_id" in request.data:
+            parent_id = request.data["parent_id"]
+            if parent_id != org_unit.parent_id:
+                # This check is a fix for when a user is restricted to certain org units hierarchy.
+                # When a user want to modify his "root" orgunit, the parent_id is included by the frontend even if
+                # not modified (the field is not present but the front send all fields)
+                #  Since the can't access the parent it 404ed
+                if parent_id:
+                    parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
+                    org_unit.parent = parent_org_unit
+                else:
+                    # User that are restricted to parts of the hierarchy cannot create root orgunit
+                    profile = request.user.iaso_profile
+                    if profile.org_units.all():
+                        errors.append(
+                            {
+                                "errorKey": "parent_id",
+                                "errorMessage": _("You cannot create an Org Unit without a parent"),
+                            }
+                        )
+                    org_unit.parent = None
+
+        new_groups = None
+        if "groups" in request.data:
+            new_groups = []
+            groups = request.data["groups"]
+            current_groups_ids = list(org_unit.groups.all().values_list("id", flat=True))
+            for group_id in groups:
+                temp_group = get_object_or_404(Group, id=group_id)
+                #  fix bug where if an org unit was already in a group it failed
+                if group_id not in current_groups_ids and (
+                    temp_group.source_version and temp_group.source_version != org_unit.version
+                ):
+                    errors.append({"errorKey": "groups", "errorMessage": _("Group must be in the same source version")})
+                    continue
+                new_groups.append(temp_group)
 
         if not errors:
             org_unit.save()
-            org_unit.groups.set(new_groups)
+            if new_groups is not None:
+                org_unit.groups.set(new_groups)
+
             audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 
             res = org_unit.as_dict_with_parents()
@@ -472,7 +512,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
 
-        instance_defining_id = request.data.get("instance_defining_id", None)
+        reference_instance_id = request.data.get("reference_instance_id", None)
 
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups", [])
@@ -524,13 +564,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
-        if instance_defining_id and org_unit_type:
-            instance = Instance.objects.get(pk=instance_defining_id)
-            # Check if the instance has as form the form_defining for the orgUnittype
-            # if the form_defining is the same as the form related to the instance one,
-            # assign the instance to the orgUnit as instance defining
-            if org_unit_type.form_defining == instance.form:
-                org_unit.instance_defining = instance
+        if reference_instance_id and org_unit_type:
+            instance = Instance.objects.get(pk=reference_instance_id)
+            # Check if the instance has as form the reference_form for the orgUnittype
+            # if the reference_form is the same as the form related to the instance one,
+            # assign the instance to the orgUnit as a reference instance
+            if org_unit_type.reference_form == instance.form:
+                org_unit.reference_instance = instance
 
         org_unit.save()
         org_unit.groups.set(new_groups)
@@ -568,6 +608,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
+        # add the reference instance in the dictiannary to return
+        res["reference_instance"] = org_unit.reference_instance.as_full_model() if org_unit.reference_instance else None
+
         return Response(res)
 
 

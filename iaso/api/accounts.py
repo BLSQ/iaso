@@ -1,3 +1,4 @@
+"""This api is only there so the default version on an account can be modified"""
 from rest_framework.request import Request
 
 from .common import ModelViewSet, HasPermission
@@ -12,7 +13,6 @@ class AccountSerializer(serializers.ModelSerializer):
 
         fields = [
             "id",
-            "name",
             "default_version",
         ]
 
@@ -32,7 +32,9 @@ class AccountSerializer(serializers.ModelSerializer):
 
 class HasAccountPermission(permissions.BasePermission):
     def has_object_permission(self, request: Request, view, obj: Account):
-        return request.user.iaso_profile.account == obj
+        if request.user.is_authenticated:
+            return request.user.iaso_profile.account == obj
+        return False
 
 
 class AccountViewSet(ModelViewSet):
@@ -45,10 +47,11 @@ class AccountViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_sources"),
+        HasPermission("menupermissions.iaso_sources"),  # type: ignore
         HasAccountPermission,
     ]
     serializer_class = AccountSerializer
     results_key = "accounts"
     queryset = Account.objects.all()
+    # FIXME: USe a PATCH in the future, it make more sense regarding HTTP method semantic
     http_method_names = ["put"]

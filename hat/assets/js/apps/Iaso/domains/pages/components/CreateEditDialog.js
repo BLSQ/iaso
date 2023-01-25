@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useSelector } from 'react-redux';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core/styles';
 import {
@@ -10,9 +9,9 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    Grid,
 } from '@material-ui/core';
 import isEqual from 'lodash/isEqual';
-import Grid from '@material-ui/core/Grid';
 import { get, merge } from 'lodash';
 import { Field, FormikProvider, useFormik } from 'formik';
 import * as yup from 'yup';
@@ -22,12 +21,13 @@ import Form from './Form';
 import TextInput from './TextInput';
 import Rte from './Rte';
 import RadioInput from './RadioInput';
-import SelectInput from './SelectInput';
+import { UsersSelect } from './UsersSelect.tsx';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
+
 import { useSavePage } from '../hooks/useSavePage';
-import { useGetProfiles } from '../../users/hooks/useGetProfiles';
+
 import MESSAGES from '../messages';
 import { PAGES_TYPES, IFRAME, TEXT, RAW } from '../constants';
-import getDisplayName from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -42,23 +42,14 @@ const useStyles = makeStyles(theme => ({
 
 const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
     const { mutate: savePage } = useSavePage();
-    const { data } = useGetProfiles();
-    const profiles = data ? data.profiles : [];
 
-    const currentUser = useSelector(state => state.users.current);
-    const profilesList = profiles
-        .filter(p => p.id !== currentUser.id)
-        .map(p => ({
-            value: p.user_id,
-            label: getDisplayName(p),
-        }));
     const classes = useStyles();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
 
     const handleSubmit = (values, helpers) => {
         const tempValues = { ...values };
-        const users = values.users || [];
-        users.push(currentUser.user_id);
+        const users = values.users || [currentUser.user_id];
         tempValues.users = users;
         savePage(tempValues, {
             onSuccess: () => {
@@ -79,17 +70,17 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                 name: yup
                     .string()
                     .trim()
-                    .required(intl.formatMessage(MESSAGES.nameRequired)),
+                    .required(formatMessage(MESSAGES.nameRequired)),
                 slug: yup
                     .string()
                     .trim()
-                    .required(intl.formatMessage(MESSAGES.slugRequired)),
+                    .required(formatMessage(MESSAGES.slugRequired)),
                 content:
                     type === IFRAME
                         ? yup
                               .string()
                               .trim()
-                              .url(intl.formatMessage(MESSAGES.urlNotValid))
+                              .url(formatMessage(MESSAGES.urlNotValid))
                         : yup.string().trim(),
                 type: yup.string().trim().required(),
             });
@@ -105,14 +96,14 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
     });
     const isFormTouched = !isEqual(formik.initialValues, formik.values);
     const type = get(formik.values, 'type');
-    let contentLabel = intl.formatMessage(MESSAGES.rawHtml);
+    let contentLabel = formatMessage(MESSAGES.rawHtml);
     let contentComponent = TextInput;
     if (type === IFRAME) {
-        contentLabel = intl.formatMessage(MESSAGES.url);
+        contentLabel = formatMessage(MESSAGES.url);
         contentComponent = TextInput;
     }
     if (type === TEXT) {
-        contentLabel = intl.formatMessage(MESSAGES.text);
+        contentLabel = formatMessage(MESSAGES.text);
         contentComponent = Rte;
     }
     return (
@@ -131,8 +122,8 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
             }}
         >
             <DialogTitle className={classes.title}>
-                {initialValues.id && intl.formatMessage(MESSAGES.editPage)}
-                {!initialValues.id && intl.formatMessage(MESSAGES.createPage)}
+                {initialValues.id && formatMessage(MESSAGES.editPage)}
+                {!initialValues.id && formatMessage(MESSAGES.createPage)}
             </DialogTitle>
             <DialogContent className={classes.content}>
                 <FormikProvider value={formik}>
@@ -141,7 +132,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                             <Grid xs={12} item>
                                 <Box mb={2}>
                                     <Typography>
-                                        {intl.formatMessage(
+                                        {formatMessage(
                                             MESSAGES.pageDialiogHelper,
                                         )}
                                     </Typography>
@@ -157,9 +148,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                 >
                                     <Grid xs={6} md={6} item>
                                         <Field
-                                            label={intl.formatMessage(
-                                                MESSAGES.name,
-                                            )}
+                                            label={formatMessage(MESSAGES.name)}
                                             name="name"
                                             component={TextInput}
                                             className={classes.input}
@@ -167,9 +156,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                     </Grid>
                                     <Grid xs={6} md={6} item>
                                         <Field
-                                            label={intl.formatMessage(
-                                                MESSAGES.slug,
-                                            )}
+                                            label={formatMessage(MESSAGES.slug)}
                                             name="slug"
                                             component={TextInput}
                                             className={classes.input}
@@ -177,31 +164,30 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                     </Grid>
                                     <Grid xs={6} md={6} item>
                                         <Field
-                                            label={intl.formatMessage(
+                                            label={formatMessage(
                                                 MESSAGES.users,
                                             )}
                                             name="users"
-                                            options={profilesList}
-                                            component={SelectInput}
+                                            component={UsersSelect}
                                             className={classes.input}
                                         />
                                     </Grid>
                                     <Grid xs={6} md={6} item>
                                         <Field
-                                            label={intl.formatMessage(
+                                            label={formatMessage(
                                                 MESSAGES.needsAuthentication,
                                             )}
                                             name="needs_authentication"
                                             options={[
                                                 {
                                                     value: true,
-                                                    label: intl.formatMessage(
+                                                    label: formatMessage(
                                                         MESSAGES.yes,
                                                     ),
                                                 },
                                                 {
                                                     value: false,
-                                                    label: intl.formatMessage(
+                                                    label: formatMessage(
                                                         MESSAGES.no,
                                                     ),
                                                 },
@@ -218,14 +204,12 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                     </Grid>
                                     <Grid xs={12} md={12} item>
                                         <Field
-                                            label={intl.formatMessage(
-                                                MESSAGES.type,
-                                            )}
+                                            label={formatMessage(MESSAGES.type)}
                                             name="type"
                                             options={PAGES_TYPES.map(
                                                 pageType => ({
                                                     value: pageType.value,
-                                                    label: intl.formatMessage(
+                                                    label: formatMessage(
                                                         pageType.label,
                                                     ),
                                                 }),
@@ -269,7 +253,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                             color="primary"
                             disabled={formik.isSubmitting}
                         >
-                            {intl.formatMessage(MESSAGES.cancel)}
+                            {formatMessage(MESSAGES.cancel)}
                         </Button>
                     </Box>
                     <Button
@@ -282,7 +266,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                             formik.isSubmitting
                         }
                     >
-                        {intl.formatMessage(MESSAGES.confirm)}
+                        {formatMessage(MESSAGES.confirm)}
                     </Button>
                 </Box>
             </DialogActions>

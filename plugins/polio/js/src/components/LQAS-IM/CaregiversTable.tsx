@@ -10,8 +10,7 @@ import { useSafeIntl, Table } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import {
     ConvertedLqasImData,
-    LqasImCampaignDataWithNameAndRegion,
-    RoundString,
+    LqasImDistrictDataWithNameAndRegion,
 } from '../../constants/types';
 import { makeDataForTable } from '../../pages/LQAS/utils';
 import {
@@ -27,7 +26,7 @@ import { CaregiverInfoSource } from './CaregiverInfoSource';
 type Props = {
     marginTop?: boolean;
     campaign?: string;
-    round: RoundString;
+    round: number;
     data: Record<string, ConvertedLqasImData>;
     isLoading: boolean;
     paperElevation: number;
@@ -84,7 +83,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
     const [sortFocus, setSortFocus] = useState<SortValues>('region_name');
     const [resetPageToOne, setResetPageToOne] = useState(`${rowsPerPage}`);
 
-    const dataForTable = useMemo((): LqasImCampaignDataWithNameAndRegion[] => {
+    const dataForTable = useMemo((): LqasImDistrictDataWithNameAndRegion[] => {
         return makeDataForTable(data, campaign, round);
     }, [data, campaign, round]);
 
@@ -117,7 +116,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
 
     const formatDataForTable = useCallback(
         (
-            tableData: LqasImCampaignDataWithNameAndRegion[],
+            tableData: LqasImDistrictDataWithNameAndRegion[],
             // eslint-disable-next-line no-unused-vars
             sortFunc: (a: any, b: any) => number,
         ) =>
@@ -160,7 +159,6 @@ export const CaregiversTable: FunctionComponent<Props> = ({
         }),
         [rowsPerPage, page],
     );
-
     return (
         <>
             {!isLoading && campaign && (
@@ -179,7 +177,7 @@ export const CaregiversTable: FunctionComponent<Props> = ({
                             defaultSorted={defaultSorted}
                             columns={columns(formatMessage)}
                             marginTop={false}
-                            count={data?.length ?? 0}
+                            count={dataForTable?.length ?? 0}
                             params={params}
                             resetPageToOne={resetPageToOne}
                             onTableParamsChange={handleTableParamsChange}

@@ -1,11 +1,11 @@
 /* eslint-disable camelcase */
-import React from 'react';
-import { Grid, Typography } from '@material-ui/core';
+import React, { useMemo } from 'react';
+import { Grid, Typography, Box } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import { SendEmailButton } from '../components/Buttons/SendEmailButton';
-import { polioVacines, polioViruses } from '../constants/virus';
+import { polioViruses } from '../constants/virus.ts';
 import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect';
 import {
     BooleanInput,
@@ -13,12 +13,24 @@ import {
     Select,
     TextInput,
 } from '../components/Inputs';
+import { MultiSelect } from '../components/Inputs/MultiSelect.tsx';
 import MESSAGES from '../constants/messages';
 import { EmailListForCountry } from '../components/EmailListForCountry/EmailListForCountry';
+import { useGetGroupedCampaigns } from '../hooks/useGetGroupedCampaigns.ts';
 
 export const BaseInfoForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    const { data: groupedCampaigns } = useGetGroupedCampaigns();
+    const groupedCampaignsOptions = useMemo(
+        () =>
+            groupedCampaigns?.results.map(result => ({
+                label: result.name,
+                value: result.id,
+            })) ?? [],
+
+        [groupedCampaigns],
+    );
 
     const { values } = useFormikContext();
     const { top_level_org_unit_id } = values;
@@ -31,7 +43,7 @@ export const BaseInfoForm = () => {
                         {formatMessage(MESSAGES.baseInfoFormTitle)}
                     </Typography>
                 </Grid>
-                <Grid container direction="row" item spacing={2}>
+                <Grid container item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Field
                             label={formatMessage(MESSAGES.epid)}
@@ -45,6 +57,14 @@ export const BaseInfoForm = () => {
                             name="obr_name"
                             component={TextInput}
                             className={classes.input}
+                            required
+                        />
+                        <Field
+                            label={formatMessage(MESSAGES.groupedCampaigns)}
+                            name="grouped_campaigns"
+                            options={groupedCampaignsOptions}
+                            withMarginTop={false}
+                            component={MultiSelect}
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -57,9 +77,12 @@ export const BaseInfoForm = () => {
                         />
                         <Field
                             label={formatMessage(MESSAGES.vaccines)}
-                            name="vacine"
-                            options={polioVacines}
-                            component={Select}
+                            name="vaccines"
+                            disabled
+                            component={TextInput}
+                            title={formatMessage(
+                                MESSAGES.helpTextEditVaccineViaScope,
+                            )}
                         />
                     </Grid>
                 </Grid>
@@ -71,17 +94,18 @@ export const BaseInfoForm = () => {
                         component={TextInput}
                     />
                     <Field
-                        className={classes.input}
                         label={formatMessage(MESSAGES.gpeiCoordinator)}
                         name="gpei_coordinator"
                         component={TextInput}
                     />
-                    <Field
-                        className={classes.input}
-                        name="initial_org_unit"
-                        label={formatMessage(MESSAGES.selectInitialRegion)}
-                        component={OrgUnitsLevels}
-                    />
+                    <Box mb={-2}>
+                        <Field
+                            name="initial_org_unit"
+                            label={formatMessage(MESSAGES.selectOrgUnit)}
+                            component={OrgUnitsLevels}
+                            clearable={false}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={6} md={6}>
                     <Field
@@ -90,10 +114,16 @@ export const BaseInfoForm = () => {
                         name="is_preventive"
                         component={BooleanInput}
                     />
+                    <Field
+                        className={classes.input}
+                        label={formatMessage(MESSAGES.testCampaign)}
+                        name="is_test"
+                        component={BooleanInput}
+                    />
                     <SendEmailButton />
                     <Field
                         className={classes.input}
-                        label={formatMessage(MESSAGES.enableSendWeeklyEmail)}
+                        label={formatMessage(MESSAGES.enable_send_weekly_email)}
                         name="enable_send_weekly_email"
                         component={BooleanInput}
                     />
@@ -118,7 +148,9 @@ export const BaseInfoForm = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
-                            label={formatMessage(MESSAGES.pv2NotificationDate)}
+                            label={formatMessage(
+                                MESSAGES.pv2_notification_date,
+                            )}
                             fullWidth
                             name="pv_notified_at"
                             component={DateInput}

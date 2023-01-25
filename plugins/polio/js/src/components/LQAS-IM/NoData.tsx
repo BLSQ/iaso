@@ -14,7 +14,7 @@ const style = theme => ({
     justifyCenter: { justifyContent: 'center' },
     boldText: { fontWeight: 'bold' },
 });
-
+// @ts-ignore
 const useStyles = makeStyles(style);
 
 export const NoData: FunctionComponent = () => {

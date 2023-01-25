@@ -116,6 +116,14 @@ export const reAssignInstance = (currentInstance, payload) => dispatch => {
         });
 };
 
+/* Submission Creation workflow
+ *  1. this function call backend create Instance in DB
+ *  2. backend contact enketo to generate a Form page
+ *  3. backend return an url to enketo
+ *  4. this function redirect  to the Enketo service
+ *  5. After submission Enketo/Backend redirect to the submission detail page
+ *  See enketo/README.md for full details.
+ */
 export const createInstance = (currentForm, payload) => dispatch => {
     dispatch(setInstancesFetching(true));
     // if (!payload.period) delete payload.period;
@@ -124,6 +132,7 @@ export const createInstance = (currentForm, payload) => dispatch => {
         form_id: currentForm.id,
         period: payload.period,
     }).then(
+        // Redirect the browser to Enketo
         createRequest => {
             window.location = createRequest.edit_url;
         },
@@ -197,6 +206,5 @@ export const bulkDelete =
                     ),
                 );
                 dispatch(setInstancesFetching(false));
-                throw error;
             });
     };

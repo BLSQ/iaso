@@ -55,14 +55,16 @@ def org_units_bulk_update(
 
     # Restrict qs to org units accessible to the user
     user = task.launcher
-    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)
+    # TODO: investigate type error on next line
+    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)  # type: ignore
 
     if not select_all:
         queryset = queryset.filter(pk__in=selected_ids)
     else:
         queryset = queryset.exclude(pk__in=unselected_ids)
         if searches:
-            profile = user.iaso_profile
+            # TODO: investigate: can the user be anonymous on next line?
+            profile = user.iaso_profile  # type: ignore
             base_queryset = queryset
             queryset = OrgUnit.objects.none()
             for search in searches:
@@ -75,7 +77,7 @@ def org_units_bulk_update(
     # Assure that none of the OrgUnit we are modifying is in a read only data source
     # ? Should not this be done in the save() or in a constraint?
     read_only_data_sources = DataSource.objects.filter(
-        id__in=queryset.values_list("version__data_source", flat=True).distinct(), read_only=True
+        id__in=queryset.values_list("version__data_source", flat=True), read_only=True
     )
     if read_only_data_sources.count() > 0:
         raise Exception("Modification on read only source are not allowed")

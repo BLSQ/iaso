@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
 import {
     Table,
@@ -54,13 +55,27 @@ const useStyle = makeStyles(theme => ({
 
 /**
  * Translate the provided label if it is translatable
- *
+ * If the locale language matches the user language, we display it
+ * if not, we display it in English by default
+ * if there is no english version, we display the first one
  * @param label
  * @returns {*}
  */
-function translateLabel(label) {
-    // TODO: pick current locale - not trivial since keys could be "FR", "French", "En français"...
+
+const labelLocales = { fr: 'French', en: 'English' };
+
+function translateLabel(label, activeLocale) {
     if (isPlainObject(label)) {
+        const correctKey = Object.keys(label).find(key => {
+            if (labelLocales[activeLocale].includes(key)) {
+                return true;
+            }
+            return labelLocales.en.includes(key);
+        });
+
+        if (correctKey) {
+            return label[correctKey];
+        }
         return label[Object.keys(label)[0]];
     }
 
@@ -82,18 +97,17 @@ function getRawValue(descriptor, data) {
  * @param data
  * @returns {string|*}
  */
-function getDisplayedValue(descriptor, data) {
+function getDisplayedValue(descriptor, data, activeLocale) {
     const value = data[descriptor.name];
     if (value === undefined) {
         return textPlaceholder;
     }
-
     switch (descriptor.type) {
         case 'select_one':
         case 'select one': {
             const choice = descriptor.children.find(c => c.name === value);
             return choice !== undefined
-                ? translateLabel(choice.label)
+                ? translateLabel(choice.label, activeLocale)
                 : `${value} (choice not found)`;
         }
         case 'select_multiple':
@@ -102,7 +116,9 @@ function getDisplayedValue(descriptor, data) {
                 value.split(' ').includes(c.name),
             );
             return choices.length > 0
-                ? choices.map(choice => translateLabel(choice.label)).join(', ')
+                ? choices
+                      .map(choice => translateLabel(choice.label, activeLocale))
+                      .join(', ')
                 : `${value} (multi choice not found)`;
         }
         default:
@@ -113,6 +129,8 @@ function getDisplayedValue(descriptor, data) {
 export default function InstanceFileContentRich({
     instanceData,
     formDescriptor,
+    showQuestionKey,
+    showNote,
 }) {
     return (
         <Table>
@@ -124,6 +142,8 @@ export default function InstanceFileContentRich({
                             key={childDescriptor.name}
                             descriptor={childDescriptor}
                             data={instanceData}
+                            showQuestionKey={showQuestionKey}
+                            showNote={showNote}
                         />
                     ))}
             </TableBody>
@@ -131,12 +151,19 @@ export default function InstanceFileContentRich({
     );
 }
 
+InstanceFileContentRich.defaultProps = {
+    showQuestionKey: true,
+    showNote: true,
+};
+
 InstanceFileContentRich.propTypes = {
     instanceData: PropTypes.object.isRequired,
     formDescriptor: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
+    showNote: PropTypes.bool,
 };
 
-function FormChild({ descriptor, data }) {
+function FormChild({ descriptor, data, showQuestionKey, showNote }) {
     switch (descriptor.type) {
         case 'repeat':
             return data[descriptor.name] ? (
@@ -145,35 +172,70 @@ function FormChild({ descriptor, data }) {
                         key={`repeat-${index}`}
                         descriptor={descriptor}
                         data={subdata}
+                        showQuestionKey={showQuestionKey}
                     />
                 ))
             ) : (
                 <></>
             );
         case 'group':
-            return <FormGroup descriptor={descriptor} data={data} />;
-        case 'start':
-        case 'end':
-        case 'today':
+            return (
+                <FormGroup
+                    descriptor={descriptor}
+                    data={data}
+                    showQuestionKey={showQuestionKey}
+                />
+            );
         case 'deviceid':
         case 'subscriberid':
         case 'simserial':
         case 'phonenumber':
-            return <FormMetaField descriptor={descriptor} data={data} />;
+            return (
+                <FormMetaField
+                    descriptor={descriptor}
+                    data={data}
+                    showQuestionKey={showQuestionKey}
+                />
+            );
         case 'note':
-            return <FormNoteField descriptor={descriptor} />;
+            return showNote ? (
+                <FormNoteField
+                    descriptor={descriptor}
+                    showQuestionKey={showQuestionKey}
+                />
+            ) : null;
         case 'calculate':
-            return <FormCalculatedField descriptor={descriptor} data={data} />;
+            return (
+                <FormCalculatedField
+                    descriptor={descriptor}
+                    data={data}
+                    showQuestionKey={showQuestionKey}
+                />
+            );
         default:
-            return <FormField descriptor={descriptor} data={data} />;
+            return (
+                <FormField
+                    descriptor={descriptor}
+                    data={data}
+                    showQuestionKey={showQuestionKey}
+                />
+            );
     }
 }
+
+FormChild.defaultProps = {
+    showQuestionKey: true,
+    showNote: true,
+};
+
 FormChild.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
+    showNote: PropTypes.bool,
 };
 
-function FormGroup({ descriptor, data }) {
+function FormGroup({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
 
     return (
@@ -184,7 +246,10 @@ function FormGroup({ descriptor, data }) {
                     align="center"
                     className={classes.tableCellHead}
                 >
-                    <Label descriptor={descriptor} />
+                    <Label
+                        descriptor={descriptor}
+                        showQuestionKey={showQuestionKey}
+                    />
                 </TableCell>
             </TableRow>
             {descriptor.children.map(childDescriptor => (
@@ -197,36 +262,53 @@ function FormGroup({ descriptor, data }) {
         </>
     );
 }
+
+FormGroup.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormGroup.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormField({ descriptor, data }) {
+function FormField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     return (
         <TableRow>
             <TableCell className={classes.tableCell}>
-                <Label descriptor={descriptor} />
+                <Label
+                    descriptor={descriptor}
+                    showQuestionKey={showQuestionKey}
+                />
             </TableCell>
             <TableCell
                 className={classes.tableCell}
                 align="right"
                 title={getRawValue(descriptor, data)}
             >
-                {getDisplayedValue(descriptor, data)}
+                {getDisplayedValue(descriptor, data, activeLocale)}
             </TableCell>
         </TableRow>
     );
 }
+
+FormField.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormField.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormCalculatedField({ descriptor, data }) {
+function FormCalculatedField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     return (
         <TableRow>
@@ -239,40 +321,55 @@ function FormCalculatedField({ descriptor, data }) {
                     <Label
                         descriptor={descriptor}
                         tooltip={descriptor.bind.calculate}
+                        showQuestionKey={showQuestionKey}
                     />
                 </div>
             </TableCell>
             <TableCell className={classes.tableCell} align="right">
-                {getDisplayedValue(descriptor, data)}
+                {getDisplayedValue(descriptor, data, activeLocale)}
             </TableCell>
         </TableRow>
     );
 }
+
+FormCalculatedField.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormCalculatedField.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormMetaField({ descriptor, data }) {
+function FormMetaField({ descriptor, data, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     return (
         <TableRow>
             <TableCell className={classes.tableCell} colSpan={2}>
                 <Label
                     descriptor={descriptor}
-                    value={getDisplayedValue(descriptor, data)}
+                    value={getDisplayedValue(descriptor, data, activeLocale)}
+                    showQuestionKey={showQuestionKey}
                 />
             </TableCell>
         </TableRow>
     );
 }
+
+FormMetaField.defaultProps = {
+    showQuestionKey: true,
+};
+
 FormMetaField.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
 };
 
-function FormNoteField({ descriptor }) {
+function FormNoteField({ descriptor, showQuestionKey }) {
     const classes = useStyle();
 
     return (
@@ -283,23 +380,33 @@ function FormNoteField({ descriptor }) {
                         color="disabled"
                         className={classes.tableCellLabelIcon}
                     />
-                    <Label descriptor={descriptor} />
+                    <Label
+                        descriptor={descriptor}
+                        showQuestionKey={showQuestionKey}
+                    />
                 </div>
             </TableCell>
         </TableRow>
     );
 }
-FormNoteField.propTypes = {
-    descriptor: PropTypes.object.isRequired,
+
+FormNoteField.defaultProps = {
+    showQuestionKey: true,
 };
 
-function Label({ descriptor, value, tooltip }) {
+FormNoteField.propTypes = {
+    descriptor: PropTypes.object.isRequired,
+    showQuestionKey: PropTypes.bool,
+};
+
+function Label({ descriptor, value, tooltip, showQuestionKey }) {
     const classes = useStyle();
+    const activeLocale = useSelector(state => state.app.locale.code);
 
     let label = descriptor.name;
     let showNameHint = false;
     if ('label' in descriptor) {
-        label = translateLabel(descriptor.label);
+        label = translateLabel(descriptor.label, activeLocale);
 
         if (value !== null) {
             // useful for meta questions, whose labels are like "subscriberid ${subscriberid}"
@@ -312,11 +419,13 @@ function Label({ descriptor, value, tooltip }) {
     const labelElement = (
         <div className={classes.tableCellLabel}>
             {label.replace(/(<([^>]+)>)/gi, '')}
-            {showNameHint && (
-                <div className={classes.tableCellLabelName}>
+            {showQuestionKey
+                ? showNameHint && (
+                      <div className={classes.tableCellLabelName}>
                     {descriptor.name}
                 </div>
-            )}
+                  )
+                : null}
         </div>
     );
 
@@ -328,12 +437,16 @@ function Label({ descriptor, value, tooltip }) {
         </Tooltip>
     );
 }
+
 Label.defaultProps = {
     value: null,
     tooltip: null,
+    showQuestionKey: true,
 };
+
 Label.propTypes = {
     descriptor: PropTypes.object.isRequired,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     tooltip: PropTypes.string,
+    showQuestionKey: PropTypes.bool,
 };

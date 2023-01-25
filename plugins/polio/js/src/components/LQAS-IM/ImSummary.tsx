@@ -2,14 +2,14 @@
 import { Box, Divider, Grid, makeStyles, Typography } from '@material-ui/core';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData, RoundString } from '../../constants/types';
+import { ConvertedLqasImData } from '../../constants/types';
 import { makeAccordionData } from '../../utils/LqasIm';
 import MESSAGES from '../../constants/messages';
 import { FAIL_COLOR, OK_COLOR } from '../../styles/constants';
 
 type Props = {
     campaign?: string;
-    round: RoundString;
+    round: number;
     type: 'imGlobal' | 'imIHH' | 'imOHH';
     data: Record<string, ConvertedLqasImData>;
 };
@@ -23,6 +23,7 @@ const style = {
     warning: { color: 'rgb(255,196,53)' },
 };
 
+// @ts-ignore
 const useStyles = makeStyles(style);
 
 const getVaccinatedColors = (vaccinated, classes) => {

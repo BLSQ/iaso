@@ -8,18 +8,25 @@ type Params = {
     data?: Record<string, LqasImCampaign>;
     campaign?: string;
     type: 'lqas' | 'im';
+    selectedRounds: [number, number];
 };
 
 const translateTitle = (formatMessage: IntlFormatMessage) => (ratio: string) =>
     `${formatMessage(MESSAGES.childrenNoMark)}: ${ratio}`;
 
-export const useNfmTitle = ({ data, campaign, type }: Params): string[] => {
+export const useNfmTitle = ({
+    data,
+    campaign,
+    type,
+    selectedRounds,
+}: Params): string[] => {
     const { formatMessage } = useSafeIntl();
     const makeTitle = translateTitle(formatMessage);
     const [ratioUnmarkedRound1, ratioUnmarkedRound2] = makeRatioUnmarked({
         data,
         campaign,
         type,
+        selectedRounds,
     });
 
     return useMemo(

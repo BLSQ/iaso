@@ -20,7 +20,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       # Merge the workflow_dispatch config with some default for deployment via the on:push
       - name: Set configs
@@ -43,7 +43,7 @@ jobs:
           export GITHUB_BRANCH=${GITHUB_REF##*heads/}
           echo $GITHUB_BRANCH
           git describe --tags
-          echo "::set-output name=VERSION_NAME::$(git describe --tags)"
+          echo "::set-output name=VERSION_NAME::$(git describe --tags --match "v[[:digit:]]*")"
       - name: Slack deployement start
         uses: rtCamp/action-slack-notify@v2.1.3
         env:
@@ -61,7 +61,7 @@ jobs:
           node-version: '14'
       - name: upgrade npm
         run: |
-          npm install --global npm
+          npm install --global npm@8.5
       - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
@@ -79,9 +79,9 @@ jobs:
           npm --version
           pip list
 
-      - name: npm install
+      - name: npm ci
         run: |
-          npm install
+          npm ci
 
       - name: npm build
         run: |

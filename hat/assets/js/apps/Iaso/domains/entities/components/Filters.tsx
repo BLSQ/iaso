@@ -12,7 +12,7 @@ import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
 
-import { useGetTypes } from '../entityTypes/hooks/requests';
+import { useGetTypes } from '../entityTypes/hooks/requests/entitiyTypes';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -112,7 +112,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     alignItems="center"
                 >
                     <Button
-                        id="search-button"
+                        data-test="search-button"
                         disabled={!filtersUpdated}
                         variant="contained"
                         className={classes.button}

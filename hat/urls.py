@@ -1,10 +1,14 @@
 from django.contrib import admin, auth
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
 from iaso.views import page, health
-import django_sql_dashboard
+import django_sql_dashboard  # type: ignore
+
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -49,6 +53,24 @@ urlpatterns = [
         name="reset_password_complete",
     ),
     path("sync/", include("hat.sync.urls")),
+]
+
+# Swagger config
+schema_view = get_schema_view(
+    openapi.Info(
+        title="Iaso",
+        default_version="v1",
+        description="Iaso Swagger",
+    ),
+    public=False,
+    urlconf="hat.urls",
+    permission_classes=(permissions.IsAdminUser,),
+)
+
+urlpatterns = urlpatterns + [
+    re_path(r"^swagger(?P<format>\.json|\.yaml)$", schema_view.without_ui(cache_timeout=0), name="schema-json"),
+    re_path(r"^swagger/$", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
+    re_path(r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
 if settings.BEANSTALK_WORKER or settings.DEBUG:

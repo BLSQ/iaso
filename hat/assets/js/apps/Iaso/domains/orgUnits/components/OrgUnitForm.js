@@ -1,14 +1,13 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import { withStyles, Button, Grid } from '@material-ui/core';
-import { FormattedMessage } from 'react-intl';
+import { Grid, Box, makeStyles } from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
 import OrgUnitInfos from './OrgUnitInfosComponent';
-import MESSAGES from '../messages';
 
 const initialFormState = orgUnit => {
     return {
@@ -23,22 +22,26 @@ const initialFormState = orgUnit => {
         aliases: orgUnit.aliases,
         parent_id: orgUnit.parent_id,
         source_ref: orgUnit.source_ref,
+        creator: orgUnit.creator,
     };
 };
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-});
-const OrgUnitForm = ({
+}));
+
+export const OrgUnitForm = ({
     orgUnit,
-    classes,
     orgUnitTypes,
     groups,
     saveOrgUnit,
     params,
     baseUrl,
     onResetOrgUnit,
+    isFetchingOrgUnitTypes,
+    isFetchingGroups,
 }) => {
+    const classes = useStyles();
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
     const [orgUnitModified, setOrgUnitModified] = useState(false);
@@ -49,7 +52,7 @@ const OrgUnitForm = ({
         saveOrgUnit(
             newOrgUnit,
             savedOrgUnit => {
-                setOrgUnitModified(false);
+                setOrgUnitModified(true);
                 setFormState(initialFormState(savedOrgUnit));
             },
             error => {
@@ -70,7 +73,7 @@ const OrgUnitForm = ({
         [setFieldValue],
     );
 
-    // TODO change compoenent in blsq-comp library to avoid separate handler
+    // TODO change component in blsq-comp library to avoid separate handler
     // This fix assumes we can only add one alias at a time
     const handleChangeAlias = useCallback(
         (key, value) => {
@@ -104,7 +107,7 @@ const OrgUnitForm = ({
         onResetOrgUnit();
     };
 
-    const isNewOrgunit = orgUnit && !orgUnit.id;
+    const isNewOrgunit = params.orgUnitId === '0';
 
     useEffect(() => {
         if (orgUnit.id !== formState.id.value) {
@@ -112,50 +115,34 @@ const OrgUnitForm = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnit.id]);
+
     return (
-        <>
-            <OrgUnitInfos
-                params={params}
-                baseUrl={baseUrl}
-                orgUnit={{
-                    ...orgUnit,
-                    ...formState,
-                }}
-                orgUnitTypes={orgUnitTypes}
-                groups={groups}
-                onChangeInfo={handleChangeInfo}
-                resetTrigger={!orgUnitModified}
-            />
+        <Box pt={isNewOrgunit ? 2 : 0}>
             <Grid
                 container
                 spacing={0}
                 alignItems="center"
-                className={classes.marginTopBig}
+                className={classnames(!isNewOrgunit && classes.marginTopBig)}
             >
-                <Grid xs={12} item className={classes.textAlignRight}>
-                    {!isNewOrgunit && (
-                        <Button
-                            className={classes.marginLeft}
-                            disabled={!orgUnitModified}
-                            variant="contained"
-                            onClick={() => handleReset()}
-                        >
-                            <FormattedMessage {...MESSAGES.cancel} />
-                        </Button>
-                    )}
-                    <Button
-                        id="save-ou"
-                        disabled={!orgUnitModified}
-                        variant="contained"
-                        className={classes.marginLeft}
-                        color="primary"
-                        onClick={() => handleSave()}
-                    >
-                        <FormattedMessage {...MESSAGES.save} />
-                    </Button>
-                </Grid>
+                <OrgUnitInfos
+                    params={params}
+                    baseUrl={baseUrl}
+                    orgUnit={{
+                        ...orgUnit,
+                        ...formState,
+                    }}
+                    orgUnitTypes={orgUnitTypes}
+                    groups={groups}
+                    onChangeInfo={handleChangeInfo}
+                    resetTrigger={!orgUnitModified}
+                    handleSave={handleSave}
+                    handleReset={handleReset}
+                    orgUnitModified={orgUnitModified}
+                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                    isFetchingGroups={isFetchingGroups}
+                />
             </Grid>
-        </>
+        </Box>
     );
 };
 
@@ -163,11 +150,10 @@ OrgUnitForm.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
-    classes: PropTypes.object.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     onResetOrgUnit: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string.isRequired,
+    isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
+    isFetchingGroups: PropTypes.bool.isRequired,
 };
-
-export default withStyles(styles)(OrgUnitForm);

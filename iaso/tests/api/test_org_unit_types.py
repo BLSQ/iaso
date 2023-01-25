@@ -1,5 +1,4 @@
 import typing
-from django.test import tag
 
 from iaso.test import APITestCase
 from iaso import models as m
@@ -14,24 +13,26 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.esd = m.Project.objects.create(name="End Some Diseases", account=wha)
 
         cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
-        cls.form_defining = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
-        cls.form_defining_update = m.Form.objects.create(
-            name="Form defining update", period_type=m.MONTH, single_per_period=True
+        cls.reference_form = m.Form.objects.create(
+            name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
-        cls.form_defining_wrong_project = m.Form.objects.create(
-            name="Form defining with wrong project", period_type=m.MONTH, single_per_period=True
+        cls.reference_form_update = m.Form.objects.create(
+            name="Reference form update", period_type=m.MONTH, single_per_period=True
+        )
+        cls.reference_form_wrong_project = m.Form.objects.create(
+            name="Reference form with wrong project", period_type=m.MONTH, single_per_period=True
         )
         cls.org_unit_type_1 = m.OrgUnitType.objects.create(
-            name="Plop", short_name="Pl", form_defining_id=cls.form_defining_update.id
+            name="Plop", short_name="Pl", reference_form_id=cls.reference_form_update.id
         )
         cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
         cls.ead.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
 
-        cls.ead.forms.add(cls.form_defining)
-        cls.ead.forms.add(cls.form_defining_update)
+        cls.ead.forms.add(cls.reference_form)
+        cls.ead.forms.add(cls.reference_form_update)
         cls.ead.save()
 
-        cls.esd.forms.add(cls.form_defining_wrong_project)
+        cls.esd.forms.add(cls.reference_form_wrong_project)
         cls.esd.save()
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
@@ -103,7 +104,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
-    def test_org_unit_type_create_with_not_existing_form_defining_ok(self):
+    def test_org_unit_type_create_with_not_existing_reference_form_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""
 
         self.client.force_authenticate(self.jane)
@@ -115,14 +116,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
-                "form_defining_id": 100,
+                "reference_form_id": 100,
             },
             format="json",
         )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "form_defining_id", 'Invalid pk "100" - object does not exist.')
+        self.assertHasError(response.json(), "reference_form_id", 'Invalid pk "100" - object does not exist.')
 
-    def test_org_unit_type_create_with_form_defining_ok(self):
+    def test_org_unit_type_create_with_reference_form_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""
 
         self.client.force_authenticate(self.jane)
@@ -134,7 +135,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
-                "form_defining_id": self.form_defining.id,
+                "reference_form_id": self.reference_form.id,
             },
             format="json",
         )
@@ -142,10 +143,10 @@ class OrgUnitTypesAPITestCase(APITestCase):
         org_unit_type_data = response.json()
         self.assertJSONResponse(response, 201)
         self.assertValidOrgUnitTypeData(org_unit_type_data)
-        self.assertEqual(self.form_defining.id, org_unit_type_data["form_defining"]["id"])
+        self.assertEqual(self.reference_form.id, org_unit_type_data["reference_form"]["id"])
 
-    def test_org_unit_type_create_with_form_defining_wrong_project(self):
-        """POST /orgunittypes/ with Invalid form defining id"""
+    def test_org_unit_type_create_with_reference_form_wrong_project(self):
+        """POST /orgunittypes/ with Invalid reference form id"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(
@@ -156,13 +157,13 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
-                "form_defining_id": self.form_defining_wrong_project.id,
+                "reference_form_id": self.reference_form_wrong_project.id,
             },
             format="json",
         )
 
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "form_defining_id", "Invalid form defining id")
+        self.assertHasError(response.json(), "reference_form_id", "Invalid reference form id")
 
     def test_org_unit_type_create_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""
@@ -225,7 +226,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
 
-    def test_org_unit_type_update_with_form_defining_id_ok(self):
+    def test_org_unit_type_update_with_reference_form_id_ok(self):
         """PUT /orgunittypes/<org_unit_type_id>: 200 OK"""
 
         self.client.force_authenticate(self.jane)
@@ -237,7 +238,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
-                "form_defining_id": self.form_defining_update.id,
+                "reference_form_id": self.reference_form_update.id,
             },
             format="json",
         )
@@ -280,7 +281,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertHasField(org_unit_type_data, "projects", list, optional=True)
         self.assertHasField(org_unit_type_data, "sub_unit_types", list, optional=True)
         self.assertHasField(org_unit_type_data, "created_at", float)
-        self.assertHasField(org_unit_type_data, "form_defining", dict, optional=True)
+        self.assertHasField(org_unit_type_data, "reference_form", dict, optional=True)
 
         if "projects" in org_unit_type_data:
             for project_data in org_unit_type_data["projects"]:

@@ -1,7 +1,9 @@
+import { ReactElement } from 'react';
+
 export type VisibleColumn = {
     active: boolean;
     disabled: boolean;
     key: string;
-    label: string;
-    meta: boolean;
+    label: string | ReactElement;
+    meta?: boolean;
 };

@@ -219,28 +219,20 @@ interface PossibleColumn extends Column {
     accessor: string;
 }
 
-export type NewColumn = {
-    key: string;
-    label: string | ReactElement;
-    active: boolean;
-    meta?: boolean;
-    disabled: boolean;
-};
-
 export const useGetInstancesVisibleColumns = ({
     order,
     defaultOrder,
 }: Props): ((
     // eslint-disable-next-line no-unused-vars
-    possibleFields?: PossibleField[],
-    // eslint-disable-next-line no-unused-vars
     columns?: string,
-) => NewColumn[]) => {
+    // eslint-disable-next-line no-unused-vars
+    possibleFields?: PossibleField[],
+) => VisibleColumn[]) => {
     const { formatMessage } = useSafeIntl();
     const activeOrders: string[] = (order || defaultOrder).split(',');
     const getInstancesVisibleColumns = (
-        possibleFields: PossibleField[],
         columns?: string,
+        possibleFields?: PossibleField[],
     ) => {
         const columnsNames: string[] = columns ? columns.split(',') : [];
         const metasColumns: PossibleColumn[] = [
@@ -248,7 +240,7 @@ export const useGetInstancesVisibleColumns = ({
                 c => c.accessor !== 'actions',
             ),
         ];
-        const newColumns: NewColumn[] = metasColumns.map(c => ({
+        const newColumns: VisibleColumn[] = metasColumns.map(c => ({
             key: c.accessor,
             label: c.Header,
             active: columnsNames.includes(c.accessor),

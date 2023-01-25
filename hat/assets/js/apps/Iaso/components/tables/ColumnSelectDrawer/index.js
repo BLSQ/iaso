@@ -54,6 +54,7 @@ const ColumnsSelectDrawer = ({
     setOptions,
     minColumns,
     intl: { formatMessage },
+    disabled,
 }) => {
     const [state, setState] = React.useState({
         open: false,
@@ -83,6 +84,7 @@ const ColumnsSelectDrawer = ({
     return (
         <>
             <Button
+                disabled={disabled}
                 variant="contained"
                 color="primary"
                 onClick={toggleDrawer(true)}
@@ -197,6 +199,7 @@ ColumnsSelectDrawer.propTypes = {
     setOptions: PropTypes.func.isRequired,
     minColumns: PropTypes.number,
     intl: PropTypes.object.isRequired,
+    disabled: PropTypes.bool.isRequired,
 };
 
 const styledAndTranslated = withStyles(styles)(injectIntl(ColumnsSelectDrawer));

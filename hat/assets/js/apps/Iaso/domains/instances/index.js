@@ -168,7 +168,7 @@ const Instances = ({ params }) => {
                     possibleFields={possibleFields}
                     setFormIds={setFormIds}
                     periodType={periodType}
-                    setTableColumns={newCols => setTableColumns(newCols)}
+                    setTableColumns={setTableColumns}
                     baseUrl={baseUrl}
                     labelKeys={labelKeys}
                     formDetails={formDetails}
@@ -176,15 +176,14 @@ const Instances = ({ params }) => {
                     tab={tab}
                 />
                 {tab === 'list' && (
-                    <Grid
-                        container
-                        spacing={0}
-                        alignItems="center"
-                        className={classes.marginTop}
-                    >
+                    <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
                             {formIds?.length === 1 && (
-                                <div className={classes.paddingBottomBig}>
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    mb={2}
+                                >
                                     <CreateReAssignDialog
                                         titleMessage={
                                             MESSAGES.instanceCreationDialogTitle
@@ -209,22 +208,15 @@ const Instances = ({ params }) => {
                                             )
                                         }
                                     />
-                                    <Box
-                                        mb={2}
-                                        mt={2}
-                                        display="flex"
-                                        justifyContent="flex-end"
-                                    >
-                                        <DownloadButtonsComponent
-                                            csvUrl={getExportUrl(params, 'csv')}
-                                            xlsxUrl={getExportUrl(
-                                                params,
-                                                'xlsx',
-                                            )}
-                                        />
-                                    </Box>
-                                </div>
+                                </Box>
                             )}
+
+                            <Box display="flex" justifyContent="flex-end">
+                                <DownloadButtonsComponent
+                                    csvUrl={getExportUrl(params, 'csv')}
+                                    xlsxUrl={getExportUrl(params, 'xlsx')}
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 )}

@@ -233,8 +233,14 @@ const InstancesFiltersComponent = ({
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
+    const isSearchDisabled =
+        !isInstancesFilterUpdated ||
+        periodError ||
+        startPeriodError ||
+        endPeriodError ||
+        hasLocationLimitError;
     return (
-        <div className={classes.marginBottomBig}>
+        <div className={classes.marginBottom}>
             <UserOrgUnitRestriction />
 
             <Grid container spacing={2}>
@@ -419,8 +425,10 @@ const InstancesFiltersComponent = ({
                             <Box mr={2} display="inline-block">
                                 <ColumnSelect
                                     params={params}
-                                    possibleFields={possibleFields}
-                                    formIds={formIds}
+                                    disabled={
+                                        params.formIds !==
+                                        formState.formIds.value
+                                    }
                                     periodType={periodType}
                                     setTableColumns={newCols =>
                                         setTableColumns(newCols)
@@ -433,13 +441,7 @@ const InstancesFiltersComponent = ({
                             </Box>
                         )}
                         <Button
-                            disabled={
-                                !isInstancesFilterUpdated ||
-                                periodError ||
-                                startPeriodError ||
-                                endPeriodError ||
-                                hasLocationLimitError
-                            }
+                            disabled={isSearchDisabled}
                             variant="contained"
                             className={classes.button}
                             color="primary"

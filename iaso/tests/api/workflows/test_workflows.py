@@ -1,21 +1,8 @@
 import jsonschema
 
-from django.utils.timezone import now
-from django.contrib.auth.models import AnonymousUser
 
-from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
-from iaso.models.workflow import WorkflowVersionsStatus
-from iaso.test import APITestCase
-
-from pprint import pprint
-
-
-def var_dump(what):
-    if type(what) is dict:
-        pprint(what)
-    else:
-        pprint(what.__dict__)
+from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
 
 post_answer_schema = {
@@ -31,75 +18,7 @@ post_answer_schema = {
 }
 
 
-class WorkflowsAPITestCase(APITestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.now = now()
-
-        blue_adults = m.Account.objects.create(name="Blue Adults")
-        blue_children = m.Account.objects.create(name="Blue Children")
-
-        cls.anon = AnonymousUser()
-
-        cls.blue_adult_1 = cls.create_user_with_profile(
-            username="blue_adult_1", account=blue_adults, permissions=["iaso_workflows"]
-        )
-
-        cls.blue_child_1 = cls.create_user_with_profile(
-            username="blue_child_1",
-            account=blue_children,
-            permissions=["iaso_workflows"],
-        )
-
-        # He doesn't have permissions
-        cls.blue_adult_np = cls.create_user_with_profile(
-            username="blue_adult_np", account=blue_adults
-        )
-
-        cls.project_blue_adults = m.Project.objects.create(
-            name="Blue Adults Project",
-            app_id="blue.adults.project",
-            account=blue_adults,
-        )
-
-        cls.form_adults_blue = m.Form.objects.create(
-            name="Blue Adults Form", form_id="adults_form_blue", created_at=cls.now
-        )
-
-        cls.form_children_blue = m.Form.objects.create(
-            name="Blue Children Form", form_id="children_form_blue", created_at=cls.now
-        )
-
-        cls.project_blue_adults.forms.add(cls.form_adults_blue)
-        cls.project_blue_adults.save()
-
-        cls.et_children_blue = m.EntityType.objects.create(
-            name="Children of Blue",
-            created_at=cls.now,
-            account=blue_children,
-            reference_form=cls.form_children_blue,
-        )
-
-        cls.workflow_et_children_blue = Workflow.objects.create(
-            entity_type=cls.et_children_blue
-        )
-
-        cls.et_adults_blue = m.EntityType.objects.create(
-            name="Adults of Blue",
-            created_at=cls.now,
-            account=blue_adults,
-            reference_form=cls.form_adults_blue,
-        )
-        cls.workflow_et_adults_blue = Workflow.objects.create(
-            entity_type=cls.et_adults_blue
-        )
-
-        cls.workflow_version_et_adults_blue = WorkflowVersion.objects.create(
-            workflow=cls.workflow_et_adults_blue,
-            name="workflow_version_et_adults_blue V1",
-            status=WorkflowVersionsStatus.PUBLISHED,
-        )
-
+class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
     def test_user_without_auth(self):
         response = self.client.get(
             f"/api/workflowversions/?workflow__entity_type={self.et_adults_blue.pk}/"
@@ -294,39 +213,6 @@ class WorkflowsAPITestCase(APITestCase):
         except WorkflowVersion.DoesNotExist as ex:
             self.fail(msg=str(ex))
 
-    def test_mobile_api_without_app_id(self):
-        self.client.force_authenticate(self.blue_adult_1)
-
-        response = self.client.get("/api/mobile/workflows/")
-
-        self.assertJSONResponse(response, 404)
-
-        assert response.data == "No app_id provided"
-
-    def test_mobile_api_with_nonexisting_app_id(self):
-        self.client.force_authenticate(self.blue_adult_1)
-
-        response = self.client.get("/api/mobile/workflows/?app_id=wrong_app_id")
-
-        self.assertJSONResponse(response, 404)
-
-        assert (
-            response.data
-            == "User not found in Projects for this app id or project not found"
-        )
-
-    def test_mobile_api_with_nonaccessible_app_id(self):
-        self.client.force_authenticate(self.blue_adult_1)
-
-        response = self.client.get("/api/mobile/workflows/?app_id=red.adults.project")
-
-        self.assertJSONResponse(response, 404)
-
-        assert (
-            response.data
-            == "User not found in Projects for this app id or project not found"
-        )
-
     def test_soft_delete_workflow_version(self):
         self.client.force_authenticate(self.blue_adult_1)
 
@@ -348,40 +234,3 @@ class WorkflowsAPITestCase(APITestCase):
             pass
 
         assert loaded_temp_version.deleted_at is not None
-
-    def test_mobile_api_ok(self):
-        self.client.force_authenticate(self.blue_adult_1)
-
-        set_tl_schema = {
-            "type": "object",
-            "properties": {
-                "workflows": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "status": {"type": "string"},
-                            "created_at": {"type": "number"},
-                            "updated_at": {"type": "number"},
-                            "version_id": {"type": "number"},
-                            "entity_type_id": {"type": "number"},
-                            "name": {"type": "string"},
-                            "changes": {"type": "array"},
-                            "follow_ups": {"type": "array"},
-                        },
-                    },
-                }
-            },
-            "required": ["workflows"],
-        }
-
-        response = self.client.get("/api/mobile/workflows/?app_id=blue.adults.project")
-
-        self.assertJSONResponse(response, 200)
-
-        try:
-            jsonschema.validate(instance=response.data, schema=set_tl_schema)
-        except jsonschema.exceptions.ValidationError as ex:
-            self.fail(msg=str(ex))
-
-        assert len(response.data["workflows"]) == 1

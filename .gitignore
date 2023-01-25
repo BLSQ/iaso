@@ -165,3 +165,6 @@ entrypoint.dev.sh
 requirements_m1.txt
 
 .python-version
+
+requirements_*.txt
+hat/settings_local.py

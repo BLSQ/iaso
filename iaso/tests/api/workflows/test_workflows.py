@@ -104,7 +104,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
         response = self.client.get(f"{BASE_API}?limit=2")
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 1)  # 1 version available
+        self.assertEqual(response.json()["count"], 3)  # 2 versions available
 
         try:
             jsonschema.validate(instance=response.data, schema=set_tl_schema)

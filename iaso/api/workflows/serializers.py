@@ -98,13 +98,11 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         # But we can have two different keys mapping to the same value, we need to check for it
 
         def find_question_by_name(name, questions):
-            for q in questions:
-                if q["name"] == name:
-                    return q
+            if questions is not None:
+                for q in questions:
+                    if q["name"] == name:
+                        return q
             return None
-
-        print("s_questions", s_questions)
-        print("r_questions", r_questions)
 
         if len(mapping.values()) != len(list(set(mapping.values()))):
             raise serializers.ValidationError(f"Mapping cannot have two identical values")
@@ -119,7 +117,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
 
             q = find_question_by_name(key, r_questions)
             if q is None:
-                raise serializers.ValidationError(f"Question {value} does not exist in reference form")
+                raise serializers.ValidationError(f"Question {key} does not exist in reference form")
             else:
                 r_type = q["type"]
 

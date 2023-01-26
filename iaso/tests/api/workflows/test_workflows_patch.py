@@ -43,7 +43,7 @@ class WorkflowsPatchAPITestCase(BaseWorkflowsAPITestCase):
         self.client.force_authenticate(self.blue_adult_1)
 
         response = self.client.patch(
-            f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/",
+            f"{BASE_API}{self.workflow_version_et_adults_blue_draft_2.pk}/",
             data={"status": "PUBLISHED"},
         )
 

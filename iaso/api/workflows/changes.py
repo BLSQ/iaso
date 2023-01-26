@@ -10,6 +10,7 @@ import iaso.api.workflows.utils as utils
 import iaso.api.workflows.serializers as ser
 
 from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
 
 version_id_param = openapi.Parameter(
     name="version_id",
@@ -60,11 +61,6 @@ class WorkflowChangeViewSet(viewsets.ViewSet):
         return Response(return_data)
 
     def update(self, request, *args, **kwargs):
-        print("update")
-        print("request.data", request.data)
-        print("kwargs", kwargs)
-        print("args", args)
-
         orig_change = WorkflowChange.objects.get(id=kwargs["pk"])
 
         serializer = ser.WorkflowChangeCreateSerializer(
@@ -79,18 +75,10 @@ class WorkflowChangeViewSet(viewsets.ViewSet):
 
     @swagger_auto_schema(request_body=no_body)
     def destroy(self, request, *args, **kwargs):
-        id_to_deleted = kwargs.get("pk", None)
+        id_to_deleted = kwargs.get("pk")
 
-        if id_to_deleted is None:
-            return Response(status=400)
-        else:
-            try:
-                change = WorkflowChange.objects.get(id=id_to_deleted)
+        change = get_object_or_404(WorkflowChange, pk=id_to_deleted)
+        utils.validate_version_id(change.workflow_version.id, request.user)
 
-                utils.validate_version_id(change.workflow_version.id, request.user)
-
-                change.delete()
-                return Response(status=204)
-            except WorkflowChange.DoesNotExist as e:
-                print(e)
-                return Response(status=404)
+        change.delete()
+        return Response(status=204)

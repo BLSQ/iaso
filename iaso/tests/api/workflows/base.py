@@ -7,11 +7,7 @@ from iaso.models.workflow import WorkflowVersionsStatus, WorkflowChange, Workflo
 from unittest import mock
 from django.core.files.uploadedfile import UploadedFile
 from django.core.files import File
-
-try:
-    from prettyprinter import cpprint as pprint
-except ImportError:
-    from pprint import pprint
+from pprint import pprint
 
 
 def var_dump(what):

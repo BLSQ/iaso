@@ -187,7 +187,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const toggleEditShape = useCallback(
         keyName => {
-            const editEnabled = state[keyName].edit;
+            const editEnabled = state[keyName].value.edit;
             const leafletMap = map.current.leafletElement;
             const group =
                 keyName === 'location'
@@ -222,7 +222,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const toggleDeleteShape = useCallback(
         keyName => {
-            const deleteEnabled = state[keyName].delete;
+            const deleteEnabled = state[keyName].value.delete;
             const leafletMap = map.current.leafletElement;
             const group =
                 keyName === 'location'

@@ -5,6 +5,9 @@ import {
     EDIT_GEO_JSON_RIGHT,
     EDIT_CATCHMENT_RIGHT,
 } from '../../../../../utils/featureFlags';
+import { User } from '../../../../../utils/usersUtils';
+import { OrgUnitMapState } from './types';
+import { OrgUnit } from '../../../types/orgUnit';
 
 export const buttonsInitialState = {
     location: {
@@ -19,7 +22,7 @@ export const buttonsInitialState = {
     },
 };
 
-export const getAncestorWithGeojson = orgUnit => {
+export const getAncestorWithGeojson = (orgUnit: OrgUnit): OrgUnit => {
     let ancestorWithGeoJson;
     for (let ancestor = orgUnit.parent; ancestor; ancestor = ancestor.parent) {
         if (ancestor.geo_json) {
@@ -30,7 +33,7 @@ export const getAncestorWithGeojson = orgUnit => {
     return ancestorWithGeoJson;
 };
 
-export const initialState = currentUser => {
+export const initialState = (currentUser: User): OrgUnitMapState => {
     return {
         locationGroup: new EditableGroup(),
         catchmentGroup: new EditableGroup(),

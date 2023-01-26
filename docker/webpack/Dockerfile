@@ -1,4 +1,5 @@
-FROM node:14.17.0-stretch-slim
+FROM node:14-bullseye-slim
+
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app

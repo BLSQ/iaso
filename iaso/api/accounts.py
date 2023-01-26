@@ -54,4 +54,14 @@ class AccountViewSet(ModelViewSet):
     results_key = "accounts"
     queryset = Account.objects.all()
     # FIXME: USe a PATCH in the future, it make more sense regarding HTTP method semantic
-    http_method_names = ["put"]
+    http_method_names = ["put", "GET"]
+
+    def update(self, request: Request, *args, **kwargs):
+        print("?????")
+        default_version = request.data["default_version"]
+        print(default_version)
+        version = get_object_or_404(SourceVersion, default_version)
+        if version in version.data_source.projects.all():
+            print("FOUND")
+
+        return super().update(request, args, kwargs)

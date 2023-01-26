@@ -17,6 +17,8 @@ class ProjectsAPITestCase(APITestCase):
         ghi_datasource.projects.set([ghi_project])
         cls.ghi_version = m.SourceVersion.objects.create(data_source=ghi_datasource, number=1)
 
+        wha_project = m.Project.objects.create(name="gha_project", account=wha)
+
     def test_account_list_without_auth(self):
         """GET /projects/ without auth should result in a 403 (before the method not authorized?"""
         self.client.force_authenticate(self.jim)
@@ -79,8 +81,8 @@ class ProjectsAPITestCase(APITestCase):
         # invert on the other account/user to be sure
         self.client.force_authenticate(self.john)
         response = self.client.put(f"/api/accounts/{self.ghi.pk}/", {"default_version": self.ghi_version.pk})
-        j = self.assertJSONResponse(response, 403)
-        self.assertEqual(j, {"detail": "You do not have permission to perform this action."})
+        j = self.assertJSONResponse(response, 400)
+        self.assertEqual(j, {"Error": "Account not allowed to access this default_source"})
 
         # old default version
         old_version = self.ghi.default_version

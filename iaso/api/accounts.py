@@ -2,7 +2,7 @@
 from rest_framework.request import Request
 
 from .common import ModelViewSet, HasPermission
-from iaso.models import Account, SourceVersion
+from iaso.models import Account, SourceVersion, Project
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
 
@@ -55,3 +55,11 @@ class AccountViewSet(ModelViewSet):
     queryset = Account.objects.all()
     # FIXME: USe a PATCH in the future, it make more sense regarding HTTP method semantic
     http_method_names = ["put"]
+
+    def update(self, request: Request, *args, **kwargs):
+        default_version = request.data["default_version"]
+        version = get_object_or_404(SourceVersion, pk=default_version)
+        project = Project.objects.get(account=request.user.iaso_profile.account)
+        if project not in version.data_source.projects.all():
+            raise serializers.ValidationError({"Error": "Account not allowed to access this default_source"})
+        return super().update(request, args, kwargs)

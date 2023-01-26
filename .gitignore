@@ -163,8 +163,8 @@ mockImData.json
 docker-compose.dev.yml
 entrypoint.dev.sh
 requirements_m1.txt
+requirements_3_8.txt
 
 .python-version
 
-requirements_*.txt
 hat/settings_local.py

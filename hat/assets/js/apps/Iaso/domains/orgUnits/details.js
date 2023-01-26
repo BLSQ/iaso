@@ -266,7 +266,7 @@ const OrgUnitDetail = ({ params, router }) => {
     );
 
     const handleSaveOrgUnit = useCallback(
-        (newOrgUnit = {}, onSuccess, onError) => {
+        (newOrgUnit = {}, onSuccess = () => {}, onError = () => {}) => {
             let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
             orgUnitPayload = {
                 ...orgUnitPayload,

@@ -405,17 +405,11 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     ]);
 
     useSkipEffectOnMount(() => {
-        // When linked org unit from other sources, fetch shape first
-        if (loadingSelectedSources === true || sourcesSelected.length !== 0)
-            state.locationGroup.value.updateShape(
-                getleafletGeoJson(currentOrgUnit.geo_json),
-                'primary',
-            );
-    }, [
-        currentOrgUnit.geo_json,
-        loadingSelectedSources,
-        state.locationGroup.value,
-    ]);
+        state.locationGroup.value.updateShape(
+            getleafletGeoJson(currentOrgUnit.geo_json),
+            'primary',
+        );
+    }, [currentOrgUnit.geo_json]);
 
     // ComponentWillUnmount
     useEffect(() => {

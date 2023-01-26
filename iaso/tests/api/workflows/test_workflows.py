@@ -2,7 +2,7 @@ import jsonschema
 
 
 from iaso.models import Workflow, WorkflowVersion
-from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
+from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase, var_dump
 
 
 BASE_API = "/api/workflowversions/"
@@ -104,7 +104,7 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
         response = self.client.get(f"{BASE_API}?limit=2")
 
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 3)  # 2 versions available
+        self.assertEqual(response.json()["count"], 5)  # 4 versions available
 
         try:
             jsonschema.validate(instance=response.data, schema=set_tl_schema)
@@ -181,7 +181,9 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
     def test_new_version_from_copy(self):
         self.client.force_authenticate(self.blue_adult_1)
 
-        response = self.client.post(f"{BASE_API}{self.workflow_version_et_adults_blue.pk}/copy/")
+        response = self.client.post(
+            f"{BASE_API}{self.workflow_version_et_adults_blue_with_followups_and_changes.pk}/copy/"
+        )
 
         self.assertJSONResponse(response, 200)
 
@@ -194,10 +196,20 @@ class WorkflowsAPITestCase(BaseWorkflowsAPITestCase):
             w_version = WorkflowVersion.objects.get(pk=response.data["version_id"])
 
             assert w_version.pk == response.data["version_id"]
-            assert w_version.name == str("Copy of " + self.workflow_version_et_adults_blue.name)
+            assert w_version.name == str(
+                "Copy of " + self.workflow_version_et_adults_blue_with_followups_and_changes.name
+            )
 
         except WorkflowVersion.DoesNotExist as ex:
             self.fail(msg=str(ex))
+
+    def test_version_search_by_name(self):
+        self.client.force_authenticate(self.blue_adult_1)
+
+        response = self.client.get(f"{BASE_API}?search=draft")
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["workflow_versions"]), 1)
 
     def test_soft_delete_workflow_version(self):
         self.client.force_authenticate(self.blue_adult_1)

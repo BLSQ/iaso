@@ -89,6 +89,10 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         version_id = self.context["version_id"]
         wfv = get_object_or_404(WorkflowVersion, pk=version_id)
         reference_form = wfv.reference_form
+
+        if not Form.objects.filter(pk=self.initial_data["form"]).exists():
+            raise serializers.ValidationError(f"Form {self.initial_data['form']} does not exist")
+
         source_form = Form.objects.get(pk=self.initial_data["form"])
 
         s_questions = source_form.possible_fields

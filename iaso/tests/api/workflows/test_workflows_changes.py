@@ -111,6 +111,16 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
         self.assertJSONResponse(response_delete, 404)
         assert "Not found." in response_delete.data["detail"]
 
+    def test_create_change_with_non_existing_form_should_fail(self):
+        self.client.force_authenticate(self.blue_adult_1)
+        response = self.client.post(
+            f"{BASE_API}?version_id={self.workflow_version_et_adults_blue_draft.pk}",
+            format="json",
+            data={"form": 1000, "mapping": {"mon_champ": "mon_champ"}},
+        )
+
+        self.assertJSONResponse(response, 400)
+
     def test_create_update_delete(self):
         self.client.force_authenticate(self.blue_adult_1)
         response = self.client.post(

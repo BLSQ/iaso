@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0190_merge_20230120_1227'),
-        ('iaso', '0190_sourceversion_unique_number_data_source_version'),
+        ("iaso", "0190_merge_20230120_1227"),
+        ("iaso", "0190_sourceversion_unique_number_data_source_version"),
     ]
 
-    operations = [
-    ]
+    operations = []

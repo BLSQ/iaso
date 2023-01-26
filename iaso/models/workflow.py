@@ -30,13 +30,9 @@ class Workflow(SoftDeletableModel):
 
     objects = DefaultSoftDeletableManager.from_queryset(WorkflowQuerySet)()
 
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(
-        WorkflowQuerySet
-    )()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
 
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(
-        WorkflowQuerySet
-    )()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowQuerySet)()
 
     @property
     def latest_version(self):
@@ -62,9 +58,7 @@ class WorkflowVersionsStatus(models.TextChoices):
 
 
 def is_transition_allowed(self: "WorkflowVersion", new_status: str):
-    allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(
-        self.status, set()
-    )
+    allowed_set: typing.Set[str] = WorkflowVersionsStatusAllowedTransitions.get(self.status, set())
     return new_status in allowed_set
 
 
@@ -76,9 +70,7 @@ class WorkflowVersionQuerySet(models.QuerySet):
         queryset = self.all()
 
         if user and user.is_authenticated:
-            queryset = queryset.filter(
-                workflow__entity_type__account=user.iaso_profile.account
-            )
+            queryset = queryset.filter(workflow__entity_type__account=user.iaso_profile.account)
 
         return queryset
 
@@ -91,9 +83,7 @@ class WorkflowVersion(SoftDeletableModel):
         follow_ups -> WorkflowFollowup
     """
 
-    workflow = models.ForeignKey(
-        Workflow, on_delete=models.CASCADE, related_name="workflow_versions"
-    )
+    workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name="workflow_versions")
 
     name = models.CharField(max_length=50, default="No Name")
     status = models.CharField(
@@ -107,13 +97,9 @@ class WorkflowVersion(SoftDeletableModel):
 
     objects = DefaultSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
 
-    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(
-        WorkflowVersionQuerySet
-    )()
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
 
-    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(
-        WorkflowVersionQuerySet
-    )()
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
 
     @property
     def reference_form(self):
@@ -129,9 +115,7 @@ class WorkflowVersion(SoftDeletableModel):
 
             if new_status_str == "PUBLISHED":
                 # We passed all the other PUBLISHED -> UNPUBLISHED
-                WorkflowVersion.objects.filter(
-                    workflow=self.workflow, status="PUBLISHED"
-                ).update(status="UNPUBLISHED")
+                WorkflowVersion.objects.filter(workflow=self.workflow, status="PUBLISHED").update(status="UNPUBLISHED")
 
             return {"success": True}
 
@@ -154,9 +138,7 @@ class WorkflowFollowup(models.Model):
     forms = models.ManyToManyField(Form)
 
     # this actually points to a WorkflowVersion
-    workflow_version = models.ForeignKey(
-        WorkflowVersion, on_delete=models.CASCADE, related_name="follow_ups"
-    )
+    workflow_version = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="follow_ups")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -169,9 +151,7 @@ class WorkflowChange(models.Model):
     )  # dict objects with keys a field name from reference_form and value the target field name in form.
 
     # this actually points to a WorkflowVersion
-    workflow_version = models.ForeignKey(
-        WorkflowVersion, on_delete=models.CASCADE, related_name="changes"
-    )
+    workflow_version = models.ForeignKey(WorkflowVersion, on_delete=models.CASCADE, related_name="changes")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

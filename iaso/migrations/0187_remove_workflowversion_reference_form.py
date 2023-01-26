@@ -6,12 +6,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0186_workflowversion_deleted_at'),
+        ("iaso", "0186_workflowversion_deleted_at"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='workflowversion',
-            name='reference_form',
+            model_name="workflowversion",
+            name="reference_form",
         ),
     ]

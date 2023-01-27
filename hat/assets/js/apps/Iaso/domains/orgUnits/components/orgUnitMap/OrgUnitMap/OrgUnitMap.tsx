@@ -93,6 +93,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const theme = useTheme();
     const currentUser = useCurrentUser();
     const map: any = useRef();
+    // These 2 refs are needed because we need to initialize the EditableGroups only once, but we need the map to be ready
+    // and we can't predict exactly how many renders that will require
     const didLocationInitialize = useRef(false);
     const didCatchmentInitialize = useRef(false);
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars

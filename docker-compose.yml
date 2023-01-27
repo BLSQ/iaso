@@ -9,8 +9,7 @@ services:
     image: iaso
     ports:
       - "8081:8081"
-    volumes:
-      &hat_volumes
+    volumes: &hat_volumes
       - ./manage.py:/opt/app/manage.py
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
@@ -30,11 +29,9 @@ services:
       - ./notebooks:/opt/notebooks
       # Optional Used to load dev bluesquare-components JS. See `Live Bluesquare components` in doc
       - ../bluesquare-components:/opt/bluesquare-components
-    links:
-      &hat_links
+    links: &hat_links
       - db
-    environment:
-      &hat_environment
+    environment: &hat_environment
       PREPAREDNESS_TEMPLATE_ID:
       PREPAREDNESS_TEMPLATE_FR_ID:
       PLUGINS:
@@ -65,16 +62,17 @@ services:
       ENKETO_API_TOKEN: AZE78974654azeAZE
       ENKETO_URL: http://enketo:8005/
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
-      LIVE_COMPONENTS: # Limit logging in dev to not overflow terminal
-    logging:
-      &iaso_logging
+      LIVE_COMPONENTS:
+    # Limit logging in dev to not overflow terminal
+    logging: &iaso_logging
       driver: "json-file"
       options:
         max-size: "5k"
     command: start_dev
 
   db:
-    image: iaso/postgis
+    image:
+      iaso/postgis
     # Workaround until there is a stable Postgis image for Apple Silicon
     build: docker/db
     logging: *iaso_logging
@@ -89,7 +87,6 @@ services:
   # the webpack dev server
   webpack:
     image: iaso-webpack
-    platform: linux/amd64
     build:
       context: .
       dockerfile: docker/webpack/Dockerfile

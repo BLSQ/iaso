@@ -1,5 +1,4 @@
 FROM node:14-bullseye-slim
-
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app

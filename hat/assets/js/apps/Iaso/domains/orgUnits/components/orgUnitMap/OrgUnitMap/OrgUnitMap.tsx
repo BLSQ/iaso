@@ -34,19 +34,15 @@ import fitToBoundsFn from '../fitToBounds';
 import { userHasPermission } from '../../../../users/utils';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
 import { useFormState } from '../../../../../hooks/form';
-import {
-    buttonsInitialState,
-    getAncestorWithGeojson,
-    initialState,
-} from './utils';
+import { getAncestorWithGeojson, initialState } from './utils';
 import { useRedux } from './useRedux';
 import { MappedOrgUnit } from './types';
 import { SourcesSelectedShapes } from './SourcesSelectedShapes';
 import { OrgUnitTypesSelectedShapes } from './OrgUnitTypesSelectedShapes';
-import { OrgUnitTypesSelectedMarkers } from './OrgUnitTypesSelectedMarkers';
-import { SourcesSelectedMarkers } from './SourcesSelectedMarkers';
 import { FormsMarkers } from './FormsMarkers';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
+import { SelectedMarkers } from './SelectedMarkers';
+import { buttonsInitialState } from './constants';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -539,15 +535,13 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     )}
                     {/* Markers section  */}
                     <>
-                        <OrgUnitTypesSelectedMarkers
-                            mappedOrgUnitTypesSelected={
-                                mappedOrgUnitTypesSelected
-                            }
+                        <SelectedMarkers
+                            data={mappedOrgUnitTypesSelected}
                             fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
-                        <SourcesSelectedMarkers
-                            mappedSourcesSelected={mappedSourcesSelected}
+                        <SelectedMarkers
+                            data={mappedSourcesSelected}
                             fetchSubOrgUnitDetail={fetchSubOrgUnitDetail}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />

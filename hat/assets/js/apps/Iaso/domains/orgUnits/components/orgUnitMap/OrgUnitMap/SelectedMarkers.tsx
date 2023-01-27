@@ -9,37 +9,41 @@ import { orgunitsPane } from './OrgUnitMap';
 import { MappedOrgUnit } from './types';
 
 type Props = {
-    mappedOrgUnitTypesSelected: MappedOrgUnit[];
+    data: MappedOrgUnit[];
     // eslint-disable-next-line no-unused-vars
     fetchSubOrgUnitDetail: (orgUnit: OrgUnit) => void;
     // eslint-disable-next-line no-unused-vars
     updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
 };
 
-export const OrgUnitTypesSelectedMarkers: FunctionComponent<Props> = ({
-    mappedOrgUnitTypesSelected,
+export const SelectedMarkers: FunctionComponent<Props> = ({
+    data,
     fetchSubOrgUnitDetail,
     updateOrgUnitLocation,
 }) => {
     return (
         <>
-            {mappedOrgUnitTypesSelected.map(ot => (
+            {data.map(mappedOrgUnit => (
                 <MarkerClusterGroup
-                    key={ot.id}
+                    key={mappedOrgUnit.id}
                     maxClusterRadius={5}
                     iconCreateFunction={cluster =>
-                        colorClusterCustomMarker(cluster, ot.color, clusterSize)
+                        colorClusterCustomMarker(
+                            cluster,
+                            mappedOrgUnit.color,
+                            clusterSize,
+                        )
                     }
                 >
                     <Pane
-                        name={`${orgunitsPane}-markers-${ot.id}-${ot.name}`}
+                        name={`${orgunitsPane}-markers-${mappedOrgUnit.id}-${mappedOrgUnit.name}`}
                         style={{ zIndex: 698 }}
                     >
                         <MarkerList
-                            locationsList={ot.orgUnits.locations}
+                            locationsList={mappedOrgUnit.orgUnits.locations}
                             fetchDetail={a => fetchSubOrgUnitDetail(a)}
-                            color={ot.color}
-                            keyId={ot.id}
+                            color={mappedOrgUnit.color}
+                            keyId={mappedOrgUnit.id}
                             updateOrgUnitLocation={updateOrgUnitLocation}
                         />
                     </Pane>

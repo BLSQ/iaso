@@ -59,7 +59,7 @@ class AccountViewSet(ModelViewSet):
     def update(self, request: Request, *args, **kwargs):
         default_version = request.data["default_version"]
         version = get_object_or_404(SourceVersion, pk=default_version)
-        project = Project.objects.get(account=request.user.iaso_profile.account)
+        project = Project.objects.get(account=request.user.iaso_profile.account)  # type: ignore
         if project not in version.data_source.projects.all():
             raise serializers.ValidationError({"Error": "Account not allowed to access this default_source"})
         return super().update(request, args, kwargs)

@@ -8,19 +8,7 @@ import {
 import { User } from '../../../../../utils/usersUtils';
 import { OrgUnitMapState } from './types';
 import { OrgUnit } from '../../../types/orgUnit';
-
-export const buttonsInitialState = {
-    location: {
-        add: false,
-        edit: false,
-        delete: false,
-    },
-    catchment: {
-        add: false,
-        edit: false,
-        delete: false,
-    },
-};
+import { buttonsInitialState } from './constants';
 
 export const getAncestorWithGeojson = (orgUnit: OrgUnit): OrgUnit => {
     let ancestorWithGeoJson;

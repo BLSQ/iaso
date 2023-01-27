@@ -86,6 +86,10 @@ const routes = [
                 key: 'campaignId',
             },
             ...campaignsFilters,
+            {
+                isRequired: false,
+                key: 'fieldset',
+            },
         ],
     },
     {

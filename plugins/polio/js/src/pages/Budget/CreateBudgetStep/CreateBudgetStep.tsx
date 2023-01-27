@@ -173,6 +173,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         messages: MESSAGES,
         formatMessage,
     });
+
     const attachmentErrors = useMemo(() => {
         const anyFieldTouched = Object.values(touched).find(value => value);
         const attachmentsErrors = [errors.attachments] ?? [];
@@ -201,9 +202,12 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         touched.links,
         values,
     ]);
-    const allowConfirm = !quickTransition
-        ? isValid && !isEqual(values, initialValues)
-        : isValid;
+
+    const allowConfirm =
+        quickTransition || requiredFields.length === 0
+            ? isValid
+            : isValid && !isEqual(values, initialValues);
+
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal

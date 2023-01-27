@@ -1,12 +1,24 @@
-import React from 'react';
+import React, { Component, FunctionComponent } from 'react';
 import MarkersListComponent from '../../../../../components/maps/markers/MarkersListComponent';
 import { circleColorMarkerOptions } from '../../../../../utils/mapUtils';
+import { OrgUnit } from '../../../types/orgUnit';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 
-export const MarkerList = ({
+type Props = {
+    PopupComponent?: FunctionComponent | Component;
+    locationsList: any[];
+    color?: string;
+    keyId: string | number;
+    // eslint-disable-next-line no-unused-vars
+    fetchDetail: (orgUnit: OrgUnit) => void;
+    // eslint-disable-next-line no-unused-vars
+    updateOrgUnitLocation: (orgUnit: OrgUnit) => void;
+};
+
+export const MarkerList: FunctionComponent<Props> = ({
     locationsList,
     fetchDetail,
-    color,
+    color = '#000000',
     keyId,
     updateOrgUnitLocation,
     PopupComponent = OrgUnitPopupComponent,

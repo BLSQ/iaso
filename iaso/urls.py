@@ -13,6 +13,7 @@ from .api.completeness_stats import CompletenessStatsViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
+from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.org_units import OrgUnitViewSet
@@ -120,6 +121,7 @@ router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importg
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
+router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to
 # change the format in the future

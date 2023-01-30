@@ -812,6 +812,7 @@ class Instance(models.Model):
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
+    form_version_id = models.IntegerField(blank=True, null=True)
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -1093,6 +1094,13 @@ class Instance(models.Model):
     @property
     def has_org_unit(self):
         return self.org_unit if self.org_unit else None
+
+    def save(self, *args, **kwargs):
+        if self.json is not None and self.json.get("_version"):
+            self.form_version_id = FormVersion.objects.get(
+                version_id=self.json.get("_version"), form_id=self.form.id
+            ).id
+        return super(Instance, self).save(*args, **kwargs)
 
 
 class InstanceFile(models.Model):

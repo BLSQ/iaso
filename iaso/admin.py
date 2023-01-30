@@ -163,6 +163,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "entity",
                     "last_modified_by",
                     "created_by",
+                    "form_version_id",
                 )
             },
         ),

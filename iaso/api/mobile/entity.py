@@ -33,11 +33,8 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_form_version_id(obj: Instance):
-        form_version_id = FormVersion.objects.get(
-            version_id=obj.json.get("_version"), form__form_id=obj.form.form_id  # type: ignore
-        ).id
 
-        return form_version_id
+        return FormVersion.objects.get(version_id=obj.json.get("_version"), form_id=obj.form.id).id  # type: ignore
 
 
 class MobileEntitySerializer(serializers.ModelSerializer):
@@ -62,11 +59,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_instances(entity: Entity):
-        res = []
-        for instance in entity.non_deleted_instances:  # type: ignore
-            res.append(MobileEntityAttributesSerializer(instance).data)
-
-        return res
+        return list(map(lambda instance: MobileEntityAttributesSerializer(instance).data, entity.non_deleted_instances))
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -100,8 +93,10 @@ class MobileEntityViewSet(ModelViewSet):
     def get_queryset(self):
         profile = self.request.user.iaso_profile
         orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+        queryset = Entity.objects.filter(account=profile.account)
         # we give all entities having an instance linked to the one of the org units allowed for the current user
-        queryset = Entity.objects.filter(account=profile.account).filter(instances__org_unit__in=orgunits)
+        if orgunits:
+            queryset = queryset.filter(instances__org_unit__in=orgunits)
         # we filter by last instance on the entity
         limit_date = self.request.query_params.get("limit_date", None)
         if limit_date:

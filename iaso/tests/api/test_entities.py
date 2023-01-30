@@ -40,6 +40,10 @@ class EntityAPITestCase(APITestCase):
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
 
+        cls.user_without_ou = cls.create_user_with_profile(
+            username="user_without_ou", account=star_wars, permissions=["iaso_submissions"]
+        )
+
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
         cls.create_form_instance(
@@ -546,3 +550,57 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("id"), str(entity.uuid))
+
+    def test_entity_mobile_user_no_org_unit(self):
+        self.client.force_authenticate(self.user_without_ou)
+
+        self.form_1.form_id = "A_FORM_ID"
+
+        self.form_1.json = {"_version": "A_FORM_ID"}
+
+        self.form_1.save()
+
+        FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
+
+        entity_type = EntityType.objects.create(
+            name="Type 1",
+            reference_form=self.form_1,
+        )
+
+        instance = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            project=self.project,
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
+        )
+
+        self.form_1.instances.set([instance])
+        self.form_1.save()
+
+        entity = Entity.objects.create(
+            name="New Client",
+            entity_type=entity_type,
+            attributes=instance,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        Entity.objects.create(
+            name="New Client",
+            entity_type=entity_type,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        Entity.objects.create(
+            name="New Client_2",
+            entity_type=entity_type,
+            account=self.yop_solo.iaso_profile.account,
+        )
+
+        instance.entity = entity
+        instance.save()
+
+        response = self.client.get("/api/mobile/entities/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json().get("count"), 2)

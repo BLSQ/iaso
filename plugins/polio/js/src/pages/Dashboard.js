@@ -30,6 +30,7 @@ import { genUrl } from '../utils/routing';
 import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
 import { useSingleTableParams } from '../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
+import { PageActionWithLink } from '../components/Buttons/PageActionWithLink.tsx';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -299,9 +300,9 @@ const Dashboard = ({ router }) => {
                     >
                         {formatMessage(MESSAGES.create)}
                     </PageAction>
-                    <PageAction icon={DownloadIcon} onClick={exportToCSV}>
+                    <PageActionWithLink icon={DownloadIcon} url={exportToCSV}>
                         {formatMessage(MESSAGES.csv)}
-                    </PageAction>
+                    </PageActionWithLink>
                     <ImportLineListDialog
                         renderTrigger={({ openDialog }) => (
                             <PageAction

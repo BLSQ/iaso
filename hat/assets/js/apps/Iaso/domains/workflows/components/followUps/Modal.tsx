@@ -6,33 +6,27 @@ import React, {
 } from 'react';
 
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     ConfirmCancelModal,
-    // @ts-ignore
     makeFullModal,
-    // @ts-ignore
     QueryBuilder,
-    // @ts-ignore
     QueryBuilderFields,
-    // @ts-ignore
     AddButton,
 } from 'bluesquare-components';
 
 import { Grid } from '@material-ui/core';
-import InputComponent from '../../../components/forms/InputComponent';
-import { EditIconButton } from './ModalButtons';
-import { commaSeparatedIdsToArray } from '../../../utils/forms';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { EditIconButton } from '../ModalButtons';
+import { commaSeparatedIdsToArray } from '../../../../utils/forms';
 
-import { useGetForms } from '../hooks/requests/useGetForms';
-import { useBulkUpdateWorkflowFollowUp } from '../hooks/requests/useBulkUpdateWorkflowFollowUp';
-import { useCreateWorkflowFollowUp } from '../hooks/requests/useCreateWorkflowFollowUp';
-import { parseJson, JSONValue } from '../../instances/utils/jsonLogicParse';
+import { useGetForms } from '../../hooks/requests/useGetForms';
+import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
+import { useCreateWorkflowFollowUp } from '../../hooks/requests/useCreateWorkflowFollowUp';
+import { parseJson, JSONValue } from '../../../instances/utils/jsonLogicParse';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
-import { FollowUps } from '../types/workflows';
+import { FollowUps } from '../../types';
 
 type Props = {
     isOpen: boolean;
@@ -107,7 +101,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     );
     const handleChangeLogic = (result: JsonLogicResult) => {
         let parsedValue;
-        if (result?.logic)
+        if (result?.logic && fields)
             parsedValue = parseJson({
                 value: result.logic,
                 fields,
@@ -132,15 +126,17 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
             closeDialog={closeDialog}
-            dataTestId="add-workflow-version"
-            id="add-workflow-version"
+            dataTestId="workflow-follow-up"
+            id="workflow-follow-up"
             onClose={() => null}
         >
-            <QueryBuilder
-                logic={logic}
-                fields={fields}
-                onChange={handleChangeLogic}
-            />
+            {fields && (
+                <QueryBuilder
+                    logic={logic}
+                    fields={fields}
+                    onChange={handleChangeLogic}
+                />
+            )}
             <Grid container spacing={2}>
                 <Grid item xs={12} md={8}>
                     <InputComponent

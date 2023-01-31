@@ -166,6 +166,47 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.saveOrder',
         defaultMessage: 'Save order',
     },
+    editChange: {
+        id: 'iaso.workflows.editChange',
+        defaultMessage: 'Edit change',
+    },
+    createChange: {
+        id: 'iaso.workflows.createChange',
+        defaultMessage: 'Create change',
+    },
+    deleteChange: {
+        id: 'iaso.workflows.dialog.deleteChange',
+        defaultMessage: 'Are you sure you want to delete this change?',
+    },
+    changeDeleted: {
+        id: 'iaso.workflows.dialog.changeDeleted',
+        defaultMessage: 'Change deleted successfully',
+    },
+    target: {
+        id: 'iaso.workflows.target',
+        defaultMessage: 'Target',
+    },
+    source: {
+        id: 'iaso.workflows.source',
+        defaultMessage: 'Source',
+    },
+    sourceForm: {
+        id: 'iaso.workflows.sourceForm',
+        defaultMessage: 'Source form',
+    },
+    targetForm: {
+        id: 'iaso.workflows.targetForm',
+        defaultMessage: 'Target form',
+    },
+    changesInfo: {
+        id: 'iaso.workflows.changesInfo',
+        defaultMessage: 'Source and target should be of the same type',
+    },
+    changesInfo2: {
+        id: 'iaso.workflows.changesInfo2',
+        defaultMessage:
+            'You cannot have multiple mappings on the same source or target',
+    },
 });
 
 export default MESSAGES;

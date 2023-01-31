@@ -25,6 +25,7 @@ import { setCurrentInstance } from '../../actions';
 import { fetchInstanceDetail } from '../../../../utils/requests';
 import { Instance } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
+import { Tile } from '../../../../components/maps/tools/TileSwitch';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -33,17 +34,23 @@ type Props = {
     fetching: boolean;
 };
 
+type PartialReduxState = {
+    map: { isClusterActive: boolean; currentTile: Tile };
+    snackBar: { notifications: any[] };
+};
+
 export const InstancesMap: FunctionComponent<Props> = ({
     instances,
     fetching,
 }) => {
     const map: any = useRef();
-    // @ts-ignore
-    const isClusterActive = useSelector(state => state.map.isClusterActive);
-    // @ts-ignore
-    const currentTile = useSelector(state => state.map.currentTile);
-    const notifications = useSelector(state =>
-        // @ts-ignore
+    const isClusterActive = useSelector(
+        (state: PartialReduxState) => state.map.isClusterActive,
+    );
+    const currentTile = useSelector(
+        (state: PartialReduxState) => state.map.currentTile,
+    );
+    const notifications = useSelector((state: PartialReduxState) =>
         state.snackBar ? state.snackBar.notifications : [],
     );
 

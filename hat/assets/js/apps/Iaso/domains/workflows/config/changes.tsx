@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React from 'react';
+import React, { useMemo } from 'react';
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
@@ -22,42 +22,45 @@ export const useGetChangesColumns = (
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
-    const columns: Array<Column> = [
-        {
-            Header: formatMessage(MESSAGES.form),
-            id: 'form_name',
-            accessor: 'form__name',
-            Cell: settings => {
-                return (
-                    <LinkToForm
-                        formId={settings.row.original.form.id}
-                        formName={settings.row.original.form.name}
-                    />
-                );
+    const columns: Array<Column> = useMemo(
+        () => [
+            {
+                Header: formatMessage(MESSAGES.form),
+                id: 'form_name',
+                accessor: 'form__name',
+                Cell: settings => {
+                    return (
+                        <LinkToForm
+                            formId={settings.row.original.form.id}
+                            formName={settings.row.original.form.name}
+                        />
+                    );
+                },
             },
-        },
-        {
-            Header: formatMessage(MESSAGES.mapping),
-            id: 'mapping',
-            accessor: 'mapping',
-            sortable: false,
-            Cell: settings => (
-                <MappingCell mapping={settings.row.original.mapping} />
-            ),
-        },
-        {
-            Header: formatMessage(MESSAGES.created_at),
-            accessor: 'created_at',
-            id: 'created_at',
-            Cell: DateCell,
-        },
-        {
-            Header: formatMessage(MESSAGES.updated_at),
-            accessor: 'updated_at',
-            id: 'updated_at',
-            Cell: DateCell,
-        },
-    ];
+            {
+                Header: formatMessage(MESSAGES.mapping),
+                id: 'mapping',
+                accessor: 'mapping',
+                sortable: false,
+                Cell: settings => (
+                    <MappingCell mapping={settings.row.original.mapping} />
+                ),
+            },
+            {
+                Header: formatMessage(MESSAGES.created_at),
+                accessor: 'created_at',
+                id: 'created_at',
+                Cell: DateCell,
+            },
+            {
+                Header: formatMessage(MESSAGES.updated_at),
+                accessor: 'updated_at',
+                id: 'updated_at',
+                Cell: DateCell,
+            },
+        ],
+        [formatMessage],
+    );
     if (workflowVersion?.status === 'DRAFT') {
         columns.push({
             Header: formatMessage(MESSAGES.actions),
@@ -87,12 +90,12 @@ export const useGetChangesColumns = (
     return columns;
 };
 
-type Props = {
+type Params = {
     sourceOptions: ChangesOption[];
     targetOptions: ChangesOption[];
     handleUpdate: (
         // eslint-disable-next-line no-unused-vars
-        key: 'target' | 'source',
+        key: keyof Mapping,
         // eslint-disable-next-line no-unused-vars
         value: string,
         // eslint-disable-next-line no-unused-vars
@@ -111,7 +114,7 @@ export const useGetChangesModalColumns = ({
     handleDelete,
     mappingArray,
     isFetchingSourcePossibleFields,
-}: Props): Array<Column> => {
+}: Params): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return [

@@ -9,7 +9,7 @@ type Props = {
     sourceOptions: ChangesOption[];
     handleUpdate: (
         // eslint-disable-next-line no-unused-vars
-        key: 'target' | 'source',
+        key: keyof Mapping,
         // eslint-disable-next-line no-unused-vars
         value: string | undefined,
         // eslint-disable-next-line no-unused-vars

@@ -86,11 +86,7 @@ export const MappingTable: FunctionComponent<Props> = ({
     const getOptions = useGetOptions();
 
     const handleUpdate = useCallback(
-        (
-            key: 'target' | 'source',
-            value: string | undefined,
-            index: number,
-        ) => {
+        (key: keyof Mapping, value: string | undefined, index: number) => {
             const newMappings = cloneDeep(mappingArray);
             newMappings[index] = {
                 ...newMappings[index],

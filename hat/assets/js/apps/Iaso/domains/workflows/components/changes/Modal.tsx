@@ -22,8 +22,7 @@ import { MappingTable } from './MappingTable';
 import { InfoTooltip } from './InfoTooltip';
 
 import { useGetForms } from '../../hooks/requests/useGetForms';
-import { useUpdateWorkflowChange } from '../../hooks/requests/useUpdateWorkflowChange';
-import { useCreateWorkflowChange } from '../../hooks/requests/useCreateWorkflowChange';
+import { useSaveWorkflowChange } from '../../hooks/requests/useSaveWorkflowChange';
 
 import MESSAGES from '../../messages';
 
@@ -89,17 +88,16 @@ const Modal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [form, setForm] = useState<number | undefined>(change?.form?.id);
     const [isTouched, setIsTouched] = useState<boolean>(false);
-    const { mutate: saveChange } = useUpdateWorkflowChange(closeDialog);
-    const { mutate: createChange } = useCreateWorkflowChange(
+    const { mutate: saveChange } = useSaveWorkflowChange(
         closeDialog,
         versionId,
     );
+
     const { data: forms, isLoading: isLoadingForms } = useGetForms();
 
     const [mappingArray, setMappingArray] = useState<Mapping[]>(
         mapChange(change),
     );
-
     const handleConfirm = useCallback(() => {
         const mappingObject = {};
         mappingArray.forEach(mapping => {
@@ -107,19 +105,12 @@ const Modal: FunctionComponent<Props> = ({
                 mappingObject[mapping.target] = mapping.source;
             }
         });
-        if (change?.id) {
-            saveChange({
-                id: change.id,
-                form,
-                mapping: mappingObject,
-            });
-        } else {
-            createChange({
-                form,
-                mapping: mappingObject,
-            });
-        }
-    }, [change?.id, createChange, form, mappingArray, saveChange]);
+        saveChange({
+            id: change?.id,
+            form,
+            mapping: mappingObject,
+        });
+    }, [change?.id, form, mappingArray, saveChange]);
 
     const handleChangeForm = useCallback(
         (_, value) => {
@@ -153,15 +144,13 @@ const Modal: FunctionComponent<Props> = ({
         isFetchingForm: isFetchingSourcePossibleFields,
     } = useGetPossibleFields(form);
 
-    const isValidMapping: boolean = useMemo(
-        () =>
-            mappingArray.filter(mapping =>
-                sourcePossibleFields.some(
-                    field => field.fieldKey === mapping.source,
-                ),
-            ).length === mappingArray.length,
-        [mappingArray, sourcePossibleFields],
-    );
+    const isValidMapping: boolean =
+        mappingArray.filter(mapping =>
+            sourcePossibleFields.some(
+                field => field.fieldKey === mapping.source,
+            ),
+        ).length === mappingArray.length;
+
     const allowConfirm =
         isTouched &&
         isValidMapping &&

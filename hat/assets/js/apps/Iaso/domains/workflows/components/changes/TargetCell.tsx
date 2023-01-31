@@ -10,7 +10,7 @@ type Props = {
     sourceOptions: ChangesOption[];
     handleUpdate: (
         // eslint-disable-next-line no-unused-vars
-        key: 'target' | 'source',
+        key: keyof Mapping,
         // eslint-disable-next-line no-unused-vars
         value: string | undefined,
         // eslint-disable-next-line no-unused-vars
@@ -35,14 +35,11 @@ export const TargetCell: FunctionComponent<Props> = ({
         value,
     });
 
-    const sourceKey: string | undefined = useMemo(
-        () => mappingArray[rowIndex]?.source,
-        [mappingArray, rowIndex],
-    );
+    const sourceKey: string | undefined = mappingArray[rowIndex]?.source;
 
-    const sourceType = useMemo(() => {
-        return sourceOptions.find(option => option.value === sourceKey)?.type;
-    }, [sourceKey, sourceOptions]);
+    const sourceType = sourceOptions.find(
+        option => option.value === sourceKey,
+    )?.type;
 
     const options = useMemo(() => {
         let newOptions: ChangesOption[] = cloneDeep(targetOptions);

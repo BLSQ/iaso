@@ -15,7 +15,7 @@ if (process.env.WEBPACK_HOST !== undefined) {
     WEBPACK_HOST = 'localhost';
 }
 
-const WEBPACK_URL = 'http://'+ WEBPACK_HOST +':3000';
+const WEBPACK_URL = `http://${WEBPACK_HOST}:3000`;
 
 module.exports = {
     context: __dirname,

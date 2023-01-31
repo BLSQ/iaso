@@ -11,6 +11,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -1097,9 +1098,11 @@ class Instance(models.Model):
 
     def save(self, *args, **kwargs):
         if self.json is not None and self.json.get("_version"):
-            self.form_version_id = FormVersion.objects.get(
-                version_id=self.json.get("_version"), form_id=self.form.id
-            ).id
+            try:
+                form_version_id = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id).id
+                self.form_version_id = form_version_id
+            except ObjectDoesNotExist:
+                pass
         return super(Instance, self).save(*args, **kwargs)
 
 

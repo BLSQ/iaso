@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
-import { Pagination, UrlParams } from '../../../types/table';
-import { EntityType } from '../../entities/entityTypes/types/entityType';
+import { Pagination, UrlParams } from '../../types/table';
+import { EntityType } from '../entities/entityTypes/types/entityType';
+import { FieldType } from '../forms/types/forms';
 
 export type WorkflowParams = UrlParams & {
     entityTypeId: string;
@@ -15,14 +16,20 @@ export type WorkflowsParams = UrlParams & {
 
 export type Status = 'DRAFT' | 'UNPUBLISHED' | 'PUBLISHED';
 
+export type Mapping = {
+    source: string | undefined;
+    target: string | undefined;
+};
+
 export type Change = {
-    form: Form;
+    id: number;
+    form: ReferenceForm;
     mapping: Record<string, string>;
     created_at: string;
     updated_at: string;
 };
 
-type Form = {
+export type ReferenceForm = {
     id: number;
     name: string;
 };
@@ -31,7 +38,7 @@ export type FollowUps = {
     id: string;
     order: number;
     condition: Record<string, string>;
-    forms: Form[];
+    forms: ReferenceForm[];
     created_at?: string;
     updated_at?: string;
 };
@@ -41,7 +48,7 @@ export type WorkflowVersionDetail = {
     name: string;
     status: Status;
     entity_type: EntityType;
-    reference_form: Form;
+    reference_form: ReferenceForm;
     created_at: string;
     updated_at: string;
     changes: Change[];
@@ -60,3 +67,8 @@ export type WorkflowVersions = Array<WorkflowVersion>;
 export interface WorkflowVersionsPaginated extends Pagination {
     workflow_versions: WorkflowVersions;
 }
+export type ChangesOption = {
+    label: string;
+    value: string | number;
+    type: FieldType;
+};

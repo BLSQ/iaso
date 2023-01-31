@@ -1,17 +1,14 @@
 import React, { FunctionComponent } from 'react';
 
-import {
-    // @ts-ignore
-    QueryBuilderFields,
-} from 'bluesquare-components';
+import { QueryBuilderFields } from 'bluesquare-components';
 
-import { FollowUps } from '../types/workflows';
+import { FollowUps } from '../../types';
 
-import MESSAGES from '../messages';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { FollowUpsModal } from './FollowUpsModal';
+import MESSAGES from '../../messages';
+import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
+import { FollowUpsModal } from './Modal';
 
-import { useDeleteWorkflowFollowUp } from '../hooks/requests/useDeleteWorkflowFollowUp';
+import { useDeleteWorkflowFollowUp } from '../../hooks/requests/useDeleteWorkflowFollowUp';
 
 type Props = {
     followUp: FollowUps;
@@ -24,7 +21,7 @@ export const FollowUpActionCell: FunctionComponent<Props> = ({
     fields,
     versionId,
 }) => {
-    const { mutate: deleteWorkflowVersion } = useDeleteWorkflowFollowUp();
+    const { mutate: deleteWorkflowFollowUp } = useDeleteWorkflowFollowUp();
     return (
         <>
             <FollowUpsModal
@@ -36,7 +33,7 @@ export const FollowUpActionCell: FunctionComponent<Props> = ({
                 keyName={`delete-workflow-follow-up-${followUp.id}`}
                 titleMessage={MESSAGES.deleteFollowUp}
                 message={MESSAGES.deleteText}
-                onConfirm={() => deleteWorkflowVersion(followUp.id)}
+                onConfirm={() => deleteWorkflowFollowUp(followUp.id)}
             />
         </>
     );

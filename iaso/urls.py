@@ -13,6 +13,7 @@ from .api.completeness_stats import CompletenessStatsViewSet
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.logs import LogsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
+from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.org_units import OrgUnitViewSet
@@ -74,6 +75,7 @@ from hat.api.token_authentication import token_auth
 from .api.workflows.versions import WorkflowVersionViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
+from .api.workflows.changes import WorkflowChangeViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -120,6 +122,7 @@ router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importg
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
+router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to
 # change the format in the future
@@ -135,6 +138,7 @@ router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basena
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")
+router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowchanges")
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")

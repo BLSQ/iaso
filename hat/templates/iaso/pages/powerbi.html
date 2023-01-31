@@ -11,7 +11,7 @@
 <div id="reportContainer"
      width="100%" height="100%" style="height: 97vh;"
 ></div>
-{{ config|json_script:"config" }}
+{{ config|json_script:'config' }}
 <script>
     // Load configuration models from powerbi.js
     models = window['powerbi-client'].models;
@@ -23,6 +23,7 @@
         tokenType: models.TokenType.Embed,
         permissions: models.Permissions.View,
         settings: {
+
             panes: {
                 filters: {
                     visible: false
@@ -38,10 +39,15 @@
     reportLoadConfig.accessToken = config.token;
     reportLoadConfig.filters = config.filters;
     reportLoadConfig.id = config.report_id;
-
+    if (config.language) {
+        reportLoadConfig.settings.localeSettings = {
+            'language': config.language,
+            'formatLocale': config.language
+        };
+    }
     // Mount config
     reportContainer = document.getElementById('reportContainer');
-    powerbi.bootstrap(reportContainer, { type: 'report' });
+    powerbi.bootstrap(reportContainer, reportLoadConfig);
     const report = powerbi.embed(reportContainer, reportLoadConfig);
 </script>
 <style>

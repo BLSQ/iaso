@@ -16,9 +16,6 @@ import TileSwitch from '../../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 import InnerDrawer from '../../../../components/nav/InnerDrawer';
-
-// import InstancePopupComponent from '../InstancePopupComponent';
-
 import { useShowWarning } from './useShowWarning';
 import { useResetMapReducerOnUnmount } from './useResetMapReducerOnUnmount';
 import { setCurrentInstance } from '../../actions';

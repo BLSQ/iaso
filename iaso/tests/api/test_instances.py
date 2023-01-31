@@ -1299,7 +1299,7 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
 
-        # Check if the instance created without FormVersion has properties form_version = None
+        # Check if the instance created without FormVersion has form_version = None
 
         self.client.force_authenticate(self.yoda)
 
@@ -1328,6 +1328,5 @@ class InstancesAPITestCase(APITestCase):
         instance.save()
 
         response = self.client.get(f"/api/instances/{instance.pk}/")
-        print("RESPONSE: ", response.json())
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["form_version_id"], form_version.id)

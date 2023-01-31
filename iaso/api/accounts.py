@@ -18,12 +18,16 @@ class AccountSerializer(serializers.ModelSerializer):
 
     def update(self, account, validated_data):
         default_version = validated_data.pop("default_version", None)
+        user = self.context["request"].user
         if default_version is not None:
             sourceVersion = get_object_or_404(
                 SourceVersion,
                 id=default_version.id,
                 number=default_version.number,
             )
+            project = Project.objects.get(account=user.iaso_profile.account)  # type: ignore
+            if project not in sourceVersion.data_source.projects.all():
+                raise serializers.ValidationError({"Error": "Account not allowed to access this default_source"})
             account.default_version = sourceVersion
             account.save()
 
@@ -55,11 +59,3 @@ class AccountViewSet(ModelViewSet):
     queryset = Account.objects.all()
     # FIXME: USe a PATCH in the future, it make more sense regarding HTTP method semantic
     http_method_names = ["put"]
-
-    def update(self, request: Request, *args, **kwargs):
-        default_version = request.data["default_version"]
-        version = get_object_or_404(SourceVersion, pk=default_version)
-        project = Project.objects.get(account=request.user.iaso_profile.account)  # type: ignore
-        if project not in version.data_source.projects.all():
-            raise serializers.ValidationError({"Error": "Account not allowed to access this default_source"})
-        return super().update(request, args, kwargs)

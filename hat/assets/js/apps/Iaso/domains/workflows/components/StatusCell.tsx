@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useTheme } from '@material-ui/core';
 
-import { Status } from '../types/workflows';
+import { Status } from '../types';
 
 import { useGetStatus } from '../hooks/useGetStatus';
 

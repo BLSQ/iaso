@@ -11,7 +11,7 @@ import { baseUrls } from '../constants/urls';
 import Page404 from '../components/errors/Page404';
 
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
-import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config.tsx';
+import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config/index.tsx';
 import { getOrgUnitsUrl } from '../domains/orgUnits/utils';
 
 const getRedirections = overrideLanding => {

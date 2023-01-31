@@ -1,6 +1,5 @@
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { useSelector } from 'react-redux';
-import { Period } from './models';
+import { Period } from './models.ts';
 import {
     PERIOD_TYPE_DAY,
     PERIOD_TYPE_MONTH,
@@ -16,7 +15,7 @@ import {
     hasFeatureFlag,
     HIDE_PERIOD_QUARTER_NAME,
 } from '../../utils/featureFlags';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 export const getDefaultPeriodString = () => {
     const currentYear = new Date().getFullYear();

@@ -5,17 +5,12 @@ import React, {
     useEffect,
 } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     LoadingSpinner,
     // @ts-ignore
     formatThousand,
-    // @ts-ignore
     SortableTable,
-    // @ts-ignore
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';
@@ -37,19 +32,17 @@ import {
 import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
-import {
-    WorkflowVersionDetail,
-    WorkflowParams,
-    FollowUps,
-} from './types/workflows';
+import { WorkflowVersionDetail, WorkflowParams, FollowUps } from './types';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { FollowUpsTable } from './components/FollowUpsTable';
-import { AddFollowUpsModal } from './components/FollowUpsModal';
+import { FollowUpsTable } from './components/followUps/Table';
+import { AddFollowUpsModal } from './components/followUps/Modal';
+import { AddChangeModal } from './components/changes/Modal';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
+import { useGetChangesColumns } from './config/changes';
+import { useGetFollowUpsColumns } from './config/followUps';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
 
 type Router = {
@@ -63,9 +56,18 @@ type Props = {
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
-    fullWidth: { width: '100%' },
     infoPaper: { width: '100%', position: 'relative' },
     infoPaperBox: { minHeight: '100px' },
+    count: {
+        height: theme.spacing(8),
+        display: 'flex',
+        justifyContent: 'flex-end',
+        position: 'absolute',
+        alignItems: 'center',
+        paddingRight: theme.spacing(2),
+        top: 0,
+        right: 0,
+    },
 }));
 
 export const Details: FunctionComponent<Props> = ({ router }) => {
@@ -107,20 +109,27 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             );
         }
     }, [workflowVersion?.follow_ups]);
-    const { possibleFields } = useGetPossibleFields(
+    const { possibleFields: targetPossibleFields } = useGetPossibleFields(
         workflowVersion?.reference_form.id,
     );
     const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );
-    const fields = useGetQueryBuildersFields(formDescriptors, possibleFields);
+    const fields = useGetQueryBuildersFields(
+        formDescriptors,
+        targetPossibleFields,
+    );
 
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
         fields,
         queryBuilderListToReplace,
     );
-    const changesColumns = useGetChangesColumns();
+    const changesColumns = useGetChangesColumns(
+        versionId,
+        targetPossibleFields,
+        workflowVersion,
+    );
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
         versionId,
@@ -142,6 +151,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             })),
         );
     }, [followUps, saveFollowUpOrder]);
+
     return (
         <>
             <TopBar
@@ -173,9 +183,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 </Grid>
                 <Box mt={2}>
                     <WidgetPaper
-                        className={classes.fullWidth}
+                        className={classes.infoPaper}
                         title={formatMessage(MESSAGES.followUps)}
                     >
+                        <Box className={classes.count}>
+                            {`${formatThousand(
+                                workflowVersion?.follow_ups.length ?? 0,
+                            )} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                         <>
                             {workflowVersion && (
                                 <>
@@ -224,9 +240,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 </Box>
                 <Box mt={2}>
                     <WidgetPaper
-                        className={classes.fullWidth}
+                        className={classes.infoPaper}
                         title={formatMessage(MESSAGES.changes)}
                     >
+                        <Box className={classes.count}>
+                            {`${formatThousand(
+                                workflowVersion?.changes.length ?? 0,
+                            )} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}
@@ -249,20 +271,23 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             }
                             extraProps={{
                                 isLoading,
+                                targetPossibleFields,
                             }}
                         />
-                        <Box
-                            display="flex"
-                            justifyContent="flex-end"
-                            pr={2}
-                            pb={2}
-                            mt={-2}
-                        >
-                            {`${formatThousand(
-                                workflowVersion?.changes.length ?? 0,
-                            )} `}
-                            {formatMessage(MESSAGES.results)}
-                        </Box>
+                        {workflowVersion?.status === 'DRAFT' && (
+                            <Box m={2} textAlign="right">
+                                <AddChangeModal
+                                    versionId={versionId}
+                                    changes={workflowVersion?.changes || []}
+                                    targetPossibleFields={
+                                        targetPossibleFields || []
+                                    }
+                                    referenceForm={
+                                        workflowVersion?.reference_form
+                                    }
+                                />
+                            </Box>
+                        )}
                     </WidgetPaper>
                 </Box>
             </Box>

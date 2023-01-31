@@ -1,7 +1,5 @@
 import {
-    // @ts-ignore
     QueryBuilderFields,
-    // @ts-ignore
     QueryBuilderListToReplace,
 } from 'bluesquare-components';
 import { purple, blue } from '@material-ui/core/colors';

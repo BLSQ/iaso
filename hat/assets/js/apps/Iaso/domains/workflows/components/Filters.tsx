@@ -4,7 +4,7 @@ import React, { FunctionComponent } from 'react';
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { WorkflowsParams } from '../types/workflows';
+import { WorkflowsParams } from '../types';
 
 import { useFilterState } from '../../../hooks/useFilterState';
 import { useGetStatus } from '../hooks/useGetStatus';

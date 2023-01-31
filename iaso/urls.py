@@ -75,6 +75,7 @@ from hat.api.token_authentication import token_auth
 from .api.workflows.versions import WorkflowVersionViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
+from .api.workflows.changes import WorkflowChangeViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -137,6 +138,7 @@ router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basena
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")
+router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowchanges")
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")

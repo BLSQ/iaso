@@ -1,10 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    IconButton,
-} from 'bluesquare-components';
+import { useSafeIntl, IconButton } from 'bluesquare-components';
 
 import { Button } from '@material-ui/core';
 import PublishIcon from '@material-ui/icons/Publish';

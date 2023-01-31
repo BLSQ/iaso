@@ -93,6 +93,17 @@ export const useGetFollowUpsColumns = (
                 );
             },
         });
+    } else {
+        columns.unshift({
+            Header: formatMessage(MESSAGES.order),
+            resizable: false,
+            sortable: false,
+            accessor: 'order',
+            width: 20,
+            Cell: settings => {
+                return <>{parseInt(settings.value, 10) + 1}</>;
+            },
+        });
     }
     return columns;
 };

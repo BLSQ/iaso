@@ -207,6 +207,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'You cannot have multiple mappings on the same source or target',
     },
+    order: {
+        id: 'iaso.workflows.order',
+        defaultMessage: 'Order',
+    },
 });
 
 export default MESSAGES;

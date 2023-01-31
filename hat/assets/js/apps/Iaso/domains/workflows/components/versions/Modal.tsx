@@ -1,20 +1,16 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     ConfirmCancelModal,
-    // @ts-ignore
     makeFullModal,
-    // @ts-ignore
     AddButton,
 } from 'bluesquare-components';
-import { useCreateWorkflowVersion } from '../hooks/requests/useCreateWorkflowVersion';
+import { useCreateWorkflowVersion } from '../../hooks/requests/useCreateWorkflowVersion';
 
-import InputComponent from '../../../components/forms/InputComponent';
+import InputComponent from '../../../../components/forms/InputComponent';
 
-import MESSAGES from '../messages';
+import MESSAGES from '../../messages';
 
 type Props = {
     entityTypeId: string;
@@ -40,7 +36,7 @@ const AddVersionModal: FunctionComponent<Props> = ({
 
     return (
         <ConfirmCancelModal
-            allowConfirm={name && name !== ''}
+            allowConfirm={Boolean(name && name !== '')}
             titleMessage={formatMessage(MESSAGES.addWorkflowVersion)}
             onConfirm={handleConfirm}
             onCancel={() => {

@@ -999,7 +999,6 @@ class Instance(models.Model):
         form_version = self.get_form_version()
 
         last_modified_by = None
-
         if self.last_modified_by is not None:
             last_modified_by = self.last_modified_by.username
 
@@ -1012,6 +1011,7 @@ class Instance(models.Model):
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
+            "form_version_id": self.form_version_id,
             "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,

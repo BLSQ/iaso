@@ -347,3 +347,8 @@ class DeletionFilterBackend(filters.BaseFilterBackend):
 class FileFormatEnum(enum.Enum):
     CSV: str = "csv"
     XLSX: str = "xlsx"
+
+
+# To sort timestamp by date, check mobile_orgunits for usage
+def get_timestamp(d):
+    return float(d["created_at"])

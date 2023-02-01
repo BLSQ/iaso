@@ -843,8 +843,9 @@ class OrgUnitAPITestCase(APITestCase):
         ou_type = OrgUnitType.objects.create(name="Test_type")
         org_unit_parent = OrgUnit.objects.create(name="A_new_OU")
 
-        data = str(
-            [
+        count_of_orgunits = OrgUnit.objects.all().count()
+
+        data = [
                 {
                     "id": "26668d58-7604-40bb-b783-71c2a2b3e6d1",
                     "name": "A",
@@ -866,7 +867,7 @@ class OrgUnitAPITestCase(APITestCase):
                     "altitude": 127.80000305175781,
                     "latitude": 50.8369448,
                     "longitude": 4.3999539,
-                    "parent_id": org_unit_parent.pk,
+                    "parent_id": str(org_unit_parent.pk),
                     "created_at": 1674833640.146,
                     "updated_at": 1674833640.146,
                     "org_unit_type_id": ou_type.pk,
@@ -905,7 +906,7 @@ class OrgUnitAPITestCase(APITestCase):
                     "altitude": 110.5999984741211,
                     "latitude": 50.8376697,
                     "longitude": 4.3963584,
-                    "parent_id": org_unit_parent.pk,
+                    "parent_id": str(org_unit_parent.pk),
                     "created_at": 1675079445.755,
                     "updated_at": 1675079445.755,
                     "org_unit_type_id": ou_type.pk,
@@ -931,7 +932,7 @@ class OrgUnitAPITestCase(APITestCase):
                     "altitude": 115.30000000000001,
                     "latitude": 50.8376,
                     "longitude": 4.396518333333333,
-                    "parent_id": org_unit_parent.pk,
+                    "parent_id": str(org_unit_parent.pk),
                     "created_at": 1675079920.602,
                     "updated_at": 1675079920.602,
                     "org_unit_type_id": ou_type.pk,
@@ -944,7 +945,7 @@ class OrgUnitAPITestCase(APITestCase):
                     "altitude": 115.5,
                     "latitude": 50.837444999999995,
                     "longitude": 4.396443333333334,
-                    "parent_id": org_unit_parent.pk,
+                    "parent_id": str(org_unit_parent.pk),
                     "created_at": 1675079729.65,
                     "updated_at": 1675079729.65,
                     "org_unit_type_id": ou_type.pk,
@@ -957,16 +958,17 @@ class OrgUnitAPITestCase(APITestCase):
                     "altitude": 113.3,
                     "latitude": 50.82527666666667,
                     "longitude": 4.35383,
-                    "parent_id": org_unit_parent.pk,
+                    "parent_id": str(org_unit_parent.pk),
                     "created_at": 1675099586.754,
                     "updated_at": 1675099586.755,
                     "org_unit_type_id": ou_type.pk,
                 },
             ]
-        )
 
         response = self.client.post(
             "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=data, format="json"
         )
+        orgunits = OrgUnit.objects.all().count()
 
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(orgunits, count_of_orgunits + 9)

@@ -1,23 +1,20 @@
 import React, { FunctionComponent } from 'react';
 
-import {
-    // @ts-ignore
-    IconButton as IconButtonComponent,
-} from 'bluesquare-components';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import BlockIcon from '@material-ui/icons/Block';
 
-import { WorkflowVersion } from '../types/workflows';
+import { WorkflowVersion } from '../../types';
 
-import MESSAGES from '../messages';
-import { baseUrls } from '../../../constants/urls';
-import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import MESSAGES from '../../messages';
+import { baseUrls } from '../../../../constants/urls';
+import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import { PublishVersionIconModal } from './PublishVersionModal';
 
-import { useCopyWorkflowVersion } from '../hooks/requests/useCopyWorkflowVersion';
-import { useDeleteWorkflowVersion } from '../hooks/requests/useDeleteWorkflowVersion';
-import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
+import { useCopyWorkflowVersion } from '../../hooks/requests/useCopyWorkflowVersion';
+import { useDeleteWorkflowVersion } from '../../hooks/requests/useDeleteWorkflowVersion';
+import { useUpdateWorkflowVersion } from '../../hooks/requests/useUpdateWorkflowVersion';
 
 type Props = {
     workflowVersion: WorkflowVersion;

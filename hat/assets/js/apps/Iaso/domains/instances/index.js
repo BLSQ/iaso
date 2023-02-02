@@ -32,7 +32,7 @@ import {
 
 import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import InstancesMap from './components/InstancesMapComponent';
+import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import { CreateReAssignDialogComponent } from './components/CreateReAssignDialogComponent.tsx';
 

@@ -86,10 +86,10 @@ class WorkflowVersion(SoftDeletableModel):
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name="workflow_versions")
 
     name = models.CharField(max_length=50, default="No Name")
-    reference_form = models.ForeignKey(Form, on_delete=models.CASCADE, default=None, null=True)
-
     status = models.CharField(
-        max_length=12, choices=WorkflowVersionsStatus.choices, default=WorkflowVersionsStatus.DRAFT
+        max_length=12,
+        choices=WorkflowVersionsStatus.choices,
+        default=WorkflowVersionsStatus.DRAFT,
     )
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -100,6 +100,10 @@ class WorkflowVersion(SoftDeletableModel):
     objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
 
     objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(WorkflowVersionQuerySet)()
+
+    @property
+    def reference_form(self):
+        return self.workflow.entity_type.reference_form
 
     def transition_to_status(self, new_status_str: str, do_save=True):
         old_status_str = self.status
@@ -116,7 +120,10 @@ class WorkflowVersion(SoftDeletableModel):
             return {"success": True}
 
         else:
-            return {"success": False, "error": f"Transition from {old_status_str} to {new_status_str} is not allowed"}
+            return {
+                "success": False,
+                "error": f"Transition from {old_status_str} to {new_status_str} is not allowed",
+            }
 
     def __str__(self):
         status_label = self.status

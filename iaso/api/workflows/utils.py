@@ -41,6 +41,6 @@ def make_deep_copy_with_relations(orig_version):
         new_followup.save()
 
         orig_forms = of.forms.all()
-        new_followup.forms.set(*orig_forms)
+        new_followup.forms.add(*orig_forms)
 
     return new_version

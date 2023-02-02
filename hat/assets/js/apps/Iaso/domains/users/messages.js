@@ -196,6 +196,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_dhis2_link',
         defaultMessage: 'Link with DHIS2',
     },
+    iaso_workflows: {
+        id: 'iaso.permissions.iaso_workflows',
+        defaultMessage: 'Workflows',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',

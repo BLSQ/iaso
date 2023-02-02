@@ -484,14 +484,14 @@ class PlanningTestCase(APITestCase):
 
     def test_query_happy_path(self):
         self.client.force_authenticate(self.user)
-        response = self.client.get("/api/microplanning/planning/", format="json")
+        response = self.client.get("/api/microplanning/plannings/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r), 1)
 
     def test_query_id(self):
         self.client.force_authenticate(self.user)
         id = self.planning.id
-        response = self.client.get(f"/api/microplanning/planning/{id}/", format="json")
+        response = self.client.get(f"/api/microplanning/plannings/{id}/", format="json")
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["name"], self.planning.name)
         self.assertEqual(
@@ -582,7 +582,7 @@ class PlanningTestCase(APITestCase):
             "started_at": "2022-02-02",
             "ended_at": "2022-03-03",
         }
-        response = self.client.patch(f"/api/microplanning/planning/{planning.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/microplanning/plannings/{planning.id}/", data=data, format="json")
         r = self.assertJSONResponse(response, 200)
         planning_id = r["id"]
         self.assertTrue(Planning.objects.get(id=planning_id))
@@ -610,7 +610,7 @@ class PlanningTestCase(APITestCase):
             "started_at": "2022-02-02",
             "ended_at": "2022-03-03",
         }
-        response = self.client.post("/api/microplanning/planning/", data=data, format="json")
+        response = self.client.post("/api/microplanning/plannings/", data=data, format="json")
         r = self.assertJSONResponse(response, 201)
         planning_id = r["id"]
         self.assertTrue(Planning.objects.get(id=planning_id))

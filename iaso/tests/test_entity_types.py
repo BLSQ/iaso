@@ -110,7 +110,7 @@ class EntityTypeAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        response = self.client.post("/api/entitytype/", data=payload, format="json")
+        response = self.client.post("/api/entitytypes/", data=payload, format="json")
 
         self.assertEqual(response.status_code, 201)
 
@@ -122,9 +122,9 @@ class EntityTypeAPITestCase(APITestCase):
             "reference_form": self.form_1.id,
         }
 
-        self.client.post("/api/entitytype/", data=payload, format="json")
+        self.client.post("/api/entitytypes/", data=payload, format="json")
 
-        response = self.client.get("/api/entitytype/", format="json")
+        response = self.client.get("/api/entitytypes/", format="json")
 
         self.assertEqual(response.status_code, 200)
 
@@ -137,7 +137,7 @@ class EntityTypeAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        self.client.post("/api/entitytype/", data=post_payload, format="json")
+        self.client.post("/api/entitytypes/", data=post_payload, format="json")
 
         patch_payload = {
             "name": "New Entity Type_test_2",
@@ -146,7 +146,7 @@ class EntityTypeAPITestCase(APITestCase):
         }
 
         response = self.client.patch(
-            "/api/entitytype/{0}/".format(EntityType.objects.last().pk), data=patch_payload, format="json"
+            "/api/entitytypes/{0}/".format(EntityType.objects.last().pk), data=patch_payload, format="json"
         )
         print(response.json())
         self.assertEqual(response.status_code, 200)
@@ -164,7 +164,7 @@ class EntityTypeAPITestCase(APITestCase):
             "account": self.yoda.iaso_profile.account.pk,
         }
 
-        response = self.client.post("/api/entitytype/", data=payload, format="json")
+        response = self.client.post("/api/entitytypes/", data=payload, format="json")
 
         print(response.json())
 
@@ -179,8 +179,8 @@ class EntityTypeAPITestCase(APITestCase):
 
         payload = {"name": "beneficiary", "reference_form": self.form_1.id, "account": self.the_gang.pk}
 
-        response = self.client.post("/api/entitytype/", data=payload, format="json")
-        get_response = self.client.get("/api/entitytype/")
+        response = self.client.post("/api/entitytypes/", data=payload, format="json")
+        get_response = self.client.get("/api/entitytypes/")
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(get_response.json()), 1)

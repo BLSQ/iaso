@@ -55,8 +55,8 @@ class DevicesPositionViewSet(ModelViewSet):
 
     This API is open to anonymous users on write (if the project allows it).
 
-    GET /api/devicesposition/
-    POST /api/devicesposition/
+    GET /api/devicespositions/
+    POST /api/devicespositions/
     """
 
     permission_classes = [permissions.AllowAny]

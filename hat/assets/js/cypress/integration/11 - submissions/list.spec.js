@@ -106,7 +106,7 @@ const goToPage = (
         },
     );
     cy.intercept('GET', '/api/formversions/**', {
-        fixture: 'devicesownership/list.json',
+        fixture: 'devicesownerships/list.json',
     });
     const options = {
         method: 'GET',
@@ -489,14 +489,14 @@ describe('Submissions', () => {
 });
 
 describe('Map Tab', () => {
-    it.skip('should display a map', () => {});
-    it.skip('should different location', () => {});
-    it.skip('should have working cluster', () => {});
+    it.skip('should display a map', () => { });
+    it.skip('should different location', () => { });
+    it.skip('should have working cluster', () => { });
 });
 
 describe('Files Tab', () => {
-    it.skip('should display a files list', () => {});
-    it.skip('should display a warning if no files', () => {});
-    it.skip('should have a working pagination', () => {});
-    it.skip('should split files types into tabs', () => {});
+    it.skip('should display a files list', () => { });
+    it.skip('should display a warning if no files', () => { });
+    it.skip('should have a working pagination', () => { });
+    it.skip('should split files types into tabs', () => { });
 });

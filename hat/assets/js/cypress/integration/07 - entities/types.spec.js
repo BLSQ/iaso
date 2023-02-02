@@ -42,7 +42,7 @@ const goToPage = (
     );
     const options = {
         method: 'GET',
-        pathname: '/api/entitytype',
+        pathname: '/api/entitytypes',
     };
     const query = {
         ...defaultQuery,
@@ -273,7 +273,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'PATCH',
-                        pathname: `/api/entitytype/${listFixture.types[entityTypeIndex].id}/`,
+                        pathname: `/api/entitytypes/${listFixture.types[entityTypeIndex].id}/`,
                     },
                     req => {
                         expect(req.body).to.deep.equal({
@@ -294,7 +294,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entitytype',
+                        pathname: '/api/entitytypes',
                         query: defaultQuery,
                     },
                     req => {
@@ -339,7 +339,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'DELETE',
-                        pathname: `/api/entitytype/${listFixture.types[entityTypeIndex].id}/`,
+                        pathname: `/api/entitytypes/${listFixture.types[entityTypeIndex].id}/`,
                     },
                     req => {
                         interceptFlag = true;
@@ -352,7 +352,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entitytype',
+                        pathname: '/api/entitytypes',
                         query: defaultQuery,
                     },
                     req => {
@@ -404,7 +404,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entitytype',
+                        pathname: '/api/entitytypes',
                         query: {
                             limit: '20',
                             order: 'name',

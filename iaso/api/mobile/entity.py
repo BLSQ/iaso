@@ -77,7 +77,7 @@ class MobileEntityViewSet(ModelViewSet):
 
     details = /api/mobile/entities/uuid
 
-    sample usage: /api/mobile/entity/?limit_date=2022-12-29&limit=1&page=1
+    sample usage: /api/mobile/entities/?limit_date=2022-12-29&limit=1&page=1
 
     """
 

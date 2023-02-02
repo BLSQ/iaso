@@ -470,6 +470,14 @@ class StorageDeviceAdmin(admin.ModelAdmin):
 class WorkflowAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
+    def get_form(self, request, obj=None, **kwargs):
+        # In the <select> for the entity type, we also want to indicate the account name
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields[
+            "entity_type"
+        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        return form
+
     def get_queryset(self, request):
         return Workflow.objects_include_deleted.all()
 

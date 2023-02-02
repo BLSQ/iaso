@@ -655,7 +655,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(True, dup.deleted)
         self.assertEqual(1, Modification.objects.count())
         # check status is ready again
-        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        self.client.get(f"/api/instances/", {"form_id": form.id})
 
         response = self.client.get(f"/api/instances/", {"form_id": form.id})
         res = self.assertJSONResponse(response, 200)
@@ -954,7 +954,7 @@ class InstancesAPITestCase(APITestCase):
             ],
         )
         response = self.client.get(f"/api/instances/stats_sum/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def test_stats_dup_deleted(self):
@@ -1005,7 +1005,7 @@ class InstancesAPITestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/instances/stats_sum/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)
@@ -1148,9 +1148,9 @@ class InstancesAPITestCase(APITestCase):
             format="json",
         )
         if can_user_modify:
-            j = self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, 200)
         else:
-            j = self.assertJSONResponse(response, 403)
+            self.assertJSONResponse(response, 403)
 
     def test_instance_create_entity(self):
         """POST /api/instances/ with an entity that don't exist in db, it create it"""
@@ -1198,7 +1198,7 @@ class InstancesAPITestCase(APITestCase):
         entity_uuid = str(uuid4())
         entity_type = m.EntityType.objects.create(account=self.star_wars)
 
-        entity = m.Entity.objects.create(
+        m.Entity.objects.create(
             account=self.star_wars,
             entity_type=entity_type,
             uuid=entity_uuid,

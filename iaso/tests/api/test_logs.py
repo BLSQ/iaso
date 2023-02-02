@@ -184,7 +184,7 @@ class LogsAPITestCase(APITestCase):
 
         self.client.force_authenticate(user_with_instance_perm)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         self.client.force_authenticate(user_no_instance_perm)
         response = self.client.get(f"/api/logs/{modification.id}/")
@@ -193,4 +193,4 @@ class LogsAPITestCase(APITestCase):
 
         self.client.force_authenticate(user_superuser)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)

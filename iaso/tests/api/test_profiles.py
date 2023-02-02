@@ -361,7 +361,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_account_feature_flags_is_included(self):
         aff = m.AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")
-        aff2 = m.AccountFeatureFlag.objects.create(code="not-used", name="this is not used")
+        m.AccountFeatureFlag.objects.create(code="not-used", name="this is not used")
         self.client.force_authenticate(self.jane)
 
         # no feature flag at first

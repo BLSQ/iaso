@@ -68,16 +68,6 @@ class ApiLogger:
         return result
 
     def log_exception(self, dhis2_exception, full_url, params):
-        resp = {}
-        try:
-            resp = json.loads(dhis2_exception.description)
-        except:
-            resp = {
-                "status": "ERROR",
-                "description": "non json response return by server",
-                "raw_data": dhis2_exception.description,
-            }
-
         resp = json.loads(dhis2_exception.description)
 
         export_log = ExportLog()

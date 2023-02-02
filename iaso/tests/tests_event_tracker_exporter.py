@@ -601,9 +601,6 @@ class DataValueExporterTests(TestCase):
             responses.PUT, "https://dhis2.com/api/trackedEntityInstances/WfMWd9YYL4d", callback=request_callback
         )
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
-
         DataValueExporter().export_instances(export_request)
 
         self.expect_logs(EXPORTED)
@@ -704,7 +701,6 @@ class DataValueExporterTests(TestCase):
         sent_create = []
 
         def request_callback(request):
-            request_payload = json.loads(request.body)
             sent_create.append(json.loads(request.body))
             resp = load_dhis2_fixture("event-tracker-tei-create.json")
             resp["response"]["importSummaries"][0]["reference"] = "TEI-" + str(len(sent_create))
@@ -725,9 +721,6 @@ class DataValueExporterTests(TestCase):
         responses.add_callback(
             responses.POST, "https://dhis2.com/api/relationships", callback=request_relation_ship_callback
         )
-
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
 
         DataValueExporter().export_instances(export_request)
 
@@ -931,9 +924,6 @@ class DataValueExporterTests(TestCase):
         responses.add_callback(
             responses.POST, "https://dhis2.com/api/trackedEntityInstances", callback=request_callback
         )
-
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
 
         DataValueExporter().export_instances(export_request)
 

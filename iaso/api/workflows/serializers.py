@@ -301,7 +301,6 @@ class WorkflowPostSerializer(serializers.Serializer):
         wf, wf_created = Workflow.objects.get_or_create(entity_type_id=entity_type_id)
 
         wfv = WorkflowVersion.objects.create(workflow=wf)
-        et = EntityType.objects.get(pk=entity_type_id)
         if "name" in validated_data:
             wfv.name = validated_data["name"]
         wfv.save()

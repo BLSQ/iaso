@@ -219,7 +219,6 @@ class LineListImportSerializer(serializers.ModelSerializer):
         line_list_import.save()
 
         # Tentatively created campaign, will transaction.abort in case of error
-        res = "importing"
         try:
             res = campaign_from_files(line_list_import.file)
         except Exception as exc:
@@ -347,7 +346,6 @@ class RoundSerializer(serializers.ModelSerializer):
             round_vaccine_instance = round_vaccine_serializer.save()
             vaccine_instances.append(round_vaccine_instance)
         for shipment_data in shipments:
-            shipment = None
             if shipment_data.get("id"):
                 shipment_id = shipment_data["id"]
                 current_shipment_ids.append(shipment_id)
@@ -367,7 +365,6 @@ class RoundSerializer(serializers.ModelSerializer):
                 current.delete()
         # TODO put repeated code in a function
         for destruction_data in destructions:
-            destruction = None
             if destruction_data.get("id"):
                 destruction_id = destruction_data["id"]
                 current_destruction_ids.append(destruction_id)
@@ -477,7 +474,7 @@ class SurgePreviewSerializer(serializers.Serializer):
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
-        except NoValidUrlKeyFound as e:
+        except NoValidUrlKeyFound:
             raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
         except Exception as e:
             raise serializers.ValidationError(f"{type(e)}: {str(e)}")

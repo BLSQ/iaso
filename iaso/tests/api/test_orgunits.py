@@ -752,7 +752,7 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
             data=data,
         )
-        jr = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertGreater(ou.updated_at, old_modification_date)

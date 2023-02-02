@@ -457,7 +457,7 @@ class PolioAPITestCase(APITestCase):
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
         c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
-        c_round_2 = c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+        c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
         c2 = Campaign.objects.create(
             country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account

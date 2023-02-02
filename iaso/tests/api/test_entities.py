@@ -510,7 +510,7 @@ class EntityAPITestCase(APITestCase):
 
         self.form_1.save()
 
-        form_version = FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
+        FormVersion.objects.create(form=self.form_1, version_id="A_FORM_ID")
 
         entity_type = EntityType.objects.create(
             name="Type 1",

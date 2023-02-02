@@ -165,7 +165,6 @@ class ProfilesViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         if pk == "me":
             # allow user to change his own language
-            user = request.user
             profile = request.user.iaso_profile
             if "home_page" in request.data:
                 profile.home_page = request.data["home_page"]

@@ -16,10 +16,9 @@ def seed_event_mapping(api, program_id):
     for program_stage in program.json()["programStages"]:
         for psde in program_stage["programStageDataElements"]:
             de = psde["dataElement"]
-            code_or_name = None
             if "code" in de:
                 code_or_name = de.get("code")
-            elif "shortName":
+            elif "shortName":  # FIXME: shouldn't it be "elif "shortName" in de"? (this is always True)
                 code_or_name = de.get("shortName")
                 missing_data_elements.append(de)
             else:

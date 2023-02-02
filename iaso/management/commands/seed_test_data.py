@@ -276,8 +276,6 @@ class Command(BaseCommand):
             {"name": "What_is_the_child_s_name", "type": "text", "label": "Prénom"},
         ]
         entity_form.label_keys = ["What_is_the_child_s_name", "What_is_the_father_s_name"]
-
-        entity_form.label_keys
         entity_form.save()
 
         entity_form.org_unit_types.add(orgunit_type)
@@ -326,7 +324,7 @@ class Command(BaseCommand):
 
             self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type, user)
 
-            self.seed_micro_planning(source_version, dhis2_version, account, project, user)
+            self.seed_micro_planning(source_version, project, user)
 
             print("********* generating instances")
 
@@ -565,8 +563,6 @@ class Command(BaseCommand):
                     instance.json = test_data
                     instance.form = form
 
-                    imei_prefix = "testi_" + dhis2_version if randint(1, 10) < 5 else "testimei"
-
                     if mapping_version.mapping.is_event_tracker():
                         instance.json.clear()
 
@@ -686,7 +682,7 @@ class Command(BaseCommand):
         with open(file) as json_file:
             return json.load(json_file)
 
-    def seed_micro_planning(self, source_version, dhis2_version, account, project, user):
+    def seed_micro_planning(self, source_version, project, user):
 
         print("********* seed_micro_planning")
         team1, _ignore1 = Team.objects.get_or_create(
@@ -732,6 +728,6 @@ class Command(BaseCommand):
                 p.assignment_set.get_or_create(org_unit=child_org_unit, team=assigned_team, user=user)
             child_index += 1
 
-        p = Planning.objects.get_or_create(
+        Planning.objects.get_or_create(
             project=self.project, name="planning-vaccination", team=team_main, org_unit=country
         )

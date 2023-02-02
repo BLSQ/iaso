@@ -127,15 +127,15 @@ class DataSourcesAPITestCase(APITestCase):
         # read but not write
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/datasources/{source_id}/")
-        j = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         response = self.client.delete(f"/api/datasources/{source_id}/")
-        j = self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 403)
 
         # user with write
         self.client.force_authenticate(self.joe)
         response = self.client.delete(f"/api/datasources/{source_id}/")
-        j = self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 403)
         self.assertEqual(m.DataSource.objects.filter(id=source_id).count(), 1)
 
         response = self.client.get(f"/api/datasources/{source_id}/")
-        j = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)

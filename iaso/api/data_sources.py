@@ -163,7 +163,7 @@ class TestCredentialSerializer(serializers.Serializer):
                 print(err)
                 raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
             raise serializers.ValidationError({"dhis2_password": [err.description]})
-        except requests.exceptions.ConnectionError as err:
+        except requests.exceptions.ConnectionError:
             raise serializers.ValidationError({"dhis2_url": ["Could not connect to server"]})
         except Exception as err:
             logging.exception(err)

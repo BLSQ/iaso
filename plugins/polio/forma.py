@@ -25,7 +25,7 @@ from logging import getLogger
 logger = getLogger(__name__)
 
 
-def forma_find_campaign_on_day(campaigns, day, country):
+def forma_find_campaign_on_day(campaigns, day):
     """Guess campaign from formA submission
 
     FormA Submission are still considered on time 28 days after the round end at the campaign level
@@ -178,7 +178,7 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     print("Matching country", country)
 
     forma_find_campaign_on_day_cached = lru_cache(maxsize=None)(forma_find_campaign_on_day)
-    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"], country), axis=1)
+    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"]), axis=1)
     df["campaign_id"] = df["campaign"].apply(lambda c: str(c.id) if c else None)
     df["campaign_obr_name"] = df["campaign"].apply(lambda c: c.obr_name if c else None)
 

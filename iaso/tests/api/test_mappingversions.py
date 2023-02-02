@@ -124,7 +124,7 @@ class FormsVersionAPITestCase(APITestCase):
                 },
             },
         }
-        patch_resp = self.client.patch(
+        self.client.patch(
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_2": data_element_2}},
             format="json",

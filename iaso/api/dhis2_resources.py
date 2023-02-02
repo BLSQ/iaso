@@ -21,7 +21,7 @@ class Dhis2ViewSet(viewsets.ViewSet):
     resource: str
     permission_classes = [permissions.IsAuthenticated]
 
-    def list(self, request, datasource_id, format="json"):
+    def list(self, request, datasource_id, _format="json"):
 
         sources = DataSource.objects.all()
         profile = request.user.iaso_profile

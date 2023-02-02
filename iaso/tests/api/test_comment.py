@@ -41,7 +41,6 @@ class CommentApiTestCase(APITestCase):
         bad_user = self.create_user_with_profile(username="bad_user", account=account)
 
         self.client.force_authenticate(bad_user)
-        ct = ContentType.objects.get_for_model(m.OrgUnit)
         data = {"comment": "comment", "content_type": "iaso-orgunit", "object_pk": self.orgunit.pk}
 
         response = self.client.post("/api/comments/", data=data, format="json")

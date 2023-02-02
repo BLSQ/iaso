@@ -52,7 +52,6 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             force_export = self.context["request"].data.get("forceExport", False)
 
             logger.debug("ExportRequest to create", user, validated_data)
-            filters = validated_data
             selection = dict()
             selection["selected_ids"] = self.context["request"].data.get("selected_ids", None)
             selection["unselected_ids"] = self.context["request"].data.get("unselected_ids", None)
@@ -66,7 +65,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             # warn the client will use this as part of the translation key
             raise serializers.ValidationError({"code": type(e).__name__, "message": str(e)})
 
-    def update(self, export_request, validated_data):
+    def update(self, export_request, _validated_data):
         DataValueExporter().export_instances(export_request)
         # this has a highly probable chance to timeout but the export will continue to be processed
         # still return the export request

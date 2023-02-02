@@ -93,7 +93,7 @@ class BudgetStepLink(SoftDeletableModel):
 def validator_template(value: str):
     try:
         # this will raise an error if the template cannot be parsed
-        template = Engine.get_default().from_string(value)
+        Engine.get_default().from_string(value)
     except TemplateSyntaxError as e:
         raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
 

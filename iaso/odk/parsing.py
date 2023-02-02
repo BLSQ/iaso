@@ -75,7 +75,6 @@ def to_questions_by_name(form_descriptor):
 def visit_by_path(node, questions_by_name, current_path):
     parent = node.get("type", None) is not None and (node["type"] == "survey" or node["type"] == "group")
 
-    node_current_path = ""
     if node.get("name", "") == "data":
         node_current_path = ""
     elif current_path == "":

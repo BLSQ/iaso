@@ -3,24 +3,23 @@ from django.conf import settings
 from django.http.request import HttpRequest
 
 
-def appversions(request: HttpRequest) -> Dict[str, bool]:
-    prefix = "D-" if settings.DEBUG else ""
+def appversions(_request: HttpRequest) -> Dict[str, bool]:
     return {"DEV_SERVER": settings.DEV_SERVER}
 
 
-def app_title(request: HttpRequest) -> Dict[str, str]:
+def app_title(_request: HttpRequest) -> Dict[str, str]:
     return {"app_title": settings.APP_TITLE}
 
 
-def favicon_path(request: HttpRequest) -> Dict[str, str]:
+def favicon_path(_request: HttpRequest) -> Dict[str, str]:
     return {"favicon_path": settings.FAVICON_PATH}
 
 
-def logo_path(request: HttpRequest) -> Dict[str, str]:
+def logo_path(_request: HttpRequest) -> Dict[str, str]:
     return {"logo_path": settings.LOGO_PATH}
 
 
-def theme(request: HttpRequest) -> Dict[str, Any]:
+def theme(_request: HttpRequest) -> Dict[str, Any]:
     return {
         # TODO: Duplicated data: refactor?
         "THEME_PRIMARY_COLOR": settings.THEME_PRIMARY_COLOR,

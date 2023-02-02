@@ -357,7 +357,6 @@ class TeamAPITestCase(APITestCase):
         j = self.assertJSONResponse(r, 201)
         self.assertEqual(j["result"], "success")
         step_id = j["id"]
-        s = BudgetStep.objects.get(id=step_id)
 
         # Check new status on campaign
         r = self.client.get(f"/api/polio/budget/{c.id}/?fields=:all")
@@ -393,7 +392,6 @@ class TeamAPITestCase(APITestCase):
         )
         j = self.assertJSONResponse(r, 201)
         self.assertEqual(j["result"], "success")
-        s = BudgetStep.objects.get(id=step_id)
         # check that we have only created one step
         new_budget_step_count = BudgetStep.objects.count()
         self.assertEqual(prev_budget_step_count + 2, new_budget_step_count)

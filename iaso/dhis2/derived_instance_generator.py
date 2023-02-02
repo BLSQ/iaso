@@ -141,7 +141,7 @@ def process_page(paginator, page, project, cvs_stat_mapping_version, progress, a
     logger.debug("generate_instances : page : " + str(page))
 
     for record in counts:
-        instance = process_instance(record, project, cvs_stat_mapping_version, progress, aggregations)
+        process_instance(record, project, cvs_stat_mapping_version, progress, aggregations)
 
     page_time = timer() - page_start
     logger.debug("generate_instances :" + str(progress) + "in" + str(page_time) + "seconds")
@@ -156,7 +156,7 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
         project=project,
     )
     flagged_as_new = False
-    if instance.uuid == None:
+    if instance.uuid is None:
         instance.uuid = str(uuid4())
         flagged_as_new = True
 
@@ -194,8 +194,7 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
             charset="utf-8",
         )
         instance.file = file
-
-        saved = instance.save()
+        instance.save()
 
 
 def nullify_stats_without_cvs(progress, cvs_form, cvs_stat_mapping_version, period):

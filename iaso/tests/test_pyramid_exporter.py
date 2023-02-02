@@ -125,8 +125,6 @@ class CommandTests(TestCase):
 
         def mock_orgunit_page(request):
             gets_request.append(1)
-            fixture_name = "orgunits"
-            # if len(gets_request) > 1:
             fixture_name = "orgunits_page" + str(len(gets_request))
 
             return (200, {}, json.dumps(self.fixture_json(fixture_name)))

@@ -18,7 +18,7 @@ class DevicesOwnershipViewSet(viewsets.ViewSet):
         HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
     ]
 
-    def list(self, request):
+    def list(self, _request):
         queryset = DeviceOwnership.objects.all()
 
         return Response({"devicesownership": [ownerShip.as_dict() for ownerShip in queryset]})

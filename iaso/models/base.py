@@ -936,7 +936,7 @@ class Instance(models.Model):
 
             DataValueExporter().export_instances(export_request)
             self.refresh_from_db()
-        except NothingToExportError as error:
+        except NothingToExportError:
             print("Export failed for instance", self)
 
     def __str__(self):

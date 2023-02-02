@@ -340,9 +340,6 @@ class DataValueExporterTests(TestCase):
 
         responses.add(responses.POST, "https://dhis2.com/api/completeDataSetRegistrations", json={}, status=200)
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
-
         DataValueExporter().export_instances(export_request)
         self.expect_logs(EXPORTED)
 

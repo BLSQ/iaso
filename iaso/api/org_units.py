@@ -76,7 +76,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         which all the power should be really specified.
 
-        Can serve theses formats, depending on the combination of GET Parameters:
+        Can serve these formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
          * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
          * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> OrgUnitSmallSearchSerializer
@@ -103,7 +103,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
         tree_search = request.GET.get("treeSearch", None)
-        direct_children = request.GET.get("onlyDirectChildren", False)
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
@@ -525,7 +524,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 g = GEOSGeometry(json.dumps(geom))
                 org_unit.geom = g
                 org_unit.simplified_geom = g  # maybe think of a standard simplification here?
-            except Exception as e:
+            except Exception:
                 errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
 
         latitude = request.data.get("latitude")

@@ -78,9 +78,8 @@ class Command(BaseCommand):
         form = Form.objects.get(form_id=options["form_id"])
         for field in form.possible_fields:
             if not field in mapping["question_mappings"]:
-                status = "ERROR no corresponding"
                 if field in usual_ona_meta or field in usual_dc_meta:
-                    status = "WARN usualy data collect metadata should not be in the program"
+                    status = "WARN usually data collect metadata should not be in the program"
                     print(field, status)
         print("******** data elements in the program but not in the form at all")
         for missing_data_element in missing_data_elements:

@@ -205,10 +205,8 @@ class AggregateHandler(BaseHandler):
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
-            resp = {}
             try:
                 resp = json.loads(dhis2_exception.description)
-
             except:
                 resp = {"status": "ERROR", "description": "non json response return by server"}
 
@@ -227,7 +225,7 @@ class AggregateHandler(BaseHandler):
 
 
 class EventHandler(BaseHandler):
-    def map_to_values(self, instance, form_mapping, export_status=None):
+    def map_to_values(self, instance, form_mapping, _export_status=None):
 
         event = {
             "program": form_mapping["program_id"],
@@ -243,7 +241,7 @@ class EventHandler(BaseHandler):
         event_errors = []
         question_mappings = form_mapping["question_mappings"]
 
-        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref == None:
+        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref is None:
             errored = True
             event_errors.append(
                 [
@@ -297,7 +295,7 @@ class EventHandler(BaseHandler):
         else:
             return (event, None)
 
-    def export_page(self, prefix, data, export_statuses, stats, api):
+    def export_page(self, prefix, data, _export_statuses, stats, api):
         if len(data) == 0:
             stats["batched_time"] = 0
             return []
@@ -354,7 +352,7 @@ class EventTrackerHandler(BaseHandler):
 
         return raw_value
 
-    def get_status(self, instance, program_stage_id, form_mapping):
+    def get_status(self, instance, program_stage_id, _form_mapping):
         status = "COMPLETED"
         key = f"status_{program_stage_id}"
 
@@ -502,7 +500,7 @@ class EventTrackerHandler(BaseHandler):
         self.logger.debug("generate_unique_number" + str(generated))
         return generated["value"]
 
-    def export_page(self, prefix, data, export_statuses, stats, raw_api):
+    def export_page(self, prefix, data, _export_statuses, stats, raw_api):
         if len(data) == 0:
             stats["batched_time"] = 0
             return []
@@ -596,7 +594,7 @@ class EventTrackerHandler(BaseHandler):
         instance,
         form_mapping,
         tracked_entity_iaso,
-        export_status,
+        _export_status,
         unique_number_attribute_id,
         country_dhis2_id,
     ):

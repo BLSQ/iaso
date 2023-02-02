@@ -22,13 +22,10 @@ import sys
 import time
 
 from django.core.management.base import BaseCommand
-
 from django.db import transaction
 
 from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
-
 from .command_logger import CommandLogger
-
 from ...tasks.dhis2_ou_importer import (
     get_api_config,
     get_api,

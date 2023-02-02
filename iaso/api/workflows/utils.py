@@ -1,9 +1,10 @@
 from copy import deepcopy
 
-from iaso.models import WorkflowVersion, EntityType, WorkflowChange, WorkflowFollowup
-from iaso.models.workflow import WorkflowVersionsStatus
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+
+from iaso.models import WorkflowVersion, EntityType, WorkflowChange, WorkflowFollowup
+from iaso.models.workflow import WorkflowVersionsStatus
 
 
 def validate_version_id(version_id, user):

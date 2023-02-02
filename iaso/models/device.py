@@ -1,7 +1,8 @@
 from uuid import uuid4
-from django.db import models
+
 from django.conf import settings
 from django.contrib.gis.db.models import PointField
+from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
 

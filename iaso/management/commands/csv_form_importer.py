@@ -1,13 +1,12 @@
-from django.core.management.base import BaseCommand
 import csv
 import json
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project, Instance, Form
-from django.contrib.gis.geos import Point
-from uuid import uuid4
-import math
-from django.db import models, transaction
-from uuid import uuid4
 from collections import defaultdict
+from uuid import uuid4
+
+from django.core.management.base import BaseCommand
+from django.db import transaction
+
+from iaso.models import OrgUnit, Instance, Form
 
 
 class Command(BaseCommand):

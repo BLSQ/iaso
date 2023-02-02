@@ -1,9 +1,10 @@
+import calendar
+import datetime as dt
+from typing import Any, Optional, Union
+
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.styles.borders import Border, Side
-import datetime as dt
-import calendar
-from typing import Any, Optional, Union
 
 CALENDAR_COLUMNS_CELL_WIDTH = 25.75
 CALENDAR_FIRST_COLUMN_CELL_WIDTH = 35.00

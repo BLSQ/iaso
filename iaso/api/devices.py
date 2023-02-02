@@ -1,8 +1,8 @@
-import typing
 from .common import ModelViewSet, HasPermission, TimestampField
-from rest_framework import serializers, viewsets, permissions
-from rest_framework.response import Response
+from rest_framework import serializers, permissions
+
 from iaso.models import Device, DeviceOwnership, Instance
+from .common import ModelViewSet, HasPermission, TimestampField
 
 
 class DeviceSerializer(serializers.ModelSerializer):

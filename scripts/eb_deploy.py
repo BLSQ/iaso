@@ -1,7 +1,8 @@
-import subprocess
-import boto3  # type: ignore
 import os
+import subprocess
 import sys
+
+import boto3  # type: ignore
 
 
 def eb_deploy(env_name, version_name):

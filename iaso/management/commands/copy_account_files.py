@@ -1,8 +1,8 @@
-import pdb
 import os
 from pathlib import Path
-from django.core.management.base import BaseCommand
+
 from django.contrib.contenttypes.models import ContentType
+from django.core.management.base import BaseCommand
 
 
 def fullname(o):

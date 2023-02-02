@@ -1,7 +1,7 @@
 from rest_framework import permissions, serializers
 
-from ..common import ModelViewSet, TimestampField, UserSerializer
 from iaso.models import Task
+from ..common import ModelViewSet, TimestampField, UserSerializer
 
 
 class TaskSerializer(serializers.ModelSerializer):

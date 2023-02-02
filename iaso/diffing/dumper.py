@@ -1,9 +1,9 @@
+import csv
 import json
 
 from django.contrib.gis.geos import GEOSGeometry
 
 from iaso.management.commands.command_logger import CommandLogger
-import csv
 
 
 def color(status):

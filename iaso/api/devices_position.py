@@ -1,7 +1,8 @@
 from django.contrib.gis.geos import Point
 from rest_framework import permissions, serializers
-from .common import ModelViewSet, TimestampField, safe_api_import
+
 from iaso.models import Device, DevicePosition, Project, DeviceOwnership
+from .common import ModelViewSet, TimestampField, safe_api_import
 
 
 class DevicePositionSerializer(serializers.Serializer):

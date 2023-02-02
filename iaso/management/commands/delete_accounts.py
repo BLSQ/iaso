@@ -1,35 +1,28 @@
-import pdb
+import traceback
+from collections import defaultdict
 
 import django
-
-from iaso.models import ExportLog
+from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
+from django.core.management.base import BaseCommand
+from django.db import connection
+from django.db.models import Count
+from django.db.models import Q
 from django.db.models import TextField
 from django.db.models.functions import Cast
-from iaso.models.base import Task, QUEUED, KILLED
 
-from django.db import connection
-import traceback
-from django.contrib.auth.models import User
-from django.db.models import Count
-from django.core.management.base import BaseCommand
-from uuid import uuid4
-from collections import defaultdict
-from django.db.models import Q
-from iaso.models import Account, OrgUnitType, CommentIaso
-from django.db import router
-
-import random
-from django.contrib.admin.utils import NestedObjects
-from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile
-from iaso.models.entity import Entity, EntityType
-from iaso.models.org_unit import OrgUnit
-from iaso.models.forms import Form
-from iaso.models.pages import Page
-from iaso.models import BulkCreateUserCsvFile
-from iaso.models.microplanning import Assignment, Team, Planning
-from iaso.models.project import Project
 from hat.audit.models import Modification
-from django.contrib.contenttypes.models import ContentType
+from iaso.models import Account, OrgUnitType, CommentIaso
+from iaso.models import BulkCreateUserCsvFile
+from iaso.models import ExportLog
+from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile
+from iaso.models.base import Task, QUEUED, KILLED
+from iaso.models.entity import Entity, EntityType
+from iaso.models.forms import Form
+from iaso.models.microplanning import Assignment, Team, Planning
+from iaso.models.org_unit import OrgUnit
+from iaso.models.pages import Page
+from iaso.models.project import Project
 
 
 def flatten(l):

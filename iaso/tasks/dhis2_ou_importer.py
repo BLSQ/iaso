@@ -1,5 +1,13 @@
+import json
+import logging
+import time
 from typing import Optional, Dict, Any, List
 
+from dhis2 import Api
+from django.contrib.gis.geos import Point, MultiPolygon, Polygon
+from django.utils.timezone import now
+
+from beanstalk_worker import task_decorator
 from iaso.models import (
     OrgUnit,
     OrgUnitType,
@@ -9,15 +17,6 @@ from iaso.models import (
     GroupSet,
     Task,
 )
-from beanstalk_worker import task_decorator
-from django.contrib.gis.geos import Point, MultiPolygon, Polygon
-from django.utils.timezone import now
-
-from dhis2 import Api
-
-import logging
-import json
-import time
 
 try:  # only in 3.8
     from typing import TypedDict  # type: ignore

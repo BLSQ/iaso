@@ -2,13 +2,12 @@ import json
 from typing import Union
 from uuid import uuid4
 
+import django.db.models.manager
 from django.contrib.auth.models import User, AnonymousUser
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Count, Manager, Q
-import django.db.models.manager
+from django.db.models import Count, Q
 from django.db.models.expressions import RawSQL
-
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 
@@ -16,7 +15,6 @@ from iaso.models import Group, OrgUnit
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
-
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences

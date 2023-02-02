@@ -1,7 +1,8 @@
-from rest_framework.response import Response
-from rest_framework import status, permissions
 from django.db.models import Q
-from iaso.models import OrgUnitType, Project, DataSource, SourceVersion
+from rest_framework import status, permissions
+from rest_framework.response import Response
+
+from iaso.models import OrgUnitType
 from .serializers import OrgUnitTypeSerializer
 from ..common import ModelViewSet
 

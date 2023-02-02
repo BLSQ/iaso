@@ -1,8 +1,8 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
+from iaso import models as m
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.test import TestCase
-from iaso import models as m
 
 
 class ExportTestCase(TestCase):

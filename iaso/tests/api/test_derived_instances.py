@@ -1,8 +1,10 @@
 from math import floor
-from iaso.test import APITestCase
-from iaso import models as m
-from django.utils import timezone
+
 from django.core.files.uploadedfile import UploadedFile
+from django.utils import timezone
+
+from iaso import models as m
+from iaso.test import APITestCase
 
 
 class DerivedInstancesTests(APITestCase):

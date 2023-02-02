@@ -15,9 +15,10 @@ const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}/tab/links`;
 
 const interceptList = [
-    'profiles',
+    // 'profiles',
     'algorithms',
-    'algorithmsruns',
+    // 'algorithmsruns',
+    // 'groups',
     'orgunittypes',
 ];
 
@@ -136,29 +137,29 @@ const goToPage = () => {
     cy.login();
     cy.intercept('GET', '/api/profiles/**', {
         fixture: 'profiles/list.json',
-    });
+    }).as('allProfiles');
     cy.intercept('GET', '/api/profiles/me/**', {
         fixture: 'profiles/me/superuser.json',
-    });
+    }).as('me');
     interceptList.forEach(i => {
         cy.intercept('GET', `/api/${i}/`, {
             fixture: `${i}/list.json`,
-        });
+        }).as(`${i}List`);
     });
-    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
+    cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
-    });
+    }).as('groupList');
     cy.intercept(
         'GET',
         `/api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,
         {
             fixture: `forms/list.json`,
         },
-    );
+    ).as('formsList');
 
     cy.intercept('GET', '/api/algorithmsruns/', {
         fixture: 'algorithmsruns/list.json',
-    });
+    }).as('algorithmsRuns');
 
     cy.intercept(
         'GET',
@@ -166,17 +167,24 @@ const goToPage = () => {
         {
             fixture: `logs/list-linked-paginated.json`,
         },
-    );
+    ).as('logs');
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
         fixture: `datasources/details-ou.json`,
-    });
+    }).as('datasources');
+    cy.intercept(
+        'GET',
+        `/api/orgunits/?linkedTo=${orgUnit.id}&linkValidated=all&linkSource=69&validation_status=all&withShapes=true`,
+        {
+            body: { orgUnits: [] },
+        },
+    ).as('linkedOrgUnits');
     cy.intercept(
         'GET',
         `/api/comments/?object_pk=${orgUnit.id}&content_type=iaso-orgunit&limit=4`,
         {
             fixture: `comments/list.json`,
         },
-    );
+    ).as('comments');
     cy.intercept('GET', `/api/orgunits/${orgUnit.id}`, {
         fixture: 'orgunits/details.json',
     }).as('getOuDetail');
@@ -186,21 +194,21 @@ const goToPage = () => {
         {
             fixture: 'orgunits/details-children-paginated.json',
         },
-    );
+    ).as('childrenPaginated');
     cy.intercept('GET', `/api/links/?orgUnitId=${orgUnit.id}`, {
         fixture: 'links/list-linked.json',
-    });
+    }).as('links');
     cy.intercept(
         'GET',
         `/api/links/?&orgUnitId=${orgUnit.id}&limit=10&order=similarity_score`,
         {
             fixture: 'links/list-linked-paginated.json',
         },
-    );
+    ).as('similarityScore');
     cy.intercept('GET', `/api/instances/?order=id&orgUnitId=${orgUnit.id}`, {
         instances: [],
-    });
-    cy.intercept('GET', '/sockjs-node/**');
+    }).as('instances');
+    cy.intercept('GET', '/sockjs-node/**').as('socks');
     cy.intercept(
         'GET',
         `/api/orgunits/?&orgUnitParentId=${orgUnit.id}&orgUnitTypeId=${orgUnit.org_unit_type.sub_unit_types[0].id}&withShapes=true&validation_status=all`,
@@ -213,13 +221,33 @@ const goToPage = () => {
                 },
             ],
         },
-    );
+    ).as('ouType2');
     cy.intercept(
         'GET',
         `orgunits/?&parent_id=${orgUnit.id}&limit=10&page=2&order=name&validation_status=all`,
         page2,
-    );
-    // cy.visit(baseUrl);
+    ).as('page2');
+    cy.visit(baseUrl);
+    // cy.wait('@socks', { timeout: 10000 });
+    cy.wait('@me');
+    cy.wait('@algorithmsRuns');
+    // cy.wait('@getOuDetail');// duplicate in tablePagination test
+    // cy.wait('@allProfiles');
+    cy.wait('@groupList');
+    // cy.wait('@formsList');
+    // cy.wait('@logs');
+    cy.wait('@datasources');
+    // cy.wait('@linkedOrgUnits');
+    // cy.wait('@comments');
+    cy.wait('@childrenPaginated');
+    cy.wait('@links');
+    cy.wait('@similarityScore');
+    cy.wait('@instances');
+    cy.wait('@ouType2');
+    // cy.wait('@page2');
+    interceptList.forEach(i => {
+        cy.wait(`@${i}List`);
+    });
 };
 
 describe('links tab', () => {

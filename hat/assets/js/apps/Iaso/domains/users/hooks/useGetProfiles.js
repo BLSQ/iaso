@@ -12,6 +12,8 @@ export const useGetProfiles = params => {
               orgUnitTypes: params.orgUnitTypes,
               location: params.location,
               permissions: params.permissions,
+              ouParent: params.ouParent,
+              ouChildren: params.ouChildren,
           }
         : {};
 

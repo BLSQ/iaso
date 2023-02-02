@@ -440,6 +440,44 @@ class DataValueExporterTests(TestCase):
         self.assertIsNone(instance.last_export_success_at)
 
     @responses.activate
+    def test_aggregate_export_handle_dhis2_errors_238_and_higher(self):
+        instance = self.build_instance(self.form)
+
+        with self.assertRaises(InstanceExportError) as context:
+            mapping_version = MappingVersion(
+                name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+            )
+            mapping_version.save()
+
+            # dhis2 2.38 now return a bad request (vs 200 previously)
+            # the payload is wrapped in "response" field
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                json=load_dhis2_fixture("datavalues-error-bad-type.json"),
+                status=409,
+            )
+
+            export_request = ExportRequestBuilder().build_export_request(
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
+            )
+            DataValueExporter().export_instances(export_request)
+
+        self.expect_logs(ERRORED)
+
+        self.assertEquals(
+            "ERROR while processing page 1/1 : Value must match data element's `nymNRxmnj4z` type constraints: Data value is not an integer",
+            context.exception.message,
+        )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)
+
+    @responses.activate
     def test_aggregate_export_continue_on_dhis2_errors(self):
         self.setUpFormQuality()
         # setup

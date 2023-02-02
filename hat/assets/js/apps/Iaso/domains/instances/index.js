@@ -11,6 +11,7 @@ import {
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
+    LoadingSpinner,
 } from 'bluesquare-components';
 
 import { useQueryClient } from 'react-query';
@@ -31,9 +32,9 @@ import {
 
 import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import InstancesMap from './components/InstancesMapComponent';
+import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import { CreateReAssignDialogComponent } from './components/CreateReAssignDialogComponent';
+import { CreateReAssignDialogComponent } from './components/CreateReAssignDialogComponent.tsx';
 
 import { baseUrls } from '../../constants/urls';
 
@@ -43,7 +44,6 @@ import snackMessages from '../../components/snackBars/messages';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
-import UpdateIcon from '@material-ui/icons/Update';
 
 const baseUrl = baseUrls.instances;
 
@@ -264,6 +264,7 @@ const Instances = ({ params }) => {
                 )}
                 {tab === 'map' && (
                     <div className={classes.containerMarginNeg}>
+                        {loadingMap && <LoadingSpinner absolute />}
                         <InstancesMap
                             instances={instancesSmall || []}
                             fetching={loadingMap}

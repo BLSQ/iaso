@@ -7,6 +7,8 @@ import PlayIcon from '@material-ui/icons/PlayCircleFilled';
 import PauseIcon from '@material-ui/icons/PauseCircleFilled';
 import { theme } from 'bluesquare-components';
 
+import 'video.js/dist/video-js.min.css';
+
 const styles = () => ({
     root: {
         position: 'relative',

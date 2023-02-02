@@ -39,7 +39,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitTypesDropdown: {
         defaultMessage: 'Org Unit Types',
-        id: 'iaso.users.orgUnitTypesDropdown',
+        id: 'iaso.datasources.label.orgUnitTypes',
     },
     isSuperUser: {
         defaultMessage: 'User is a super admin and has all rights',
@@ -125,9 +125,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.polio_budget',
         defaultMessage: 'Polio budget validation',
     },
+    iaso_polio_budget_admin: {
+        id: 'iaso.permissions.polio_budget_admin',
+        defaultMessage: 'Polio budget admin',
+    },
     iaso_polio_config: {
         id: 'iaso.permissions.polio_config',
         defaultMessage: 'Polio campaign admin',
+    },
+    iaso_reports: {
+        id: 'iaso.permission.reports',
+        defaultMessage: 'Reports',
     },
     iaso_links: {
         id: 'iaso.permissions.links',
@@ -216,6 +224,27 @@ const MESSAGES = defineMessages({
     homePage: {
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
+    },
+    ouChildrenCheckbox: {
+        defaultMessage: 'Users with access to children org unit',
+        id: 'iaso.users.ouChildrenCheckbox',
+    },
+    ouParentCheckbox: {
+        defaultMessage: 'Users with access to parent org unit',
+        id: 'iaso.users.ouParentCheckbox',
+    },
+    logout: {
+        defaultMessage: 'Logout',
+        id: 'iaso.logout',
+    },
+    wrongAccount: {
+        defaultMessage:
+            'You are connected to the wrong account, would you like to log out and connect with the correct account to see this link?',
+        id: 'iaso.label.wrongAccount',
+    },
+    wrongAccountTitle: {
+        defaultMessage: 'Wrong account',
+        id: 'iaso.label.wrongAccountTitle',
     },
 });
 

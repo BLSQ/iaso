@@ -132,7 +132,7 @@ describe('Groups', () => {
             cy.wait('@getGroups').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/name/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/name/pageSize/20/page/1`,
                 );
             });
         });
@@ -179,7 +179,7 @@ describe('Groups', () => {
                 cy.get('#search-search').type(search);
 
                 cy.get('[data-test="search-button"]').click();
-                cy.url().should('contain', `${baseUrl}/search/${search}`);
+                cy.url().should('contain', `/search/${search}`);
             });
         });
     });

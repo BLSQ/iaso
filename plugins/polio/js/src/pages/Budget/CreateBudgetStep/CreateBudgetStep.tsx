@@ -134,7 +134,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
             files: undefined,
             links: intialLinks,
             amount: previousStep?.amount,
-            // this value is for handling non-field arrors from api
+            // this value is for handling non-field errors from api
             general: null,
             // This value is to handle error state when either files or links are required
             attachments: null,
@@ -173,6 +173,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         messages: MESSAGES,
         formatMessage,
     });
+
     const attachmentErrors = useMemo(() => {
         const anyFieldTouched = Object.values(touched).find(value => value);
         const attachmentsErrors = [errors.attachments] ?? [];
@@ -201,9 +202,12 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         touched.links,
         values,
     ]);
-    const allowConfirm = !quickTransition
-        ? isValid && !isEqual(values, initialValues)
-        : isValid;
+
+    const allowConfirm =
+        quickTransition || requiredFields.length === 0
+            ? isValid
+            : isValid && !isEqual(values, initialValues);
+
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal

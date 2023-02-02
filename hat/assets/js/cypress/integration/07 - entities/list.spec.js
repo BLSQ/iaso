@@ -62,7 +62,7 @@ describe.skip('Entities', () => {
             cy.wait('@getEntities').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/order/name/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/name/pageSize/20/page/1`,
                 );
             });
         });
@@ -120,7 +120,7 @@ describe.skip('Entities', () => {
                     cy.get('[data-test="search-button"]').click();
                     cy.url().should(
                         'contain',
-                        `${baseUrl}/search/${search}/entityTypes/1`,
+                        `${baseUrl}/accountId/1/search/${search}/entityTypes/1`,
                     );
                 });
             });

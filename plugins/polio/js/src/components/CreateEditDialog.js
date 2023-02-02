@@ -47,14 +47,13 @@ import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
+import { useGetCampaign } from '../hooks/useGetCampaign';
 
-const CreateEditDialog = ({
-    isOpen,
-    onClose,
-    selectedCampaign,
-    isFetching,
-}) => {
+const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
+    const { data: selectedCampaign, isFetching: isFetching } = useGetCampaign(
+        isOpen && campaignId,
+    );
 
     const { data: campaignLogs } = useGetCampaignLogs(
         selectedCampaign?.id,
@@ -307,15 +306,13 @@ const CreateEditDialog = ({
 };
 
 CreateEditDialog.defaultProps = {
-    isFetching: false,
     selectedCampaign: undefined,
 };
 
 CreateEditDialog.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
-    selectedCampaign: PropTypes.object,
-    isFetching: PropTypes.bool,
+    campaignId: PropTypes.string,
 };
 
 // There's naming conflict with component in Iaso

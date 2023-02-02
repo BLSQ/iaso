@@ -29,10 +29,7 @@ export const InstanceLogDetail: FunctionComponent<Props> = ({
         data: instanceLogDescriptor,
         isLoading: isLogDescriptorLoading,
         isError: isLogDescriptorError,
-    } = useGetFormDescriptor(
-        instanceLogContent?.logA?.json?._version,
-        instanceLogContent?.logA?.form,
-    );
+    } = useGetFormDescriptor(instanceLogContent?.logA?.form);
 
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();

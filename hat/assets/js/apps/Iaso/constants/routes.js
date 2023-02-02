@@ -31,6 +31,8 @@ import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
 import { Storages } from '../domains/storages/index.tsx';
+import { Workflows } from '../domains/workflows/index.tsx';
+import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
@@ -73,6 +75,10 @@ export const formsPath = {
     baseUrl: baseUrls.forms,
     permissions: ['iaso_forms', 'iaso_submissions'],
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         ...paginationPathParams,
         {
             isRequired: false,
@@ -95,7 +101,13 @@ export const pagesPath = {
     baseUrl: baseUrls.pages,
     permissions: ['iaso_pages'],
     featureFlag: SHOW_PAGES,
-    params: [...paginationPathParams],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+    ],
     component: props => <Pages {...props} />,
 };
 
@@ -104,6 +116,10 @@ export const formDetailPath = {
     permissions: ['iaso_forms', 'iaso_submissions'],
     component: props => <FormDetail {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: true,
             key: 'formId',
@@ -116,7 +132,12 @@ export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
     permissions: ['iaso_forms'],
     component: () => <FormsStats />,
-    params: [],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
 };
 
 export const instancesPath = {
@@ -124,6 +145,10 @@ export const instancesPath = {
     permissions: ['iaso_submissions'],
     component: props => <Instances {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'formIds',
@@ -214,6 +239,10 @@ export const instanceDetailPath = {
     component: props => <InstanceDetail {...props} />,
     params: [
         {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
             isRequired: true,
             key: 'instanceId',
         },
@@ -229,6 +258,10 @@ export const compareInstanceLogsPath = {
     permissions: ['iaso_submissions'],
     component: props => <CompareInstanceLogs {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: true,
             key: 'instanceIds',
@@ -250,6 +283,10 @@ export const compareInstancesPath = {
     component: props => <CompareSubmissions {...props} />,
     params: [
         {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
             isRequired: true,
             key: 'instanceIds',
         },
@@ -261,6 +298,10 @@ export const mappingsPath = {
     permissions: ['iaso_mappings'],
     component: props => <Mappings {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'formId',
@@ -278,6 +319,10 @@ export const mappingDetailPath = {
     component: props => <MappingDetails {...props} />,
     params: [
         {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
             isRequired: true,
             key: 'mappingVersionId',
         },
@@ -293,6 +338,10 @@ export const orgUnitsPath = {
     permissions: ['iaso_org_units'],
     component: props => <OrgUnits {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: true,
             key: 'locationLimit',
@@ -325,6 +374,10 @@ export const orgUnitsDetailsPath = {
     permissions: ['iaso_org_units'],
     component: props => <OrgUnitDetail {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: true,
             key: 'orgUnitId',
@@ -368,6 +421,10 @@ export const linksPath = {
     permissions: ['iaso_links'],
     component: props => <Links {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'search',
@@ -431,6 +488,10 @@ export const algosPath = {
     params: [
         {
             isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
             key: 'algorithmId',
         },
         {
@@ -465,7 +526,12 @@ export const completenessPath = {
     baseUrl: baseUrls.completeness,
     permissions: ['iaso_completeness'],
     component: props => <Completeness {...props} />,
-    params: [],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
 };
 
 export const completenessStatsPath = {
@@ -473,6 +539,10 @@ export const completenessStatsPath = {
     permissions: ['iaso_completeness_stats'],
     component: props => <CompletessStats {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         ...paginationPathParams,
         {
             isRequired: false,
@@ -486,6 +556,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'orgUnitTypeIds',
         },
+        {
+            isRequired: false,
+            key: 'parentId',
+        },
     ],
 };
 
@@ -494,6 +568,10 @@ export const usersPath = {
     permissions: ['iaso_users'],
     component: props => <Users {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'search',
@@ -510,6 +588,14 @@ export const usersPath = {
             isRequired: false,
             key: 'orgUnitTypes',
         },
+        {
+            isRequired: false,
+            key: 'ouParent',
+        },
+        {
+            isRequired: false,
+            key: 'ouChildren',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,
@@ -521,28 +607,52 @@ export const projectsPath = {
     baseUrl: baseUrls.projects,
     permissions: ['iaso_projects'],
     component: props => <Projects {...props} />,
-    params: [...paginationPathParams],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+    ],
 };
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
     permissions: ['iaso_sources'],
     component: props => <DataSources {...props} />,
-    params: [...paginationPathParams],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+    ],
 };
 
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
     permissions: ['iaso_data_tasks'],
     component: props => <Tasks {...props} />,
-    params: [...paginationPathParams],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+    ],
 };
 
 export const devicesPath = {
     baseUrl: baseUrls.devices,
     permissions: ['iaso_data_devices'],
     component: props => <Devices {...props} />,
-    params: [...paginationPathParams],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
+    ],
 };
 
 export const groupsPath = {
@@ -550,6 +660,10 @@ export const groupsPath = {
     permissions: ['iaso_org_units'],
     component: props => <Groups {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'search',
@@ -568,6 +682,10 @@ export const orgUnitTypesPath = {
     params: [
         {
             isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
             key: 'search',
         },
         ...paginationPathParams.map(p => ({
@@ -581,6 +699,10 @@ export const entitiesPath = {
     permissions: ['iaso_entities'],
     component: props => <Beneficiaries {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'tab',
@@ -625,6 +747,10 @@ export const entityDetailsPath = {
     component: props => <BeneficiaryDetail {...props} />,
     params: [
         {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
             isRequired: true,
             key: 'entityId',
         },
@@ -637,6 +763,10 @@ export const entitySubmissionDetailPath = {
     permissions: ['iaso_entities'],
     component: props => <VisitDetails {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: true,
             key: 'instanceId',
@@ -655,6 +785,10 @@ export const entityTypesPath = {
     params: [
         {
             isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
             key: 'search',
         },
         ...paginationPathParams.map(p => ({
@@ -669,6 +803,10 @@ export const planningPath = {
     permissions: ['iaso_planning'],
     component: props => <Planning {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'search',
@@ -697,6 +835,10 @@ export const assignmentsPath = {
     permissions: ['iaso_assignments'],
     component: props => <Assignments {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: true,
             key: 'planningId',
@@ -734,6 +876,10 @@ export const teamsPath = {
     params: [
         {
             isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
             key: 'search',
         },
         ...paginationPathParams.map(p => ({
@@ -747,6 +893,10 @@ export const storagesPath = {
     permissions: ['iaso_storages'],
     component: props => <Storages {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
         {
             isRequired: false,
             key: 'search',
@@ -775,6 +925,10 @@ export const storageDetailPath = {
     component: props => <StorageDetails {...props} />,
     params: [
         {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
             isRequired: true,
             key: 'type',
         },
@@ -790,10 +944,55 @@ export const storageDetailPath = {
             isRequired: false,
             key: 'performedAt',
         },
+        ...paginationPathParams,
+    ],
+};
+export const workflowsPath = {
+    baseUrl: baseUrls.workflows,
+    permissions: ['iaso_workflows'],
+    component: props => <Workflows {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'entityTypeId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'status',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
-            isRequired: false,
+            isRequired: true,
         })),
+    ],
+};
+export const workflowsDetailPath = {
+    baseUrl: baseUrls.workflowDetail,
+    permissions: ['iaso_workflows'],
+    component: props => <WorkflowDetails {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'entityTypeId',
+        },
+        {
+            isRequired: true,
+            key: 'versionId',
+        },
+        // pagination to sort changes
+        ...paginationPathParams,
     ],
 };
 
@@ -850,4 +1049,6 @@ export const routeConfigs = [
     entitySubmissionDetailPath,
     storagesPath,
     storageDetailPath,
+    workflowsPath,
+    workflowsDetailPath,
 ];

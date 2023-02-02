@@ -62,7 +62,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
     setPage,
 }) => {
     const [selectRegion, setSelectRegion] = useState(false);
-    const [selectedVaccine, setSelectedVaccine] = useState<string>('mOPV2');
+    const [selectedVaccine, setSelectedVaccine] = useState<string>('nOPV2');
     const [, , helpers] = useField(field.name);
     const { formatMessage } = useSafeIntl();
     const { value: scopes = [] } = field;

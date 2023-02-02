@@ -4,6 +4,7 @@ import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import Workflow from '../../../components/svg/Workflow';
 
 import MESSAGES from './messages';
 
@@ -90,6 +91,13 @@ export const columns = ({
                         }
                     />
                 )}
+                <IconButtonComponent
+                    id={`workflow-link-${settings.row.original.id}`}
+                    url={`/${baseUrls.workflows}/entityTypeId/${settings.row.original.id}`}
+                    icon="remove-red-eye"
+                    tooltipMessage={MESSAGES.workflow}
+                    overrideIcon={Workflow}
+                />
             </section>
         ),
     },

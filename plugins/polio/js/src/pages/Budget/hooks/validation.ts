@@ -75,6 +75,66 @@ addMethod(
 export const useBudgetStepValidation = (
     errors: ValidationError = {},
     payload: any,
+    requiredFields: string[] = [],
+): ObjectSchema<any> => {
+    const { formatMessage } = useSafeIntl();
+    const fieldRequired = formatMessage(MESSAGES.requiredField);
+    const typeError = formatMessage(MESSAGES.budgetTypeError);
+    const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
+    return useMemo(() => {
+        return object().shape({
+            files: makeRequired(
+                mixed().nullable(),
+                requiredFields.includes('files'),
+                fieldRequired,
+            ),
+            links: makeRequired(
+                array().of(
+                    object({
+                        alias: string()
+                            .nullable()
+                            // @ts-ignore
+                            .isAliasRequired(
+                                requiredFields.includes('links'),
+                                fieldRequired,
+                            ),
+                        url: string()
+                            .nullable()
+                            // @ts-ignore
+                            .isUrlRequired(
+                                requiredFields.includes('links'),
+                                fieldRequired,
+                            ),
+                    }),
+                ),
+                requiredFields.includes('files'),
+                fieldRequired,
+            ),
+            comment: makeRequired(
+                string().nullable(),
+                requiredFields.includes('comment'),
+                fieldRequired,
+            ),
+            amount: makeRequired(
+                number().nullable(),
+                requiredFields.includes('amount'),
+                fieldRequired,
+            ).typeError(typeError),
+            general: mixed().nullable().test(apiValidator('general')),
+            attachments: mixed()
+                .nullable()
+                // @ts-ignore
+                .fileOrLinks(
+                    requiredFields.includes('attachments'),
+                    formatMessage,
+                ),
+        });
+    }, [apiValidator, fieldRequired, formatMessage, requiredFields, typeError]);
+};
+
+export const useOverrideStepValidation = (
+    errors: ValidationError = {},
+    payload: any,
     requiredFields: string[] = ['links', 'comment'],
 ): ObjectSchema<any> => {
     const { formatMessage } = useSafeIntl();
@@ -83,6 +143,7 @@ export const useBudgetStepValidation = (
     const apiValidator = useAPIErrorValidator<Partial<any>>(errors, payload);
     return useMemo(() => {
         return object().shape({
+            new_state_key: string().nullable().required(),
             files: makeRequired(
                 mixed().nullable(),
                 requiredFields.includes('files'),

@@ -49,6 +49,8 @@ from .models import (
     WorkflowVersion,
     WorkflowChange,
     WorkflowFollowup,
+    Report,
+    ReportVersion,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -468,6 +470,9 @@ class StorageDeviceAdmin(admin.ModelAdmin):
 class WorkflowAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
+    def get_queryset(self, request):
+        return Workflow.objects_include_deleted.all()
+
 
 class WorkflowChangeInline(admin.TabularInline):
     model = WorkflowChange
@@ -482,6 +487,9 @@ class WorkflowFollowupInline(admin.TabularInline):
 class WorkflowVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     inlines = [WorkflowChangeInline, WorkflowFollowupInline]
+
+    def get_queryset(self, request):
+        return WorkflowVersion.objects_include_deleted.all()
 
 
 admin.site.register(Link, LinkAdmin)
@@ -521,3 +529,5 @@ admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
+admin.site.register(Report)
+admin.site.register(ReportVersion)

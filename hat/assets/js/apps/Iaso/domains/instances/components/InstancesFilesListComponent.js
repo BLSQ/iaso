@@ -12,7 +12,7 @@ import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
 import LazyImagesList from '../../../components/files/LazyImagesListComponent';
 import DocumentsList from '../../../components/files/DocumentsListComponent';
 import VideosList from '../../../components/files/VideosListComponent';
-import InstancePopover from './InstancePopoverComponent';
+import InstancePopover from './InstancePopoverComponent.tsx';
 
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';

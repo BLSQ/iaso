@@ -21,6 +21,7 @@ import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts
 import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,6 +30,10 @@ const useStyles = makeStyles(theme => ({
 const Filters = ({ baseUrl, params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const classes = useStyles();
+    const [ouParent, setOuParent] = useState(stringToBoolean(params.ouParent));
+    const [ouChildren, setOuChildren] = useState(
+        stringToBoolean(params.ouChildren),
+    );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const [filters, setFilters] = useState({
@@ -36,6 +41,8 @@ const Filters = ({ baseUrl, params }) => {
         permissions: params.permissions,
         location: params.location,
         orgUnitTypes: params.orgUnitTypes,
+        ouParent: params.ouParent,
+        ouChildren: params.ouParent,
     });
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
@@ -96,21 +103,6 @@ const Filters = ({ baseUrl, params }) => {
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
                     />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="permissions"
-                        onChange={handleChange}
-                        value={filters.permissions}
-                        type="select"
-                        multi
-                        options={dropdown ?? []}
-                        label={MESSAGES.permissions}
-                        loading={isFetching}
-                        onEnterPressed={handleSearchPerms}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -127,6 +119,31 @@ const Filters = ({ baseUrl, params }) => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
+                        keyValue="permissions"
+                        onChange={handleChange}
+                        value={filters.permissions}
+                        type="select"
+                        multi
+                        options={dropdown ?? []}
+                        label={MESSAGES.permissions}
+                        loading={isFetching}
+                        onEnterPressed={handleSearchPerms}
+                    />
+                    <InputComponent
+                        keyValue="ouParent"
+                        type="checkbox"
+                        checked={ouParent}
+                        onChange={(key, value) => {
+                            handleChange('ouParent', value);
+                            setOuParent(value);
+                        }}
+                        disabled={!initialOrgUnit}
+                        value={ouParent}
+                        label={MESSAGES.ouParentCheckbox}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
                         keyValue="orgUnitTypes"
                         onChange={handleChange}
                         value={filters.orgUnitTypes}
@@ -137,9 +154,21 @@ const Filters = ({ baseUrl, params }) => {
                         onEnterPressed={handleSearchPerms}
                         clearable
                     />
+                    <InputComponent
+                        keyValue="ouChildren"
+                        type="checkbox"
+                        checked={ouChildren}
+                        onChange={(key, value) => {
+                            handleChange('ouChildren', !ouChildren);
+                            setOuChildren(value);
+                        }}
+                        disabled={!initialOrgUnit}
+                        value={ouChildren}
+                        label={MESSAGES.ouChildrenCheckbox}
+                    />
                 </Grid>
-                <Grid container item xs={12} justifyContent="flex-end">
-                    <Box>
+                <Grid container item xs={12} md={3} justifyContent="flex-end">
+                    <Box mt={2}>
                         <Button
                             data-test="search-button"
                             disabled={!filtersUpdated}

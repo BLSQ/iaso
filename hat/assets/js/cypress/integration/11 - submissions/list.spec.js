@@ -151,7 +151,7 @@ describe('Submissions', () => {
             goToPage();
             cy.url().should(
                 'eq',
-                `${siteBaseUrl}/dashboard/forms/submissions/tab/list/columns/form__name,updated_at,period,org_unit__name,status/mapResults/3000`,
+                `${siteBaseUrl}/dashboard/forms/submissions/accountId/1/tab/list/columns/form__name,updated_at,period,org_unit__name,status/mapResults/3000`,
             );
         });
 
@@ -394,9 +394,9 @@ describe('Submissions', () => {
         };
         cy.wait('@getSubmissions').then(() => {
             // TODO: test new period type day
-            testPeriod(1, '201801', '201901');
-            testPeriod(2, '2018Q1', '2019Q1');
-            testPeriod(3, '2018', '2019');
+            testPeriod(1, '201901', '202001');
+            testPeriod(2, '2019Q1', '2020Q1');
+            testPeriod(3, '2019', '2020');
         });
     });
 

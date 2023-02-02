@@ -33,7 +33,7 @@ import formsTableColumns from '../forms/config';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
-import OrgUnitForm from './components/OrgUnitForm';
+import { OrgUnitForm } from './components/OrgUnitForm';
 import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 import { orgUnitsTableColumns } from './config';
@@ -47,6 +47,7 @@ import {
     getAliasesArrayFromString,
     getLinksSources,
     getOrgUnitsTree,
+    getOrgUnitsUrl,
 } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
@@ -108,7 +109,6 @@ const tabs = [
 const OrgUnitDetail = ({ params, router }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
@@ -365,7 +365,6 @@ const OrgUnitDetail = ({ params, router }) => {
         isNewOrgunit,
         sourcesSelected,
     ]);
-
     return (
         <section className={classes.root}>
             <TopBar
@@ -377,7 +376,9 @@ const OrgUnitDetail = ({ params, router }) => {
                             router.goBack();
                         }, 300);
                     } else {
-                        dispatch(redirectTo(baseUrls.orgUnits, {}));
+                        dispatch(
+                            redirectTo(getOrgUnitsUrl(params.accountId), {}),
+                        );
                     }
                 }}
             >
@@ -400,9 +401,12 @@ const OrgUnitDetail = ({ params, router }) => {
                     </Tabs>
                 )}
             </TopBar>
-            {(isFetchingDetail || isFetchingDatas || savingOu) && (
-                <LoadingSpinner />
-            )}
+
+            {/* there is already a loader on SingleTable for the other tabs */}
+            {(isFetchingDetail || isFetchingDatas || savingOu) &&
+                (tab === 'infos' || tab === 'map' || tab === 'comments') && (
+                    <LoadingSpinner />
+                )}
             {currentOrgUnit && (
                 <section>
                     {tab === 'infos' && (

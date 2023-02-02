@@ -3,14 +3,12 @@ from django.utils.translation import gettext_lazy as _
 
 MODIFICATIONS = _("Modifications")
 
-TEAMS = _("Teams")
 USERS = _("Users")
 FORMS = _("Formulaires")
 MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
 LINKS = _("Correspondances sources")
-USERS = _("Utilisateurs")  # Duplicated
 PAGES = _("Pages")
 PROJECTS = _("Projets")
 SOURCES = _("Sources")
@@ -24,11 +22,13 @@ PLANNING = _("Planning")
 TEAMS = _("Equipes")
 ASSIGNMENTS = _("Attributions")
 POLIO_BUDGET = _("Budget Polio")
+POLIO_BUDGET_ADMIN = _("Budget Polio Admin")
 ENTITIES = _("Entities")
 BENEFICIARIES = _("Beneficiaries")
 STORAGES = _("Storages")
 COMPLETENESS_STATS = _("Completeness stats")
 WORKFLOWS = _("Workflows")
+REPORTS = _("Reports")
 
 
 # When adding a new permission, it also needs to be added in
@@ -51,6 +51,7 @@ class CustomPermissionSupport(models.Model):
         "iaso_projects",
         "iaso_sources",
         "iaso_data_tasks",
+        "iaso_reports",
     ]
 
     class Meta:
@@ -76,6 +77,7 @@ class CustomPermissionSupport(models.Model):
             ("iaso_submissions", SUBMISSIONS),
             ("iaso_update_submission", UPDATE_SUBMISSIONS),
             ("iaso_planning", PLANNING),
+            ("iaso_reports", REPORTS),
             ("iaso_teams", TEAMS),
             ("iaso_assignments", ASSIGNMENTS),
             ("iaso_polio_budget", POLIO_BUDGET),
@@ -83,4 +85,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_storages", STORAGES),
             ("iaso_completeness_stats", COMPLETENESS_STATS),
             ("iaso_workflows", WORKFLOWS),
+            ("iaso_polio_budget_admin", POLIO_BUDGET_ADMIN),
         )

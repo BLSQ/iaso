@@ -1,5 +1,4 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles } from '@material-ui/core';
 import {
     // @ts-ignore
     IconButton as IconButtonComponent,
@@ -13,16 +12,6 @@ import { OrgUnit, ShortOrgUnit } from '../types/orgUnit';
 
 import MESSAGES from '../../assignments/messages';
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        textDecoration: 'none',
-        color: theme.palette.primary.main,
-        '&:hover': {
-            textDecoration: 'underline',
-        },
-    },
-}));
-
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
     useIcon?: boolean;
@@ -33,7 +22,6 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
     useIcon,
 }) => {
     const user = useCurrentUser();
-    const classes: Record<string, string> = useStyles();
     if (userHasPermission('iaso_org_units', user) && orgUnit) {
         const url = `/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`;
         if (useIcon) {
@@ -45,11 +33,7 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
                 />
             );
         }
-        return (
-            <Link className={classes.root} to={url}>
-                {orgUnit.name}
-            </Link>
-        );
+        return <Link to={url}>{orgUnit.name}</Link>;
     }
     return <>{orgUnit ? orgUnit.name : '-'}</>;
 };

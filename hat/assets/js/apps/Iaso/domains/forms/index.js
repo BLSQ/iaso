@@ -15,7 +15,9 @@ import formsTableColumns from './config';
 
 import { Filters } from './components/Filters.tsx';
 import TopBar from '../../components/nav/TopBarComponent';
-import SingleTable from '../../components/tables/SingleTable';
+import SingleTable, {
+    useSingleTableParams,
+} from '../../components/tables/SingleTable';
 import { deleteForm, restoreForm, fetchForms } from '../../utils/requests';
 
 import MESSAGES from './messages';
@@ -55,12 +57,14 @@ const Forms = ({ params }) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [params]);
 
+    const apiParams = useSingleTableParams(params);
+
     return (
         <>
             <TopBar title={intl.formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters
-                    params={params}
+                    params={apiParams}
                     onErrorChange={setTextSearchError}
                     hasErrors={textSearchError}
                 />
@@ -70,7 +74,7 @@ const Forms = ({ params }) => {
                     endPointPath="forms"
                     dataKey="forms"
                     apiParams={{
-                        ...params,
+                        ...apiParams,
                         all: true,
                     }}
                     fetchItems={(d, u, newParams, signal) =>

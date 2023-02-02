@@ -86,6 +86,10 @@ const routes = [
                 key: 'campaignId',
             },
             ...campaignsFilters,
+            {
+                isRequired: false,
+                key: 'fieldset',
+            },
         ],
     },
     {
@@ -235,6 +239,10 @@ const routes = [
                 isRequired: false,
                 key: 'roundStartTo',
             },
+            {
+                isRequired: false,
+                key: 'countries',
+            },
         ],
     },
     {
@@ -272,14 +280,6 @@ const routes = [
                 isRequired: false,
                 key: 'previousStep',
             },
-            // {
-            //     isRequired: false,
-            //     key: 'senderTeam',
-            // },
-            // {
-            //     isRequired: false,
-            //     key: 'recipient',
-            // },
             {
                 isRequired: false,
                 key: 'transition_key',

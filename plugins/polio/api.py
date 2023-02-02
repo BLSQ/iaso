@@ -2,7 +2,7 @@ import csv
 import functools
 import json
 import datetime as dt
-from datetime import timedelta, datetime, date
+from datetime import timedelta, datetime
 from typing import Any, Optional
 from collections import defaultdict
 from functools import lru_cache
@@ -10,7 +10,7 @@ from logging import getLogger
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
-from django.core.cache import cache
+from django.core.cache import cache, BaseCache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
@@ -57,15 +57,13 @@ from .models import (
     Campaign,
     Config,
     LineListImport,
-    SpreadSheetImport,
     Round,
     CampaignGroup,
     CampaignScope,
     RoundScope,
 )
 from .models import CountryUsersGroup
-from .preparedness.calculator import preparedness_summary
-from .preparedness.parser import get_preparedness
+from .preparedness.summary import get_or_set_preparedness_cache_for_round
 from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 
 logger = getLogger(__name__)
@@ -441,6 +439,7 @@ Timeline tracker Automated message
         if cached_response:
             return cached_response
 
+        # noinspection SqlResolve
         round_scope_queryset = campaigns.filter(separate_scopes_per_round=True).annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
@@ -453,6 +452,7 @@ where polio_round.campaign_id = polio_campaign.id""",
             )
         )
         # For campaign scope
+        # noinspection SqlResolve
         campain_scope_queryset = campaigns.filter(separate_scopes_per_round=False).annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
@@ -494,6 +494,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         url_path="v2/merged_shapes.geojson",
     )
     def shapes_v2(self, request):
+        "Deprecated, should return the same format as shapes v3, kept for comparison"
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes_v2".format(request.user.id)
 
@@ -562,8 +563,8 @@ where group_id = polio_roundscope.group_id""",
             )
         )
 
+        scope: RoundScope
         for scope in round_scopes:
-            scope: RoundScope
             if scope.geom:
                 feature = {
                     "type": "Feature",
@@ -582,6 +583,24 @@ where group_id = polio_roundscope.group_id""",
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
+        return JsonResponse(res)
+
+    @action(
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
+        detail=False,
+        url_path="v3/merged_shapes.geojson",
+    )
+    def shapes_v3(self, request):
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
+        campaigns = campaigns.only("geojson")
+        features = []
+        for c in campaigns:
+            features.extend(c.geojson)
+
+        res = {"type": "FeatureCollection", "features": features}
+
         return JsonResponse(res)
 
 
@@ -613,100 +632,17 @@ class LineListImportViewSet(ModelViewSet):
         return LineListImport.objects.all()
 
 
-DAYS_EVOLUTION = [
-    # day before, target in percent
-    (1, 90),
-    (3, 85),
-    (7, 80),
-    (14, 60),
-    (21, 40),
-    (28, 20),
-]
-
-
-def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
-    day = ref_date - timedelta(days=n_day)
-    try:
-        ssi = ssi_for_campaign.filter(created_at__date=day).last()
-    except SpreadSheetImport.DoesNotExist:
-        return None, day, None
-    try:
-        preparedness = get_preparedness(ssi.cached_spreadsheet)
-        summary = preparedness_summary(preparedness)
-        score = summary["overall_status_score"]
-    except Exception as e:
-        return None, day, None
-    return ssi.created_at, day, score
-
-
-def history_for_campaign(ssi_qs, round: Round):
-    ref_date = round.started_at
-    if not ref_date:
-        return {"error": f"Please configure a start date for the round {round}"}
-    r = []
-    for n_day, target in DAYS_EVOLUTION:
-        sync_time, day, score = score_for_x_day_before(ssi_qs, ref_date, n_day)
-        r.append(
-            {
-                "days_before": n_day,
-                "expected_score": target,
-                "preparedness_score": score,
-                "date": day,
-                "sync_time": sync_time,
-            }
-        )
-    return r
-
-
-def _make_prep(c: Campaign, round: Round):
-    url = round.preparedness_spreadsheet_url
-    if not url:
-        return None
-    campaign_prep = {
-        "campaign_id": c.id,
-        "campaign_obr_name": c.obr_name,
-        "indicators": {},
-        "round": f"Round{round.number}",
-        "round_id": round.id,
-        "round_start": round.started_at,
-        "round_end": round.ended_at,
-    }
-    try:
-        spread_id = extract_id_from_url(url)
-        ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id)
-
-        if not ssi_qs:
-            # No import yet
-            campaign_prep["status"] = "not_sync"
-            campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
-            return campaign_prep
-        # FIXME: what if ssi_qs.last() is None?
-        campaign_prep["date"] = ssi_qs.last().created_at  # type: ignore
-        cs = ssi_qs.last().cached_spreadsheet  # type: ignore
-        last_p = get_preparedness(cs)
-        campaign_prep.update(preparedness_summary(last_p))
-        if round.number != last_p["national"]["round"]:
-            logger.info(f"Round mismatch on {c} {round}")
-
-        campaign_prep["history"] = history_for_campaign(ssi_qs, round)
-    except Exception as e:  # FIXME: too broad Exception
-        campaign_prep["status"] = "error"
-        campaign_prep["details"] = str(e)
-        logger.exception(e)
-    return campaign_prep
-
-
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
 
         r = []
-        qs = Campaign.objects.all()
+        qs = Campaign.objects.all().prefetch_related("rounds")
         if request.query_params.get("campaign"):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 
         for c in qs:
             for round in c.rounds.all():
-                p = _make_prep(c, round)
+                p = get_or_set_preparedness_cache_for_round(c, round)
                 if p:
                     r.append(p)
         return Response(r)
@@ -1077,7 +1013,7 @@ def convert_dicts_to_table(list_of_dicts):
     return values
 
 
-def handle_ona_request_with_key(request, key):
+def handle_ona_request_with_key(request, key, country_id=None):
     as_csv = request.GET.get("format", None) == "csv"
     config = get_object_or_404(Config, slug=key)
     res = []
@@ -1091,6 +1027,9 @@ def handle_ona_request_with_key(request, key):
         "alltime": {"ok": defaultdict(lambda: 0), "failure": defaultdict(lambda: 0)},
     }
     for config in config.content:
+        cid = int(country_id) if (country_id and country_id.isdigit()) else None
+        if country_id is not None and config.get("country_id", None) != cid:
+            continue
         forms = get_url_content(
             url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
         )
@@ -1190,6 +1129,10 @@ class VaccineStocksViewSet(viewsets.ViewSet):
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
     def list(self, request):
         return handle_ona_request_with_key(request, "vaccines")
+
+    @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour
+    def retrieve(self, request, pk=None):
+        return handle_ona_request_with_key(request, "vaccines", country_id=pk)
 
 
 class FormAStocksViewSet(viewsets.ViewSet):

@@ -20,7 +20,7 @@ class OrgUnitAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         cls.sw_version_1 = sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
 
@@ -762,10 +762,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
 
     def test_edit_org_unit_edit_bad_group_fail(self):
-        """FIXME this test Document current behaviour but we want to change how to handle this
-
-        If a org unit already has a bad group we can't edit it anymore from the interface
-        we should just not have this case"""
+        """Check for a previous bug if an org unit is already member of a bad group
+        it couldn't be  edited anymore from the interface
+        """
 
         old_ou = m.OrgUnit.objects.create(
             name="hey",
@@ -776,6 +775,7 @@ class OrgUnitAPITestCase(APITestCase):
         # group on wrong version
         bad_group = m.Group.objects.create(name="bad")
         old_ou.groups.set([bad_group, good_group])
+        old_modification_date = old_ou.updated_at
 
         self.old_counts = self.counts()
 
@@ -785,23 +785,25 @@ class OrgUnitAPITestCase(APITestCase):
 
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
+        data["name"] = "new name"
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
             data=data,
         )
-        self.assertJSONResponse(response, 400)
-        self.assertNoCreation()
+        self.assertJSONResponse(response, 200)
+        self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
-        # Verify Nothing has changed
+        # Verify group was not modified but the rest was modified
         self.assertQuerysetEqual(
             ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
         )
         self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.name, old_ou.name)
+        self.assertEqual(ou.name, "new name")
         self.assertEqual(ou.parent, old_ou.parent)
         self.assertEqual(ou.created_at, old_ou.created_at)
-        self.assertEqual(ou.updated_at, old_ou.updated_at)
+
+        self.assertNotEqual(ou.updated_at, old_modification_date)
 
     def test_edit_with_apply_directly_instance_gps_into_org_unit(self):
         """Retrieve a orgunit data and push instance_gps_to_org_unit"""

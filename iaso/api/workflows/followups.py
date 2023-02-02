@@ -27,7 +27,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
 
     For all these endpoints, the workflow version should be in draft status otherwise additions/modifications will be refused
 
-    POST /api/workflowfollowups/?workflow_version_id={workflow_version_id}
+    POST /api/workflowfollowups/?version_id={workflow_version_id}
     Creates one new followup for WorkflowVersion {workflow_version_id} with the followup body data
     {
         "order": Int,
@@ -84,7 +84,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
 
         for followup in request.data:
             if "id" not in followup:
-                raise ValueError("id is required for bulk update")
+                return Response("id is required for bulk update", status=400)
             else:
                 followup_orig = WorkflowFollowup.objects.get(id=followup["id"])
                 serializer = ser.WorkflowFollowupModifySerializer(
@@ -100,7 +100,6 @@ class WorkflowFollowupViewSet(ModelViewSet):
     @swagger_auto_schema(request_body=no_body)
     def destroy(self, request, *args, **kwargs):
         followup_id = request.query_params.get("followup_id", kwargs.get("followup_id", None))
-        # validate_followup_id(followup_id, request.user)
         wf = WorkflowFollowup.objects.get(pk=followup_id)
         wf.delete()
         return Response(status=204)

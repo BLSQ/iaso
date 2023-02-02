@@ -79,6 +79,7 @@ const InstancesFiltersComponent = ({
         delete filters.pageSize;
         delete filters.order;
         delete filters.page;
+        filters.showDeleted = filters.showDeleted === 'true';
         return filters;
     }, [params]);
     const [formState, setFormState] = useFormState(
@@ -88,7 +89,11 @@ const InstancesFiltersComponent = ({
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     useSkipEffectOnMount(() => {
         Object.entries(params).forEach(([key, value]) => {
-            setFormState(key, value);
+            if (key === 'showDeleted') {
+                setFormState(key, value === 'true');
+            } else {
+                setFormState(key, value);
+            }
         });
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);

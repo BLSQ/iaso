@@ -48,6 +48,8 @@ class CategoryItemSerializer(serializers.Serializer):
     performed_by = UserSerializer(required=False)
     performed_at = serializers.DateTimeField(required=False)
     step_id = serializers.IntegerField(required=False)
+    skipped = serializers.BooleanField(required=False)
+    cancelled = serializers.BooleanField(required=False)
 
 
 class CategorySerializer(serializers.Serializer):
@@ -182,6 +184,14 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         r = []
         c: Category
         steps = list(campaign.budget_steps.filter(deleted_at__isnull=True).order_by("created_at"))
+
+        override_steps = list(
+            campaign.budget_steps.filter(deleted_at__isnull=True)
+            .filter(transition_key="override")
+            .order_by("created_at")
+        )
+        all_nodes = workflow.nodes
+
         for c in workflow.categories:
             items = []
             node_dict = {node.key: node for node in c.nodes}
@@ -209,6 +219,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                                     "performed_by": step.created_by,
                                     "performed_at": step.created_at,
                                     "step_id": step.id,
+                                    "order": other_node.order,
                                 }
                             )
                             node_passed_by.add(other_key)
@@ -219,17 +230,17 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                             "performed_by": step.created_by,
                             "performed_at": step.created_at,
                             "step_id": step.id,
+                            "order": node.order,
                         }
                     )
                     node_passed_by.add(to_node_key)
-
             for node in c.nodes:  # Node are already sorted
                 if not node.mandatory:
                     continue
                 if node.key in node_passed_by:
                     continue
                 node_remaining.add(node.key)
-                items.append({"label": node.label})
+                items.append({"label": node.label, "order": node.order})
             # color calculation
             active = len(node_passed_by) > 0
             completed = len(node_remaining) == 0
@@ -241,7 +252,6 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             else:
                 # Category not started
                 color = "grey"
-
             r.append(
                 {
                     "label": c.label,
@@ -252,6 +262,25 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                     "completed": completed,
                 }
             )
+
+        override_step: BudgetStep
+        for override_step in override_steps:
+            start_node_key = override_step.node_key_from
+            destination_node_key = override_step.node_key_to
+            # TODO check if list contains one and only one element
+            start_node = [node for node in all_nodes if node.key == start_node_key][0]
+            start_position = start_node.order
+            destination_node = [node for node in all_nodes if node.key == destination_node_key][0]
+            destination_position = destination_node.order
+            is_skipping = destination_position >= start_position
+            for section in r:
+                for item in section["items"]:
+                    item_order = item["order"]
+                    if is_skipping and item_order > start_position and item_order < destination_position:
+                        item["skipped"] = True
+                    elif item_order < start_position and item_order > destination_position and not is_skipping:
+                        item["cancelled"] = True
+
         return TimelineSerializer({"categories": r}).data
 
 
@@ -389,22 +418,30 @@ class TransitionOverrideSerializer(serializers.Serializer):
                 campaign=campaign,
                 comment=data.get("comment"),
                 transition_key="override",
+                node_key_to=to_node.key,
+                node_key_from=campaign.budget_current_state_key,
             )
             for link_data in data.get("links", []):
                 link_serializer = BudgetLinkSerializer(data=link_data)
                 link_serializer.is_valid(raise_exception=True)
                 link_serializer.save(step=step)
 
-            campaign.budget_current_state_key = node_key
-            for file in data.get("files", []):
-                step.files.create(file=file, filename=file.name)
-            campaign.budget_current_state_label = to_node.label
-            campaign.save()
+            # campaign.budget_current_state_key = node_key
+            # for file in data.get("files", []):
+            #     step.files.create(file=file, filename=file.name)
+            # campaign.budget_current_state_label = to_node.label
+            # campaign.save()
             # saving step before sending email to allow send_budget_emails to have access to the step's transition_key
             step.save()
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+
+            campaign.budget_current_state_key = node_key
+            for file in data.get("files", []):
+                step.files.create(file=file, filename=file.name)
+            campaign.budget_current_state_label = to_node.label
+            campaign.save()
 
         return step
 

@@ -425,7 +425,7 @@ class InstancesViewSet(viewsets.ViewSet):
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data
         # To display the Lock or unlock icon when the use has access to the two actions
         response["can_user_modify"] = instance.can_user_modify(request.user)
-        # To display either the unlock or lock icon depending on if the instance is already lock or not
+        # To display either the "unlock" or the "lock" icon depending on if the instance is already lock or not
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
 
         return Response(response)

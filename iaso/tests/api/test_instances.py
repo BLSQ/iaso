@@ -1153,7 +1153,7 @@ class InstancesAPITestCase(APITestCase):
             self.assertJSONResponse(response, 403)
 
     def test_instance_create_entity(self):
-        """POST /api/instances/ with an entity that don't exist in db, it create it"""
+        """POST /api/instances/ with an entity that don't exist in db, it creates it"""
 
         instance_uuid = str(uuid4())
         entity_uuid = str(uuid4())

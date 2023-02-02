@@ -105,7 +105,7 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
     """Parse an ODK xls form file.
 
     :param xls_file: a named file-like object (a persistent file or a django uploaded file will do)
-    :param previous_version: used to validate the version present in the excel file or to auto-generate it
+    :param previous_version: used to validate the version present in the Excel file or to auto-generate it
     """
 
     try:

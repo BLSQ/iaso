@@ -28,7 +28,7 @@ from django.db.models.fields.json import KeyTransformTextLookupMixin, JSONField
 class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
     lookup_name = "forcefloat"
     # KeyTransformTextLookupMixin
-    # tell it to use ->> to extract the value as text otherwhise it can't be casted
+    # tell it to use ->> to extract the value as text otherwhise it can't be cast
 
     def as_sql(self, compiler, connection):
         if not connection.ops.extract_trunc_lookup_pattern.fullmatch(self.lookup_name):
@@ -94,7 +94,7 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
 
     extract = ""
     if isinstance(params[1], (int, float)) and field_prefix:
-        # Since inside the json everything is casted as string we cast back as int
+        # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
     lookup = lookups[op]

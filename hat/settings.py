@@ -28,7 +28,7 @@ from urllib.parse import urlparse
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
-# This should the the naked domain (no http or https prefix) that is
+# This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
 # back to the Iaso application.
 #
@@ -312,7 +312,7 @@ AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
 ]
 
-# Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
+# Needed for PowerBI, used for the Polio project, which only supports BasicAuth.
 if "polio" in PLUGINS:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",

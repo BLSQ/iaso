@@ -61,7 +61,7 @@ class DataSourcesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
 
     def test_datasource_post_without_credentials(self):
-        """POST /datasource/ without credentials should NOT fails"""
+        """POST /datasource/ without credentials should NOT fail"""
         self.client.force_authenticate(self.joe)
 
         response = self.client.post(

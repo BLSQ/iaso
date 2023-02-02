@@ -526,7 +526,7 @@ class PolioAPITestCase(APITestCase):
 
     def test_create_calendar_xlsx_sheet_without_test_campaigns(self):
         """
-        Test campaigns appeared in the XLSX but they should not
+        Test campaigns appeared in the XLSX, but they should not
             - This test is to make sure that no test campaign appear again in the XLSX calendar export
         """
         org_unit = OrgUnit.objects.create(

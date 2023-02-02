@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class SetupAccountSerializer(serializers.Serializer):
-    """Setup an account with a first user and the appropriate sources"""
+    """Set up an account with a first user and the appropriate sources"""
 
     account_name = serializers.CharField(required=True)
     user_username = serializers.CharField(max_length=150, required=True)

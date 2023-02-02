@@ -62,7 +62,7 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
         # Blanks are generally there because the "calculate" in the xlsform ended up to NaN
         # because other dependencies where not 'relevant' or 'filled'
         # for the moment excluding them looks better than considering them as 0
-        # this can be changed later and we consider make it configurable on the aggregation settings
+        # this can be changed later, and we consider make it configurable on the aggregation settings
         question_name = aggregation["questionName"]
         fieldname = "json__" + question_name
         filter_out_blanks = ~Q(**{fieldname: ""})
@@ -115,7 +115,7 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
 def condition_to_q(condition):
     """This is our custom format to filter on a question value in the json field.
 
-    It takes 3 parameter, the questionName, the operator (e.g exact) and the value (attention type matter don't quote
+    It takes 3 parameter, the questionName, the operator (e.g. exact) and the value (attention type matter don't quote)
     if you want to filter an int
     Check JSONField.get_lookups() for valid operators. You can prepend ~ to negate them.
 

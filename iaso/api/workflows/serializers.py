@@ -139,7 +139,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         if WorkflowChange.objects.filter(workflow_version=wfv, form=form).exists():
             raise serializers.ValidationError(f"WorkflowChange for form {form.id} already exists !")
 
-        # If it does, we return a error
+        # If it does, we return an error
         # If it doesn't, we create the change
 
         wc = WorkflowChange.objects.create(

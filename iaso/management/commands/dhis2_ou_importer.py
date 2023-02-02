@@ -11,9 +11,9 @@ Example
     --version_number 1 \
     --org_unit_type_csv_file ./data/play_unit_types.csv (optional)
 
-the org_unit_type_csv_file file format is a csv WITHOUT headers with iaso_orgunit_type_id,dhis2_name,dhis2_parent_name
-the source will be created if missing
-if an import already exist with the number, a warning will be displayed, you can still force with -f
+The org_unit_type_csv_file file format is a csv WITHOUT headers with iaso_orgunit_type_id,dhis2_name,dhis2_parent_name.
+The source will be created if missing.
+If an import already exist with the number, a warning will be displayed, you can still force with -f
 
 """
 
@@ -40,7 +40,7 @@ csv.field_size_limit(sys.maxsize)
 
 
 class FakeTask:
-    """Fake task so we can share code with the dhis2 task and have output"""
+    """Fake task, so we can share code with the dhis2 task and have output"""
 
     def __init__(self, iaso_logger):
         self.logger = iaso_logger
@@ -109,7 +109,7 @@ class Command(BaseCommand):
         start = time.time()
 
         # the transaction prevent tons of small commits, and improve performance
-        # moved to outside so we have proper stats
+        # moved to outside, so we have proper stats
         with transaction.atomic():
             source, _created = DataSource.objects.get_or_create(name=source_name)
             try:

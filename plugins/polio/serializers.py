@@ -75,7 +75,7 @@ def _error(message, exc=None):
     return errors
 
 
-# the following serializer are used so we can audit the modification on a campaign.
+# the following serializer are used, so we can audit the modification on a campaign.
 # The related Scope and Round can be modified in the same request but are modelised as separate ORM Object
 # and DjangoSerializer don't serialize relation, DRF Serializer is used
 class AuditGroupSerializer(serializers.ModelSerializer):
@@ -782,7 +782,7 @@ class ListCampaignSerializer(CampaignSerializer):
 
 class CalendarCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
-    Used by both anonymous and non anonymous user"""
+    Used by both anonymous and non-anonymous user"""
 
     class NestedListRoundSerializer(RoundSerializer):
         class NestedScopeSerializer(RoundScopeSerializer):

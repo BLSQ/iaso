@@ -187,8 +187,8 @@ class OrgUnitModelDbTestCase(TestCase):
     def activate_constraints(self):
         """Active constraints inside the test, so that it raise in real time
 
-        Kind of a hack but need to check the constraints, otherwise django only check them
-        at teardown and we can't catch them.
+        Kind of a hack but need to check the constraints, otherwise Django only check them
+        at teardown, and we can't catch them.
 
         This will be automatically reversed in teardown. Only tested with postgres
         Note that the transaction will be blocked once an error occur

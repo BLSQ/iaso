@@ -79,7 +79,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         Can serve these formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
          * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
-         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> OrgUnitSmallSearchSerializer
+         * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
          * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
          * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
          * GeoPackage format (if `gpkg` is passed)
@@ -456,7 +456,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):
-        """This endpoint is used by the react frontend"""
+        """This endpoint is used by the React frontend"""
         errors = []
         org_unit = OrgUnit()
 
@@ -591,7 +591,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None
-        # Had first geojson of parent so we can add it to map, caution we stop after the first
+        # Had first geojson of parent, so we can add it to map. Caution: we stop after the first
         ancestor = org_unit.parent
         ancestor_dict = res["parent"]
         while ancestor:

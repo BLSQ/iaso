@@ -454,7 +454,7 @@ class Command(BaseCommand):
         xls_xml_file="./testdata/seed-data-command-form.xml",
     ):
         form_version, created = FormVersion.objects.get_or_create(form=form, version_id=1)
-        # don't use uploadedFile in get_or_create, it will end up non unique
+        # don't use uploadedFile in get_or_create, it will end up non-unique
         form_version.file = UploadedFile(
             # TODO: use better fixture
             open(xls_xml_file)

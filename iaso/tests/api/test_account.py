@@ -18,7 +18,7 @@ class ProjectsAPITestCase(APITestCase):
         cls.ghi_version = m.SourceVersion.objects.create(data_source=ghi_datasource, number=1)
 
     def test_account_list_without_auth(self):
-        """GET /projects/ without auth should result in a 403 (before the method not authorized?"""
+        """GET /projects/ without auth should result in a 403 (before the method not authorized?)"""
         self.client.force_authenticate(self.jim)
 
         response = self.client.get("/api/accounts/")

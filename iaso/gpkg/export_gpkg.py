@@ -26,13 +26,13 @@ OUT_COLUMNS = [
     "parent_ref",
     "group_refs",
     "group_names",
-    # "id", # it's present as  an index so it bug GeoPandas but it's exported
+    # "id", # it's present as  an index, so it bug GeoPandas but it's exported
     "uuid",
 ]
 
 
 def geos_to_shapely(geom: Optional[GEOSGeometry]) -> Optional[BaseGeometry]:
-    # Pandas need a shapely geom because it need a object with __geo_interface__ for fiona
+    # Pandas need a shapely geom because it needs an object with __geo_interface__ for fiona
     if not geom:
         return None
     shape = wkt.loads(geom.wkt)
@@ -61,7 +61,7 @@ def export_org_units_to_gpkg(filepath, orgunits: "QuerySet[OrgUnit]") -> None:
 
     Internal, use the other method as it only export orgunit and not group
 
-    The file may or may not exists.
+    The file may or may not exist.
     filter_empty_geom is for compat with the old api"""
 
     df = gpd.GeoDataFrame(orgunits.values(*ORG_UNIT_COLUMNS))
@@ -150,7 +150,7 @@ insert into gpkg_contents(table_name, data_type, identifier) values (
 def add_group_in_gpkg(filepath: str, groups: "QuerySet[Group]") -> None:
     """Create the table containing the groups and populate it.
 
-    The gpkg must already exists
+    The gpkg must already exist
     also fill it in gpkg_contents as per spec"""
     with sqlite3.connect(filepath) as conn:
         cur = conn.cursor()
@@ -172,7 +172,7 @@ def source_to_gpkg(filepath: str, source: SourceVersion) -> None:
 def org_units_to_gpkg_bytes(queryset: "QuerySet[OrgUnit]") -> bytes:
     """Export OrgUnit queryset in Geopackage (gpkg) format as bytes that can be streamed in response."""
 
-    # Tried to use a mkstemp but it prevents the group.to_file from writing to it and is hard to remove later on
+    # Tried to use a mkstemp, but it prevents the group.to_file from writing to it and is hard to remove later on
     # NamedTemporaryFile works but the handle cannot be used to read again. So left the plain uuid thing.
     filepath = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()) + ".gpkg")
     export_org_units_to_gpkg(filepath, queryset)

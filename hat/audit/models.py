@@ -33,7 +33,7 @@ def dict_compare(d1, d2):
 
 class IasoJsonEncoder(json.JSONEncoder):
     """This Encoder is needed for object that use UUID as their primary id
-    e.g Campaign"""
+    e.g. Campaign"""
 
     def default(self, o):
         if isinstance(o, uuid.UUID):

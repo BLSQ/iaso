@@ -557,7 +557,7 @@ class EventTrackerHandler(BaseHandler):
                                     unique_number_attribute_id,
                                     country_dhis2_id,
                                 )
-                                # create relation ship
+                                # create relationship
                                 if "relationship_type" in subform_mapping:
                                     relation_ship = {
                                         "relationshipType": subform_mapping["relationship_type"],

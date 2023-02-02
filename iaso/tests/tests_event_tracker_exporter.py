@@ -239,7 +239,7 @@ class DataValueExporterTests(TestCase):
         instance.project = self.project
         instance.save()
         # force to past creation date
-        # looks the the first save don't take it
+        # looks the first save don't take it
         instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.save()
         return instance

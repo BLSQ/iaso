@@ -264,7 +264,7 @@ class EnketoAPITestCase(APITestCase):
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
     def test_public_create_url_duplicate_fail(self):
-        """There is already more than two instance for the form/period and it is single_per_period so it fail"""
+        """There is already more than two instance for the form/period, and it is single_per_period so it fail"""
         token = self.project.external_token
         form_id = self.form_1.form_id
         # Mark form as single per period and add a duplicate
@@ -356,7 +356,7 @@ class EnketoAPITestCase(APITestCase):
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
     def test_public_create_url_non_single_create_2(self):
-        """There is 2 instances on the Form/OrgUnit/Period and it is NOT single per period, so we create a new one"""
+        """There is 2 instances on the Form/OrgUnit/Period, and it is NOT single per period, so we create a new one"""
         token = self.project.external_token
         form_id = self.form_1.form_id
         # Mark form as single per period and add a duplicate

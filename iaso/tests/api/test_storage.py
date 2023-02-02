@@ -123,7 +123,7 @@ class StorageAPITestCase(APITestCase):
 
     def test_post_log_base_new_storage(self):
         """
-        Test the base of the POST /api/mobile/storage/log/ endpoint, in the case where the storage device is new.
+        Test the base of the POST /api/mobile/storages/log/ endpoint, in the case where the storage device is new.
 
         - Status is 201 CREATED
         - Correct values added to the database
@@ -283,7 +283,7 @@ class StorageAPITestCase(APITestCase):
         self.assertIsNone(the_log_entry.entity)
 
     def test_post_log_invalid_storage_type(self):
-        """In the case the storage type is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        """In the case the storage type is invalid, POST to /api/mobile/storages/log/ should return 400."""
         self.client.force_authenticate(self.yoda)
 
         num_logs_before = StorageLogEntry.objects.count()
@@ -305,7 +305,7 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
     def test_post_log_invalid_operation_type(self):
-        """In the case the operation type is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        """In the case the operation type is invalid, POST to /api/mobile/storages/log/ should return 400."""
         self.client.force_authenticate(self.yoda)
 
         num_logs_before = StorageLogEntry.objects.count()
@@ -327,7 +327,7 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
     def test_post_log_invalid_org_unit(self):
-        """In the case the org unit is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        """In the case the org unit is invalid, POST to /api/mobile/storages/log/ should return 400."""
         self.client.force_authenticate(self.yoda)
 
         num_logs_before = StorageLogEntry.objects.count()
@@ -349,7 +349,7 @@ class StorageAPITestCase(APITestCase):
         self.assertEqual(StorageLogEntry.objects.count(), num_logs_before)
 
     def test_post_log_invalid_entity(self):
-        """In the case the entity is invalid, POST to /api/mobile/storage/log/ should return 400."""
+        """In the case the entity is invalid, POST to /api/mobile/storages/log/ should return 400."""
         self.client.force_authenticate(self.yoda)
 
         num_logs_before = StorageLogEntry.objects.count()

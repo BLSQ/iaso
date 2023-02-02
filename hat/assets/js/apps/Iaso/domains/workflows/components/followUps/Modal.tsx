@@ -18,7 +18,7 @@ import { Grid, Box, useTheme } from '@material-ui/core';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
-import { InfoPopper } from '../../../forms/fields/components/InfoPopper';
+import { Popper } from '../../../forms/fields/components/Popper';
 
 import { useGetForms } from '../../hooks/requests/useGetForms';
 import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
@@ -138,7 +138,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                     top={theme.spacing(-7)}
                     right={theme.spacing(-3)}
                 >
-                    <InfoPopper />
+                    <Popper />
                 </Box>
                 {fields && (
                     <QueryBuilder

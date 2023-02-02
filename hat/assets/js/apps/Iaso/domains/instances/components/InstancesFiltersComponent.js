@@ -41,7 +41,7 @@ import { parseJson } from '../utils/jsonLogicParse.ts';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
-import { InfoPopper } from '../../forms/fields/components/InfoPopper.tsx';
+import { Popper } from '../../forms/fields/components/Popper.tsx';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
@@ -264,7 +264,7 @@ const InstancesFiltersComponent = ({
                                 onClear: () =>
                                     handleFormChange('fieldsSearch', undefined),
                             }}
-                            InfoPopper={<InfoPopper />}
+                            InfoPopper={<Popper />}
                         />
                     )}
                     <InputComponent

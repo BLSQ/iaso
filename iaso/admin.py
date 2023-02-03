@@ -7,7 +7,7 @@ from django.utils.safestring import mark_safe
 from typing import Any
 from typing_extensions import Protocol
 
-from django_json_widget.widgets import JSONEditorWidget
+from django_json_widget.widgets import JSONEditorWidget  # type: ignore
 
 
 class IasoJSONEditorWidget(JSONEditorWidget):

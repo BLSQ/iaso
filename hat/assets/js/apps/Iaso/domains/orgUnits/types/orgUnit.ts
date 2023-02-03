@@ -32,6 +32,7 @@ export type OrgUnit = {
     geo_json?: Shape | undefined;
     has_geo_json: boolean;
     org_unit_type_name: string;
+    org_unit_type_depth: Nullable<number>;
     source: string;
     source_id: number;
     version: number;

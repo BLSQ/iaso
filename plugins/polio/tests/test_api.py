@@ -686,6 +686,8 @@ class PreparednessAPITestCase(APITestCase):
 
     def test_two_campaign_round_empty(self):
         campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
+        campaign_a.rounds.create(number=1)
+        campaign_a.rounds.create(number=3)
         Campaign.objects.create(obr_name="campaign B", account=self.account)
         Campaign.objects.create(obr_name="campaign c", account=self.account)
 

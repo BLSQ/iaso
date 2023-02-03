@@ -289,10 +289,10 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             uncancelled_mandatory_nodes_passed = list(
                 filter(lambda i: i.get("cancelled") != True, mandatory_nodes_passed)
             )
-            mapped = []
-            for thing in uncancelled_mandatory_nodes_passed:
-                mapped.append(thing["label"])
-            unique_nodes_passed = set(mapped)
+            uncancelled_mandatory_nodes_labels = []
+            for uncancelled_node in uncancelled_mandatory_nodes_passed:
+                uncancelled_mandatory_nodes_labels.append(uncancelled_node["label"])
+            unique_nodes_passed = set(uncancelled_mandatory_nodes_labels)
             if len(unique_nodes_passed) == len(mandatory_nodes):
                 section["completed"] = True
                 section["active"] = False

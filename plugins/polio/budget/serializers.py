@@ -252,7 +252,6 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                         "order": node.order,
                         "key": node.key,
                         "mandatory": node.mandatory,
-                        "performed_at": step.created_at,
                     }
                 )
             r.append(

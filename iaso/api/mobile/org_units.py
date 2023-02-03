@@ -1,3 +1,6 @@
+from rest_framework.response import Response
+from rest_framework import viewsets, permissions
+from iaso.api.common import safe_api_import, get_timestamp
 import json
 
 from django.contrib.gis.geos import Point
@@ -83,6 +86,7 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
 def import_data(org_units, user, app_id):
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
+    org_units = sorted(org_units, key=get_timestamp)
 
     for org_unit in org_units:
         uuid = org_unit.get("id", None)

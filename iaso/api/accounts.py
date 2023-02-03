@@ -20,15 +20,16 @@ class AccountSerializer(serializers.ModelSerializer):
         default_version = validated_data.pop("default_version", None)
         user = self.context["request"].user
         if default_version is not None:
-            sourceVersion = get_object_or_404(
+            source_version = get_object_or_404(
                 SourceVersion,
                 id=default_version.id,
                 number=default_version.number,
             )
-            project = Project.objects.get(account=user.iaso_profile.account)  # type: ignore
-            if project not in sourceVersion.data_source.projects.all():
-                raise serializers.ValidationError({"Error": "Account not allowed to access this default_source"})
-            account.default_version = sourceVersion
+            projects = source_version.data_source.projects.all()
+            for p in projects:
+                if user.iaso_profile.account != p.account:
+                    raise serializers.ValidationError({"Error": "Account not allowed to access this default_source"})
+            account.default_version = source_version
             account.save()
 
         return account

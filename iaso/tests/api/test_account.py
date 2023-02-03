@@ -17,7 +17,8 @@ class AccountAPITestCase(APITestCase):
         ghi_datasource.projects.set([ghi_project])
         cls.ghi_version = m.SourceVersion.objects.create(data_source=ghi_datasource, number=1)
 
-        wha_project = m.Project.objects.create(name="gha_project", account=wha)
+        wha_project = m.Project.objects.create(name="wha_project", account=wha)
+        wha_second_project = m.Project.objects.create(name="wha_second_project", account=wha)
         wha_datasource = m.DataSource.objects.create(name="wha datasource")
         wha_datasource.projects.set([wha_project])
         cls.wha_version = m.SourceVersion.objects.create(data_source=wha_datasource, number=1)

@@ -2,7 +2,7 @@ import React from 'react';
 import { useSafeIntl, useTranslatedOptions } from 'bluesquare-components';
 import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
-import { BUDGET_STATES } from '../../constants/budget.ts';
+import { RA_STATUSES } from '../../constants/statuses.ts';
 
 const statuses = [
     {
@@ -32,7 +32,7 @@ export const StatusField = props => {
     );
 };
 
-const RABudgetstatuses = BUDGET_STATES.map(state => ({
+const RABudgetstatuses = RA_STATUSES.map(state => ({
     value: state,
     label: MESSAGES[state],
 }));

@@ -221,7 +221,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                                     "step_id": step.id,
                                     "order": other_node.order,
                                     "key": other_node.key,
-                                    "mandatory":other_node.mandatory
+                                    "mandatory": other_node.mandatory,
                                 }
                             )
                             node_passed_by.add(other_key)
@@ -234,7 +234,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                             "step_id": step.id,
                             "order": node.order,
                             "key": node.key,
-                            "mandatory":node.mandatory
+                            "mandatory": node.mandatory,
                         }
                     )
                     node_passed_by.add(to_node_key)
@@ -277,7 +277,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             destination_node = [node for node in all_nodes if node.key == destination_node_key][0]
             destination_position = destination_node.order
             is_skipping = destination_position >= start_position
-            #TODO add condition on created_at
+            # TODO add condition on created_at
             for section in r:
                 for item in section["items"]:
                     item_order = item["order"]
@@ -288,13 +288,15 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
 
         for index, section in enumerate(r):
             mandatory_nodes = list(filter(lambda node: node.mandatory == True, workflow.categories[index].nodes))
-            mandatory_nodes_passed = list(filter(lambda x : x.get("mandatory") == True, section["items"]))
-            uncancelled_mandatory_nodes_passed = list(filter (lambda i : i.get("cancelled") !=True, mandatory_nodes_passed))
+            mandatory_nodes_passed = list(filter(lambda x: x.get("mandatory") == True, section["items"]))
+            uncancelled_mandatory_nodes_passed = list(
+                filter(lambda i: i.get("cancelled") != True, mandatory_nodes_passed)
+            )
             mapped = []
             for thing in uncancelled_mandatory_nodes_passed:
                 mapped.append(thing["label"])
             unique_nodes_passed = set(mapped)
-            print(len(unique_nodes_passed),len(mandatory_nodes))
+            print(len(unique_nodes_passed), len(mandatory_nodes))
             if len(unique_nodes_passed) == len(mandatory_nodes):
                 section["completed"] = True
                 section["active"] = False
@@ -303,7 +305,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                 section["completed"] = False
                 section["active"] = True
                 section["color"] = "yellow"
-            else: 
+            else:
                 section["completed"] = False
                 section["active"] = False
                 section["color"] = "grey"

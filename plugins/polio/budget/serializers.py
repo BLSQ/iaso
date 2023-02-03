@@ -206,6 +206,8 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                         continue
                     transition = workflow.transitions_dict[step.transition_key]
                     to_node_key = transition.to_node
+                    # if step.transition_key == "override"
+                    # we need to access the actual step to get the to_node_key, as the one in the workflow is generic and not to be used
 
                 if to_node_key in node_dict.keys():
                     # If this is in the category
@@ -244,26 +246,20 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                 if node.key in node_passed_by:
                     continue
                 node_remaining.add(node.key)
-                items.append({"label": node.label, "order": node.order, "key": node.key, "mandatory": node.mandatory})
-            # color calculation
-            active = len(node_passed_by) > 0
-            completed = len(node_remaining) == 0
-            if completed:
-                # category done
-                color = "green"
-            elif active:
-                color = "yellow"
-            else:
-                # Category not started
-                color = "grey"
+                items.append(
+                    {
+                        "label": node.label,
+                        "order": node.order,
+                        "key": node.key,
+                        "mandatory": node.mandatory,
+                        "performed_at": step.created_at,
+                    }
+                )
             r.append(
                 {
                     "label": c.label,
                     "key": c.key,
-                    "color": color,
                     "items": items,
-                    "active": active,
-                    "completed": completed,
                 }
             )
 
@@ -277,14 +273,15 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             destination_node = [node for node in all_nodes if node.key == destination_node_key][0]
             destination_position = destination_node.order
             is_skipping = destination_position >= start_position
-            # TODO add condition on created_at
+            reference_date = override_step.created_at
             for section in r:
                 for item in section["items"]:
-                    item_order = item["order"]
-                    if is_skipping and item_order > start_position and item_order < destination_position:
-                        item["skipped"] = True
-                    elif item_order < start_position and item_order > destination_position and not is_skipping:
-                        item["cancelled"] = True
+                    if reference_date >= item["performed_at"]:
+                        item_order = item["order"]
+                        if is_skipping and item_order > start_position and item_order < destination_position:
+                            item["skipped"] = True
+                        elif item_order < start_position and item_order > destination_position and not is_skipping:
+                            item["cancelled"] = True
 
         for index, section in enumerate(r):
             mandatory_nodes = list(filter(lambda node: node.mandatory == True, workflow.categories[index].nodes))
@@ -296,7 +293,6 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             for thing in uncancelled_mandatory_nodes_passed:
                 mapped.append(thing["label"])
             unique_nodes_passed = set(mapped)
-            print(len(unique_nodes_passed), len(mandatory_nodes))
             if len(unique_nodes_passed) == len(mandatory_nodes):
                 section["completed"] = True
                 section["active"] = False

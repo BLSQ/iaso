@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
+
 import os
 from typing import Dict, Any
 
@@ -27,6 +28,7 @@ import urllib.parse
 from urllib.parse import urlparse
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
+
 # This should the the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
 # back to the Iaso application.
@@ -165,7 +167,7 @@ INSTALLED_APPS = [
     "django_comments",
     "django_filters",
     "drf_yasg",
-    "django_json_widget"
+    "django_json_widget",
 ]
 
 # needed because we customize the comment model

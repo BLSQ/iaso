@@ -17,47 +17,44 @@ type Props = {
 export const TimelineStepIcon: FunctionComponent<Props> = ({ item }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const isRegularItem = !item.skipped && !item.cancelled;
 
-    return (
-        <>
-            {isRegularItem && (
-                <CheckCircleOutline
+    if (item.skipped)
+        return (
+            <Tooltip
+                arrow
+                placement="top"
+                title={formatMessage(MESSAGES.stepSkipped)}
+            >
+                <FastForwardIcon
                     className={classnames(
-                        item.performed_by && classes.taskDone,
-                        !item.performed_by && classes.taskPending,
                         classes.taskIcon,
+                        classes.overrideIcon,
                     )}
                 />
+            </Tooltip>
+        );
+    if (item.cancelled)
+        return (
+            <Tooltip
+                arrow
+                placement="top"
+                title={formatMessage(MESSAGES.stepCancelled)}
+            >
+                <ClearIcon
+                    className={classnames(
+                        classes.taskIcon,
+                        classes.overrideIcon,
+                    )}
+                />
+            </Tooltip>
+        );
+    return (
+        <CheckCircleOutline
+            className={classnames(
+                item.performed_by && classes.taskDone,
+                !item.performed_by && classes.taskPending,
+                classes.taskIcon,
             )}
-            {item.skipped && (
-                <Tooltip
-                    arrow
-                    placement="top"
-                    title={formatMessage(MESSAGES.stepSkipped)}
-                >
-                    <FastForwardIcon
-                        className={classnames(
-                            classes.taskIcon,
-                            classes.overrideIcon,
-                        )}
-                    />
-                </Tooltip>
-            )}
-            {item.cancelled && (
-                <Tooltip
-                    arrow
-                    placement="top"
-                    title={formatMessage(MESSAGES.stepCancelled)}
-                >
-                    <ClearIcon
-                        className={classnames(
-                            classes.taskIcon,
-                            classes.overrideIcon,
-                        )}
-                    />
-                </Tooltip>
-            )}
-        </>
+        />
     );
 };

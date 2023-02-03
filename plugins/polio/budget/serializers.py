@@ -278,9 +278,9 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                 for item in section["items"]:
                     if reference_date >= item["performed_at"]:
                         item_order = item["order"]
-                        if is_skipping and item_order > start_position and item_order < destination_position:
+                        if is_skipping and item_order >= start_position and item_order < destination_position:
                             item["skipped"] = True
-                        elif item_order < start_position and item_order > destination_position and not is_skipping:
+                        elif item_order <= start_position and item_order > destination_position and not is_skipping:
                             item["cancelled"] = True
 
         for index, section in enumerate(r):

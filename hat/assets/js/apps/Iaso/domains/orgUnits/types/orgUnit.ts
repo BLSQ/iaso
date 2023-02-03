@@ -1,3 +1,4 @@
+import { ReactNode } from 'react';
 import { UrlParams } from '../../../types/table';
 import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
@@ -52,3 +53,44 @@ export type OrgUnitParams = UrlParams & {
 export type OrgUnitsApi = {
     orgunits: OrgUnit[];
 };
+type FormState<T> = {
+    value?: T;
+    errors?: string[];
+};
+type FormStateRequired<T> = {
+    value: T;
+    errors?: string[];
+};
+
+export type OrgUnitState = {
+    id: FormStateRequired<number>;
+    name: FormStateRequired<string>;
+    org_unit_type_id: FormStateRequired<string>;
+    groups: FormState<number[]>;
+    sub_source: FormState<string>;
+    validation_status: FormState<string>;
+    aliases: FormState<string>;
+    source_id: FormState<number>;
+    source: FormState<string>;
+    parent: FormState<OrgUnit>;
+    source_ref: FormState<string>;
+    creator: FormStateRequired<Record<string, any>>;
+    reference_instance_id: FormState<number>;
+};
+
+export type OrgUnitType = {
+    id: number;
+    name: string;
+};
+export type Group = {
+    id: number;
+    name: string;
+};
+
+export type Action = {
+    id: string;
+    icon: ReactNode;
+    disabled?: boolean;
+};
+
+export type ActionsType = Action[];

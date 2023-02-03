@@ -277,6 +277,7 @@ const OrgUnitDetail = ({ params, router }) => {
             };
             saveOu(orgUnitPayload)
                 .then(ou => {
+                    setCurrentOrgUnit(ou);
                     setOrgUnitLocationModified(false);
                     dispatch(resetOrgUnits());
                     if (isNewOrgunit) {

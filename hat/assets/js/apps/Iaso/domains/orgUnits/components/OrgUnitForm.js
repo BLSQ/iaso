@@ -7,24 +7,23 @@ import { Grid, Box, makeStyles } from '@material-ui/core';
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
-import OrgUnitInfos from './OrgUnitInfosComponent';
+import { OrgUnitInfos } from './OrgUnitInfos.tsx';
 
-const initialFormState = orgUnit => {
-    return {
-        id: orgUnit.id,
-        name: orgUnit.name,
-        org_unit_type_id: orgUnit.org_unit_type_id
-            ? `${orgUnit.org_unit_type_id}`
-            : null,
-        groups: orgUnit.groups?.map(g => g.id) ?? [],
-        sub_source: orgUnit.sub_source,
-        validation_status: orgUnit.validation_status,
-        aliases: orgUnit.aliases,
-        parent_id: orgUnit.parent_id,
-        source_ref: orgUnit.source_ref,
-        creator: orgUnit.creator,
-    };
-};
+const initialFormState = orgUnit => ({
+    id: orgUnit.id,
+    name: orgUnit.name,
+    org_unit_type_id: orgUnit.org_unit_type_id
+        ? `${orgUnit.org_unit_type_id}`
+        : undefined,
+    groups: orgUnit.groups?.map(g => g.id) ?? [],
+    sub_source: orgUnit.sub_source,
+    validation_status: orgUnit.validation_status,
+    aliases: orgUnit.aliases,
+    source_id: orgUnit.source_id,
+    parent: orgUnit.parent,
+    source_ref: orgUnit.source_ref,
+    reference_instance_id: orgUnit.reference_instance_id,
+});
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -49,10 +48,11 @@ export const OrgUnitForm = ({
         const newOrgUnit = mapValues(formState, v =>
             Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
         );
+        newOrgUnit.parent_id = newOrgUnit.parent?.id;
         saveOrgUnit(
             newOrgUnit,
             savedOrgUnit => {
-                setOrgUnitModified(true);
+                setOrgUnitModified(false);
                 setFormState(initialFormState(savedOrgUnit));
             },
             error => {
@@ -113,7 +113,6 @@ export const OrgUnitForm = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnit.id]);
-
     return (
         <Box pt={isNewOrgunit ? 2 : 0}>
             <Grid
@@ -125,10 +124,8 @@ export const OrgUnitForm = ({
                 <OrgUnitInfos
                     params={params}
                     baseUrl={baseUrl}
-                    orgUnit={{
-                        ...orgUnit,
-                        ...formState,
-                    }}
+                    orgUnitState={formState}
+                    orgUnit={orgUnit}
                     orgUnitTypes={orgUnitTypes}
                     groups={groups}
                     onChangeInfo={handleChangeInfo}
@@ -138,6 +135,8 @@ export const OrgUnitForm = ({
                     orgUnitModified={orgUnitModified}
                     isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                     isFetchingGroups={isFetchingGroups}
+                    referenceInstance={orgUnit.reference_instance}
+                    setFieldErrors={setFieldErrors}
                 />
             </Grid>
         </Box>

@@ -1,45 +1,30 @@
-/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 
-import { Box, Button, Grid, DialogContentText } from '@material-ui/core';
+import { Box, Button, Grid } from '@material-ui/core';
+import { useDispatch } from 'react-redux';
 
 import PropTypes from 'prop-types';
 
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { makeStyles } from '@material-ui/core/styles';
 
 import {
-    injectIntl,
+    useSafeIntl,
     FormControl as FormControlComponent,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import LinkIcon from '@material-ui/icons/Link';
-import LinkOffIcon from '@material-ui/icons/LinkOff';
-import omit from 'lodash/omit';
-import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../hooks';
-import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { fetchEditUrl as fetchEditUrlAction } from '../../instances/actions';
+import { fetchEditUrl } from '../../instances/actions';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstanceActions';
-import EnketoIcon from '../../instances/components/EnketoIcon';
-import { userHasPermission } from '../../users/utils';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
-import {
-    hasFeatureFlag,
-    SHOW_LINK_INSTANCE_REFERENCE,
-} from '../../../utils/featureFlags';
-import { OrgUnitCreationDetails } from './OrgUnitCreationDetails.tsx';
 
-// reformatting orgUnit name so the OU can be passed to the treeview modal
-// and selecting the parent for display
+import { OrgUnitCreationDetails } from './OrgUnitCreationDetails.tsx';
+import { Actions } from './OrgUnitActions.tsx';
+
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
         top: theme.spacing(12.5),
@@ -52,219 +37,74 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const reformatOrgUnit = orgUnit => {
-    let copy = null;
-    if (orgUnit?.parent) {
-        // eslint-disable-next-line camelcase
-        copy = {
-            id: orgUnit?.parent.id,
-            name: orgUnit?.parent.name,
-            source: orgUnit?.parent.source,
-            source_id: orgUnit?.parent.source_id,
-            parent: orgUnit?.parent.parent,
-            parent_name: orgUnit?.parent.parent_name,
-        };
-    }
-    return copy;
-};
+const getParentOrgUnit = orgUnit =>
+    orgUnit?.parent && {
+        id: orgUnit.parent.id,
+        name: orgUnit.parent.name,
+        source: orgUnit.parent.source,
+        source_id: orgUnit.parent.source_id,
+        parent: orgUnit.parent.parent,
+        parent_name: orgUnit.parent.parent_name,
+    };
 
-const onActionSelected = (fetchEditUrl, action, instance) => {
+const onActionSelected = (action, instance, dipatch) => {
     if (action.id === 'instanceEditAction' && instance) {
-        fetchEditUrl(instance, window.location);
+        dipatch(fetchEditUrl(instance, window.location));
     }
-};
-
-const initialFormState = (orgUnit, referenceSubmissionId) => {
-    return {
-        id: orgUnit.id.value,
-        name: orgUnit.name.value,
-        creator: orgUnit.creator.value,
-        org_unit_type_id:
-            orgUnit?.org_unit_type_id.value?.toString() ?? undefined,
-        groups: orgUnit.groups.value?.map(g => g) ?? [],
-        sub_source: orgUnit.sub_source.value,
-        validation_status: orgUnit.validation_status.value,
-        aliases: orgUnit.aliases.value,
-        parent_id: orgUnit.parent_id.value,
-        source_ref: orgUnit.source_ref.value,
-        reference_instance_id: referenceSubmissionId,
-    };
-};
-
-const onError = setFieldErrors => {
-    if (onError.status === 400) {
-        onError.details.forEach(entry => {
-            setFieldErrors(entry.errorKey, [entry.errorMessage]);
-        });
-    }
-};
-
-const linkOrLinkOffOrgUnitToReferenceSubmission = (
-    orgUnit,
-    referenceSubmissionId,
-    saveOu,
-    setFieldErrors,
-) => {
-    const currentOrgUnit = orgUnit;
-    const newOrgUnit = initialFormState(orgUnit, referenceSubmissionId);
-    let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
-
-    orgUnitPayload = {
-        ...orgUnitPayload,
-        groups:
-            orgUnitPayload.groups.length > 0 && !orgUnitPayload.groups[0].id
-                ? orgUnitPayload.groups
-                : orgUnitPayload.groups.map(g => g.id),
-    };
-    saveOu(orgUnitPayload)
-        // eslint-disable-next-line no-unused-vars
-        .then(_ou => {
-            window.location.reload(false);
-        })
-        .catch(onError(setFieldErrors));
-};
-
-const Actions = (
-    orgUnit,
-    formId,
-    referenceFormId,
-    instanceId,
-    saveOu,
-    setFieldErrors,
-) => {
-    const currentUser = useCurrentUser();
-    const referenceSubmission = orgUnit.reference_instance;
-    const linkOrgUnit =
-        formId !== referenceFormId || referenceSubmission !== null;
-    const hasSubmissionPermission = userHasPermission(
-        'iaso_submissions',
-        currentUser,
-    );
-
-    const hasfeatureFlag = hasFeatureFlag(
-        currentUser,
-        SHOW_LINK_INSTANCE_REFERENCE,
-    );
-
-    const actions = [
-        {
-            id: 'instanceEditAction',
-            icon: <EnketoIcon />,
-            disabled: !referenceSubmission,
-        },
-    ];
-
-    const orgUnitToReferenceSubmission = instance => {
-        return linkOrLinkOffOrgUnitToReferenceSubmission(
-            orgUnit,
-            instance,
-            saveOu,
-            setFieldErrors,
-        );
-    };
-
-    const confirmCancelTitleMessage = isItLinked => {
-        return isItLinked
-            ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
-            : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
-    };
-
-    const renderTrigger = (isLinked, openDialog) => {
-        return isLinked ? (
-            <LinkOffIcon onClick={openDialog} />
-        ) : (
-            <LinkIcon onClick={openDialog} />
-        );
-    };
-
-    if (!hasSubmissionPermission || !hasfeatureFlag) return actions;
-    return [
-        ...actions,
-        {
-            id: linkOrgUnit
-                ? 'linkOffOrgUnitReferenceSubmission'
-                : 'linkOrgUnitReferenceSubmission',
-            icon: (
-                <ConfirmCancelDialogComponent
-                    titleMessage={confirmCancelTitleMessage(linkOrgUnit)}
-                    onConfirm={() =>
-                        linkOrgUnit
-                            ? orgUnitToReferenceSubmission(null)
-                            : orgUnitToReferenceSubmission(instanceId)
-                    }
-                    renderTrigger={({ openDialog }) =>
-                        renderTrigger(linkOrgUnit, openDialog)
-                    }
-                >
-                    <DialogContentText id="alert-dialog-description">
-                        <FormattedMessage
-                            id="iaso.instance.linkOrgUnitToInstanceReferenceWarning"
-                            defaultMessage="This operation can still be undone"
-                            {...MESSAGES.linkOrgUnitToInstanceReferenceWarning}
-                        />
-                    </DialogContentText>
-                </ConfirmCancelDialogComponent>
-            ),
-        },
-    ];
 };
 
 const OrgUnitInfosComponent = ({
-    orgUnit,
+    orgUnitState,
     onChangeInfo,
     orgUnitTypes,
-    intl: { formatMessage },
     groups,
     resetTrigger,
-    fetchEditUrl,
     params,
     handleSave,
     handleReset,
     orgUnitModified,
     isFetchingOrgUnitTypes,
     isFetchingGroups,
+    referenceInstance,
+    setFieldErrors,
+    orgUnit,
 }) => {
     const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
 
     const { formId } = params;
     const { referenceFormId } = params;
     const { instanceId } = params;
 
-    const [setFieldErrors] = useFormState(
-        initialFormState(orgUnit, instanceId),
-    );
-
     const showSpeedDialsActions =
-        orgUnit.reference_instance ||
+        referenceInstance ||
         (formId === referenceFormId &&
             Boolean(formId) &&
             Boolean(referenceFormId));
 
     const isNewOrgunit = params.orgUnitId === '0';
-
     const isSaveDisabled =
-        orgUnit.name.value === '' || orgUnit.org_unit_type_id.value === null;
+        orgUnitState.name.value === '' ||
+        orgUnitState.org_unit_type_id.value === null;
 
     return (
         <Grid container spacing={2}>
             {showSpeedDialsActions && (
                 <SpeedDialInstanceActions
                     speedDialClasses={classes.speedDialTop}
-                    actions={Actions(
-                        orgUnit,
+                    actions={Actions({
+                        orgUnitState,
                         formId,
                         referenceFormId,
                         instanceId,
                         saveOu,
                         setFieldErrors,
-                    )}
+                        referenceInstance,
+                    })}
                     onActionSelected={action =>
-                        onActionSelected(
-                            fetchEditUrl,
-                            action,
-                            orgUnit.reference_instance,
-                        )
+                        onActionSelected(action, referenceInstance, dispatch)
                     }
                 />
             )}
@@ -273,10 +113,9 @@ const OrgUnitInfosComponent = ({
                     keyValue="name"
                     required
                     onChange={onChangeInfo}
-                    value={orgUnit.name.value}
-                    errors={orgUnit.name.errors}
+                    value={orgUnitState.name.value}
+                    errors={orgUnitState.name.errors}
                     label={MESSAGES.name}
-                    withMarginTop={!orgUnit.reference_instance}
                 />
 
                 <InputComponent
@@ -286,9 +125,9 @@ const OrgUnitInfosComponent = ({
                     value={
                         isFetchingOrgUnitTypes
                             ? undefined
-                            : orgUnit.org_unit_type_id.value
+                            : orgUnitState.org_unit_type_id.value
                     }
-                    errors={orgUnit.org_unit_type_id.errors}
+                    errors={orgUnitState.org_unit_type_id.errors}
                     type="select"
                     loading={isFetchingOrgUnitTypes}
                     options={orgUnitTypes.map(t => ({
@@ -303,9 +142,11 @@ const OrgUnitInfosComponent = ({
                         onChangeInfo(name, commaSeparatedIdsToArray(value))
                     }
                     multi
-                    value={isFetchingGroups ? undefined : orgUnit.groups.value}
+                    value={
+                        isFetchingGroups ? undefined : orgUnitState.groups.value
+                    }
                     loading={isFetchingGroups}
-                    errors={orgUnit.groups.errors}
+                    errors={orgUnitState.groups.errors}
                     type="select"
                     options={groups.map(g => ({
                         label: g.name,
@@ -317,7 +158,7 @@ const OrgUnitInfosComponent = ({
                 <InputComponent
                     keyValue="aliases"
                     onChange={onChangeInfo}
-                    value={orgUnit.aliases.value}
+                    value={orgUnitState.aliases.value}
                     type="arrayInput"
                 />
             </Grid>
@@ -327,8 +168,8 @@ const OrgUnitInfosComponent = ({
                     keyValue="validation_status"
                     isClearable={false}
                     onChange={onChangeInfo}
-                    errors={orgUnit.validation_status.errors}
-                    value={orgUnit.validation_status.value}
+                    errors={orgUnitState.validation_status.errors}
+                    value={orgUnitState.validation_status.value}
                     type="select"
                     label={MESSAGES.status}
                     options={[
@@ -345,17 +186,16 @@ const OrgUnitInfosComponent = ({
                             value: 'REJECTED',
                         },
                     ]}
-                    withMarginTop
                 />
                 <InputComponent
                     keyValue="source_ref"
-                    value={orgUnit.source_ref.value || ''}
+                    value={orgUnitState.source_ref.value || ''}
                     onChange={onChangeInfo}
-                    errors={orgUnit.source_ref.errors}
+                    errors={orgUnitState.source_ref.errors}
                 />
 
                 <FormControlComponent
-                    errors={orgUnit.parent_id.errors}
+                    errors={orgUnitState.parent.errors}
                     id="ou-tree-input"
                 >
                     <OrgUnitTreeviewModal
@@ -365,13 +205,13 @@ const OrgUnitInfosComponent = ({
                             if (
                                 (treeviewOrgUnit
                                     ? treeviewOrgUnit.id
-                                    : null) !== orgUnit.parent_id.value
+                                    : null) !== orgUnitState.parent?.value?.id
                             ) {
-                                onChangeInfo('parent_id', treeviewOrgUnit?.id);
+                                onChangeInfo('parent', treeviewOrgUnit);
                             }
                         }}
                         source={orgUnit.source_id}
-                        initialSelection={reformatOrgUnit(orgUnit)}
+                        initialSelection={getParentOrgUnit(orgUnit)}
                         resetTrigger={resetTrigger}
                     />
                 </FormControlComponent>
@@ -392,7 +232,7 @@ const OrgUnitInfosComponent = ({
                             color="primary"
                             onClick={handleSave}
                         >
-                            <FormattedMessage {...MESSAGES.save} />
+                            {formatMessage(MESSAGES.save)}
                         </Button>
 
                         {!isNewOrgunit && (
@@ -402,7 +242,7 @@ const OrgUnitInfosComponent = ({
                                 variant="contained"
                                 onClick={() => handleReset()}
                             >
-                                <FormattedMessage {...MESSAGES.cancel} />
+                                {formatMessage(MESSAGES.cancel)}
                             </Button>
                         )}
                     </Box>
@@ -420,7 +260,7 @@ const OrgUnitInfosComponent = ({
                 </Box>
             </Grid>
 
-            {orgUnit.reference_instance && (
+            {referenceInstance && (
                 <Grid container item xs={12} md={8}>
                     <Box mt={4} className={classes.formContents}>
                         <WidgetPaper
@@ -430,7 +270,7 @@ const OrgUnitInfosComponent = ({
                             iconButtonProps={{
                                 onClick: () =>
                                     window.open(
-                                        orgUnit.reference_instance.file_url,
+                                        referenceInstance.file_url,
                                         '_blank',
                                     ),
                                 icon: 'xml',
@@ -438,9 +278,7 @@ const OrgUnitInfosComponent = ({
                                 tooltipMessage: MESSAGES.downloadXml,
                             }}
                         >
-                            <InstanceFileContent
-                                instance={orgUnit.reference_instance}
-                            />
+                            <InstanceFileContent instance={referenceInstance} />
                         </WidgetPaper>
                     </Box>
                 </Grid>
@@ -450,34 +288,24 @@ const OrgUnitInfosComponent = ({
 };
 
 OrgUnitInfosComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
-    orgUnit: PropTypes.object.isRequired,
+    orgUnitState: PropTypes.object.isRequired,
+    orgUnit: PropTypes.object,
     orgUnitTypes: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
     resetTrigger: PropTypes.bool,
-    fetchEditUrl: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     handleSave: PropTypes.func.isRequired,
     handleReset: PropTypes.func.isRequired,
     orgUnitModified: PropTypes.bool.isRequired,
     isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
     isFetchingGroups: PropTypes.bool.isRequired,
+    referenceInstance: PropTypes.object,
+    setFieldErrors: PropTypes.func.isRequired,
 };
 OrgUnitInfosComponent.defaultProps = {
     resetTrigger: false,
+    referenceInstance: undefined,
+    orgUnit: undefined,
 };
-
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            fetchEditUrl: fetchEditUrlAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(
-    null,
-    MapDispatchToProps,
-)(injectIntl(OrgUnitInfosComponent));
+export default OrgUnitInfosComponent;

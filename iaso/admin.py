@@ -9,6 +9,26 @@ from typing_extensions import Protocol
 
 from django_json_widget.widgets import JSONEditorWidget
 
+
+class IasoJSONEditorWidget(JSONEditorWidget):
+    def __init__(self, attrs=None, mode="code", options=None, width=None, height=None):
+        if height == None:
+            height = "200px"
+
+        default_options = {
+            "modes": ["text", "code"],
+            "mode": mode,
+            "search": True,
+        }
+
+        if options:
+            default_options.update(options)
+
+        super(IasoJSONEditorWidget, self).__init__(
+            attrs=attrs, mode=mode, options=default_options, width=width, height=height
+        )
+
+
 from .models import (
     OrgUnitType,
     OrgUnit,
@@ -484,12 +504,12 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 class WorkflowChangeInline(admin.TabularInline):
     model = WorkflowChange
-    formfield_overrides = {models.JSONField: {"widget": JSONEditorWidget}}
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 class WorkflowFollowupInline(admin.TabularInline):
     model = WorkflowFollowup
-    formfield_overrides = {models.JSONField: {"widget": JSONEditorWidget}}
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 class WorkflowVersionAdmin(admin.ModelAdmin):

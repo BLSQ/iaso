@@ -4,14 +4,14 @@ import classnames from 'classnames';
 import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
-import { CheckCircleOutline } from '@material-ui/icons';
 import moment from 'moment';
 import { Categories } from '../types';
+import { TimelineStepIcon } from './TimelineStepIcon';
 
 type Props = {
     categories?: Categories;
 };
-const useStyles = makeStyles(theme => ({
+export const useStyles = makeStyles(theme => ({
     root: {
         width: '100%',
         '&.MuiStepper-root': {
@@ -67,6 +67,13 @@ const useStyles = makeStyles(theme => ({
             // @ts-ignore
             borderColor: theme.palette.gray.main,
         },
+    },
+    strikethrough: {
+        textDecoration: 'line-through',
+    },
+    overrideIcon: {
+        // @ts-ignore
+        color: theme.palette.gray.main,
     },
 }));
 
@@ -132,18 +139,16 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                                                 mb={1}
                                             >
                                                 <Box
-                                                    className={
-                                                        classes.checkboxWrapper
-                                                    }
+                                                    className={classnames(
+                                                        classes.checkboxWrapper,
+                                                        item.cancelled ||
+                                                            item.skipped
+                                                            ? classes.strikethrough
+                                                            : '',
+                                                    )}
                                                 >
-                                                    <CheckCircleOutline
-                                                        className={classnames(
-                                                            item.performed_by &&
-                                                                classes.taskDone,
-                                                            !item.performed_by &&
-                                                                classes.taskPending,
-                                                            classes.taskIcon,
-                                                        )}
+                                                    <TimelineStepIcon
+                                                        item={item}
                                                     />
                                                     <Box
                                                         className={

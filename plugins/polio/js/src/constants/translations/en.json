@@ -108,6 +108,8 @@
     "iaso.polio.form.label.RRTReview": "RRT review",
     "iaso.polio.form.label.selectInitialRegion": "Select initial region",
     "iaso.polio.form.label.selectRoundsToDisplay": "Select rounds to display",
+    "iaso.polio.form.label.stepCancelled": "Admin override cancelled this step",
+    "iaso.polio.form.label.stepSkipped": "Admin override skipped this step",
     "iaso.polio.form.label.submission_to_orpg_operations_1": "Submitted to ORPG Ops (1)",
     "iaso.polio.form.label.submission_to_orpg_operations_2": "Submitted to ORPG ops (2)",
     "iaso.polio.form.label.submitted_for_approval": "Submitted for approval",

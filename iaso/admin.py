@@ -13,7 +13,7 @@ from django_json_widget.widgets import JSONEditorWidget
 class IasoJSONEditorWidget(JSONEditorWidget):
     def __init__(self, attrs=None, mode="code", options=None, width=None, height=None):
         if height == None:
-            height = "200px"
+            height = "400px"
 
         default_options = {
             "modes": ["text", "code"],
@@ -131,6 +131,8 @@ class FormAdmin(admin.GeoModelAdmin):
         "deleted_at",
     )
 
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
     def get_queryset(self, request):
         return Form.objects_include_deleted.all()
 
@@ -140,6 +142,8 @@ class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")
     ordering = ("form__name",)
     list_display = ("form_name", "form_id", "version_id", "created_at", "updated_at")
+
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
     @admin_attr_decorator
     def form_name(self, obj):
@@ -161,6 +165,7 @@ class InstanceFileAdminInline(admin.TabularInline):
     extra = 0
     formfield_overrides = {
         models.TextField: {"widget": widgets.AdminTextInputWidget},
+        models.JSONField: {"widget": IasoJSONEditorWidget},
     }
 
 
@@ -254,6 +259,7 @@ class MappingAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
     list_filter = ("form_version_id",)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin_attr_decorator
@@ -331,6 +337,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
     list_filter = ("account", "status", "name")
     readonly_fields = ("stacktrace", "created_at", "result")
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")
@@ -520,6 +527,14 @@ class WorkflowVersionAdmin(admin.ModelAdmin):
         return WorkflowVersion.objects_include_deleted.all()
 
 
+class AlgorithmRunAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+class PageAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -533,7 +548,7 @@ admin.site.register(SourceVersion, SourceVersionAdmin)
 admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
-admin.site.register(AlgorithmRun)
+admin.site.register(AlgorithmRun, AlgorithmRunAdmin)
 admin.site.register(FormVersion, FormVersionAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
@@ -545,7 +560,7 @@ admin.site.register(ExportRequest, ExportRequestAdmin)
 admin.site.register(ExportStatus, ExportStatusAdmin)
 admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
-admin.site.register(Page)
+admin.site.register(Page, PageAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(EntityType, EntityTypeAdmin)
 admin.site.register(Entity, EntityAdmin)

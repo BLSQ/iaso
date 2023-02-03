@@ -240,6 +240,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                         }
                     )
                     node_passed_by.add(to_node_key)
+            # Show the nodes still have to be passed through
             for node in c.nodes:  # Node are already sorted
                 if not node.mandatory:
                     continue
@@ -275,16 +276,25 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             reference_date = override_step.created_at
             for section in r:
                 for item in section["items"]:
-                    if reference_date >= item["performed_at"]:
+                    if reference_date >= item.get("performed_at", reference_date):
                         item_order = item["order"]
-                        if is_skipping and item_order >= start_position and item_order < destination_position:
-                            item["skipped"] = True
+                        # strictly greater than start position because the starting step is not skipped
+                        if is_skipping and item_order > start_position and item_order < destination_position:
+                            # Steps cancelled by previous overrides remain cancelled
+                            if not item.get("cancelled", None):
+                                item["skipped"] = True
+                        # lte start_position because the starting step is cancelled as well
                         elif item_order <= start_position and item_order > destination_position and not is_skipping:
-                            item["cancelled"] = True
+                            if item.get("skipped", None):
+                                item["skipped"] = False
+                            # We don't want to show the "greyed out" steps as cancelled as they show the user which steps need to be done
+                            if item.get("step_id", None) is not None:
+                                item["cancelled"] = True
 
         for index, section in enumerate(r):
             mandatory_nodes = list(filter(lambda node: node.mandatory == True, workflow.categories[index].nodes))
             mandatory_nodes_passed = list(filter(lambda x: x.get("mandatory") == True, section["items"]))
+            # TODO filter out items with no step id
             uncancelled_mandatory_nodes_passed = list(
                 filter(lambda i: i.get("cancelled") != True, mandatory_nodes_passed)
             )

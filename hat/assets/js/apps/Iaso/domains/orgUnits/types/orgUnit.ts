@@ -2,6 +2,7 @@ import { ReactNode } from 'react';
 import { UrlParams } from '../../../types/table';
 import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
+import { Instance } from '../../instances/types/instance';
 
 /* eslint-disable camelcase */
 export type ShortOrgUnit = {
@@ -40,6 +41,7 @@ export type OrgUnit = {
     org_unit_type: string;
     search_index?: number;
     reference_instance_id: Nullable<number>;
+    reference_instance: Instance;
 };
 
 export type OrgUnitParams = UrlParams & {

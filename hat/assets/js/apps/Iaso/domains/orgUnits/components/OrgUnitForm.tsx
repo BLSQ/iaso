@@ -1,13 +1,18 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, {
+    useState,
+    useCallback,
+    useEffect,
+    FunctionComponent,
+} from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
-import PropTypes from 'prop-types';
 import { Grid, Box, makeStyles } from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
-import { OrgUnitInfos } from './OrgUnitInfos.tsx';
+import { OrgUnitInfos } from './OrgUnitInfos';
+import { OrgUnit, OrgUnitType, Group } from '../types/orgUnit';
 
 const initialFormState = orgUnit => ({
     id: orgUnit.id,
@@ -29,18 +34,35 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const OrgUnitForm = ({
+type Props = {
+    orgUnit: OrgUnit;
+    orgUnitTypes: OrgUnitType[];
+    groups: Group[];
+    saveOrgUnit: (
+        // eslint-disable-next-line no-unused-vars
+        newOu: OrgUnit,
+        // eslint-disable-next-line no-unused-vars
+        onSuccess: (unit: OrgUnit) => void,
+        // eslint-disable-next-line no-unused-vars
+        onError: (error: any) => void,
+    ) => void;
+    params: Record<string, string>;
+    onResetOrgUnit: () => void;
+    isFetchingOrgUnitTypes: boolean;
+    isFetchingGroups: boolean;
+};
+
+export const OrgUnitForm: FunctionComponent<Props> = ({
     orgUnit,
     orgUnitTypes,
     groups,
     saveOrgUnit,
     params,
-    baseUrl,
     onResetOrgUnit,
     isFetchingOrgUnitTypes,
     isFetchingGroups,
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
     const [orgUnitModified, setOrgUnitModified] = useState(false);
@@ -50,7 +72,7 @@ export const OrgUnitForm = ({
         );
         newOrgUnit.parent_id = newOrgUnit.parent?.id;
         saveOrgUnit(
-            newOrgUnit,
+            newOrgUnit as OrgUnit,
             savedOrgUnit => {
                 setOrgUnitModified(false);
                 setFormState(initialFormState(savedOrgUnit));
@@ -123,7 +145,6 @@ export const OrgUnitForm = ({
             >
                 <OrgUnitInfos
                     params={params}
-                    baseUrl={baseUrl}
                     orgUnitState={formState}
                     orgUnit={orgUnit}
                     orgUnitTypes={orgUnitTypes}
@@ -141,16 +162,4 @@ export const OrgUnitForm = ({
             </Grid>
         </Box>
     );
-};
-
-OrgUnitForm.propTypes = {
-    orgUnit: PropTypes.object.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
-    groups: PropTypes.array.isRequired,
-    saveOrgUnit: PropTypes.func.isRequired,
-    onResetOrgUnit: PropTypes.func.isRequired,
-    params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string.isRequired,
-    isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
-    isFetchingGroups: PropTypes.bool.isRequired,
 };

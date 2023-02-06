@@ -61,6 +61,7 @@ const useStyles = makeStyles(theme => ({
         color: 'inherit',
         textDecoration: 'none',
         display: 'flex',
+        '&:hover': { textDecoration: 'none' },
     },
 }));
 
@@ -174,20 +175,20 @@ const OrgUnitPopupComponent = ({
                                         confirm={() => confirmDialog()}
                                     />
                                 )}
-                                <Button
-                                    className={classes.marginLeft}
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
+                                <Link
+                                    target="_blank"
+                                    to={`${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
+                                    className={classes.linkButton}
                                 >
-                                    <Link
-                                        target="_blank"
-                                        to={`${baseUrls.orgUnitDetails}/orgUnitId/${activeOrgUnit.id}/tab/infos`}
-                                        className={classes.linkButton}
+                                    <Button
+                                        className={classes.marginLeft}
+                                        variant="outlined"
+                                        color="primary"
+                                        size="small"
                                     >
                                         <FormattedMessage {...MESSAGES.see} />
-                                    </Link>
-                                </Button>
+                                    </Button>
+                                </Link>
                             </Grid>
                         </Box>
                     </CardContent>

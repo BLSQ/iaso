@@ -9,13 +9,20 @@ from iaso.utils.powerbi import get_powerbi_report_token
 from django.http import HttpResponse, JsonResponse
 
 
-def load_powerbi_config_for_page(page):
+def load_powerbi_config_for_page(page: Page):
     group_id = page.powerbi_group_id
     report_id = page.powerbi_report_id
     filters = page.powerbi_filters
+    language = page.powerbi_language
 
     report_access_token = get_powerbi_report_token(group_id, report_id)
-    config = {"token": report_access_token, "report_id": report_id, group_id: "group_id", "filters": filters}
+    config = {
+        "token": report_access_token,
+        "report_id": report_id,
+        "group_id": group_id,
+        "language": language,
+        "filters": filters,
+    }
     return config
 
 

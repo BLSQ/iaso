@@ -283,6 +283,17 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                         if is_skipping and item_order > start_position and item_order < destination_position:
                             item["skipped"] = True
                             item["cancelled"] = False
+                        # This is an edge case for when 2 steps have the same order (ie: have to done at the same time,
+                        # but with no determined priority, eg: UNICEF Co sends budegt and WHO CO sends budget)
+                        # We then add a check on the label.
+                        elif (
+                            is_skipping
+                            and item_order >= start_position
+                            and item_order < destination_position
+                            and item["label"] != start_node.label
+                        ):
+                            item["skipped"] = True
+                            item["cancelled"] = False
                         elif item_order <= start_position and item_order > destination_position and not is_skipping:
                             if item.get("skipped", False) and not item.get("step_id", None):
                                 item["cancelled"] = False

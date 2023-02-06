@@ -19,7 +19,7 @@ export const useGetOrgUnitParentLocations = ({
     orgUnitParentIds,
     baseOrgunitType,
 }: Props): UseQueryResult<OrgUnitShape[], Error> => {
-    const params = {
+    const params: Record<string, any> = {
         validation_status: 'VALID',
         asLocation: true,
         limit: 5000,
@@ -31,7 +31,7 @@ export const useGetOrgUnitParentLocations = ({
         orgUnitTypeId: baseOrgunitType,
     };
 
-    const url = makeUrlWithParams('/api/orgunits', params);
+    const url = makeUrlWithParams('/api/orgunits/', params);
 
     return useSnackQuery(
         ['geo_json', params, baseOrgunitType],

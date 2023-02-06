@@ -276,7 +276,9 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             reference_date = override_step.created_at
             for section in r:
                 for item in section["items"]:
-                    if reference_date >= item.get("performed_at", reference_date):# I think using reference date wold create problems with overrides that don't happen on the same day
+                    if reference_date >= item.get(
+                        "performed_at", reference_date
+                    ):  # I think using reference date wold create problems with overrides that don't happen on the same day
                         item_order = item["order"]
                         if is_skipping and item_order > start_position and item_order < destination_position:
                             item["skipped"] = True
@@ -284,21 +286,21 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                         elif item_order <= start_position and item_order > destination_position and not is_skipping:
                             if item.get("skipped", False) and not item.get("step_id", None):
                                 item["cancelled"] = False
-                                item["skipped"]= False
+                                item["skipped"] = False
                             else:
-                                item["skipped"]= False
+                                item["skipped"] = False
                                 item["cancelled"] = True
 
         for index, section in enumerate(r):
             mandatory_nodes = list(filter(lambda node: node.mandatory == True, workflow.categories[index].nodes))
             mandatory_nodes_passed = list(filter(lambda x: x.get("mandatory") == True, section["items"]))
-            uncancelled_mandatory_nodes_passed =   uncancelled_mandatory_nodes_passed = list(
+            uncancelled_mandatory_nodes_passed = uncancelled_mandatory_nodes_passed = list(
                 filter(
-                    lambda i: i.get("step_id", None) or i.get("skipped", False) ,
+                    lambda i: i.get("step_id", None) or i.get("skipped", False),
                     list(filter(lambda i: i.get("cancelled", False) != True, mandatory_nodes_passed)),
                 )
             )
-          
+
             uncancelled_mandatory_nodes_labels = []
             for uncancelled_node in uncancelled_mandatory_nodes_passed:
                 uncancelled_mandatory_nodes_labels.append(uncancelled_node["label"])

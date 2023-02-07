@@ -1,4 +1,6 @@
-const styles = theme => ({
+import { makeStyles } from '@material-ui/core';
+
+export const useStyles = makeStyles(theme => ({
     root: {
         width: 400,
         overflow: 'hidden',
@@ -32,6 +34,7 @@ const styles = theme => ({
     },
     placeholder: {
         height: 15,
+        // @ts-ignore
         backgroundColor: theme.palette.ligthGray.main,
         borderRadius: 5,
         marginRight: theme.spacing(1),
@@ -41,6 +44,4 @@ const styles = theme => ({
         width: '100%',
         padding: 0,
     },
-});
-
-export { styles };
+}));

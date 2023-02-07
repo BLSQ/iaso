@@ -530,6 +530,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.initialPeriodError',
         defaultMessage: 'Current period on submission is invalid: {period}',
     },
+    disableColumnSelectionMessage: {
+        id: 'iaso.instance.disableColumnSelectionMessage',
+        defaultMessage: 'Apply search to be able to select visible columns',
+    },
 });
 
 export default MESSAGES;

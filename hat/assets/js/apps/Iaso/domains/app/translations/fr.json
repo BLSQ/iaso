@@ -17,6 +17,7 @@
     "iaso.algo.addRun": "Exécuter un algorithme",
     "iaso.archived.title": "Archives",
     "iaso.area": "Aire de santé",
+    "iaso.instance.disableColumnSelectionMessage": "Lancer la recherche pour pouvoir sélectionner les colonnes visibles",
     "iaso.assignment.alreadyAssigned": "Déjà assigné",
     "iaso.assignment.alreadyAssignedTo": "Déjà assigné à",
     "iaso.assignment.assignationsCount": "Nombre d'assignations",

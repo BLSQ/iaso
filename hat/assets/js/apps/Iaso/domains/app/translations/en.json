@@ -238,6 +238,7 @@
     "iaso.instance.dialog.lockOpened": "This lock has been opened",
     "iaso.instance.dialog.lockSuccess": "Lock added on the submission",
     "iaso.instance.dialog.unlockedWarning": "Are you sure you want to unlock the submission ?",
+    "iaso.instance.disableColumnSelectionMessage": "Apply search to be able to select visible columns",
     "iaso.instance.duplicate": "Compare submissions",
     "iaso.instance.editGpsFromInstanceWarning": "This operation can still be undone",
     "iaso.instance.error": "Cannot find a submission with this Id",

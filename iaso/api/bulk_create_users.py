@@ -38,6 +38,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr,"iaso_submissions, iaso_forms"
 
+    Email is not mandatory, but you must keep the email column.
+
     You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
 
     The permissions are :
@@ -77,6 +79,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        user_created_count = 0
         if request.FILES:
             user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
             try:
@@ -95,15 +98,18 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             for row in reader:
                 org_units_list = []
                 if i > 0:
-                    try:
-                        validators.validate_email(row[csv_indexes.index("email")])
-                    except ValidationError:
-                        raise serializers.ValidationError(
-                            {
-                                "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
-                                "again.".format(i)
-                            }
-                        )
+                    email_address = True if row[csv_indexes.index("email")] else None
+                    if email_address:
+                        try:
+                            validators.validate_email(row[csv_indexes.index("email")])
+                        except ValidationError:
+                            raise serializers.ValidationError(
+                                {
+                                    "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
+                                             "again.".format(i)
+                                }
+                            )
+
                     try:
                         try:
                             user = User.objects.create(
@@ -214,9 +220,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)
                     profile.save()
+                    user_created_count += 1
                 else:
                     csv_indexes = row
                 i += 1
-        csv_files = BulkCreateUserCsvFile.objects.none()
-        serializer = BulkCreateUserSerializer(csv_files, many=True)
-        return Response(serializer.data)
+        response = {"Accounts created": user_created_count}
+        return Response(response)

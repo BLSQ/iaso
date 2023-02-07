@@ -11,6 +11,9 @@ from django.utils.translation import gettext as _
 from django.core.mail import send_mail
 from django.conf import settings
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+
+from iaso.api.common import ModelViewSet
+from iaso.api.pages import remove_deleted_users_from_page
 from iaso.models import Profile, OrgUnit
 from django.utils.http import urlsafe_base64_encode
 from django.contrib.auth.models import Permission
@@ -28,7 +31,7 @@ class HasProfilePermission(permissions.BasePermission):
         return True
 
 
-class ProfilesViewSet(viewsets.ViewSet):
+class ProfilesViewSet(ModelViewSet):
     """Profiles API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_users" permission for write permission
@@ -60,7 +63,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         return queryset
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "user__username").split(",")
@@ -318,6 +321,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.is_active = False
         user.save()
         profile.save()
+        remove_deleted_users_from_page(user)
         return Response(True)
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,

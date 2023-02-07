@@ -33,5 +33,15 @@ class PagesViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         order = self.request.query_params.get("order", "created_at").split(",")
-        users = User.objects.filter(iaso_profile__account=user.iaso_profile.account)
+        users = User.objects.filter(iaso_profile__account=user.iaso_profile.account, is_active=True)
         return Page.objects.filter(users__in=users).order_by(*order).distinct()
+
+
+def remove_deleted_users_from_page(user):
+    pages = Page.objects.filter(iaso_profile__account=user.iaso_profile.account)
+    print(pages)
+    for page in pages:
+        print(page)
+        page.users.remove(user)
+        page.save()
+        print(page.users.all())

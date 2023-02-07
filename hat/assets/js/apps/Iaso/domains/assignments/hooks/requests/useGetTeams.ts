@@ -10,7 +10,9 @@ import { Teams, DropdownTeamsOptions, Team } from '../../types/team';
 import { getColor } from '../../constants/colors';
 
 const getTeams = async (ancestor: number): Promise<Teams> => {
-    const url = makeUrlWithParams('/api/microplanning/teams', { ancestor });
+    const url = makeUrlWithParams('/api/microplanning/teams/', {
+        ancestor: `${ancestor}`,
+    });
     return getRequest(url) as Promise<Teams>;
 };
 

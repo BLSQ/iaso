@@ -11,6 +11,9 @@ from django_json_widget.widgets import JSONEditorWidget  # type: ignore
 
 
 class IasoJSONEditorWidget(JSONEditorWidget):
+    class Media:
+        css = {"all": ("css/admin-json-widget.css",)}
+
     def __init__(self, attrs=None, mode="code", options=None, width=None, height=None):
         if height == None:
             height = "400px"

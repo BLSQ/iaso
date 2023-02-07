@@ -41,7 +41,7 @@ export type OrgunitType = {
     projects: Project[];
 };
 
-type OrgunitTypes = OrgunitType[];
+export type OrgunitTypes = OrgunitType[];
 
 export type OrgunitTypesApi = {
     orgUnitTypes: OrgunitTypes;

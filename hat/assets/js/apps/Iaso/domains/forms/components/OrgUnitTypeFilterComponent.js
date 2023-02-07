@@ -51,10 +51,7 @@ const OrgUnitTypeFilterComponent = props => {
     const [orgUnitTypesList, setOrgUnitTypesList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const updateOrgUnitTypesSelected = (
-        newOrgUnitTypesSelected,
-        fitToBoundsAction = true,
-    ) => {
+    const updateOrgUnitTypesSelected = newOrgUnitTypesSelected => {
         const promisesArray = [];
         const oldOrgUnitsTypes = [];
         newOrgUnitTypesSelected.forEach(ot => {
@@ -75,9 +72,6 @@ const OrgUnitTypeFilterComponent = props => {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
             setOrgUnitTypesSelected(orgUnitsTypesWithData);
             setIsLoading(false);
-            if (fitToBoundsAction) {
-                fitToBounds();
-            }
         });
     };
 

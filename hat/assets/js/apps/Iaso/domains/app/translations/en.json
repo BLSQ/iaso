@@ -703,6 +703,7 @@
     "iaso.permissions.teams": "Teams",
     "iaso.permissions.update_submission": "Update submissions",
     "iaso.permissions.users": "Users",
+    "iaso.permissions.workflows": "Workflows",
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Duplicate planning",
     "iaso.plannings.label.selectOrgUnit": "Please select org unit",

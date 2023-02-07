@@ -106,7 +106,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             raise serializers.ValidationError(
                                 {
                                     "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
-                                             "again.".format(i)
+                                    "again.".format(i)
                                 }
                             )
 

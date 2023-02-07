@@ -30,6 +30,24 @@ type Option = {
     index?: number;
 };
 
+type TooltipProps = {
+    option: Option;
+};
+
+const TooltipTitle: FunctionComponent<TooltipProps> = ({ option }) => {
+    return (
+        <Box>
+            {option.label ? (
+                <>
+                    {option.label} -<br />
+                </>
+            ) : (
+                ''
+            )}{' '}
+            -{option.key}
+        </Box>
+    );
+};
 type Props = {
     options: Option[];
     setOptions: React.Dispatch<React.SetStateAction<Option[]>>;
@@ -184,19 +202,9 @@ export const ColumnsSelectDrawer: FunctionComponent<Props> = ({
                                                             classes.switch
                                                         }
                                                         toolTipTitle={
-                                                            <Box>
-                                                                {o.label ? (
-                                                                    <>
-                                                                        {
-                                                                            o.label
-                                                                        }{' '}
-                                                                        -<br />
-                                                                    </>
-                                                                ) : (
-                                                                    ''
-                                                                )}{' '}
-                                                                -{o.key}
-                                                            </Box>
+                                                            <TooltipTitle
+                                                                option={o}
+                                                            />
                                                         }
                                                         primaryText={
                                                             o.label

@@ -76,9 +76,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         () => (params.formIds ? params.formIds.split(',') : []),
         [params.formIds],
     );
-    const formId = useMemo(() => {
-        return formIds?.length === 1 ? parseInt(formIds[0], 10) : undefined;
-    }, [formIds]);
+    const formId = formIds?.length === 1 ? parseInt(formIds[0], 10) : undefined;
     const dispatch = useDispatch();
     const { possibleFields } = useGetPossibleFields(formId);
     const getInstancesVisibleColumns = useGetInstancesVisibleColumns({

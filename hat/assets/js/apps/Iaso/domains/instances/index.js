@@ -5,9 +5,7 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import {
-    AddButton as AddButtonComponent,
     commonStyles,
-    makeFullModal,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
@@ -34,7 +32,7 @@ import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
 import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import { CreateReAssignDialogComponent } from './components/CreateReAssignDialogComponent.tsx';
+import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
 
 import { baseUrls } from '../../constants/urls';
 
@@ -67,10 +65,7 @@ const Instances = ({ params }) => {
     const [tab, setTab] = useState(params.tab ?? 'list');
 
     const [formIds, setFormIds] = useState(params.formIds?.split(','));
-    const formId = useMemo(
-        () => (formIds?.length === 1 ? formIds[0] : undefined),
-        [formIds],
-    );
+    const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
     const { possibleFields, isLoading: isLoadingPossibleFields } =
         useGetPossibleFields(formId);
@@ -148,11 +143,7 @@ const Instances = ({ params }) => {
         },
         [dispatch],
     );
-
-    const CreateReAssignDialog = useMemo(
-        () => makeFullModal(CreateReAssignDialogComponent, AddButtonComponent),
-        [],
-    );
+    const isSingleFormSearch = params.formIds?.split(',').length === 1;
     return (
         <section className={classes.relativeContainer}>
             <TopBar
@@ -175,8 +166,7 @@ const Instances = ({ params }) => {
                     tableColumns={tableColumns}
                     tab={tab}
                 />
-                {/* Only display create and export buttons if a single form search has been performed */}
-                {tab === 'list' && params.formIds?.split(',').length === 1 && (
+                {tab === 'list' && isSingleFormSearch && (
                     <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
                             <Box
@@ -219,43 +209,41 @@ const Instances = ({ params }) => {
                     </Grid>
                 )}
                 {tab === 'list' && tableColumns.length > 0 && (
-                    <>
-                        <TableWithDeepLink
-                            data={data?.instances ?? []}
-                            pages={data?.pages}
-                            count={data?.count}
-                            params={params}
-                            columns={tableColumns}
-                            baseUrl={baseUrl}
-                            multiSelect
-                            defaultSorted={[{ id: 'updated_at', desc: true }]}
-                            selectionActions={getSelectionActions(
-                                formatMessage,
-                                getFilters(params),
-                                () => refetchInstances(),
-                                params.showDeleted === 'true',
-                                classes,
-                            )}
-                            selection={selection}
-                            setTableSelection={(
-                                selectionType,
-                                items,
-                                totalCount,
-                            ) => {
-                                setSelection(
-                                    setTableSelection(
-                                        selection,
-                                        selectionType,
-                                        items,
-                                        totalCount,
-                                    ),
-                                );
-                            }}
-                            extraProps={{
-                                loading: fetchingList,
-                            }}
-                        />
-                    </>
+                    <TableWithDeepLink
+                        data={data?.instances ?? []}
+                        pages={data?.pages}
+                        count={data?.count}
+                        params={params}
+                        columns={tableColumns}
+                        baseUrl={baseUrl}
+                        multiSelect
+                        defaultSorted={[{ id: 'updated_at', desc: true }]}
+                        selectionActions={getSelectionActions(
+                            formatMessage,
+                            getFilters(params),
+                            () => refetchInstances(),
+                            params.showDeleted === 'true',
+                            classes,
+                        )}
+                        selection={selection}
+                        setTableSelection={(
+                            selectionType,
+                            items,
+                            totalCount,
+                        ) => {
+                            setSelection(
+                                setTableSelection(
+                                    selection,
+                                    selectionType,
+                                    items,
+                                    totalCount,
+                                ),
+                            );
+                        }}
+                        extraProps={{
+                            loading: fetchingList,
+                        }}
+                    />
                 )}
                 {tab === 'map' && (
                     <div className={classes.containerMarginNeg}>

@@ -1,5 +1,10 @@
 /* eslint-disable camelcase */
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, {
+    FunctionComponent,
+    ReactElement,
+    useMemo,
+    useCallback,
+} from 'react';
 import { Link } from 'react-router';
 import moment from 'moment';
 import { Tooltip } from '@material-ui/core';
@@ -151,66 +156,77 @@ export const useGetInstancesColumns = (
 ): ((visibleColumns: VisibleColumn[]) => Column[]) => {
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
-    const metasColumns = [...instancesTableColumns(formatMessage)];
+    const metasColumns = useMemo(
+        () => [...instancesTableColumns(formatMessage)],
+        [formatMessage],
+    );
     if (showDeleted) {
         metasColumns.shift();
     }
 
-    const getInstancesColumns = (visibleColumns: VisibleColumn[]) => {
-        let tableColumns: Column[] = [];
-        metasColumns.forEach(c => {
-            const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);
-            if ((metaColumn && metaColumn.active) || c.accessor === 'actions') {
-                tableColumns.push(c);
-            }
-        });
-
-        const childrenArray: Column[] = [];
-        visibleColumns
-            .filter(c => !c.meta)
-            .forEach(c => {
-                if (c.active) {
-                    childrenArray.push({
-                        class: 'small',
-                        sortable: false,
-                        accessor: c.key,
-                        Header: (
-                            <Tooltip
-                                title={formatMessage(
-                                    MESSAGES.instanceHeaderTooltip,
-                                    {
-                                        label: c.label,
-                                        key: c.key,
-                                    },
-                                )}
-                            >
-                                <span>
-                                    {c.label?.trim()
-                                        ? truncateText(c.label, 25)
-                                        : c.key}
-                                </span>
-                            </Tooltip>
-                        ),
-                        Cell: settings => renderValue(settings, c),
-                    });
+    const getInstancesColumns = useCallback(
+        (visibleColumns: VisibleColumn[]) => {
+            let tableColumns: Column[] = [];
+            metasColumns.forEach(c => {
+                const metaColumn = visibleColumns.find(
+                    vc => vc.key === c.accessor,
+                );
+                if (
+                    (metaColumn && metaColumn.active) ||
+                    c.accessor === 'actions'
+                ) {
+                    tableColumns.push(c);
                 }
             });
-        tableColumns = tableColumns.concat(childrenArray);
-        tableColumns.push({
-            Header: formatMessage(MESSAGES.actions),
-            accessor: 'actions',
-            resizable: false,
-            sortable: false,
-            width: 150,
-            Cell: settings => (
-                <ActionTableColumnComponent
-                    settings={settings}
-                    user={currentUser}
-                />
-            ),
-        });
-        return tableColumns;
-    };
+
+            const childrenArray: Column[] = [];
+            visibleColumns
+                .filter(c => !c.meta)
+                .forEach(c => {
+                    if (c.active) {
+                        childrenArray.push({
+                            class: 'small',
+                            sortable: false,
+                            accessor: c.key,
+                            Header: (
+                                <Tooltip
+                                    title={formatMessage(
+                                        MESSAGES.instanceHeaderTooltip,
+                                        {
+                                            label: c.label,
+                                            key: c.key,
+                                        },
+                                    )}
+                                >
+                                    <span>
+                                        {c.label?.trim()
+                                            ? truncateText(c.label, 25)
+                                            : c.key}
+                                    </span>
+                                </Tooltip>
+                            ),
+                            Cell: settings => renderValue(settings, c),
+                        });
+                    }
+                });
+            tableColumns = tableColumns.concat(childrenArray);
+            tableColumns.push({
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                resizable: false,
+                sortable: false,
+                width: 150,
+                Cell: settings => (
+                    <ActionTableColumnComponent
+                        settings={settings}
+                        user={currentUser}
+                    />
+                ),
+            });
+            return tableColumns;
+        },
+        [currentUser, formatMessage, metasColumns],
+    );
     return getInstancesColumns;
 };
 
@@ -239,40 +255,43 @@ export const useGetInstancesVisibleColumns = ({
     possibleFields?: PossibleField[],
 ) => VisibleColumn[]) => {
     const { formatMessage } = useSafeIntl();
-    const activeOrders: string[] = (order || defaultOrder).split(',');
-    const getInstancesVisibleColumns = (
-        columns?: string,
-        possibleFields?: PossibleField[],
-    ) => {
-        const columnsNames: string[] = columns ? columns.split(',') : [];
-        const metasColumns: PossibleColumn[] = [
-            ...instancesTableColumns(formatMessage).filter(
-                c => c.accessor !== 'actions',
-            ),
-        ];
-        const newColumns: VisibleColumn[] = metasColumns.map(c => ({
-            key: c.accessor,
-            label: c.Header,
-            active: columnsNames.includes(c.accessor),
-            meta: true,
-            disabled:
-                activeOrders.indexOf(c.accessor) !== -1 ||
-                activeOrders.indexOf(`-${c.accessor}`) !== -1,
-        }));
+    const activeOrders: string[] = useMemo(
+        () => (order || defaultOrder).split(','),
+        [defaultOrder, order],
+    );
+    const getInstancesVisibleColumns = useCallback(
+        (columns?: string, possibleFields?: PossibleField[]) => {
+            const columnsNames: string[] = columns ? columns.split(',') : [];
+            const metasColumns: PossibleColumn[] = [
+                ...instancesTableColumns(formatMessage).filter(
+                    c => c.accessor !== 'actions',
+                ),
+            ];
+            const newColumns: VisibleColumn[] = metasColumns.map(c => ({
+                key: c.accessor,
+                label: c.Header,
+                active: columnsNames.includes(c.accessor),
+                meta: true,
+                disabled:
+                    activeOrders.indexOf(c.accessor) !== -1 ||
+                    activeOrders.indexOf(`-${c.accessor}`) !== -1,
+            }));
 
-        if (possibleFields) {
-            possibleFields?.forEach(field => {
-                const label = formatLabel(field);
-                newColumns.push({
-                    key: field.name,
-                    label,
-                    active: columnsNames.includes(field.name),
-                    disabled: false,
+            if (possibleFields) {
+                possibleFields?.forEach(field => {
+                    const label = formatLabel(field);
+                    newColumns.push({
+                        key: field.name,
+                        label,
+                        active: columnsNames.includes(field.name),
+                        disabled: false,
+                    });
                 });
-            });
-        }
-        return newColumns;
-    };
+            }
+            return newColumns;
+        },
+        [activeOrders, formatMessage],
+    );
     return getInstancesVisibleColumns;
 };
 

@@ -80,7 +80,6 @@ export const useColumns = ({
         const assignationColumn: Column = {
             Header: formatMessage(MESSAGES.assignment),
             id: 'assignment',
-            sortable: false,
             Cell: settings => {
                 return (
                     <UsersTeamsCell

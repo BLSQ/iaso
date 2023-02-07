@@ -282,7 +282,12 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                         "performed_at", reference_date
                     ):  # I think using reference date wold create problems with overrides that don't happen on the same day
                         item_order = item["order"]
-                        if is_skipping and item_order > start_position and item_order < destination_position and not item.get("step_id", None):
+                        if (
+                            is_skipping
+                            and item_order > start_position
+                            and item_order < destination_position
+                            and not item.get("step_id", None)
+                        ):
                             item["skipped"] = True
                             item["cancelled"] = False
                         # This is an edge case for when 2 steps have the same order (ie: have to done at the same time,
@@ -292,7 +297,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                             is_skipping
                             and item_order >= start_position
                             and item_order < destination_position
-                            and item["label"] != start_node.label 
+                            and item["label"] != start_node.label
                             and not item.get("step_id", None)
                         ):
                             item["skipped"] = True

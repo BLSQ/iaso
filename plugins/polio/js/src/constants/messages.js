@@ -2018,6 +2018,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.newBudgetState',
         defaultMessage: 'New budget state',
     },
+    TO_SUBMIT: {
+        id: 'iaso.polio.form.label.TO_SUBMIT',
+        defaultMessage: 'To submit',
+    },
+    SUBMITTED: {
+        id: 'iaso.polio.form.label.SUBMITTED',
+        defaultMessage: 'Submitted',
+    },
+    REVIEWED: {
+        id: 'iaso.polio.form.label.REVIEWED',
+        defaultMessage: 'Reviewed by RRT',
+    },
+    APPROVED: {
+        id: 'iaso.polio.form.label.APPROVED',
+        defaultMessage: 'Approved',
+    },
 });
 
 export default MESSAGES;

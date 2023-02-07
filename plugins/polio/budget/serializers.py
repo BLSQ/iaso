@@ -268,9 +268,11 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             start_node_key = override_step.node_key_from
             destination_node_key = override_step.node_key_to
             # TODO check if list contains one and only one element
-            start_node = [node for node in all_nodes if node.key == start_node_key][0]
+            start_node_list = [node for node in all_nodes if node.key == start_node_key]
+            start_node = start_node_list[0]
             start_position = start_node.order
-            destination_node = [node for node in all_nodes if node.key == destination_node_key][0]
+            destination_node_list = [node for node in all_nodes if node.key == destination_node_key]
+            destination_node = destination_node_list[0]
             destination_position = destination_node.order
             is_skipping = destination_position >= start_position
             reference_date = override_step.created_at
@@ -280,17 +282,23 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
                         "performed_at", reference_date
                     ):  # I think using reference date wold create problems with overrides that don't happen on the same day
                         item_order = item["order"]
-                        if is_skipping and item_order > start_position and item_order < destination_position:
+                        if (
+                            is_skipping
+                            and item_order > start_position
+                            and item_order < destination_position
+                            and not item.get("step_id", None)
+                        ):
                             item["skipped"] = True
                             item["cancelled"] = False
                         # This is an edge case for when 2 steps have the same order (ie: have to done at the same time,
-                        # but with no determined priority, eg: UNICEF Co sends budegt and WHO CO sends budget)
+                        # but with no determined priority, eg: UNICEF Co sends budget and WHO CO sends budget)
                         # We then add a check on the label.
                         elif (
                             is_skipping
                             and item_order >= start_position
                             and item_order < destination_position
                             and item["label"] != start_node.label
+                            and not item.get("step_id", None)
                         ):
                             item["skipped"] = True
                             item["cancelled"] = False

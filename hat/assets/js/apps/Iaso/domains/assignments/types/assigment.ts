@@ -9,6 +9,7 @@ export type AssignmentParams = {
     parentPicking?: string;
     tab?: string;
     order?: string;
+    search?: string;
 };
 
 type OrgUnitDetails = {

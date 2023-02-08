@@ -2,10 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Paper } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
-import {
-    // @ts-ignore
-    Table,
-} from 'bluesquare-components';
+import { Table } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
 import {
@@ -19,6 +16,8 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
+
+import { AssignmentsOrgUnitFilters } from './AssignmentsOrgUnitFilters';
 
 type Order = {
     id: string;
@@ -79,6 +78,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     return (
         <Paper>
             <Box maxHeight="70vh" overflow="auto">
+                <AssignmentsOrgUnitFilters params={params} />
                 <Table
                     data={orgUnits}
                     showPagination={false}

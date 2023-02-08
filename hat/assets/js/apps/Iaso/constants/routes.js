@@ -867,6 +867,10 @@ export const assignmentsPath = {
             isRequired: false,
             key: 'order',
         },
+        {
+            isRequired: false,
+            key: 'search',
+        },
     ],
 };
 export const teamsPath = {

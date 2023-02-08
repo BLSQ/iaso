@@ -115,7 +115,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.apply',
     },
     searchOrgUnit: {
-        defaultMessage: 'Search a org unit',
+        defaultMessage: 'Search an org unit',
         id: 'iaso.assignment.searchOrgUnit',
     },
 });

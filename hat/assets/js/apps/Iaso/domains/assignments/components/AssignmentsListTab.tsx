@@ -17,8 +17,6 @@ import { Profile } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
 
-import { AssignmentsOrgUnitFilters } from './AssignmentsOrgUnitFilters';
-
 type Order = {
     id: string;
     desc: boolean;
@@ -78,7 +76,6 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     return (
         <Paper>
             <Box maxHeight="70vh" overflow="auto">
-                <AssignmentsOrgUnitFilters params={params} />
                 <Table
                     data={orgUnits}
                     showPagination={false}

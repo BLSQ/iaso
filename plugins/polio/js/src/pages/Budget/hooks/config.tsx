@@ -173,7 +173,7 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.created_at),
+                Header: formatMessage(MESSAGES.date),
                 id: 'created_at',
                 accessor: 'created_at',
                 sortable: false,

@@ -65,8 +65,6 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
 
     const apiParams = useBudgetParams(params);
 
-    // const { data: campaigns, isFetching: isFetchingCampaigns } =
-    //     useGetCampaigns(apiParams).query;
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
     const columns = useBudgetColumns();
     const theme = useTheme();

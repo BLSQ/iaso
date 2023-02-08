@@ -155,7 +155,7 @@ const goToPage = () => {
         });
     });
 
-    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
+    cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     });
     cy.intercept(

@@ -206,20 +206,25 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // onload, if searchActive is true => set launch search
     useEffect(() => {
         if (isSearchActive) {
-            handleSearch();
+            const cachedOrgUnits = queryClient.getQueryData(['orgunits']);
+            const cachedLocations = queryClient.getQueryData([
+                'orgunitslocations',
+            ]);
+            if (!cachedOrgUnits || !cachedLocations) {
+                handleSearch();
+            }
         }
-        return () => {
-            queryClient
-                .getQueryCache()
-                .findAll(['orgunits'])
-                .forEach(query => query.setData(undefined));
-            queryClient
-                .getQueryCache()
-                .findAll(['orgunitslocations'])
-                .forEach(query => query.setData(undefined));
-        };
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        // return () => {
+        // queryClient
+        //     .getQueryCache()
+        //     .findAll(['orgunits'])
+        //     .forEach(query => query.setData(undefined));
+        // queryClient
+        //     .getQueryCache()
+        //     .findAll(['orgunitslocations'])
+        //     .forEach(query => query.setData(undefined));
+        // };
+    }, [handleSearch, isSearchActive, queryClient]);
 
     // trigger search on order, page size and page
     useSkipEffectOnMount(() => {
@@ -263,6 +268,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     counts={(!isLoading && orgUnitsData?.counts) || []}
                     setDeletedTab={setDeletedTab}
                 />
+
                 {tab === 'list' &&
                     orgUnitsData &&
                     orgUnitsData?.orgunits?.length > 0 && (

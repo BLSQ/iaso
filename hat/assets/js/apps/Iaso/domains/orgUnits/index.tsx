@@ -203,7 +203,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     );
     // TABS
 
-    // onload, if searchActive is true => set launch search
+    // onload, if searchActive is true and cache empty => set launch search
     useEffect(() => {
         if (isSearchActive) {
             const cachedOrgUnits = queryClient.getQueryData(['orgunits']);
@@ -214,16 +214,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                 handleSearch();
             }
         }
-        // return () => {
-        // queryClient
-        //     .getQueryCache()
-        //     .findAll(['orgunits'])
-        //     .forEach(query => query.setData(undefined));
-        // queryClient
-        //     .getQueryCache()
-        //     .findAll(['orgunitslocations'])
-        //     .forEach(query => query.setData(undefined));
-        // };
     }, [handleSearch, isSearchActive, queryClient]);
 
     // trigger search on order, page size and page

@@ -18,6 +18,7 @@ import {
     Typography,
     Tooltip,
     Box,
+    makeStyles,
 } from '@material-ui/core';
 
 import { FormattedMessage } from 'react-intl';
@@ -27,10 +28,15 @@ import {
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
+import classNames from 'classnames';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
-import { BaseInfoForm } from '../forms/BaseInfoForm';
+import {
+    BaseInfoForm,
+    baseInfoFormFields,
+    compareValues,
+} from '../forms/BaseInfoForm';
 import { DetectionForm } from '../forms/DetectionForm';
 import { RiskAssessmentForm } from '../forms/RiskAssessmentForm';
 import { ScopeForm } from '../forms/ScopeForm.tsx';
@@ -49,6 +55,17 @@ import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
 
+const useTabErrorStyles = makeStyles(theme => {
+    return {
+        tabError: {
+            color: theme.palette.error.main,
+        },
+        pointer: {
+            pointerEvents: 'auto',
+        },
+    };
+});
+
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
     const { data: selectedCampaign, isFetching } = useGetCampaign(
@@ -64,6 +81,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { formatMessage } = useSafeIntl();
 
     const classes = useStyles();
+    const tabErrorClasses = useTabErrorStyles();
 
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
@@ -113,6 +131,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             {
                 title: formatMessage(MESSAGES.baseInfo),
                 form: BaseInfoForm,
+                hasTabError: compareValues(baseInfoFormFields, formik.errors),
             },
             {
                 title: formatMessage(MESSAGES.detection),
@@ -150,6 +169,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         formatMessage,
         formik.values.initial_org_unit,
         formik.values.rounds.length,
+        formik.errors,
     ]);
 
     const [selectedTab, setSelectedTab] = useState(0);
@@ -226,7 +246,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     variant="scrollable"
                     scrollButtons="auto"
                 >
-                    {tabs.map(({ title, disabled }) => {
+                    {tabs.map(({ title, disabled, hasTabError }) => {
                         if (
                             disabled &&
                             title === formatMessage(MESSAGES.scope)
@@ -234,7 +254,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                             return (
                                 <Tab
                                     key={title}
-                                    style={{ pointerEvents: 'auto' }}
+                                    className={classNames(
+                                        tabErrorClasses.pointer,
+                                        hasTabError && tabErrorClasses.tabError,
+                                    )}
                                     label={
                                         <Tooltip
                                             key={title}

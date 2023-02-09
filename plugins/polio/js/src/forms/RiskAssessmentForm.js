@@ -12,6 +12,18 @@ import {
     NumberInput,
 } from '../components/Inputs';
 
+export const riskAssessmentFormFields = [
+    'risk_assessment_status',
+    'risk_assessment_responsible',
+    'verification_score',
+    'investigation_at',
+    'three_level_call_at',
+    'risk_assessment_first_draft_submitted_at',
+    'risk_assessment_rrt_oprtt_approval_at',
+    'ag_nopv_group_met_at',
+    'dg_authorized_at',
+];
+
 export const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();

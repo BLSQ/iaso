@@ -18,6 +18,7 @@ import {
     Typography,
     Tooltip,
     Box,
+    makeStyles,
 } from '@material-ui/core';
 
 import { FormattedMessage } from 'react-intl';
@@ -27,14 +28,21 @@ import {
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
+import classnames from 'classnames';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
-import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
-import { BaseInfoForm } from '../forms/BaseInfoForm';
-import { DetectionForm } from '../forms/DetectionForm';
-import { RiskAssessmentForm } from '../forms/RiskAssessmentForm';
-import { ScopeForm } from '../forms/ScopeForm.tsx';
-import { BudgetForm } from '../forms/BudgetForm';
+import { BaseInfoForm, baseInfoFormFields } from '../forms/BaseInfoForm';
+import { DetectionForm, detectionFormFields } from '../forms/DetectionForm';
+import {
+    RiskAssessmentForm,
+    riskAssessmentFormFields,
+} from '../forms/RiskAssessmentForm';
+import { ScopeForm, scopeFormFields } from '../forms/ScopeForm.tsx';
+import { BudgetForm, budgetFormFields } from '../forms/BudgetForm';
+import {
+    PreparednessForm,
+    preparednessFormFields,
+} from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
 import { RoundsForm } from '../forms/RoundsForm';
 import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
@@ -48,6 +56,20 @@ import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
+import { compareArraysValues } from '../utils/compareArraysValues';
+
+const useTabErrorStyles = makeStyles(theme => {
+    return {
+        tabError: {
+            '& .MuiTab-wrapper': {
+                color: theme.palette.error.main,
+            },
+        },
+        pointer: {
+            pointerEvents: 'auto',
+        },
+    };
+});
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
@@ -64,6 +86,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { formatMessage } = useSafeIntl();
 
     const classes = useStyles();
+    const tabErrorClasses = useTabErrorStyles();
 
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
@@ -113,14 +136,26 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             {
                 title: formatMessage(MESSAGES.baseInfo),
                 form: BaseInfoForm,
+                hasTabError: compareArraysValues(
+                    baseInfoFormFields,
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.detection),
                 form: DetectionForm,
+                hasTabError: compareArraysValues(
+                    detectionFormFields,
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.riskAssessment),
                 form: RiskAssessmentForm,
+                hasTabError: compareArraysValues(
+                    riskAssessmentFormFields,
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.scope),
@@ -128,14 +163,26 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 disabled:
                     !formik.values.initial_org_unit ||
                     formik.values.rounds.length === 0,
+                hasTabError: compareArraysValues(
+                    scopeFormFields,
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.budget),
                 form: BudgetForm,
+                hasTabError: compareArraysValues(
+                    budgetFormFields,
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.preparedness),
                 form: PreparednessForm,
+                hasTabError: compareArraysValues(
+                    preparednessFormFields,
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.rounds),
@@ -150,6 +197,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         formatMessage,
         formik.values.initial_org_unit,
         formik.values.rounds.length,
+        formik.errors,
     ]);
 
     const [selectedTab, setSelectedTab] = useState(0);
@@ -226,7 +274,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     variant="scrollable"
                     scrollButtons="auto"
                 >
-                    {tabs.map(({ title, disabled }) => {
+                    {tabs.map(({ title, disabled, hasTabError = false }) => {
                         if (
                             disabled &&
                             title === formatMessage(MESSAGES.scope)
@@ -234,7 +282,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                             return (
                                 <Tab
                                     key={title}
-                                    style={{ pointerEvents: 'auto' }}
+                                    className={classnames(
+                                        tabErrorClasses.pointer,
+                                        hasTabError && tabErrorClasses.tabError,
+                                    )}
                                     label={
                                         <Tooltip
                                             key={title}

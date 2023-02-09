@@ -36,10 +36,6 @@ export const baseInfoFormFields = [
     'three_level_call_at',
 ];
 
-export const compareValues = (form, fieldErrors) => {
-    return Object.entries(fieldErrors).some(err => form.includes(err[0]));
-};
-
 export const BaseInfoForm = () => {
     const classes = useStyles();
 

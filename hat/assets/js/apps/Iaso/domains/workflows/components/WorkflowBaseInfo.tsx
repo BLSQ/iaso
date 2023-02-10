@@ -56,13 +56,10 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
             <Divider />
             <Table size="small">
                 <TableBody>
-                    {workflowVersion?.status &&
-                        workflowVersion?.status !== 'DRAFT' && (
-                            <Row
-                                label={formatMessage(MESSAGES.name)}
-                                value={workflowVersion?.name}
-                            />
-                        )}
+                    <Row
+                        label={formatMessage(MESSAGES.name)}
+                        value={workflowVersion?.name}
+                    />
                     <Row
                         label={formatMessage(MESSAGES.type)}
                         value={workflowVersion?.entity_type.name}

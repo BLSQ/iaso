@@ -78,7 +78,6 @@ export const budgetFormFields = [
     'unicef_disbursed_to_moh_at',
     'district_count',
     'no_regret_fund_amount',
-    'rounds',
 ];
 
 export const BudgetForm = () => {

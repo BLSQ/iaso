@@ -10,6 +10,7 @@ import { cloneDeep } from 'lodash';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import Tooltip from '@material-ui/core/Tooltip';
+import { Box } from '@material-ui/core';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
@@ -31,6 +32,7 @@ export const useCompletenessStatsColumns = (params: any) => {
                 id: 'name',
                 accessor: 'name',
                 sortable: true,
+                align: 'left',
                 Cell: settings => {
                     return (
                         <span>
@@ -79,9 +81,24 @@ export const useCompletenessStatsColumns = (params: any) => {
                 accessor: 'forms_filled_direct',
                 sortable: false,
                 Cell: settings => (
-                    <span>
-                        {settings.row.original.forms_filled_direct ?? '--'}/
-                        {settings.row.original.forms_to_fill_direct ?? '--'}
+                    <Box>
+                        <div
+                            style={{
+                                // marginTop: '2px', // The margin will align the icon in FF but misalign it in Chrome
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                verticalAlign: 'middle',
+                            }}
+                        >
+                            {`${
+                                settings.row.original.forms_filled_direct ??
+                                '--'
+                            }/
+                            ${
+                                settings.row.original.forms_to_fill_direct ??
+                                '--'
+                            }`}
+                        </div>
                         {settings.row.original
                             .has_multiple_direct_submissions && (
                             <Tooltip
@@ -89,10 +106,24 @@ export const useCompletenessStatsColumns = (params: any) => {
                                     MESSAGES.orgUnitHasMultipleSubmissions,
                                 )}
                             >
-                                <AddCircleOutlineIcon fontSize="small" />
+                                <div
+                                    style={{
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        verticalAlign: 'middle',
+                                    }}
+                                >
+                                    <AddCircleOutlineIcon
+                                        style={{
+                                            fontSize: '16px',
+                                            marginLeft: '4px',
+                                        }}
+                                        color="action"
+                                    />
+                                </div>
                             </Tooltip>
                         )}
-                    </span>
+                    </Box>
                 ),
             },
             {

@@ -1872,7 +1872,7 @@ const MESSAGES = defineMessages({
     },
     nextSteps: {
         id: 'iaso.polio.label.nextSteps',
-        defaultMessage: 'Next steps',
+        defaultMessage: 'Possible next steps',
     },
     searchInScopeOrAllDistricts: {
         id: 'iaso.polio.label.searchInScopeOrAllDistricts',
@@ -2033,6 +2033,10 @@ const MESSAGES = defineMessages({
     APPROVED: {
         id: 'iaso.polio.form.label.APPROVED',
         defaultMessage: 'Approved',
+    },
+    date: {
+        id: 'iaso.polio.form.label.date',
+        defaultMessage: 'Date',
     },
 });
 

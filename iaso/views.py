@@ -33,14 +33,14 @@ def page(request, page_slug):
     if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
         return redirect_to_login(path, resolved_login_url, "next")
     if page.type == IFRAME:
-        return render(request, "iaso/pages/iframe.html", {"src": page.content, "title": page.name})
-    if page.type == TEXT:
-        return render(request, "iaso/pages/text.html", {"text": page.content, "title": page.name})
-    if page.type == POWERBI:
+        response = render(request, "iaso/pages/iframe.html", {"src": page.content, "title": page.name})
+    elif page.type == TEXT:
+        response = render(request, "iaso/pages/text.html", {"text": page.content, "title": page.name})
+    elif page.type == POWERBI:
         config = load_powerbi_config_for_page(page)
-        return render(request, "iaso/pages/powerbi.html", {"config": config, "title": page.name})
-
-    response = HttpResponse(page.content)
+        response = render(request, "iaso/pages/powerbi.html", {"config": config, "title": page.name})
+    else:
+        response = HttpResponse(page.content)
     response["X-Frame-Options"] = "ALLOW"
     return response
 

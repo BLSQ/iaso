@@ -27,7 +27,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitHasMultipleSubmissions: {
         id: 'iaso.completeness.orgUnitHasMultipleSubmissions',
-        defaultMessage: 'This org. unit has multiple direct submissions',
+        defaultMessage: 'This org unit has multiple direct submissions',
     },
     completenessDirect: {
         id: 'iaso.completeness.titleDirect',

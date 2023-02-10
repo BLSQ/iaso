@@ -8,22 +8,24 @@ export type Timeline = {
     categories: Categories;
 };
 
+export type Item = {
+    label: string;
+    step_id?: number;
+    performed_at?: string; // datetime
+    performed_by?: {
+        username;
+        first_name;
+        last_name;
+    };
+};
+
 export type Categories = {
     key: string;
     label: string;
     color: string; // css string
     active: boolean;
     completed: boolean;
-    items: {
-        label: string;
-        step_id?: number;
-        performed_at?: string; // datetime
-        performed_by?: {
-            username;
-            first_name;
-            last_name;
-        }; // User
-    }[];
+    items: Item[];
 }[];
 
 export type NextTransition = {

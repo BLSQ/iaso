@@ -33,13 +33,6 @@ class PermissionsViewSet(viewsets.ViewSet):
         if "polio" not in settings.PLUGINS:
             perms = perms.exclude(codename__startswith="iaso_polio")
 
-        # TODO Remove once this is in prod
-        perms = (
-            perms.exclude(codename__startswith="iaso_planning")
-            # .exclude(codename__startswith="iaso_teams")
-            .exclude(codename__startswith="iaso_assignments")
-        )
-
         result = []
         for permission in perms:
             result.append({"id": permission.id, "name": _(permission.name), "codename": permission.codename})

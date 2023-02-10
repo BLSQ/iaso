@@ -3,15 +3,10 @@ import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     Table,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
 

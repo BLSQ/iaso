@@ -5,13 +5,7 @@ import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 
 import { locationLimitMax } from './constants/orgUnitConstants';
-
-import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
-import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
-import {
-    circleColorMarkerOptions,
-    orderOrgUnitsByDepth,
-} from '../../utils/mapUtils';
+import { orderOrgUnitsByDepth } from '../../utils/mapUtils.ts';
 
 import MESSAGES from './messages';
 
@@ -217,33 +211,6 @@ export const getOrgUnitGroups = orgUnit => (
         {(!orgUnit.groups || orgUnit.groups.length === 0) && textPlaceholder}
     </span>
 );
-
-export const getMarkerList = ({
-    locationsList,
-    fetchDetail,
-    color,
-    keyId,
-    useOrgUnitLocation,
-    PopupComponent = OrgUnitPopupComponent,
-}) => {
-    return (
-        <MarkersListComponent
-            key={keyId}
-            items={locationsList}
-            onMarkerClick={fetchDetail}
-            PopupComponent={PopupComponent}
-            popupProps={() => ({
-                displayUseLocation: true,
-                replaceLocation: selectedOrgUnit =>
-                    useOrgUnitLocation(selectedOrgUnit),
-            })}
-            isCircle
-            markerProps={() => ({
-                ...circleColorMarkerOptions(color),
-            })}
-        />
-    );
-};
 
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];

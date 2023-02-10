@@ -87,6 +87,7 @@ services:
   # the webpack dev server
   webpack:
     image: iaso-webpack
+    platform: linux/amd64
     build:
       context: .
       dockerfile: docker/webpack/Dockerfile

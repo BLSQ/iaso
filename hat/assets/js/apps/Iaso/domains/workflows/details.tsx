@@ -24,10 +24,8 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
-import {
-    useGetQueryBuildersFields,
-    useGetQueryBuilderListToReplace,
-} from './hooks/queryBuilder';
+import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 
 import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';

@@ -19,7 +19,7 @@ import { Grid, Box, makeStyles } from '@material-ui/core';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
 import { MappingTable } from './MappingTable';
-import { InfoTooltip } from './InfoTooltip';
+import { Popper } from './InfoPopper';
 
 import { useGetForms } from '../../hooks/requests/useGetForms';
 import { useSaveWorkflowChange } from '../../hooks/requests/useSaveWorkflowChange';
@@ -64,11 +64,10 @@ const useStyles = makeStyles(theme => ({
             paddingRight: theme.spacing(1),
         },
     },
-    infoTooltip: {
+    popper: {
         position: 'absolute',
-        right: theme.spacing(2),
-        top: theme.spacing(2),
-        cursor: 'pointer',
+        right: 0,
+        top: 0,
     },
 }));
 
@@ -178,8 +177,8 @@ const Modal: FunctionComponent<Props> = ({
             id="workflow-change"
             onClose={() => null}
         >
-            <Box className={classes.infoTooltip}>
-                <InfoTooltip />
+            <Box className={classes.popper}>
+                <Popper />
             </Box>
 
             {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}

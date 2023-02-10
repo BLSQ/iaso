@@ -28,7 +28,6 @@ import {
     LoadingSpinner,
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import classnames from 'classnames';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../hooks/useFormValidator';
 import { BaseInfoForm, baseInfoFormFields } from '../forms/BaseInfoForm';
@@ -61,9 +60,7 @@ import { compareArraysValues } from '../utils/compareArraysValues';
 const useTabErrorStyles = makeStyles(theme => {
     return {
         tabError: {
-            '& .MuiTab-wrapper': {
-                color: theme.palette.error.main,
-            },
+            color: `${theme.palette.error.main}!important`,
         },
         pointer: {
             pointerEvents: 'auto',
@@ -140,6 +137,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     baseInfoFormFields,
                     formik.errors,
                 ),
+                key: 'baseInfo',
             },
             {
                 title: formatMessage(MESSAGES.detection),
@@ -148,6 +146,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     detectionFormFields,
                     formik.errors,
                 ),
+                key: 'detection',
             },
             {
                 title: formatMessage(MESSAGES.riskAssessment),
@@ -156,6 +155,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     riskAssessmentFormFields,
                     formik.errors,
                 ),
+                key: 'riskAssessment',
             },
             {
                 title: formatMessage(MESSAGES.scope),
@@ -167,6 +167,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     scopeFormFields,
                     formik.errors,
                 ),
+                key: 'scope',
             },
             {
                 title: formatMessage(MESSAGES.budget),
@@ -175,6 +176,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     budgetFormFields,
                     formik.errors,
                 ),
+                key: 'budget',
             },
             {
                 title: formatMessage(MESSAGES.preparedness),
@@ -183,14 +185,17 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     preparednessFormFields,
                     formik.errors,
                 ),
+                key: 'preparedness',
             },
             {
                 title: formatMessage(MESSAGES.rounds),
                 form: RoundsForm,
+                key: 'rounds',
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
                 form: VaccineManagementForm,
+                key: 'vaccineManagement',
             },
         ];
     }, [
@@ -274,42 +279,55 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     variant="scrollable"
                     scrollButtons="auto"
                 >
-                    {tabs.map(({ title, disabled, hasTabError = false }) => {
-                        if (
-                            disabled &&
-                            title === formatMessage(MESSAGES.scope)
-                        ) {
+                    {tabs.map(
+                        ({ title, disabled, hasTabError = false, key }) => {
+                            if (
+                                disabled &&
+                                title === formatMessage(MESSAGES.scope)
+                            ) {
+                                return (
+                                    <Tab
+                                        key={key}
+                                        classes={
+                                            hasTabError && {
+                                                textColorPrimary:
+                                                    tabErrorClasses.tabError,
+                                                selected:
+                                                    tabErrorClasses.tabError,
+                                            }
+                                        }
+                                        label={
+                                            <Tooltip
+                                                key={key}
+                                                title={
+                                                    <FormattedMessage
+                                                        {...MESSAGES.scopeUnlockConditions}
+                                                    />
+                                                }
+                                            >
+                                                <span>{title}</span>
+                                            </Tooltip>
+                                        }
+                                        disabled={disabled || false}
+                                    />
+                                );
+                            }
                             return (
                                 <Tab
-                                    key={title}
-                                    className={classnames(
-                                        tabErrorClasses.pointer,
-                                        hasTabError && tabErrorClasses.tabError,
-                                    )}
-                                    label={
-                                        <Tooltip
-                                            key={title}
-                                            title={
-                                                <FormattedMessage
-                                                    {...MESSAGES.scopeUnlockConditions}
-                                                />
-                                            }
-                                        >
-                                            <span>{title}</span>
-                                        </Tooltip>
-                                    }
+                                    key={key}
+                                    label={title}
                                     disabled={disabled || false}
+                                    classes={
+                                        hasTabError && {
+                                            textColorPrimary:
+                                                tabErrorClasses.tabError,
+                                            selected: tabErrorClasses.tabError,
+                                        }
+                                    }
                                 />
                             );
-                        }
-                        return (
-                            <Tab
-                                key={title}
-                                label={title}
-                                disabled={disabled || false}
-                            />
-                        );
-                    })}
+                        },
+                    )}
                 </Tabs>
                 <FormikProvider value={formik}>
                     <Form>

@@ -33,6 +33,7 @@
     "iaso.assignment.parentDialog.titleUnsassign": "Désassigner {assignmentCount} unité(s) d'org. de {parentOrgUnitName}",
     "iaso.assignment.parentOrgUnitsType": "Types d'unités d'org. parent",
     "iaso.assignment.parentPicking": "Mode sélection de parent",
+    "iaso.assignment.searchOrgUnit": "Chercher une unité d'org.",
     "iaso.assignment.title": "Affectation pour le planning",
     "iaso.CDS": "Centre de Santé",
     "iaso.completeness.chooseParent": "Selectionnez un formulaire ou une unité d'org parente pour activer",

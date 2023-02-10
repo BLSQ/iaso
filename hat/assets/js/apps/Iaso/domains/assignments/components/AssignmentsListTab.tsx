@@ -2,10 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Paper } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
-import {
-    // @ts-ignore
-    Table,
-} from 'bluesquare-components';
+import { Table } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
 import {

@@ -36,52 +36,68 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params, withPagination: false });
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid item xs={4} lg={3} xl={2}>
-                    <InputComponent
-                        type="select"
-                        keyValue="team"
-                        onChange={handleChange}
-                        value={isFetchingTeams ? undefined : filters.team}
-                        label={MESSAGES.team}
-                        options={teams}
-                        loading={isFetchingTeams}
-                        disabled={isFetchingTeams}
-                        clearable={false}
-                    />
-                </Grid>
-                <Grid item xs={4} lg={3} xl={2}>
-                    <InputComponent
-                        type="select"
-                        disabled={isFetchingOrgUnitTypes}
-                        keyValue="baseOrgunitType"
-                        onChange={handleChange}
-                        value={
-                            isFetchingOrgUnitTypes
-                                ? undefined
-                                : filters.baseOrgunitType
-                        }
-                        label={MESSAGES.baseOrgUnitsType}
-                        options={orgunitTypes}
-                        loading={isFetchingOrgUnitTypes}
-                        clearable={false}
-                    />
-                </Grid>
-                <Grid item xs={4} lg={3} xl={2} container alignItems="center">
-                    <Button
-                        disabled={!filtersUpdated}
-                        variant="contained"
-                        color="primary"
-                        onClick={handleSearch}
-                    >
-                        <Box mr={1} top={3} position="relative">
-                            <FiltersIcon />
-                        </Box>
-                        {formatMessage(MESSAGES.apply)}
-                    </Button>
-                </Grid>
+        <Grid container spacing={2}>
+            <Grid item xs={4} lg={3} xl={2}>
+                <InputComponent
+                    type="select"
+                    keyValue="team"
+                    onChange={handleChange}
+                    value={isFetchingTeams ? undefined : filters.team}
+                    label={MESSAGES.team}
+                    options={teams}
+                    loading={isFetchingTeams}
+                    disabled={isFetchingTeams}
+                    clearable={false}
+                />
             </Grid>
-        </>
+            <Grid item xs={4} lg={3} xl={2}>
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingOrgUnitTypes}
+                    keyValue="baseOrgunitType"
+                    onChange={handleChange}
+                    value={
+                        isFetchingOrgUnitTypes
+                            ? undefined
+                            : filters.baseOrgunitType
+                    }
+                    label={MESSAGES.baseOrgUnitsType}
+                    options={orgunitTypes}
+                    loading={isFetchingOrgUnitTypes}
+                    clearable={false}
+                />
+            </Grid>
+            <Grid item xs={4} lg={3} xl={2}>
+                <InputComponent
+                    keyValue="search"
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.searchOrgUnit}
+                    onEnterPressed={handleSearch}
+                />
+            </Grid>
+            <Grid
+                item
+                xs={4}
+                lg={3}
+                xl={2}
+                container
+                justifyContent="flex-end"
+                alignContent="center"
+            >
+                <Button
+                    disabled={!filtersUpdated}
+                    variant="contained"
+                    color="primary"
+                    onClick={handleSearch}
+                >
+                    <Box mr={1} top={3} position="relative">
+                        <FiltersIcon />
+                    </Box>
+                    {formatMessage(MESSAGES.apply)}
+                </Button>
+            </Grid>
+        </Grid>
     );
 };

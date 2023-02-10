@@ -1,6 +1,6 @@
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 import typing
 
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 from django.db import connection
 
 from hat.audit.models import Modification

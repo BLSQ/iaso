@@ -1,18 +1,16 @@
+import logging
+
 import jwt
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt
-from jwt import DecodeError
-from rest_framework.decorators import api_view, permission_classes, authentication_classes
-from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
-
-import logging
+from django.http.request import HttpRequest
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.settings import SECRET_KEY
 from iaso.models import Instance, InstanceFile, FeatureFlag
-import re
 
 logger = logging.getLogger(__name__)
 

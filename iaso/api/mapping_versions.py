@@ -1,10 +1,11 @@
 import typing
+
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, permissions
-import iaso.models as m
 
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
+import iaso.models as m
 from iaso.models import FormVersion, MappingVersion
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 
 
 class MappingVersionSerializer(DynamicFieldsModelSerializer):

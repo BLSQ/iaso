@@ -7,6 +7,7 @@ and we adapt the value for the particular campaign we are generating to.
 We copy the Regional worksheet for each region in the Campaign scope, then add a column for each district.
 """
 import copy
+from logging import getLogger
 from typing import Optional
 
 import gspread  # type: ignore
@@ -17,8 +18,6 @@ from rest_framework import exceptions
 from iaso.models import OrgUnit
 from plugins.polio.models import CountryUsersGroup, Campaign
 from plugins.polio.preparedness.client import get_client, get_google_config
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 

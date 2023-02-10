@@ -1,6 +1,8 @@
-from iaso.models.base import ExportLog
-from dhis2 import RequestException
 import json
+
+from dhis2 import RequestException
+
+from iaso.models.base import ExportLog
 
 
 class ApiLogger:

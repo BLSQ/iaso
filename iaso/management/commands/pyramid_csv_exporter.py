@@ -1,7 +1,8 @@
-from django.core.management.base import BaseCommand
 import csv
+
+from django.core.management.base import BaseCommand
+
 from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
-from django.contrib.gis.geos import Point
 
 
 class Command(BaseCommand):

@@ -10,21 +10,19 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-import os
-from typing import Dict, Any
-
-import sentry_sdk
-from datetime import timedelta
-from django.utils.translation import ugettext_lazy as _
-
-from sentry_sdk.integrations.django import DjangoIntegration
-
 import base64
 import hashlib
 import html
+import os
 import re
 import urllib.parse
+from datetime import timedelta
+from typing import Dict, Any
 from urllib.parse import urlparse
+
+import sentry_sdk
+from django.utils.translation import ugettext_lazy as _
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 

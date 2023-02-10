@@ -1,22 +1,21 @@
 import datetime
 import json
 import typing
+from unittest import mock
 from uuid import uuid4
 
 import pytz
 from django.contrib.gis.geos import Point
 from django.core.files import File
-from unittest import mock
-
 from django.utils import timezone
 from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
+from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import OrgUnit, Instance, InstanceLock
+from iaso.models import InstanceLock
 from iaso.models.microplanning import Planning, Team
 from iaso.test import APITestCase
-from hat.audit.models import Modification
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 

@@ -1,12 +1,16 @@
 from collections import defaultdict
 from datetime import timedelta
 from functools import lru_cache
+from logging import getLogger
 from typing import Dict, Callable, Any
 from uuid import UUID
 
 import pandas as pd
+from django.core.cache import cache
 from django.db.models import Max, Min
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from pandas import DataFrame
 from rest_framework import viewsets
 from rest_framework.decorators import action
@@ -16,11 +20,6 @@ from iaso.models import *
 from plugins.polio.helpers import get_url_content
 from plugins.polio.models import Campaign
 from plugins.polio.models import Config
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.core.cache import cache
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 

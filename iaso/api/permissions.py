@@ -1,12 +1,13 @@
+from operator import itemgetter
+
 from django.conf import settings
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from hat.menupermissions.models import CustomPermissionSupport
 from django.utils.translation import gettext as _
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
 
-from operator import itemgetter
+from hat.menupermissions.models import CustomPermissionSupport
 
 
 class PermissionsViewSet(viewsets.ViewSet):

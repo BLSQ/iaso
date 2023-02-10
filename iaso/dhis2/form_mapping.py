@@ -1,5 +1,5 @@
-import uuid
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 

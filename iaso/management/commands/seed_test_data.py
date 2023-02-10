@@ -1,26 +1,26 @@
-import pdb
 import csv
-from random import randint, random
-from django.contrib.contenttypes.models import ContentType
-import requests
-from iaso.api.comment import ContentTypeField
-from iaso.models.base import AccountFeatureFlag
-from iaso.models.comment import CommentIaso
-from django.contrib.sites.models import Site
-from iaso.models.device import Device
-from iaso.models.entity import Entity, EntityType
-from iaso.models.microplanning import Planning, Team
-from iaso.models.pages import Page
-from lxml import etree
+import json
 from io import BytesIO
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.utils import timezone
+from random import randint, random
+from uuid import uuid4
+
+import requests
+from dhis2 import Api
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Point
+from django.contrib.sites.models import Site
+from django.core import management
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from uuid import uuid4
-from django.contrib.auth.models import Permission
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from lxml import etree
+
+from iaso.dhis2.datavalue_exporter import DataValueExporter
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
     User,
     Instance,
@@ -36,14 +36,12 @@ from iaso.models import (
     Account,
     Profile,
 )
-from django.core import management
-
-from iaso.dhis2.datavalue_exporter import DataValueExporter
-from iaso.dhis2.export_request_builder import ExportRequestBuilder
-from django.utils.dateparse import parse_datetime
-from dhis2 import Api
-
-import json
+from iaso.models.base import AccountFeatureFlag
+from iaso.models.comment import CommentIaso
+from iaso.models.device import Device
+from iaso.models.entity import Entity, EntityType
+from iaso.models.microplanning import Planning, Team
+from iaso.models.pages import Page
 
 """
 seed_test_data --mode=seed

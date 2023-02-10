@@ -9,15 +9,14 @@ completeness API.
 """
 from typing import Tuple, Optional
 
+from django.core.paginator import Paginator
 from django.db.models import QuerySet
-
 from rest_framework import viewsets, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-from .common import HasPermission
 from iaso.models import OrgUnit, Form, OrgUnitType
-from django.core.paginator import Paginator
+from .common import HasPermission
 
 
 def formatted_percentage(part: int, total: int) -> str:

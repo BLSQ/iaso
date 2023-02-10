@@ -9,7 +9,7 @@ from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
-from .workflow import next_transitions, can_user_transition, Transition, Category, effective_teams
+from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
 
 class TransitionSerializer(serializers.Serializer):

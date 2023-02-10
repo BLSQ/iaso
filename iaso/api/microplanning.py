@@ -516,7 +516,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         PublishingStatusFilterBackend,
         DeletionFilterBackend,
     ]
-    ordering_fields = ["id", "name", "started_at", "ended_at"]
+    ordering_fields = ["id", "team__name", "user__username"]
     filterset_fields = {
         "planning": ["exact"],
         "team": ["exact"],

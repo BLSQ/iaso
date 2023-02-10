@@ -48,6 +48,7 @@ class DhisOrgunit(TypedDict):
     coordinates: Optional[str]
     geometry: Optional[DhisGeom]
     organisationUnitGroups: List[DhisGroup]
+    path: str
 
 
 def get_api(options_or_url, login=None, password=None):
@@ -162,8 +163,12 @@ def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
         feature_type = None
         coordinates = None
         try:
-            coordinates = row["geometry"]["coordinates"]
-            feature_type = row["geometry"]["type"]
+            geometry_ = row["geometry"]
+            if not isinstance(geometry_, dict):
+                logger.warning("Unsupported feature tye")
+                return
+            coordinates = geometry_.get("coordinates")
+            feature_type = geometry_.get("type")
             if feature_type == "Point" and coordinates:
                 # No altitude in DHIS2, but mandatory in Iaso
                 org_unit.location = Point(coordinates[0], coordinates[1], 0)

@@ -118,7 +118,7 @@ if os.getenv("DEBUG_SQL") == "true":
 
 
 # AWS expects python logs to be stored in this folder
-AWS_LOG_FOLDER = "/opt/python/log"
+AWS_LOG_FOLDER = "/var/app/log"
 
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
@@ -290,7 +290,7 @@ LANGUAGES = (
     ("en", _("English")),
 )
 
-LOCALE_PATHS = ["/opt/app/hat/locale/", "hat/locale/"]
+LOCALE_PATHS = ["/var/app/current/hat/locale/", "/opt/app/hat/locale/", "hat/locale/"]
 
 TIME_ZONE = "UTC"
 

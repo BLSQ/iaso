@@ -17,6 +17,7 @@ admin.site.index_title = "Administration de Iaso"
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
     path("_health/", health),
+    path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),

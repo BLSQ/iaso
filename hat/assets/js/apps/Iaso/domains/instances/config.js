@@ -5,11 +5,7 @@ import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 import ActionTableColumnComponent from './components/ActionTableColumnComponent';
 
-export const actionTableColumn = (
-    formatMessage = () => ({}),
-    user,
-    dispatch,
-) => {
+export const actionTableColumn = (formatMessage = () => ({}), user) => {
     return {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',

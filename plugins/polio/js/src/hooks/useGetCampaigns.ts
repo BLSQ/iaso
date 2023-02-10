@@ -134,39 +134,6 @@ export const useGetCampaignsAsCsv = (
     return `${getURL(params, url)}`;
 };
 
-// return {
-//     // eslint-disable-next-line no-return-assign
-// exportToCSV: `${getURL(
-//     {
-//         ...params,
-//         limit: undefined,
-//         page: undefined,
-//         format: 'csv',
-//     },
-//     url,
-// )}`,
-//     query: useSnackQuery(
-//         effectiveQueryKey,
-//         () =>
-//             getRequest(
-//                 getURL(
-//                     {
-//                         ...params,
-//                         fieldset: options.fieldset ?? undefined,
-//                     },
-//                     url,
-//                 ),
-//             ),
-//         undefined,
-//         {
-//             cacheTime: Infinity,
-//             structuralSharing: false,
-//             refetchOnWindowFocus: false,
-//             enabled: !!params.enabled,
-//         },
-//     ),
-// };
-
 // Add the defaults. put in a memo for comparison.
 // Need a better way to handle default in the routing
 export const useCampaignParams = (params: Options): Options => {

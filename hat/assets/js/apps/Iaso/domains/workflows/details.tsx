@@ -10,6 +10,8 @@ import {
     LoadingSpinner,
     // @ts-ignore
     formatThousand,
+    // @ts-ignore
+    Column,
     SortableTable,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
@@ -199,7 +201,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         <SortableTable
                                             items={followUps}
                                             onChange={handleSortChange}
-                                            columns={followUpsColumns}
+                                            columns={
+                                                followUpsColumns as Column[]
+                                            }
                                         />
                                     )}
                                     {workflowVersion.status !== 'DRAFT' && (
@@ -226,6 +230,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         {formatMessage(MESSAGES.saveOrder)}
                                     </Button>
                                 </Box>
+                                {/* @ts-ignore */}
                                 <AddFollowUpsModal
                                     fields={fields}
                                     versionId={versionId}
@@ -276,6 +281,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
+                                {/* @ts-ignore */}
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}

@@ -8,22 +8,26 @@ export type Timeline = {
     categories: Categories;
 };
 
+export type BudgetCategoryItem = {
+    label: string;
+    step_id?: number;
+    cancelled?: boolean;
+    skipped?: boolean;
+    performed_at?: string; // datetime
+    performed_by?: {
+        username;
+        first_name;
+        last_name;
+    }; // User
+};
+
 export type Categories = {
     key: string;
     label: string;
     color: string; // css string
     active: boolean;
     completed: boolean;
-    items: {
-        label: string;
-        step_id?: number;
-        performed_at?: string; // datetime
-        performed_by?: {
-            username;
-            first_name;
-            last_name;
-        }; // User
-    }[];
+    items: BudgetCategoryItem[];
 }[];
 
 export type NextTransition = {

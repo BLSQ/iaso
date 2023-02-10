@@ -2018,6 +2018,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.newBudgetState',
         defaultMessage: 'New budget state',
     },
+    stepCancelled: {
+        id: 'iaso.polio.form.label.stepCancelled',
+        defaultMessage: 'Admin override cancelled this step',
+    },
+    stepSkipped: {
+        id: 'iaso.polio.form.label.stepSkipped',
+        defaultMessage: 'Admin override skipped this step',
+    },
 });
 
 export default MESSAGES;

@@ -169,20 +169,20 @@ export const useGetOrgUnits = ({
     currentType,
     order,
 }: Props): UseQueryResult<Locations, Error> => {
-    const params = {
+    const params: Record<string, any> = {
         validation_status: 'VALID',
         asLocation: true,
         limit: 5000,
-        order,
-        orgUnitParentIds: orgUnitParentIds?.join(','),
         geography: 'any',
         onlyDirectChildren: false,
         page: 1,
-        orgUnitTypeId: baseOrgunitType,
         withParents: true,
+        order,
+        orgUnitParentIds: orgUnitParentIds?.join(','),
+        orgUnitTypeId: baseOrgunitType,
     };
 
-    const url = makeUrlWithParams('/api/orgunits', params);
+    const url = makeUrlWithParams('/api/orgunits/', params);
 
     const select = useCallback(
         (orgUnits: OrgUnit[]) => {

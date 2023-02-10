@@ -196,6 +196,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_dhis2_link',
         defaultMessage: 'Link with DHIS2',
     },
+    iaso_workflows: {
+        id: 'iaso.permissions.iaso_workflows',
+        defaultMessage: 'Workflows',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',
@@ -232,6 +236,19 @@ const MESSAGES = defineMessages({
     ouParentCheckbox: {
         defaultMessage: 'Users with access to parent org unit',
         id: 'iaso.users.ouParentCheckbox',
+    },
+    logout: {
+        defaultMessage: 'Logout',
+        id: 'iaso.logout',
+    },
+    wrongAccount: {
+        defaultMessage:
+            'You are connected to the wrong account, would you like to log out and connect with the correct account to see this link?',
+        id: 'iaso.label.wrongAccount',
+    },
+    wrongAccountTitle: {
+        defaultMessage: 'Wrong account',
+        id: 'iaso.label.wrongAccountTitle',
     },
 });
 

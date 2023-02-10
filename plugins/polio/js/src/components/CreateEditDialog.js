@@ -74,6 +74,8 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         isOpen && campaignId,
     );
 
+    const { rounds } = selectedCampaign;
+
     const { data: campaignLogs } = useGetCampaignLogs(
         selectedCampaign?.id,
         isOpen,
@@ -173,7 +175,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 title: formatMessage(MESSAGES.budget),
                 form: BudgetForm,
                 hasTabError: compareArraysValues(
-                    budgetFormFields,
+                    budgetFormFields(rounds ?? []),
                     formik.errors,
                 ),
                 key: 'budget',
@@ -200,9 +202,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         ];
     }, [
         formatMessage,
+        formik.errors,
         formik.values.initial_org_unit,
         formik.values.rounds.length,
-        formik.errors,
+        rounds,
     ]);
 
     const [selectedTab, setSelectedTab] = useState(0);

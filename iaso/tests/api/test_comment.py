@@ -1,7 +1,7 @@
 from django.contrib.contenttypes.models import ContentType
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class CommentApiTestCase(APITestCase):

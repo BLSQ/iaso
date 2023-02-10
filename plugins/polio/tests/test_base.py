@@ -1,39 +1,29 @@
 import datetime
 import json
-import os
-import pandas as pd
-import pprint
-import io
 from typing import List
 from unittest import mock
 from unittest.mock import patch
 
 import jwt  # type: ignore
+import pandas as pd
 from django.contrib.auth.models import User
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.core.cache import cache
-from django.core.files import File
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.utils.timezone import now
 from rest_framework import status
 from rest_framework.test import APIClient
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
-from hat.api.token_authentication import generate_auto_authentication_link
-from hat.settings import BASE_DIR
 from iaso import models as m
-from iaso.models import Account, OrgUnit, org_unit, OrgUnitType
-from iaso.models.microplanning import Team
+from iaso.models import Account
 from iaso.test import APITestCase, TestCase
-
 from plugins.polio.management.commands.weekly_email import send_notification_email
 from ..api import CACHE_VERSION
+from ..export_utils import format_date
 from ..models import Config, Round
-
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
 from ..serializers import CampaignSerializer
-from ..export_utils import format_date
 
 
 class PolioAPITestCase(APITestCase):

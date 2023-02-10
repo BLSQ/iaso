@@ -1,10 +1,11 @@
+from typing import Any
+
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
-from django.db import models
 from django.contrib.gis.db import models as geomodels
+from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
-from typing import Any
 from typing_extensions import Protocol
 
 from .models import (
@@ -467,6 +468,14 @@ class StorageDeviceAdmin(admin.ModelAdmin):
 
 class WorkflowAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
+
+    def get_form(self, request, obj=None, **kwargs):
+        # In the <select> for the entity type, we also want to indicate the account name
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields[
+            "entity_type"
+        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        return form
 
     def get_queryset(self, request):
         return Workflow.objects_include_deleted.all()

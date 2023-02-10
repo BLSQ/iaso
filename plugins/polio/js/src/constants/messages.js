@@ -1872,7 +1872,7 @@ const MESSAGES = defineMessages({
     },
     nextSteps: {
         id: 'iaso.polio.label.nextSteps',
-        defaultMessage: 'Next steps',
+        defaultMessage: 'Possible next steps',
     },
     searchInScopeOrAllDistricts: {
         id: 'iaso.polio.label.searchInScopeOrAllDistricts',
@@ -2017,6 +2017,26 @@ const MESSAGES = defineMessages({
     newBudgetState: {
         id: 'iaso.polio.form.label.newBudgetState',
         defaultMessage: 'New budget state',
+    },
+    TO_SUBMIT: {
+        id: 'iaso.polio.form.label.TO_SUBMIT',
+        defaultMessage: 'To submit',
+    },
+    SUBMITTED: {
+        id: 'iaso.polio.form.label.SUBMITTED',
+        defaultMessage: 'Submitted',
+    },
+    REVIEWED: {
+        id: 'iaso.polio.form.label.REVIEWED',
+        defaultMessage: 'Reviewed by RRT',
+    },
+    APPROVED: {
+        id: 'iaso.polio.form.label.APPROVED',
+        defaultMessage: 'Approved',
+    },
+    date: {
+        id: 'iaso.polio.form.label.date',
+        defaultMessage: 'Date',
     },
 });
 

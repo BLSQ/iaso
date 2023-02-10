@@ -1,6 +1,7 @@
 import json
-import responses
 import logging
+
+import responses
 
 logger = logging.getLogger(__name__)
 from django.core.files.uploadedfile import UploadedFile

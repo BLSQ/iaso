@@ -7,7 +7,7 @@ import uuid
 from unittest import mock
 
 from iaso import models as m
-from iaso.models import EntityType, Instance, Entity, OrgUnit, Profile, FormVersion
+from iaso.models import EntityType, Instance, Entity, FormVersion
 from iaso.test import APITestCase
 
 

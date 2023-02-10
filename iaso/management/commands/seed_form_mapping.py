@@ -1,10 +1,9 @@
-from django.core.management.base import BaseCommand
 import json
-from django.utils import timezone
-from iaso.models import Instance, Form
-import datetime
-from dhis2 import Api
 
+from dhis2 import Api
+from django.core.management.base import BaseCommand
+
+from iaso.models import Form
 from ...dhis2.form_mapping import seed_event_mapping
 
 """

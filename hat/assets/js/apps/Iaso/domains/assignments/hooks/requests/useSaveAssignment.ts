@@ -1,4 +1,4 @@
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import { postRequest, patchRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
@@ -16,13 +16,14 @@ export const saveAssignment = async (
     return postRequest(endpoint, body);
 };
 
-export const useSaveAssignment = (
-    callback: () => void = () => null,
-): UseMutationResult => {
-    const onSuccess = () => callback();
+export const useSaveAssignment = (): UseMutationResult => {
+    const queryClient = useQueryClient();
+    const onSuccess = () => {
+        queryClient.invalidateQueries('orgUnits');
+        queryClient.invalidateQueries('assignmentsList');
+    };
     return useSnackMutation({
         mutationFn: (data: SaveAssignmentQuery) => saveAssignment(data),
-        invalidateQueryKey: ['assignmentsList'],
         options: { onSuccess },
         showSucessSnackBar: false,
     });
@@ -33,13 +34,14 @@ const saveBulkAssignments = (data: SaveAssignmentQuery) => {
     return postRequest(url, data);
 };
 
-export const useBulkSaveAssignments = (
-    callback: () => void = () => null,
-): UseMutationResult => {
-    const onSuccess = () => callback();
+export const useBulkSaveAssignments = (): UseMutationResult => {
+    const queryClient = useQueryClient();
+    const onSuccess = () => {
+        queryClient.invalidateQueries('orgUnits');
+        queryClient.invalidateQueries('assignmentsList');
+    };
     return useSnackMutation({
         mutationFn: saveBulkAssignments,
-        invalidateQueryKey: ['assignmentsList'],
         options: { onSuccess },
         showSucessSnackBar: false,
     });

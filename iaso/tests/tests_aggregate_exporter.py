@@ -1,8 +1,11 @@
 import json
+import logging
+from collections import namedtuple
+
 import responses
 from django.core.files.uploadedfile import UploadedFile
-from collections import namedtuple
 from django.test import TestCase
+
 from iaso.models import (
     User,
     Instance,
@@ -24,7 +27,6 @@ from iaso.models import (
     ERRORED,
     EXPORTED,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 import os

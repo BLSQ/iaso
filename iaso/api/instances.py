@@ -24,6 +24,7 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
+from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
     Instance,
     OrgUnit,
@@ -35,10 +36,9 @@ from iaso.models import (
 )
 from iaso.utils import timestamp_to_datetime
 from . import common
+from .comment import UserSerializerForComment
 from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instance_filters import parse_instance_filters, get_form_from_instance_filters
-from .comment import UserSerializerForComment
-from iaso.api.serializers import OrgUnitSerializer
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -139,6 +139,7 @@ class InstancesViewSet(viewsets.ViewSet):
     GET /api/instances/<id>
     DELETE /api/instances/<id>
     POST /api/instances/
+    PATCH /api/instances/<id>
     """
 
     permission_classes = [HasInstancePermission]
@@ -452,6 +453,9 @@ class InstancesViewSet(viewsets.ViewSet):
         if instance.org_unit not in access_ou:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
+        # If the org unit change but the instance was marked as the reference_instance for this org unit,
+        # remove the reference as reference instance
+        # FIXME we should log the modification on org unit
         if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
             previous_orgunit = original.org_unit
             previous_orgunit.reference_instance = None
@@ -592,6 +596,8 @@ def import_data(instances, user, app_id):
 
         instance.form_id = instance_data.get("formId")
 
+        # TODO: check that planning_id is valid
+        instance.planning_id = instance_data.get("planningId", None)
         entityUuid = instance_data.get("entityUuid", None)
         entityTypeId = instance_data.get("entityTypeId", None)
         if entityUuid and entityTypeId:

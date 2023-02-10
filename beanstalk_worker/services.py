@@ -2,15 +2,15 @@ import decimal
 import importlib
 import json
 from datetime import datetime
-from iaso.models.base import Task, RUNNING, QUEUED, KILLED
+from logging import getLogger
+
 import boto3
 import dateparser
 from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
-from logging import getLogger
-
+from iaso.models.base import Task, RUNNING, QUEUED, KILLED
 
 logger = getLogger(__name__)
 

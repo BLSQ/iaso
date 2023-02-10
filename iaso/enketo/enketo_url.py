@@ -1,9 +1,10 @@
-import sys
-import requests
 import json
-from json.decoder import JSONDecodeError
-from django.conf import settings as django_settings
 import logging
+import sys
+from json.decoder import JSONDecodeError
+
+import requests
+from django.conf import settings as django_settings
 
 logger = logging.getLogger(__name__)
 

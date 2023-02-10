@@ -1,7 +1,7 @@
 from django.db import InternalError, connections
 
-from iaso.test import TestCase
 from iaso import models as m
+from iaso.test import TestCase
 
 
 class OrgUnitTypeModelTestCase(TestCase):

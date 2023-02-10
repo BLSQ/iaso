@@ -1,8 +1,9 @@
-from iaso.test import APITestCase
-from iaso import models as m
 from django.contrib.gis.geos import Point
-from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.core.files.uploadedfile import UploadedFile
+
+from iaso import models as m
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
+from iaso.test import APITestCase
 
 
 class ExportRequestsAPITestCase(APITestCase):

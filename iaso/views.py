@@ -1,21 +1,27 @@
+from django.conf import settings
+from django.contrib.auth.views import redirect_to_login
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
 
-from django.contrib.auth.views import redirect_to_login
-from django.conf import settings
-from iaso.models import Page, Account, TEXT, IFRAME, POWERBI
-
 from hat.__version__ import DEPLOYED_ON, DEPLOYED_BY, VERSION
+from iaso.models import Page, Account, TEXT, IFRAME, POWERBI
 from iaso.utils.powerbi import get_powerbi_report_token
-from django.http import HttpResponse, JsonResponse
 
 
-def load_powerbi_config_for_page(page):
+def load_powerbi_config_for_page(page: Page):
     group_id = page.powerbi_group_id
     report_id = page.powerbi_report_id
     filters = page.powerbi_filters
+    language = page.powerbi_language
 
     report_access_token = get_powerbi_report_token(group_id, report_id)
-    config = {"token": report_access_token, "report_id": report_id, group_id: "group_id", "filters": filters}
+    config = {
+        "token": report_access_token,
+        "report_id": report_id,
+        "group_id": group_id,
+        "language": language,
+        "filters": filters,
+    }
     return config
 
 

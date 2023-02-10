@@ -1,13 +1,13 @@
 import typing
 
+from django.conf import settings
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
-from django.test import tag
 from django.core import mail
+
+from iaso import models as m
 from iaso.models import Profile
 from iaso.test import APITestCase
-from iaso import models as m
-from django.conf import settings
 
 
 class ProfileAPITestCase(APITestCase):

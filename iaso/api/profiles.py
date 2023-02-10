@@ -1,22 +1,22 @@
+from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.models import Permission
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
-
-from rest_framework import viewsets, permissions, serializers
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
-from django.utils.translation import gettext as _
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from iaso.models import Profile, OrgUnit
-from django.utils.http import urlsafe_base64_encode
-from django.contrib.auth.models import Permission
-from django.contrib.auth.models import User
-from django.utils.encoding import force_bytes
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import gettext as _
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+
+from iaso.models import Profile, OrgUnit
 
 
 class HasProfilePermission(permissions.BasePermission):

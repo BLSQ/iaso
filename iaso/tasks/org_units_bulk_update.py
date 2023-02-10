@@ -1,7 +1,6 @@
-from time import time
 from copy import deepcopy
+from time import time
 from typing import Optional, List
-
 
 from django.db import transaction
 

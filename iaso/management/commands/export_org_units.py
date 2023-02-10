@@ -1,6 +1,8 @@
-from django.core.management.base import BaseCommand
 import csv
-from iaso.models import OrgUnit, OrgUnitType
+
+from django.core.management.base import BaseCommand
+
+from iaso.models import OrgUnit
 
 
 class Command(BaseCommand):

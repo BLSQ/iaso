@@ -1,11 +1,11 @@
-from django.contrib.gis.geos import Point
-from django.test import TestCase, tag
-from ..models import OrgUnit, Profile, OrgUnitType, Account, Project, DataSource, SourceVersion
-
-from rest_framework.test import APIClient
-from django.contrib.auth.models import User
-
 import json
+
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import Point
+from django.test import TestCase
+from rest_framework.test import APIClient
+
+from ..models import OrgUnit, Profile, OrgUnitType, Account, Project, DataSource, SourceVersion
 
 
 class MultiSearchTestCase(TestCase):

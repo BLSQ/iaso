@@ -1,11 +1,11 @@
-from io import StringIO
-from django.test import TestCase
-from django.core import management
-from django.contrib.gis.geos import Point, Polygon, MultiPolygon
-
-from os import environ
-import responses
 import json
+from io import StringIO
+from os import environ
+
+import responses
+from django.contrib.gis.geos import Point, Polygon, MultiPolygon
+from django.core import management
+from django.test import TestCase
 
 from iaso.models import OrgUnit, DataSource, SourceVersion, Group
 

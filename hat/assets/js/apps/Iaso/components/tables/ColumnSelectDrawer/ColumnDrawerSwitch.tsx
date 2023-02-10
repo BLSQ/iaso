@@ -1,17 +1,29 @@
-import React from 'react';
+import React, { FunctionComponent, ChangeEvent, ReactElement } from 'react';
 import { Switch, ListItemText, Tooltip } from '@material-ui/core';
-import { string, bool, func, oneOfType, object } from 'prop-types';
+// @ts-ignore
 import { truncateText } from 'bluesquare-components';
 
-export const ColumnDrawerSwitch = ({
+type Props = {
+    disabled: boolean;
+    // eslint-disable-next-line no-unused-vars
+    onChange?: (event: ChangeEvent<HTMLInputElement>, checked: boolean) => void;
+    className: string;
+    checked: boolean;
+    toolTipTitle: string | ReactElement;
+    primaryText: string;
+    secondaryText: string;
+    size?: 'small' | 'medium' | undefined;
+};
+
+export const ColumnDrawerSwitch: FunctionComponent<Props> = ({
     disabled,
-    onChange,
+    onChange = () => null,
     className,
     checked,
     toolTipTitle,
     primaryText,
     secondaryText,
-    size,
+    size = 'small',
 }) => {
     return (
         <>
@@ -23,15 +35,12 @@ export const ColumnDrawerSwitch = ({
                 color="primary"
                 inputProps={{
                     'aria-label': primaryText,
+                    // @ts-ignore
                     'data-test-column-switch': secondaryText,
                 }}
                 className={className}
             />
-            <Tooltip
-                title={toolTipTitle}
-                placement="left-start"
-                components={{ Tooltip: 'div' }}
-            >
+            <Tooltip title={toolTipTitle} placement="left-start">
                 <ListItemText
                     style={{
                         cursor: 'default',
@@ -42,22 +51,4 @@ export const ColumnDrawerSwitch = ({
             </Tooltip>
         </>
     );
-};
-ColumnDrawerSwitch.propTypes = {
-    disabled: bool,
-    onChange: func,
-    className: string,
-    checked: bool,
-    toolTipTitle: oneOfType([string, object]).isRequired,
-    primaryText: string.isRequired,
-    secondaryText: string,
-    size: string,
-};
-ColumnDrawerSwitch.defaultProps = {
-    disabled: false,
-    onChange: () => null,
-    className: '',
-    checked: false,
-    secondaryText: undefined,
-    size: 'small',
 };

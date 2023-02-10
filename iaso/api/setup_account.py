@@ -1,8 +1,8 @@
+import logging
+
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import permissions, serializers
-import logging
-
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 

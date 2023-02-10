@@ -1,7 +1,8 @@
 import json
+import logging
+
 import responses
 from django.core.files.uploadedfile import UploadedFile
-import logging
 
 logger = logging.getLogger(__name__)
 from django.test import TestCase
@@ -32,7 +33,7 @@ from django.core.files import File
 
 import os
 from datetime import datetime
-from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError, EventTrackerHandler
+from iaso.dhis2.datavalue_exporter import DataValueExporter, EventTrackerHandler
 from ..dhis2.export_request_builder import ExportRequestBuilder
 
 

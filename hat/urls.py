@@ -1,14 +1,14 @@
+import django_sql_dashboard  # type: ignore
+from django.conf import settings
+from django.conf.urls.static import static
 from django.contrib import admin, auth
 from django.urls import path, include, re_path
 from django.views.generic import RedirectView
-from django.conf import settings
-from django.conf.urls.static import static
-from iaso.views import page, health
-import django_sql_dashboard  # type: ignore
-
-from rest_framework import permissions
-from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+from rest_framework import permissions
+
+from iaso.views import page, health
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -17,6 +17,7 @@ admin.site.index_title = "Administration de Iaso"
 urlpatterns = [
     path("", RedirectView.as_view(pattern_name="dashboard:iaso", permanent=False), name="index"),
     path("_health/", health),
+    path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
     path("accounts/", include("django.contrib.auth.urls")),
     path("admin/", admin.site.urls),

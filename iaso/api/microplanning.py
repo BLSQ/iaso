@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
@@ -517,7 +516,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
         PublishingStatusFilterBackend,
         DeletionFilterBackend,
     ]
-    ordering_fields = ["id", "name", "started_at", "ended_at"]
+    ordering_fields = ["id", "team__name", "user__username"]
     filterset_fields = {
         "planning": ["exact"],
         "team": ["exact"],

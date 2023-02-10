@@ -1,11 +1,12 @@
-from django.core.management.base import BaseCommand
 import csv
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project
-from django.contrib.gis.geos import Point
-from uuid import uuid4
-from django.db import models, transaction
-from unidecode import unidecode
 import json
+
+from django.contrib.gis.geos import Point
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from unidecode import unidecode
+
+from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project
 
 DEFAULT_DATA_DICT = {
     "name": "Nom",

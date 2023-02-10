@@ -1,8 +1,8 @@
-from hat.audit.models import log_modification
-
-from iaso.test import APITestCase
-from iaso import models as m
 from copy import deepcopy
+
+from hat.audit.models import log_modification
+from iaso import models as m
+from iaso.test import APITestCase
 
 
 class LogsAPITestCase(APITestCase):

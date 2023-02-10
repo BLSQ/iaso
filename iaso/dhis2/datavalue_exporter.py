@@ -1,15 +1,17 @@
+import itertools
+import json
+import logging
+from timeit import default_timer as timer
+
+from dhis2 import Api
+from dhis2 import RequestException
 from django.core.paginator import Paginator
 from django.utils import timezone
-from dhis2 import RequestException
-from dhis2 import Api
-from .value_formatter import format_value
-import json
-from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
+
 import iaso.models as models
-from timeit import default_timer as timer
-import itertools
+from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
 from .api_logger import ApiLogger  # type: ignore
-import logging
+from .value_formatter import format_value
 
 logger = logging.getLogger(__name__)
 

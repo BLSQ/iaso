@@ -1,16 +1,15 @@
 import json
 import urllib.parse
 
-from django.core.files.uploadedfile import UploadedFile
-
-from iaso.models import Instance
-from iaso.test import APITestCase
-from iaso import models as m
+import responses
 from django.core.files.uploadedfile import SimpleUploadedFile
-from hat.audit.models import Modification
+from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
 
-import responses
+from hat.audit.models import Modification
+from iaso import models as m
+from iaso.models import Instance
+from iaso.test import APITestCase
 
 enketo_test_settings = {
     "ENKETO_API_TOKEN": "ENKETO_API_TOKEN_TEST",

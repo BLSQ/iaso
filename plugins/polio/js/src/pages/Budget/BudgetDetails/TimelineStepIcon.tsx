@@ -5,15 +5,14 @@ import ClearIcon from '@material-ui/icons/Clear';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import { Tooltip } from '@material-ui/core';
-import { useStyles } from './BudgetTimeline';
 import { BudgetCategoryItem } from '../types';
 import MESSAGES from '../../../constants/messages';
+import { useStyles } from './styles';
 
 type Props = {
     item: BudgetCategoryItem;
 };
 
-// TODO : double check what happens with multiple overrides (step skipped then cancelled for example)
 export const TimelineStepIcon: FunctionComponent<Props> = ({ item }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();

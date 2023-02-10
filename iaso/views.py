@@ -40,7 +40,9 @@ def page(request, page_slug):
         config = load_powerbi_config_for_page(page)
         return render(request, "iaso/pages/powerbi.html", {"config": config, "title": page.name})
 
-    return HttpResponse(page.content)
+    response = HttpResponse(page.content)
+    response["X-Frame-Options"] = "ALLOW"
+    return response
 
 
 def health(request):

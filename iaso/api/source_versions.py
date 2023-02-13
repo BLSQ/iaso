@@ -92,6 +92,22 @@ class SourceVersionViewSet(ModelViewSet):
 
         return versions.order_by("id").distinct()
 
+    def create(self, request, *args, **kwargs):
+        version_data = request.data
+        data_source = DataSource.objects.get(id=version_data["data_source_id"])
+        description = version_data["description"]
+        version = SourceVersion.objects.filter(data_source_id=data_source).latest("number")
+        latest_version = version.number
+        new_version_number = latest_version + 1 if latest_version else 1
+        new_source_version = SourceVersion.objects.create(
+            data_source=data_source, number=new_version_number, description=description
+        )
+        new_source_version.save()
+
+        serializer = SourceVersionSerializer(new_source_version)
+
+        return Response(serializer.data)
+
     @action(methods=["GET", "POST"], detail=False, serializer_class=DiffSerializer, url_path="diff.csv")
     def diff_csv(self, request):
         serializer: DiffSerializer = self.get_serializer(

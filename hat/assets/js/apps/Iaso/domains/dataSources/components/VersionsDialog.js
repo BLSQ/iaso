@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import Public from '@material-ui/icons/Public';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import FolderOpenIcon from '@material-ui/icons/FolderOpen';
 import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
@@ -25,6 +26,7 @@ import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { EditSourceVersion } from './EditSourceVersion.tsx';
 
@@ -208,6 +210,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
         [page, rowsPerPage],
     );
+
     const sortedData = useMemo(() => {
         if (sortFocus === 'number' && sortBy === 'asc') {
             return formatDataForTable(dataForTable, sortByNumberAsc);
@@ -269,7 +272,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             <Table
                 data={sortedData}
                 columns={tableColumns(source)}
-                redirectTo={() => {}}
+                redirectTo={() => { }}
                 params={params}
                 resetPageToOne={resetPageToOne}
                 pages={pages}
@@ -314,6 +317,20 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     sourceId={source.id}
                     sourceName={source.name}
                     projects={source.projects.flat()}
+                />
+
+                <AddNewEmptyVersion
+                    renderTrigger={({ openDialog }) => (
+                        <Button onClick={openDialog}>
+                            <FolderOpenIcon />
+                            &nbsp;
+                            <FormattedMessage
+                                id="iaso.versionsDialog.label.newEmptyVersion"
+                                defaultMessage="New empty version"
+                            />
+                        </Button>
+                    )}
+                    sourceId={source.id}
                 />
             </Grid>
         </DialogComponent>

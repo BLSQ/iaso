@@ -317,6 +317,13 @@ export const useCopyDataSourceVersion = () => {
     );
 };
 
+export const createSourceVersion = async ({ description, dataSourceId }) => {
+    return postRequest(`/api/sourceversions/`, {
+        description,
+        data_source_id: dataSourceId,
+    });
+};
+
 const updateSourceVersion = async ({
     sourceVersionId,
     description,

@@ -247,7 +247,6 @@ class CampaignViewSet(ModelViewSet):
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
-        order_by = params.get("order") if params.get("order") is not None else None
         search = params.get("search")
         rounds = Round.objects.filter(started_at__year=year)
         # Test campaigns should not appear in the xlsx calendar
@@ -1114,7 +1113,6 @@ def handle_ona_request_with_key(request, key, country_id=None):
     if as_csv:
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
         writer = csv.writer(response)
-        i = 1
         for item in res:
             writer.writerow(item)
         return response

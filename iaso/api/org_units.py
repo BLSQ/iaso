@@ -74,10 +74,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         which all the power should be really specified.
 
-        Can serve theses formats, depending on the combination of GET Parameters:
+        Can serve these formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
          * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
-         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> OrgUnitSmallSearchSerializer
+         * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
          * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
          * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
          * GeoPackage format (if `gpkg` is passed)
@@ -101,7 +101,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
         tree_search = request.GET.get("treeSearch", None)
-        direct_children = request.GET.get("onlyDirectChildren", False)
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
@@ -455,7 +454,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):
-        """This endpoint is used by the react frontend"""
+        """This endpoint is used by the React frontend"""
         errors = []
         org_unit = OrgUnit()
 
@@ -523,7 +522,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 g = GEOSGeometry(json.dumps(geom))
                 org_unit.geom = g
                 org_unit.simplified_geom = g  # maybe think of a standard simplification here?
-            except Exception as e:
+            except Exception:
                 errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
 
         latitude = request.data.get("latitude")
@@ -590,7 +589,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None
-        # Had first geojson of parent so we can add it to map, caution we stop after the first
+        # Had first geojson of parent, so we can add it to map. Caution: we stop after the first
         ancestor = org_unit.parent
         ancestor_dict = res["parent"]
         while ancestor:

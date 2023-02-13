@@ -218,7 +218,6 @@ def cell_border(cell: Any, all: bool = True, bottom_only: bool = False) -> Any:
             returns:
                 cell (openpyxl.cell): a sheet openpyxl.cell object
     """
-    border = None
     if all:
         border = Border(
             left=Side(style="thin"),

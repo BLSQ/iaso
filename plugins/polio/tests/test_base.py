@@ -447,7 +447,7 @@ class PolioAPITestCase(APITestCase):
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
         c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
-        c_round_2 = c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+        c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
         c2 = Campaign.objects.create(
             country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account
@@ -516,7 +516,7 @@ class PolioAPITestCase(APITestCase):
 
     def test_create_calendar_xlsx_sheet_without_test_campaigns(self):
         """
-        Test campaigns appeared in the XLSX but they should not
+        Test campaigns appeared in the XLSX, but they should not
             - This test is to make sure that no test campaign appear again in the XLSX calendar export
         """
         org_unit = OrgUnit.objects.create(

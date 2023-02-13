@@ -74,7 +74,7 @@ def org_units_bulk_update(
         raise Exception("No matching org unit found")
 
     # Assure that none of the OrgUnit we are modifying is in a read only data source
-    # ? Should not this be done in the save() or in a constraint?
+    # ? Shouldn't this be done in the save() or in a constraint?
     read_only_data_sources = DataSource.objects.filter(
         id__in=queryset.values_list("version__data_source", flat=True), read_only=True
     )

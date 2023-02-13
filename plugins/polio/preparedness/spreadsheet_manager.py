@@ -109,7 +109,7 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
 
 
-# Google Sheet don't automatically copy the protected ranges when duplicating a sheet so we do it by hand
+# Google Sheet don't automatically copy the protected ranges when duplicating a sheet, so we do it by hand
 def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
     new_sheet_id = new_sheet.id
     new_protected_ranges = []

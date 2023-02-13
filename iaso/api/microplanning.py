@@ -239,7 +239,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
     Read access for all auth users.
     Write access necessitate iaso_teams permissions.
-    The tree assignation are handled by settings the child sub teams (parent is readonly)
+    The tree assignation are handled by settings the child subteams (parent is readonly)
     """
 
     remove_results_key_if_paginated = True

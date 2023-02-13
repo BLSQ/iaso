@@ -128,7 +128,6 @@ class Command(BaseCommand):
             parent_units = []
             top_org_units = set([])
             print("Inserting all units")
-            index = 0
             with open(file_name, encoding="utf-8-sig") as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=";")
                 index = 1

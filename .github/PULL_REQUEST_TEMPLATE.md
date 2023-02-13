@@ -2,7 +2,7 @@ Explain what problem this PR is resolving
 
 Related JIRA tickets : IA-XXX, WC2-XXX, POLIO-XXX
 
-## Self proof reading checklist
+## Self proofreading checklist
 
 - [ ] Did I use eslint and black formatters
 - [ ] Is my code clear enough and well documented
@@ -13,7 +13,7 @@ Related JIRA tickets : IA-XXX, WC2-XXX, POLIO-XXX
 
 ## Changes
 
-Explain the changes that were made. The idea is not to list exhaustively all the changes made (Github already provides a full diff), but to help the reviewers better understand:
+Explain the changes that were made. The idea is not to list exhaustively all the changes made (GitHub already provides a full diff), but to help the reviewers better understand:
 - which specific file changes go together, e.g: when creating a table in the front-end, there usually is a config file that goes with it
 - the reasoning behind some changes, e.g: deleted files because they are now redundant
 - the behaviour to expect, e.g: tooltip has purple background color because the client likes it so, changed a key in the API response to be consistent with other endpoints

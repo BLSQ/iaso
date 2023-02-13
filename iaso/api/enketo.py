@@ -289,7 +289,7 @@ def enketo_form_download(request):
     """Called by Enketo to Download the form definition as an XML file (the list of question and so on)
 
     Require a param `formID` which is actually an Instance UUID.
-    We insert the instance.id In the form definition so the "Form" is unique per instance.
+    We insert the instance Id In the form definition so the "Form" is unique per instance.
     """
     uuid = request.GET.get("uuid")
     try:
@@ -346,7 +346,7 @@ class EnketoSubmissionAPIView(APIView):
             instance.json = {}
             instance.save()
 
-            # copy pasted from the create
+            # copy-pasted from the "create" code
             try:
                 instance.get_and_save_json_of_xml()
                 try:

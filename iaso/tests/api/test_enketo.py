@@ -141,7 +141,6 @@ class EnketoAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 403)
 
     def test_when_anonymous_head_submission_should_work(self):
-        instance = self.form_1.instances.first()
         response = self.client.head(f"/api/enketo/submission")
 
         self.assertXmlResponse(response, 204)
@@ -178,9 +177,7 @@ class EnketoAPITestCase(APITestCase):
                 .replace("REPLACEuserID", str(self.yoda.id))
                 .encode(),
             )
-            response = self.client.post(
-                f"/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
-            )
+            self.client.post(f"/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f})
 
             instance = self.form_1.instances.first()
 
@@ -266,15 +263,15 @@ class EnketoAPITestCase(APITestCase):
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
     def test_public_create_url_duplicate_fail(self):
-        """There is already more than two instance for the form/period and it is single_per_period so it fail"""
+        """There is already more than two instance for the form/period, and it is single_per_period so it fail"""
         token = self.project.external_token
         form_id = self.form_1.form_id
         # Mark form as single per period and add a duplicate
         self.setUpMockEnketo()
         self.form_1.single_per_period = True
         self.form_1.save()
-        instance = self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
-        instance = self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
+        self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
+        self.create_form_instance(form=self.form_1, period="202001", org_unit=self.jedi_council_corruscant)
 
         data = {
             "period": "202001",
@@ -358,7 +355,7 @@ class EnketoAPITestCase(APITestCase):
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
     def test_public_create_url_non_single_create_2(self):
-        """There is 2 instances on the Form/OrgUnit/Period and it is NOT single per period, so we create a new one"""
+        """There is 2 instances on the Form/OrgUnit/Period, and it is NOT single per period, so we create a new one"""
         token = self.project.external_token
         form_id = self.form_1.form_id
         # Mark form as single per period and add a duplicate
@@ -391,14 +388,14 @@ class EnketoAPITestCase(APITestCase):
     def test_form_list_work_with_duplicate_instance(self):
         "Check form list work when there are two instances with the same UUID"
         uuid_dup = "uuid-dup"
-        instance1 = self.create_form_instance(
+        self.create_form_instance(
             form=self.form_1,
             period="202001",
             org_unit=self.jedi_council_corruscant,
             project=self.project,
             uuid=uuid_dup,
         )
-        instance2 = self.create_form_instance(
+        self.create_form_instance(
             form=self.form_1,
             period="202001",
             org_unit=self.jedi_council_corruscant,
@@ -436,7 +433,7 @@ class EnketoAPITestCase(APITestCase):
             json={"a": 2, "hello": "world"},
         )
         # json empty
-        instance2 = self.create_form_instance(
+        self.create_form_instance(
             form=self.form_1,
             period="202001",
             org_unit=self.jedi_council_corruscant,
@@ -486,7 +483,7 @@ class EnketoAPITestCase(APITestCase):
         )
 
     def test_form_download(self):
-        "form download works"
+        """form download works"""
         submission_uuid = "uuid-dup"
         instance1 = self.create_form_instance(
             form=self.form_1,

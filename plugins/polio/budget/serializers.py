@@ -174,7 +174,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         We also return a color to mark the progress in each category. In the future we may want to modulate this
         color according to the delay.
 
-        We may want to cache this in the future because this a bit of calculation, and only change when a step is done
+        We may want to cache this in the future because this a bit of calculation, and only change when a step is done,
         but it is not critical for now as we only query one campaign at the time in the current design.
 
         """
@@ -368,12 +368,14 @@ class TransitionOverrideSerializer(serializers.Serializer):
         user = self.context["request"].user
         node_keys = data["new_state_key"]
         workflow = get_workflow()
+
         n_transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
         # find the override transition in the workflow
         transition_as_list = list(filter(lambda tr: tr.key == "override", workflow.transitions))
         if len(transition_as_list) == 0:
             raise Exception("override step not found in workflow")
         transition = transition_as_list[0]
+
         created_by_team = None
         if not created_by_team:
             created_by_team = Team.objects.filter(users=user).first()

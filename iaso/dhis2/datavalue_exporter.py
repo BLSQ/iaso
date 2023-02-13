@@ -207,10 +207,8 @@ class AggregateHandler(BaseHandler):
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
-            resp = {}
             try:
                 resp = json.loads(dhis2_exception.description)
-
             except:
                 resp = {"status": "ERROR", "description": "non json response return by server"}
 
@@ -245,7 +243,7 @@ class EventHandler(BaseHandler):
         event_errors = []
         question_mappings = form_mapping["question_mappings"]
 
-        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref == None:
+        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref is None:
             errored = True
             event_errors.append(
                 [
@@ -561,7 +559,7 @@ class EventTrackerHandler(BaseHandler):
                                     unique_number_attribute_id,
                                     country_dhis2_id,
                                 )
-                                # create relation ship
+                                # create relationship
                                 if "relationship_type" in subform_mapping:
                                     relation_ship = {
                                         "relationshipType": subform_mapping["relationship_type"],

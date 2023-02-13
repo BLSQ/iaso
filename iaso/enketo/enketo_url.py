@@ -4,7 +4,7 @@ import sys
 from json.decoder import JSONDecodeError
 
 import requests
-from django.conf import settings as djangoSettings
+from django.conf import settings as django_settings
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class EnketoError(Exception):
 
 
 def enketo_settings():
-    return djangoSettings.ENKETO
+    return django_settings.ENKETO
 
 
 def urljoin(arg1, arg2):
@@ -29,7 +29,6 @@ def urljoin(arg1, arg2):
 
 def enketo_url_for_creation(uuid, server_url, return_url=None):
     """Return Enketo webform URL."""
-
     settings = enketo_settings()
     url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_SURVEY_PATH"])
     url = urljoin(url, "/single")

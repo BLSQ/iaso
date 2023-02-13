@@ -165,7 +165,6 @@ class ProfilesViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         if pk == "me":
             # allow user to change his own language
-            user = request.user
             profile = request.user.iaso_profile
             if "home_page" in request.data:
                 profile.home_page = request.data["home_page"]
@@ -198,7 +197,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
 
         if password and request.user == user:
-            # update session hash if you changed your own password so you don't get unlogged
+            # update session hash if you changed your own password, so you don't get unlogged
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
             update_session_auth_hash(request, user)
 
@@ -274,7 +273,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if permissions != []:
             user.save()
 
-        # Create a iaso profile for the new user and attach it to the same account
+        # Create an Iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(

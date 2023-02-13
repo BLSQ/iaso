@@ -291,7 +291,7 @@ def dhis2_ou_importer(
         account.default_version = version  # type: ignore
         account.save()  # type: ignore
 
-    # name of group to a orgunit type. If a orgunit belong to one of these group it will get that type
+    # name of group to an orgunit type. If an orgunit belong to one of these group it will get that type
     group_type_dict: Dict[str, OrgUnitType] = {}
     error_count, unit_dict = import_orgunits_and_groups(
         api, source, version, validate, continue_on_error, group_type_dict, start, update_mode, the_task
@@ -332,7 +332,7 @@ def import_orgunits_and_groups(
     created_ou = {}
 
     for row in orgunits:
-        # In update mode we only create non present OrgUnit but we don't update existing one.
+        # In update mode we only create non-present OrgUnit, but we don't update existing one.
         # in not update mode the version should be empty, so explode
         if row["id"].strip() in unit_dict:
             if update_mode:

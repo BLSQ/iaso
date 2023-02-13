@@ -1,3 +1,5 @@
+/* eslint-disable class-methods-use-this */
+// @ts-ignore
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
@@ -5,14 +7,21 @@ import { injectIntl, theme } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import { MapControl, withLeaflet } from 'react-leaflet';
 import { ZoomBar } from '../components/leaflet/zoom-bar';
+import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../domains/orgUnits/types/orgunitTypes';
+import {
+    AssociatedOrgUnit,
+    MappedOrgUnit,
+} from '../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
 
 export const defaultCenter = [5, 20];
 export const defaultZoom = 4;
 
-export const orderOrgUnitsByDepth = orgUnits =>
+export const orderOrgUnitsByDepth = (orgUnits: OrgUnit[]): OrgUnit[] =>
     orderBy(orgUnits, [o => o.org_unit_type_depth], ['asc']);
-export const orderOrgUnitTypeByDepth = orgUnitTypes =>
-    orderBy(orgUnitTypes, [o => o.depth], ['asc']);
+export const orderOrgUnitTypeByDepth = (
+    orgUnitTypes: OrgunitTypes,
+): OrgunitTypes => orderBy(orgUnitTypes, [o => o.depth], ['asc']);
 
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
@@ -29,7 +38,10 @@ export const MESSAGES = defineMessages({
     },
 });
 
-export const isValidCoordinate = (latitude, longitude) => {
+export const isValidCoordinate = (
+    latitude: number,
+    longitude: number,
+): boolean => {
     if (
         !latitude ||
         !longitude ||
@@ -44,7 +56,7 @@ export const isValidCoordinate = (latitude, longitude) => {
 
 export const getLatLngBounds = items => {
     if (!items || (items && items.length === 0)) return null;
-    const latLngs = [];
+    const latLngs: any[] = [];
     items.forEach(i => {
         if (isValidCoordinate(i.latitude, i.longitude)) {
             latLngs.push(L.latLng(i.latitude, i.longitude));
@@ -60,7 +72,7 @@ export const getLatLngBounds = items => {
 };
 
 export const getShapesBounds = (shapes, shapeKey = 'geo_json') => {
-    const groups = [];
+    const groups: any[] = [];
     shapes.forEach(s => {
         const shapeGroup = new L.FeatureGroup();
         const shape = L.geoJSON(s[shapeKey]);
@@ -112,7 +124,9 @@ export const customMarkerOptions = {
 
 export const customMarker = L.divIcon(customMarkerOptions);
 
-export const circleColorMarkerOptions = color => ({
+export const circleColorMarkerOptions = (
+    color: string,
+): Record<string, string | number> => ({
     className: 'marker-custom color circle-marker',
     fillColor: color,
     fillOpacity: 1,
@@ -135,30 +149,36 @@ class ZoomControl_ extends MapControl {
 
 export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
 
-export const mapOrgUnitByLocation = orgUnits => {
-    const mappedOrgunits = [];
-    orgUnits.forEach(ot => {
-        const otCopy = {
-            ...ot,
+// Takes the value of the .orgUnit field of each org unit and copy it in either shape or location field
+export const mapOrgUnitByLocation = (
+    origin: OrgunitTypes | AssociatedOrgUnit[],
+): MappedOrgUnit[] => {
+    const mappedOrgunits: MappedOrgUnit[] = [];
+    origin.forEach(element => {
+        const copy = {
+            ...element,
             orgUnits: {
                 shapes: [],
                 locations: [],
             },
         };
-        ot.orgUnits.forEach(o => {
+        element.orgUnits.forEach(o => {
             if (o.latitude && o.longitude) {
-                otCopy.orgUnits.locations.push(o);
+                copy.orgUnits.locations.push(o);
             }
             if (o.geo_json) {
-                otCopy.orgUnits.shapes.push(o);
+                copy.orgUnits.shapes.push(o);
             }
         });
-        mappedOrgunits.push(otCopy);
+        mappedOrgunits.push(copy);
     });
     return mappedOrgunits;
 };
 
-export const shapeOptions = () => ({
+export const shapeOptions = (): {
+    // eslint-disable-next-line no-unused-vars
+    onEachFeature: (feature: any, layer: any) => void;
+} => ({
     onEachFeature: (feature, layer) => {
         layer.setStyle({
             weight: 3,
@@ -166,10 +186,13 @@ export const shapeOptions = () => ({
     },
 });
 
+type ShapeOptions = {
+    shapeOptions: { color: string; className: string; pane: string };
+};
 export const polygonDrawOption = (
     customClass = 'primary',
     extraClass = '',
-) => ({
+): ShapeOptions => ({
     shapeOptions: {
         color: theme.palette[customClass].main,
         className: `${customClass} ${extraClass}`,
@@ -177,5 +200,5 @@ export const polygonDrawOption = (
     },
 });
 
-export const getleafletGeoJson = geoJson =>
+export const getleafletGeoJson = (geoJson: any): void =>
     geoJson ? L.geoJson(geoJson, shapeOptions) : null;

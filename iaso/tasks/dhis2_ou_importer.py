@@ -1,5 +1,13 @@
+import json
+import logging
+import time
 from typing import Optional, Dict, Any, List
 
+from dhis2 import Api
+from django.contrib.gis.geos import Point, MultiPolygon, Polygon
+from django.utils.timezone import now
+
+from beanstalk_worker import task_decorator
 from iaso.models import (
     OrgUnit,
     OrgUnitType,
@@ -9,15 +17,6 @@ from iaso.models import (
     GroupSet,
     Task,
 )
-from beanstalk_worker import task_decorator
-from django.contrib.gis.geos import Point, MultiPolygon, Polygon
-from django.utils.timezone import now
-
-from dhis2 import Api
-
-import logging
-import json
-import time
 
 try:  # only in 3.8
     from typing import TypedDict  # type: ignore
@@ -49,6 +48,7 @@ class DhisOrgunit(TypedDict):
     coordinates: Optional[str]
     geometry: Optional[DhisGeom]
     organisationUnitGroups: List[DhisGroup]
+    path: str
 
 
 def get_api(options_or_url, login=None, password=None):
@@ -163,8 +163,12 @@ def map_geometry(row: DhisOrgunit, org_unit: OrgUnit):
         feature_type = None
         coordinates = None
         try:
-            coordinates = row["geometry"]["coordinates"]
-            feature_type = row["geometry"]["type"]
+            geometry_ = row["geometry"]
+            if not isinstance(geometry_, dict):
+                logger.warning("Unsupported feature tye")
+                return
+            coordinates = geometry_.get("coordinates")
+            feature_type = geometry_.get("type")
             if feature_type == "Point" and coordinates:
                 # No altitude in DHIS2, but mandatory in Iaso
                 org_unit.location = Point(coordinates[0], coordinates[1], 0)
@@ -287,7 +291,7 @@ def dhis2_ou_importer(
         account.default_version = version  # type: ignore
         account.save()  # type: ignore
 
-    # name of group to a orgunit type. If a orgunit belong to one of these group it will get that type
+    # name of group to an orgunit type. If an orgunit belong to one of these group it will get that type
     group_type_dict: Dict[str, OrgUnitType] = {}
     error_count, unit_dict = import_orgunits_and_groups(
         api, source, version, validate, continue_on_error, group_type_dict, start, update_mode, the_task
@@ -328,7 +332,7 @@ def import_orgunits_and_groups(
     created_ou = {}
 
     for row in orgunits:
-        # In update mode we only create non present OrgUnit but we don't update existing one.
+        # In update mode we only create non-present OrgUnit, but we don't update existing one.
         # in not update mode the version should be empty, so explode
         if row["id"].strip() in unit_dict:
             if update_mode:

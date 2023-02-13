@@ -1,17 +1,14 @@
-from iaso.models import WorkflowFollowup
-from iaso.api.common import ModelViewSet, HasPermission
-
-from rest_framework import filters, permissions
-from rest_framework.response import Response
-from rest_framework.decorators import action
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-
-from drf_yasg.utils import swagger_auto_schema, no_body
 from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema, no_body
+from rest_framework import filters, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
 
-import iaso.api.workflows.utils as utils
 import iaso.api.workflows.serializers as ser
-
+import iaso.api.workflows.utils as utils
+from iaso.api.common import ModelViewSet, HasPermission
+from iaso.models import WorkflowFollowup
 
 workflow_version_id_param = openapi.Parameter(
     name="workflow_version_id",

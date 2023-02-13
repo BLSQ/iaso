@@ -13,7 +13,7 @@ import {
 } from '../../../utils/forms';
 import { fetchAllOrgUnitTypes } from '../../orgUnits/orgUnitTypes/actions';
 
-import { formatLabel } from '../../instances/utils';
+import { formatLabel } from '../../instances/utils/index.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
 

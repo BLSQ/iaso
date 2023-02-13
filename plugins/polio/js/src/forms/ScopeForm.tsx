@@ -27,11 +27,7 @@ type Values = {
     initial_org_unit: number;
 };
 
-export const scopeFormFields = [
-    'separate_scopes_per_round',
-    'scopes',
-    'rounds',
-];
+export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
 
 export const ScopeForm: FunctionComponent = () => {
     const { values } = useFormikContext<Values>();

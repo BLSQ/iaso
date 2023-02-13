@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Grid, Typography, Box, Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
+import { findKey } from 'lodash';
 
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
@@ -79,7 +80,10 @@ export const budgetFormFields = rounds => {
         'unicef_disbursed_to_moh_at',
         'district_count',
         'no_regret_fund_amount',
-        ...rounds.map((round, i) => `rounds[${i}].cost`),
+        ...rounds.map((round, i) => {
+            console.log(findKey(rounds[i], rounds[i].cost));
+            return findKey(rounds[i], rounds[i].cost);
+        }),
     ];
 };
 

@@ -615,6 +615,12 @@ export const useFormValidator = () => {
         unicef_disbursed_to_co_at: yup.date().nullable(),
         who_disbursed_to_moh_at: yup.date().nullable(),
         who_disbursed_to_co_at: yup.date().nullable(),
+        feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE: yup
+            .date()
+            .nullable(),
+        feedback_sent_to_orpg_operations_who_at_WFEDITABLE: yup
+            .date()
+            .nullable(),
 
         spreadsheet_url: yup.string().url().nullable(),
 

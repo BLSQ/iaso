@@ -74,8 +74,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         isOpen && campaignId,
     );
 
-    const { rounds } = selectedCampaign;
-
     const { data: campaignLogs } = useGetCampaignLogs(
         selectedCampaign?.id,
         isOpen,
@@ -131,6 +129,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         onClose();
     };
     const tabs = useMemo(() => {
+        console.log(
+            'budget form fields',
+            budgetFormFields(selectedCampaign?.rounds ?? []),
+        );
         return [
             {
                 title: formatMessage(MESSAGES.baseInfo),
@@ -175,7 +177,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 title: formatMessage(MESSAGES.budget),
                 form: BudgetForm,
                 hasTabError: compareArraysValues(
-                    budgetFormFields(rounds ?? []),
+                    budgetFormFields(selectedCampaign?.rounds ?? []),
                     formik.errors,
                 ),
                 key: 'budget',
@@ -193,6 +195,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 title: formatMessage(MESSAGES.rounds),
                 form: RoundsForm,
                 key: 'rounds',
+                hasTabError: compareArraysValues('rounds', formik.errors),
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
@@ -205,7 +208,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         formik.errors,
         formik.values.initial_org_unit,
         formik.values.rounds.length,
-        rounds,
+        selectedCampaign?.rounds,
     ]);
 
     const [selectedTab, setSelectedTab] = useState(0);
@@ -229,6 +232,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
         formik.isSubmitting;
+
+    // console.log('selected campaign', selectedCampaign);
+    // console.log('formik errors', formik.errors);
+    console.log('rounds', selectedCampaign?.rounds);
 
     return (
         <Dialog
@@ -292,12 +299,14 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                                     <Tab
                                         key={key}
                                         classes={
-                                            hasTabError && {
-                                                textColorPrimary:
-                                                    tabErrorClasses.tabError,
-                                                selected:
-                                                    tabErrorClasses.tabError,
-                                            }
+                                            hasTabError
+                                                ? {
+                                                      textColorPrimary:
+                                                          tabErrorClasses.tabError,
+                                                      selected:
+                                                          tabErrorClasses.tabError,
+                                                  }
+                                                : null
                                         }
                                         label={
                                             <Tooltip
@@ -321,11 +330,14 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                                     label={title}
                                     disabled={disabled || false}
                                     classes={
-                                        hasTabError && {
-                                            textColorPrimary:
-                                                tabErrorClasses.tabError,
-                                            selected: tabErrorClasses.tabError,
-                                        }
+                                        hasTabError
+                                            ? {
+                                                  textColorPrimary:
+                                                      tabErrorClasses.tabError,
+                                                  selected:
+                                                      tabErrorClasses.tabError,
+                                              }
+                                            : null
                                     }
                                 />
                             );
@@ -347,12 +359,13 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                             )}
                         </Grid>
                     </Grid>
-                    {formik.errors?.rounds && (
+                    {/* TO DO / SPECIFIC COMMIT TO REMOVE ERRORS ROUND */}
+                    {/* {formik.errors?.rounds && (
                         <RoundsEmptyDates
                             roundErrors={formik.errors.rounds}
                             roundValues={formik.values.rounds}
                         />
-                    )}
+                    )} */}
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>

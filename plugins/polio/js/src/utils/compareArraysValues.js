@@ -1,3 +1,6 @@
 export const compareArraysValues = (form, fieldErrors) => {
-    return Object.entries(fieldErrors).some(err => form.includes(err[0]));
+    console.log('field errors', fieldErrors);
+    return Object.entries(fieldErrors).some(fieldError =>
+        form.includes(fieldError[0]),
+    );
 };

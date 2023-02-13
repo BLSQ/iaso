@@ -8,7 +8,7 @@ from .common import ModelViewSet, HasPermission
 
 
 class DerivedInstanceSerializer(serializers.Serializer):
-    def validate(self, _data: typing.Mapping):
+    def validate(self, data: typing.Mapping):
         data = self.context["request"].data
         periods = data["periods"]
         form_ids = list(map(lambda f: f["form_version__form_id"], data["derived"]))

@@ -18,7 +18,7 @@ def seed_event_mapping(api, program_id):
             de = psde["dataElement"]
             if "code" in de:
                 code_or_name = de.get("code")
-            elif "shortName":  # FIXME: shouldn't it be "elif "shortName" in de"? (this is always True)
+            elif "shortName" in de:
                 code_or_name = de.get("shortName")
                 missing_data_elements.append(de)
             else:

@@ -120,7 +120,7 @@ data
 
 
 
-\static/
+/static
 
 # lint error checking output
 lintErrors.html

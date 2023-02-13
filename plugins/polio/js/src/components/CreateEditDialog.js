@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import { FormikProvider, useFormik } from 'formik';
-import { merge } from 'lodash';
+import { get, merge } from 'lodash';
 import {
     Button,
     Dialog,
@@ -43,9 +43,8 @@ import {
     preparednessFormFields,
 } from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
-import { RoundsForm } from '../forms/RoundsForm';
-import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
-import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
+import { RoundsForm, roundFormFields } from '../forms/RoundsForm';
+import { VaccineManagementForm, vaccineManagementFormFields } from '../forms/VaccineManagementForm.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useGetCampaignLogs } from '../hooks/useGetCampaignHistory.ts';
@@ -129,10 +128,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         onClose();
     };
     const tabs = useMemo(() => {
-        console.log(
-            'budget form fields',
-            budgetFormFields(selectedCampaign?.rounds ?? []),
-        );
         return [
             {
                 title: formatMessage(MESSAGES.baseInfo),
@@ -195,12 +190,13 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 title: formatMessage(MESSAGES.rounds),
                 form: RoundsForm,
                 key: 'rounds',
-                hasTabError: compareArraysValues('rounds', formik.errors),
+                hasTabError: compareArraysValues(roundFormFields(selectedCampaign?.rounds ?? []), formik.errors),
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
                 form: VaccineManagementForm,
                 key: 'vaccineManagement',
+                hasTabError:compareArraysValues(vaccineManagementFormFields(selectedCampaign?.rounds ?? []), formik.errors)
             },
         ];
     }, [
@@ -232,10 +228,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
         formik.isSubmitting;
-
-    // console.log('selected campaign', selectedCampaign);
-    // console.log('formik errors', formik.errors);
-    console.log('rounds', selectedCampaign?.rounds);
 
     return (
         <Dialog

@@ -39,17 +39,20 @@ export const useGetQueryBuildersFields = (
             if (currentField.useListValues) {
                 // We will take the last found value in the form descriptors list
                 formDescriptors?.forEach(formDescriptor => {
-                    const listValues =
-                        findDescriptorInChildren(
-                            field,
-                            formDescriptor,
-                        )?.children?.map(child => ({
-                            value: child.name,
-                            title: formatLabel(child),
-                        })) || [];
-                    fields[field.fieldKey].fieldSettings = {
-                        listValues,
-                    };
+                    const descriptor = findDescriptorInChildren(
+                        field,
+                        formDescriptor,
+                    );
+                    if (descriptor?.children) {
+                        const listValues =
+                            descriptor.children.map(child => ({
+                                value: child.name,
+                                title: formatLabel(child),
+                            })) || [];
+                        fields[field.fieldKey].fieldSettings = {
+                            listValues,
+                        };
+                    }
                 });
             }
         }

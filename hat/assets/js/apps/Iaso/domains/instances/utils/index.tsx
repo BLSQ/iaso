@@ -61,7 +61,7 @@ const KeyValueFields: FunctionComponent<KeyValueFieldsProps> = ({ entry }) => (
 );
 
 type Field = {
-    label?: string;
+    label?: string | Record<string, string>;
     name: string;
 };
 type Locales = {
@@ -76,28 +76,37 @@ const localizeLabel = (field: Field): string => {
     const locale: string = getCookie('django_language') ?? 'en';
     const localeKey = labelLocales[locale] ?? labelLocales.en;
 
-    let localeOptions: Field;
+    let localeOptions: Record<string, string> = { [localeKey]: field.name };
     if (typeof field === 'object') {
-        const singleToDoubleQuotes: string = (field.label || '').replaceAll(
-            "'",
-            '"',
-        );
-        const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
-        const formattedLabel: string = singleToDoubleQuotes.replace(
-            wrongDoubleQuotes,
-            "'",
-        );
-        try {
-            localeOptions = JSON.parse(formattedLabel);
-        } catch (e) {
-            // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
-            console.warn('Error parsing JSON', formattedLabel, e);
-            return field.name;
+        // console.log('BUG!', field.label);
+        if (typeof field.label === 'string') {
+            const singleToDoubleQuotes: string = (field.label || '').replaceAll(
+                "'",
+                '"',
+            );
+            const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
+            const formattedLabel: string = singleToDoubleQuotes.replace(
+                wrongDoubleQuotes,
+                "'",
+            );
+            try {
+                localeOptions = JSON.parse(formattedLabel);
+            } catch (e) {
+                // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
+                console.warn('Error parsing JSON', formattedLabel, e);
+                return field.name;
+            }
+        } else if (
+            typeof field.label === 'object' &&
+            !Array.isArray(field.label)
+        ) {
+            // console.log('JSON', field.label);
+            localeOptions = field.label;
         }
     } else {
         localeOptions = field;
     }
-    return localeOptions[localeKey] ?? field.name;
+    return localeOptions[localeKey];
 };
 
 /**

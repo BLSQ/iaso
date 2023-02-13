@@ -1,6 +1,5 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
-from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import serializers, filters, permissions
 from rest_framework.decorators import action
@@ -240,7 +239,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
 
     Read access for all auth users.
     Write access necessitate iaso_teams permissions.
-    The tree assignation are handled by settings the child sub teams (parent is readonly)
+    The tree assignation are handled by settings the child subteams (parent is readonly)
     """
 
     remove_results_key_if_paginated = True

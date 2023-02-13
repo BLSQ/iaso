@@ -4,7 +4,7 @@
 
 Short version: please report security issues by emailing security@bluesquarehub.com.
 
-Most normal bugs in Iaso are reported to our github issues, but due to the sensitive nature of security issues, we ask that they not be publicly reported in this fashion.
+Most normal bugs in Iaso are reported to our GitHub issues, but due to the sensitive nature of security issues, we ask that they not be publicly reported in this fashion.
 
 Instead, if you believe you’ve found something in Iaso which has security implications, please send a description of the issue via email to security@bluesquarehub.com. Mail sent to that address reaches the security team.
 

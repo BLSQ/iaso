@@ -8,13 +8,13 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
-from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.budget import workflow
+from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.time_cache import time_cache
 
 
@@ -93,7 +93,7 @@ class BudgetStepLink(SoftDeletableModel):
 def validator_template(value: str):
     try:
         # this will raise an error if the template cannot be parsed
-        template = Engine.get_default().from_string(value)
+        Engine.get_default().from_string(value)
     except TemplateSyntaxError as e:
         raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
 
@@ -159,8 +159,14 @@ class MailTemplate(models.Model):
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
-        node = workflow.get_node_by_key(transition.to_node)
+        if transition.key != "override":
+            node = workflow.get_node_by_key(transition.to_node)
+        else:
+            node_key = request.data["new_state_key"].split(",")[0]
+            node = workflow.get_node_by_key(node_key)
+
         attachments = []
+        override = step.transition_key == "override"
         for f in step.files.all():
             file_url = base_url + f.get_absolute_url()
             attachments.append({"url": file_url, "name": f.filename})
@@ -193,6 +199,7 @@ class MailTemplate(models.Model):
                 "skipped_attachments": skipped_attachements,
                 "files": step.files.all(),
                 "links": step.links.all(),
+                "override": override,
             }
         )
         DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'

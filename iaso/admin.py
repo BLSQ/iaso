@@ -1,10 +1,11 @@
+from typing import Any
+
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
-from django.db import models
 from django.contrib.gis.db import models as geomodels
+from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
-from typing import Any
 from typing_extensions import Protocol
 
 from .models import (

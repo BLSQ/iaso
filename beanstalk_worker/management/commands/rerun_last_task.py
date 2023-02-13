@@ -5,7 +5,6 @@ from django.core.management.base import BaseCommand
 from beanstalk_worker import task_service
 from iaso.models import Task
 
-
 logger = getLogger(__name__)
 
 

@@ -111,7 +111,7 @@ class ExportSerializer(DiffSerializer):
         return validated_data
 
     def launch_export(self, user):
-        # use data and not validated data so we have the id
+        # use data and not validated data, so we have the id
         data = self.data
         if "groups" in data["fields_to_export"]:
             data["fields_to_export"].remove("groups")

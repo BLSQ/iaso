@@ -1,10 +1,11 @@
-from hat.audit.models import Modification, INSTANCE_API
 from django.core.files import File
-from iaso.test import TestCase
-from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
+from django.utils.timezone import now
+
+from hat.audit.models import Modification, INSTANCE_API
 from iaso import models as m
 from iaso.odk import parsing
+from iaso.test import TestCase
 
 
 class InstanceModelTestCase(TestCase):

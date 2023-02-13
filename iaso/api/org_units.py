@@ -2,28 +2,26 @@ import json
 from copy import deepcopy
 from time import gmtime, strftime
 
+from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
-from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.serializers import ValidationError
-from django.conf import settings
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit import models as audit_models
 from iaso.api.common import safe_api_import, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
 from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
-from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
 from iaso.utils import geojson_queryset
 
 
@@ -76,10 +74,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         which all the power should be really specified.
 
-        Can serve theses formats, depending on the combination of GET Parameters:
+        Can serve these formats, depending on the combination of GET Parameters:
          * Simple JSON (default) -> as_dict_for_mobile
          * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
-         * Paginated JSON with less info (if both `limit` and `smallSearch` is passed. -> OrgUnitSmallSearchSerializer
+         * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
          * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
          * Paginated GeoJson (if `asLocation` is passed) Note: Don't respect the page setting -> as_location
          * GeoPackage format (if `gpkg` is passed)
@@ -103,7 +101,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
         tree_search = request.GET.get("treeSearch", None)
-        direct_children = request.GET.get("onlyDirectChildren", False)
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
@@ -457,7 +454,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):
-        """This endpoint is used by the react frontend"""
+        """This endpoint is used by the React frontend"""
         errors = []
         org_unit = OrgUnit()
 
@@ -525,7 +522,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 g = GEOSGeometry(json.dumps(geom))
                 org_unit.geom = g
                 org_unit.simplified_geom = g  # maybe think of a standard simplification here?
-            except Exception as e:
+            except Exception:
                 errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
 
         latitude = request.data.get("latitude")
@@ -592,7 +589,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None
-        # Had first geojson of parent so we can add it to map, caution we stop after the first
+        # Had first geojson of parent, so we can add it to map. Caution: we stop after the first
         ancestor = org_unit.parent
         ancestor_dict = res["parent"]
         while ancestor:

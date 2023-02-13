@@ -8,11 +8,8 @@ import { Box, makeStyles, Tabs, Tab, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
 
@@ -103,6 +100,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         parentSelected,
         baseOrgunitType,
         order: params.order || 'name',
+        search: params.search,
         selectedItem,
     });
 

@@ -1,12 +1,11 @@
 from django.http import HttpResponse
+from rest_framework import serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from iaso.models import DataSource
 from iaso.models import SourceVersion
 from .common import ModelViewSet, CONTENT_TYPE_CSV, HasPermission
-from iaso.models import DataSource
-from rest_framework import serializers, permissions
-
 from .source_versions_serializers import DiffSerializer, ExportSerializer
 from .tasks import TaskSerializer
 

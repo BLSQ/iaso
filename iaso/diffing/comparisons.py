@@ -1,7 +1,4 @@
 from django.contrib.gis.geos import Point
-from django.db.models.query import prefetch_related_objects
-from iaso.models import OrgUnit, GroupSet
-import json
 
 
 class Dictable:

@@ -108,7 +108,7 @@ def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
         preparedness = get_preparedness(ssi.cached_spreadsheet)
         summary = preparedness_summary(preparedness)
         score = summary["overall_status_score"]
-    except Exception as e:
+    except Exception:
         return None, day, None
     return ssi.created_at, day, score
 

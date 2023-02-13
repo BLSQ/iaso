@@ -3,9 +3,10 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
+from django.contrib.auth.models import User, Permission
+
 from iaso.models import Account, Form, OrgUnitType, OrgUnit
 from iaso.test import APITestCase
-from django.contrib.auth.models import User, Permission
 
 
 class CompletenessStatsAPITestCase(APITestCase):

@@ -42,6 +42,7 @@ class FormsVersionAPITestCase(APITestCase):
         cls.form_1.org_unit_types.add(cls.sith_council)
         cls.form_1.save()
         cls.project.forms.add(cls.form_1)
+        cls.project.feature_flags.add(m.FeatureFlag.objects.get(code="FORM_VERSIONS_NO_READ_ONLY"))
         cls.project.save()
 
         cls.form_2 = m.Form.objects.create(

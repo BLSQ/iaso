@@ -7,7 +7,7 @@ from django.db.models.functions import Concat
 from rest_framework import serializers, parsers, permissions, exceptions
 from rest_framework.fields import Field
 
-from iaso.models import Form, FormVersion
+from iaso.models import Form, FormVersion, Project
 from iaso.odk import parsing
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
@@ -186,3 +186,37 @@ class FormVersionsViewSet(ModelViewSet):
         queryset = queryset.order_by(*orders)
 
         return queryset
+
+
+def form_version_read_only_ok(request):
+    app_id = request.query_params.get("app_id")
+    if app_id is not None:  # mobile app
+        try:
+            project = Project.objects.get_for_user_and_app_id(request.user, app_id)
+            if project.feature_flags.get(code="FORM_VERSIONS_NO_READ_ONLY"):
+                return False
+        except Project.DoesNotExist:
+            return False
+    else:
+        return False  # No app_id, so we cannot know if the project has the feature flag
+
+    return True
+
+
+class HasFormVersionPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS and form_version_read_only_ok(request):
+            return True
+
+        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+
+    def has_object_permission(self, request, view, obj):
+        if not self.has_permission(request, view):
+            return False
+        return obj in Form.objects_include_deleted.filter_for_user_and_app_id(
+            request.user, request.query_params.get("app_id")
+        )
+
+
+class MobileFormVersionsViewSet(FormVersionsViewSet):
+    permission_classes = [HasFormVersionPermission]

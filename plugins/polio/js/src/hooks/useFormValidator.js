@@ -396,10 +396,8 @@ const useDestructionShape = () => {
 const useVaccineShape = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        name: yup
-            .string()
-            .trim()
-            .required(formatMessage(MESSAGES.fieldRequired)), // TODO restrict string value to vaccines
+        name: yup.string().trim(),
+        // .required(formatMessage(MESSAGES.fieldRequired)), // TODO restrict string value to vaccines
         wastage_ratio_forecast: yup
             .number()
             .nullable()

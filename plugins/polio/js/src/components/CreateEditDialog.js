@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import { FormikProvider, useFormik } from 'formik';
-import { get, merge } from 'lodash';
+import { merge } from 'lodash';
 import {
     Button,
     Dialog,
@@ -44,7 +44,10 @@ import {
 } from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
 import { RoundsForm, roundFormFields } from '../forms/RoundsForm';
-import { VaccineManagementForm, vaccineManagementFormFields } from '../forms/VaccineManagementForm.tsx';
+import {
+    VaccineManagementForm,
+    vaccineManagementFormFields,
+} from '../forms/VaccineManagementForm.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useGetCampaignLogs } from '../hooks/useGetCampaignHistory.ts';
@@ -54,7 +57,7 @@ import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
-import { compareArraysValues } from '../utils/compareArraysValues';
+import { compareArraysValues } from '../utils/compareArraysValues.ts';
 
 const useTabErrorStyles = makeStyles(theme => {
     return {
@@ -190,13 +193,19 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 title: formatMessage(MESSAGES.rounds),
                 form: RoundsForm,
                 key: 'rounds',
-                hasTabError: compareArraysValues(roundFormFields(selectedCampaign?.rounds ?? []), formik.errors),
+                hasTabError: compareArraysValues(
+                    roundFormFields(selectedCampaign?.rounds ?? []),
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
                 form: VaccineManagementForm,
                 key: 'vaccineManagement',
-                hasTabError:compareArraysValues(vaccineManagementFormFields(selectedCampaign?.rounds ?? []), formik.errors)
+                hasTabError: compareArraysValues(
+                    vaccineManagementFormFields(selectedCampaign?.rounds ?? []),
+                    formik.errors,
+                ),
             },
         ];
     }, [
@@ -206,7 +215,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         formik.values.rounds.length,
         selectedCampaign?.rounds,
     ]);
-
     const [selectedTab, setSelectedTab] = useState(0);
 
     const handleChange = (_event, newValue) => {

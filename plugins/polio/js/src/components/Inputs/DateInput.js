@@ -6,11 +6,12 @@ import { get } from 'lodash';
 import { apiDateFormat } from 'Iaso/utils/dates.ts';
 
 import MESSAGES from '../../constants/messages';
+import { isTouched } from '../../utils';
 
 export const DateInput = ({ field, form, label, required }) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
+        Boolean(get(form.errors, field.name) && isTouched(form.touched));
     return (
         <Box mb={2}>
             <DatePicker

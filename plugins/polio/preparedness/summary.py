@@ -33,7 +33,7 @@ indicators = [
     (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
     (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
     (5, "ppe_materials_and_others_supply", "PPE Materials and other supplies  ", "number"),
-    (6, "penmarkers_supply", "Penmarkers  ", "date"),
+    (6, "penmarkers_supply", "Penmarkers  ", "number"),
     (7, "sia_training", "Supervisor training & deployment  ", "number"),
     (8, "sia_micro_planning", "Micro/Macro plan  ", "number"),
     (9, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),

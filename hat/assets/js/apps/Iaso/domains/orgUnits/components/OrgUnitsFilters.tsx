@@ -8,11 +8,8 @@ import React, {
 } from 'react';
 import { Grid, Box, Typography, makeStyles, Divider } from '@material-ui/core';
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 
@@ -124,8 +121,12 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         }
         const newFilters: Record<string, unknown> = {
             ...filters,
-            [key]: value,
         };
+        if ((!value || value === '') && newFilters[key]) {
+            delete newFilters[key];
+        } else {
+            newFilters[key] = value;
+        }
         if (newFilters.source && newFilters.version) {
             delete newFilters.source;
         }

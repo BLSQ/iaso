@@ -8,6 +8,7 @@ from rest_framework import serializers, parsers, permissions, exceptions
 from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion, Project
+from iaso.models.base import FeatureFlag
 from iaso.odk import parsing
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
@@ -194,8 +195,15 @@ def form_version_read_only_ok(request):
         try:
             project = Project.objects.get_for_user_and_app_id(request.user, app_id)
             if project.feature_flags.get(code="FORM_VERSIONS_NO_READ_ONLY"):
+                print("Project has feature flag FORM_VERSIONS_NO_READ_ONLY")
                 return False
+
+        except FeatureFlag.DoesNotExist:
+            print("Feature flag FORM_VERSIONS_NO_READ_ONLY not found")
+            return True
+
         except Project.DoesNotExist:
+            print("Project not found")
             return False
     else:
         return False  # No app_id, so we cannot know if the project has the feature flag

@@ -45,7 +45,7 @@ def create_spreadsheet(title: str, lang: str):
 
     spreadsheet = client.copy(template, title)
     logger.info(f"Created spreadsheet {spreadsheet.url}")
-    spreadsheet.share(None, perm_type="anyone", role="writer")
+    spreadsheet.share(None, perm_type="anyone", role="writer", with_link=True)
     return spreadsheet
 
 

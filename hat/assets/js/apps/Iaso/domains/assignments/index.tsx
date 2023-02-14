@@ -11,6 +11,7 @@ import {
     commonStyles,
     useSafeIntl,
     LoadingSpinner,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import { redirectTo, redirectToReplace } from '../../routing/actions';
@@ -208,6 +209,18 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
             }
         }
     }, [params, currentTeam?.type, dispatch]);
+
+    useSkipEffectOnMount(() => {
+        // Change order if baseOrgunitType or team changed and current order is on a parent column that will probably disappear
+        if (params.order?.includes('parent__name')) {
+            dispatch(
+                redirectToReplace(baseUrl, {
+                    ...params,
+                    order: 'name',
+                }),
+            );
+        }
+    }, [params.baseOrgunitType, params.team]);
 
     useEffect(() => {
         if (planning && currentTeam) {

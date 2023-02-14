@@ -68,7 +68,7 @@ class Team(SoftDeletableModel):
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
         # correct type for parent type
-        if self.parent and self.parent.type == None:
+        if self.parent and self.parent.type is None:
             self.parent.type = TeamType.TEAM_OF_TEAMS
             self.parent.save(skip_calculate_path=True)
 

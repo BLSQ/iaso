@@ -1,9 +1,9 @@
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .common import HasPermission
-from iaso.models import Instance, MappingVersion
 import iaso.periods as periods
+from iaso.models import Instance, MappingVersion
+from .common import HasPermission
 
 
 class CompletenessViewSet(viewsets.ViewSet):

@@ -1,8 +1,9 @@
-from django.core.management.base import BaseCommand
 import csv
-from iaso.models import Instance
-
 import sys
+
+from django.core.management.base import BaseCommand
+
+from iaso.models import Instance
 
 csv.field_size_limit(sys.maxsize)
 

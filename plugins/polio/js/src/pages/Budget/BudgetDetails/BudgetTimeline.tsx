@@ -5,7 +5,7 @@ import Stepper from '@material-ui/core/Stepper';
 import Step from '@material-ui/core/Step';
 import StepLabel from '@material-ui/core/StepLabel';
 import moment from 'moment';
-import { Categories } from '../types';
+import { Categories, Item } from '../types';
 import { TimelineStepIcon } from './TimelineStepIcon';
 import { useStyles } from './styles';
 
@@ -24,6 +24,24 @@ const getColor = category => {
     }
 };
 
+const findLatestStep = (steps: Item[]) => {
+    const sorted = steps
+        .filter(step => step.performed_at)
+        .sort((step1, step2) =>
+            moment(step1.performed_at).isAfter(moment(step2.performed_at)),
+        );
+    // API sends the data sorted by ascending date. We keep that order to avoid messing with the order for step swith the same timestamp (it happens)
+    // So we need to get the last element of the sorted array
+    return sorted[sorted.length - 1];
+};
+
+const isSameItem = (item1: Item, item2: Item): boolean => {
+    return (
+        item1?.label === item2?.label &&
+        item1?.performed_at === item2?.performed_at
+    );
+};
+
 export const BudgetTimeline: FunctionComponent<Props> = ({
     categories = [],
 }) => {
@@ -34,6 +52,9 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
             return categories.findIndex(category => !category.completed);
         }
         return 0;
+    }, [categories]);
+    const latestItem = useMemo(() => {
+        return findLatestStep(categories.map(c => c.items).flat());
     }, [categories]);
     return (
         <Stepper
@@ -87,9 +108,14 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                                                         item={item}
                                                     />
                                                     <Box
-                                                        className={
-                                                            classes.itemLabel
-                                                        }
+                                                        className={classnames(
+                                                            classes.itemLabel,
+                                                            isSameItem(
+                                                                item,
+                                                                latestItem,
+                                                            ) &&
+                                                                classes.latestItem,
+                                                        )}
                                                     >
                                                         {item.label}
                                                         {item.performed_at &&

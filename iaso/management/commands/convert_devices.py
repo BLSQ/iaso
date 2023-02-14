@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
-from iaso.models import Instance, Form
+
+from iaso.models import Instance
 
 
 class Command(BaseCommand):

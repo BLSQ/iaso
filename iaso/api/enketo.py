@@ -1,15 +1,20 @@
+from logging import getLogger
+from uuid import uuid4
+
 from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import permissions
-from rest_framework.response import Response
-from rest_framework import status
 from django.utils.translation import gettext as _
+from rest_framework import permissions
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from hat.audit.models import log_modification, INSTANCE_API
 from iaso.api.common import HasPermission
 from iaso.dhis2.datavalue_exporter import InstanceExportError
+from iaso.enketo import calculate_file_md5
 from iaso.enketo import (
     enketo_settings,
     enketo_url_for_edition,
@@ -20,13 +25,8 @@ from iaso.enketo import (
     inject_instance_id_in_instance,
     EnketoError,
 )
-from iaso.enketo import calculate_file_md5
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
-
-from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
-from uuid import uuid4
-from logging import getLogger
 
 logger = getLogger(__name__)
 
@@ -289,7 +289,7 @@ def enketo_form_download(request):
     """Called by Enketo to Download the form definition as an XML file (the list of question and so on)
 
     Require a param `formID` which is actually an Instance UUID.
-    We insert the instance.id In the form definition so the "Form" is unique per instance.
+    We insert the instance Id In the form definition so the "Form" is unique per instance.
     """
     uuid = request.GET.get("uuid")
     try:
@@ -346,7 +346,7 @@ class EnketoSubmissionAPIView(APIView):
             instance.json = {}
             instance.save()
 
-            # copy pasted from the create
+            # copy-pasted from the "create" code
             try:
                 instance.get_and_save_json_of_xml()
                 try:

@@ -10,6 +10,8 @@ import {
     LoadingSpinner,
     // @ts-ignore
     formatThousand,
+    // @ts-ignore
+    Column,
     SortableTable,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
@@ -24,12 +26,10 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
-import {
-    useGetQueryBuildersFields,
-    useGetQueryBuilderListToReplace,
-} from './hooks/queryBuilder';
+import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 
-import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
+import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
 import { WorkflowVersionDetail, WorkflowParams, FollowUps } from './types';
@@ -199,7 +199,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         <SortableTable
                                             items={followUps}
                                             onChange={handleSortChange}
-                                            columns={followUpsColumns}
+                                            columns={
+                                                followUpsColumns as Column[]
+                                            }
                                         />
                                     )}
                                     {workflowVersion.status !== 'DRAFT' && (
@@ -226,6 +228,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         {formatMessage(MESSAGES.saveOrder)}
                                     </Button>
                                 </Box>
+                                {/* @ts-ignore */}
                                 <AddFollowUpsModal
                                     fields={fields}
                                     versionId={versionId}
@@ -276,6 +279,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
+                                {/* @ts-ignore */}
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}

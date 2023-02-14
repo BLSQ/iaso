@@ -8,7 +8,7 @@ export type Timeline = {
     categories: Categories;
 };
 
-export type BudgetCategoryItem = {
+export type Item = {
     label: string;
     step_id?: number;
     cancelled?: boolean;
@@ -18,7 +18,7 @@ export type BudgetCategoryItem = {
         username;
         first_name;
         last_name;
-    }; // User
+    };
 };
 
 export type Categories = {
@@ -27,7 +27,7 @@ export type Categories = {
     color: string; // css string
     active: boolean;
     completed: boolean;
-    items: BudgetCategoryItem[];
+    items: Item[];
 }[];
 
 export type NextTransition = {

@@ -1,8 +1,9 @@
-from iaso.test import APITestCase
-from iaso import models as m
 from django.contrib.gis.geos import Point
-from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.core.files.uploadedfile import UploadedFile
+
+from iaso import models as m
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
+from iaso.test import APITestCase
 
 
 class ExportRequestsAPITestCase(APITestCase):
@@ -84,12 +85,8 @@ class ExportRequestsAPITestCase(APITestCase):
         self.build_instance(self.village_2, self.uuid(5), "201901")
         self.build_instance(self.village_2, self.uuid(6), "201902")
 
-        export_request = ExportRequestBuilder().build_export_request(
-            filters={"period_ids": "201901,201902"}, launcher=self.user
-        )
-        export_request2 = ExportRequestBuilder().build_export_request(
-            filters={"period_ids": "201903"}, launcher=self.user
-        )
+        ExportRequestBuilder().build_export_request(filters={"period_ids": "201901,201902"}, launcher=self.user)
+        ExportRequestBuilder().build_export_request(filters={"period_ids": "201903"}, launcher=self.user)
 
         self.client.force_authenticate(self.user)
 

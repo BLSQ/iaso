@@ -8,7 +8,7 @@ import MESSAGES from '../constants/messages';
 import {
     DateInput,
     ResponsibleField,
-    RABudgetStatusField,
+    BudgetStatusField,
     TextInput,
     PaymentField,
 } from '../components/Inputs';
@@ -123,7 +123,7 @@ export const BudgetForm = () => {
                     <Box mb={2}>
                         <Field
                             name="budget_status"
-                            component={RABudgetStatusField}
+                            component={BudgetStatusField}
                         />
                     </Box>
                     <Box mt={2}>

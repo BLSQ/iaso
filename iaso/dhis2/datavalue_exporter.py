@@ -1,15 +1,17 @@
+import itertools
+import json
+import logging
+from timeit import default_timer as timer
+
+from dhis2 import Api
+from dhis2 import RequestException
 from django.core.paginator import Paginator
 from django.utils import timezone
-from dhis2 import RequestException
-from dhis2 import Api
-from .value_formatter import format_value
-import json
-from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
+
 import iaso.models as models
-from timeit import default_timer as timer
-import itertools
+from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
 from .api_logger import ApiLogger  # type: ignore
-import logging
+from .value_formatter import format_value
 
 logger = logging.getLogger(__name__)
 
@@ -205,10 +207,8 @@ class AggregateHandler(BaseHandler):
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
-            resp = {}
             try:
                 resp = json.loads(dhis2_exception.description)
-
             except:
                 resp = {"status": "ERROR", "description": "non json response return by server"}
 
@@ -243,7 +243,7 @@ class EventHandler(BaseHandler):
         event_errors = []
         question_mappings = form_mapping["question_mappings"]
 
-        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref == None:
+        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref is None:
             errored = True
             event_errors.append(
                 [
@@ -559,7 +559,7 @@ class EventTrackerHandler(BaseHandler):
                                     unique_number_attribute_id,
                                     country_dhis2_id,
                                 )
-                                # create relation ship
+                                # create relationship
                                 if "relationship_type" in subform_mapping:
                                     relation_ship = {
                                         "relationshipType": subform_mapping["relationship_type"],

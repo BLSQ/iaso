@@ -1,10 +1,10 @@
 """This api is only there so the default version on an account can be modified"""
-from rest_framework.request import Request
-
 from .common import ModelViewSet, HasPermission
 from iaso.models import Account, SourceVersion
+
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
+from rest_framework.request import Request
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -18,13 +18,18 @@ class AccountSerializer(serializers.ModelSerializer):
 
     def update(self, account, validated_data):
         default_version = validated_data.pop("default_version", None)
+        user = self.context["request"].user
         if default_version is not None:
-            sourceVersion = get_object_or_404(
+            source_version = get_object_or_404(
                 SourceVersion,
                 id=default_version.id,
                 number=default_version.number,
             )
-            account.default_version = sourceVersion
+            projects = source_version.data_source.projects.all()
+            for p in projects:
+                if user.iaso_profile.account != p.account:
+                    raise serializers.ValidationError({"Error": "Account not allowed to access this default_source"})
+            account.default_version = source_version
             account.save()
 
         return account

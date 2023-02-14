@@ -172,6 +172,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                         campaignId={campaignId}
                                                         iconProps={{
                                                             label: step.label,
+                                                            // @ts-ignore
                                                             color: step.color,
                                                             stepKey: step.key,
                                                             disabled:
@@ -186,7 +187,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                         }
                                                         previousStep={
                                                             isQuickTransition
-                                                                ? previousBudgetStep
+                                                                ? (previousBudgetStep as BudgetStep)
                                                                 : undefined
                                                         }
                                                         requiredFields={
@@ -205,6 +206,8 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                     currentUser,
                                 ) && (
                                     <Grid item>
+                                        {/* Ignore missing iconProps as it's not really mandatory (typing error in the component) */}
+                                        {/* @ts-ignore */}
                                         <CreateOverrideStep
                                             isMobileLayout={isMobileLayout}
                                             campaignId={campaignId}

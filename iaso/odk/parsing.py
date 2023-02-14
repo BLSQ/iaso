@@ -1,7 +1,8 @@
 import pathlib
 import typing
-from pyxform import create_survey_from_xls, errors, Survey as BaseSurvey  # type: ignore
+
 from django.utils import timezone, dateparse
+from pyxform import create_survey_from_xls, errors, Survey as BaseSurvey  # type: ignore
 
 
 class ParsingError(Exception):
@@ -75,7 +76,6 @@ def to_questions_by_name(form_descriptor):
 def visit_by_path(node, questions_by_name, current_path):
     parent = node.get("type", None) is not None and (node["type"] == "survey" or node["type"] == "group")
 
-    node_current_path = ""
     if node.get("name", "") == "data":
         node_current_path = ""
     elif current_path == "":
@@ -106,7 +106,7 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
     """Parse an ODK xls form file.
 
     :param xls_file: a named file-like object (a persistent file or a django uploaded file will do)
-    :param previous_version: used to validate the version present in the excel file or to auto-generate it
+    :param previous_version: used to validate the version present in the Excel file or to auto-generate it
     """
 
     try:

@@ -64,4 +64,5 @@ export const useStyles = makeStyles(theme => ({
         // @ts-ignore
         color: theme.palette.gray.main,
     },
+    latestItem: { fontWeight: 'bold' },
 }));

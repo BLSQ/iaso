@@ -788,6 +788,8 @@
     "iaso.snackBar.importGkpgError": "Une erreur s'est produite lors de l'import du ficher gpkg",
     "iaso.snackBar.importGpkgSuccess": "L'import du fichier gpkg a été planifié avec succès",
     "iaso.snackBar.locationLimitWarning": "Afficher trop de résultats sur la carte peut affecter les performances de la page",
+    "iaso.snackBar.newEmptyVersionError": "Une erreur s'est produite lors de la création de la nouvelle version vide",
+    "iaso.snackBar.newEmptyVersionSavedSuccess": "La nouvelle version vide sauvegardée avec succés",
     "iaso.snackBar.patchTaskError": "Une erreur est survenue lors de la mise à jour de la tâche.",
     "iaso.snackBar.patchTaskSuccess": "La tâche a été mise à jour.",
     "iaso.snackBar.reload": "Recharger",

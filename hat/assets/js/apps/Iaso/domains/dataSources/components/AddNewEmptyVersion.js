@@ -25,8 +25,8 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
 
     const mutation = useSnackMutation(
         createSourceVersion,
-        MESSAGES.importFromDhis2Success,
-        MESSAGES.importFromDhis2Error,
+        MESSAGES.newEmptyVersionSavedSuccess,
+        MESSAGES.newEmptyVersionError,
     );
 
     const reset = () => {
@@ -86,7 +86,7 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
             titleMessage={titleMessage}
             onConfirm={onConfirm}
             onClosed={reset}
-            confirmMessage={MESSAGES.launch}
+            confirmMessage={MESSAGES.save}
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={allowConfirm}

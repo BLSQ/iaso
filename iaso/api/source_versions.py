@@ -92,15 +92,26 @@ class SourceVersionViewSet(ModelViewSet):
         return versions.order_by("id").distinct()
 
     def create(self, request, *args, **kwargs):
+        """Create a new source version
+
+        The version number is obtained from the latest version number by adding 1
+        When the is not yet source version, the new one will get 1 as number
+
+        POST /api/sourceversions/
+        """
         version_data = request.data
-        data_source = DataSource.objects.get(id=version_data["data_source_id"])
         description = version_data["description"]
+        data_source_id = version_data["data_source_id"]
+
+        data_source = DataSource.objects.get(id=data_source_id)
+
         version = SourceVersion.objects.filter(data_source_id=data_source).latest("number")
         latest_version = version.number
         new_version_number = latest_version + 1 if latest_version else 1
         new_source_version = SourceVersion.objects.create(
             data_source=data_source, number=new_version_number, description=description
         )
+
         new_source_version.save()
 
         serializer = SourceVersionSerializer(new_source_version)

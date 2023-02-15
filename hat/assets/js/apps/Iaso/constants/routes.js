@@ -832,7 +832,7 @@ export const planningPath = {
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_assignments'],
+    permissions: ['iaso_planning'],
     component: props => <Assignments {...props} />,
     params: [
         {
@@ -866,6 +866,10 @@ export const assignmentsPath = {
         {
             isRequired: false,
             key: 'order',
+        },
+        {
+            isRequired: false,
+            key: 'search',
         },
     ],
 };

@@ -8,18 +8,17 @@ import {
     Box,
 } from '@material-ui/core';
 import React, { FunctionComponent, ReactNode } from 'react';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
-import { WorkflowVersionDetail } from '../types/workflows';
+import { WorkflowVersionDetail } from '../types';
 
 import { StatusCell } from './StatusCell';
 import { DetailsForm } from './DetailsForm';
 import { LinkToForm } from '../../forms/components/LinkToForm';
 
-import { PublishVersionModal } from './PublishVersionModal';
+import { PublishVersionModal } from './versions/PublishVersionModal';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -53,21 +52,14 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <>
-            {workflowVersion?.status === 'DRAFT' && (
-                <>
-                    <DetailsForm workflowVersion={workflowVersion} />
-                    <Divider />
-                </>
-            )}
+            <DetailsForm workflowVersion={workflowVersion} />
+            <Divider />
             <Table size="small">
                 <TableBody>
-                    {workflowVersion?.status &&
-                        workflowVersion?.status !== 'DRAFT' && (
-                            <Row
-                                label={formatMessage(MESSAGES.name)}
-                                value={workflowVersion?.name}
-                            />
-                        )}
+                    <Row
+                        label={formatMessage(MESSAGES.name)}
+                        value={workflowVersion?.name}
+                    />
                     <Row
                         label={formatMessage(MESSAGES.type)}
                         value={workflowVersion?.entity_type.name}
@@ -107,6 +99,7 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
                 <>
                     <Divider />
                     <Box p={2} display="flex" justifyContent="flex-end">
+                        {/* @ts-ignore */}
                         <PublishVersionModal
                             workflowVersion={workflowVersion}
                             invalidateQueryKey="workflowVersion"

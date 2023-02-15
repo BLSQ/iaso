@@ -1,5 +1,5 @@
-from rest_framework import permissions, serializers
 from django.db.models import Count
+from rest_framework import permissions, serializers
 
 from iaso.models import Group, SourceVersion, DataSource
 from .common import ModelViewSet, TimestampField, HasPermission

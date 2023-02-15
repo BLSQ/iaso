@@ -49,7 +49,7 @@ Cypress.Commands.add(
 /**
  * @param {string} username - by default then env username specified
  * @param {string} password - by default then env password specified
- * This Login way of working is not stable an needs to be improved
+ * This Login way of working is not stable and needs to be improved
  */
 Cypress.Commands.add(
     'loginByCSRF',

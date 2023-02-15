@@ -7,7 +7,7 @@ import {
     WorkflowVersionsPaginated,
     WorkflowsParams,
     WorkflowVersionDetail,
-} from '../../types/workflows';
+} from '../../types';
 
 const getWorkflowVersions = async (
     options: WorkflowsParams,
@@ -35,7 +35,6 @@ export const useGetWorkflowVersions = (
     // taking accountId out in order not to pass it to API
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
     const { select, accountId } = options as Record<string, any>;
-    // @ts-ignore
     return useSnackQuery({
         queryKey,
         queryFn: () => getWorkflowVersions(options),
@@ -58,7 +57,6 @@ export const useGetWorkflowVersion = (
     versionId: string,
 ): UseQueryResult<WorkflowVersionDetail, Error> => {
     const queryKey: any[] = ['workflowVersion', versionId];
-    // @ts-ignore
     return useSnackQuery({
         queryKey,
         queryFn: () => getWorkflowVersion(versionId),

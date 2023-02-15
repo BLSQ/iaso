@@ -2,7 +2,7 @@ import { UseMutationResult } from 'react-query';
 import { patchRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
-import { Status } from '../../types/workflows';
+import { Status } from '../../types';
 
 type QueryData = {
     name?: string;

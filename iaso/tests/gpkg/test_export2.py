@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
+
 from iaso import models as m
 from iaso.gpkg.export_gpkg import org_units_to_gpkg_bytes, source_to_gpkg
 from iaso.gpkg.import_gpkg import import_gpkg_file
@@ -31,7 +32,7 @@ class GPKGExport(TestCase):
         ou2 = m.OrgUnit.objects.create(
             name="ou2", version=cls.version, org_unit_type=out2, parent=ou, geom=polygon, simplified_geom=polygon
         )
-        ou3 = m.OrgUnit.objects.create(name="ou3", version=cls.version, parent=ou2)  # no orgunit type and no geom
+        m.OrgUnit.objects.create(name="ou3", version=cls.version, parent=ou2)  # no orgunit type and no geom
         group1 = m.Group.objects.create(name="group1", source_version=cls.version)
         group2 = m.Group.objects.create(name="group2", source_ref="my_group_ref", source_version=cls.version)
         ou.groups.add(group1)
@@ -91,9 +92,9 @@ class GPKGExport(TestCase):
         out3 = m.OrgUnitType.objects.create(name="type3", depth=3)
 
         polygon = MultiPolygon([Polygon([(0, 0), (0, 1), (2, 1), (1, 0), (0, 0)])])
-        ou4 = m.OrgUnit.objects.create(name="ou4", version=self.version, org_unit_type=out3, geom=polygon)
+        m.OrgUnit.objects.create(name="ou4", version=self.version, org_unit_type=out3, geom=polygon)
         p = Point(x=1, y=3, z=3)
-        ou5 = m.OrgUnit.objects.create(name="ou5", version=self.version, org_unit_type=out3, location=p)
+        m.OrgUnit.objects.create(name="ou5", version=self.version, org_unit_type=out3, location=p)
         source_to_gpkg(self.filename, self.version)
         new_project = m.Project.objects.create(name="Project 2", account=self.account, app_id="test_app_id")
 
@@ -113,10 +114,10 @@ class GPKGExport(TestCase):
         self.assertEqual(v2.group_set.count(), 2)
 
     def test_export_one(self):
-        """We hit a strange pandas crash when exporting a single orgunit without parent"""
+        """We hit a strange Pandas crash when exporting a single orgunit without parent"""
         orgs = m.OrgUnit.objects.filter(name="ou1")
         self.assertEqual(orgs.count(), 1)
-        out = org_units_to_gpkg_bytes(orgs)
+        org_units_to_gpkg_bytes(orgs)
 
     def test_export_no_parent(self):
         """Idem all ou without parent"""
@@ -126,4 +127,4 @@ class GPKGExport(TestCase):
         orgs = m.OrgUnit.objects.filter(org_unit_type=out)
 
         self.assertEqual(orgs.count(), 2)
-        out = org_units_to_gpkg_bytes(orgs)
+        org_units_to_gpkg_bytes(orgs)

@@ -7,7 +7,7 @@ from os.path import dirname, abspath
 # https://docs.python.org/3/library/unittest.html#unittest.TestLoader.discover
 
 
-def load_tests(loader, tests, pattern):
+def load_tests(loader, _, pattern):
     # not sure why but we must do the import other there is some strange scope issue.
     # eg it import the apps from the Polio directory since django 3.2 if we do it globally.
     from django.conf import settings

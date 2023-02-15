@@ -2,20 +2,18 @@ import logging
 from datetime import datetime
 
 import pandas as pd
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.transaction import atomic
+from django.utils import timezone
+from django.utils.translation import gettext as _
 from gspread.exceptions import APIError  # type: ignore
 from gspread.exceptions import NoValidUrlKeyFound
 from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.validators import UniqueValidator
-from django.utils.translation import gettext as _
-from django.utils import timezone
 
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
-
 from iaso.models import Group
 from .models import (
     Round,
@@ -29,7 +27,7 @@ from .models import (
     RoundScope,
     CampaignScope,
 )
-from .preparedness.calculator import get_preparedness_score, preparedness_summary
+from .preparedness.calculator import get_preparedness_score
 from .preparedness.parser import (
     InvalidFormatError,
     get_preparedness,
@@ -37,6 +35,7 @@ from .preparedness.parser import (
 )
 from .preparedness.spreadsheet_manager import *
 from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
+from .preparedness.summary import preparedness_summary, set_preparedness_cache_for_round
 
 logger = getLogger(__name__)
 
@@ -74,7 +73,7 @@ def _error(message, exc=None):
     return errors
 
 
-# the following serializer are used so we can audit the modification on a campaign.
+# the following serializer are used, so we can audit the modification on a campaign.
 # The related Scope and Round can be modified in the same request but are modelised as separate ORM Object
 # and DjangoSerializer don't serialize relation, DRF Serializer is used
 class AuditGroupSerializer(serializers.ModelSerializer):
@@ -218,7 +217,6 @@ class LineListImportSerializer(serializers.ModelSerializer):
         line_list_import.save()
 
         # Tentatively created campaign, will transaction.abort in case of error
-        res = "importing"
         try:
             res = campaign_from_files(line_list_import.file)
         except Exception as exc:
@@ -346,7 +344,6 @@ class RoundSerializer(serializers.ModelSerializer):
             round_vaccine_instance = round_vaccine_serializer.save()
             vaccine_instances.append(round_vaccine_instance)
         for shipment_data in shipments:
-            shipment = None
             if shipment_data.get("id"):
                 shipment_id = shipment_data["id"]
                 current_shipment_ids.append(shipment_id)
@@ -366,7 +363,6 @@ class RoundSerializer(serializers.ModelSerializer):
                 current.delete()
         # TODO put repeated code in a function
         for destruction_data in destructions:
-            destruction = None
             if destruction_data.get("id"):
                 destruction_id = destruction_data["id"]
                 current_destruction_ids.append(destruction_id)
@@ -388,6 +384,8 @@ class RoundSerializer(serializers.ModelSerializer):
         instance.shipments.set(shipment_instances)
         instance.destructions.set(destruction_instances)
         round = super().update(instance, validated_data)
+        # update the preparedness cache in case we touched the spreadsheet url
+        set_preparedness_cache_for_round(round)
         return round
 
 
@@ -474,7 +472,7 @@ class SurgePreviewSerializer(serializers.Serializer):
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
-        except NoValidUrlKeyFound as e:
+        except NoValidUrlKeyFound:
             raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
         except Exception as e:
             raise serializers.ValidationError(f"{type(e)}: {str(e)}")
@@ -688,6 +686,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         round_instances = []
         # find existing round either by id or number
+        # Fixme this is not a partial update because of the dfault
         for round_data in rounds:
             round = None
             if round_data.get("id"):
@@ -781,7 +780,7 @@ class ListCampaignSerializer(CampaignSerializer):
 
 class CalendarCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
-    Used by both anonymous and non anonymous user"""
+    Used by both anonymous and non-anonymous user"""
 
     class NestedListRoundSerializer(RoundSerializer):
         class NestedScopeSerializer(RoundScopeSerializer):

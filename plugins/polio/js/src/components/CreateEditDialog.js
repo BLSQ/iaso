@@ -51,7 +51,7 @@ import { useGetCampaign } from '../hooks/useGetCampaign';
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
-    const { data: selectedCampaign, isFetching: isFetching } = useGetCampaign(
+    const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
     );
 
@@ -307,12 +307,14 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
 
 CreateEditDialog.defaultProps = {
     selectedCampaign: undefined,
+    campaignId: undefined,
 };
 
 CreateEditDialog.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     campaignId: PropTypes.string,
+    selectedCampaign: PropTypes.object,
 };
 
 // There's naming conflict with component in Iaso

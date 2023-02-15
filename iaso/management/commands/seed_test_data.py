@@ -1,26 +1,26 @@
-import pdb
 import csv
-from random import randint, random
-from django.contrib.contenttypes.models import ContentType
-import requests
-from iaso.api.comment import ContentTypeField
-from iaso.models.base import AccountFeatureFlag
-from iaso.models.comment import CommentIaso
-from django.contrib.sites.models import Site
-from iaso.models.device import Device
-from iaso.models.entity import Entity, EntityType
-from iaso.models.microplanning import Planning, Team
-from iaso.models.pages import Page
-from lxml import etree
+import json
 from io import BytesIO
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.utils import timezone
+from random import randint, random
+from uuid import uuid4
+
+import requests
+from dhis2 import Api
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Point
+from django.contrib.sites.models import Site
+from django.core import management
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
-from uuid import uuid4
-from django.contrib.auth.models import Permission
+from django.utils import timezone
+from django.utils.dateparse import parse_datetime
+from lxml import etree
+
+from iaso.dhis2.datavalue_exporter import DataValueExporter
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.models import (
     User,
     Instance,
@@ -36,14 +36,12 @@ from iaso.models import (
     Account,
     Profile,
 )
-from django.core import management
-
-from iaso.dhis2.datavalue_exporter import DataValueExporter
-from iaso.dhis2.export_request_builder import ExportRequestBuilder
-from django.utils.dateparse import parse_datetime
-from dhis2 import Api
-
-import json
+from iaso.models.base import AccountFeatureFlag
+from iaso.models.comment import CommentIaso
+from iaso.models.device import Device
+from iaso.models.entity import Entity, EntityType
+from iaso.models.microplanning import Planning, Team
+from iaso.models.pages import Page
 
 """
 seed_test_data --mode=seed
@@ -276,8 +274,6 @@ class Command(BaseCommand):
             {"name": "What_is_the_child_s_name", "type": "text", "label": "Prénom"},
         ]
         entity_form.label_keys = ["What_is_the_child_s_name", "What_is_the_father_s_name"]
-
-        entity_form.label_keys
         entity_form.save()
 
         entity_form.org_unit_types.add(orgunit_type)
@@ -326,7 +322,7 @@ class Command(BaseCommand):
 
             self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type, user)
 
-            self.seed_micro_planning(source_version, dhis2_version, account, project, user)
+            self.seed_micro_planning(source_version, project, user)
 
             print("********* generating instances")
 
@@ -456,7 +452,7 @@ class Command(BaseCommand):
         xls_xml_file="./testdata/seed-data-command-form.xml",
     ):
         form_version, created = FormVersion.objects.get_or_create(form=form, version_id=1)
-        # don't use uploadedFile in get_or_create, it will end up non unique
+        # don't use uploadedFile in get_or_create, it will end up non-unique
         form_version.file = UploadedFile(
             # TODO: use better fixture
             open(xls_xml_file)
@@ -564,8 +560,6 @@ class Command(BaseCommand):
 
                     instance.json = test_data
                     instance.form = form
-
-                    imei_prefix = "testi_" + dhis2_version if randint(1, 10) < 5 else "testimei"
 
                     if mapping_version.mapping.is_event_tracker():
                         instance.json.clear()
@@ -686,7 +680,7 @@ class Command(BaseCommand):
         with open(file) as json_file:
             return json.load(json_file)
 
-    def seed_micro_planning(self, source_version, dhis2_version, account, project, user):
+    def seed_micro_planning(self, source_version, project, user):
 
         print("********* seed_micro_planning")
         team1, _ignore1 = Team.objects.get_or_create(
@@ -732,6 +726,6 @@ class Command(BaseCommand):
                 p.assignment_set.get_or_create(org_unit=child_org_unit, team=assigned_team, user=user)
             child_index += 1
 
-        p = Planning.objects.get_or_create(
+        Planning.objects.get_or_create(
             project=self.project, name="planning-vaccination", team=team_main, org_unit=country
         )

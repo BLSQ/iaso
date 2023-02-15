@@ -7,7 +7,7 @@ from gspread.utils import extract_id_from_url  # type: ignore
 
 from plugins.polio.models import SpreadSheetImport, Round, Campaign
 from plugins.polio.preparedness.calculator import avg
-from plugins.polio.preparedness.parser import get_preparedness
+from plugins.polio.preparedness.parser import get_preparedness, indicators
 
 logger = getLogger(__name__)
 
@@ -24,32 +24,6 @@ def get_summary(zones):
 
             r[i] = (len(values) / len(zones) * 10) if zones else None
     return r
-
-
-# sn, key, title, type
-indicators = [
-    (1, "operational_fund", "Operational funds", "number"),
-    (2, "vaccine_and_droppers_received", "Vaccines and droppers received", "number"),
-    (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
-    (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
-    (5, "ppe_materials_and_others_supply", "PPE Materials and other supplies  ", "number"),
-    (6, "penmarkers_supply", "Penmarkers  ", "number"),
-    (7, "sia_training", "Supervisor training & deployment  ", "number"),
-    (8, "sia_micro_planning", "Micro/Macro plan  ", "number"),
-    (9, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),
-    (10, "communication_sm_activities", "SM activities  ", "percent"),
-    (11, "communication_c4d", "C4d", "date"),
-    (12, "aefi_easi_protocol", "Safety documents: AESI Protocol  ", "number"),
-    (13, "pharmacovigilance_committee", "Pharmacovigilance Committee  ", "number"),
-    (0, "status_score", "Total score", "percent"),
-    # not used atm
-    # (0, "training_score", "training_score", "number"),
-    # (0, "monitoring_score", "monitoring_score", "number"),
-    # (3, "vaccine_score", "vaccine_score", "number"),
-    # (4, "advocacy_score", "advocacy_score", "number"),
-    # (5, "adverse_score", "adverse_score", "number"),
-    # (7, "region", "region", "number"),
-]
 
 
 def preparedness_summary(prep_dict):

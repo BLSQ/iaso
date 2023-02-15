@@ -10,6 +10,29 @@ export type ShortOrgUnit = {
     id: number;
 };
 
+export type Group = {
+    created_at: number;
+    updated_at: number;
+    id: number;
+    name: string;
+    source_ref: Nullable<string>;
+    source_version: number;
+};
+
+export type OrgunitInititialState = {
+    id: number;
+    name: string;
+    org_unit_type_id?: string;
+    groups?: Array<(unknown & { id: number }) | number>;
+    sub_source?: string;
+    validation_status?: string;
+    aliases?: string;
+    source_id?: number;
+    parent?: OrgUnit;
+    source_ref?: string;
+    reference_instance_id?: Nullable<number>;
+};
+
 export type OrgUnit = {
     name: string;
     short_name: string;
@@ -37,7 +60,7 @@ export type OrgUnit = {
     source: string;
     source_id: number;
     version: number;
-    groups: Array<(unknown & { id: number }) | number>;
+    groups: Group[];
     org_unit_type: string;
     search_index?: number;
     reference_instance_id: Nullable<number>;
@@ -82,10 +105,6 @@ export type OrgUnitState = {
 };
 
 export type OrgUnitType = {
-    id: number;
-    name: string;
-};
-export type Group = {
     id: number;
     name: string;
 };

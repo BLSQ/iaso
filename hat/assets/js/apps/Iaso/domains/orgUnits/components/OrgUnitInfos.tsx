@@ -45,16 +45,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type ParentOrgUnit = {
-    id: number;
-    name: string;
-    source: string;
-    source_id: number;
-    parent: ParentOrgUnit;
-    parent_name: string;
-};
-
-const getParentOrgUnit = (orgUnit: OrgUnit): ParentOrgUnit =>
+const getParentOrgUnit = (orgUnit: OrgUnit): Partial<OrgUnit> =>
     orgUnit?.parent && {
         id: orgUnit.parent.id,
         name: orgUnit.parent.name,

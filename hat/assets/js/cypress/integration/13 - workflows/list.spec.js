@@ -28,6 +28,11 @@ const search = 'mario';
 const name = 'Peach';
 let interceptFlag = false;
 
+const getActionCellButton = (rowIndex, buttonIndex) => {
+    cy.get('table tbody tr').eq(rowIndex).find('td').last().as('actionCell');
+    cy.get('@actionCell').find('button').eq(buttonIndex).as('actionButton');
+};
+
 describe('Workflows', () => {
     it('page should not be accessible if user does not have permission', () => {
         const fakeUser = {
@@ -77,6 +82,195 @@ describe('Workflows', () => {
                 workflow__entity_type: '3',
             },
         });
+        describe('Actions', () => {
+            beforeEach(() => {
+                mockPage();
+                cy.visit(baseUrl);
+            });
+
+            describe('Buttons', () => {
+                it('Delete should only be present on DRAFT version', () => {
+                    cy.get('table tbody tr')
+                        .eq(0)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Draft');
+
+                    cy.get(
+                        '[data-test="delete-dialog-button-workflow-version-12"]',
+                    ).should('be.visible');
+
+                    cy.get('table tbody tr')
+                        .eq(1)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Published');
+
+                    cy.get(
+                        '[data-test="delete-dialog-button-workflow-version-11"]',
+                    ).should('not.exist');
+                });
+                it('Publish should only be present on DRAFT or UNPUBLISHED version', () => {
+                    cy.get('table tbody tr')
+                        .eq(0)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Draft');
+                    cy.get('[data-test="publish-button-12"]').should(
+                        'be.visible',
+                    );
+
+                    cy.get('table tbody tr')
+                        .eq(1)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Published');
+
+                    cy.get('[data-test="publish-button-11"]').should(
+                        'not.exist',
+                    );
+
+                    cy.get('table tbody tr')
+                        .eq(2)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Unpublished');
+
+                    cy.get('[data-test="publish-button-10"]').should(
+                        'be.visible',
+                    );
+                });
+                it('Copy should only be present on DRAFT or UNPUBLISHED version', () => {
+                    cy.get('table tbody tr')
+                        .eq(0)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Draft');
+
+                    cy.get('[data-test="copy-button-12"]').should('not.exist');
+
+                    cy.get('table tbody tr')
+                        .eq(2)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Unpublished');
+
+                    cy.get('[data-test="copy-button-10"]').should('be.visible');
+
+                    cy.get('table tbody tr')
+                        .eq(1)
+                        .find('td')
+                        .eq(2)
+                        .should('contain', 'Published');
+
+                    cy.get('[data-test="copy-button-11"]').should('be.visible');
+                });
+            });
+            it('Copy should call api with correct params', () => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'POST',
+                        pathname: '/api/workflowversions/11/copy/',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: {},
+                        });
+                    },
+                ).as('copyVersion');
+                getActionCellButton(1, 1);
+                cy.get('@actionButton').click();
+                cy.wait('@copyVersion').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+
+            it('Publish should open dialog and call api with correct params', () => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'PATCH',
+                        pathname: '/api/workflowversions/10/',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: {},
+                        });
+                    },
+                ).as('publishVersion');
+                getActionCellButton(2, 2);
+                cy.get('@actionButton').click();
+                cy.get('[data-test="publish-workflow-version"]').should(
+                    'be.visible',
+                );
+
+                cy.get('[data-test="confirm-button"]').click();
+                cy.wait('@publishVersion').then(xhr => {
+                    cy.wrap(xhr.request.body)
+                        .its('status')
+                        .should('eq', 'PUBLISHED');
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+
+            it('Unpublish should call api with correct params', () => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'PATCH',
+                        pathname: '/api/workflowversions/11/',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: {},
+                        });
+                    },
+                ).as('unPublishVersion');
+                getActionCellButton(1, 2);
+                cy.get('@actionButton').click();
+                cy.wait('@unPublishVersion').then(xhr => {
+                    cy.wrap(xhr.request.body)
+                        .its('status')
+                        .should('eq', 'UNPUBLISHED');
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+
+            it('Delete should open dialog and call api with correct params', () => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'DELETE',
+                        pathname: '/api/workflowversions/12/',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: {},
+                        });
+                    },
+                ).as('deleteVersion');
+                getActionCellButton(0, 1);
+                cy.get('@actionButton').click();
+                cy.get(
+                    '[data-test="delete-dialog-workflow-version-12"]',
+                ).should('be.visible');
+
+                cy.get('[data-test="confirm-button"]').click();
+                cy.wait('@deleteVersion').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+            it.skip('Delete ', () => {});
+        });
     });
     it('Search field should enabled search button', () => {
         mockPage();
@@ -86,7 +280,7 @@ describe('Workflows', () => {
             .invoke('attr', 'disabled')
             .should('equal', undefined);
     });
-    describe('Search button', () => {
+    describe('Filter button', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
@@ -132,7 +326,7 @@ describe('Workflows', () => {
         });
     });
 
-    describe.only('Create button', () => {
+    describe('Create button', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
@@ -179,7 +373,4 @@ describe('Workflows', () => {
             });
         });
     });
-    describe.skip('Copy action', () => {});
-    describe.skip('Publish action', () => {});
-    describe.skip('Unpublish action', () => {});
 });

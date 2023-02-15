@@ -21,7 +21,7 @@ from iaso.models import Instance, Form, Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
-## TODO: Remove blank=True, null=True on FK once the models are sets and validated
+# TODO: Remove blank=True, null=True on FK once the models are sets and validated
 
 
 class EntityType(models.Model):

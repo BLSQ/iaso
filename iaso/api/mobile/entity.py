@@ -2,14 +2,16 @@ from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters
 from rest_framework import serializers
+from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from iaso.api.common import (
     ModelViewSet,
     DeletionFilterBackend,
     TimestampField,
 )
-from iaso.models import Entity, Instance, OrgUnit, FormVersion
+from iaso.models import Entity, Instance, OrgUnit, FormVersion, EntityType
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -33,7 +35,6 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_form_version_id(obj: Instance):
-
         return FormVersion.objects.get(version_id=obj.json.get("_version"), form_id=obj.form.id).id  # type: ignore
 
 
@@ -59,7 +60,8 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_instances(entity: Entity):
-        return list(map(lambda instance: MobileEntityAttributesSerializer(instance).data, entity.non_deleted_instances))  # type: ignore
+        return list(map(lambda instance: MobileEntityAttributesSerializer(instance).data,
+                        entity.non_deleted_instances))  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -108,3 +110,41 @@ class MobileEntityViewSet(ModelViewSet):
         )
         queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
         return queryset
+
+
+class MobileEntityTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityType
+        fields = [
+            "name",
+            "created_at",
+            "updated_at",
+            "reference_form",
+            "account",
+            "is_active",
+        ]
+
+    created_at = TimestampField()
+    updated_at = TimestampField()
+
+
+class MobileEntityTypesViewSet(ModelViewSet):
+    results_key = "entitytypes"
+    remove_results_key_if_paginated = True
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    pagination_class = LargeResultsSetPagination
+
+    def get_serializer_class(self):
+        return MobileEntityTypeSerializer
+
+    def get_queryset(self):
+        queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
+
+        return queryset
+
+    # @action(detail=False, methods=["get"])
+    def get_entities_by_types(self, pk):
+        entities = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__pk=pk)
+
+        return Response(entities)
+

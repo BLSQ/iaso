@@ -311,7 +311,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.importGpkgError',
     },
     newEmptyVersionSavedSuccess: {
-        defaultMessage: 'The new empty version saved successfully',
+        defaultMessage: 'New empty version saved successfully',
         id: 'iaso.snackBar.newEmptyVersionSavedSuccess',
     },
     newEmptyVersionError: {

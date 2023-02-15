@@ -31,6 +31,9 @@ import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { EditSourceVersion } from './EditSourceVersion.tsx';
 
 const useStyles = makeStyles(theme => ({
+    spanStyle: {
+        marginLeft: '4px',
+    },
     ...commonStyles(theme),
 }));
 
@@ -166,7 +169,7 @@ const sortByOrgUnitsDesc = (sourceA, sourceB) => {
 };
 
 const VersionsDialog = ({ renderTrigger, source }) => {
-    const classes = useStyles();
+    const { spanStyle, ...classes } = useStyles();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [sortBy, setSortBy] = useState('asc');
@@ -272,7 +275,6 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             <Table
                 data={sortedData}
                 columns={tableColumns(source)}
-                redirectTo={() => { }}
                 params={params}
                 resetPageToOne={resetPageToOne}
                 pages={pages}
@@ -293,11 +295,12 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
                             <DHIS2Svg />
-                            &nbsp;
-                            <FormattedMessage
-                                id="iaso.versionsDialog.label.newVersionDhis2"
-                                defaultMessage="New version from DHIS2"
-                            />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newVersionDhis2"
+                                    defaultMessage="New version from DHIS2"
+                                />
+                            </span>
                         </Button>
                     )}
                     sourceId={source.id}
@@ -307,11 +310,12 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
                             <Public />
-                            &nbsp;
-                            <FormattedMessage
-                                id="iaso.versionsDialog.label.newVersionGpkg"
-                                defaultMessage="New version from a Geopackage"
-                            />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newVersionGpkg"
+                                    defaultMessage="New version from a Geopackage"
+                                />
+                            </span>
                         </Button>
                     )}
                     sourceId={source.id}
@@ -323,11 +327,12 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
                             <FolderOpenIcon />
-                            &nbsp;
-                            <FormattedMessage
-                                id="iaso.versionsDialog.label.newEmptyVersion"
-                                defaultMessage="New empty version"
-                            />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newEmptyVersion"
+                                    defaultMessage="New empty version"
+                                />
+                            </span>
                         </Button>
                     )}
                     sourceId={source.id}

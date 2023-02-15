@@ -16,10 +16,24 @@ const initialFormState = () => {
     };
 };
 
-const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
+const VersionDescription = ({ formValue, onChangeDescription }) => {
     const { formatMessage } = useSafeIntl();
+    return (
+        <InputComponent
+            type="text"
+            keyValue="versionDescription"
+            labelString={formatMessage(MESSAGES.dataSourceDescription)}
+            value={formValue}
+            onChange={(field, value) => {
+                onChangeDescription(field, value);
+            }}
+        />
+    );
+};
+
+const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
     // eslint-disable-next-line no-unused-vars
-    const [form, setFormField, _, setFormState] = useFormState(
+    const [form, setFormField, , setFormState] = useFormState(
         initialFormState(),
     );
 
@@ -60,24 +74,8 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
 
     const allowConfirm = !mutation.isLoading;
 
-    const renderDefaultLayout = versionNumber => {
-        return (
-            <>
-                {!versionNumber && (
-                    <InputComponent
-                        type="text"
-                        keyValue="versionDescription"
-                        labelString={formatMessage(
-                            MESSAGES.dataSourceDescription,
-                        )}
-                        value={form.versionDescription.value}
-                        onChange={(field, value) => {
-                            setFormField(field, value);
-                        }}
-                    />
-                )}
-            </>
-        );
+    const onChangeDescription = (field, value) => {
+        setFormField(field, value);
     };
 
     return (
@@ -99,14 +97,17 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
                 <Grid item>
                     <Typography>
                         <FormattedMessage
-                            id="iaso.sourceVersion.label.create_empty_version_explication"
+                            id="iaso.sourceVersion.label.createEmptyVersionDescription"
                             defaultMessage="It will directly create a new empty version."
                         />
                     </Typography>
                 </Grid>
 
                 <Grid xs={12} item>
-                    {renderDefaultLayout()}
+                    <VersionDescription
+                        formValue={form.versionDescription.value}
+                        onChangeDescription={onChangeDescription}
+                    />
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>
@@ -116,6 +117,11 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
 AddNewEmptyVersion.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     sourceId: PropTypes.number.isRequired,
+};
+
+VersionDescription.propTypes = {
+    formValue: PropTypes.string.isRequired,
+    onChangeDescription: PropTypes.func.isRequired,
 };
 
 export { AddNewEmptyVersion };

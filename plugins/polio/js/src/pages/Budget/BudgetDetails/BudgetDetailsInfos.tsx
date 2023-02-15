@@ -15,17 +15,16 @@ import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import WidgetPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../../constants/messages';
-
 import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStep, Categories, NextTransition } from '../types';
-
 import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetTimeline } from './BudgetTimeline';
+import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 type NextSteps = {
     regular?: NextTransition[];
-    override?: NextTransition;
     toDisplay: Set<string>;
 };
 
@@ -80,6 +79,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
     const classes = useStyles();
+    const currentUser = useCurrentUser();
 
     const isTabletOrDesktopLayout = useMediaQuery(theme.breakpoints.up('sm'));
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
@@ -172,6 +172,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                         campaignId={campaignId}
                                                         iconProps={{
                                                             label: step.label,
+                                                            // @ts-ignore
                                                             color: step.color,
                                                             stepKey: step.key,
                                                             disabled:
@@ -186,7 +187,7 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                         }
                                                         previousStep={
                                                             isQuickTransition
-                                                                ? previousBudgetStep
+                                                                ? (previousBudgetStep as BudgetStep)
                                                                 : undefined
                                                         }
                                                         requiredFields={
@@ -200,29 +201,17 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                 </Grid>
                                             );
                                         })}
-                                {nextSteps.override?.allowed && (
+                                {userHasPermission(
+                                    'iaso_polio_budget_admin',
+                                    currentUser,
+                                ) && (
                                     <Grid item>
+                                        {/* Ignore missing iconProps as it's not really mandatory (typing error in the component) */}
+                                        {/* @ts-ignore */}
                                         <CreateOverrideStep
                                             isMobileLayout={isMobileLayout}
                                             campaignId={campaignId}
-                                            iconProps={{
-                                                label: nextSteps.override.label,
-                                                color: nextSteps.override.color,
-                                            }}
-                                            transitionKey={
-                                                nextSteps.override.key
-                                            }
-                                            transitionLabel={
-                                                nextSteps.override.label
-                                            }
-                                            requiredFields={
-                                                nextSteps.override
-                                                    .required_fields
-                                            }
-                                            recipients={
-                                                nextSteps.override
-                                                    .emails_destination_team_ids
-                                            }
+                                            params={params}
                                         />
                                     </Grid>
                                 )}

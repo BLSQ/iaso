@@ -5,8 +5,7 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { DropdownOptions } from '../../../../types/utils';
-
-import { OrgunitTypesApi } from '../../types/orgunitTypes';
+import { OrgunitTypesApi } from '../../../orgUnits/types/orgunitTypes';
 
 const getOrgunitTypes = (): Promise<OrgunitTypesApi> => {
     return getRequest('/api/orgunittypes/');

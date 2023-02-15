@@ -8,13 +8,13 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
-from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.budget import workflow
+from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.time_cache import time_cache
 
 
@@ -48,6 +48,8 @@ class BudgetStep(SoftDeletableModel):
 
     amount = models.DecimalField(blank=True, null=True, decimal_places=2, max_digits=14)
     is_email_sent = models.BooleanField(default=False)
+    node_key_from = models.CharField(max_length=100, blank=True, null=True)
+    node_key_to = models.CharField(max_length=100, blank=True, null=True)
 
     def __str__(self):
         return f"{self.campaign}, {self.transition_key}"
@@ -91,7 +93,7 @@ class BudgetStepLink(SoftDeletableModel):
 def validator_template(value: str):
     try:
         # this will raise an error if the template cannot be parsed
-        template = Engine.get_default().from_string(value)
+        Engine.get_default().from_string(value)
     except TemplateSyntaxError as e:
         raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
 
@@ -108,7 +110,7 @@ class MailTemplate(models.Model):
         validators=[validator_template],
         help_text="Template for the Email subject, use the Django Template language, "
         "see https://docs.djangoproject.com/en/4.1/ref/templates/language/ for reference. Please keep it as one line.",
-        default="{{author_name}} updated the the budget  for campaign {{campaign.obr_name}}",
+        default="Budget for campaign {{campaign.obr_name}} updated to {{node.label}}",
     )
     html_template = models.TextField(
         validators=[validator_template],
@@ -157,7 +159,14 @@ class MailTemplate(models.Model):
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
+        if transition.key != "override":
+            node = workflow.get_node_by_key(transition.to_node)
+        else:
+            node_key = request.data["new_state_key"].split(",")[0]
+            node = workflow.get_node_by_key(node_key)
+
         attachments = []
+        override = step.transition_key == "override"
         for f in step.files.all():
             file_url = base_url + f.get_absolute_url()
             attachments.append({"url": file_url, "name": f.filename})
@@ -177,11 +186,11 @@ class MailTemplate(models.Model):
                 "author": step.created_by,
                 "author_name": step.created_by.get_full_name() or step.created_by.username,
                 "buttons": buttons,
-                "transition": transition,
+                "node": node,
                 "team": step.created_by_team,
                 "step": step,
                 "campaign": campaign,
-                "budget_link": campaign_url,
+                "budget_url": campaign_url,
                 "site_url": base_url,
                 "site_name": site.name,
                 "comment": step.comment,
@@ -190,6 +199,7 @@ class MailTemplate(models.Model):
                 "skipped_attachments": skipped_attachements,
                 "files": step.files.all(),
                 "links": step.links.all(),
+                "override": override,
             }
         )
         DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'
@@ -243,9 +253,11 @@ class WorkflowModel(models.Model):
 @time_cache(60)
 def get_workflow():
     workflow_model = WorkflowModel.objects.last()
+    if workflow_model is None:
+        return None
     transition_defs = workflow_model.definition["transitions"]
     node_defs = workflow_model.definition["nodes"]
-    categories_defs = workflow_model.definition["categories"]
+    categories_defs = workflow_model.definition.get("categories", [])
     if not any(n["key"] == "-" for n in node_defs):
         node_defs.insert(0, {"key": "-", "label": "No budget submitted"})
     transitions = [Transition(**transition_def) for transition_def in transition_defs]

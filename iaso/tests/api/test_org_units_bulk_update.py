@@ -2,13 +2,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 
-
-from iaso import models as m
-from hat.audit import models as am
-from iaso.test import APITestCase
-from iaso.models import Task, QUEUED
-
 from beanstalk_worker.services import TestTaskService
+from hat.audit import models as am
+from iaso import models as m
+from iaso.models import Task, QUEUED
+from iaso.test import APITestCase
 
 
 class OrgUnitsBulkUpdateAPITestCase(APITestCase):
@@ -23,7 +21,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
 

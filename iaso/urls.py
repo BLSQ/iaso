@@ -1,49 +1,35 @@
+import pkgutil
 from typing import Union, List
 
 from django.conf.urls import url
-from django.urls import path, include, URLPattern, URLResolver
 from django.contrib import auth
+from django.urls import path, include, URLPattern, URLResolver
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
 from hat.api.authentication import WfpLogin, wfp_callback
-from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
-from .api.comment import CommentViewSet
-from .api.completeness_stats import CompletenessStatsViewSet
-from .api.entity import EntityViewSet, EntityTypeViewSet
-from .api.logs import LogsViewSet
-from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
-from .api.mobile.org_units import MobileOrgUnitViewSet
-from .api.org_units import OrgUnitViewSet
-from .api.org_unit_types import OrgUnitTypeViewSet
+from hat.api.token_authentication import token_auth
+from iaso import matching
+from iaso.api.tasks.create.copy_version import CopyVersionViewSet
+from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
+from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
+from iaso.models import MatchingAlgorithm
+from plugins.router import router as plugins_router
+from .api.accounts import AccountViewSet
+from .api.algorithms import AlgorithmsViewSet
+from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.apps import AppsViewSet
-from .api.pages import PagesViewSet
-from .api.projects import ProjectsViewSet
-from .api.instances import InstancesViewSet
+from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
+from .api.check_version import CheckVersionViewSet
+from .api.comment import CommentViewSet
+from .api.completeness import CompletenessViewSet
+from .api.completeness_stats import CompletenessStatsViewSet
+from .api.data_sources import DataSourceViewSet
+from .api.derived_instances import DerivedInstancesViewSet
 from .api.devices import DevicesViewSet
 from .api.devices_ownership import DevicesOwnershipViewSet
 from .api.devices_position import DevicesPositionViewSet
-from .api.data_sources import DataSourceViewSet
-from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
-from iaso.api.tasks.create.copy_version import CopyVersionViewSet
-from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
-from .api.setup_account import SetupAccountViewSet
-from .api.source_versions import SourceVersionViewSet
-from .api.forms import FormsViewSet, MobileFormViewSet
-from .api.form_versions import FormVersionsViewSet
-from .api.links import LinkViewSet
-from .api.profiles import ProfilesViewSet
-from .api.algorithms import AlgorithmsViewSet
-from .api.algorithms_runs import AlgorithmsRunsViewSet
-from .api.groups import GroupsViewSet
-from .api.periods import PeriodsViewSet
-from .api.completeness import CompletenessViewSet
-from .api.export_requests import ExportRequestsViewSet
-from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
-
-from .api.tasks import TaskSourceViewSet
-from .api.accounts import AccountViewSet
-from plugins.router import router as plugins_router
+from .api.dhis2_resources import DHIS2_VIEWSETS
 from .api.enketo import (
     enketo_edit_url,
     enketo_create_url,
@@ -53,25 +39,41 @@ from .api.enketo import (
     enketo_public_launch,
     enketo_public_create_url,
 )
-from .api.mappings import MappingsViewSet
-from .api.mapping_versions import MappingVersionsViewSet
-from iaso.models import MatchingAlgorithm
-from .api.derived_instances import DerivedInstancesViewSet
-from .api.hesabu_descriptors import HesabuDescriptorsViewSet
-from .api.dhis2_resources import DHIS2_VIEWSETS
-from .api.permissions import PermissionsViewSet
+from .api.entity import EntityViewSet, EntityTypeViewSet
+from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
-from .api.check_version import CheckVersionViewSet
-from iaso import matching
-import pkgutil
-
+from .api.form_versions import FormVersionsViewSet
+from .api.forms import FormsViewSet, MobileFormViewSet
+from .api.groups import GroupsViewSet
+from .api.hesabu_descriptors import HesabuDescriptorsViewSet
+from .api.instances import InstancesViewSet
+from .api.links import LinkViewSet
+from .api.logs import LogsViewSet
+from .api.mapping_versions import MappingVersionsViewSet
+from .api.mappings import MappingsViewSet
+from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
+from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.org_units import MobileOrgUnitViewSet
+from .api.mobile.reports import MobileReportsViewSet
+from .api.org_unit_types import OrgUnitTypeViewSet
+from .api.org_units import OrgUnitViewSet
+from .api.pages import PagesViewSet
+from .api.periods import PeriodsViewSet
+from .api.permissions import PermissionsViewSet
+from .api.profiles import ProfilesViewSet
+from .api.projects import ProjectsViewSet
+from .api.reports import ReportsViewSet
+from .api.setup_account import SetupAccountViewSet
+from .api.source_versions import SourceVersionViewSet
+from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
+from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.workflows.changes import WorkflowChangeViewSet
+from .api.workflows.followups import WorkflowFollowupViewSet
+from .api.workflows.mobile import MobileWorkflowViewSet
+from .api.workflows.versions import WorkflowVersionViewSet
 from .api.xls_form_generator import XlsFormGeneratorViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
-from hat.api.token_authentication import token_auth
-
-from .api.workflows import WorkflowVersionViewSet
-from .api.mobile.workflows import MobileWorkflowViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -118,6 +120,7 @@ router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importg
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
+router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to
 # change the format in the future
@@ -133,7 +136,11 @@ router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basena
 router.register(r"generate_xlsform", XlsFormGeneratorViewSet, basename="generatexlsform")
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
+router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")
+router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowchanges")
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
+router.register(r"reports", ReportsViewSet, basename="report")
+router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 
 router.registry.extend(plugins_router.registry)
 

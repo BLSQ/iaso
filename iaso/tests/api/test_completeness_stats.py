@@ -1,6 +1,12 @@
+# Those tests are not very readable in themselves because they use complex data that is set up both in fixtures files
+# and in the setupTestData() methods.
+
+# Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
+
+from django.contrib.auth.models import User, Permission
+
 from iaso.models import Account, Form, OrgUnitType, OrgUnit
 from iaso.test import APITestCase
-from django.contrib.auth.models import User, Permission
 
 
 class CompletenessStatsAPITestCase(APITestCase):
@@ -9,6 +15,8 @@ class CompletenessStatsAPITestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
+        # Update test data here? Please also update the diagram in ../docs/test_completeness_stats.png
+        # It is known as "test-completeness-stats-fixtures-illustrated" in Whimsical
         cls.user = User.objects.get(username="test")
         cls.user.user_permissions.add(Permission.objects.get(codename="iaso_completeness_stats"))
         cls.account = Account.objects.get(name="test")
@@ -29,6 +37,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_hs_2)
         cls.project_1.forms.add(cls.form_hs_4)
         cls.project_1.save()
+        cls.org_unit_type_country = OrgUnitType.objects.get(pk=1)
         cls.org_unit_type_hopital = OrgUnitType.objects.get(pk=5)
         cls.org_unit_type_aire_sante = OrgUnitType.objects.get(pk=4)
         cls.org_unit_type_district = OrgUnitType.objects.get(pk=3)
@@ -37,8 +46,13 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.form_hs_2.org_unit_types.add(cls.org_unit_type_hopital)
         cls.form_hs_3.org_unit_types.add(cls.org_unit_type_aire_sante)
         cls.form_hs_4.org_unit_types.add(cls.org_unit_type_aire_sante)
+        cls.form_hs_4.org_unit_types.add(cls.org_unit_type_country)
         cls.hopital_aaa_ou = OrgUnit.objects.filter(org_unit_type=cls.org_unit_type_hopital).first()
         cls.create_form_instance(form=cls.form_hs_1, org_unit=cls.hopital_aaa_ou)
+
+        cls.as_abb_ou = OrgUnit.objects.get(pk=10)
+        cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+        cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
 
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
@@ -74,6 +88,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled_direct": 0,
                         "forms_to_fill_direct": 0,
                         "completeness_ratio_direct": "N/A",
+                        "has_multiple_direct_submissions": False,
                     },
                     {
                         "parent_org_unit": None,
@@ -86,25 +101,27 @@ class CompletenessStatsAPITestCase(APITestCase):
                         "forms_filled_direct": 0,
                         "forms_to_fill_direct": 0,
                         "completeness_ratio_direct": "N/A",
+                        "has_multiple_direct_submissions": False,
                     },
                     {
                         "parent_org_unit": None,
                         "org_unit_type": {"name": "Country", "id": 1},
                         "org_unit": {"name": "LaLaland", "id": 1},
                         "form": {"name": "Hydroponics study 4", "id": self.form_hs_4.id},
-                        "forms_filled": 0,
-                        "forms_to_fill": 2,
-                        "completeness_ratio": "0.0%",
+                        "forms_filled": 1,
+                        "forms_to_fill": 3,
+                        "completeness_ratio": "33.3%",
                         "forms_filled_direct": 0,
-                        "forms_to_fill_direct": 0,
-                        "completeness_ratio_direct": "N/A",
+                        "forms_to_fill_direct": 1,
+                        "completeness_ratio_direct": "0.0%",
+                        "has_multiple_direct_submissions": False,
                     },
                 ],
                 "has_next": False,
                 "has_previous": False,
                 "page": 1,
                 "pages": 1,
-                "limit": 50,
+                "limit": 10,
             },
             j,
         )
@@ -180,6 +197,29 @@ class CompletenessStatsAPITestCase(APITestCase):
                 result["org_unit_type"]["id"], [self.org_unit_type_hopital.id, self.org_unit_type_aire_sante.id]
             )
 
+    def test_filter_by_org_unit_type_no_results(self):
+        # We don't specify the parent_org_unit_id filter (so we only have the root OUs - a country)
+        # Then we ask to filter to only keep the hospitals: nothing at this level is a hospital => no results
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}")
+        json = response.json()
+        self.assertListEqual(json["results"], [])
+
+    def test_filter_by_org_unit_type_with_results(self):
+        # Opposite scenario compared to test_filter_by_org_unit_type_no_results()
+        # We don't specify the parent_org_unit_id filter (so we only have the root OUs - a country)
+        # Then we ask to filter to only keep the countries: results should be identical than without the filter
+        self.client.force_authenticate(self.user)
+
+        response_with_filter = self.client.get(
+            f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}"
+        )
+        results_with_filter = response_with_filter.json()["results"]
+        response_without_filter = self.client.get(f"/api/completeness_stats/")
+        results_without_filter = response_without_filter.json()["results"]
+        self.assertListEqual(results_with_filter, results_without_filter)
+
     def test_filter_by_org_unit(self):
         self.client.force_authenticate(self.user)
 
@@ -211,6 +251,14 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertTrue(j["has_next"])
         self.assertFalse(j["has_previous"])
 
+    def test_pagination_default_limit(self):
+        """Test that the default limit parameter is 10"""
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/completeness_stats/")
+        json = self.assertJSONResponse(response, 200)
+        self.assertEqual(json["limit"], 10)
+
     def test_row_count(self):
         self.client.force_authenticate(self.user)
 
@@ -223,12 +271,12 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         # We request a form/OU combination that has no forms to fill.
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=3&form_id={self.form_hs_2.id}")
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=2&form_id={self.form_hs_2.id}")
         json = response.json()
         # 0 forms to fill: the percentage should be returned as N/A and not as 0% or as a division error :)
         row = json["results"][0]
-        self.assertEqual(row["forms_to_fill"], 0)
-        self.assertEqual(row["completeness_ratio"], "N/A")
+        self.assertEqual(row["forms_to_fill_direct"], 0)
+        self.assertEqual(row["completeness_ratio_direct"], "N/A")
 
     def test_counts_include_current_ou_and_children(self):
         """The forms_to_fill/forms_filled counts include the forms for the OU and all its children"""
@@ -279,3 +327,106 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(result_form_1["forms_filled"], 1)
         # Let's check the percentage calculation is correct
         self.assertEqual(result_form_1["completeness_ratio"], "100.0%")
+
+    def test_counts_with_skipped_levels(self):
+        """Regression test: make sure the direct/indirect counts make sense even when there are skipped levels"""
+        # Form hs_4 is linked to the two AS at the bottom of the tree and also to the country at the top, but not to the
+        # region and district in between. We'll check direct and indirect counters for each level, starting at the
+        # country and going down.
+        self.client.force_authenticate(self.user)
+
+        # We filter to get only the country and the relevant form
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}")
+        json = response.json()
+        results_country = json["results"][0]
+        self.assertEqual(results_country["forms_to_fill"], 3)
+        self.assertEqual(results_country["forms_filled"], 1)
+        self.assertEqual(results_country["forms_to_fill_direct"], 1)
+        self.assertEqual(results_country["forms_filled_direct"], 0)
+
+        # We filter to get only the region and the relevant form
+        # no direct here, but the two grandchildren should be counted
+        response = self.client.get(
+            f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=1&org_unit_id=3"
+        )
+        json = response.json()
+        results_region_b = json["results"][0]
+        self.assertEqual(results_region_b["forms_to_fill"], 2)
+        self.assertEqual(results_region_b["forms_filled"], 1)
+        self.assertEqual(results_region_b["forms_to_fill_direct"], 0)
+        self.assertEqual(results_region_b["forms_filled_direct"], 0)
+
+        # We filter to get only the district A.B and the relevant form
+        # no direct here, but the two children should be counted
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=3")
+        json = response.json()
+        results_district_ab = json["results"][0]
+        self.assertEqual(results_district_ab["forms_to_fill"], 2)
+        self.assertEqual(results_district_ab["forms_filled"], 1)
+        self.assertEqual(results_district_ab["forms_to_fill_direct"], 0)
+        self.assertEqual(results_district_ab["forms_filled_direct"], 0)
+
+        # Finally, we request the two AS at the bottom of the tree
+        # each one is targeted by one form, submissions only on A.B.B
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=5")
+        json = response.json()
+        results_as = json["results"]
+        for result_as in results_as:
+            self.assertEqual(result_as["forms_to_fill"], 1)
+            self.assertEqual(result_as["forms_to_fill_direct"], 1)
+            if result_as["org_unit"]["id"] == self.as_abb_ou.pk:
+                self.assertEqual(result_as["forms_filled"], 1)
+                self.assertEqual(result_as["forms_filled_direct"], 1)
+            else:
+                self.assertEqual(result_as["forms_filled"], 0)
+                self.assertEqual(result_as["forms_filled_direct"], 0)
+
+    def test_has_multiple_direct_submissions(self):
+        #  see: https://bluesquare.atlassian.net/browse/IA-1826
+
+        self.client.force_authenticate(self.user)
+
+        # Case 1: the OU has no direct submissions => False
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=1&form_id={self.form_hs_4.id}")
+        json = response.json()
+        result = json["results"][0]
+        self.assertFalse(result["has_multiple_direct_submissions"])
+
+        # Case 2: the OU has one direct submissions => False
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=7&form_id={self.form_hs_1.id}")
+        json = response.json()
+        result = json["results"][0]
+        self.assertFalse(result["has_multiple_direct_submissions"])
+
+        # Case 3: the OU has one two direct submissions => True
+        response = self.client.get(f"/api/completeness_stats/?org_unit_id=10&form_id={self.form_hs_4.id}")
+        json = response.json()
+        result = json["results"][0]
+        self.assertTrue(result["has_multiple_direct_submissions"])
+
+    def test_non_valid_ous_not_counted(self):
+        """Make sure that non-valid ous are not counted in the counters for OU+children. See IA-1788"""
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=3&form_id={self.form_hs_4.id}")
+        json = response.json()
+        self.assertEqual(
+            json["results"][0]["forms_to_fill"], 2
+        )  # Because AS A.B.C is not included since its status is new
+
+    def test_non_valid_ous_not_listed(self):
+        """Make sure that non-valid ous are not listed in the results"""
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=5&form_id={self.form_hs_4.id}")
+        json = response.json()
+        self.assertEqual(len(json["results"]), 2)  # Because AS A.B.C is not included since its status is new
+
+    def test_no_rows_if_form_not_for_ou_and_descendants(self):
+        """
+        The API exclude the rows that qre not relevant because the form is not for the OU and its descendants.
+
+        Those lines would have 0/0 in the "count with descendants" column and would pollute the table.
+        """
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=2")
+        json = response.json()
+        self.assertEqual(json["results"], [])

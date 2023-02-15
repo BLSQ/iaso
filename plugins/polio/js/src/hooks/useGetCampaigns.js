@@ -67,16 +67,21 @@ export const useGetCampaigns = (
     // adding the params to the queryKey to make sure it fetches when the query changes
     return {
         // eslint-disable-next-line no-return-assign
-        exportToCSV: () =>
-            (window.location.href = `${getURL({
-                ...params,
-                limit: undefined,
-                page: undefined,
-                format: 'csv',
-            })}`),
+        exportToCSV: `${getURL({
+            ...params,
+            limit: undefined,
+            page: undefined,
+            format: 'csv',
+        })}`,
         query: useSnackQuery(
             effectiveQueryKey,
-            () => getRequest(getURL(params)),
+            () =>
+                getRequest(
+                    getURL({
+                        ...params,
+                        fieldset: options.fieldset ?? undefined,
+                    }),
+                ),
             undefined,
             {
                 cacheTime: Infinity,
@@ -92,6 +97,10 @@ export const useGetCampaigns = (
 // Need a better way to handle default in the routing
 export const useCampaignParams = params => {
     return useMemo(() => {
+        const showTest = !!(
+            params.campaignType !== 'regular' &&
+            params.campaignType !== 'preventive'
+        );
         return {
             order: params?.order ?? DEFAULT_ORDER,
             pageSize: params?.pageSize ?? DEFAULT_PAGE_SIZE,
@@ -103,8 +112,9 @@ export const useCampaignParams = params => {
             showOnlyDeleted: params.showOnlyDeleted,
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,
-            show_test: params.show_test ?? true,
+            show_test: showTest,
             last_budget_event__status: params.last_budget_event__status,
+            fieldset: 'list',
         };
     }, [params]);
 };

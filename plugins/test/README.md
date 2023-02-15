@@ -2,8 +2,8 @@
 
 This is a demo plugin to demonstrate how the v2 plugin system in Iaso works.
 
-It create a new model BlogPost, that can be managed in admin and expose it via API an endpoint. In the web interface, it
-add a `test` entry and a new page showing the list of Posts.
+It creates a new model BlogPost, that can be managed in admin and expose it via API an endpoint. In the web interface, it
+adds a `test` entry and a new page showing the list of Posts.
 
 To activate it set the environment variable `ENV` to `test`. You can do so either in your `.env` file or by remoting  
 

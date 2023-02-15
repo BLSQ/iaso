@@ -6,3 +6,5 @@ export const campaignStatuses = [
     'ROUND2START',
     'ROUND2DONE',
 ];
+
+export const RA_STATUSES = ['TO_SUBMIT', 'SUBMITTED', 'REVIEWED', 'APPROVED'];

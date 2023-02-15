@@ -5,12 +5,12 @@ from functools import reduce
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
-from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.postgres.indexes import GistIndex
+from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
+from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 from django.db import models, transaction
 

@@ -15,8 +15,7 @@ export const testPageFilters = (
         const { value, type, selector } = filters[keyName];
         switch (type) {
             case 'text': {
-                // cy.wait(0); // prevent an error on line below because the element is still animating when trying to clear
-                cy.get(selector).clear().type(value);
+                cy.get(selector).type('{selectall}').type(value);
                 break;
             }
             case 'multi': {

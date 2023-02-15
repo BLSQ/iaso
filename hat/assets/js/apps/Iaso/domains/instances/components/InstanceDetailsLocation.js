@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core';
 
 import { injectIntl } from 'bluesquare-components';
-import MarkerMap from '../../../components/maps/MarkerMapComponent';
+import { MarkerMap } from '../../../components/maps/MarkerMapComponent.tsx';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
 import OrgUnitSourceRefDisplay from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 

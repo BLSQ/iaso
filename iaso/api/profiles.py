@@ -1,22 +1,22 @@
+from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.models import Permission
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
-
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
-from django.utils.translation import gettext as _
-from django.core.mail import send_mail
-from django.conf import settings
-from django.contrib.auth.tokens import PasswordResetTokenGenerator
-from iaso.models import Profile, OrgUnit
-from django.utils.http import urlsafe_base64_encode
-from django.contrib.auth.models import Permission
-from django.contrib.auth.models import User
-from django.utils.encoding import force_bytes
+from django.shortcuts import get_object_or_404
 from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from django.utils.translation import gettext as _
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+
+from iaso.models import Profile, OrgUnit
 
 
 class HasProfilePermission(permissions.BasePermission):
@@ -63,6 +63,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         perms = request.GET.get("permissions", None)
         location = request.GET.get("location", None)
         org_unit_type = request.GET.get("orgUnitTypes", None)
+        parent_ou = True if request.GET.get("ouParent", None) == "true" else False
+        children_ou = True if request.GET.get("ouChildren", None) == "true" else False
 
         queryset = self.get_queryset()
         if search:
@@ -79,6 +81,54 @@ class ProfilesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(
                 user__iaso_profile__org_units__pk=location,
             ).distinct()
+
+        no_parent_ou = False
+
+        if parent_ou and location or children_ou and location:
+            ou = get_object_or_404(OrgUnit, pk=location)
+            if parent_ou and ou.parent is None:
+                no_parent_ou = True
+
+            if parent_ou and not children_ou:
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+
+                if no_parent_ou:
+                    queryset = queryset_current
+
+                else:
+                    queryset = (
+                        self.get_queryset().filter(
+                            user__iaso_profile__org_units__pk=ou.parent.pk,
+                        )
+                    ) | queryset_current
+
+                    queryset = queryset.distinct()
+
+            if children_ou and not parent_ou:
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+                children_ou = OrgUnit.objects.filter(parent__pk=location)
+                queryset = (
+                    self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                    | queryset_current
+                )
+
+            if parent_ou and children_ou:
+
+                if no_parent_ou:
+                    queryset_parent = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+                else:
+                    queryset_parent = self.get_queryset().filter(
+                        user__iaso_profile__org_units__pk=ou.parent.pk,
+                    )
+
+                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
+
+                children_ou = OrgUnit.objects.filter(parent__pk=location)
+                queryset_children = self.get_queryset().filter(
+                    user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
+                )
+
+                queryset = queryset_current | queryset_parent | queryset_children
 
         if org_unit_type:
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
@@ -115,7 +165,6 @@ class ProfilesViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         if pk == "me":
             # allow user to change his own language
-            user = request.user
             profile = request.user.iaso_profile
             if "home_page" in request.data:
                 profile.home_page = request.data["home_page"]
@@ -148,7 +197,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.save()
 
         if password and request.user == user:
-            # update session hash if you changed your own password so you don't get unlogged
+            # update session hash if you changed your own password, so you don't get unlogged
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
             update_session_auth_hash(request, user)
 
@@ -224,7 +273,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if permissions != []:
             user.save()
 
-        # Create a iaso profile for the new user and attach it to the same account
+        # Create an Iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(

@@ -50,7 +50,7 @@ export const testTablerender = ({
                 },
             ).as('fetch');
             cy.visit(baseUrl);
-            cy.wait('@fetch');
+            cy.wait('@fetch', { timeout: 10000 });
 
             const table = cy.get(selector);
             table.should('have.length', 1);

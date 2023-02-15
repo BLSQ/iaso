@@ -1,13 +1,13 @@
 import typing
 
+from django.conf import settings
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
-from django.test import tag
 from django.core import mail
+
+from iaso import models as m
 from iaso.models import Profile
 from iaso.test import APITestCase
-from iaso import models as m
-from django.conf import settings
 
 
 class ProfileAPITestCase(APITestCase):
@@ -55,6 +55,19 @@ class ProfileAPITestCase(APITestCase):
             source_ref="PvtAI4RUMkr",
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
+
+        cls.jedi_council_corruscant_child = m.OrgUnit.objects.create(
+            org_unit_type=cls.jedi_council,
+            version=sw_version_1,
+            name="Corruscant Jedi Council",
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
+            location=cls.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+            parent=cls.jedi_council_corruscant,
+        )
 
     def test_can_delete_dhis2_id(self):
         self.client.force_authenticate(self.john)
@@ -348,7 +361,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_account_feature_flags_is_included(self):
         aff = m.AccountFeatureFlag.objects.create(code="shape", name="Can edit shape")
-        aff2 = m.AccountFeatureFlag.objects.create(code="not-used", name="this is not used")
+        m.AccountFeatureFlag.objects.create(code="not-used", name="this is not used")
         self.client.force_authenticate(self.jane)
 
         # no feature flag at first
@@ -402,6 +415,29 @@ class ProfileAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/profiles/?orgUnitTypes={self.jedi_council.pk}")
 
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_children_ou(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant_child])
+
+        response = self.client.get(
+            f"/api/profiles/?location={self.jedi_council_corruscant.pk}&ouParent=false&ouChildren=true"
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(len(response.json()["profiles"]), 1)
+
+    def test_search_user_by_parent_ou(self):
+        self.client.force_authenticate(self.jane)
+        self.jane.iaso_profile.org_units.set([self.jedi_council_corruscant])
+
+        response = self.client.get(
+            f"/api/profiles/?location={self.jedi_council_corruscant_child.pk}&ouParent=true&ouChildren=false"
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 1)

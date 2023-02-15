@@ -1,8 +1,8 @@
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 
+from iaso import models as m
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.test import TestCase
-from iaso import models as m
 
 
 class ExportTestCase(TestCase):
@@ -11,7 +11,7 @@ class ExportTestCase(TestCase):
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         cls.sw_source = sw_source
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
 
         cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
         cls.jedi_team = m.OrgUnitType.objects.create(name="Jedi Team", short_name="Jdt")

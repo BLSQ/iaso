@@ -1,11 +1,37 @@
+from typing import Any
+
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
-from django.db import models
 from django.contrib.gis.db import models as geomodels
+from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
-from typing import Any
 from typing_extensions import Protocol
+
+from django_json_widget.widgets import JSONEditorWidget  # type: ignore
+
+
+class IasoJSONEditorWidget(JSONEditorWidget):
+    class Media:
+        css = {"all": ("css/admin-json-widget.css",)}
+
+    def __init__(self, attrs=None, mode="code", options=None, width=None, height=None):
+        if height == None:
+            height = "400px"
+
+        default_options = {
+            "modes": ["text", "code"],
+            "mode": mode,
+            "search": True,
+        }
+
+        if options:
+            default_options.update(options)
+
+        super(IasoJSONEditorWidget, self).__init__(
+            attrs=attrs, mode=mode, options=default_options, width=width, height=height
+        )
+
 
 from .models import (
     OrgUnitType,
@@ -47,6 +73,8 @@ from .models import (
     WorkflowVersion,
     WorkflowChange,
     WorkflowFollowup,
+    Report,
+    ReportVersion,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.xls_form_template import XlsFormTemplate
@@ -108,6 +136,8 @@ class FormAdmin(admin.GeoModelAdmin):
         "deleted_at",
     )
 
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
     def get_queryset(self, request):
         return Form.objects_include_deleted.all()
 
@@ -117,6 +147,8 @@ class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")
     ordering = ("form__name",)
     list_display = ("form_name", "form_id", "version_id", "created_at", "updated_at")
+
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
     @admin_attr_decorator
     def form_name(self, obj):
@@ -138,6 +170,7 @@ class InstanceFileAdminInline(admin.TabularInline):
     extra = 0
     formfield_overrides = {
         models.TextField: {"widget": widgets.AdminTextInputWidget},
+        models.JSONField: {"widget": IasoJSONEditorWidget},
     }
 
 
@@ -231,6 +264,7 @@ class MappingAdmin(admin.GeoModelAdmin):
 @admin_attr_decorator
 class MappingVersionAdmin(admin.GeoModelAdmin):
     list_filter = ("form_version_id",)
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 @admin_attr_decorator
@@ -308,6 +342,7 @@ class TaskAdmin(admin.ModelAdmin):
     list_display = ("name", "account", "status", "created_at", "launcher", "result_message")
     list_filter = ("account", "status", "name")
     readonly_fields = ("stacktrace", "created_at", "result")
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
     def result_message(self, task):
         return task.result and task.result.get("message", "")
@@ -467,18 +502,42 @@ class StorageDeviceAdmin(admin.ModelAdmin):
 class WorkflowAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
+    def get_form(self, request, obj=None, **kwargs):
+        # In the <select> for the entity type, we also want to indicate the account name
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields[
+            "entity_type"
+        ].label_from_instance = lambda entity: f"{entity.name} (Account: {entity.account.name})"
+        return form
+
+    def get_queryset(self, request):
+        return Workflow.objects_include_deleted.all()
+
 
 class WorkflowChangeInline(admin.TabularInline):
     model = WorkflowChange
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 class WorkflowFollowupInline(admin.TabularInline):
     model = WorkflowFollowup
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 class WorkflowVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     inlines = [WorkflowChangeInline, WorkflowFollowupInline]
+
+    def get_queryset(self, request):
+        return WorkflowVersion.objects_include_deleted.all()
+
+
+class AlgorithmRunAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+class PageAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 admin.site.register(Link, LinkAdmin)
@@ -494,7 +553,7 @@ admin.site.register(SourceVersion, SourceVersionAdmin)
 admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
-admin.site.register(AlgorithmRun)
+admin.site.register(AlgorithmRun, AlgorithmRunAdmin)
 admin.site.register(FormVersion, FormVersionAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
@@ -506,7 +565,7 @@ admin.site.register(ExportRequest, ExportRequestAdmin)
 admin.site.register(ExportStatus, ExportStatusAdmin)
 admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
-admin.site.register(Page)
+admin.site.register(Page, PageAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(EntityType, EntityTypeAdmin)
 admin.site.register(Entity, EntityAdmin)
@@ -518,4 +577,6 @@ admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
+admin.site.register(Report)
+admin.site.register(ReportVersion)
 admin.site.register(XlsFormTemplate)

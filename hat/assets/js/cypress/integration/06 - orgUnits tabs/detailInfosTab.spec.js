@@ -69,6 +69,25 @@ const testEditableInfos = (ou, validationStatus = 'New') => {
     cy.get('@ouTreeInput').should('contain', ou.parent.short_name);
 };
 
+const testReadableInfos = ou => {
+    const createdAt = moment.unix(ou.created_at).format('DD/MM/YYYY HH:mm');
+    const updatedAt = moment.unix(ou.updated_at).format('DD/MM/YYYY HH:mm');
+
+    cy.get('[data-test="source"]').should('contain', ou.source);
+    if (ou.creator) {
+        cy.get('[data-test="creator"]').should('contain', ou.creator.value);
+    } else {
+        cy.get('[data-test="creator"]').should('contain', '-');
+    }
+    cy.get('[data-test="created_at"]').should('contain', createdAt);
+    cy.get('[data-test="updated_at"]').should('contain', updatedAt);
+
+    if (ou.latitude && ou.longitude) {
+        cy.get('[data-test="latitude"]').should('contain', ou.latitude);
+        cy.get('[data-test="longitude"]').should('contain', ou.longitude);
+    }
+};
+
 describe('infos tab', () => {
     beforeEach(() => {
         cy.login();
@@ -83,7 +102,7 @@ describe('infos tab', () => {
                 fixture: `${i}/list.json`,
             });
         });
-        cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
+        cy.intercept('GET', '/api/groups/', {
             fixture: `groups/list.json`,
         });
         cy.intercept(
@@ -162,15 +181,7 @@ describe('infos tab', () => {
         cy.visit(baseUrl);
         cy.wait('@getOuDetail').then(() => {
             testEditableInfos(orgUnit);
-            cy.testInputValue('#input-text-source', orgUnit.source);
-            cy.testInputValue(
-                '#input-text-created_at',
-                moment.unix(orgUnit.created_at).format('DD/MM/YYYY HH:mm'),
-            );
-            cy.testInputValue(
-                '#input-text-updated_at',
-                moment.unix(orgUnit.updated_at).format('DD/MM/YYYY HH:mm'),
-            );
+            testReadableInfos(orgUnit);
         });
     });
 
@@ -215,37 +226,6 @@ describe('infos tab', () => {
                 cy.wrap(interceptFlag).should('eq', true);
                 testEditableInfos(newOu, 'VALIDATED');
             });
-        });
-    });
-
-    describe('aliases', () => {
-        it('should prevent saving empty alias', () => {
-            cy.intercept(
-                'GET',
-                `/api/orgunits/?&rootsForUser=true&source=${orgUnit.source_id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
-                {
-                    fixture: 'orgunits/list.json',
-                },
-            );
-            cy.visit(baseUrl);
-            cy.fillArrayInputField('aliases', ['']);
-            cy.get('#save-ou').as('saveButton').should('be.disabled');
-            cy.get('@addButton').should('be.disabled');
-            cy.fillArrayInputField('aliases', ['TOAD']);
-            cy.get('@saveButton').should('be.enabled');
-            cy.get('@addButton').should('be.enabled');
-            cy.fillArrayInputField('aliases', ['TOAD', 'BOWSER']);
-            cy.get('@saveButton').should('be.enabled');
-            cy.get('@addButton').should('be.enabled');
-            cy.deleteLastFieldInArrayInputField('@arrayInputFieldList');
-            cy.get('@saveButton').should('be.enabled');
-            cy.get('@addButton').should('be.enabled');
-            cy.fillArrayInputField('aliases', ['BEAU']);
-            cy.get('@saveButton').should('be.disabled');
-            cy.get('@addButton').should('be.enabled');
-            cy.deleteLastFieldInArrayInputField('@arrayInputFieldList');
-            cy.get('@saveButton').should('be.enabled');
-            cy.get('@addButton').should('be.enabled');
         });
     });
 });

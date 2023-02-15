@@ -20,7 +20,7 @@ import {
     commonStyles,
     LoadingSpinner,
 } from 'bluesquare-components';
-import LinksCompare from './LinksCompareComponent';
+import { LinksCompare } from './LinksCompareComponent';
 
 import { fetchLinkDetail } from '../../../utils/requests';
 

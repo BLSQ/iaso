@@ -2,10 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Paper } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
-import {
-    // @ts-ignore
-    Table,
-} from 'bluesquare-components';
+import { Table } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
 import {
@@ -14,7 +11,7 @@ import {
     AssignmentUnit,
 } from '../types/locations';
 import { useColumns } from '../configs/AssignmentsListTabColumns';
-import { DropdownTeamsOptions, SubTeam, User } from '../types/team';
+import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
 import { Profile } from '../../../utils/usersUtils';
 
 import { baseUrls } from '../../../constants/urls';
@@ -53,6 +50,7 @@ type Props = {
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     selectedItem: SubTeam | User | undefined;
+    currentTeam?: Team;
 };
 
 const baseUrl = baseUrls.assignments;
@@ -65,8 +63,15 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     profiles,
     selectedItem,
     params,
+    currentTeam,
 }: Props) => {
-    const columns = useColumns({ orgUnits, assignments, teams, profiles });
+    const columns = useColumns({
+        orgUnits,
+        assignments,
+        teams,
+        profiles,
+        currentTeam,
+    });
     const dispatch = useDispatch();
     return (
         <Paper>

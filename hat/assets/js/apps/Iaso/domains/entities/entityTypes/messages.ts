@@ -102,6 +102,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entityTypes.selectReferenceForm',
         defaultMessage: 'Select a reference form first',
     },
+    workflow: {
+        id: 'iaso.label.workflow',
+        defaultMessage: 'Workflow',
+    },
 });
 
 export default MESSAGES;

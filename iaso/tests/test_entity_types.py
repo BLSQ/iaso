@@ -1,6 +1,6 @@
-from django.core.files import File
 from unittest import mock
 
+from django.core.files import File
 
 from iaso import models as m
 from iaso.models import EntityType

@@ -10,25 +10,24 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-import os
-from typing import Dict, Any
-
-import sentry_sdk
-from datetime import timedelta
-from django.utils.translation import ugettext_lazy as _
-
-from sentry_sdk.integrations.django import DjangoIntegration
 
 import base64
 import hashlib
 import html
+import os
 import re
 import urllib.parse
+from datetime import timedelta
+from typing import Dict, Any
 from urllib.parse import urlparse
+
+import sentry_sdk
+from django.utils.translation import ugettext_lazy as _
+from sentry_sdk.integrations.django import DjangoIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
 
-# This should the the naked domain (no http or https prefix) that is
+# This should be the naked domain (no http or https prefix) that is
 # hosting Iaso, this is used when sending out emails that need a link
 # back to the Iaso application.
 #
@@ -110,14 +109,17 @@ LOGGING: Dict[str, Any] = {
         "iaso": {"level": LOGGING_LEVEL},
         "plugins": {"level": LOGGING_LEVEL},
         "beanstalk_worker": {"level": LOGGING_LEVEL},
-        #  Uncomment to print all sql query
-        # 'django.db.backends': {'level': 'DEBUG'},
         "": {"handlers": ["console"]},
     },
 }
 
+
+if os.getenv("DEBUG_SQL") == "true":
+    LOGGING["loggers"]["django.db.backends"] = {"level": "DEBUG"}
+
+
 # AWS expects python logs to be stored in this folder
-AWS_LOG_FOLDER = "/opt/python/log"
+AWS_LOG_FOLDER = "/var/app/log"
 
 if os.path.isdir(AWS_LOG_FOLDER):
     if os.access(AWS_LOG_FOLDER, os.W_OK):
@@ -163,6 +165,7 @@ INSTALLED_APPS = [
     "django_comments",
     "django_filters",
     "drf_yasg",
+    "django_json_widget",
 ]
 
 # needed because we customize the comment model
@@ -289,7 +292,7 @@ LANGUAGES = (
     ("en", _("English")),
 )
 
-LOCALE_PATHS = ["/opt/app/hat/locale/", "hat/locale/"]
+LOCALE_PATHS = ["/var/app/current/hat/locale/", "/opt/app/hat/locale/", "hat/locale/"]
 
 TIME_ZONE = "UTC"
 
@@ -309,7 +312,7 @@ AUTH_CLASSES = [
     "rest_framework_simplejwt.authentication.JWTAuthentication",
 ]
 
-# Needed for PowerBI, used for the Polio project, which only support support BasicAuth.
+# Needed for PowerBI, used for the Polio project, which only supports BasicAuth.
 if "polio" in PLUGINS:
     AUTH_CLASSES.append(
         "rest_framework.authentication.BasicAuthentication",
@@ -344,6 +347,7 @@ if USE_S3:
     AWS_S3_SIGNATURE_VERSION = "s3v4"
     AWS_S3_HOST = "s3.%s.amazonaws.com" % AWS_S3_REGION_NAME
     AWS_DEFAULT_ACL = None
+    S3_ENDPOINT_URL = os.environ.get("AWS_S3_ENDPOINT_URL", None)
 
     # s3 static settings
     if CDN_URL:
@@ -355,6 +359,17 @@ if USE_S3:
         STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
 
     MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
+
+    if S3_ENDPOINT_URL:
+        AWS_S3_ENDPOINT_URL = S3_ENDPOINT_URL
+        STATIC_LOCATION = "iasostatics"
+        STATIC_URL = S3_ENDPOINT_URL + "/" + AWS_STORAGE_BUCKET_NAME + "/" + STATIC_LOCATION + "/"
+        MEDIA_URL = S3_ENDPOINT_URL + "/" + AWS_STORAGE_BUCKET_NAME + "/"
+
+        print("using s3 alternative", AWS_S3_ENDPOINT_URL)
+        print(" STATIC_URL", STATIC_URL)
+        print(" MEDIA_URL", MEDIA_URL)
+
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
     MEDIA_URL = "/media/"

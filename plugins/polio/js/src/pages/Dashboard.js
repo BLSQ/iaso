@@ -29,6 +29,8 @@ import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
 import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
+import { useSingleTableParams } from '../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
+import { PageActionWithLink } from '../components/Buttons/PageActionWithLink.tsx';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -42,7 +44,8 @@ const Dashboard = ({ router }) => {
     const [selectedCampaignId, setSelectedCampaignId] = useState();
     const classes = useStyles();
 
-    const apiParams = useCampaignParams(params);
+    const paramsToUse = useSingleTableParams(params);
+    const apiParams = useCampaignParams(paramsToUse);
 
     const [resetPageToOne, setResetPageToOne] = useState('');
 
@@ -273,9 +276,8 @@ const Dashboard = ({ router }) => {
                 displayBackButton={false}
             />
             <CreateEditDialog
-                selectedCampaign={selectedCampaign}
+                campaignId={selectedCampaign?.id}
                 isOpen={isCreateEditDialogOpen}
-                isFetching={isFetching}
                 onClose={closeCreateEditDialog}
             />
             <ConfirmDialog
@@ -298,9 +300,9 @@ const Dashboard = ({ router }) => {
                     >
                         {formatMessage(MESSAGES.create)}
                     </PageAction>
-                    <PageAction icon={DownloadIcon} onClick={exportToCSV}>
+                    <PageActionWithLink icon={DownloadIcon} url={exportToCSV}>
                         {formatMessage(MESSAGES.csv)}
-                    </PageAction>
+                    </PageActionWithLink>
                     <ImportLineListDialog
                         renderTrigger={({ openDialog }) => (
                             <PageAction

@@ -147,14 +147,6 @@ describe('Submissions', () => {
         });
     });
     describe('page', () => {
-        it('should redirect to default columns param', () => {
-            goToPage();
-            cy.url().should(
-                'eq',
-                `${siteBaseUrl}/dashboard/forms/submissions/tab/list/columns/form__name,updated_at,period,org_unit__name,status/mapResults/3000`,
-            );
-        });
-
         it('page should not be accessible if user does not have permission', () => {
             goToPage({
                 ...superUser,
@@ -394,9 +386,9 @@ describe('Submissions', () => {
         };
         cy.wait('@getSubmissions').then(() => {
             // TODO: test new period type day
-            testPeriod(1, '201801', '201901');
-            testPeriod(2, '2018Q1', '2019Q1');
-            testPeriod(3, '2018', '2019');
+            testPeriod(1, '201901', '202001');
+            testPeriod(2, '2019Q1', '2020Q1');
+            testPeriod(3, '2019', '2020');
         });
     });
 
@@ -426,16 +418,18 @@ describe('Submissions', () => {
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
             cy.get('@selectColumnsList').find('li').should('have.length', 12);
-            const testIsActive = keyName => {
+            const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');
                 cy.get(`[data-test-column-switch="${keyName}"]`).should(
                     'be.checked',
                 );
                 cy.get('@thead').should('contain', keyName);
-                cy.url().should(url => {
-                    expect(url.split('columns')[1]).to.contain(keyName);
-                });
+                if (withUrl) {
+                    cy.url().should(url => {
+                        expect(url.split('columns')[1]).to.contain(keyName);
+                    });
+                }
             };
             const tstIsInactiveActive = keyName => {
                 cy.get('table').as('table');
@@ -451,7 +445,7 @@ describe('Submissions', () => {
             possibleFields.possible_fields.forEach(pf => {
                 cy.get(`[data-test-column-switch="${pf.name}"]`).as('switch');
                 if (formDetail.label_keys.includes(pf.name)) {
-                    testIsActive(pf.name);
+                    testIsActive(pf.name, false);
                     cy.get(`@switch`).click();
                     tstIsInactiveActive(pf.name);
                 } else {

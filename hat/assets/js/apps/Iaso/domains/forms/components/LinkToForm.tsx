@@ -6,9 +6,10 @@ import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
 type Props = {
-    formId: string;
+    formId: string | number;
     formName: unknown;
 };
+
 export const LinkToForm: FunctionComponent<Props> = ({ formId, formName }) => {
     const user = useCurrentUser();
     if (userHasPermission('iaso_forms', user)) {

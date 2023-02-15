@@ -30,11 +30,12 @@ export type DataSource = {
     description: string;
     created_at: string;
     updated_at: string;
-    versions: [Version];
+    versions: Version[];
     url: string;
-    Project: [Project];
+    projects: Project[];
     default_version?: Version;
     credentials?: Credentials;
+    color?: string;
 };
 
 type DataSources = DataSource[];

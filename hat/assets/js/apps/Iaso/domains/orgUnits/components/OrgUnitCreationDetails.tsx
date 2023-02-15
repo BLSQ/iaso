@@ -1,0 +1,139 @@
+import moment from 'moment';
+import React, { FunctionComponent, ReactNode } from 'react';
+import {
+    makeStyles,
+    Table,
+    TableBody,
+    TableRow,
+    TableCell,
+} from '@material-ui/core';
+import GpsFixedIcon from '@material-ui/icons/GpsFixed';
+import GpsOffIcon from '@material-ui/icons/GpsOff';
+import {
+    // @ts-ignore
+    useSafeIntl,
+    // @ts-ignore
+    commonStyles,
+    // @ts-ignore
+    LoadingSpinner,
+} from 'bluesquare-components';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
+import { OrgUnit } from '../types/orgUnit';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import MESSAGES from '../messages';
+
+const useStyles = makeStyles(theme => ({
+    mapContainer: {
+        ...commonStyles(theme).mapContainer,
+        height: '60vh',
+        marginBottom: 0,
+    },
+}));
+
+type RowProps = {
+    label: string | ReactNode;
+    value?: string | ReactNode;
+    dataTestId?: string;
+};
+
+const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
+    const classes: Record<string, string> = useStyles();
+    return (
+        <TableRow>
+            <TableCell className={classes.leftCell}>{label}</TableCell>
+            <TableCell data-test={dataTestId}>{value}</TableCell>
+        </TableRow>
+    );
+};
+
+type Props = {
+    orgUnit: OrgUnit;
+    params: Record<string, any>;
+};
+
+export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
+    orgUnit,
+    params,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const latitude = `${formatMessage(MESSAGES.latitude)}: ${
+        orgUnit.latitude
+    },`;
+    const longitude = `${formatMessage(MESSAGES.longitude)}: ${
+        orgUnit.longitude
+    },`;
+
+    const latitudeLongitude =
+        orgUnit.latitude && orgUnit.longitude ? latitude + longitude : false;
+    const orgUnitCreatedAt = moment.unix(orgUnit.created_at).format('LTS');
+    const orgUnitUpdatedAt = moment.unix(orgUnit.updated_at).format('LTS');
+    const isNewOrgunit = params.orgUnitId === '0';
+    const { account } = useCurrentUser();
+
+    return (
+        <>
+            {!orgUnit && <LoadingSpinner absolute />}
+
+            <WidgetPaper showHeader={false} title="">
+                <Table size="medium">
+                    <TableBody>
+                        <Row
+                            label={formatMessage(MESSAGES.source)}
+                            value={
+                                orgUnit.source ??
+                                account.default_version?.data_source.name
+                            }
+                            dataTestId="source"
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.creator)}
+                            value={orgUnit.creator.value ?? '-'}
+                            dataTestId="creator"
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.created_at)}
+                            value={orgUnit.created_at ? orgUnitCreatedAt : '-'}
+                            dataTestId="created_at"
+                        />
+                        <Row
+                            label={formatMessage(MESSAGES.updated_at)}
+                            value={orgUnit.updated_at ? orgUnitUpdatedAt : '-'}
+                            dataTestId="updated_at"
+                        />
+                        {!isNewOrgunit &&
+                            !orgUnit.has_geo_json &&
+                            !latitudeLongitude && (
+                                <Row
+                                    label={<GpsOffIcon color="primary" />}
+                                    value={formatMessage(
+                                        MESSAGES.hasNoGeometryAndGps,
+                                    )}
+                                />
+                            )}
+                        {orgUnit.has_geo_json && (
+                            <Row
+                                label={<GpsFixedIcon color="primary" />}
+                                value={formatMessage(MESSAGES.hasGeometry)}
+                            />
+                        )}
+                        {latitudeLongitude && (
+                            <>
+                                <Row
+                                    label={formatMessage(MESSAGES.latitude)}
+                                    value={orgUnit.latitude}
+                                    dataTestId="latitude"
+                                />
+
+                                <Row
+                                    label={formatMessage(MESSAGES.longitude)}
+                                    value={orgUnit.longitude}
+                                    dataTestId="longitude"
+                                />
+                            </>
+                        )}
+                    </TableBody>
+                </Table>
+            </WidgetPaper>
+        </>
+    );
+};

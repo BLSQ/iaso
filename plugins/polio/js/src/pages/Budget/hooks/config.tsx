@@ -113,7 +113,10 @@ export const useBudgetDetailsColumns = (): Column[] => {
                                 Boolean(settings.row.original.deleted_at),
                             )}
                         >
-                            {settings.row.original.transition_label}
+                            {settings.row.original.transition_label !==
+                            'override'
+                                ? settings.row.original.transition_label
+                                : 'Override'}
                         </span>
                     );
                 },
@@ -170,7 +173,7 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.created_at),
+                Header: formatMessage(MESSAGES.date),
                 id: 'created_at',
                 accessor: 'created_at',
                 sortable: false,

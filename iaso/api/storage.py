@@ -16,7 +16,6 @@ from hat.api.export_utils import generate_xlsx, iter_items, Echo, timestamp_to_u
 from iaso.api.entity import EntitySerializer
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
-
 from .common import (
     TimestampField,
     HasPermission,

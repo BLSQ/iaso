@@ -16,6 +16,7 @@ import { redirectToReplace } from '../../routing/actions';
 
 import MESSAGES from './messages';
 import { useGetColumns, defaultSorted, baseUrl } from './config';
+import { useSingleTableParams } from '../../components/tables/SingleTable';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,9 +30,11 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetStorages(params);
-    const { url: apiUrl } = useGetStorageApiParams(params);
-    const columns = useGetColumns(params);
+
+    const apiParams = useSingleTableParams(params);
+    const { data, isFetching } = useGetStorages(apiParams);
+    const { url: apiUrl } = useGetStorageApiParams(apiParams);
+    const columns = useGetColumns(apiParams);
 
     return (
         <>
@@ -40,7 +43,7 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Filters params={params} />
+                <Filters params={apiParams} />
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
@@ -48,7 +51,7 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
                     defaultSorted={defaultSorted}
                     columns={columns}
                     count={data?.count ?? 0}
-                    params={params}
+                    params={apiParams}
                     onTableParamsChange={p =>
                         dispatch(redirectToReplace(baseUrl, p))
                     }

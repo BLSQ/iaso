@@ -1,11 +1,13 @@
+import json
 from typing import Union
 from uuid import uuid4
 
-from django.contrib.auth.models import User, AnonymousUser
-from django.db import models
-from django.db.models import Count, Manager, Q
 import django.db.models.manager
-
+from django.contrib.auth.models import User, AnonymousUser
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db import models
+from django.db.models import Count, Q
+from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 
@@ -14,7 +16,6 @@ from iaso.models.microplanning import Team
 from iaso.utils import slugify_underscore
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
-
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences
@@ -242,6 +243,15 @@ class Campaign(SoftDeletableModel):
         related_name="campaigns_country",
         help_text="Country for campaign, set automatically from initial_org_unit",
     )
+    # We use a geojson and not a geom because we have a feature per vaccine x round (if separate scope per round)
+    # It is a feature collection. Basic info about the campaign are in the properties
+    geojson = models.JSONField(
+        null=True,
+        editable=False,
+        blank=True,
+        help_text="GeoJson representing the scope of the campaign",
+        encoder=DjangoJSONEncoder,
+    )
 
     creation_email_send_at = models.DateTimeField(
         null=True, blank=True, help_text="When and if we sent an email for creation"
@@ -347,7 +357,7 @@ class Campaign(SoftDeletableModel):
     surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
-    budget_status = models.CharField(max_length=10, choices=RA_BUDGET_STATUSES, null=True, blank=True)
+    budget_status = models.CharField(max_length=100, null=True, blank=True)
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     is_test = models.BooleanField(default=False)
 
@@ -356,8 +366,32 @@ class Campaign(SoftDeletableModel):
         "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
     )
 
+    # For budget worflow
     budget_current_state_key = models.CharField(max_length=100, default="-")
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
+
+    # Budget tab
+    budget_requested_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    gpei_consolidation_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submission_to_orpg_operations_1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submission_to_orpg_operations_2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt3_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submission_to_orpg_operations_2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(
         null=True,
@@ -510,6 +544,68 @@ class Campaign(SoftDeletableModel):
             return round
         except Round.DoesNotExist:
             return None
+
+    def update_geojson_field(self):
+        "Update the geojson field on the campaign DO NOT TRIGGER the save() you have to do it manually"
+        campaign = self
+        features = []
+        if not self.separate_scopes_per_round:
+            campaign_scopes = self.scopes
+
+            # noinspection SqlResolve
+            campaign_scopes = campaign_scopes.annotate(
+                geom=RawSQL(
+                    """SELECT st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
+    from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+    where group_id = polio_campaignscope.group_id""",
+                    [],
+                )
+            )
+
+            for scope in campaign_scopes:
+                if scope.geom:
+                    feature = {
+                        "type": "Feature",
+                        "geometry": json.loads(scope.geom),
+                        "properties": {
+                            "obr_name": campaign.obr_name,
+                            "id": str(campaign.id),
+                            "vaccine": scope.vaccine,
+                            "scope_key": f"campaignScope-{scope.id}",
+                            "top_level_org_unit_name": scope.campaign.country.name,
+                        },
+                    }
+                    features.append(feature)
+        else:
+            round_scopes = RoundScope.objects.filter(round__campaign=campaign)
+            round_scopes = round_scopes.prefetch_related("round")
+            # noinspection SqlResolve
+            round_scopes = round_scopes.annotate(
+                geom=RawSQL(
+                    """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
+    from iaso_orgunit right join iaso_group_org_units ON iaso_group_org_units.orgunit_id = iaso_orgunit.id
+    where group_id = polio_roundscope.group_id""",
+                    [],
+                )
+            )
+
+            for scope in round_scopes:
+                if scope.geom:
+                    feature = {
+                        "type": "Feature",
+                        "geometry": json.loads(scope.geom),
+                        "properties": {
+                            "obr_name": campaign.obr_name,
+                            "id": str(campaign.id),
+                            "vaccine": scope.vaccine,
+                            "scope_key": f"roundScope-{scope.id}",
+                            "top_level_org_unit_name": campaign.country.name,
+                            "round_number": scope.round.number,
+                        },
+                    }
+                    features.append(feature)
+
+        self.geojson = features
 
 
 # Deprecated

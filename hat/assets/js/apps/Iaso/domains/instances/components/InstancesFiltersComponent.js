@@ -18,30 +18,34 @@ import {
     useSafeIntl,
     QueryBuilderInput,
     useSkipEffectOnMount,
+    useHumanReadableJsonLogic,
 } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { periodTypeOptions } from '../../periods/constants';
 import { isValidPeriod } from '../../periods/utils';
 import DatesRange from '../../../components/filters/DatesRange';
-import PeriodPicker from '../../periods/components/PeriodPicker';
-import { Period } from '../../periods/models';
+import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
+import { Period } from '../../periods/models.ts';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import { useGetQueryBuildersFields } from '../hooks/useGetQueryBuildersFields.ts';
+import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
+import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { Popper } from '../../forms/fields/components/Popper.tsx';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
-import { UserOrgUnitRestriction } from './UserOrgUnitRestriction';
+import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
+import { ColumnSelect } from './ColumnSelect.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -62,6 +66,14 @@ const InstancesFiltersComponent = ({
     params,
     onSearch,
     possibleFields,
+    setFormIds,
+    periodType,
+    setTableColumns,
+    baseUrl,
+    labelKeys,
+    formDetails,
+    tableColumns,
+    tab,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
@@ -75,6 +87,7 @@ const InstancesFiltersComponent = ({
         delete filters.pageSize;
         delete filters.order;
         delete filters.page;
+        filters.showDeleted = filters.showDeleted === 'true';
         return filters;
     }, [params]);
     const [formState, setFormState] = useFormState(
@@ -84,7 +97,11 @@ const InstancesFiltersComponent = ({
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     useSkipEffectOnMount(() => {
         Object.entries(params).forEach(([key, value]) => {
-            setFormState(key, value);
+            if (key === 'showDeleted') {
+                setFormState(key, value === 'true');
+            } else {
+                setFormState(key, value);
+            }
         });
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);
@@ -100,10 +117,13 @@ const InstancesFiltersComponent = ({
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
             : undefined;
-
     const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
-
+    const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
+    const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
+        fields,
+        queryBuilderListToReplace,
+    );
     useInstancesFiltersData(formIds, setFetchingOrgUnitTypes);
     const handleSearch = useCallback(() => {
         if (isInstancesFilterUpdated) {
@@ -144,6 +164,7 @@ const InstancesFiltersComponent = ({
             // checking only as value can be null or false
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
+                setFormIds(value ? value.split(',') : undefined);
             }
             if (key) {
                 setFormState(key, value);
@@ -158,7 +179,7 @@ const InstancesFiltersComponent = ({
             }
             dispatch(setInstancesFilterUpdated(true));
         },
-        [dispatch, setFormState],
+        [dispatch, setFormState, setFormIds],
     );
 
     const startPeriodError = useMemo(() => {
@@ -208,9 +229,17 @@ const InstancesFiltersComponent = ({
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
-
+    const fieldsSearchJson = formState.fieldsSearch.value
+        ? JSON.parse(formState.fieldsSearch.value)
+        : undefined;
+    const isSearchDisabled =
+        !isInstancesFilterUpdated ||
+        periodError ||
+        startPeriodError ||
+        endPeriodError ||
+        hasLocationLimitError;
     return (
-        <div className={classes.marginBottomBig}>
+        <div className={classes.marginBottom}>
             <UserOrgUnitRestriction />
 
             <Grid container spacing={2}>
@@ -241,18 +270,17 @@ const InstancesFiltersComponent = ({
                         <QueryBuilderInput
                             label={MESSAGES.queryBuilder}
                             onChange={handleChangeQueryBuilder}
-                            initialLogic={
-                                formState.fieldsSearch.value
-                                    ? JSON.parse(formState.fieldsSearch.value)
-                                    : undefined
-                            }
+                            initialLogic={fieldsSearchJson}
                             fields={fields}
                             iconProps={{
                                 label: MESSAGES.queryBuilder,
-                                value: formState.fieldsSearch.value,
+                                value: getHumanReadableJsonLogic(
+                                    fieldsSearchJson,
+                                ),
                                 onClear: () =>
                                     handleFormChange('fieldsSearch', undefined),
                             }}
+                            InfoPopper={<Popper />}
                         />
                     )}
                     <InputComponent
@@ -393,14 +421,27 @@ const InstancesFiltersComponent = ({
                     alignItems="center"
                 >
                     <Box mt={isLargeLayout ? 0 : 2}>
+                        {tab === 'list' && (
+                            <Box mr={2} display="inline-block">
+                                <ColumnSelect
+                                    params={params}
+                                    disabled={
+                                        params.formIds !==
+                                        formState.formIds.value
+                                    }
+                                    periodType={periodType}
+                                    setTableColumns={newCols =>
+                                        setTableColumns(newCols)
+                                    }
+                                    baseUrl={baseUrl}
+                                    labelKeys={labelKeys}
+                                    formDetails={formDetails}
+                                    tableColumns={tableColumns}
+                                />
+                            </Box>
+                        )}
                         <Button
-                            disabled={
-                                !isInstancesFilterUpdated ||
-                                periodError ||
-                                startPeriodError ||
-                                endPeriodError ||
-                                hasLocationLimitError
-                            }
+                            disabled={isSearchDisabled}
                             variant="contained"
                             className={classes.button}
                             color="primary"
@@ -419,12 +460,22 @@ const InstancesFiltersComponent = ({
 
 InstancesFiltersComponent.defaultProps = {
     possibleFields: [],
+    periodType: undefined,
+    formDetails: undefined,
 };
 
 InstancesFiltersComponent.propTypes = {
     params: PropTypes.object.isRequired,
     onSearch: PropTypes.func.isRequired,
+    setFormIds: PropTypes.func.isRequired,
+    setTableColumns: PropTypes.func.isRequired,
+    baseUrl: PropTypes.string.isRequired,
+    tab: PropTypes.string.isRequired,
+    tableColumns: PropTypes.array.isRequired,
+    labelKeys: PropTypes.array.isRequired,
+    periodType: PropTypes.string,
     possibleFields: PropTypes.array,
+    formDetails: PropTypes.object,
 };
 
 export default InstancesFiltersComponent;

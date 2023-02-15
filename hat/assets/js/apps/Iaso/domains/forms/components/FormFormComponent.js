@@ -1,17 +1,19 @@
 // To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
 
+import React, { useState, useEffect } from 'react';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import React, { useState } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-import { formatLabel } from '../../instances/utils';
+import { fetchAllOrgUnitTypes } from '../../orgUnits/orgUnitTypes/actions';
+
+import { formatLabel } from '../../instances/utils/index.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
 
@@ -48,9 +50,11 @@ const redirectToChangesLog = url => {
 const FormForm = ({ currentForm, setFieldValue }) => {
     const classes = useStyles();
     const intl = useSafeIntl();
+    const dispatch = useDispatch();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
     const allProjects = useSelector(state => state.projects.allProjects);
     const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
+    const [isOuTypeLoading, setIsOuTypeLoading] = useState(true);
     const setPeriodType = value => {
         setFieldValue('period_type', value);
         if (value === null) {
@@ -72,6 +76,22 @@ const FormForm = ({ currentForm, setFieldValue }) => {
         projects = currentForm.project_ids.value.join(',');
     }
     const logsUrl = `/${baseUrls.apiLogs}/?objectId=${currentForm.id.value}&contentType=iaso.form`;
+
+    useEffect(() => {
+        // if (!allProjects) {
+        //     dispatch(fetchAllProjects());
+        // }
+        if (!allOrgUnitTypes) {
+            dispatch(fetchAllOrgUnitTypes());
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+    useEffect(() => {
+        if (allOrgUnitTypes) {
+            setIsOuTypeLoading(false);
+        }
+    }, [allOrgUnitTypes]);
+
     return (
         <>
             <Grid container spacing={2} justifyContent="flex-start">
@@ -216,6 +236,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                                 : []
                         }
                         label={MESSAGES.orgUnitsTypes}
+                        loading={isOuTypeLoading}
                     />
                     {showAdvancedSettings && (
                         <>

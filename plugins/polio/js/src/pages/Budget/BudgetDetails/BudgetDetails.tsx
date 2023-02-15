@@ -67,15 +67,12 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
         const regular = budgetInfos?.next_transitions?.filter(
             transition => transition.key !== 'override',
         );
-        const override = budgetInfos?.next_transitions?.find(
-            transition => transition.key === 'override',
-        );
         const toDisplay = new Set(
             regular
                 ?.filter(transition => !transition.key.includes('repeat'))
                 .map(transition => transition.label),
         );
-        return { regular, override, toDisplay };
+        return { regular, toDisplay };
     }, [budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({

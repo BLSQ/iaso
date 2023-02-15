@@ -82,12 +82,11 @@ export const useCompletenessStatsColumns = (params: any) => {
                 sortable: false,
                 Cell: settings => (
                     <Box>
-                        <div
+                        <Box
                             style={{
                                 // marginTop: '2px', // The margin will align the icon in FF but misalign it in Chrome
                                 display: 'inline-flex',
                                 alignItems: 'center',
-                                verticalAlign: 'middle',
                             }}
                         >
                             {`${
@@ -98,7 +97,7 @@ export const useCompletenessStatsColumns = (params: any) => {
                                 settings.row.original.forms_to_fill_direct ??
                                 '--'
                             }`}
-                        </div>
+                        </Box>
                         {settings.row.original
                             .has_multiple_direct_submissions && (
                             <Tooltip
@@ -106,7 +105,7 @@ export const useCompletenessStatsColumns = (params: any) => {
                                     MESSAGES.orgUnitHasMultipleSubmissions,
                                 )}
                             >
-                                <div
+                                <Box
                                     style={{
                                         display: 'inline-flex',
                                         alignItems: 'center',
@@ -120,7 +119,7 @@ export const useCompletenessStatsColumns = (params: any) => {
                                         }}
                                         color="action"
                                     />
-                                </div>
+                                </Box>
                             </Tooltip>
                         )}
                     </Box>

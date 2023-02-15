@@ -5,9 +5,8 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import { createSourceVersion } from '../requests';
+import { useCreateSourceVersion } from '../requests';
 import { useFormState } from '../../../hooks/form';
-import { useSnackMutation } from '../../../libs/apiHooks.ts';
 import InputComponent from '../../../components/forms/InputComponent';
 
 const initialFormState = () => {
@@ -36,12 +35,7 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
     const [form, setFormField, , setFormState] = useFormState(
         initialFormState(),
     );
-
-    const mutation = useSnackMutation(
-        createSourceVersion,
-        MESSAGES.newEmptyVersionSavedSuccess,
-        MESSAGES.newEmptyVersionError,
-    );
+    const { mutateAsync: createSourceVersion } = useCreateSourceVersion();
 
     const reset = () => {
         setFormState(initialFormState());
@@ -52,7 +46,7 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
             dataSourceId: sourceId,
             description: form.versionDescription.value || null,
         };
-        await mutation.mutateAsync(body);
+        await createSourceVersion(body);
         closeDialogCallBack();
         reset();
     };
@@ -72,8 +66,7 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
         />
     );
 
-    const allowConfirm = !mutation.isLoading;
-
+    const allowConfirm = !createSourceVersion.isLoading;
     const onChangeDescription = (field, value) => {
         setFormField(field, value);
     };
@@ -91,7 +84,7 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
             additionalButton
             onAdditionalButtonClick={onRedirect}
         >
-            {mutation.isLoading && <LoadingSpinner />}
+            {createSourceVersion.isLoading && <LoadingSpinner />}
 
             <Grid container spacing={4}>
                 <Grid item>

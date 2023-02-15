@@ -317,11 +317,17 @@ export const useCopyDataSourceVersion = () => {
     );
 };
 
-export const createSourceVersion = async ({ description, dataSourceId }) => {
-    return postRequest(`/api/sourceversions/`, {
-        description,
-        data_source_id: dataSourceId,
-    });
+export const useCreateSourceVersion = () => {
+    return useSnackMutation(
+        ({ description, dataSourceId }) => {
+            return postRequest(`/api/sourceversions/`, {
+                description,
+                data_source_id: dataSourceId,
+            });
+        },
+        MESSAGES.newEmptyVersionSavedSuccess,
+        MESSAGES.newEmptyVersionError,
+    );
 };
 
 const updateSourceVersion = async ({

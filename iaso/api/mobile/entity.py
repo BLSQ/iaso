@@ -60,8 +60,9 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_instances(entity: Entity):
-        return list(map(lambda instance: MobileEntityAttributesSerializer(instance).data,
-                        entity.non_deleted_instances))  # type: ignore
+        return list(
+            map(lambda instance: MobileEntityAttributesSerializer(instance).data, entity.non_deleted_instances)
+        )  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -142,9 +143,20 @@ class MobileEntityTypesViewSet(ModelViewSet):
 
         return queryset
 
-    # @action(detail=False, methods=["get"])
-    def get_entities_by_types(self, pk):
-        entities = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__pk=pk)
+    @action(detail=False, methods=["get"], url_path=r"(?P<type_pk>\d+)/entities")
+    def get_entities_by_types(self, *args, **kwargs):
+        type_pk = self.request.parser_context.get("kwargs")["type_pk"]
+        p = Prefetch(
+            "instances",
+            queryset=Instance.objects.filter(deleted=False).exclude(file=""),
+            to_attr="non_deleted_instances",
+        )
 
-        return Response(entities)
+        entities = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__pk=type_pk)
+        entities = entities.prefetch_related(p).prefetch_related("non_deleted_instances__form")
 
+        page = self.paginate_queryset(entities)
+
+        serializer = MobileEntitySerializer(page, many=True)
+
+        return self.get_paginated_response(serializer.data)

@@ -13,6 +13,7 @@ class CachedSpread:
         dict_spread["title"] = spread.title
         dict_spread["id"] = spread.id
         dict_spread["properties"] = spread._properties
+        dict_spread["named_ranges"] = spread.list_named_ranges()
         dict_spread["sheets"] = sheets = []
         for sheet in spread.worksheets():
             # Google sheet has some kind of special "chart" as a sheet

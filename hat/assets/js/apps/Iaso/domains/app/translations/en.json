@@ -38,6 +38,7 @@
     "iaso.completeness.formsFilledDirect": "# Forms filled (direct)",
     "iaso.completeness.formsFilledWithDescendants": "# Forms filled (with descendants)",
     "iaso.completeness.generateDerivedInstances": "Generate derived instances",
+    "iaso.completeness.orgUnitHasMultipleSubmissions": "This org unit has multiple direct submissions",
     "iaso.completeness.title": "Completeness",
     "iaso.completeness.titleDescendants": "Completeness (with descendants)",
     "iaso.completeness.titleDirect": "Completeness (direct)",

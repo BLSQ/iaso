@@ -78,7 +78,6 @@ export const useColumns = ({
                     },
                 });
             });
-        // assignment__team__name
         const assignationColumn: Column = {
             Header: formatMessage(MESSAGES.assignment),
             id:

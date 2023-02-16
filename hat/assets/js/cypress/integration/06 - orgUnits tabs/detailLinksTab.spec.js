@@ -23,7 +23,7 @@ const interceptList = [
 ];
 
 const defaultQuery = {
-    orgUnitId: '1',
+    orgUnitId: '2',
     limit: '10',
     order: 'similarity_score',
     page: '1',

@@ -39,6 +39,17 @@ class MobileEntityTypeSerializer(serializers.ModelSerializer):
 
 
 class MobileEntityTypesViewSet(ModelViewSet):
+    """
+    Mobile API to Serve Entity Types.
+
+    /api/mobile/entitytypes
+
+    /api/mobile/entitytypes/id
+
+    It's possible to get all entities of a given type :
+
+    /api/mobile/entitytypes/id/entities
+    """
     results_key = "entitytypes"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]

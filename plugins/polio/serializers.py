@@ -583,7 +583,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         return _("Preparing")
 
     def get_has_data_in_budget_tool(self, campaign):
-        if len(list(campaign.budget_steps.filter(created_at__isnull=False))) > 0:
+        if campaign.budget_steps.all() :
             return True
         return False
 

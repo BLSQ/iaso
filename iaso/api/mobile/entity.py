@@ -110,5 +110,3 @@ class MobileEntityViewSet(ModelViewSet):
         )
         queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
         return queryset
-
-

@@ -1,9 +1,10 @@
+import uuid
 from unittest import mock
 
 from django.core.files import File
 
 from iaso import models as m
-from iaso.models import EntityType
+from iaso.models import EntityType, Instance, Entity
 from iaso.test import APITestCase
 
 
@@ -184,3 +185,70 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(get_response.json()), 1)
+
+    def test_get_mobile_entity_types(self):
+        self.client.force_authenticate(self.yoda)
+
+        # same account as logged user
+        EntityType.objects.create(
+            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        # different account
+        EntityType.objects.create(name="beneficiary", reference_form=self.form_1, account=self.the_gang)
+
+        response = self.client.get("/api/mobile/entitytypes/")
+
+        entity_type_count = EntityType.objects.filter(account=self.yoda.iaso_profile.account).count()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["count"], entity_type_count)
+
+    def get_entities_by_entity_type(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type = EntityType.objects.create(
+            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        second_entity_type = EntityType.objects.create(
+            name="children under 5", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        Entity.objects.create(
+            name="New Client",
+            account=self.yoda.iaso_profile.account,
+            entity_type=entity_type,
+        )
+
+        Entity.objects.create(
+            name="New Client 2",
+            account=self.yoda.iaso_profile.account,
+            entity_type=entity_type,
+        )
+
+        response = self.client.get(f"/api/mobile/entitytype/{entity_type}/entities")
+
+        self.assertEqual(response.json()["count"], 2)
+
+        Entity.objects.create(
+            name="New Client",
+            account=self.yoda.iaso_profile.account,
+            entity_type=second_entity_type,
+        )
+
+        response = self.client.get(f"/api/mobile/entitytype/{second_entity_type}/entities")
+
+        self.assertEqual(response.json()["count"], 1)
+
+    def test_entity_types_are_account_restricted(self):
+        self.client.force_authenticate(self.yoda)
+
+        EntityType.objects.create(name="beneficiary", reference_form=self.form_1, account=self.the_gang)
+
+        response = self.client.get("/api/mobile/entitytypes/")
+
+        entity_type_count = EntityType.objects.filter(account=self.yoda.iaso_profile.account).count()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["count"], entity_type_count)

@@ -60,8 +60,8 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         id: undefined,
         name: undefined,
         reference_form: undefined,
-        fields_detail_info_view: [],
-        fields_list_view: [],
+        fields_detail_info_view: undefined,
+        fields_list_view: undefined,
     },
     saveEntityType,
 }) => {
@@ -82,6 +82,16 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     .number()
                     .nullable()
                     .required(formatMessage(MESSAGES.referenceFormRequired)),
+                fields_list_view: yup
+                    .array()
+                    .of(yup.string())
+                    .nullable()
+                    .required(),
+                fields_detail_info_view: yup
+                    .array()
+                    .of(yup.string())
+                    .nullable()
+                    .required(),
             }),
         );
 
@@ -194,6 +204,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi
+                        required
                         disabled={isFetchingForm || !values.reference_form}
                         keyValue="fields_list_view"
                         onChange={(key, value) =>
@@ -214,6 +225,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi
+                        required
                         disabled={isFetchingForm || !values.reference_form}
                         loading={isFetchingForm}
                         keyValue="fields_detail_info_view"

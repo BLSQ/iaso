@@ -12,6 +12,7 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.models import Entity, Instance, OrgUnit, FormVersion, EntityType
+from iaso.utils.jsonlogic import jsonlogic_to_q
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -98,6 +99,7 @@ class MobileEntityViewSet(ModelViewSet):
         orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
         queryset = Entity.objects.filter(account=profile.account)
         # we give all entities having an instance linked to the one of the org units allowed for the current user
+        # For now, it can be filtered on OU without any access restriction
         if orgunits:
             queryset = queryset.filter(instances__org_unit__in=orgunits)
         # we filter by last instance on the entity
@@ -139,12 +141,15 @@ class MobileEntityTypesViewSet(ModelViewSet):
         return MobileEntityTypeSerializer
 
     def get_queryset(self):
+
         queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
 
         return queryset
 
     @action(detail=False, methods=["get"], url_path=r"(?P<type_pk>\d+)/entities")
     def get_entities_by_types(self, *args, **kwargs):
+        limit_date = self.request.query_params.get("limit_date", None)
+        json_content = self.request.query_params.get("json_content", None)
         type_pk = self.request.parser_context.get("kwargs")["type_pk"]
         p = Prefetch(
             "instances",
@@ -152,10 +157,17 @@ class MobileEntityTypesViewSet(ModelViewSet):
             to_attr="non_deleted_instances",
         )
 
-        entities = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__pk=type_pk)
-        entities = entities.prefetch_related(p).prefetch_related("non_deleted_instances__form")
+        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__pk=type_pk)
+        queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
 
-        page = self.paginate_queryset(entities)
+        if limit_date:
+            queryset = queryset.filter(instances__updated_at__gte=limit_date)
+
+        if json_content:
+            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")  # type: ignore
+            queryset = queryset.filter(q)
+
+        page = self.paginate_queryset(queryset)
 
         serializer = MobileEntitySerializer(page, many=True)
 

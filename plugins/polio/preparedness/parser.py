@@ -303,7 +303,8 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
             if regional_name_range not in spread.range_dict:
                 regional_name_range = range_name
             if regional_name_range not in spread.range_dict:
-                districts_indicators.setdefault(district_region_name, {})[indicator_key] = "Error"
+                for _, _, district_region_name in region_districts:
+                    districts_indicators.setdefault(district_region_name, {})[indicator_key] = "Error"
 
             indicator_row, indicator_col = spread.get_range_row_col(regional_name_range)
             for _, district_col, district_region_name in region_districts:

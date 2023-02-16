@@ -52,8 +52,8 @@ const AddNewEmptyVersion = ({
         };
         await createSourceVersion(body);
         closeDialogCallBack();
-        forceRefreshParent();
         reset();
+        forceRefreshParent();
     };
 
     const onConfirm = async closeDialog => {

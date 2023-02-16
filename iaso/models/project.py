@@ -18,6 +18,13 @@ class ProjectQuerySet(models.QuerySet):
         :param user: User
         :param app_id: str
         """
+        # project = self.get(app_id=app_id)
+        # print("app_id", app_id)
+        # print("project", project)
+        # print("project.needs_authentication", project.needs_authentication)
+        # print("project.account.id", project.account.id)
+        # print("user", user)
+        # print("user.iaso_profile.account.id", user.iaso_profile.account.id)
 
         if app_id is not None:
             try:

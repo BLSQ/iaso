@@ -193,14 +193,15 @@ def form_version_read_only_ok(request):
     app_id = request.query_params.get("app_id")
     if app_id is not None:  # mobile app
         try:
-            project = Project.objects.get_for_user_and_app_id(request.user, app_id)
-            if project.feature_flags.get(code="FORM_VERSIONS_NO_READ_ONLY"):
+            project = Project.objects.get(app_id=app_id)
+            try:
+                project.feature_flags.get(code="FORM_VERSIONS_NO_READ_ONLY")
                 print("Project has feature flag FORM_VERSIONS_NO_READ_ONLY")
                 return False
 
-        except FeatureFlag.DoesNotExist:
-            print("Feature flag FORM_VERSIONS_NO_READ_ONLY not found")
-            return True
+            except FeatureFlag.DoesNotExist:
+                print("feature flag form_versions_no_read_only not found")
+                return True
 
         except Project.DoesNotExist:
             print("Project not found")
@@ -213,15 +214,31 @@ def form_version_read_only_ok(request):
 
 class HasFormVersionPermission(permissions.BasePermission):
     def has_permission(self, request, view):
+        print("has_permission")
         if request.method in permissions.SAFE_METHODS and form_version_read_only_ok(request):
+            print("HasFormVersionPermission true")
             return True
 
-        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+        print("HasFormVersionPermission is_auth and has_perm iaso_forms")
+        answer = request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+        print(f"HasFormVersionPermission {answer}")
+        return answer
 
     def has_object_permission(self, request, view, obj):
+        print("has_object_permission")
+
         if not self.has_permission(request, view):
             return False
-        return obj in Form.objects_include_deleted.filter_for_user_and_app_id(
+
+        print("obj in form.filter_for_user app_id :", request.query_params.get("app_id"))
+
+        ok_forms = Form.objects_include_deleted.filter_for_user_and_app_id(
+            request.user, request.query_params.get("app_id")
+        )
+
+        print("obj in ok_forms", obj.form in ok_forms)
+
+        return obj.form in Form.objects_include_deleted.filter_for_user_and_app_id(
             request.user, request.query_params.get("app_id")
         )
 

@@ -336,36 +336,30 @@ const useShipmentShape = () => {
         vaccine_name: yup
             .string() // TODO restrict string value to vaccines
             .trim(),
-        // .hasAllShipmentFieldsString(formatMessage),
         po_numbers: yup
             .number()
             .nullable()
             .integer()
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
-        // .hasAllShipmentFieldsNumber(formatMessage),
         vials_received: yup
             .number()
             .nullable()
             .integer()
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
-        // .hasAllShipmentFieldsNumber(formatMessage),
         reception_pre_alert: yup
             .date()
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate)),
-        // .hasAllShipmentFieldsDate(formatMessage),
         estimated_arrival_date: yup
             .date()
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate)),
-        // .hasAllShipmentFieldsDate(formatMessage),
         date_reception: yup
             .date()
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate)),
-        // .hasAllShipmentFieldsDate(formatMessage),
         comment: yup.string().nullable(),
     });
 };
@@ -378,17 +372,14 @@ const useDestructionShape = () => {
             .integer()
             .min(0)
             .typeError(formatMessage(MESSAGES.positiveNumber)),
-        // .destructionFieldsNumberCheck(formatMessage),
         date_report: yup
             .date()
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate)),
-        // .destructionFieldsDateCheck(formatMessage),
         date_report_received: yup
             .date()
             .nullable()
             .typeError(formatMessage(MESSAGES.invalidDate)),
-        // .destructionFieldsDateCheck(formatMessage),
         comment: yup.string().nullable(),
     });
 };
@@ -396,8 +387,7 @@ const useDestructionShape = () => {
 const useVaccineShape = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        name: yup.string().trim(),
-        // .required(formatMessage(MESSAGES.fieldRequired)), // TODO restrict string value to vaccines
+        name: yup.string().trim(), // TODO restrict string value to vaccines
         wastage_ratio_forecast: yup
             .number()
             .nullable()
@@ -507,22 +497,19 @@ const useRoundShape = () => {
             .integer()
             .nullable()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         forma_usable_vials: yup
             .number()
             .integer()
             .nullable()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         forma_missing_vials: yup
             .number()
             .integer()
             .nullable()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         reporting_delays_hc_to_district: yup
             .number()
             .integer()
@@ -544,13 +531,11 @@ const useRoundShape = () => {
         forma_reception: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable()
-            .hasAllFormAFieldsDate(formatMessage),
+            .nullable(),
         forma_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable()
-            .hasAllFormAFieldsDate(formatMessage),
+            .nullable(),
         forma_comment: yup.string().nullable(),
         date_signed_vrf_received: yup
             .date()

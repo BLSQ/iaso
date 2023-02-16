@@ -159,7 +159,10 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     classNames: classes.dialog,
                 }}
                 onOpen={() => setIsOpen(true)}
-                onClosed={() => setIsOpen(false)}
+                onClosed={() => {
+                    setIsOpen(false);
+                    resetForm();
+                }}
             >
                 {!isNew && (
                     <Box className={classes.view}>

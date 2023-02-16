@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core';
 import Public from '@material-ui/icons/Public';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import FolderOpenIcon from '@material-ui/icons/FolderOpen';
+import AddBox from '@mui/icons-material/AddBoxOutlined';
 import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
@@ -168,7 +168,7 @@ const sortByOrgUnitsDesc = (sourceA, sourceB) => {
     return sourceB.org_units_count - sourceA.org_units_count;
 };
 
-const VersionsDialog = ({ renderTrigger, source }) => {
+const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
     const { spanStyle, ...classes } = useStyles();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -274,7 +274,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
         >
             <Table
                 data={sortedData}
-                columns={tableColumns(source)}
+                columns={tableColumns(source, forceRefreshParent)}
                 params={params}
                 resetPageToOne={resetPageToOne}
                 pages={pages}
@@ -326,7 +326,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                 <AddNewEmptyVersion
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
-                            <FolderOpenIcon />
+                            <AddBox />
                             <span className={spanStyle}>
                                 <FormattedMessage
                                     id="iaso.versionsDialog.label.newEmptyVersion"
@@ -336,6 +336,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                         </Button>
                     )}
                     sourceId={source.id}
+                    forceRefreshParent={forceRefreshParent}
                 />
             </Grid>
         </DialogComponent>
@@ -351,6 +352,7 @@ VersionsDialog.propTypes = {
         credentials: PropTypes.object,
         projects: PropTypes.array.isRequired,
     }).isRequired,
+    forceRefreshParent: PropTypes.func.isRequired,
 };
 VersionsDialog.defaultProps = {};
 

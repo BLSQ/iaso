@@ -830,7 +830,6 @@
     "iaso.sourceVersion.label.createNewEmptyVersion": "Create a new empty version",
     "iaso.sourceVersion.label.import_task_explication": "The import will be processed in the background and can take a dozen minutes to complete.",
     "iaso.sourceVersion.label.update": "Update version {version}",
-    "iaso.sourceVersion.label.update_empty_version_explication": "Update this empty version.",
     "iaso.sourceVersion.label.update_explication": "Update this version by syncing with DHIS2. New Orgunit from DHIS2 will be imported but OrgUnit already present on this version won't be modified.",
     "iaso.SSC": "Community Health Site",
     "iaso.storages.changeStatus": "Change status",

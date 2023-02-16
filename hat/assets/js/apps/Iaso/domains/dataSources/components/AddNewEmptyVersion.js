@@ -30,7 +30,11 @@ const VersionDescription = ({ formValue, onChangeDescription }) => {
     );
 };
 
-const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
+const AddNewEmptyVersion = ({
+    renderTrigger,
+    sourceId,
+    forceRefreshParent,
+}) => {
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, , setFormState] = useFormState(
         initialFormState(),
@@ -48,6 +52,7 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
         };
         await createSourceVersion(body);
         closeDialogCallBack();
+        forceRefreshParent();
         reset();
     };
 
@@ -110,6 +115,7 @@ const AddNewEmptyVersion = ({ renderTrigger, sourceId }) => {
 AddNewEmptyVersion.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     sourceId: PropTypes.number.isRequired,
+    forceRefreshParent: PropTypes.func.isRequired,
 };
 
 VersionDescription.propTypes = {

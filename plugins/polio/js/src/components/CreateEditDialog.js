@@ -13,15 +13,9 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
-    Tab,
-    Tabs,
     Typography,
-    Tooltip,
     Box,
-    makeStyles,
 } from '@material-ui/core';
-
-import { FormattedMessage } from 'react-intl';
 
 import {
     useSafeIntl,
@@ -58,17 +52,7 @@ import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
 import { compareArraysValues } from '../utils/compareArraysValues.ts';
-
-const useTabErrorStyles = makeStyles(theme => {
-    return {
-        tabError: {
-            color: `${theme.palette.error.main}!important`,
-        },
-        pointer: {
-            pointerEvents: 'auto',
-        },
-    };
-});
+import { PolioDialogTabs } from './MainDialog/PolioDialogTabs.tsx';
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
@@ -85,7 +69,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { formatMessage } = useSafeIntl();
 
     const classes = useStyles();
-    const tabErrorClasses = useTabErrorStyles();
 
     const handleSubmit = async (values, helpers) => {
         saveCampaign(convertEmptyStringToNull(values), {
@@ -217,10 +200,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     ]);
     const [selectedTab, setSelectedTab] = useState(0);
 
-    const handleChange = (_event, newValue) => {
-        setSelectedTab(newValue);
-    };
-
     const CurrentForm = tabs[selectedTab].form;
 
     // default to tab 0 when opening
@@ -280,70 +259,13 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             </Grid>
 
             <DialogContent className={classes.content}>
-                <Tabs
-                    value={selectedTab}
-                    className={classes.tabs}
-                    textColor="primary"
-                    onChange={handleChange}
-                    aria-label="disabled tabs example"
-                    variant="scrollable"
-                    scrollButtons="auto"
-                >
-                    {tabs.map(
-                        ({ title, disabled, hasTabError = false, key }) => {
-                            if (
-                                disabled &&
-                                title === formatMessage(MESSAGES.scope)
-                            ) {
-                                return (
-                                    <Tab
-                                        key={key}
-                                        classes={
-                                            hasTabError
-                                                ? {
-                                                      textColorPrimary:
-                                                          tabErrorClasses.tabError,
-                                                      selected:
-                                                          tabErrorClasses.tabError,
-                                                  }
-                                                : null
-                                        }
-                                        label={
-                                            <Tooltip
-                                                key={key}
-                                                title={
-                                                    <FormattedMessage
-                                                        {...MESSAGES.scopeUnlockConditions}
-                                                    />
-                                                }
-                                            >
-                                                <span>{title}</span>
-                                            </Tooltip>
-                                        }
-                                        disabled={disabled || false}
-                                    />
-                                );
-                            }
-                            return (
-                                <Tab
-                                    key={key}
-                                    label={title}
-                                    disabled={disabled || false}
-                                    classes={
-                                        hasTabError
-                                            ? {
-                                                  textColorPrimary:
-                                                      tabErrorClasses.tabError,
-                                                  selected:
-                                                      tabErrorClasses.tabError,
-                                              }
-                                            : null
-                                    }
-                                />
-                            );
-                        },
-                    )}
-                </Tabs>
+                <PolioDialogTabs
+                    tabs={tabs}
+                    selectedTab={selectedTab}
+                    handleChange={(_event, newValue) => {
+                        setSelectedTab(newValue);
+                    }}
+                />
                 <FormikProvider value={formik}>
                     <Form>
                         <CurrentForm />

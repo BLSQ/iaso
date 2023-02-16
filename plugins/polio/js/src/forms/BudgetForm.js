@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import { Grid, Typography, Box, Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
-
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import {
@@ -44,6 +43,45 @@ const findErrorInFieldList = (keys, errors, touched) => {
             hasFormikFieldError(`${key}${WORKFLOW_SUFFIX}`, errors, touched),
         ),
     );
+};
+
+export const budgetFormFields = rounds => {
+    return [
+        'budget_status_at_WFEDITABLE',
+        'budget_responsible_at_WFEDITABLE',
+        'rounds_at_WFEDITABLE',
+        'budget_requested_at_WFEDITABLE',
+        'who_sent_budget_at_WFEDITABLE',
+        'unicef_sent_budget_at_WFEDITABLE',
+        'gpei_consolidation_at_WFEDITABLE',
+        'submitted_to_rrt_at_WFEDITABLE',
+        'feedback_sent_to_gpei_at_WFEDITABLE',
+        're_submitted_to_rrt_at_WFEDITABLE',
+        'submission_to_orpg_operations_1_at_WFEDITABLE',
+        'feedback_sent_to_rrt1_at_WFEDITABLE',
+        'submitted_to_orpg_at_WFEDITABLE',
+        'feedback_sent_to_rrt2_at_WFEDITABLE',
+        're_submitted_to_orpg_at_WFEDITABLE',
+        'submission_to_orpg_operations_2_at_WFEDITABLE',
+        'feedback_sent_to_rrt3_at_WFEDITABLE',
+        're_submission_to_orpg_operations_2_at_WFEDITABLE',
+        'submitted_for_approval_at_WFEDITABLE',
+        'feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE',
+        'feedback_sent_to_orpg_operations_who_at_WFEDITABLE',
+        'approved_by_who_at_WFEDITABLE',
+        'approved_by_unicef_at_WFEDITABLE',
+        'approved_at_WFEDITABLE',
+        'payment_mode',
+        'who_disbursed_to_co_at',
+        'who_disbursed_to_moh_at',
+        'unicef_disbursed_to_co_at',
+        'unicef_disbursed_to_moh_at',
+        'district_count',
+        'no_regret_fund_amount',
+        ...rounds.map((_round, i) => {
+            return `rounds[${i}].cost`;
+        }),
+    ];
 };
 
 export const BudgetForm = () => {

@@ -2,17 +2,14 @@ from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters
 from rest_framework import serializers
-from rest_framework.decorators import action
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
 
 from iaso.api.common import (
     ModelViewSet,
     DeletionFilterBackend,
     TimestampField,
 )
-from iaso.models import Entity, Instance, OrgUnit, FormVersion, EntityType
-from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.models import Entity, Instance, OrgUnit, FormVersion
 
 
 class LargeResultsSetPagination(PageNumberPagination):

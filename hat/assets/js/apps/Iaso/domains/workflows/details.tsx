@@ -143,6 +143,22 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         setIsFollowUpOrderChange(true);
     }, []);
 
+    const handleResetFollowUpsOrder = useCallback(() => {
+        if (workflowVersion?.follow_ups) {
+            const newFollowUps = orderBy(
+                workflowVersion.follow_ups,
+                [f => f.order],
+                ['asc'],
+            );
+            setFollowUps(
+                newFollowUps.map(followUp => ({
+                    ...followUp,
+                    accessor: followUp.id,
+                })),
+            );
+        }
+    }, [workflowVersion?.follow_ups]);
+
     const handleSaveFollowUpsOrder = useCallback(() => {
         saveFollowUpOrder(
             followUps.map(fu => ({
@@ -217,6 +233,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </>
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
+                                <Box display="inline-block" mr={2}>
+                                    <Button
+                                        color="primary"
+                                        disabled={!isFollowUpOrderChange}
+                                        data-test="reset-follow-up-order"
+                                        onClick={handleResetFollowUpsOrder}
+                                        variant="contained"
+                                    >
+                                        {formatMessage(MESSAGES.resetOrder)}
+                                    </Button>
+                                </Box>
+
                                 <Box display="inline-block" mr={2}>
                                     <Button
                                         color="primary"

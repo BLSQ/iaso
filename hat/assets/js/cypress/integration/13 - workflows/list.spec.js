@@ -269,7 +269,6 @@ describe('Workflows', () => {
                     cy.wrap(interceptFlag).should('eq', true);
                 });
             });
-            it.skip('Delete ', () => {});
         });
     });
     it('Search field should enabled search button', () => {

@@ -15,7 +15,7 @@ const findDescriptorInChildren = (field, descriptor) =>
     }, null);
 
 export const useGetQueryBuildersFields = (
-    formDescriptor?: FormDescriptor,
+    formDescriptors?: FormDescriptor[],
     possibleFields?: PossibleField[],
 ): QueryBuilderFields => {
     if (!possibleFields) return {};
@@ -35,16 +35,25 @@ export const useGetQueryBuildersFields = (
                 ...currentField.queryBuilder,
                 label: formatLabel(field),
             };
+            // in case the field needs a list of values to display
             if (currentField.useListValues) {
-                const listValues =
-                    findDescriptorInChildren(
+                // We will take the last found value in the form descriptors list
+                formDescriptors?.forEach(formDescriptor => {
+                    const descriptor = findDescriptorInChildren(
                         field,
                         formDescriptor,
-                    )?.children?.map(child => ({
-                        value: child.name,
-                        title: formatLabel(child),
-                    })) || [];
-                currentField.queryBuilder.fieldSettings = { listValues };
+                    );
+                    if (descriptor?.children) {
+                        const listValues =
+                            descriptor.children.map(child => ({
+                                value: child.name,
+                                title: formatLabel(child),
+                            })) || [];
+                        fields[field.fieldKey].fieldSettings = {
+                            listValues,
+                        };
+                    }
+                });
             }
         }
     });

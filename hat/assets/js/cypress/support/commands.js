@@ -165,7 +165,6 @@ Cypress.Commands.add('fillSingleSelect', (id, selectedOption = 1) => {
  */
 Cypress.Commands.add('fillArrayInputField', (id, newValues = []) => {
     cy.get(`#array-input-field-list-${id}`).as('arrayInputFieldList');
-    cy.get('@arrayInputFieldList').find(`#${id}-0`).parent().next().click();
     cy.get('@arrayInputFieldList')
         .find('li')
         .last()

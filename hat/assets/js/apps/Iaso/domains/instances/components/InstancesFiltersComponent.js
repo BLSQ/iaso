@@ -31,7 +31,7 @@ import { Period } from '../../periods/models.ts';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
 import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';

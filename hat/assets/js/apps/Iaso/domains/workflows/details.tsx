@@ -29,7 +29,7 @@ import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
 import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 
-import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
+import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
 import { WorkflowVersionDetail, WorkflowParams, FollowUps } from './types';

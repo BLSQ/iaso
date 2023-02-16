@@ -46,6 +46,14 @@ describe('Workflows', () => {
         const errorCode = cy.get('#error-code');
         errorCode.should('contain', '401');
     });
+    it('Search field should enabled search button', () => {
+        mockPage();
+        cy.visit(baseUrl);
+        cy.get('#search-search').type(search);
+        cy.get('[data-test="search-button"]')
+            .invoke('attr', 'disabled')
+            .should('equal', undefined);
+    });
     describe('Table', () => {
         beforeEach(() => {
             mockPage();
@@ -110,7 +118,7 @@ describe('Workflows', () => {
                         '[data-test="delete-dialog-button-workflow-version-11"]',
                     ).should('not.exist');
                 });
-                it('Publish should only be present on DRAFT or UNPUBLISHED version', () => {
+                it('Publish and Copy should only be present on DRAFT or UNPUBLISHED version', () => {
                     cy.get('table tbody tr')
                         .eq(0)
                         .find('td')
@@ -139,8 +147,6 @@ describe('Workflows', () => {
                     cy.get('[data-test="publish-button-10"]').should(
                         'be.visible',
                     );
-                });
-                it('Copy should only be present on DRAFT or UNPUBLISHED version', () => {
                     cy.get('table tbody tr')
                         .eq(0)
                         .find('td')
@@ -271,105 +277,82 @@ describe('Workflows', () => {
             });
         });
     });
-    it('Search field should enabled search button', () => {
+
+    it('Filter button action should deep link search and call api with same params', () => {
         mockPage();
         cy.visit(baseUrl);
-        cy.get('#search-search').type(search);
         cy.get('[data-test="search-button"]')
             .invoke('attr', 'disabled')
+            .should('equal', 'disabled');
+        interceptFlag = false;
+        cy.intercept(
+            {
+                method: 'GET',
+                pathname: '/api/workflowversions/',
+                query: {
+                    search,
+                    status: 'DRAFT',
+                    order: '-id',
+                    page: '1',
+                    limit: '10',
+                    workflow__entity_type: '3',
+                },
+            },
+            req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: listFixture,
+                });
+            },
+        ).as('getVersions');
+        cy.get('#search-search').type(search);
+        cy.fillSingleSelect('#status', 0);
+        cy.get('[data-test="search-button"]').click();
+        cy.url().should('contain', `/search/${search}`);
+        cy.url().should('contain', '/status/DRAFT');
+
+        cy.wait('@getVersions').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
+        });
+    });
+
+    it('Create button should open dialog with empty fieldand save new workflow version', () => {
+        mockPage();
+        cy.visit(baseUrl);
+        cy.get('[data-test="add-workflow-version-button"]').click();
+        cy.get('[data-test="add-workflow-version"]').should('be.visible');
+        cy.testInputValue('#input-text-name', '');
+        cy.get('[data-test="confirm-button"]').as('confirmButton');
+        cy.get('@confirmButton')
+            .invoke('attr', 'disabled')
+            .should('equal', 'disabled');
+        cy.fillTextField('#input-text-name', name);
+        cy.get('@confirmButton')
+            .invoke('attr', 'disabled')
             .should('equal', undefined);
-    });
-    describe('Filter button', () => {
-        beforeEach(() => {
-            mockPage();
-            cy.visit(baseUrl);
-        });
-        it('should be disabled', () => {
-            cy.get('[data-test="search-button"]')
-                .invoke('attr', 'disabled')
-                .should('equal', 'disabled');
-        });
-        it('action should deep link search and call ai with same params', () => {
-            interceptFlag = false;
 
-            cy.intercept(
-                {
-                    method: 'GET',
-                    pathname: '/api/workflowversions/',
-                    query: {
-                        search,
-                        status: 'DRAFT',
-                        order: '-id',
-                        page: '1',
-                        limit: '10',
-                        workflow__entity_type: '3',
-                    },
-                },
-                req => {
-                    interceptFlag = true;
-                    req.reply({
-                        statusCode: 200,
-                        body: listFixture,
-                    });
-                },
-            ).as('getVersions');
-            cy.get('#search-search').type(search);
-            cy.fillSingleSelect('#status', 0);
-            cy.get('[data-test="search-button"]').click();
-            cy.url().should('contain', `/search/${search}`);
-            cy.url().should('contain', '/status/DRAFT');
+        interceptFlag = false;
 
-            cy.wait('@getVersions').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
-            });
-        });
-    });
+        cy.intercept(
+            {
+                method: 'POST',
+                pathname: '/api/workflowversions/',
+            },
+            req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: {},
+                });
+            },
+        ).as('createVersion');
 
-    describe('Create button', () => {
-        beforeEach(() => {
-            mockPage();
-            cy.visit(baseUrl);
-        });
-        it('should open dialog with empty field', () => {
-            cy.get('[data-test="add-workflow-version-button"]').click();
-            cy.get('[data-test="add-workflow-version"]').should('be.visible');
-            cy.testInputValue('#input-text-name', '');
-        });
-        it('should save new workflow version', () => {
-            cy.get('[data-test="add-workflow-version-button"]').click();
-            cy.get('[data-test="confirm-button"]').as('confirmButton');
-            cy.get('@confirmButton')
-                .invoke('attr', 'disabled')
-                .should('equal', 'disabled');
-            cy.fillTextField('#input-text-name', name);
-            cy.get('@confirmButton')
-                .invoke('attr', 'disabled')
-                .should('equal', undefined);
-
-            interceptFlag = false;
-
-            cy.intercept(
-                {
-                    method: 'POST',
-                    pathname: '/api/workflowversions/',
-                },
-                req => {
-                    interceptFlag = true;
-                    req.reply({
-                        statusCode: 200,
-                        body: {},
-                    });
-                },
-            ).as('createVersion');
-
-            cy.get('@confirmButton').click();
-            cy.wait('@createVersion').then(xhr => {
-                cy.wrap(xhr.request.body).its('name').should('eq', name);
-                cy.wrap(xhr.request.body)
-                    .its('entity_type_id')
-                    .should('eq', '3');
-                cy.wrap(interceptFlag).should('eq', true);
-            });
+        cy.get('@confirmButton').click();
+        cy.wait('@createVersion').then(xhr => {
+            cy.wrap(xhr.request.body).its('name').should('eq', name);
+            cy.wrap(xhr.request.body).its('entity_type_id').should('eq', '3');
+            cy.wrap(interceptFlag).should('eq', true);
         });
     });
 });

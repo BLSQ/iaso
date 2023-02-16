@@ -6,7 +6,8 @@ from django.contrib.gis.db import models as geomodels
 from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
-from typing_extensions import Protocol
+from typing import Protocol
+
 
 from django_json_widget.widgets import JSONEditorWidget  # type: ignore
 

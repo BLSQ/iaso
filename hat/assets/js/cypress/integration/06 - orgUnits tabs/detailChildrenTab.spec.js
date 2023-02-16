@@ -21,7 +21,7 @@ const interceptList = [
     'orgunittypes',
 ];
 const defaultQuery = {
-    parent_id: '1',
+    parent_id: '2',
     limit: '10',
     order: 'name',
     validation_status: 'all',

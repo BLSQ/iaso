@@ -31,10 +31,12 @@ export default function DeleteDialog({
     return (
         <ConfirmCancelDialogComponent
             titleMessage={titleMessage}
+            dataTestId={`delete-dialog-${keyName}`}
             onConfirm={closeThenOnConfirm}
             renderTrigger={({ openDialog }) => (
                 <IconButtonComponent
                     onClick={openDialog}
+                    dataTestId={`delete-dialog-button-${keyName}`}
                     disabled={disabled}
                     icon="delete"
                     tooltipMessage={MESSAGES.delete}

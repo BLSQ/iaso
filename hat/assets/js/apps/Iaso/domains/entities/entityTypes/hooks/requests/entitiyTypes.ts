@@ -73,7 +73,7 @@ export const useGetType = (
     // @ts-ignore
     return useSnackQuery({
         queryKey: ['entitytype', typeId],
-        queryFn: () => getRequest(`/api/entitytype/${typeId}`),
+        queryFn: () => getRequest(`/api/entitytype/${typeId}/`),
     });
 };
 

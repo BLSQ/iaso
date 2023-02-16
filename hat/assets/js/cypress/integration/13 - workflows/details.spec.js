@@ -4,8 +4,9 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 import details from '../../fixtures/workflows/details.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-const baseUrl = `${siteBaseUrl}/dashboard/workflows/entityTypeId/3/versionId/12`;
+const baseUrl = `${siteBaseUrl}/dashboard/workflows/details/entityTypeId/3/versionId/12`;
 
+let interceptFlag = false;
 const mockPage = () => {
     cy.login();
     cy.intercept('GET', '/sockjs-node/**');
@@ -22,6 +23,7 @@ const mockPage = () => {
         fixture: 'workflows/descriptor.json',
     });
 };
+const name = 'mario';
 
 describe('Workflows details', () => {
     it('page should not be accessible if user does not have permission', () => {
@@ -37,7 +39,11 @@ describe('Workflows details', () => {
         errorCode.should('contain', '401');
     });
     describe('with any status', () => {
-        it('should display correct infos values', () => {
+        beforeEach(() => {
+            mockPage();
+            cy.visit(baseUrl);
+        });
+        it.only('should display correct infos values', () => {
             cy.get('[data-test="workflow-base-info"]')
                 .as('tableInfos')
                 .should('be.visible');
@@ -66,10 +72,38 @@ describe('Workflows details', () => {
                 .eq(1)
                 .should('contain', 'Draft');
         });
-        it.skip('should be possible to edit and save name', () => {
+        it('should be possible to edit and save name', () => {
             // save is disabled
+            cy.get('[data-test="save-name-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', 'disabled');
+
             // can edit name
+            cy.get('#input-text-name').clear();
             // can save new name
+            cy.get('[data-test="save-name-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', undefined);
+
+            interceptFlag = false;
+
+            cy.intercept(
+                {
+                    method: 'PATCH',
+                    pathname: '/api/workflowversions/12',
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('saveVersion');
+            cy.wait('@saveVersion').then(xhr => {
+                cy.wrap(xhr.request.body).its('name').should('eq', name);
+                cy.wrap(interceptFlag).should('eq', true);
+            });
         });
         it.skip('should display correct follow-ups', () => {});
         it.skip('should display correct changes', () => {});

@@ -59,8 +59,8 @@ class MobileEntitySerializer(serializers.ModelSerializer):
     @staticmethod
     def get_instances(entity: Entity):
         return list(
-            map(lambda instance: MobileEntityAttributesSerializer(instance).data, entity.non_deleted_instances)
-        )  # type: ignore
+            map(lambda instance: MobileEntityAttributesSerializer(instance).data, entity.non_deleted_instances)  # type: ignore
+        )
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

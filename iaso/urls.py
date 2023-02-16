@@ -52,7 +52,8 @@ from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
-from .api.mobile.entity import MobileEntityViewSet, MobileEntityTypesViewSet
+from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet

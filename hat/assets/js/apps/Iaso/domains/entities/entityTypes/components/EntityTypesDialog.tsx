@@ -137,7 +137,6 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     const { possibleFields, isFetchingForm } = useGetPossibleFields(
         isOpen ? values?.reference_form : undefined,
     );
-
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}

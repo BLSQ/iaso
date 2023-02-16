@@ -119,7 +119,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         formDescriptors,
         targetPossibleFields,
     );
-
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
         fields,
@@ -181,7 +180,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2}>
+                <Box mt={2} data-test="follow-ups">
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.followUps)}

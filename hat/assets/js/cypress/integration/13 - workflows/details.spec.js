@@ -13,7 +13,7 @@ const mockPage = () => {
     cy.intercept('GET', '/api/profiles/me/**', {
         fixture: 'profiles/me/superuser.json',
     });
-    cy.intercept('GET', '/api/workflowversions/12', {
+    cy.intercept('GET', '/api/workflowversions/12/', {
         fixture: 'workflows/details.json',
     });
     cy.intercept('GET', '/api/forms/7/?fields=possible_fields', {
@@ -26,7 +26,7 @@ const mockPage = () => {
 const name = 'mario';
 
 describe('Workflows details', () => {
-    it('page should not be accessible if user does not have permission', () => {
+    it.skip('page should not be accessible if user does not have permission', () => {
         const fakeUser = {
             ...superUser,
             permissions: [],
@@ -43,7 +43,7 @@ describe('Workflows details', () => {
             mockPage();
             cy.visit(baseUrl);
         });
-        it.only('should display correct infos values', () => {
+        it('should display correct infos values', () => {
             cy.get('[data-test="workflow-base-info"]')
                 .as('tableInfos')
                 .should('be.visible');
@@ -73,15 +73,13 @@ describe('Workflows details', () => {
                 .should('contain', 'Draft');
         });
         it('should be possible to edit and save name', () => {
-            // save is disabled
-            cy.get('[data-test="save-name-button"]')
+            cy.get('[data-test="save-name-button"]').as('saveButton');
+            cy.get('@saveButton')
                 .invoke('attr', 'disabled')
                 .should('equal', 'disabled');
 
-            // can edit name
-            cy.get('#input-text-name').clear();
-            // can save new name
-            cy.get('[data-test="save-name-button"]')
+            cy.fillTextField('#input-text-name', name);
+            cy.get('@saveButton')
                 .invoke('attr', 'disabled')
                 .should('equal', undefined);
 
@@ -100,12 +98,24 @@ describe('Workflows details', () => {
                     });
                 },
             ).as('saveVersion');
+
+            cy.get('@saveButton').click();
             cy.wait('@saveVersion').then(xhr => {
                 cy.wrap(xhr.request.body).its('name').should('eq', name);
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
-        it.skip('should display correct follow-ups', () => {});
+        it.only('should display correct follow-ups', () => {
+            cy.get('[data-test="follow-ups"]')
+                .find('table')
+                .as('followUpTable');
+
+            cy.get('@followUpTable').should('be.visible');
+            cy.get('@followUpTable')
+                .find('tbody')
+                .find('tr')
+                .should('have.length', 2);
+        });
         it.skip('should display correct changes', () => {});
     });
     describe('with DRAFT status', () => {

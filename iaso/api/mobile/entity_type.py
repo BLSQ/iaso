@@ -50,6 +50,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
 
     /api/mobile/entitytypes/id/entities
     """
+
     results_key = "entitytypes"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]

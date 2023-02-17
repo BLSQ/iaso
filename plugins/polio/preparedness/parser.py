@@ -295,7 +295,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
         # ignore last column since it is the comments
         region_districts = region_districts[:-1]
         districts_indicators: Dict[str, Any] = {}
-        region_indicators: Dict[str | Any] = {}
+        region_indicators: Dict[str, Any] = {}
         for _, indicator_key, _, kind in indicators:
             range_name = f"regional_{indicator_key}"
             regional_name_range = absolute_range_name(sheet.title, range_name)

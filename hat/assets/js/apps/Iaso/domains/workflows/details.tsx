@@ -156,6 +156,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     accessor: followUp.id,
                 })),
             );
+            setIsFollowUpOrderChange(false);
         }
     }, [workflowVersion?.follow_ups]);
 

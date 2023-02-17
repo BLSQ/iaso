@@ -316,18 +316,21 @@ export const useCopyDataSourceVersion = () => {
         'dataSources',
     );
 };
+const saveSourceVersion = newSourceVersion => {
+    const url = '/api/sourceversions/';
+    return postRequest(url, {
+        description: newSourceVersion.description,
+        data_source_id: newSourceVersion.dataSourceId,
+    });
+};
 
 export const useCreateSourceVersion = () => {
-    return useSnackMutation(
-        ({ description, dataSourceId }) => {
-            return postRequest(`/api/sourceversions/`, {
-                description,
-                data_source_id: dataSourceId,
-            });
-        },
-        MESSAGES.newEmptyVersionSavedSuccess,
-        MESSAGES.newEmptyVersionError,
-    );
+    return useSnackMutation({
+        mutationFn: saveSourceVersion,
+        snackErrorMsg: MESSAGES.newEmptyVersionError,
+        snackSuccessMessage: MESSAGES.newEmptyVersionSavedSuccess,
+        invalidateQueryKey: 'dataSourceVersions',
+    });
 };
 
 const updateSourceVersion = async ({

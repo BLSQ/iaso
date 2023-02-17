@@ -9,11 +9,7 @@ import { useCreateSourceVersion } from '../requests';
 import { useFormState } from '../../../hooks/form';
 import InputComponent from '../../../components/forms/InputComponent';
 
-const initialFormState = () => {
-    return {
-        versionDescription: '',
-    };
-};
+const initialFormState = { versionDescription: '' };
 
 const VersionDescription = ({ formValue, onChangeDescription }) => {
     const { formatMessage } = useSafeIntl();
@@ -36,13 +32,11 @@ const AddNewEmptyVersion = ({
     forceRefreshParent,
 }) => {
     // eslint-disable-next-line no-unused-vars
-    const [form, setFormField, , setFormState] = useFormState(
-        initialFormState(),
-    );
+    const [form, setFormField, , setFormState] = useFormState(initialFormState);
     const { mutateAsync: createSourceVersion } = useCreateSourceVersion();
 
     const reset = () => {
-        setFormState(initialFormState());
+        setFormState(initialFormState);
     };
 
     const submit = async closeDialogCallBack => {
@@ -57,10 +51,6 @@ const AddNewEmptyVersion = ({
     };
 
     const onConfirm = async closeDialog => {
-        await submit(closeDialog);
-    };
-
-    const onRedirect = async closeDialog => {
         await submit(closeDialog);
     };
 
@@ -86,8 +76,6 @@ const AddNewEmptyVersion = ({
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={allowConfirm}
-            additionalButton
-            onAdditionalButtonClick={onRedirect}
         >
             {createSourceVersion.isLoading && <LoadingSpinner />}
 

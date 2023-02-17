@@ -295,6 +295,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
         # ignore last column since it is the comments
         region_districts = region_districts[:-1]
         districts_indicators: Dict[str, Any] = {}
+        region_indicators: Dict[str | Any] = {}
         for _, indicator_key, _, kind in indicators:
             range_name = f"regional_{indicator_key}"
             regional_name_range = absolute_range_name(sheet.title, range_name)
@@ -307,15 +308,17 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
                     districts_indicators.setdefault(district_region_name, {})[indicator_key] = "Error"
 
             indicator_row, indicator_col = spread.get_range_row_col(regional_name_range)
-            for _, district_col, district_region_name in region_districts:
-                # take unalignement of table into account (eg score box don't sart on the same row
+            for i, (_, district_col, district_region_name) in enumerate(region_districts):
+                # take un-alignement of tables into account (for the score box that don't start on the same column)
                 col = (indicator_col - start_region[1]) + district_col
                 value = sheet.get_rc(indicator_row, col)
                 if kind == "percent":
                     value = from_percent(value)
-                districts_indicators.setdefault(district_region_name, {})[indicator_key] = value
-
-        region_indicators = districts_indicators.pop(regional_name)
+                if i == 0:  # first column is the region
+                    # this new logic avoid the problem where there was a district with the same name as the region
+                    region_indicators[indicator_key] = value
+                else:
+                    districts_indicators.setdefault(district_region_name, {})[indicator_key] = value
 
         regions[regional_name] = {**region_indicators}
         # Find district box

@@ -94,10 +94,10 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetWorkflowVersion(versionId);
 
-    useEffect(() => {
-        if (workflowVersion?.follow_ups) {
+    const setCurrentFollowUps = workflowVersionFollowUps => {
+        if (workflowVersionFollowUps) {
             const newFollowUps = orderBy(
-                workflowVersion.follow_ups,
+                workflowVersionFollowUps,
                 [f => f.order],
                 ['asc'],
             );
@@ -108,7 +108,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 })),
             );
         }
+    };
+
+    useEffect(() => {
+        setCurrentFollowUps(workflowVersion?.follow_ups);
     }, [workflowVersion?.follow_ups]);
+
     const { possibleFields: targetPossibleFields } = useGetPossibleFields(
         workflowVersion?.reference_form.id,
     );
@@ -144,20 +149,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     }, []);
 
     const handleResetFollowUpsOrder = useCallback(() => {
-        if (workflowVersion?.follow_ups) {
-            const newFollowUps = orderBy(
-                workflowVersion.follow_ups,
-                [f => f.order],
-                ['asc'],
-            );
-            setFollowUps(
-                newFollowUps.map(followUp => ({
-                    ...followUp,
-                    accessor: followUp.id,
-                })),
-            );
-            setIsFollowUpOrderChange(false);
-        }
+        setCurrentFollowUps(workflowVersion?.follow_ups);
+        setIsFollowUpOrderChange(false);
     }, [workflowVersion?.follow_ups]);
 
     const handleSaveFollowUpsOrder = useCallback(() => {

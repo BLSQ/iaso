@@ -104,10 +104,12 @@ class SourceVersionViewSet(ModelViewSet):
         data_source_id = version_data["data_source_id"]
 
         data_source = DataSource.objects.get(id=data_source_id)
+        try:
+            latest_version_number = SourceVersion.objects.filter(data_source_id=data_source).latest("number").number
+        except SourceVersion.DoesNotExist:
+            latest_version_number = None
 
-        version = SourceVersion.objects.filter(data_source_id=data_source).latest("number")
-        latest_version = version.number
-        new_version_number = latest_version + 1 if latest_version else 1
+        new_version_number = latest_version_number + 1 if latest_version_number else 1
         new_source_version = SourceVersion.objects.create(
             data_source=data_source, number=new_version_number, description=description
         )

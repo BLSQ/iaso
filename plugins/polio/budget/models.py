@@ -53,12 +53,11 @@ class BudgetStep(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.campaign}, {self.transition_key}"
-    
-    def save(self,*args, **kwargs):
+
+    def save(self, *args, **kwargs):
         campaign = self.campaign
         end_state = self.node_key_to
-        
-        
+
         super().save(*args, **kwargs)
 
 

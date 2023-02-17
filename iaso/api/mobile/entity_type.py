@@ -4,22 +4,15 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, status
 from rest_framework import serializers
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from iaso.api.common import (
     ModelViewSet,
     TimestampField,
 )
-from iaso.api.mobile.entity import MobileEntitySerializer
+from iaso.api.mobile.entity import MobileEntitySerializer, LargeResultsSetPagination
 from iaso.models import Entity, Instance, EntityType
 from iaso.utils.jsonlogic import jsonlogic_to_q
-
-
-class LargeResultsSetPagination(PageNumberPagination):
-    page_size = 1000
-    page_size_query_param = "page_size"
-    max_page_size = 1000
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):

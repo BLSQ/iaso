@@ -99,7 +99,6 @@ class MobileEntityViewSet(ModelViewSet):
         # For now, it can be filtered on OU without any access restriction
         if orgunits:
             queryset = queryset.filter(instances__org_unit__in=orgunits)
-        # we filter by last instance on the entity
         limit_date = self.request.query_params.get("limit_date", None)
         if limit_date:
             queryset = queryset.filter(instances__updated_at__gte=limit_date)

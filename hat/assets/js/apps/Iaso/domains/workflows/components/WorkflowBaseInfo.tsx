@@ -95,10 +95,12 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
                 <>
                     <Divider />
                     <Box p={2} display="flex" justifyContent="flex-end">
-                        {/* @ts-ignore */}
                         <PublishVersionModal
                             workflowVersion={workflowVersion}
                             invalidateQueryKey="workflowVersion"
+                            iconProps={{
+                                dataTestId: 'publish-workflow-button',
+                            }}
                         />
                     </Box>
                 </>

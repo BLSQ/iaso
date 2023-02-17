@@ -105,27 +105,152 @@ describe('Workflows details', () => {
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
-        it.only('should display correct follow-ups', () => {
+
+        it('should display correct follow-ups', () => {
             cy.get('[data-test="follow-ups"]')
                 .find('table')
                 .as('followUpTable');
-
             cy.get('@followUpTable').should('be.visible');
             cy.get('@followUpTable')
                 .find('tbody')
                 .find('tr')
                 .should('have.length', 2);
+
+            cy.get('@followUpTable')
+                .find('tbody')
+                .find('tr')
+                .eq(0)
+                .as('firstRow');
+
+            cy.get('@followUpTable')
+                .find('tbody')
+                .find('tr')
+                .eq(1)
+                .as('secondRow');
+            cy.get('@firstRow')
+                .find('td')
+                .eq(1)
+                .should('contain', 'Gender = Male AND Entity Group = Group A');
+            cy.get('@firstRow').find('td').eq(2).should('contain', 'FORM_3');
+            cy.get('@firstRow')
+                .find('td')
+                .eq(3)
+                .should('contain', '31/01/2023');
+            cy.get('@firstRow')
+                .find('td')
+                .eq(4)
+                .should('contain', '13/02/2023');
+
+            cy.get('@secondRow')
+                .find('td')
+                .eq(1)
+                .should('contain', 'Last name = last_name_value');
+            cy.get('@secondRow').find('td').eq(2).should('contain', 'FORM_2');
+            cy.get('@secondRow')
+                .find('td')
+                .eq(3)
+                .should('contain', '01/02/2023');
+            cy.get('@secondRow')
+                .find('td')
+                .eq(4)
+                .should('contain', '01/02/2023');
         });
-        it.skip('should display correct changes', () => {});
+        it('should display correct changes', () => {
+            cy.get('[data-test="changes"]').find('table').as('changesTable');
+            cy.get('@changesTable').should('be.visible');
+            cy.get('@changesTable')
+                .find('tbody')
+                .find('tr')
+                .should('have.length', 2);
+
+            cy.get('@changesTable')
+                .find('tbody')
+                .find('tr')
+                .eq(0)
+                .as('firstRow');
+            cy.get('@changesTable')
+                .find('tbody')
+                .find('tr')
+                .eq(1)
+                .as('secondRow');
+
+            cy.get('@firstRow').find('td').eq(0).should('contain', 'FORM_2');
+            cy.get('@firstRow')
+                .find('td')
+                .eq(1)
+                .should(
+                    'contain',
+                    'first_name => firstName, last_name => LastName',
+                );
+            cy.get('@firstRow')
+                .find('td')
+                .eq(2)
+                .should('contain', '31/01/2023');
+            cy.get('@firstRow')
+                .find('td')
+                .eq(3)
+                .should('contain', '31/01/2023');
+
+            cy.get('@secondRow').find('td').eq(0).should('contain', 'FORM_3');
+            cy.get('@secondRow')
+                .find('td')
+                .eq(1)
+                .should('contain', 'last_name => name');
+            cy.get('@secondRow')
+                .find('td')
+                .eq(2)
+                .should('contain', '31/01/2023');
+            cy.get('@secondRow')
+                .find('td')
+                .eq(3)
+                .should('contain', '31/01/2023');
+        });
     });
     describe('with DRAFT status', () => {
-        it.skip('should be possible to publish', () => {});
+        beforeEach(() => {
+            mockPage();
+            cy.visit(baseUrl);
+        });
+        it.only('should be possible to publish', () => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'PATCH',
+                    pathname: '/api/workflowversions/12/',
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('publishVersion');
+            cy.get('[data-test="publish-workflow-button"')
+                .should('be.visible')
+                .click();
+            cy.get('[data-test="publish-workflow-version"]').should(
+                'be.visible',
+            );
+            cy.get('[data-test="confirm-button"]').click();
+            cy.wait('@publishVersion').then(xhr => {
+                cy.wrap(xhr.request.body)
+                    .its('status')
+                    .should('eq', 'PUBLISHED');
+                cy.wrap(interceptFlag).should('eq', true);
+            });
+        });
+
         it.skip('should create a follow-up', () => {});
         it.skip('should edit a follow-up', () => {});
+        it.skip('should delete a follow-up', () => {});
         it.skip('should change order of follow-ups and save it', () => {});
+        it.skip('should reset order of follow-ups', () => {});
+
         it.skip('should create a change', () => {});
         it.skip('should edit a change', () => {});
         it.skip('should delete a change', () => {});
+
         describe('follow-up modal', () => {
             it.skip('should display correct infos', () => {});
             it.skip('should not save if form is not set', () => {});
@@ -143,18 +268,14 @@ describe('Workflows details', () => {
     });
     describe('with PUBLISHED status', () => {
         it.skip('should not be possible to publish', () => {});
-        it.skip('should not create a follow-up', () => {});
-        it.skip('should not edit a follow-up', () => {});
+        it.skip('should not create edit or delete a follow-up', () => {});
         it.skip('should not change order of follow-ups and save it', () => {});
-        it.skip('should not create a change', () => {});
-        it.skip('should not edit or delete a change', () => {});
+        it.skip('should not create edit or delete a change', () => {});
     });
     describe('with UNPUBLISHED status', () => {
         it.skip('should not be possible to publish', () => {});
-        it.skip('should not create a follow-up', () => {});
-        it.skip('should not edit a follow-up', () => {});
+        it.skip('should not create edit or delete a follow-up', () => {});
         it.skip('should not change order of follow-ups and save it', () => {});
-        it.skip('should not create a change', () => {});
-        it.skip('should not edit or delete a change', () => {});
+        it.skip('should not create edit or delete a change', () => {});
     });
 });

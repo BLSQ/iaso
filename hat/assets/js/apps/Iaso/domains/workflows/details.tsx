@@ -240,7 +240,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         )}
                     </WidgetPaper>
                 </Box>
-                <Box mt={2}>
+                <Box mt={2} data-test="changes">
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.changes)}

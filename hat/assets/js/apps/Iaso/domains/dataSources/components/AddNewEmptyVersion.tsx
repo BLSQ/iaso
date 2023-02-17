@@ -1,33 +1,36 @@
-import React from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import { Grid, Typography } from '@material-ui/core';
-import { FormattedMessage } from 'react-intl';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-import PropTypes from 'prop-types';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useCreateSourceVersion } from '../requests';
-import { useFormState } from '../../../hooks/form';
 import { VersionDescription } from './VersionDescription';
 
-const initialFormState = { versionDescription: '' };
+type Props = {
+    // eslint-disable-next-line no-unused-vars
+    renderTrigger: ({ openDialog }: { openDialog: any }) => ReactNode;
+    sourceId: number;
+    forceRefreshParent: () => void;
+};
 
-const AddNewEmptyVersion = ({
+export const AddNewEmptyVersion: FunctionComponent<Props> = ({
     renderTrigger,
     sourceId,
     forceRefreshParent,
 }) => {
     // eslint-disable-next-line no-unused-vars
-    const [form, setFormField, , setFormState] = useFormState(initialFormState);
+    const [description, setDescription] = useState<string>('');
     const { mutateAsync: createSourceVersion } = useCreateSourceVersion();
+    const { formatMessage } = useSafeIntl();
 
     const reset = () => {
-        setFormState(initialFormState);
+        setDescription('');
     };
 
-    const submit = async closeDialogCallBack => {
+    const submit = async (closeDialogCallBack: () => void) => {
         const body = {
             dataSourceId: sourceId,
-            description: form.versionDescription.value || null,
+            description: description || null,
         };
         await createSourceVersion(body);
         closeDialogCallBack();
@@ -35,23 +38,19 @@ const AddNewEmptyVersion = ({
         forceRefreshParent();
     };
 
-    const onConfirm = async closeDialog => {
+    const onConfirm = async (closeDialog: () => void) => {
         await submit(closeDialog);
     };
 
-    const titleMessage = (
-        <FormattedMessage
-            id="iaso.sourceVersion.label.createNewEmptyVersion"
-            defaultMessage="Create a new empty version"
-        />
-    );
+    const titleMessage = formatMessage(MESSAGES.newEmptyVersion);
 
     const allowConfirm = !createSourceVersion.isLoading;
-    const onChangeDescription = (field, value) => {
-        setFormField(field, value);
+    const onChangeDescription = (_field, value) => {
+        setDescription(value);
     };
 
     return (
+        // @ts-ignore
         <ConfirmCancelDialogComponent
             renderTrigger={renderTrigger}
             titleMessage={titleMessage}
@@ -61,22 +60,20 @@ const AddNewEmptyVersion = ({
             cancelMessage={MESSAGES.cancel}
             maxWidth="sm"
             allowConfirm={allowConfirm}
+            dataTestId="new-empty-version-modal"
         >
             {createSourceVersion.isLoading && <LoadingSpinner />}
 
             <Grid container spacing={4}>
                 <Grid item>
                     <Typography>
-                        <FormattedMessage
-                            id="iaso.sourceVersion.label.createEmptyVersionDescription"
-                            defaultMessage="It will directly create a new empty version."
-                        />
+                        {formatMessage(MESSAGES.newEmptyVersionDescription)}
                     </Typography>
                 </Grid>
 
                 <Grid xs={12} item>
                     <VersionDescription
-                        formValue={form.versionDescription.value}
+                        formValue={description}
                         onChangeDescription={onChangeDescription}
                     />
                 </Grid>
@@ -84,12 +81,3 @@ const AddNewEmptyVersion = ({
         </ConfirmCancelDialogComponent>
     );
 };
-
-AddNewEmptyVersion.propTypes = {
-    renderTrigger: PropTypes.func.isRequired,
-    sourceId: PropTypes.number.isRequired,
-    forceRefreshParent: PropTypes.func.isRequired,
-};
-
-
-export { AddNewEmptyVersion };

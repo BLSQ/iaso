@@ -319,6 +319,14 @@ const MESSAGES = defineMessages({
             'An error occurred while creating the new empty version',
         id: 'iaso.snackBar.newEmptyVersionError',
     },
+    newEmptyVersion: {
+        defaultMessage: 'Create a new empty version',
+        id: 'iaso.sourceVersion.label.createNewEmptyVersion',
+    },
+    newEmptyVersionDescription: {
+        defaultMessage: 'It will directly create a new empty version.',
+        id: 'iaso.sourceVersion.label.createEmptyVersionDescription',
+    },
 });
 
 export default MESSAGES;

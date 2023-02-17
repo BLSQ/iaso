@@ -4,7 +4,7 @@
             "descriptor": {
                 "name": "data",
                 "type": "survey",
-                "title": "Registration",
+                "title": "ALLO",
                 "_xpath": {
                     "age": "/data/registration/beneficiary_details/age",
                     "data": "/data",

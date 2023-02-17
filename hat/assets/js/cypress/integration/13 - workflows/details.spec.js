@@ -22,11 +22,22 @@ const mockPage = () => {
     cy.intercept('GET', '/api/formversions/?form_id=7&fields=descriptor', {
         fixture: 'workflows/descriptor.json',
     });
+
+    cy.intercept('GET', '/api/forms/?fields=id,name', {
+        fixture: 'forms/list.json',
+    });
 };
 const name = 'mario';
 
+const testFollowUpBody = (body, order, key, value, formId) => {
+    cy.wrap(body).its('order').should('eq', order);
+    cy.wrap(body.condition.and[0]['=='][0]).its('var').should('eq', key);
+    cy.wrap(body.condition.and[0]['=='][1]).should('eq', value);
+    cy.wrap(body.form_ids[0]).should('eq', formId);
+};
+
 describe('Workflows details', () => {
-    it.skip('page should not be accessible if user does not have permission', () => {
+    it('page should not be accessible if user does not have permission', () => {
         const fakeUser = {
             ...superUser,
             permissions: [],
@@ -105,7 +116,6 @@ describe('Workflows details', () => {
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
-
         it('should display correct follow-ups', () => {
             cy.get('[data-test="follow-ups"]')
                 .find('table')
@@ -241,7 +251,7 @@ describe('Workflows details', () => {
             });
         });
 
-        it.only('should create a follow-up', () => {
+        it('should create a follow-up', () => {
             interceptFlag = false;
             cy.intercept(
                 {
@@ -271,28 +281,64 @@ describe('Workflows details', () => {
             cy.get('.query-builder button').eq(0).click();
             cy.get('.query-builder .MuiInputBase-input').click();
             cy.get('[role="option"]').eq(0).click();
-            cy.get('.widget--widget input[type="text"]').type('Mario');
+            cy.get('.widget--widget input[type="text"]').type(name);
             cy.fillSingleSelect('#forms', 0);
 
             cy.get('@saveButton')
                 .invoke('attr', 'disabled')
                 .should('equal', undefined);
             cy.get('@saveButton').click();
-
             cy.wait('@addFollowUp').then(xhr => {
-                cy.wrap(xhr.request.body).its('order').should('eq', 2);
-                cy.wrap(xhr.request.body.condition.and[0]['=='][0])
-                    .its('var')
-                    .should('eq', 'first_name');
-                cy.wrap(xhr.request.body.condition.and[0]['=='][1]).should(
-                    'eq',
-                    'Mario',
-                );
-                cy.wrap(xhr.request.body.form_ids[0]).should('eq', 16);
+                testFollowUpBody(xhr.request.body, 2, 'first_name', name, 1);
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
-        it.skip('should edit a follow-up', () => {});
+        it.only('should edit a follow-up', () => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'POST',
+                    pathname: '/api/workflowfollowups/',
+                    query: {
+                        version_id: '12',
+                    },
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('editFollowUp');
+
+            cy.wait(1000);
+            cy.get('[data-test="follow-ups"]')
+                .find('table tbody tr')
+                .eq(0)
+                .find('td')
+                .last()
+                .find('button')
+                .first()
+                .click();
+            cy.get('[data-test="follow-up-modal"').should('be.visible');
+            cy.get('[data-test="confirm-button"]').as('saveButton');
+            cy.testMultiSelect('#forms', [{ name: 'FORM 3' }]);
+            // cy.get('.query-builder button').eq(0).click();
+            // cy.get('.query-builder .MuiInputBase-input').click();
+            // cy.get('[role="option"]').eq(0).click();
+            // cy.get('.widget--widget input[type="text"]').type(name);
+            // cy.fillSingleSelect('#forms', 0);
+
+            // cy.get('@saveButton')
+            //     .invoke('attr', 'disabled')
+            //     .should('equal', undefined);
+            // cy.get('@saveButton').click();
+            // cy.wait('@editFollowUp').then(xhr => {
+            //     testFollowUpBody(xhr.request.body, 2, 'first_name', name, 16);
+            //     cy.wrap(interceptFlag).should('eq', true);
+            // });
+        });
         it.skip('should delete a follow-up', () => {});
         it.skip('should change order of follow-ups and save it', () => {});
         it.skip('should reset order of follow-ups', () => {});

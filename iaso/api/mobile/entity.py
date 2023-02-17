@@ -134,8 +134,3 @@ class MobileEntityViewSet(ModelViewSet):
 
     def get_queryset(self):
         return mobile_entity_get_queryset(self.request)
-
-    # def list(self, request, *args, **kwargs):
-    #     response = super().list(request, *args, **kwargs)
-    #
-    #     return response

@@ -7,24 +7,9 @@ import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { useCreateSourceVersion } from '../requests';
 import { useFormState } from '../../../hooks/form';
-import InputComponent from '../../../components/forms/InputComponent';
+import { VersionDescription } from './VersionDescription';
 
 const initialFormState = { versionDescription: '' };
-
-const VersionDescription = ({ formValue, onChangeDescription }) => {
-    const { formatMessage } = useSafeIntl();
-    return (
-        <InputComponent
-            type="text"
-            keyValue="versionDescription"
-            labelString={formatMessage(MESSAGES.dataSourceDescription)}
-            value={formValue}
-            onChange={(field, value) => {
-                onChangeDescription(field, value);
-            }}
-        />
-    );
-};
 
 const AddNewEmptyVersion = ({
     renderTrigger,
@@ -106,9 +91,5 @@ AddNewEmptyVersion.propTypes = {
     forceRefreshParent: PropTypes.func.isRequired,
 };
 
-VersionDescription.propTypes = {
-    formValue: PropTypes.string.isRequired,
-    onChangeDescription: PropTypes.func.isRequired,
-};
 
 export { AddNewEmptyVersion };

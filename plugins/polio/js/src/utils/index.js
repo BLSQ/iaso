@@ -128,3 +128,23 @@ export const convertObjectToString = value =>
 export const findCampaignRound = (campaign, round) => {
     return campaign.rounds.find(rnd => rnd.number === round);
 };
+
+export const isTouched = touched => {
+    const keys = Object.keys(touched ?? {});
+
+    for (let i = 0; i < keys.length; i += 1) {
+        const key = keys[i];
+        if (typeof touched[key] === 'boolean' && touched[key] === true) {
+            return true;
+        }
+        if (typeof touched[key] === 'object' && !Array.isArray(touched[key])) {
+            return isTouched(touched[key]);
+        }
+        if (typeof touched[key] === 'object' && Array.isArray(touched[key])) {
+            return Boolean(
+                touched[key].find(touchedKey => isTouched(touchedKey)),
+            );
+        }
+    }
+    return false;
+};

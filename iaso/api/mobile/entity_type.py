@@ -10,7 +10,7 @@ from iaso.api.common import (
     ModelViewSet,
     TimestampField,
 )
-from iaso.api.mobile.entity import MobileEntitySerializer, LargeResultsSetPagination
+from iaso.api.mobile.entity import MobileEntitySerializer, LargeResultsSetPagination, mobile_entity_get_queryset
 from iaso.models import Entity, Instance, EntityType
 from iaso.utils.jsonlogic import jsonlogic_to_q
 
@@ -60,33 +60,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path=r"(?P<type_pk>\d+)/entities")
     def get_entities_by_types(self, *args, **kwargs):
-        limit_date = self.request.query_params.get("limit_date", None)
-        json_content = self.request.query_params.get("json_content", None)
-        type_pk = self.request.parser_context.get("kwargs")["type_pk"]
-        p = Prefetch(
-            "instances",
-            queryset=Instance.objects.filter(deleted=False).exclude(file=""),
-            to_attr="non_deleted_instances",
-        )
-
-        queryset = Entity.objects.filter(account=self.request.user.iaso_profile.account, entity_type__pk=type_pk)
-        queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
-
-        if limit_date:
-            try:
-                queryset = queryset.filter(instances__updated_at__gte=limit_date)
-            except ValidationError:
-                return Response("Error in limit date format", status.HTTP_400_BAD_REQUEST)
-
-        if json_content:
-            try:
-                q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")  # type: ignore
-                queryset = queryset.filter(q)
-            except ValidationError:
-                return Response("Error in json logic format", status.HTTP_400_BAD_REQUEST)
-
+        queryset = mobile_entity_get_queryset(self.request, *args, **kwargs)
         page = self.paginate_queryset(queryset)
-
         serializer = MobileEntitySerializer(page, many=True)
-
         return self.get_paginated_response(serializer.data)

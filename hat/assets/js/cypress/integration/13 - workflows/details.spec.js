@@ -211,7 +211,7 @@ describe('Workflows details', () => {
             mockPage();
             cy.visit(baseUrl);
         });
-        it.only('should be possible to publish', () => {
+        it('should be possible to publish', () => {
             interceptFlag = false;
             cy.intercept(
                 {
@@ -241,7 +241,57 @@ describe('Workflows details', () => {
             });
         });
 
-        it.skip('should create a follow-up', () => {});
+        it.only('should create a follow-up', () => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'POST',
+                    pathname: '/api/workflowfollowups/',
+                    query: {
+                        version_id: '12',
+                    },
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('addFollowUp');
+            cy.get('[data-test="create-follow-ups"')
+                .should('be.visible')
+                .click();
+            cy.get('[data-test="follow-up-modal"').should('be.visible');
+            cy.get('[data-test="confirm-button"]').as('saveButton');
+            cy.get('@saveButton')
+                .invoke('attr', 'disabled')
+                .should('equal', 'disabled');
+            cy.testInputValue('#forms', '');
+            cy.get('.query-builder button').eq(0).click();
+            cy.get('.query-builder .MuiInputBase-input').click();
+            cy.get('[role="option"]').eq(0).click();
+            cy.get('.widget--widget input[type="text"]').type('Mario');
+            cy.fillSingleSelect('#forms', 0);
+
+            cy.get('@saveButton')
+                .invoke('attr', 'disabled')
+                .should('equal', undefined);
+            cy.get('@saveButton').click();
+
+            cy.wait('@addFollowUp').then(xhr => {
+                cy.wrap(xhr.request.body).its('order').should('eq', 2);
+                cy.wrap(xhr.request.body.condition.and[0]['=='][0])
+                    .its('var')
+                    .should('eq', 'first_name');
+                cy.wrap(xhr.request.body.condition.and[0]['=='][1]).should(
+                    'eq',
+                    'Mario',
+                );
+                cy.wrap(xhr.request.body.form_ids[0]).should('eq', 16);
+                cy.wrap(interceptFlag).should('eq', true);
+            });
+        });
         it.skip('should edit a follow-up', () => {});
         it.skip('should delete a follow-up', () => {});
         it.skip('should change order of follow-ups and save it', () => {});

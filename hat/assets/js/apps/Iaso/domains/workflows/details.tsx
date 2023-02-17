@@ -227,7 +227,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         {formatMessage(MESSAGES.saveOrder)}
                                     </Button>
                                 </Box>
-                                {/* @ts-ignore */}
                                 <AddFollowUpsModal
                                     fields={fields}
                                     versionId={versionId}
@@ -235,6 +234,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         followUps[followUps.length - 1]?.order +
                                         1
                                     }
+                                    iconProps={{
+                                        dataTestId: 'create-follow-ups',
+                                    }}
                                 />
                             </Box>
                         )}

@@ -20,7 +20,7 @@ import { baseUrls } from '../../../../constants/urls';
 
 import { useGetForms } from '../hooks/requests/forms';
 import { useTranslatedErrors } from '../../../../libs/validation';
-import { useGetPossibleFields } from '../../../forms/hooks/useGetPossibleFields';
+import { useGetPossibleFieldsForEntityTypes } from '../../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
 
 type RenderTriggerProps = {
@@ -134,9 +134,11 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     });
     const isNew = !initialData?.id;
     const { data: formsList, isFetching: isFetchingForms } = useGetForms(isNew);
-    const { possibleFields, isFetchingForm } = useGetPossibleFields(
-        isOpen ? values?.reference_form : undefined,
-    );
+    const { possibleFields, isFetchingForm } =
+        useGetPossibleFieldsForEntityTypes({
+            formId: values?.reference_form,
+            enabled: isOpen,
+        });
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -158,10 +160,12 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 dialogProps={{
                     classNames: classes.dialog,
                 }}
-                onOpen={() => setIsOpen(true)}
+                onOpen={() => {
+                    resetForm();
+                    setIsOpen(true);
+                }}
                 onClosed={() => {
                     setIsOpen(false);
-                    resetForm();
                 }}
             >
                 {!isNew && (

@@ -19,16 +19,24 @@ class MobileEntityTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityType
         fields = [
+            "id",
             "name",
             "created_at",
             "updated_at",
             "reference_form",
+            "entities_count",
             "account",
-            "is_active",
+            "fields_detail_info_view",
+            "fields_list_view",
         ]
 
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+    entities_count = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_entities_count(obj: EntityType):
+        return Entity.objects.filter(entity_type=obj.id).count()
 
 
 class MobileEntityTypesViewSet(ModelViewSet):

@@ -926,6 +926,7 @@
     "iaso.workflows.editFollowUp": "Edit follow up",
     "iaso.workflows.followUps": "Follow ups",
     "iaso.workflows.mapping": "Mapping",
+    "iaso.workflows.noCondition": "Always true",
     "iaso.workflows.order": "Order",
     "iaso.workflows.publish": "Publish",
     "iaso.workflows.publishVersion": "Publish version",

@@ -73,13 +73,13 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                 {
                     id: followUp.id,
                     order: followUp.order,
-                    condition: logic,
+                    condition: logic || true,
                     form_ids: formIds,
                 },
             ]);
         } else {
             createFollowUp({
-                condition: logic,
+                condition: logic || true,
                 form_ids: formIds,
                 order: newOrder || 0,
             });

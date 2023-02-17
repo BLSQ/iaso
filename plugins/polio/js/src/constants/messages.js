@@ -2046,6 +2046,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.date',
         defaultMessage: 'Date',
     },
+    editionDisabled: {
+        id: 'iaso.polio.form.label.editionDisabled',
+        defaultMessage: 'Edition disabled',
+    },
 });
 
 export default MESSAGES;

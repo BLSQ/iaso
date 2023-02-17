@@ -561,6 +561,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     )
     # Account is filed per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
+    has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -580,6 +581,11 @@ class CampaignSerializer(serializers.ModelSerializer):
             elif round.started_at and now_utc >= round.started_at:
                 return _("Round {} started").format(round.number)
         return _("Preparing")
+
+    def get_has_data_in_budget_tool(self, campaign):
+        if campaign.budget_steps.all():
+            return True
+        return False
 
     # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)

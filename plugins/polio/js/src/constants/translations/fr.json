@@ -65,6 +65,7 @@
     "iaso.polio.form.label.districtsFailingLqas": "Districts ayant échoué le LQAS",
     "iaso.polio.form.label.districtsPassingLqas": "Districts ayant réussi le LQAS",
     "iaso.polio.form.label.dosesRequested": "Nombre de doses nécessaires",
+    "iaso.polio.form.label.editionDisabled": "Edition désactivée",
     "iaso.polio.form.label.eomg": "Groupe EOMG",
     "iaso.polio.form.label.epid": "EPID",
     "iaso.polio.form.label.feedback_sent_to_gpei": "Feedback envoyé au coordinateur GPEI",

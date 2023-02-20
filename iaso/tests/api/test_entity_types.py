@@ -221,7 +221,7 @@ class EntityTypeAPITestCase(APITestCase):
             "g_admi_type": "mam",
             "color_answer": "Green ðŸŸ¢",
             "color_output": "",
-            "counsuelling_type": "therap_foods"
+            "counsuelling_type": "therap_foods",
         }
         instance.save()
 

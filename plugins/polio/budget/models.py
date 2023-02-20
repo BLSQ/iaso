@@ -1,3 +1,4 @@
+from functools import reduce
 import logging
 from typing import Union
 
@@ -166,20 +167,22 @@ class MailTemplate(models.Model):
             node = workflow.get_node_by_key(node_key)
 
         attachments = []
-        override = step.transition_key == "override"
-        for f in step.files.all():
-            file_url = base_url + f.get_absolute_url()
-            attachments.append({"url": file_url, "name": f.filename})
-        for l in step.links.all():
-            attachments.append({"url": l.url, "name": l.alias})
-
         skipped_attachements = 0
+        override = step.transition_key == "override"
+        total_file_size = reduce(
+            lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(step.files.all())))
+        )
+
         for f in step.files.all():
-            # only attach file smaller than 500k
-            if f.file.size < 1024 * 500:
+            # only attach files if total is less than 5MB
+            if total_file_size < 1024 * 5000:
                 msg.attach(f.filename, f.file.read())
             else:
-                skipped_attachements += 1
+                skipped_attachements = len(list(step.files.all()))
+                file_url = base_url + f.get_absolute_url()
+                attachments.append({"url": generate_auto_authentication_link(file_url, receiver), "name": f.filename})
+        for l in step.links.all():
+            attachments.append({"url": l.url, "name": l.alias})
 
         context = Context(
             {
@@ -215,7 +218,6 @@ class MailTemplate(models.Model):
         msg.body = text_content
 
         msg.attach_alternative(html_content, "text/html")
-
         return msg
 
 

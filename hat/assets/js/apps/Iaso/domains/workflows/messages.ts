@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Condition',
         id: 'iaso.workflows.condition',
     },
+    noCondition: {
+        defaultMessage: 'Always true',
+        id: 'iaso.workflows.noCondition',
+    },
     mapping: {
         defaultMessage: 'Mapping',
         id: 'iaso.workflows.mapping',

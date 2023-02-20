@@ -15,7 +15,6 @@ from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
-from plugins.polio.models import Campaign
 from plugins.polio.time_cache import time_cache
 
 
@@ -32,12 +31,12 @@ class BudgetStepQuerySet(models.QuerySet):
 BudgetManager = models.Manager.from_queryset(BudgetStepQuerySet)
 
 # source : https://stackoverflow.com/questions/29034721/check-if-model-field-exists-in-django
-def model_field_exists(cls, field):
-    try:
-        cls._meta.get_field(field)
-        return True
-    except models.FieldDoesNotExist:
-        return False
+def model_field_exists(campaign, field):
+    campaign_fields = dir(campaign)
+    print("-------------------------")
+    print(field, campaign_fields)
+    print("-------------------------")
+    return True if field in campaign_fields else False
 
 
 class BudgetStep(SoftDeletableModel):
@@ -66,10 +65,10 @@ class BudgetStep(SoftDeletableModel):
     def save(self, *args, **kwargs):
         campaign = self.campaign
         end_state = self.node_key_to
-        field = end_state + "WF_EDITABLE"
-        if model_field_exists(Campaign, field):
-            if not campaign.get(field, None):
-                campaign[field] = self.created_at
+        field = end_state + "_at_WFEDITABLE"
+        if model_field_exists(campaign, field):
+            if not getattr(campaign, field):
+                setattr(campaign, field, self.created_at)
                 campaign.save()
         super().save(*args, **kwargs)
 

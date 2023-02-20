@@ -94,7 +94,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetWorkflowVersion(versionId);
 
-    const setCurrentFollowUps = workflowVersionFollowUps => {
+    const updateCurrentFollowUps = workflowVersionFollowUps => {
         if (workflowVersionFollowUps) {
             const newFollowUps = orderBy(
                 workflowVersionFollowUps,
@@ -111,7 +111,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     };
 
     useEffect(() => {
-        setCurrentFollowUps(workflowVersion?.follow_ups);
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
     }, [workflowVersion?.follow_ups]);
 
     const { possibleFields: targetPossibleFields } = useGetPossibleFields(
@@ -149,7 +149,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     }, []);
 
     const handleResetFollowUpsOrder = useCallback(() => {
-        setCurrentFollowUps(workflowVersion?.follow_ups);
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
         setIsFollowUpOrderChange(false);
     }, [workflowVersion?.follow_ups]);
 

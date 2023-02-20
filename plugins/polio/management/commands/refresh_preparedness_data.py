@@ -21,7 +21,7 @@ class Command(BaseCommand):
     def handle(self, campaigns, **options):
         started_at = datetime.now()
         round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")
-        round_qs = round_qs.object.exclude(campaign__isnull=True)
+        round_qs = round_qs.exclude(campaign__isnull=True)
         if campaigns:
             for campaign_name in campaigns:
                 round_qs = round_qs.filter(campaign__obr_name__icontains=campaign_name)

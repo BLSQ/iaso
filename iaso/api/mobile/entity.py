@@ -21,26 +21,15 @@ class LargeResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 
-def mobile_entity_get_queryset(request, *args, **kwargs):
-    profile = request.user.iaso_profile
-    orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-    type_pk = request.parser_context.get("kwargs").get("type_pk", None)
-    if type_pk:
-        queryset = Entity.objects.filter(account=request.user.iaso_profile.account, entity_type__pk=type_pk)
-    else:
-        queryset = Entity.objects.filter(account=profile.account)
-    json_content = request.query_params.get("json_content", None)
-
-    # we give all entities having an instance linked to the one of the org units allowed for the current user
-    # For now, it can be filtered on OU without any access restriction
-    if orgunits:
-        queryset = queryset.filter(instances__org_unit__in=orgunits)
+def filter_queryset_for_mobile_entity(queryset, request):
     limit_date = request.query_params.get("limit_date", None)
     if limit_date:
         try:
             queryset = queryset.filter(instances__updated_at__gte=limit_date)
         except ValidationError:
             raise Http404("Invalid Limit Date")
+
+    json_content = request.query_params.get("json_content", None)
     if json_content:
         try:
             q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")  # type: ignore
@@ -53,7 +42,6 @@ def mobile_entity_get_queryset(request, *args, **kwargs):
         queryset=Instance.objects.filter(deleted=False).exclude(file=""),
         to_attr="non_deleted_instances",
     )
-
     queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
 
     return queryset
@@ -133,4 +121,12 @@ class MobileEntityViewSet(ModelViewSet):
         return MobileEntitySerializer
 
     def get_queryset(self):
-        return mobile_entity_get_queryset(self.request)
+        profile = self.request.user.iaso_profile
+        queryset = filter_queryset_for_mobile_entity(Entity.objects.filter(account=profile.account), self.request)
+
+        # we give all entities having an instance linked to the one of the org units allowed for the current user
+        orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
+        if orgunits:
+            queryset = queryset.filter(instances__org_unit__in=orgunits)
+
+        return queryset

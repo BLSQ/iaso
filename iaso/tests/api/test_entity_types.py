@@ -199,10 +199,8 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.get("/api/mobile/entitytypes/")
 
-        entity_type_count = EntityType.objects.filter(account=self.yoda.iaso_profile.account).count()
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["count"], entity_type_count)
+        self.assertEqual(response.json()["count"], 1)
 
     def get_entities_by_entity_type(self):
         self.client.force_authenticate(self.yoda)
@@ -227,15 +225,15 @@ class EntityTypeAPITestCase(APITestCase):
             entity_type=entity_type,
         )
 
-        response = self.client.get(f"/api/mobile/entitytype/{entity_type}/entities")
-
-        self.assertEqual(response.json()["count"], 2)
-
         Entity.objects.create(
             name="New Client",
             account=self.yoda.iaso_profile.account,
             entity_type=second_entity_type,
         )
+
+        response = self.client.get(f"/api/mobile/entitytype/{entity_type}/entities")
+
+        self.assertEqual(response.json()["count"], 2)
 
         response = self.client.get(f"/api/mobile/entitytype/{second_entity_type}/entities")
 
@@ -248,7 +246,5 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.get("/api/mobile/entitytypes/")
 
-        entity_type_count = EntityType.objects.filter(account=self.yoda.iaso_profile.account).count()
-
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["count"], entity_type_count)
+        self.assertEqual(response.json()["count"], 0)

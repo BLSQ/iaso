@@ -1,18 +1,14 @@
-from django.core.exceptions import ValidationError
-from django.db.models import Prefetch
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, status
+from rest_framework import filters
 from rest_framework import serializers
 from rest_framework.decorators import action
-from rest_framework.response import Response
 
 from iaso.api.common import (
     ModelViewSet,
     TimestampField,
 )
-from iaso.api.mobile.entity import MobileEntitySerializer, LargeResultsSetPagination, mobile_entity_get_queryset
-from iaso.models import Entity, Instance, EntityType
-from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.api.mobile.entity import MobileEntitySerializer, LargeResultsSetPagination, filter_queryset_for_mobile_entity
+from iaso.models import Entity, EntityType
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):
@@ -68,7 +64,11 @@ class MobileEntityTypesViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path=r"(?P<type_pk>\d+)/entities")
     def get_entities_by_types(self, *args, **kwargs):
-        queryset = mobile_entity_get_queryset(self.request, *args, **kwargs)
+        profile = self.request.user.iaso_profile
+        type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
+        queryset = filter_queryset_for_mobile_entity(
+            Entity.objects.filter(account=profile.account, entity_type__pk=type_pk), self.request
+        )
         page = self.paginate_queryset(queryset)
         serializer = MobileEntitySerializer(page, many=True)
         return self.get_paginated_response(serializer.data)

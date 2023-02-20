@@ -927,6 +927,7 @@
     "iaso.workflows.order": "Ordre",
     "iaso.workflows.publish": "Publier",
     "iaso.workflows.publishVersion": "Publier la version",
+    "iaso.workflows.resetOrder": "Réinitialiser l'ordre",
     "iaso.workflows.saveOrder": "Sauver l'ordre",
     "iaso.workflows.source": "Source",
     "iaso.workflows.sourceForm": "Formulaire source",

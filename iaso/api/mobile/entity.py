@@ -120,6 +120,8 @@ class MobileEntityViewSet(ModelViewSet):
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile
+
+        # This function alter the queryset by adding non_deleted_instances
         queryset = filter_queryset_for_mobile_entity(Entity.objects.filter(account=profile.account), self.request)
 
         # we give all entities having an instance linked to the one of the org units allowed for the current user

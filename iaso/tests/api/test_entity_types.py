@@ -261,6 +261,8 @@ class EntityTypeAPITestCase(APITestCase):
         second_entity_type.refresh_from_db()
 
         response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
+        print("RESPONSE :", response.json())
+        print("ACCOUNT: ", self.yoda.iaso_profile.account)
         self.assertEqual(response.json()["count"], 2)
 
         response_entity_instance = response.json()["results"][0]["instances"]

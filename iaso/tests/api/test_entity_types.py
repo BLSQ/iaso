@@ -243,12 +243,6 @@ class EntityTypeAPITestCase(APITestCase):
         )
 
         Entity.objects.create(
-            name="New Client 2",
-            account=self.yoda.iaso_profile.account,
-            entity_type=entity_type,
-        )
-
-        Entity.objects.create(
             name="New Client",
             account=self.yoda.iaso_profile.account,
             entity_type=second_entity_type,
@@ -261,8 +255,6 @@ class EntityTypeAPITestCase(APITestCase):
         second_entity_type.refresh_from_db()
 
         response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
-        print("RESPONSE :", response.json())
-        print("ACCOUNT: ", self.yoda.iaso_profile.account)
         self.assertEqual(response.json()["count"], 2)
 
         response_entity_instance = response.json()["results"][0]["instances"]

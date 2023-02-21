@@ -19,7 +19,7 @@ import classnames from 'classnames';
 import { isEqual } from 'lodash';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
-import { SearchButton } from '../../../components/SearchButton';
+import { FilterButton } from '../../../components/FilterButton';
 import { OrgUnitFilters as Filters } from './OrgUnitsFilters';
 import { redirectTo } from '../../../routing/actions';
 
@@ -103,18 +103,20 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     const [locationLimit, setLocationLimit] = useState<number>(
         parseInt(params.locationLimit, 10),
     );
-    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
+    const [filtersUpdated, setFiltersUpdated] = useState(false);
 
     const handleSearch = useCallback(() => {
-        const tempParams = {
-            ...params,
-            locationLimit,
-            page: 1,
-            searches,
-        };
-        onSearch(tempParams);
-    }, [params, locationLimit, searches, onSearch]);
+        if (filtersUpdated) {
+            const tempParams = {
+                ...params,
+                locationLimit,
+                page: 1,
+                searches,
+            };
+            onSearch(tempParams);
+        }
+    }, [params, locationLimit, searches, onSearch, filtersUpdated]);
 
     const handleChangeColor = useCallback(
         (color: string, searchIndex: number) => {
@@ -204,11 +206,11 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             searchIndex={currentSearchIndex}
                             currentSearch={searches[searchIndex]}
                             searches={searches}
-                            setTextSearchError={setTextSearchError}
                             setSearches={setSearches}
                             onChangeColor={handleChangeColor}
                             currentTab={currentTab}
                             setHasLocationLimitError={setHasLocationLimitError}
+                            setFiltersUpdated={setFiltersUpdated}
                             orgunitTypes={orgunitTypes}
                             isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                             locationLimit={locationLimit}
@@ -235,9 +237,9 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                         <Add className={classes.buttonIcon} />
                         {formatMessage(MESSAGES.create)}
                     </Button>
-                    <SearchButton
-                        disabled={textSearchError || hasLocationLimitError}
-                        onSearch={handleSearch}
+                    <FilterButton
+                        disabled={!filtersUpdated || hasLocationLimitError}
+                        onFilter={handleSearch}
                     />
                 </Box>
             </Box>

@@ -15,7 +15,6 @@ import {
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
-import { SearchFilter } from '../../../components/filters/Search';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -39,12 +38,11 @@ type Props = {
     setLocationLimit: Dispatch<React.SetStateAction<number>>;
     searchIndex: number;
     currentSearch: Search;
-    // eslint-disable-next-line no-unused-vars
-    setTextSearchError: Dispatch<React.SetStateAction<boolean>>;
     onSearch: () => void;
     // eslint-disable-next-line no-unused-vars
     onChangeColor: (color: string, index: number) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
+    setFiltersUpdated: React.Dispatch<React.SetStateAction<boolean>>;
     currentTab: string;
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
     orgunitTypes: DropdownOptions<string>[];
@@ -71,10 +69,10 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     currentSearch,
     onSearch,
     onChangeColor,
-    setTextSearchError,
     setSearches,
     currentTab,
     setHasLocationLimitError,
+    setFiltersUpdated,
     orgunitTypes,
     isFetchingOrgunitTypes,
     locationLimit,
@@ -108,6 +106,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         sourceVersionId,
     });
     const handleChange = (key, value) => {
+        setFiltersUpdated(true);
         if (key === 'version') {
             setSourceVersionId(parseInt(value, 10));
         }
@@ -224,7 +223,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 })) ?? []
         );
     }, [dataSourceId, dataSources]);
-
     return (
         <Grid container spacing={2}>
             <Grid item xs={12} sm={4}>
@@ -236,14 +234,13 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <SearchFilter
-                    withMarginTop
-                    uid={`search-${searchIndex}`}
-                    onEnterPressed={() => onSearch()}
-                    onChange={handleChange}
+                <InputComponent
                     keyValue="search"
-                    value={filters?.search ? `${filters?.search}` : ''}
-                    onErrorChange={setTextSearchError}
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    onEnterPressed={onSearch}
                 />
                 <InputComponent
                     type="select"

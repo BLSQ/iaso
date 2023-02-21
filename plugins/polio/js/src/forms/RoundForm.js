@@ -21,7 +21,6 @@ export const RoundForm = ({ roundNumber }) => {
                     label={formatMessage(MESSAGES.startDate)}
                     name={`rounds[${roundIndex}].started_at`}
                     component={DateInput}
-                    required
                     fullWidth
                 />
 
@@ -29,7 +28,6 @@ export const RoundForm = ({ roundNumber }) => {
                     label={formatMessage(MESSAGES.endDate)}
                     name={`rounds[${roundIndex}].ended_at`}
                     component={DateInput}
-                    required
                     fullWidth
                 />
                 <Field

@@ -141,7 +141,7 @@ file](https://docs.docker.com/v17.12/compose/environment-variables/#the-env-file
 As a starting point, you can copy the sample .env.dist file and edit it
 to your needs.
 
-``` {.sourceCode .bash}
+``` bash
 cp .env.dist .env
 ```
 
@@ -154,13 +154,13 @@ cp .env.dist .env
 
 This will build and download the containers.
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose build
 ```
 
 ### 3. Start the database
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose up db
 ```
 
@@ -168,15 +168,15 @@ docker-compose up db
 
 In a separate bash (without closing yet the started db), launch the migrations
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose run --rm iaso manage migrate
 ```
 (If you get a message saying that the database iaso does not exist, you can connect to your postgres instance using 
-```
+``` bash
 psql -h localhost -p 5433 -U postgres
 ```
 then type 
-```
+``` sql
 create database iaso; 
 ```
 to create the missing database.)
@@ -185,7 +185,7 @@ to create the missing database.)
 
 To start all the containers (backend, frontend, db)
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose up
 ```
 
@@ -199,7 +199,7 @@ The `docker-compose.yml` file describes the setup of the containers. See section
 To log in to the app or the Django admin, a superuser needs to be created
 with:
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose exec iaso ./manage.py createsuperuser
 ```
 
@@ -212,14 +212,14 @@ through the Django admin or loaded via fixtures.
 
 To create the initial account, project and profile, do the following:
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose exec iaso ./manage.py create_and_import_data
 ```
 
 And run the following command to populate your database with a tree of
 org units (these are childcare schools in the West of DRC):
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose exec iaso ./manage.py tree_importer \
     --org_unit_csv_file testdata/schools.csv \
     --data_dict testdata/data_dict.json \
@@ -237,7 +237,7 @@ Alternatively to this step and following steps you can import data from DHIS2 se
 
 Run the following command to create a form:
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose exec iaso ./manage.py create_form
 ```
 
@@ -268,7 +268,7 @@ That you will pass to the next docker-compose run
 In a new bash, run the command
 
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose run --rm iaso manage seed_test_data --mode=seed --dhis2version=2.37.7.1
 ```
 
@@ -284,7 +284,7 @@ you can then log in through <http://127.0.0.1:8081/dashboard> with :
 
 Set the PLUGINS environment variable  to `polio`.
 You can do so by adding the following line in your root .env:
-```
+``` python
 PLUGINS=polio
 ```
 
@@ -367,7 +367,7 @@ Database restore and dump
 -------------------------
 
 To create a copy of your iaso database in a file (dump) you can use:
-```
+``` bash
 docker-compose exec db pg_dump -U postgres iaso  -Fc > iaso.dump
 ```
 
@@ -380,7 +380,7 @@ The dumpfile will be created on your host. The `-Fc` meant it will use an optimi
    You can list existing databases using `docker-compose exec db psql -U postgres -l`
 3. Create the database `docker-compose exec db psql -U postgres -c "create database iaso5"`
 4. Restore the dump file to put the data in your database
-```
+``` bash
 cat iaso.dump | docker-compose exec -T db pg_restore -U postgres -d iaso5 -Fc --no-owner /dev/stdin
 ```
 5. Edit your `.env` file to use to this database in the `RDS_DB_NAME` settings.
@@ -395,7 +395,7 @@ Local DHIS2
 Experimental. For development if you need a local dhis2 server, you can spin up one in your docker-compose by using the `docker/docker-compose-dhis2.yml ` configuration file.
 
 Replace your invocations of `docker-compose` by `docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml` you need to specify both config files. e.g. to launch the cluster:
-```
+``` bash
 docker-compose -f docker-compose.yml -f docker/docker-compose-dhis2.yml up
 ```
 
@@ -411,7 +411,7 @@ for the official play servers. The DHIS2 database take around 3 GB.
 The steps as are follow:
 Download the file, stop all the docker, remove the postgres database directory, start only the database docker, load the database dump and then restart everything.
 
-```
+``` bash
 wget https://databases.dhis2.org/sierra-leone/2.36.4/dhis2-db-sierra-leone.sql.gz
 docker-compose down
 sudo rm ../pgdata-dhis2 -r
@@ -467,14 +467,14 @@ To test your forms on the mobile app follow those steps:
 ### 1 - Setup Ngrok
 Download and setup Ngrok on https://ngrok.com/. Once Ngrok installed and running you must add your ngrok server url
 in ```settings.py``` by adding the following line :
-```
+``` python
 FILE_SERVER_URL = os.environ.get("FILE_SERVER_URL", "YOUR_NGROK_SERVER_URL")
 ```
 
 After this step you have to import  ```settings.py``` and add ```FILE_SERVER_URL``` to ```forms.py``` in iaso/models/forms as
 shown on the following lines :
 
-```
+``` python
 "file": settings.FILE_SERVER_URL + self.file.url,
 "xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None
 ```
@@ -484,6 +484,31 @@ Once Ngrok installed and running you have to run the app in developer mode (tap 
 by selecting the 3 dots in the top right corner and select "change server url". When connected to your server, refresh
 all data and your app will be ready and connected to your development server.
 
+
+Testing and service forms from Iaso App In Android Studio Emulator
+----------
+
+In this case you don't need Ngrok, the emulator considers that `10.0.2.2` points to `127.0.0.1` on the computer running the emulator, so if you have for example your django server running on `http://127.0.0.1:8001` (In android emulator this becomes `http://10.0.2.2:8001`
+
+You can just add at the end of `hat/settings.py` the following :
+
+``` python
+FILE_SERVER_URL = "http://10.0.2.2:8001"
+```
+
+And then in `iaso/models/forms.py` in the import section, add :
+```
+from django.conf import settings
+```
+
+And then in the `as_dict` method of `FormVersion` model, add the `settigs.FILE_SERVER_URL +` part
+
+So that it becomes like :
+
+``` python
+"file": settings.FILE_SERVER_URL + self.file.url,
+"xls_file": settings.FILE_SERVER_URL + self.xls_file.url if self.xls_file else None,
+```
 
 SSO with DHIS2
 --------------------------
@@ -547,7 +572,7 @@ To do so:
  * set the environment variable `LIVE_COMPONENTS=true`
  * start your docker-compose
 
-```
+``` bash
 cd ..
 git clone git@github.com:BLSQ/bluesquare-components.git
 cd  bluesquare-components
@@ -568,7 +593,7 @@ Customization
 
 You can override default application title, logo and colors using the `.env` file and specify those variables:
 
-```
+``` bash
 THEME_PRIMARY_COLOR="<hexa_color>"
 THEME_PRIMARY_BACKGROUND_COLOR="<hexa_color>"
 THEME_SECONDARY_COLOR="<hexa_color>"
@@ -609,7 +634,7 @@ Tests and linting
 
 For the Python backend, we use the Django builtin test framework. Tests can be executed with
 
-``` {.sourceCode .bash}
+``` bash
 docker-compose exec iaso ./manage.py test
 ```
 
@@ -630,12 +655,12 @@ translate.
 
 If you get an error about `/opt/app` or cannot accessing docker:
 Change in settings.py LOCALE_PATHS to
-```python
+``` python
 LOCALE_PATHS = [ "hat/locale/"]
 ```
 
 And specify --ignore
-```sh
+```bash
 makemessages --locale=fr --extension txt --extension html --ignore /opt/app --ignore docker --ignore node_modules
 ```
 
@@ -662,14 +687,14 @@ Troubleshooting
 ---------------
 
 If you need to restart everything
-``` {.sourceCode .shell}
+``` bash
 docker-compose stop && docker-compose start
 ```
 
 If you encounter problems, you can try to rebuild everything from
 scratch.
 
-``` {.sourceCode .shell}
+``` bash
 # kill containers
 docker-compose kill
 # remove `iaso` container

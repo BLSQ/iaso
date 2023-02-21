@@ -2,13 +2,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 
-
-from iaso import models as m
-from hat.audit import models as am
-from iaso.test import APITestCase
-from iaso.models import Task, QUEUED
-
 from beanstalk_worker.services import TestTaskService
+from hat.audit import models as am
+from iaso import models as m
+from iaso.models import Task, QUEUED
+from iaso.test import APITestCase
 
 
 class OrgUnitsBulkUpdateAPITestCase(APITestCase):

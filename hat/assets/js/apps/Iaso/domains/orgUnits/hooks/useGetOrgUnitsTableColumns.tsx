@@ -17,7 +17,6 @@ import { Search } from '../types/search';
 import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 import { ActionCell } from '../components/ActionCell';
-import getDisplayName from '../../../utils/usersUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

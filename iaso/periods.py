@@ -238,8 +238,8 @@ class MonthPeriod(Period):
 
 class DayPeriod(Period):
 
-    LOWER_BOUND = None
-    HIGHER_BOUND = None
+    LOWER_BOUND = "20000101"
+    HIGHER_BOUND = "20301231"
 
     @staticmethod
     def from_parts(year, month, day):

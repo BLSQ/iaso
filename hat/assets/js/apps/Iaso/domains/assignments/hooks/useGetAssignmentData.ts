@@ -30,7 +30,8 @@ type Props = {
     currentTeam: Team | undefined;
     parentSelected: OrgUnitShape | undefined;
     baseOrgunitType: string | undefined;
-    order: string;
+    order?: string;
+    search?: string;
     selectedItem: SubTeam | User | undefined;
 };
 
@@ -66,6 +67,7 @@ export const useGetAssignmentData = ({
     baseOrgunitType,
     order,
     selectedItem,
+    search,
 }: Props): Result => {
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
@@ -130,6 +132,7 @@ export const useGetAssignmentData = ({
             profiles: profiles || [],
             currentType: currentTeam?.type,
             order,
+            search,
         });
 
     const [orgUnits] = useBoundState<Locations | undefined>(

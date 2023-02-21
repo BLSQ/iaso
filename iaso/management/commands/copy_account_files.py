@@ -1,8 +1,8 @@
-import pdb
 import os
 from pathlib import Path
-from django.core.management.base import BaseCommand
+
 from django.contrib.contenttypes.models import ContentType
+from django.core.management.base import BaseCommand
 
 
 def fullname(o):
@@ -20,7 +20,7 @@ def model_and_fields_with_files(account_id_to_keep, model_to_copy, offset):
         if m:
             if model_to_copy and m.__name__ == model_to_copy:
                 skip = False
-            elif model_to_copy == None:
+            elif model_to_copy is None:
                 skip = False
             else:
                 skip = True

@@ -12,7 +12,8 @@ import FileInputComponent from '../../../components/forms/FileInputComponent';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import { postGeoPkg } from '../requests';
-import { useSnackMutation } from '../../../libs/apiHooks';
+import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import { VersionDescription } from './VersionDescription.tsx';
 
 const initialFormState = () => ({
     file: null,
@@ -139,14 +140,9 @@ const ImportGeoPkgDialog = ({
                         onChange={setFormField}
                     />
                     {!versionNumber && (
-                        <InputComponent
-                            type="text"
-                            keyValue="versionDescription"
-                            labelString={formatMessage(
-                                MESSAGES.dataSourceDescription,
-                            )}
-                            value={form.versionDescription.value}
-                            onChange={(field, value) => {
+                        <VersionDescription
+                            formValue={form.versionDescription.value}
+                            onChangeDescription={(field, value) => {
                                 setFormField(field, value);
                             }}
                         />

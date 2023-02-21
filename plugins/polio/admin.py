@@ -18,6 +18,8 @@ from .models import (
     CampaignGroup,
 )
 
+from iaso.admin import IasoJSONEditorWidget
+
 
 class CampaignAdmin(admin.ModelAdmin):
     raw_id_fields = ("initial_org_unit",)
@@ -45,6 +47,7 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
     list_filter = ["spread_id", "created_at"]
     list_display = ["spread_id", "title", "created_at", "url"]
     readonly_fields = ["title", "table"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
     def title(self, obj: SpreadSheetImport):
         return obj.content["title"]
@@ -113,23 +116,21 @@ class BudgetStepAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    readonly_fields = [
-        "pretty_json",
-    ]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
-    def pretty_json(self, obj: WorkflowModel):
-        try:
-            d = json.dumps(obj.definition, indent=2)
-            html = f"<pre>{d}</pre>"
-            return mark_safe(html)
-        except Exception as e:
-            print(e)
+
+class ConfigAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+class SurgeAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
-admin.site.register(Config)
-admin.site.register(Surge)
+admin.site.register(Config, ConfigAdmin)
+admin.site.register(Surge, SurgeAdmin)
 admin.site.register(Round)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)

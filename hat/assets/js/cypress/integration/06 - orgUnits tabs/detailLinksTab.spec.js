@@ -23,7 +23,7 @@ const interceptList = [
 ];
 
 const defaultQuery = {
-    orgUnitId: '1',
+    orgUnitId: '2',
     limit: '10',
     order: 'similarity_score',
     page: '1',
@@ -146,7 +146,7 @@ const goToPage = () => {
             fixture: `${i}/list.json`,
         }).as(`${i}List`);
     });
-    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
+    cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     }).as('groupList');
     cy.intercept(

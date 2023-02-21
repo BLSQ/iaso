@@ -1,11 +1,15 @@
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useMemo,
+    Dispatch,
+    useCallback,
+} from 'react';
 import { Grid, Box, Typography, makeStyles, Divider } from '@material-ui/core';
-import React, { FunctionComponent, useState, useEffect, useMemo } from 'react';
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 
@@ -24,7 +28,6 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetOrgUnit } from './TreeView/requests';
 
 import { IntlFormatMessage } from '../../../types/intl';
-import { OrgUnitParams } from '../types/orgUnit';
 import { Search } from '../types/search';
 import { DropdownOptions } from '../../../types/utils';
 
@@ -32,16 +35,17 @@ import MESSAGES from '../messages';
 
 type Props = {
     searches: [Search];
+    locationLimit: number;
+    setLocationLimit: Dispatch<React.SetStateAction<number>>;
     searchIndex: number;
     currentSearch: Search;
     // eslint-disable-next-line no-unused-vars
-    setTextSearchError: (hasError: boolean) => void;
+    setTextSearchError: Dispatch<React.SetStateAction<boolean>>;
     onSearch: () => void;
     // eslint-disable-next-line no-unused-vars
     onChangeColor: (color: string, index: number) => void;
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
-    params: OrgUnitParams;
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
     orgunitTypes: DropdownOptions<string>[];
     isFetchingOrgunitTypes: boolean;
@@ -70,10 +74,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     setTextSearchError,
     setSearches,
     currentTab,
-    params,
     setHasLocationLimitError,
     orgunitTypes,
     isFetchingOrgunitTypes,
+    locationLimit,
+    setLocationLimit,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -116,8 +121,12 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         }
         const newFilters: Record<string, unknown> = {
             ...filters,
-            [key]: value,
         };
+        if ((!value || value === '') && newFilters[key]) {
+            delete newFilters[key];
+        } else {
+            newFilters[key] = value;
+        }
         if (newFilters.source && newFilters.version) {
             delete newFilters.source;
         }
@@ -129,6 +138,13 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const currentColor = filters?.color
         ? `#${filters.color}`
         : getChipColors(searchIndex);
+
+    const handleLocationLimitChange = useCallback(
+        (key: string, value: number) => {
+            setLocationLimit(value);
+        },
+        [setLocationLimit],
+    );
 
     // Splitting this effect from the one below, so we can use the deps array
     useEffect(() => {
@@ -335,8 +351,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         <Box mt={2}>
                             <LocationLimit
                                 keyValue="locationLimit"
-                                onChange={handleChange}
-                                value={params.locationLimit}
+                                onChange={handleLocationLimitChange}
+                                value={locationLimit}
                                 setHasError={setHasLocationLimitError}
                             />
                         </Box>

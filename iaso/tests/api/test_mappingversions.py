@@ -1,7 +1,8 @@
 import tempfile
+from unittest import mock
+
 from django.core.files import File
 from django.test import override_settings
-from unittest import mock
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -124,7 +125,7 @@ class FormsVersionAPITestCase(APITestCase):
                 },
             },
         }
-        patch_resp = self.client.patch(
+        self.client.patch(
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_2": data_element_2}},
             format="json",

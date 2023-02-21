@@ -41,7 +41,7 @@ class HasBlogPostPermission(permissions.BasePermission):
         if request.method in SAFE_METHODS:
             return True
         else:
-            # only an an author can edit his post
+            # only an author can edit his post
             return obj.author == request.user
 
 

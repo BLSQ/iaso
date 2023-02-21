@@ -310,6 +310,23 @@ const MESSAGES = defineMessages({
         defaultMEssage: 'An error occurred while importing the gpkg file',
         id: 'iaso.snackBar.importGpkgError',
     },
+    newEmptyVersionSavedSuccess: {
+        defaultMessage: 'New empty version saved successfully',
+        id: 'iaso.snackBar.newEmptyVersionSavedSuccess',
+    },
+    newEmptyVersionError: {
+        defaultMessage:
+            'An error occurred while creating the new empty version',
+        id: 'iaso.snackBar.newEmptyVersionError',
+    },
+    newEmptyVersion: {
+        defaultMessage: 'Create a new empty version',
+        id: 'iaso.sourceVersion.label.createNewEmptyVersion',
+    },
+    newEmptyVersionDescription: {
+        defaultMessage: 'It will directly create a new empty version.',
+        id: 'iaso.sourceVersion.label.createEmptyVersionDescription',
+    },
 });
 
 export default MESSAGES;

@@ -1,11 +1,36 @@
+import { ReactNode } from 'react';
 import { UrlParams } from '../../../types/table';
 import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
+import { Instance } from '../../instances/types/instance';
 
 /* eslint-disable camelcase */
 export type ShortOrgUnit = {
     name: string;
     id: number;
+};
+
+export type Group = {
+    created_at: number;
+    updated_at: number;
+    id: number;
+    name: string;
+    source_ref: Nullable<string>;
+    source_version: number;
+};
+
+export type OrgunitInititialState = {
+    id: number;
+    name: string;
+    org_unit_type_id?: string;
+    groups?: Array<(unknown & { id: number }) | number>;
+    sub_source?: string;
+    validation_status?: string;
+    aliases?: string;
+    source_id?: number;
+    parent?: OrgUnit;
+    source_ref?: string;
+    reference_instance_id?: Nullable<number>;
 };
 
 export type OrgUnit = {
@@ -31,13 +56,15 @@ export type OrgUnit = {
     geo_json?: Shape | undefined;
     has_geo_json: boolean;
     org_unit_type_name: string;
+    org_unit_type_depth: Nullable<number>;
     source: string;
     source_id: number;
     version: number;
-    groups: Array<(unknown & { id: number }) | number>;
+    groups: Group[];
     org_unit_type: string;
     search_index?: number;
     reference_instance_id: Nullable<number>;
+    reference_instance: Instance;
 };
 
 export type OrgUnitParams = UrlParams & {
@@ -52,3 +79,40 @@ export type OrgUnitParams = UrlParams & {
 export type OrgUnitsApi = {
     orgunits: OrgUnit[];
 };
+type FormState<T> = {
+    value?: T;
+    errors?: string[];
+};
+type FormStateRequired<T> = {
+    value: T;
+    errors?: string[];
+};
+
+export type OrgUnitState = {
+    id: FormStateRequired<number>;
+    name: FormStateRequired<string>;
+    org_unit_type_id: FormStateRequired<string>;
+    groups: FormState<number[]>;
+    sub_source: FormState<string>;
+    validation_status: FormState<string>;
+    aliases: FormState<string>;
+    source_id: FormState<number>;
+    source: FormState<string>;
+    parent: FormState<OrgUnit>;
+    source_ref: FormState<string>;
+    creator: FormStateRequired<Record<string, any>>;
+    reference_instance_id: FormState<number>;
+};
+
+export type OrgUnitType = {
+    id: number;
+    name: string;
+};
+
+export type Action = {
+    id: string;
+    icon: ReactNode;
+    disabled?: boolean;
+};
+
+export type ActionsType = Action[];

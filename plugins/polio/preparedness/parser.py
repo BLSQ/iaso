@@ -229,7 +229,7 @@ def get_preparedness(spread: CachedSpread):
 
 
 # Layout of surge spreadsheet, there is only one worksheet
-# one row per country and one indicator per column: e.g
+# one row per country and one indicator per column: e.g.
 # country name | Total surge approved - WHO | Total Surge Recruited -WHO
 # ALGERIA      | 5                          | 3
 # In surge spreadsheet. Which indicator is on which column

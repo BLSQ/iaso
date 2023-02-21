@@ -1,7 +1,8 @@
 import typing
 
-from django.db import models
 from django.contrib.auth.models import User, AnonymousUser
+from django.db import models
+
 from iaso.models.entity import EntityType, Form
 from ..utils.models.soft_deletable import (
     SoftDeletableModel,

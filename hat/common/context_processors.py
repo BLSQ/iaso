@@ -1,10 +1,10 @@
 from typing import Dict, Any
+
 from django.conf import settings
 from django.http.request import HttpRequest
 
 
 def appversions(request: HttpRequest) -> Dict[str, bool]:
-    prefix = "D-" if settings.DEBUG else ""
     return {"DEV_SERVER": settings.DEV_SERVER}
 
 

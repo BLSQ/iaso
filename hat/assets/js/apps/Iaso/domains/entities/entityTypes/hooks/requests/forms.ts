@@ -30,11 +30,15 @@ export const useGetForms = (
 ): UseQueryResult<Form[], Error> => {
     return useSnackQuery({
         queryKey: ['forms'],
-        queryFn: () => getRequest('/api/forms/?fields=id,name'),
+        queryFn: () =>
+            getRequest('/api/forms/?fields=id,name,latest_form_version'),
         options: {
             staleTime: 60000,
             enabled,
-            select: data => data?.forms,
+            select: data =>
+                data?.forms.filter(form =>
+                    Boolean(form.latest_form_version?.xls_file),
+                ),
         },
     });
 };

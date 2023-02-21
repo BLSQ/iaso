@@ -5,6 +5,14 @@ import { useSafeIntl } from 'bluesquare-components';
 import { DateInput, ResponsibleField, StatusField } from '../components/Inputs';
 import MESSAGES from '../constants/messages';
 
+export const detectionFormFields = [
+    'detection_status',
+    'detection_responsible',
+    'onset_at',
+    'pv_notified_at',
+    'cvdpv2_notified_at',
+];
+
 export const DetectionForm = () => {
     const { formatMessage } = useSafeIntl();
     return (

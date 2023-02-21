@@ -6,16 +6,18 @@ import { get } from 'lodash';
 import { apiDateFormat } from 'Iaso/utils/dates.ts';
 
 import MESSAGES from '../../constants/messages';
+import { isTouched } from '../../utils';
 
-export const DateInput = ({ field, form, label, required }) => {
+export const DateInput = ({ field, form, label, required, disabled }) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
+        Boolean(get(form.errors, field.name) && isTouched(form.touched));
     return (
         <Box mb={2}>
             <DatePicker
                 label={label}
                 required={required}
+                disabled={disabled}
                 clearMessage={MESSAGES.clear}
                 currentDate={field.value || null}
                 errors={hasError ? [get(form.errors, field.name)] : []}
@@ -32,6 +34,7 @@ export const DateInput = ({ field, form, label, required }) => {
 };
 DateInput.defaultProps = {
     required: false,
+    disabled: false,
 };
 
 DateInput.propTypes = {
@@ -39,4 +42,5 @@ DateInput.propTypes = {
     form: PropTypes.object.isRequired,
     label: PropTypes.string.isRequired,
     required: PropTypes.bool,
+    disabled: PropTypes.bool,
 };

@@ -169,9 +169,11 @@ class MailTemplate(models.Model):
         attachments = []
         skipped_attachements = 0
         override = step.transition_key == "override"
-        total_file_size = reduce(
-            lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(step.files.all())))
-        )
+        total_file_size = 0
+        if len(list(step.files.all())) > 0:
+            total_file_size = reduce(
+                lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(step.files.all())))
+            )
 
         for f in step.files.all():
             # only attach files if total is less than 5MB

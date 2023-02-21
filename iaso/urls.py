@@ -53,6 +53,7 @@ from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
@@ -120,6 +121,7 @@ router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
+router.register(r"mobile/entitytypes", MobileEntityTypesViewSet, basename="entitytypes")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to
 # change the format in the future

@@ -310,6 +310,14 @@ const MESSAGES = defineMessages({
         defaultMEssage: 'An error occurred while importing the gpkg file',
         id: 'iaso.snackBar.importGpkgError',
     },
+    checkDhis2Success: {
+        defaultMEssage: 'Connection to server ok',
+        id: 'iaso.dataSources.checkDHIS2.success',
+    },
+    checkDhis2Error: {
+        defaultMEssage: 'Connection Error check settings',
+        id: 'iaso.dataSources.checkDHIS2.error',
+    },
 });
 
 export default MESSAGES;

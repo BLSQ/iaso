@@ -10,6 +10,5 @@
     "experimentalSessionSupport": true,
     "viewportWidth": 1280,
     "viewportHeight": 800,
-    "testFiles": ["hat/assets/js/cypress/integration/**/*.js", "plugins/**/cypress/integration/**/*.js"],
-    "retries": 2
+    "testFiles": ["hat/assets/js/cypress/integration/**/*.js", "plugins/**/cypress/integration/**/*.js"]
 }

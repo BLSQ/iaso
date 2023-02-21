@@ -3,6 +3,7 @@ import { CircularProgress, Box } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
+import { isTouched } from '../../utils';
 
 export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
     const { name } = field;
@@ -15,7 +16,7 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
     } = form;
     const initialOrgUnitId = values[name];
     const errors =
-        touched[name] && formErrors?.[name] ? [formErrors[name]] : [];
+        isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
     return (
         <Box position="relative">

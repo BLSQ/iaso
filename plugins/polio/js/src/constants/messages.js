@@ -262,11 +262,11 @@ const MESSAGES = defineMessages({
     },
     pv2_notification_date: {
         id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV2 notification date',
+        defaultMessage: 'PV notification date',
     },
     pv2_notified_at: {
         id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV2 notification date',
+        defaultMessage: 'PV notification date',
     },
     threelevelCall: {
         id: 'iaso.polio.form.label.threelevelCall',
@@ -2045,6 +2045,10 @@ const MESSAGES = defineMessages({
     date: {
         id: 'iaso.polio.form.label.date',
         defaultMessage: 'Date',
+    },
+    editionDisabled: {
+        id: 'iaso.polio.form.label.editionDisabled',
+        defaultMessage: 'Edition disabled',
     },
 });
 

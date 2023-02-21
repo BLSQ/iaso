@@ -199,8 +199,7 @@ describe('forms tab', () => {
 
     describe('Actions buttons', () => {
         it('should contain a link with the right href', () => {
-            const submissionsHref =
-                '/dashboard/forms/submissions/formIds/1/levels/1/tab/list';
+            const submissionsHref = `/dashboard/forms/submissions/formIds/1/levels/${orgUnit.id}/tab/list`;
 
             const formEditionHref = '/dashboard/forms/detail/formId/1';
 

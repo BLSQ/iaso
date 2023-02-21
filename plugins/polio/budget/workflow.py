@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from django.db.models import Q, QuerySet
 
 # Move to typing import Literal when upgrading to python 3.8
-from typing_extensions import Literal
+from typing import Literal
 
 import plugins.polio.models
 from iaso.models.microplanning import Team, TeamType

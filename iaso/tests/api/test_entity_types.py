@@ -255,7 +255,7 @@ class EntityTypeAPITestCase(APITestCase):
         second_entity_type.refresh_from_db()
 
         response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
-        self.assertEqual(response.json()["count"], 2)
+        self.assertEqual(response.json()["count"], 1)
 
         response_entity_instance = response.json()["results"][0]["instances"]
 

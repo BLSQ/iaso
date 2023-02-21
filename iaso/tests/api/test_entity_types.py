@@ -1,9 +1,10 @@
+import uuid
 from unittest import mock
 
 from django.core.files import File
 
 from iaso import models as m
-from iaso.models import EntityType
+from iaso.models import EntityType, Instance, Entity, FormVersion
 from iaso.test import APITestCase
 
 
@@ -184,3 +185,94 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(get_response.json()), 1)
+
+    def test_get_mobile_entity_types(self):
+        self.client.force_authenticate(self.yoda)
+
+        # same account as logged user
+        EntityType.objects.create(
+            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        # different account
+        EntityType.objects.create(name="beneficiary", reference_form=self.form_1, account=self.the_gang)
+
+        response = self.client.get("/api/mobile/entitytypes/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["count"], 1)
+
+    def test_get_entities_by_entity_type(self):
+        self.client.force_authenticate(self.yoda)
+
+        file = File(open("iaso/tests/fixtures/test_entity_data.xml", "rb"))
+        instance = Instance.objects.get(period=202001, form=self.form_1)
+        instance.file = file
+        instance.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29730"
+        instance.json = {
+            "muac": "13",
+            "oedema": "0",
+            "y_prog": "prog_otp",
+            "_version": "2022090601",
+            "ref_to_sc": "The child will be referred to SC!",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03d",
+            "child_color": "muac_green",
+            "confirm_otp": "",
+            "g_admi_type": "mam",
+            "color_answer": "Green ðŸŸ¢",
+            "color_output": "",
+            "counsuelling_type": "therap_foods",
+        }
+        instance.save()
+
+        FormVersion.objects.create(version_id="2022090601", form_id=instance.form.id)
+
+        entity_type = EntityType.objects.create(
+            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        second_entity_type = EntityType.objects.create(
+            name="children under 5", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        entity_with_data = Entity.objects.create(
+            name="New Client",
+            account=self.yoda.iaso_profile.account,
+            entity_type=entity_type,
+            attributes=instance,
+        )
+
+        Entity.objects.create(
+            name="New Client",
+            account=self.yoda.iaso_profile.account,
+            entity_type=second_entity_type,
+        )
+
+        instance.entity = entity_with_data
+        instance.save()
+
+        entity_type.refresh_from_db()
+        second_entity_type.refresh_from_db()
+
+        response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
+        self.assertEqual(response.json()["count"], 1)
+
+        response_entity_instance = response.json()["results"][0]["instances"]
+
+        self.assertEqual(response_entity_instance[0]["id"], instance.uuid)
+        self.assertEqual(response_entity_instance[0]["json"]["muac"], "13")
+        self.assertEqual(response_entity_instance[0]["json"], instance.json)
+
+        response = self.client.get(f"/api/mobile/entitytypes/{second_entity_type.pk}/entities/")
+
+        self.assertEqual(response.json()["count"], 1)
+
+    def test_entity_types_are_account_restricted(self):
+        self.client.force_authenticate(self.yoda)
+
+        EntityType.objects.create(name="beneficiary", reference_form=self.form_1, account=self.the_gang)
+
+        response = self.client.get("/api/mobile/entitytypes/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["count"], 0)

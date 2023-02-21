@@ -24,15 +24,31 @@ class MobileEntityTypeSerializer(serializers.ModelSerializer):
             "account",
             "fields_detail_info_view",
             "fields_list_view",
+            "fields_duplicate_search",
         ]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     entities_count = serializers.SerializerMethodField()
+    fields_detail_info_view = serializers.SerializerMethodField()
+    fields_list_view = serializers.SerializerMethodField()
+    fields_duplicate_search = serializers.SerializerMethodField()
 
     @staticmethod
     def get_entities_count(obj: EntityType):
         return Entity.objects.filter(entity_type=obj.id).count()
+
+    @staticmethod
+    def get_fields_detail_info_view(obj: EntityType):
+        return obj.fields_detail_info_view or []
+
+    @staticmethod
+    def get_fields_list_view(obj: EntityType):
+        return obj.fields_list_view or []
+
+    @staticmethod
+    def get_fields_duplicate_search(obj: EntityType):
+        return obj.fields_duplicate_search or []
 
 
 class MobileEntityTypesViewSet(ModelViewSet):

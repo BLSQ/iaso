@@ -39,7 +39,7 @@ export const useGetPossibleFieldsForEntityTypes = ({
 }): Result => {
     const { data: currentForm, isFetching: isFetchingForm } = useGetForm(
         formId,
-        enabled,
+        enabled && Boolean(formId),
         'possible_fields',
     );
     return usePossibleFields(isFetchingForm, currentForm);

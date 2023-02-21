@@ -257,10 +257,14 @@ class EntityTypeAPITestCase(APITestCase):
         instance.entity = entity_with_data
         instance.save()
 
+        entity_type.refresh_from_db()
+        second_entity_type.refresh_from_db()
+
         response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
+        self.assertEqual(response.json()["count"], 2)
+
         response_entity_instance = response.json()["results"][0]["instances"]
 
-        self.assertEqual(response.json()["count"], 2)
         self.assertEqual(response_entity_instance[0]["id"], instance.uuid)
         self.assertEqual(response_entity_instance[0]["json"]["muac"], "13")
         self.assertEqual(response_entity_instance[0]["json"], instance.json)

@@ -1,14 +1,13 @@
+import datetime
 from collections import OrderedDict
+from unittest import mock
 
+import pytz
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
 from iaso import models as m
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer
 from iaso.test import APITestCase
-
-import pytz
-from unittest import mock
-import datetime
 
 
 class OrgUnitAPITestCase(APITestCase):

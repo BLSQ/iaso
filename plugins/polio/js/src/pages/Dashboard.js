@@ -20,7 +20,11 @@ import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateE
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { useGetCampaigns, useCampaignParams } from '../hooks/useGetCampaigns';
+import {
+    useGetCampaigns,
+    useCampaignParams,
+    useGetCampaignsAsCsv,
+} from '../hooks/useGetCampaigns.ts';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
@@ -49,10 +53,8 @@ const Dashboard = ({ router }) => {
 
     const [resetPageToOne, setResetPageToOne] = useState('');
 
-    const { query, exportToCSV } = useGetCampaigns(apiParams);
-
-    // TODO remove when select is fixed. beurk lol.
-    const { data: rawCampaigns, isFetching } = query;
+    const { data: rawCampaigns, isFetching } = useGetCampaigns(apiParams);
+    const exportToCSV = useGetCampaignsAsCsv(apiParams);
 
     const campaigns = useMemo(() => {
         if (!rawCampaigns) return rawCampaigns;

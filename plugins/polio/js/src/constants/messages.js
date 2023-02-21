@@ -262,11 +262,11 @@ const MESSAGES = defineMessages({
     },
     pv2_notification_date: {
         id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV2 notification date',
+        defaultMessage: 'PV notification date',
     },
     pv2_notified_at: {
         id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV2 notification date',
+        defaultMessage: 'PV notification date',
     },
     threelevelCall: {
         id: 'iaso.polio.form.label.threelevelCall',
@@ -1872,7 +1872,7 @@ const MESSAGES = defineMessages({
     },
     nextSteps: {
         id: 'iaso.polio.label.nextSteps',
-        defaultMessage: 'Next steps',
+        defaultMessage: 'Possible next steps',
     },
     searchInScopeOrAllDistricts: {
         id: 'iaso.polio.label.searchInScopeOrAllDistricts',
@@ -2018,6 +2018,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.newBudgetState',
         defaultMessage: 'New budget state',
     },
+    stepCancelled: {
+        id: 'iaso.polio.form.label.stepCancelled',
+        defaultMessage: 'Admin override cancelled this step',
+    },
+    stepSkipped: {
+        id: 'iaso.polio.form.label.stepSkipped',
+        defaultMessage: 'Admin override skipped this step',
+    },
     TO_SUBMIT: {
         id: 'iaso.polio.form.label.TO_SUBMIT',
         defaultMessage: 'To submit',
@@ -2033,6 +2041,14 @@ const MESSAGES = defineMessages({
     APPROVED: {
         id: 'iaso.polio.form.label.APPROVED',
         defaultMessage: 'Approved',
+    },
+    date: {
+        id: 'iaso.polio.form.label.date',
+        defaultMessage: 'Date',
+    },
+    editionDisabled: {
+        id: 'iaso.polio.form.label.editionDisabled',
+        defaultMessage: 'Edition disabled',
     },
 });
 

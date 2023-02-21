@@ -1,8 +1,7 @@
-from iaso.enketo import inject_userid_and_version, to_xforms_xml
-
 from django.test import TestCase
 
 import iaso.models as m
+from iaso.enketo import inject_userid_and_version, to_xforms_xml
 
 
 class EnketoLibTests(TestCase):

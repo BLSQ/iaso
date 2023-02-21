@@ -10,6 +10,8 @@ import {
     LoadingSpinner,
     // @ts-ignore
     formatThousand,
+    // @ts-ignore
+    Column,
     SortableTable,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
@@ -24,12 +26,10 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
-import {
-    useGetQueryBuildersFields,
-    useGetQueryBuilderListToReplace,
-} from './hooks/queryBuilder';
+import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 
-import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
+import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
 import { WorkflowVersionDetail, WorkflowParams, FollowUps } from './types';
@@ -94,10 +94,10 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         isLoading: boolean;
     } = useGetWorkflowVersion(versionId);
 
-    useEffect(() => {
-        if (workflowVersion?.follow_ups) {
+    const updateCurrentFollowUps = workflowVersionFollowUps => {
+        if (workflowVersionFollowUps) {
             const newFollowUps = orderBy(
-                workflowVersion.follow_ups,
+                workflowVersionFollowUps,
                 [f => f.order],
                 ['asc'],
             );
@@ -108,7 +108,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 })),
             );
         }
+    };
+
+    useEffect(() => {
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
     }, [workflowVersion?.follow_ups]);
+
     const { possibleFields: targetPossibleFields } = useGetPossibleFields(
         workflowVersion?.reference_form.id,
     );
@@ -142,6 +147,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         );
         setIsFollowUpOrderChange(true);
     }, []);
+
+    const handleResetFollowUpsOrder = useCallback(() => {
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
+        setIsFollowUpOrderChange(false);
+    }, [workflowVersion?.follow_ups]);
 
     const handleSaveFollowUpsOrder = useCallback(() => {
         saveFollowUpOrder(
@@ -199,7 +209,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         <SortableTable
                                             items={followUps}
                                             onChange={handleSortChange}
-                                            columns={followUpsColumns}
+                                            columns={
+                                                followUpsColumns as Column[]
+                                            }
                                         />
                                     )}
                                     {workflowVersion.status !== 'DRAFT' && (
@@ -219,6 +231,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                     <Button
                                         color="primary"
                                         disabled={!isFollowUpOrderChange}
+                                        data-test="reset-follow-up-order"
+                                        onClick={handleResetFollowUpsOrder}
+                                        variant="contained"
+                                    >
+                                        {formatMessage(MESSAGES.resetOrder)}
+                                    </Button>
+                                </Box>
+
+                                <Box display="inline-block" mr={2}>
+                                    <Button
+                                        color="primary"
+                                        disabled={!isFollowUpOrderChange}
                                         data-test="save-follow-up-order"
                                         onClick={handleSaveFollowUpsOrder}
                                         variant="contained"
@@ -226,6 +250,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         {formatMessage(MESSAGES.saveOrder)}
                                     </Button>
                                 </Box>
+                                {/* @ts-ignore */}
                                 <AddFollowUpsModal
                                     fields={fields}
                                     versionId={versionId}
@@ -276,6 +301,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
+                                {/* @ts-ignore */}
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}

@@ -1,6 +1,6 @@
-from ...models import OrgUnit, OrgUnitType, Account, Project, SourceVersion, DataSource, Task
-from iaso.test import APITestCase
 from beanstalk_worker.services import TestTaskService
+from iaso.test import APITestCase
+from ...models import OrgUnit, OrgUnitType, Account, Project, SourceVersion, DataSource, Task
 
 
 class CopyVersionTestCase(APITestCase):

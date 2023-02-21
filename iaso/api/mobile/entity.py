@@ -1,8 +1,11 @@
+from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
+from rest_framework import filters, status
 from rest_framework import serializers
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.response import Response
 
 from iaso.api.common import (
     ModelViewSet,
@@ -16,6 +19,32 @@ class LargeResultsSetPagination(PageNumberPagination):
     page_size = 1000
     page_size_query_param = "page_size"
     max_page_size = 1000
+
+
+def filter_queryset_for_mobile_entity(queryset, request):
+    limit_date = request.query_params.get("limit_date", None)
+    if limit_date:
+        try:
+            queryset = queryset.filter(instances__updated_at__gte=limit_date)
+        except ValidationError:
+            raise Http404("Invalid Limit Date")
+
+    json_content = request.query_params.get("json_content", None)
+    if json_content:
+        try:
+            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")  # type: ignore
+            queryset = queryset.filter(q)
+        except ValidationError:
+            raise Http404("Invalid Json Content")
+
+    p = Prefetch(
+        "instances",
+        queryset=Instance.objects.filter(deleted=False).exclude(file=""),
+        to_attr="non_deleted_instances",
+    )
+    queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
+
+    return queryset
 
 
 class MobileEntityAttributesSerializer(serializers.ModelSerializer):
@@ -33,7 +62,6 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_form_version_id(obj: Instance):
-
         return FormVersion.objects.get(version_id=obj.json.get("_version"), form_id=obj.form.id).id  # type: ignore
 
 
@@ -59,7 +87,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_instances(entity: Entity):
-        return list(map(lambda instance: MobileEntityAttributesSerializer(instance).data, entity.non_deleted_instances))  # type: ignore
+        return [MobileEntityAttributesSerializer(instance).data for instance in entity.non_deleted_instances]  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -92,19 +120,13 @@ class MobileEntityViewSet(ModelViewSet):
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile
-        orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-        queryset = Entity.objects.filter(account=profile.account)
+
+        # This function alter the queryset by adding non_deleted_instances
+        queryset = filter_queryset_for_mobile_entity(Entity.objects.filter(account=profile.account), self.request)
+
         # we give all entities having an instance linked to the one of the org units allowed for the current user
+        orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
         if orgunits:
             queryset = queryset.filter(instances__org_unit__in=orgunits)
-        # we filter by last instance on the entity
-        limit_date = self.request.query_params.get("limit_date", None)
-        if limit_date:
-            queryset = queryset.filter(instances__updated_at__gte=limit_date)
-        p = Prefetch(
-            "instances",
-            queryset=Instance.objects.filter(deleted=False).exclude(file=""),
-            to_attr="non_deleted_instances",
-        )
-        queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
+
         return queryset

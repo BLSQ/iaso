@@ -12,14 +12,16 @@ age,... Because entities can be of very different natures, we avoid hardcoding t
 has a foreign key to a reference form, and each entity has a foreign key (attributes) to an instance/submission of that
 form.
 """
-from django.db import models
-from django.contrib.postgres.fields import ArrayField, CITextField
 import uuid
 
-## TODO: Remove blank=True, null=True on FK once the models are sets and validated
+from django.contrib.postgres.fields import ArrayField, CITextField
+from django.db import models
 
 from iaso.models import Instance, Form, Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
+
+
+# TODO: Remove blank=True, null=True on FK once the models are sets and validated
 
 
 class EntityType(models.Model):

@@ -1,6 +1,6 @@
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 import typing
 
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 from django.db import connection
 
 from hat.audit.models import Modification
@@ -538,7 +538,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.version, self.star_wars.default_version)
 
     def test_create_org_unit_fail_on_parent_not_found(self):
-        # returning a 404 is strange but it was the current behaviour
+        # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
@@ -554,7 +554,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNoCreation()
 
     def test_create_org_unit_fail_on_group_not_found(self):
-        # returning a 404 is strange but it was the current behaviour
+        # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
@@ -666,7 +666,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.reference_instance, None)
 
     def test_edit_org_unit_retrieve_put(self):
-        """Retrieve a orgunit data and then resend back mostly unmodified and ensure that nothing burn
+        """Retrieve an orgunit data and then resend back mostly unmodified and ensure that nothing burn
 
         Note that a lot of the field we send will end up being unused"""
         old_ou = self.jedi_council_corruscant
@@ -693,7 +693,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
     def test_edit_org_unit_link_to_reference_instance(self):
-        """Retrieve a orgunit data and modify the reference_instance_id"""
+        """Retrieve an orgunit data and modify the reference_instance_id"""
         old_ou = self.jedi_council_corruscant
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
@@ -714,7 +714,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
 
     def test_edit_org_unit_not_link_to_reference_instance(self):
-        """Retrieve a orgunit data and modify the reference_instance_id with a no reference form"""
+        """Retrieve an orgunit data and modify the reference_instance_id with a no reference form"""
         old_ou = self.jedi_council_corruscant
         old_modification_date = old_ou.updated_at
         self.client.force_authenticate(self.yoda)
@@ -753,7 +753,7 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
             data=data,
         )
-        jr = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertGreater(ou.updated_at, old_modification_date)
@@ -807,7 +807,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNotEqual(ou.updated_at, old_modification_date)
 
     def test_edit_with_apply_directly_instance_gps_into_org_unit(self):
-        """Retrieve a orgunit data and push instance_gps_to_org_unit"""
+        """Retrieve an orgunit data and push instance_gps_to_org_unit"""
         org_unit = self.jedi_council_corruscant
         org_unit.latitude = 8.32842671
         org_unit.longitude = -11.681191

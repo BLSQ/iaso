@@ -24,6 +24,7 @@ import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
+from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
     Instance,
     OrgUnit,
@@ -35,10 +36,9 @@ from iaso.models import (
 )
 from iaso.utils import timestamp_to_datetime
 from . import common
+from .comment import UserSerializerForComment
 from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instance_filters import parse_instance_filters, get_form_from_instance_filters
-from .comment import UserSerializerForComment
-from iaso.api.serializers import OrgUnitSerializer
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -426,7 +426,7 @@ class InstancesViewSet(viewsets.ViewSet):
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data
         # To display the Lock or unlock icon when the use has access to the two actions
         response["can_user_modify"] = instance.can_user_modify(request.user)
-        # To display either the unlock or lock icon depending on if the instance is already lock or not
+        # To display either the "unlock" or the "lock" icon depending on if the instance is already lock or not
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
 
         return Response(response)

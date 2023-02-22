@@ -48,7 +48,7 @@ def find_orgunit_in_cache(cache_dict, name, parent_name=None):
     if not name or pd.isna(name):
         return None
     name = name.lower().strip()
-    parent_name = parent_name.lower().strip() if (parent_name and not pd.isna(parent_name)) else ""
+    parent_name = parent_name.lower() if (parent_name and not pd.isna(parent_name)) else ""
     matched_orgunits = cache_dict[name]
 
     if len(matched_orgunits) == 0:

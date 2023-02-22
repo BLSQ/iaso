@@ -170,6 +170,8 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     df["today"] = pd.to_datetime(df["today"])
     if "District" not in df.columns:
         df["District"] = None
+    if "Region" not in df.columns:
+        df["Region"] = None
     if "facility" not in df.columns:
         df["facility"] = None
 

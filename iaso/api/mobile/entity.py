@@ -1,11 +1,12 @@
+import json
+
 from django.core.exceptions import ValidationError
 from django.db.models import Prefetch
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, status
+from rest_framework import filters
 from rest_framework import serializers
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.response import Response
 
 from iaso.api.common import (
     ModelViewSet,
@@ -13,6 +14,7 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.models import Entity, Instance, OrgUnit, FormVersion
+from iaso.utils.jsonlogic import jsonlogic_to_q
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -32,7 +34,7 @@ def filter_queryset_for_mobile_entity(queryset, request):
     json_content = request.query_params.get("json_content", None)
     if json_content:
         try:
-            q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")  # type: ignore
+            q = jsonlogic_to_q(jsonlogic=json.loads(json_content), field_prefix="attributes__json__")  # type: ignore
             queryset = queryset.filter(q)
         except ValidationError:
             raise Http404("Invalid Json Content")
@@ -87,7 +89,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_instances(entity: Entity):
-        return [MobileEntityAttributesSerializer(instance).data for instance in entity.non_deleted_instances]  # type: ignore
+        return MobileEntityAttributesSerializer(entity.non_deleted_instances, many=True).data  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

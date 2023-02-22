@@ -97,12 +97,14 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     facilities = (
         OrgUnit.objects.filter(parent__in=districts)
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     regions = (
         OrgUnit.objects.filter(parents_q(districts))
@@ -110,6 +112,7 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     countries = (
         OrgUnit.objects.filter(parents_q(districts))
@@ -117,6 +120,7 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     logger.info(
         f"Creating cache for {cs}: Facilities, {facilities.count()}; regions, {regions.count()}, countries, {countries.count()}"

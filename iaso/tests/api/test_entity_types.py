@@ -267,7 +267,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         self.assertEqual(response.json()["count"], 1)
 
-    def test_get_entities_by_entity_type(self):
+    def test_get_entities_by_entity_type_filtered_by_json_content(self):
         self.client.force_authenticate(self.yoda)
 
         FormVersion.objects.create(version_id="2022090601", form=self.form_1)

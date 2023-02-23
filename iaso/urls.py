@@ -56,6 +56,7 @@ from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
+from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
@@ -134,6 +135,7 @@ router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplan
 router.register(r"storage", StorageViewSet, basename="storage")
 router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
+router.register(r"mobile/storage/passwords", MobileStoragePasswordViewSet, basename="storagepasswords")
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")

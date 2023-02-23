@@ -47,6 +47,8 @@
     "iaso.datasources.button.label.copy": "Copy",
     "iaso.datasources.button.label.csvPreview": "Preview",
     "iaso.datasources.button.label.export": "Export",
+    "iaso.dataSources.checkDHIS2.error": "Connection Error check settings",
+    "iaso.dataSources.checkDHIS2.success": "Connection to server ok",
     "iaso.dataSources.continueOnError": "Continue on error",
     "iaso.datasources.copyVersion": "Copy source version",
     "iaso.dataSources.create": "Create data sources",

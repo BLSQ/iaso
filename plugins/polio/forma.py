@@ -250,11 +250,11 @@ def fetch_and_match_forma_data(country_id=None):
                 start_date=Min("rounds__started_at"),
                 end_date=Max("rounds__ended_at"),
             )
-            # If all the country's campaigns has been over for more than five day, don't fetch submission from remote server
-            # use cache
+            # If all the country's campaigns has been over for more than 2 months, don't fetch submission from remote server
+            # use cache. (FormA is after campaign so the delay is longer)
             last_campaign_date_agg = campaigns_of_country.aggregate(last_date=Max("end_date"))
             last_campaign_date: Optional[date] = last_campaign_date_agg["last_date"]
-            prefer_cache = last_campaign_date and last_campaign_date < (date.today() + timedelta(days=5))
+            prefer_cache = last_campaign_date and last_campaign_date + timedelta(days=60) < (date.today())
             submissions = get_content_for_config(config, prefer_cache)
             df = handle_country(submissions, country, campaigns_of_country)
             dfs.append(df)

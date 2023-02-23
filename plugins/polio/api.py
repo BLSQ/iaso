@@ -1052,7 +1052,7 @@ def handle_ona_request_with_key(request, key, country_id=None):
         # use cache
         last_campaign_date_agg = campaign_qs.aggregate(last_date=Max("end_date"))
         last_campaign_date: Optional[dt.date] = last_campaign_date_agg["last_date"]
-        prefer_cache = last_campaign_date and last_campaign_date < (dt.date.today() + timedelta(days=5))
+        prefer_cache = last_campaign_date and (last_campaign_date + timedelta(days=5)) < dt.date.today()
         forms = get_url_content(
             url=config["url"],
             login=config["login"],

@@ -143,6 +143,7 @@
     "iaso.entityTypes.errors.referenceForm": "Le formulaire de référence est un champs requis",
     "iaso.entityTypes.fieldsDetailInfoView": "Champs détails",
     "iaso.entityTypes.fieldsListView": "Champs liste",
+    "iaso.entityTypes.fieldsDuplicateSearch": "Champs de recherche de duplication",
     "iaso.entityTypes.referenceForm": "Formulaire de référence",
     "iaso.entityTypes.selectReferenceForm": "Sélectionnez un formulaire de référence d'abord",
     "iaso.entityTypes.title": "Types de bénéficiaires",

@@ -125,7 +125,7 @@ router.register(r"mobile/entitytypes", MobileEntityTypesViewSet, basename="entit
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to
 # change the format in the future
-router.register(r"mobile/entitytype", EntityTypeViewSet, basename="entitytype")
+router.register(r"mobile/entitytype", MobileEntityTypesViewSet, basename="entitytype")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/planning", PlanningViewSet, basename="planning")

@@ -233,6 +233,7 @@ describe('Entities types', () => {
                 cy.testMultiSelect('#reference_form', []);
                 cy.testMultiSelect('#fields_detail_info_view', []);
                 cy.testMultiSelect('#fields_list_view', []);
+                cy.testMultiSelect('#fields_duplicate_search', []);
                 cy.get('[data-test="see-form-button"]').should('not.exist');
             });
         });
@@ -269,6 +270,7 @@ describe('Entities types', () => {
                 cy.testInputValue('#input-text-name', name);
                 cy.fillMultiSelect('#fields_list_view', [2, 3]);
                 cy.fillMultiSelect('#fields_detail_info_view', [2, 3]);
+                cy.fillMultiSelect('#fields_duplicate_search', [2], false);
                 interceptFlag = false;
                 cy.intercept(
                     {
@@ -280,6 +282,7 @@ describe('Entities types', () => {
                             ...listFixture.types[entityTypeIndex],
                             fields_detail_info_view: ['firstname', 'name'],
                             fields_list_view: ['firstname', 'name'],
+                            fields_duplicate_search: ['firstname'],
                             name,
                         });
                         interceptFlag = true;

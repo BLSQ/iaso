@@ -84,7 +84,7 @@ export const useApiErrorValidation = <
                     const errorKeys = Object.keys(e.details);
                     const errorsDict = {};
                     errorKeys.forEach(errorKey => {
-                        errorsDict[errorKey] = e.details[errorKey].join(', ');
+                        errorsDict[errorKey] = e.details[errorKey];
                     });
                     const apiErrorsDict = convertError
                         ? convertError(errorsDict)

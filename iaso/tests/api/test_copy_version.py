@@ -22,7 +22,9 @@ class CopyVersionTestCase(APITestCase):
         source.projects.add(cls.project)
         OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=unit_type, source_ref="nomercy")
         cls.source = source
-        cls.johnny = cls.create_user_with_profile(username="johnny", account=account, permissions=["iaso_sources"])
+        cls.johnny = cls.create_user_with_profile(
+            username="johnny", account=account, permissions=["iaso_sources", "iaso_data_tasks"]
+        )
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
 
     def test_copy_version(self):

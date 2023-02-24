@@ -95,15 +95,11 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_org_units", "iaso_data_tasks"]
-        )
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
         cls.luke = cls.create_user_with_profile(
             username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
         )
-        cls.raccoon = cls.create_user_with_profile(
-            username="raccoon", account=marvel, permissions=["iaso_org_units", "iaso_data_tasks"]
-        )
+        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 

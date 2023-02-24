@@ -22,8 +22,11 @@ class CopyVersionTestCase(APITestCase):
         source.projects.add(cls.project)
         OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=unit_type, source_ref="nomercy")
         cls.source = source
-        cls.johnny = cls.create_user_with_profile(username="johnny", account=account, permissions=["iaso_sources"])
-        cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
+        cls.johnny = cls.create_user_with_profile(
+            username="johnny", account=account, permissions=["iaso_sources", "iaso_data_tasks"]
+        )
+        cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=["iaso_data_tasks"])
+        cls.user_no_perms = cls.create_user_with_profile(username="user_no_perms", account=account)
 
     def test_copy_version(self):
         """Copying a version through the api"""
@@ -68,6 +71,21 @@ class CopyVersionTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         body = response.json()
         self.assertEqual(body["status"], "SUCCESS")
+
+    def test_user_unhautorized(self):
+
+        self.client.force_authenticate(self.user_no_perms)
+
+        data = {
+            "source_source_id": self.source.id,
+            "destination_source_id": self.source.id,
+            "source_version_number": 1,
+            "destination_version_number": 2,
+        }
+
+        response = self.client.post("/api/copyversion/", data=data, format="json")
+
+        self.assertEqual(response.status_code, 403)
 
     def test_copy_version_unauthorized(self):
         self.client.force_authenticate(self.miguel)

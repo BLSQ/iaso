@@ -5,7 +5,20 @@ import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/
 import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
 import { isTouched } from '../../utils';
 
-export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
+const getErrors = (touched, formErrors) => {
+    const { name } = formErrors;
+
+    return isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
+};
+
+export const OrgUnitsLevels = ({
+    field,
+    form,
+    label,
+    required,
+    clearable,
+    errors: backendErrors,
+}) => {
     const { name } = field;
     const {
         setFieldValue,
@@ -15,8 +28,7 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
         values,
     } = form;
     const initialOrgUnitId = values[name];
-    const errors =
-        isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
+    const errors = backendErrors ?? getErrors(touched, formErrors);
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
     return (
         <Box position="relative">
@@ -55,6 +67,7 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
 OrgUnitsLevels.defaultProps = {
     required: false,
     clearable: true,
+    errors: undefined,
 };
 
 OrgUnitsLevels.propTypes = {
@@ -71,4 +84,5 @@ OrgUnitsLevels.propTypes = {
     label: PropTypes.string.isRequired,
     required: PropTypes.bool,
     clearable: PropTypes.bool,
+    errors: PropTypes.arrayOf(PropTypes.string),
 };

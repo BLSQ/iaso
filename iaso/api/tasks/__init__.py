@@ -46,7 +46,7 @@ class TaskSourceViewSet(ModelViewSet):
     PATCH /api/tasks/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_data_tasks")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_data_tasks")]  # type: ignore
     serializer_class = TaskSerializer
     results_key = "tasks"
     queryset = Task.objects.all()

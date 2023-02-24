@@ -39,12 +39,14 @@ export const BulkImportButton: FunctionComponent<Props> = ({
                 >
                     <Add className={classes.buttonIcon} />
                     {formatMessage(MESSAGES.createFromFile)}
-                    <LoadingSpinner
-                        size={16}
-                        absolute
-                        fixed={false}
-                        transparent
-                    />
+                    {Boolean(isMutating) && (
+                        <LoadingSpinner
+                            size={16}
+                            absolute
+                            fixed={false}
+                            transparent
+                        />
+                    )}
                 </Button>
             </Box>
         </Tooltip>

@@ -272,7 +272,11 @@ const MESSAGES = defineMessages({
     },
     uploadSuccess: {
         id: 'iaso.user.label.uploadSuccess',
-        defaultMessage: 'Users created from csv',
+        defaultMessage: 'Users created from CSV',
+    },
+    backendIsBusy: {
+        id: 'iaso.user.label.backendIsBusy',
+        defaultMessage: 'The server is already processing another request',
     },
     confirm: {
         id: 'iaso.mappings.confirm',

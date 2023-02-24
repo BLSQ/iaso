@@ -1,7 +1,12 @@
-import { Button, makeStyles } from '@material-ui/core';
+import { Box, Button, makeStyles, Tooltip } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
-import { commonStyles, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    LoadingSpinner,
+    useSafeIntl,
+} from 'bluesquare-components';
 import Add from '@material-ui/icons/Add';
+import { useIsMutating } from 'react-query';
 import MESSAGES from '../../messages';
 
 const useStyles = makeStyles(theme => ({ ...commonStyles(theme) }));
@@ -17,16 +22,31 @@ export const BulkImportButton: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const isMutating = useIsMutating();
+    const tooltipTitle = isMutating
+        ? formatMessage(MESSAGES.backendIsBusy)
+        : '';
     return (
-        <Button
-            onClick={onClick}
-            disabled={disabled}
-            color="primary"
-            variant="contained"
-            className={classes.button}
-        >
-            <Add className={classes.buttonIcon} />
-            {formatMessage(MESSAGES.createFromFile)}
-        </Button>
+        <Tooltip title={tooltipTitle}>
+            {/* The Box is necessary to show the tooltip when the Button is disabled */}
+            <Box>
+                <Button
+                    onClick={onClick}
+                    disabled={disabled || Boolean(isMutating)}
+                    color="primary"
+                    variant="contained"
+                    className={classes.button}
+                >
+                    <Add className={classes.buttonIcon} />
+                    {formatMessage(MESSAGES.createFromFile)}
+                    <LoadingSpinner
+                        size={16}
+                        absolute
+                        fixed={false}
+                        transparent
+                    />
+                </Button>
+            </Box>
+        </Tooltip>
     );
 };

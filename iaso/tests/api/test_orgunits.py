@@ -105,6 +105,18 @@ class OrgUnitAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
+        cls.jedi_squad_endor_2_children = m.OrgUnit.objects.create(
+            org_unit_type=cls.jedi_council,
+            parent=cls.jedi_squad_endor_2,
+            version=sw_version_2,
+            name="Endor Jedi Squad 2 Children",
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
+            location=cls.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
             version=sw_version_2,
@@ -972,3 +984,19 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(orgunits, count_of_orgunits + 9)
+
+    def test_org_unit_search_only_direct_children(self):
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            f"/api/orgunits/?&orgUnitParentId={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=false"
+        )
+
+        org_units = response.json()["orgunits"]
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 3)
+
+        ids_in_response = [ou["id"] for ou in org_units]
+        ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk, self.jedi_squad_endor_2_children.pk]
+        self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))

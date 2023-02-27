@@ -305,7 +305,19 @@ class CampaignViewSet(ModelViewSet):
         obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
         vacine = round.campaign.vacine if round.campaign.vacine is not None else ""
         round_number = round.number if round.number is not None else ""
+        # count all districts in the country
+        country_districts_count = (
+            round.campaign.country.descendants().filter(org_unit_type__category="DISTRICT").count()
+        )
+        # count disticts related to the round
+        round_districts_count = (
+            round.campaign.get_districts_for_round_number(round_number).count() if round_number else 0
+        )
+        # check if country districts is equal to round districts
+        nid_or_snid = "NID" if country_districts_count == round_districts_count else "sNID"
+        # target population
         target_population = round.target_population if round.target_population is not None else ""
+
         return {
             "started_at": started_at,
             "ended_at": ended_at,
@@ -313,6 +325,7 @@ class CampaignViewSet(ModelViewSet):
             "vacine": vacine,
             "round_number": round_number,
             "target_population": target_population,
+            "nid_or_snid": nid_or_snid,
         }
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)

@@ -296,7 +296,6 @@ class CampaignViewSet(ModelViewSet):
                             else:
                                 data_row[row_index]["rounds"][str(month)] = []
                                 data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
-
         return data_row
 
     @staticmethod
@@ -306,12 +305,14 @@ class CampaignViewSet(ModelViewSet):
         obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
         vacine = round.campaign.vacine if round.campaign.vacine is not None else ""
         round_number = round.number if round.number is not None else ""
+        target_population = round.target_population if round.target_population is not None else ""
         return {
             "started_at": started_at,
             "ended_at": ended_at,
             "obr_name": obr_name,
             "vacine": vacine,
             "round_number": round_number,
+            "target_population": target_population,
         }
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)

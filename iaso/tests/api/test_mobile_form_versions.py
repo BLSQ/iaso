@@ -5,6 +5,8 @@ from unittest import mock
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.test import override_settings
+from django.contrib.auth.models import AnonymousUser
+
 
 from iaso import models as m
 from iaso.models.org_unit import OrgUnitType
@@ -57,6 +59,8 @@ class MobileFormsVersionAPITestCase(APITestCase):
         blue_source.default_version = blue_source_version
         blue_source.save()
 
+        cls.anon = AnonymousUser()
+
         cls.blue_with_perms = cls.create_user_with_profile(
             username="blue_with_perms", account=blue_account, permissions=["iaso_forms"]
         )
@@ -67,62 +71,26 @@ class MobileFormsVersionAPITestCase(APITestCase):
 
         cls.blue_council = m.OrgUnitType.objects.create(name="Blue Council", short_name="BC1")
 
-        cls.blue_project_need_auth_allow_ro = m.Project.objects.create(
-            name="Blue Project Needs Auth Allow RO",
-            app_id="blue.project_need_auth_allow_ro",
+        cls.blue_project_need_auth = m.Project.objects.create(
+            name="Blue Project Needs Auth",
+            app_id="blue.project_need_auth",
             account=blue_account,
             needs_authentication=True,
         )
-        cls.blue_project_need_auth_allow_ro.unit_types.add(cls.blue_council)
+        cls.blue_project_need_auth.unit_types.add(cls.blue_council)
 
-        cls.blue_project_need_auth_not_allow_ro = m.Project.objects.create(
-            name="Blue Project Needs Auth Not Allow RO",
-            app_id="blue.project_need_auth_not_allow_ro",
-            account=blue_account,
-            needs_authentication=True,
-        )
-
-        cls.blue_project_need_auth_not_allow_ro.feature_flags.add(
-            m.FeatureFlag.objects.get(code="FORM_VERSIONS_NO_READ_ONLY")
-        )
-        cls.blue_project_need_auth_not_allow_ro.unit_types.add(cls.blue_council)
-        cls.blue_project_need_auth_not_allow_ro.save()
-
-        cls.blue_project_no_need_auth_allow_ro = m.Project.objects.create(
-            name="Blue Project  No Needs Auth Allow RO",
-            app_id="blue.project_no_need_auth_allow_ro",
+        cls.blue_project_no_need_auth = m.Project.objects.create(
+            name="Blue Project No Needs Auth",
+            app_id="blue.project_no_need_auth",
             account=blue_account,
             needs_authentication=False,
         )
 
-        cls.blue_project_no_need_auth_allow_ro.unit_types.add(cls.blue_council)
-        cls.blue_project_no_need_auth_allow_ro.save()
+        cls.blue_project_no_need_auth.unit_types.add(cls.blue_council)
+        cls.blue_project_no_need_auth.save()
 
-        cls.blue_project_no_need_auth_not_allow_ro = m.Project.objects.create(
-            name="Blue Project  No Needs Auth Allow RO",
-            app_id="blue.project_no_need_auth_not_allow_ro",
-            account=blue_account,
-            needs_authentication=False,
-        )
-
-        cls.blue_project_no_need_auth_not_allow_ro.feature_flags.add(
-            m.FeatureFlag.objects.get(code="FORM_VERSIONS_NO_READ_ONLY")
-        )
-        cls.blue_project_no_need_auth_not_allow_ro.unit_types.add(cls.blue_council)
-        cls.blue_project_no_need_auth_not_allow_ro.save()
-
-        cls.form_need_auth_allow_ro = create_add_form(
-            "Form need_auth_allow_ro", cls.blue_council, cls.blue_project_need_auth_allow_ro
-        )
-        cls.form_need_auth_not_allow_ro = create_add_form(
-            "Form need_auth_not_allow_ro", cls.blue_council, cls.blue_project_need_auth_not_allow_ro
-        )
-        cls.form_no_need_auth_allow_ro = create_add_form(
-            "Form no_need_auth_allow_ro", cls.blue_council, cls.blue_project_no_need_auth_allow_ro
-        )
-        cls.form_no_need_auth_not_allow_ro = create_add_form(
-            "Form no_need_auth_not_allow_ro", cls.blue_council, cls.blue_project_no_need_auth_not_allow_ro
-        )
+        cls.form_need_auth = create_add_form("Form need_auth", cls.blue_council, cls.blue_project_need_auth)
+        cls.form_no_need_auth = create_add_form("Form no_need_auth", cls.blue_council, cls.blue_project_no_need_auth)
 
     def test_form_versions_list_without_auth(self):
         """GET /mobile/formversions/: without auth should not be allowed"""
@@ -149,16 +117,14 @@ class MobileFormsVersionAPITestCase(APITestCase):
             self.assertValidFormVersionData(form_version_data)
             self.assertNotIn("descriptor", form_version_data)
 
-    def test_form_need_auth_allow_ro(self):
-        """This form is linked to a project needs authentication and allow read only"""
+    def test_form_need_auth(self):
+        """This form is linked to a project needs authentication"""
 
         self.client.force_authenticate(self.blue_with_perms)
 
         # it should work both with and without app_id for this project
-        response_1 = self.client.get(f"{BASE_URL}{self.form_need_auth_allow_ro.id}/")
-        response_2 = self.client.get(
-            f"{BASE_URL}{self.form_need_auth_allow_ro.id}/?app_id={self.blue_project_need_auth_allow_ro.app_id}"
-        )
+        response_1 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/")
+        response_2 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/?app_id={self.blue_project_need_auth.app_id}")
 
         self.assertJSONResponse(response_1, 200)
         self.assertJSONResponse(response_2, 200)
@@ -166,64 +132,32 @@ class MobileFormsVersionAPITestCase(APITestCase):
         self.assertValidFormVersionData(response_1.json())
         self.assertValidFormVersionData(response_2.json())
 
-    def test_form_need_auth_allow_ro_should_fail(self):
-        self.client.force_authenticate(self.red_no_perms)
-        response_3 = self.client.get(f"{BASE_URL}{self.form_need_auth_allow_ro.id}/")
+    def test_form_need_auth_should_fail(self):
+        self.client.force_authenticate(self.anon)
+        response_3 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/")
 
         self.assertJSONResponse(response_3, 403)  # should fail if no app_id is provided
 
-        response_4 = self.client.get(
-            f"{BASE_URL}{self.form_need_auth_allow_ro.id}/?app_id={self.blue_project_need_auth_allow_ro.app_id}"
-        )
+        print(response_3)
+        print(response_3.json())
+
+        response_4 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/?app_id={self.blue_project_need_auth.app_id}")
 
         print(response_4)
         print(response_4.json())
 
-        self.assertJSONResponse(response_3, 200)  # should work if app_id is provided and project allows read only
+        self.assertJSONResponse(response_4, 200)  # should work if app_id is provided and project allows read only
 
-    def test_form_need_auth_not_allow_ro(self):
-        """This form is linked to a project needs authentication and not allow read only"""
-
-        self.client.force_authenticate(self.blue_with_perms)
-
-        # it should work both with and without app_id for this project
-        response_1 = self.client.get(f"{BASE_URL}{self.form_need_auth_not_allow_ro.id}/")
-        response_2 = self.client.get(
-            f"{BASE_URL}{self.form_need_auth_not_allow_ro.id}/?app_id={self.blue_project_need_auth_not_allow_ro.app_id}"
-        )
-
-        self.assertJSONResponse(response_1, 200)
-        self.assertJSONResponse(response_2, 200)
-
-        self.assertValidFormVersionData(response_1.json())
-        self.assertValidFormVersionData(response_2.json())
-
-    def test_form_need_auth_not_allow_ro_should_fail(self):
-
-        self.client.force_authenticate(self.red_no_perms)
-        response_3 = self.client.get(f"{BASE_URL}{self.form_need_auth_not_allow_ro.id}/")
-
-        var_dump(response_3)
-
-        response_4 = self.client.get(
-            f"{BASE_URL}{self.form_need_auth_not_allow_ro.id}/?app_id={self.blue_project_need_auth_not_allow_ro.app_id}"
-        )
-
-        var_dump(response_4)
-
-        self.assertJSONResponse(response_4, 403)
-
-    def test_form_no_need_auth_allow_ro(self):
+    def test_form_no_need_auth(self):
         """GET /mobile/formversions/<form_id> This form is linked to a project which allow read only: ok"""
 
         self.client.force_authenticate(self.blue_with_perms)
         response = self.client.get(f"{BASE_URL}{self.form_no_need_auth_allow_ro.id}/")
         self.assertJSONResponse(response, 200)
-        form_version_data = response.json()["form_version"]
-        self.assertValidFormVersionData(form_version_data)
-        self.assertIn("descriptor", form_version_data)
+        form_data = response.json()
+        self.assertValidFormVersionData(form_data)
 
-    def test_form_no_need_auth_not_allow_ro(self):
+    def test_form_no_need_auth_should_fail(self):
         """GET /mobile/formversions/<form_id> This form is linked to a project which does not allow read only: 403"""
 
         self.client.force_authenticate(self.blue_with_perms)

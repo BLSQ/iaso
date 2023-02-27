@@ -42,7 +42,7 @@ from .api.enketo import (
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
-from .api.form_versions import FormVersionsViewSet, MobileFormVersionsViewSet
+from .api.form_versions import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.groups import GroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
@@ -88,7 +88,6 @@ router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
-router.register(r"mobile/formversions", MobileFormVersionsViewSet, basename="formversionsmobile")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownership", DevicesOwnershipViewSet, basename="devicesownership")

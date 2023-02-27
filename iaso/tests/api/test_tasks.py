@@ -32,7 +32,7 @@ class IasoTasksTestCase(APITestCase):
         response = self.client.get("/api/tasks/")
         self.assertEqual(response.status_code, 403)
 
-    def test_tasks_authoziration_access(self):
+    def test_tasks_user_can_access(self):
         """
         Both permissions iaso_sources and iaso_data_tasks are required to access tasks.
         """

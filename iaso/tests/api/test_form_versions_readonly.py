@@ -13,7 +13,7 @@ from iaso.models.org_unit import OrgUnitType
 from iaso.models.project import Project
 from iaso.test import APITestCase
 
-BASE_URL = "/api/mobile/formversions/"
+BASE_URL = "/api/formversions/"
 
 
 def var_dump(var, indent=0):
@@ -136,33 +136,31 @@ class MobileFormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.anon)
         response_3 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/")
 
-        self.assertJSONResponse(response_3, 403)  # should fail if no app_id is provided
-
-        print(response_3)
-        print(response_3.json())
+        self.assertJSONResponse(response_3, 404)
 
         response_4 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/?app_id={self.blue_project_need_auth.app_id}")
 
-        print(response_4)
-        print(response_4.json())
-
-        self.assertJSONResponse(response_4, 200)  # should work if app_id is provided and project allows read only
+        self.assertJSONResponse(response_4, 403)  # should work if app_id is provided and project allows read only
 
     def test_form_no_need_auth(self):
-        """GET /mobile/formversions/<form_id> This form is linked to a project which allow read only: ok"""
-
         self.client.force_authenticate(self.blue_with_perms)
-        response = self.client.get(f"{BASE_URL}{self.form_no_need_auth_allow_ro.id}/")
+        response = self.client.get(f"{BASE_URL}{self.form_no_need_auth.id}/")
+
         self.assertJSONResponse(response, 200)
         form_data = response.json()
         self.assertValidFormVersionData(form_data)
 
-    def test_form_no_need_auth_should_fail(self):
-        """GET /mobile/formversions/<form_id> This form is linked to a project which does not allow read only: 403"""
+    def test_form_no_need_auth_should_fail_without_app_id(self):
+        self.client.force_authenticate(self.anon)
+        response_1 = self.client.get(f"{BASE_URL}{self.form_no_need_auth.id}/")  # should fail without app id
+        self.assertJSONResponse(response_1, 404)
+        var_dump(response_1.json())
 
-        self.client.force_authenticate(self.blue_with_perms)
-        response = self.client.get(f"{BASE_URL}{self.form_no_need_auth_not_allow_ro.id}/")
-        self.assertJSONResponse(response, 403)
+        response_2 = self.client.get(
+            f"{BASE_URL}{self.form_no_need_auth.id}/?app_id={self.blue_project_no_need_auth.app_id}"
+        )  # should work with app id
+        self.assertJSONResponse(response_1, 200)
+        var_dump(response_2.json())
 
     def assertValidFormVersionData(
         self, form_version_data: typing.Mapping, *, check_annotated_fields: bool = True

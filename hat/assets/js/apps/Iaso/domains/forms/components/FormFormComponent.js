@@ -30,8 +30,6 @@ const styles = theme => ({
     },
     linkToChangesLog: {
         color: theme.palette.primary.main,
-        textAlign: 'right',
-        flex: '1',
         cursor: 'pointer',
     },
 });
@@ -328,7 +326,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                 </Grid>
             </Grid>
             {currentForm.id.value && (
-                <Grid justifyContent="space-between" container spacing={2}>
+                <Grid justifyContent="flex-end" container spacing={2}>
                     <Typography
                         className={classes.linkToChangesLog}
                         variant="overline"

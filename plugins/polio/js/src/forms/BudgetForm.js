@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { useMemo } from 'react';
 import { Grid, Typography, Box, Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
@@ -90,7 +91,7 @@ export const BudgetForm = () => {
     const { touched, errors } = useFormikContext();
 
     const { values } = useFormikContext();
-    const { rounds = [] } = values;
+    const { rounds = [], has_data_in_budget_tool: disableEdition } = values;
 
     const totalCostPerChild = useMemo(() => {
         let totalCost = 0;
@@ -121,15 +122,19 @@ export const BudgetForm = () => {
         touched,
     );
 
+    const title = disableEdition
+        ? `${formatMessage(MESSAGES.budgetApproval)}: ${formatMessage(
+              MESSAGES.editionDisabled,
+          )}`
+        : formatMessage(MESSAGES.budgetApproval);
+
     return (
         <>
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
                     <Grid xs={12} md={6} item>
                         <Box mb={2}>
-                            <Typography variant="button">
-                                {formatMessage(MESSAGES.budgetApproval)}
-                            </Typography>
+                            <Typography variant="button">{title}</Typography>
                         </Box>
                         <Box mb={2}>
                             <Divider style={{ height: '1px', width: '100%' }} />
@@ -162,6 +167,7 @@ export const BudgetForm = () => {
                         <Field
                             name="budget_status"
                             component={BudgetStatusField}
+                            disabled={disableEdition}
                         />
                     </Box>
                     <Box mt={2}>
@@ -179,6 +185,7 @@ export const BudgetForm = () => {
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}
                                         fullWidth
+                                        disabled={disableEdition}
                                     />
                                 </Box>
                             );
@@ -197,6 +204,7 @@ export const BudgetForm = () => {
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}
                                         fullWidth
+                                        disabled={disableEdition}
                                     />
                                 </Box>
                             );
@@ -211,6 +219,7 @@ export const BudgetForm = () => {
                         <Field
                             name="budget_responsible"
                             component={ResponsibleField}
+                            disabled={disableEdition}
                         />
                     </Box>
                     <Box mt={2}>
@@ -228,6 +237,7 @@ export const BudgetForm = () => {
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}
                                         fullWidth
+                                        disabled={disableEdition}
                                     />
                                 </Box>
                             );
@@ -248,6 +258,7 @@ export const BudgetForm = () => {
                                         name={`${node}${WORKFLOW_SUFFIX}`}
                                         component={DateInput}
                                         fullWidth
+                                        disabled={disableEdition}
                                     />
                                 </Box>
                             );

@@ -111,7 +111,7 @@ jobs:
             ${{ runner.os }}-venv-
           # Build a virtualenv, but only if it doesn't already exist
       - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
-          pip install -r requirements.txt
+          pip install -r requirements.txt && pip install -r requirements-dev.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |

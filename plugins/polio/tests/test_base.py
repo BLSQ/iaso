@@ -551,6 +551,7 @@ class PolioAPITestCase(APITestCase):
             + ended_at
             + "\n"
             + campaign.vacine
+            + "\n"
         )
 
     def test_handle_restore_active_campaign(self):

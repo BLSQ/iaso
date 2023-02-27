@@ -313,8 +313,12 @@ class CampaignViewSet(ModelViewSet):
         round_districts_count = (
             round.campaign.get_districts_for_round_number(round_number).count() if round_number else 0
         )
+        districts_exists = country_districts_count > 0 and round_districts_count > 0
         # check if country districts is equal to round districts
-        nid_or_snid = "NID" if country_districts_count == round_districts_count else "sNID"
+        if districts_exists:
+            nid_or_snid = "NID" if country_districts_count == round_districts_count else "sNID"
+        else:
+            nid_or_snid = ""
         # target population
         target_population = round.target_population if round.target_population is not None else ""
 

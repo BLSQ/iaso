@@ -12,7 +12,6 @@ type FormVersionsList = {
 };
 
 const getVersion = (formId: number | undefined): Promise<FormVersionsList> => {
-    console.log('ICI');
     return getRequest(`/api/formversions/?form_id=${formId}&fields=descriptor`);
 };
 export const useGetFormDescriptor = (

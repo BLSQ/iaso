@@ -43,7 +43,7 @@
     "follow_ups": [
         {
             "id": 1,
-            "order": 1,
+            "order": 0,
             "condition": {
                 "and": [
                     {
@@ -67,7 +67,7 @@
         },
         {
             "id": 2,
-            "order": 0,
+            "order": 1,
             "condition": {
                 "and": [
                     {

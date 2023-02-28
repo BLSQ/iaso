@@ -37,9 +37,66 @@ class StorageAPITestCase(APITestCase):
         response = self.client.get("/api/mobile/storage/passwords/", data={APP_ID: self.rebels.app_id})
         self.assertEqual(response.status_code, 403)
 
+    def test_post_passwords_without_authentication(self):
+        response = self.client.post(
+            "/api/mobile/storage/passwords/",
+            data={
+                "password": "test",
+                "is_compromised": True,
+                "project": self.rebels.id,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_post_passwords_with_authentication(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            "/api/mobile/storage/passwords/",
+            data={
+                "password": "test",
+                "is_compromised": True,
+                "project": self.rebels.id,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_patch_passwords_without_authentication(self):
+        response = self.client.patch(
+            f"/api/mobile/storage/passwords/{self.rebels_password1}/",
+            data={
+                "password": "test",
+                "is_compromised": True,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_patch_passwords_with_authentication(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.patch(
+            f"/api/mobile/storage/passwords/{self.rebels_password1}/",
+            data={
+                "password": "test",
+                "is_compromised": True,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_passwords_without_authentication(self):
+        response = self.client.delete(f"/api/mobile/storage/passwords/{self.rebels_password1}/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_delete_passwords_with_authentication(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.delete(f"/api/mobile/storage/passwords/{self.rebels_password1}/")
+        self.assertEqual(response.status_code, 403)
+
     def test_retrieve_passwords_without_app_id(self):
         self.client.force_authenticate(self.yoda)
-        response = self.client.get("/api/mobile/storage/passwords/", data={}, format="json")
+        response = self.client.get("/api/mobile/storage/passwords/", data={})
         self.assertEqual(response.status_code, 400)
 
     def test_retrieve_passwords_with_wrong_app_id(self):

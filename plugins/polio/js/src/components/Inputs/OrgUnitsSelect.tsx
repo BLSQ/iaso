@@ -9,16 +9,16 @@ type Props = {
     field: FieldInputProps<string>;
     form: FormikProps<Record<string, any>>;
     label: string;
-    required: boolean;
-    clearable: boolean;
+    required?: boolean;
+    clearable?: boolean;
 };
 
 export const OrgUnitsLevels: FunctionComponent<Props> = ({
     field,
     form,
     label,
-    required,
-    clearable,
+    required = false,
+    clearable = true,
 }) => {
     const { name } = field;
     const {
@@ -45,8 +45,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
                 initialSelection={initialOrgUnit}
                 showStatusIconInTree={false}
                 showStatusIconInPicker={false}
-                // @ts-ignore
-                errors={errors}
+                errors={errors as string[]}
                 required={required}
                 clearable={clearable}
             />

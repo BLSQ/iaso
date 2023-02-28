@@ -1,11 +1,11 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 
 import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import Star from './StarSvgComponent';
 
-const styles = theme => ({
+export const styles = theme => ({
     stars: {
         width: 100,
         height: 18,

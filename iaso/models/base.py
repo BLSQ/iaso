@@ -813,6 +813,7 @@ class Instance(models.Model):
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
     planning = models.ForeignKey(
         "Planning", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances"
+    )
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )

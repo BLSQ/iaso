@@ -120,6 +120,7 @@ export const DataSourceDialogComponent = ({
     const { saveDataSource, isSaving } = useSaveDataSource(setFieldErrors);
     const checkDhis2 = useCheckDhis2Mutation(setFieldErrors);
     const [fieldHasBeenChanged, setFieldHasBeenChanged] = useState(false);
+    const { formatMessage } = useSafeIntl();
 
     const onConfirm = async closeDialog => {
         await saveDataSource(form);
@@ -292,18 +293,11 @@ export const DataSourceDialogComponent = ({
                         />
                     </Button>
                     <Typography>
-                        {checkDhis2.isSuccess && (
-                            <FormattedMessage
-                                id="iaso.checkDHIS.success"
-                                defaultMessage="✅ Connection to server ok"
-                            />
-                        )}
-                        {checkDhis2.isError && (
-                            <FormattedMessage
-                                id="iaso.checkDHIS.error"
-                                defaultMessage="❌ Connection Error check settings"
-                            />
-                        )}
+                        {checkDhis2.isSuccess &&
+                            `✅ ${formatMessage(MESSAGES.checkDhis2Success)}`}
+
+                        {checkDhis2.isError &&
+                            `❌ ${formatMessage(MESSAGES.checkDhis2Error)}`}
                     </Typography>
                 </Grid>
             </Grid>

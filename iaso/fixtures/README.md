@@ -12,7 +12,7 @@ We use these files in the automated unit test !
 (this readme assume ./m is your manage.py)
 
 
-To create a temporary server with only the fixtures data:
+To create a temporary server with only the fixtures's data:
 ```
 ./m testserver --noinput iaso/fixtures/user.yaml  iaso/fixtures/orgunit.yaml
 ```

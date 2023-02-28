@@ -19,9 +19,30 @@ import { ReportingDelays } from './ReportingDelays';
 import { RoundVaccinesForm } from './RoundVaccinesForm';
 import { DestructionsForm } from './DestructionsForm';
 import { FormAForm } from './FormAForm';
-import { Campaign } from '../constants/types';
+import { Campaign, Round } from '../constants/types';
 
 type Props = any;
+
+export const vaccineManagementFormFields = (rounds: Round[]): string[] => {
+    return rounds
+        .map((_round: Round, index: number) => {
+            return [
+                `rounds[${index}].reporting_delays_hc_to_district`,
+                `rounds[${index}].reporting_delays_region_to_national`,
+                `rounds[${index}].reporting_delays_district_to_region`,
+                `rounds[${index}].date_signed_vrf_received`,
+                `rounds[${index}].forma_reception`,
+                `rounds[${index}].forma_date`,
+                `rounds[${index}].forma_missing_vials`,
+                `rounds[${index}].forma_usable_vials`,
+                `rounds[${index}].forma_comment`,
+                `rounds[${index}].shipments`,
+                `rounds[${index}].destructions`,
+                `rounds[${index}].vaccines`,
+            ];
+        })
+        .flat();
+};
 
 const useCustomStyles = makeStyles(theme => ({
     marginTop: { width: '100%', marginTop: theme.spacing(1) },

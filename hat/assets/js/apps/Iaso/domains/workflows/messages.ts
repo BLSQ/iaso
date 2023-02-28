@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Condition',
         id: 'iaso.workflows.condition',
     },
+    noCondition: {
+        defaultMessage: 'Always true',
+        id: 'iaso.workflows.noCondition',
+    },
     mapping: {
         defaultMessage: 'Mapping',
         id: 'iaso.workflows.mapping',
@@ -166,6 +170,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.saveOrder',
         defaultMessage: 'Save order',
     },
+    resetOrder: {
+        id: 'iaso.workflows.resetOrder',
+        defaultMessage: 'Reset order',
+    },
     editChange: {
         id: 'iaso.workflows.editChange',
         defaultMessage: 'Edit change',
@@ -206,6 +214,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.changesInfo2',
         defaultMessage:
             'You cannot have multiple mappings on the same source or target',
+    },
+    order: {
+        id: 'iaso.workflows.order',
+        defaultMessage: 'Order',
     },
 });
 

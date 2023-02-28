@@ -1,3 +1,4 @@
+from functools import reduce
 import logging
 from typing import Union
 
@@ -8,13 +9,13 @@ from django.core.exceptions import ValidationError
 from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
-from django.utils.translation import ugettext_lazy as _
 from django.urls import reverse
+from django.utils.translation import ugettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.budget import workflow
+from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
 from plugins.polio.time_cache import time_cache
 
 
@@ -93,7 +94,7 @@ class BudgetStepLink(SoftDeletableModel):
 def validator_template(value: str):
     try:
         # this will raise an error if the template cannot be parsed
-        template = Engine.get_default().from_string(value)
+        Engine.get_default().from_string(value)
     except TemplateSyntaxError as e:
         raise ValidationError(_("Error in template: %(error)s"), code="invalid_template", params={"error": str(e)})
 
@@ -159,21 +160,31 @@ class MailTemplate(models.Model):
                 }
             )
         transition = workflow.get_transition_by_key(step.transition_key)
-        node = workflow.get_node_by_key(transition.to_node)
-        attachments = []
-        for f in step.files.all():
-            file_url = base_url + f.get_absolute_url()
-            attachments.append({"url": file_url, "name": f.filename})
-        for l in step.links.all():
-            attachments.append({"url": l.url, "name": l.alias})
+        if transition.key != "override":
+            node = workflow.get_node_by_key(transition.to_node)
+        else:
+            node_key = request.data["new_state_key"].split(",")[0]
+            node = workflow.get_node_by_key(node_key)
 
+        attachments = []
         skipped_attachements = 0
+        override = step.transition_key == "override"
+        total_file_size = 0
+        if len(list(step.files.all())) > 0:
+            total_file_size = reduce(
+                lambda file1, file2: file1 + file2, list(map(lambda f: f.file.size, list(step.files.all())))
+            )
+
         for f in step.files.all():
-            # only attach file smaller than 500k
-            if f.file.size < 1024 * 500:
+            # only attach files if total is less than 5MB
+            if total_file_size < 1024 * 5000:
                 msg.attach(f.filename, f.file.read())
             else:
-                skipped_attachements += 1
+                skipped_attachements = len(list(step.files.all()))
+                file_url = base_url + f.get_absolute_url()
+                attachments.append({"url": generate_auto_authentication_link(file_url, receiver), "name": f.filename})
+        for l in step.links.all():
+            attachments.append({"url": l.url, "name": l.alias})
 
         context = Context(
             {
@@ -193,6 +204,7 @@ class MailTemplate(models.Model):
                 "skipped_attachments": skipped_attachements,
                 "files": step.files.all(),
                 "links": step.links.all(),
+                "override": override,
             }
         )
         DEFAULT_HTML_TEMPLATE = '{% extends "base_budget_email.html" %}'
@@ -208,7 +220,6 @@ class MailTemplate(models.Model):
         msg.body = text_content
 
         msg.attach_alternative(html_content, "text/html")
-
         return msg
 
 

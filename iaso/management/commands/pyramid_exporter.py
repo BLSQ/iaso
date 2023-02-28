@@ -94,7 +94,7 @@ class Command(BaseCommand):
             org_unit_types_ref=org_unit_types_ref,
         )
         dumper = Dumper(iaso_logger)
-        stats = dumper.dump_stats(diffs, fields)
+        stats = dumper.dump_stats(diffs)
         if file_name:
             with open(file_name, "w") as csv_file:
                 dumper.dump_as_csv(diffs, fields, csv_file)
@@ -111,14 +111,13 @@ class Command(BaseCommand):
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
 
-    def load_version(self, options, param_source_name, param_version_number, top_org_unit=None, org_unit_types=None):
+    def load_version(self, options, param_source_name, param_version_number):
         source_name = options[param_source_name]
         version_number = options[param_version_number]
         self.iaso_logger.info("loading ", source_name, version_number)
-        source = None
         try:
             source = DataSource.objects.get(name=source_name)
-        except Exception as e:
+        except Exception:
             message = " ".join(
                 (
                     "--" + param_source_name,
@@ -131,7 +130,7 @@ class Command(BaseCommand):
 
         try:
             version = SourceVersion.objects.get(number=version_number, data_source=source)
-        except Exception as e:
+        except Exception:
             message = " ".join(
                 (
                     "--" + param_version_number,
@@ -149,4 +148,4 @@ class Command(BaseCommand):
             )
             self.iaso_logger.error(message)
             raise Exception(message)
-        return (source, version)
+        return source, version

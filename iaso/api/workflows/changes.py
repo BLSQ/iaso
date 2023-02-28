@@ -1,16 +1,14 @@
-from iaso.models import WorkflowChange
-from iaso.api.common import HasPermission
-from rest_framework import viewsets
-from drf_yasg.utils import swagger_auto_schema, no_body
-
-from drf_yasg import openapi
-
-from rest_framework import permissions
-import iaso.api.workflows.utils as utils
-import iaso.api.workflows.serializers as ser
-
-from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema, no_body
+from rest_framework import permissions
+from rest_framework import viewsets
+from rest_framework.response import Response
+
+import iaso.api.workflows.serializers as ser
+import iaso.api.workflows.utils as utils
+from iaso.api.common import HasPermission
+from iaso.models import WorkflowChange
 
 version_id_param = openapi.Parameter(
     name="version_id",

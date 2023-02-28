@@ -6,7 +6,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import { SendEmailButton } from '../components/Buttons/SendEmailButton';
 import { polioViruses } from '../constants/virus.ts';
-import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect';
+import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect.tsx';
 import {
     BooleanInput,
     DateInput,
@@ -18,8 +18,27 @@ import MESSAGES from '../constants/messages';
 import { EmailListForCountry } from '../components/EmailListForCountry/EmailListForCountry';
 import { useGetGroupedCampaigns } from '../hooks/useGetGroupedCampaigns.ts';
 
+export const baseInfoFormFields = [
+    'epid',
+    'obr_name',
+    'grouped_campaigns',
+    'virus',
+    'vaccines',
+    'description',
+    'gpei_coordinator',
+    'initial_org_unit',
+    'is_preventive',
+    'is_test',
+    'enable_send_weekly_email',
+    'onset_at',
+    'cvdpv2_notified_at',
+    'pv_notified_at',
+    'three_level_call_at',
+];
+
 export const BaseInfoForm = () => {
     const classes = useStyles();
+
     const { formatMessage } = useSafeIntl();
     const { data: groupedCampaigns } = useGetGroupedCampaigns();
     const groupedCampaignsOptions = useMemo(

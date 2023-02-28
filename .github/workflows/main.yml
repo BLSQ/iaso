@@ -3,12 +3,13 @@ name: Iaso Automated CI testing
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
+
 jobs:
   test_js:
     runs-on: ubuntu-20.04
@@ -94,10 +95,10 @@ jobs:
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
       - uses: actions/checkout@v2
-      - name: Set up Python 3.6
+      - name: Set up Python 3.8
         uses: actions/setup-python@v2
         with:
-          python-version: 3.6
+          python-version: 3.8
       - name: Install GDAL
         run: sudo apt install gdal-bin
       - uses: actions/cache@v2
@@ -110,7 +111,7 @@ jobs:
             ${{ runner.os }}-venv-
           # Build a virtualenv, but only if it doesn't already exist
       - run: python -v && python -m venv ./venv && . ./venv/bin/activate && pip install -U pip &&
-          pip install -r requirements.txt
+          pip install -r requirements.txt && pip install -r requirements-dev.txt
         if: steps.cache-venv.outputs.cache-hit != 'true'
       - name: Environment info
         run: |
@@ -162,6 +163,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
+
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2.1.3
         env:
@@ -174,4 +176,3 @@ jobs:
           SLACK_FOOTER: ${{  format('<https://github.com/{0}/commit/{1}/checks|🔗{2} logs> | <https://github.com/{0}/commit/{1}/checks|🔗 Commit {1}>', github.repository, github.sha, github.job) }}
           MSG_MINIMAL: true
         if: failure()
-  

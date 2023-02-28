@@ -1,13 +1,15 @@
-from iaso.test import APITestCase
-from django.utils.timezone import now
+from pprint import pprint
+from unittest import mock
+
 from django.contrib.auth.models import AnonymousUser
+from django.core.files import File
+from django.core.files.uploadedfile import UploadedFile
+from django.utils.timezone import now
+
 from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
 from iaso.models.workflow import WorkflowVersionsStatus, WorkflowChange, WorkflowFollowup
-from unittest import mock
-from django.core.files.uploadedfile import UploadedFile
-from django.core.files import File
-from pprint import pprint
+from iaso.test import APITestCase
 
 
 def var_dump(what):

@@ -1,16 +1,15 @@
 import csv
+import datetime as dt
 import functools
 import json
-import datetime as dt
-from datetime import timedelta, datetime
-from typing import Any, Optional
 from collections import defaultdict
+from datetime import timedelta, datetime
 from functools import lru_cache
 from logging import getLogger
-from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
-from django.core.cache import cache, BaseCache
+from typing import Any, Optional
+
+from django.conf import settings
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
@@ -19,16 +18,22 @@ from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django.utils.timezone import now, make_aware
+from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
+from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from django.conf import settings
+
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
+from plugins.polio.serializers import (
+    CountryUsersGroupSerializer,
+)
 from plugins.polio.serializers import (
     OrgUnitSerializer,
     CampaignSerializer,
@@ -43,10 +48,8 @@ from plugins.polio.serializers import (
     ListCampaignSerializer,
     CalendarCampaignSerializer,
 )
-from plugins.polio.serializers import (
-    CountryUsersGroupSerializer,
-)
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
+from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from .forma import (
     FormAStocksViewSetV2,
     make_orgunits_cache,
@@ -64,7 +67,6 @@ from .models import (
 )
 from .models import CountryUsersGroup
 from .preparedness.summary import get_or_set_preparedness_cache_for_round
-from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 
 logger = getLogger(__name__)
 
@@ -245,7 +247,6 @@ class CampaignViewSet(ModelViewSet):
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
-        order_by = params.get("order") if params.get("order") is not None else None
         search = params.get("search")
         rounds = Round.objects.filter(started_at__year=year)
         # Test campaigns should not appear in the xlsx calendar
@@ -1112,7 +1113,6 @@ def handle_ona_request_with_key(request, key, country_id=None):
     if as_csv:
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
         writer = csv.writer(response)
-        i = 1
         for item in res:
             writer.writerow(item)
         return response

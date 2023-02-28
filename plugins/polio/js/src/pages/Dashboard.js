@@ -20,7 +20,11 @@ import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateE
 import { PageAction } from '../components/Buttons/PageAction';
 import { PageActions } from '../components/Buttons/PageActions';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { useGetCampaigns, useCampaignParams } from '../hooks/useGetCampaigns';
+import {
+    useGetCampaigns,
+    useCampaignParams,
+    useGetCampaignsAsCsv,
+} from '../hooks/useGetCampaigns.ts';
 import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
@@ -30,6 +34,7 @@ import { genUrl } from '../utils/routing';
 import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
 import { useSingleTableParams } from '../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
+import { PageActionWithLink } from '../components/Buttons/PageActionWithLink.tsx';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -48,10 +53,8 @@ const Dashboard = ({ router }) => {
 
     const [resetPageToOne, setResetPageToOne] = useState('');
 
-    const { query, exportToCSV } = useGetCampaigns(apiParams);
-
-    // TODO remove when select is fixed. beurk lol.
-    const { data: rawCampaigns, isFetching } = query;
+    const { data: rawCampaigns, isFetching } = useGetCampaigns(apiParams);
+    const exportToCSV = useGetCampaignsAsCsv(apiParams);
 
     const campaigns = useMemo(() => {
         if (!rawCampaigns) return rawCampaigns;
@@ -299,9 +302,9 @@ const Dashboard = ({ router }) => {
                     >
                         {formatMessage(MESSAGES.create)}
                     </PageAction>
-                    <PageAction icon={DownloadIcon} onClick={exportToCSV}>
+                    <PageActionWithLink icon={DownloadIcon} url={exportToCSV}>
                         {formatMessage(MESSAGES.csv)}
-                    </PageAction>
+                    </PageActionWithLink>
                     <ImportLineListDialog
                         renderTrigger={({ openDialog }) => (
                             <PageAction

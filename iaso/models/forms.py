@@ -1,20 +1,19 @@
 import pathlib
 import typing
+from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.postgres.fields import ArrayField, CITextField
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.postgres.fields import ArrayField, CITextField
 
 from .project import Project
+from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
 from ..utils import slugify_underscore
-from .. import periods
-from uuid import uuid4
-
 from ..utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     SoftDeletableModel,

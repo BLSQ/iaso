@@ -1,11 +1,9 @@
-from rest_framework import serializers
-from django.http import Http404
-from rest_framework import status
-from rest_framework.response import Response
-from ..projects import ProjectSerializer
-from iaso.models import Project, FeatureFlag, Form
-from hat.audit import models as audit_models
 import logging
+
+from rest_framework import serializers
+
+from iaso.models import Project, FeatureFlag, Form
+from ..projects import ProjectSerializer
 
 logger = logging.getLogger(__name__)
 

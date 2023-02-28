@@ -1,8 +1,10 @@
 from math import floor
-from iaso.test import APITestCase
-from iaso import models as m
-from django.utils import timezone
+
 from django.core.files.uploadedfile import UploadedFile
+from django.utils import timezone
+
+from iaso import models as m
+from iaso.test import APITestCase
 
 
 class DerivedInstancesTests(APITestCase):
@@ -209,7 +211,7 @@ class DerivedInstancesTests(APITestCase):
         self.survey_form.instances.all().delete()
 
         self.trigger_generation_and_expect_stats({"new": 0, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 1})
-        # the instances should deleted
+        # the instances should be deleted
         self.assertEqual(self.derived_form.instances.all().count(), 0)
 
     def test_post_derived_instances_with_auth_nullified(self):
@@ -226,7 +228,7 @@ class DerivedInstancesTests(APITestCase):
         self.survey_form.instances.all().delete()
 
         self.trigger_generation_and_expect_stats({"new": 0, "updated": 0, "skipped": 0, "nullified": 1, "deleted": 0})
-        # the instances should nullified
+        # the instances should be nullified
         derived_instance = self.derived_form.instances.all().first()
         self.assertEqual(
             derived_instance.json,

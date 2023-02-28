@@ -34,7 +34,8 @@ import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm';
-import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
+// import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
+import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 import { orgUnitsTableColumns } from './config';
 import {
@@ -265,7 +266,7 @@ const OrgUnitDetail = ({ params, router }) => {
     );
 
     const handleSaveOrgUnit = useCallback(
-        (newOrgUnit = {}, onSuccess, onError) => {
+        (newOrgUnit = {}, onSuccess = () => {}, onError = () => {}) => {
             let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
             orgUnitPayload = {
                 ...orgUnitPayload,
@@ -277,6 +278,7 @@ const OrgUnitDetail = ({ params, router }) => {
             };
             saveOu(orgUnitPayload)
                 .then(ou => {
+                    setCurrentOrgUnit(ou);
                     setOrgUnitLocationModified(false);
                     dispatch(resetOrgUnits());
                     if (isNewOrgunit) {

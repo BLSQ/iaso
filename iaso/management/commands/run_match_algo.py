@@ -1,7 +1,8 @@
-from django.core.management.base import BaseCommand
-from iaso.models import DataSource, SourceVersion
-
 import importlib
+
+from django.core.management.base import BaseCommand
+
+from iaso.models import DataSource, SourceVersion
 
 
 class Command(BaseCommand):

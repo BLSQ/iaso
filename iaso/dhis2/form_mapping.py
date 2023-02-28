@@ -1,5 +1,5 @@
-import uuid
 import logging
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -16,10 +16,9 @@ def seed_event_mapping(api, program_id):
     for program_stage in program.json()["programStages"]:
         for psde in program_stage["programStageDataElements"]:
             de = psde["dataElement"]
-            code_or_name = None
             if "code" in de:
                 code_or_name = de.get("code")
-            elif "shortName":
+            elif "shortName" in de:
                 code_or_name = de.get("shortName")
                 missing_data_elements.append(de)
             else:

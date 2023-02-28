@@ -21,13 +21,12 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from hat.audit.models import log_modification, INSTANCE_API
-from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
-from iaso.models.org_unit import OrgUnit
 from iaso.models.data_source import SourceVersion, DataSource
+from iaso.models.org_unit import OrgUnit
+from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 from .. import periods
-
 from ..utils.jsonlogic import jsonlogic_to_q
 
 logger = getLogger(__name__)
@@ -100,7 +99,6 @@ class Account(models.Model):
     name = models.TextField(unique=True, validators=[MinLengthValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    users = models.ManyToManyField(User, blank=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
 
@@ -813,6 +811,8 @@ class Instance(models.Model):
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
+    planning = models.ForeignKey(
+        "Planning", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances"
     form_version = models.ForeignKey(
         "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
     )
@@ -940,7 +940,7 @@ class Instance(models.Model):
 
             DataValueExporter().export_instances(export_request)
             self.refresh_from_db()
-        except NothingToExportError as error:
+        except NothingToExportError:
             print("Export failed for instance", self)
 
     def __str__(self):

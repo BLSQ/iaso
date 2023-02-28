@@ -1,12 +1,14 @@
-from rest_framework.response import Response
-from rest_framework import viewsets, permissions
-from iaso.api.common import safe_api_import
 import json
-from iaso.models import OrgUnit, Project
+
 from django.contrib.gis.geos import Point
+from django.core.cache import cache
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from django.core.cache import cache
+from iaso.api.common import get_timestamp
+from iaso.api.common import safe_api_import
+from iaso.models import OrgUnit, Project
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -82,6 +84,7 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
 def import_data(org_units, user, app_id):
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
+    org_units = sorted(org_units, key=get_timestamp)
 
     for org_unit in org_units:
         uuid = org_unit.get("id", None)

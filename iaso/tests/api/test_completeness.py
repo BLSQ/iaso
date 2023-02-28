@@ -1,8 +1,8 @@
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class CompletenessAPITestCase(APITestCase):

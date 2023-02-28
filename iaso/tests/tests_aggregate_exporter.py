@@ -1,8 +1,11 @@
 import json
+import logging
+from collections import namedtuple
+
 import responses
 from django.core.files.uploadedfile import UploadedFile
-from collections import namedtuple
 from django.test import TestCase
+
 from iaso.models import (
     User,
     Instance,
@@ -24,7 +27,6 @@ from iaso.models import (
     ERRORED,
     EXPORTED,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 import os
@@ -82,7 +84,7 @@ class DataValueExporterTests(TestCase):
         instance.project = self.project
         instance.save()
         # force to past creation date
-        # looks the the first save don't take it
+        # looks the first save don't take it
         instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.save()
         return instance
@@ -339,9 +341,6 @@ class DataValueExporterTests(TestCase):
         )
 
         responses.add(responses.POST, "https://dhis2.com/api/completeDataSetRegistrations", json={}, status=200)
-
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
 
         DataValueExporter().export_instances(export_request)
         self.expect_logs(EXPORTED)

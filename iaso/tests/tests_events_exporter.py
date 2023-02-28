@@ -1,6 +1,7 @@
 import json
-import responses
 import logging
+
+import responses
 
 logger = logging.getLogger(__name__)
 from django.core.files.uploadedfile import UploadedFile
@@ -242,9 +243,6 @@ class DataValueExporterTests(TestCase):
             responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
         )
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
-
         DataValueExporter().export_instances(export_request)
         self.expect_logs(EXPORTED)
 
@@ -253,7 +251,6 @@ class DataValueExporterTests(TestCase):
 
     @responses.activate
     def test_event_export_handle_errors(self):
-
         mapping_version = MappingVersion(
             name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
@@ -276,9 +273,6 @@ class DataValueExporterTests(TestCase):
         )
 
         with self.assertRaises(InstanceExportError) as context:
-            # excercice
-            instances_qs = Instance.objects.order_by("id").all()
-
             DataValueExporter().export_instances(export_request)
             self.expect_logs("exported")
 

@@ -998,11 +998,16 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["count"], 3)
 
         ids_in_response = [ou["id"] for ou in org_units]
+
+        # list of all the indirect children of the jedi_council_endor OU
         ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk, jedi_squad_endor_2_children.pk]
+
         self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))
 
     def test_org_unit_search_only_direct_children_true(self):
         self.client.force_authenticate(self.yoda)
+
+        # this ou in the children of the children of the parent so it must not appear in the response.
 
         jedi_squad_endor_2_children = m.OrgUnit.objects.create(
             org_unit_type=self.jedi_council,
@@ -1028,5 +1033,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["count"], 2)
 
         ids_in_response = [ou["id"] for ou in org_units]
+
+        # list of all direct children of the jedi_council_endor OU
         ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk]
         self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))

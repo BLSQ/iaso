@@ -24,7 +24,6 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     const {
         setFieldValue,
         touched,
-        // @ts-ignore
         errors: formErrors,
         setFieldTouched,
         values,

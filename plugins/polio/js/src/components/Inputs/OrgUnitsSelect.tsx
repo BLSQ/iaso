@@ -1,23 +1,24 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
+import { FormikProps, FieldInputProps } from 'formik';
 import { CircularProgress, Box } from '@material-ui/core';
-import PropTypes from 'prop-types';
-import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
+import { useGetOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/requests';
+import { OrgUnitTreeviewModal } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { isTouched } from '../../utils';
 
-const getErrors = (touched, formErrors) => {
-    const { name } = formErrors;
-
-    return isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
+type Props = {
+    field: FieldInputProps<string>;
+    form: FormikProps<Record<string, any>>;
+    label: string;
+    required: boolean;
+    clearable: boolean;
 };
 
-export const OrgUnitsLevels = ({
+export const OrgUnitsLevels: FunctionComponent<Props> = ({
     field,
     form,
     label,
     required,
     clearable,
-    errors: backendErrors,
 }) => {
     const { name } = field;
     const {
@@ -28,8 +29,10 @@ export const OrgUnitsLevels = ({
         values,
     } = form;
     const initialOrgUnitId = values[name];
-    const errors = backendErrors ?? getErrors(touched, formErrors);
+    const errors =
+        isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
+
     return (
         <Box position="relative">
             <OrgUnitTreeviewModal
@@ -62,27 +65,4 @@ export const OrgUnitsLevels = ({
             )}
         </Box>
     );
-};
-
-OrgUnitsLevels.defaultProps = {
-    required: false,
-    clearable: true,
-    errors: undefined,
-};
-
-OrgUnitsLevels.propTypes = {
-    field: PropTypes.shape({
-        name: PropTypes.string,
-    }).isRequired,
-    form: PropTypes.shape({
-        setFieldValue: PropTypes.func.isRequired,
-        values: PropTypes.object.isRequired,
-        errors: PropTypes.object,
-        touched: PropTypes.object.isRequired,
-        setFieldTouched: PropTypes.func.isRequired,
-    }).isRequired,
-    label: PropTypes.string.isRequired,
-    required: PropTypes.bool,
-    clearable: PropTypes.bool,
-    errors: PropTypes.arrayOf(PropTypes.string),
 };

@@ -24,6 +24,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     const {
         setFieldValue,
         touched,
+        // @ts-ignore
         errors: formErrors,
         setFieldTouched,
         values,
@@ -45,6 +46,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
                 initialSelection={initialOrgUnit}
                 showStatusIconInTree={false}
                 showStatusIconInPicker={false}
+                // @ts-ignore
                 errors={errors}
                 required={required}
                 clearable={clearable}

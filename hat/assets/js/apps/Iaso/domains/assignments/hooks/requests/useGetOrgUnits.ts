@@ -156,7 +156,8 @@ type Props = {
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     currentType: 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS' | undefined;
-    order: string;
+    order?: string;
+    search?: string;
 };
 
 export const useGetOrgUnits = ({
@@ -168,6 +169,7 @@ export const useGetOrgUnits = ({
     profiles,
     currentType,
     order,
+    search,
 }: Props): UseQueryResult<Locations, Error> => {
     const params: Record<string, any> = {
         validation_status: 'VALID',
@@ -180,6 +182,7 @@ export const useGetOrgUnits = ({
         order,
         orgUnitParentIds: orgUnitParentIds?.join(','),
         orgUnitTypeId: baseOrgunitType,
+        search,
     };
 
     const url = makeUrlWithParams('/api/orgunits/', params);

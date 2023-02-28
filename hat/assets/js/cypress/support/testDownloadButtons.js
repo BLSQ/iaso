@@ -4,10 +4,10 @@ export const testDownloadButtons = (
 ) => {
     const href = fileType => {
         if (domain === 'orgunits') {
-            return `/api/${domain}/?&parent_id=1&limit=10&order=name&validation_status=all&${fileType}=true`;
+            return `/api/${domain}/?&parent_id=2&limit=10&order=name&validation_status=all&${fileType}=true`;
         }
         if (domain === 'links') {
-            return `/api/${domain}/?&orgUnitId=1&limit=10&order=similarity_score&${fileType}=true`;
+            return `/api/${domain}/?&orgUnitId=2&limit=10&order=similarity_score&${fileType}=true`;
         }
     };
 

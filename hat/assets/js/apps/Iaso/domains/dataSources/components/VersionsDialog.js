@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 import Public from '@material-ui/icons/Public';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import AddBox from '@mui/icons-material/AddBoxOutlined';
 import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
@@ -25,10 +26,14 @@ import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { EditSourceVersion } from './EditSourceVersion.tsx';
 
 const useStyles = makeStyles(theme => ({
+    spanStyle: {
+        marginLeft: '4px',
+    },
     ...commonStyles(theme),
 }));
 
@@ -163,8 +168,8 @@ const sortByOrgUnitsDesc = (sourceA, sourceB) => {
     return sourceB.org_units_count - sourceA.org_units_count;
 };
 
-const VersionsDialog = ({ renderTrigger, source }) => {
-    const classes = useStyles();
+const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
+    const { spanStyle, ...classes } = useStyles();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [sortBy, setSortBy] = useState('asc');
@@ -208,6 +213,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
         [page, rowsPerPage],
     );
+
     const sortedData = useMemo(() => {
         if (sortFocus === 'number' && sortBy === 'asc') {
             return formatDataForTable(dataForTable, sortByNumberAsc);
@@ -268,8 +274,7 @@ const VersionsDialog = ({ renderTrigger, source }) => {
         >
             <Table
                 data={sortedData}
-                columns={tableColumns(source)}
-                redirectTo={() => {}}
+                columns={tableColumns(source, forceRefreshParent)}
                 params={params}
                 resetPageToOne={resetPageToOne}
                 pages={pages}
@@ -290,11 +295,12 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
                             <DHIS2Svg />
-                            &nbsp;
-                            <FormattedMessage
-                                id="iaso.versionsDialog.label.newVersionDhis2"
-                                defaultMessage="New version from DHIS2"
-                            />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newVersionDhis2"
+                                    defaultMessage="New version from DHIS2"
+                                />
+                            </span>
                         </Button>
                     )}
                     sourceId={source.id}
@@ -304,16 +310,33 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
                             <Public />
-                            &nbsp;
-                            <FormattedMessage
-                                id="iaso.versionsDialog.label.newVersionGpkg"
-                                defaultMessage="New version from a Geopackage"
-                            />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newVersionGpkg"
+                                    defaultMessage="New version from a Geopackage"
+                                />
+                            </span>
                         </Button>
                     )}
                     sourceId={source.id}
                     sourceName={source.name}
                     projects={source.projects.flat()}
+                />
+
+                <AddNewEmptyVersion
+                    renderTrigger={({ openDialog }) => (
+                        <Button onClick={openDialog}>
+                            <AddBox />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newEmptyVersion"
+                                    defaultMessage="New empty version"
+                                />
+                            </span>
+                        </Button>
+                    )}
+                    sourceId={source.id}
+                    forceRefreshParent={forceRefreshParent}
                 />
             </Grid>
         </DialogComponent>
@@ -329,6 +352,7 @@ VersionsDialog.propTypes = {
         credentials: PropTypes.object,
         projects: PropTypes.array.isRequired,
     }).isRequired,
+    forceRefreshParent: PropTypes.func.isRequired,
 };
 VersionsDialog.defaultProps = {};
 

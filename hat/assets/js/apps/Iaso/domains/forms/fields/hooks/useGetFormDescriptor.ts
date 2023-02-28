@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { FormDescriptor } from '../../../forms/types/forms';
+import { FormDescriptor } from '../../types/forms';
 
 type FormVersions = {
     descriptor: FormDescriptor;

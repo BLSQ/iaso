@@ -1,8 +1,8 @@
+import logging
+
 from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import permissions, serializers
-import logging
-
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 # noinspection PyMethodMayBeStatic
 class SetupAccountSerializer(serializers.Serializer):
-    """Setup an account with a first user and the appropriate sources"""
+    """Set up an account with a first user and the appropriate sources"""
 
     account_name = serializers.CharField(required=True)
     user_username = serializers.CharField(max_length=150, required=True)
@@ -46,7 +46,7 @@ class SetupAccountSerializer(serializers.Serializer):
             last_name=validated_data.get("user_last_name", ""),
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
-        account.users.add(user)
+
         profile = Profile.objects.create(account=account, user=user)
 
         permissions_to_add = CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER

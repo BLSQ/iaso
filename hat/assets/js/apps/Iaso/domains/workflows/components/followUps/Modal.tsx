@@ -14,10 +14,11 @@ import {
     AddButton,
 } from 'bluesquare-components';
 
-import { Grid } from '@material-ui/core';
+import { Grid, Box, useTheme } from '@material-ui/core';
 import InputComponent from '../../../../components/forms/InputComponent';
 import { EditIconButton } from '../ModalButtons';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
+import { Popper } from '../../../forms/fields/components/Popper';
 
 import { useGetForms } from '../../hooks/requests/useGetForms';
 import { useBulkUpdateWorkflowFollowUp } from '../../hooks/requests/useBulkUpdateWorkflowFollowUp';
@@ -51,6 +52,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     newOrder,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const theme = useTheme();
 
     const [logic, setLogic] = useState<JSONValue | undefined>(
         followUp?.condition,
@@ -71,13 +73,13 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                 {
                     id: followUp.id,
                     order: followUp.order,
-                    condition: logic,
+                    condition: logic || true,
                     form_ids: formIds,
                 },
             ]);
         } else {
             createFollowUp({
-                condition: logic,
+                condition: logic || true,
                 form_ids: formIds,
                 order: newOrder || 0,
             });
@@ -130,31 +132,40 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             id="workflow-follow-up"
             onClose={() => null}
         >
-            {fields && (
-                <QueryBuilder
-                    logic={logic}
-                    fields={fields}
-                    onChange={handleChangeLogic}
-                />
-            )}
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={8}>
-                    <InputComponent
-                        type="select"
-                        keyValue="forms"
-                        onChange={(_, value) =>
-                            setForms(commaSeparatedIdsToArray(value))
-                        }
-                        value={formIds.join(',')}
-                        label={MESSAGES.forms}
-                        required
-                        multi
-                        options={formsList}
-                        loading={isFetchingForms}
+            <Box position="relative">
+                <Box
+                    position="absolute"
+                    top={theme.spacing(-7)}
+                    right={theme.spacing(-3)}
+                >
+                    <Popper />
+                </Box>
+                {fields && (
+                    <QueryBuilder
+                        logic={logic}
+                        fields={fields}
+                        onChange={handleChangeLogic}
                     />
+                )}
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={8}>
+                        <InputComponent
+                            type="select"
+                            keyValue="forms"
+                            onChange={(_, value) =>
+                                setForms(commaSeparatedIdsToArray(value))
+                            }
+                            value={formIds.join(',')}
+                            label={MESSAGES.forms}
+                            required
+                            multi
+                            options={formsList}
+                            loading={isFetchingForms}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={4} />
                 </Grid>
-                <Grid item xs={12} md={4} />
-            </Grid>
+            </Box>
         </ConfirmCancelModal>
     );
 };

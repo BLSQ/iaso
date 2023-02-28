@@ -7,7 +7,7 @@ from django.db import models
 from django.db.models import QuerySet
 from django.utils import timezone
 
-from iaso.models import Entity, Instance, OrgUnit, Account
+from iaso.models import Entity, Instance, OrgUnit, Account, Project
 
 
 class StorageDevice(models.Model):
@@ -221,3 +221,19 @@ class StorageLogEntry(models.Model):
     class Meta:
         ordering = ["-performed_at"]
         verbose_name_plural = "storage log entries"
+
+
+class StoragePassword(models.Model):
+    """
+    This model represents a password used to symmetrically encrypt data on a Storage device.
+
+    A StoragePassword is attached to a Project and a Project can have many passwords attached.
+
+    The idea is to be able to rotate passwords in case they are compromised.
+    """
+
+    password = models.CharField(null=False, max_length=100)
+    is_compromised = models.BooleanField(default=False)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="storage_passwords")
+    created_at = models.DateTimeField(auto_now_add=True, editable=False)
+    updated_at = models.DateTimeField(auto_now=True)

@@ -1,6 +1,6 @@
-from django.core.management.base import BaseCommand
 from django.core.files import File
-from django.contrib.auth.models import User
+from django.core.management.base import BaseCommand
+
 from iaso.models import Project, Form, FormVersion
 from iaso.odk import parsing
 

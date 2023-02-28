@@ -31,18 +31,17 @@ import { Period } from '../../periods/models.ts';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import {
-    useGetQueryBuildersFields,
-    useGetQueryBuilderListToReplace,
-} from '../hooks/queryBuilder.ts';
+import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
+import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { Popper } from '../../forms/fields/components/Popper.tsx';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
@@ -281,6 +280,7 @@ const InstancesFiltersComponent = ({
                                 onClear: () =>
                                     handleFormChange('fieldsSearch', undefined),
                             }}
+                            InfoPopper={<Popper />}
                         />
                     )}
                     <InputComponent

@@ -11,6 +11,11 @@ import { getRequest } from '../../libs/Api';
 import SourceVersionSelector from '../../components/SourceVersionSelector/SourceVersionSelector';
 import { selectDefaultVersionId } from '../../redux/selectors';
 import { useSelector } from 'react-redux';
+import MESSAGES from './orgUnitTypes/messages';
+import TopBar from '../../components/nav/TopBarComponent';
+import { useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner } from 'bluesquare-components';
+import { Box } from '@material-ui/core';
 
 const defaultConfig = {
     staleTime: 1000 * 60 * 1,
@@ -71,6 +76,8 @@ const TreeComponent = ({ data, onNodeSelected }) => {
     );
 };
 
+const TreeComponentCached = React.memo(TreeComponent);
+
 const MapComponent = ({ children, bounds }) => {
     const map = useRef();
     useEffect(() => {
@@ -108,38 +115,64 @@ const TreePage = () => {
     if (error) {
         return <>Error from server {error.toString()}</>;
     }
-    const handleSelect = (event, nodeIds) => {
-        setSelectedNodes(nodeIds);
-    };
+    const handleSelect = React.useCallback(
+        (event, nodeIds) => {
+            setSelectedNodes(nodeIds);
+        },
+        [setSelectedNodes],
+    );
+    const { formatMessage } = useSafeIntl();
 
     return (
         <>
-            <Grid container>
-                <Grid container item md={4}>
-                    <Grid item md={12}>
-                        <SourceVersionSelector
-                            value={version}
-                            onChange={value => {
-                                setVersion(value);
-                            }}
-                        />
-                        {isFetching && 'Loading ...'}
+            <TopBar
+                title={formatMessage(MESSAGES.orgUnitsTypes)}
+                displayBackButton={false}
+                id="orgunittype-topbar"
+            />
+            <Box mt={1}>
+                {isFetching && <LoadingSpinner absolute />}
+                <Grid container>
+                    <Grid container item md={4} margin={'2px'}>
+                        <Box margin={2}>
+                            <Grid
+                                item
+                                md={12}
+                                style={{ width: '100%', flex: 1 }}
+                            >
+                                <SourceVersionSelector
+                                    value={version}
+                                    onChange={value => {
+                                        setVersion(value);
+                                    }}
+                                />
+                            </Grid>
+                            <Grid
+                                item
+                                md={12}
+                                style={{
+                                    overflowY: 'auto',
+                                    height: '50%',
+                                    maxHeight: '50%',
+                                    paddingTop: '10px',
+                                }}
+                            >
+                                <TreeComponentCached
+                                    data={data}
+                                    onNodeSelected={handleSelect}
+                                />
+                            </Grid>
+                        </Box>
                     </Grid>
-                    <Grid item md={12}>
-                        <TreeComponent
-                            data={data}
-                            onNodeSelected={handleSelect}
-                        />
+                    <Grid item md={8}>
+                        <MapComponent bounds={bounds}>
+                            {shapes.map(shape => (
+                                <GeoJSON key={shape.id} data={shape.geo_json} />
+                            ))}
+                        </MapComponent>
                     </Grid>
                 </Grid>
-                <Grid item md={8}>
-                    <MapComponent bounds={bounds}>
-                        {shapes.map(shape => (
-                            <GeoJSON key={shape.id} data={shape.geo_json} />
-                        ))}
-                    </MapComponent>
-                </Grid>
-            </Grid>
+            </Box>
         </>
     );
 };

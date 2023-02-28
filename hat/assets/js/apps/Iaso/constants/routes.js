@@ -40,7 +40,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
-import { Deduplication } from '../domains/entities/deduplication/Deduplication.tsx';
+import { Duplicates } from '../domains/entities/deduplication/Duplicates.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -798,10 +798,10 @@ export const entityTypesPath = {
         })),
     ],
 };
-export const entityDeduplicationPath = {
+export const entityDuplicatesPath = {
     baseUrl: baseUrls.entityDuplicates,
     permissions: ['iaso_entities'],
-    component: props => <Deduplication {...props} />,
+    component: props => <Duplicates {...props} />,
     params: [
         {
             isRequired: false,
@@ -1071,7 +1071,7 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
-    entityDeduplicationPath,
+    entityDuplicatesPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,

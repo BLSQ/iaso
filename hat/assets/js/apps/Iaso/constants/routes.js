@@ -678,9 +678,14 @@ export const groupsPath = {
 
 export const treePath = {
     baseUrl: baseUrls.tree,
-    permission: 'iaso_org_units',
+    permissions: ['iaso_org_units'],
     component: props => <TreePage {...props} />,
-    params: [],
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
 };
 
 export const orgUnitTypesPath = {

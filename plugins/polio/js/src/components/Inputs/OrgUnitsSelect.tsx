@@ -1,11 +1,25 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
+import { FormikProps, FieldInputProps } from 'formik';
 import { CircularProgress, Box } from '@material-ui/core';
-import PropTypes from 'prop-types';
-import { OrgUnitTreeviewModal } from 'Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { useGetOrgUnit } from 'Iaso/domains/orgUnits/components/TreeView/requests';
+import { useGetOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/requests';
+import { OrgUnitTreeviewModal } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { isTouched } from '../../utils';
 
-export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
+type Props = {
+    field: FieldInputProps<string>;
+    form: FormikProps<Record<string, any>>;
+    label: string;
+    required?: boolean;
+    clearable?: boolean;
+};
+
+export const OrgUnitsLevels: FunctionComponent<Props> = ({
+    field,
+    form,
+    label,
+    required = false,
+    clearable = true,
+}) => {
     const { name } = field;
     const {
         setFieldValue,
@@ -18,6 +32,7 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
     const errors =
         isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
+
     return (
         <Box position="relative">
             <OrgUnitTreeviewModal
@@ -30,7 +45,7 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
                 initialSelection={initialOrgUnit}
                 showStatusIconInTree={false}
                 showStatusIconInPicker={false}
-                errors={errors}
+                errors={errors as string[]}
                 required={required}
                 clearable={clearable}
             />
@@ -50,25 +65,4 @@ export const OrgUnitsLevels = ({ field, form, label, required, clearable }) => {
             )}
         </Box>
     );
-};
-
-OrgUnitsLevels.defaultProps = {
-    required: false,
-    clearable: true,
-};
-
-OrgUnitsLevels.propTypes = {
-    field: PropTypes.shape({
-        name: PropTypes.string,
-    }).isRequired,
-    form: PropTypes.shape({
-        setFieldValue: PropTypes.func.isRequired,
-        values: PropTypes.object.isRequired,
-        errors: PropTypes.object,
-        touched: PropTypes.object.isRequired,
-        setFieldTouched: PropTypes.func.isRequired,
-    }).isRequired,
-    label: PropTypes.string.isRequired,
-    required: PropTypes.bool,
-    clearable: PropTypes.bool,
 };

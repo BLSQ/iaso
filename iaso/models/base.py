@@ -813,7 +813,9 @@ class Instance(models.Model):
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
-    form_version_id = models.IntegerField(blank=True, null=True)
+    form_version = models.ForeignKey(
+        "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
+    )
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -1012,7 +1014,7 @@ class Instance(models.Model):
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
-            "form_version_id": self.form_version_id,
+            "form_version_id": self.form_version.id if self.form_version else None,
             "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
@@ -1099,8 +1101,8 @@ class Instance(models.Model):
     def save(self, *args, **kwargs):
         if self.json is not None and self.json.get("_version"):
             try:
-                form_version_id = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id).id
-                self.form_version_id = form_version_id
+                form_version = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id)
+                self.form_version = form_version
             except ObjectDoesNotExist:
                 pass
         return super(Instance, self).save(*args, **kwargs)

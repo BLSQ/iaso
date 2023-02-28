@@ -1330,3 +1330,4 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/{instance.pk}/")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["form_version_id"], form_version.id)
+        self.assertEqual(response.json()["form_name"], "Hydroponics study")

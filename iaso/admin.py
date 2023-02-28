@@ -69,6 +69,7 @@ from .models import (
     BulkCreateUserCsvFile,
     InstanceLock,
     StorageDevice,
+    StoragePassword,
     StorageLogEntry,
     Workflow,
     WorkflowVersion,
@@ -500,6 +501,19 @@ class StorageDeviceAdmin(admin.ModelAdmin):
     ]
 
 
+class StoragePasswordAdmin(admin.ModelAdmin):
+    fields = (
+        "password",
+        "is_compromised",
+        "project",
+        "created_at",
+        "updated_at",
+    )
+    readonly_fields = ("created_at", "updated_at")
+    list_display = ("project", "password")
+    list_filter = ("project", "is_compromised")
+
+
 class WorkflowAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
 
@@ -576,6 +590,7 @@ admin.site.register(BulkCreateUserCsvFile)
 admin.site.register(Assignment, AssignmentAdmin)
 admin.site.register(InstanceLock, InstanceLockAdmin)
 admin.site.register(StorageDevice, StorageDeviceAdmin)
+admin.site.register(StoragePassword, StoragePasswordAdmin)
 admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)

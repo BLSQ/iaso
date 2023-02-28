@@ -160,6 +160,12 @@ const menuItems = defaultSourceId => [
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
             },
+            {
+                label: MESSAGES.entityTypesTitle,
+                permissions: paths.entityDeduplicationPath.permissions,
+                key: 'duplicates',
+                icon: props => <CategoryIcon {...props} />,
+            },
         ],
     },
     {

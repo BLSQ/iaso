@@ -40,6 +40,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
+import { Deduplication } from '../domains/entities/deduplication/Deduplication.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -797,6 +798,25 @@ export const entityTypesPath = {
         })),
     ],
 };
+export const entityDeduplicationPath = {
+    baseUrl: baseUrls.entityDuplicates,
+    permissions: ['iaso_entities'],
+    component: props => <Deduplication {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        // ...paginationPathParams.map(p => ({
+        //     ...p,
+        //     isRequired: true,
+        // })),
+    ],
+};
 export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
@@ -1051,6 +1071,7 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
+    entityDeduplicationPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,

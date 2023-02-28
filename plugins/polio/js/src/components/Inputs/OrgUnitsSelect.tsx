@@ -11,6 +11,13 @@ type Props = {
     label: string;
     required?: boolean;
     clearable?: boolean;
+    errors?: string[];
+};
+
+const getErrors = (touched, formErrors) => {
+    const { name } = formErrors;
+
+    return isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
 };
 
 export const OrgUnitsLevels: FunctionComponent<Props> = ({
@@ -19,6 +26,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     label,
     required = false,
     clearable = true,
+    errors: backendErrors = undefined,
 }) => {
     const { name } = field;
     const {
@@ -29,8 +37,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
         values,
     } = form;
     const initialOrgUnitId = values[name];
-    const errors =
-        isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
+    const errors = backendErrors ?? getErrors(touched, formErrors);
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
 
     return (
@@ -45,7 +52,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
                 initialSelection={initialOrgUnit}
                 showStatusIconInTree={false}
                 showStatusIconInPicker={false}
-                errors={errors as string[]}
+                errors={errors}
                 required={required}
                 clearable={clearable}
             />

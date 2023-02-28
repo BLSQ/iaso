@@ -40,6 +40,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
+import TreePage from '../domains/orgUnits/tree';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -675,6 +676,13 @@ export const groupsPath = {
     ],
 };
 
+export const treePath = {
+    baseUrl: baseUrls.tree,
+    permission: 'iaso_org_units',
+    component: props => <TreePage {...props} />,
+    params: [],
+};
+
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     permissions: ['iaso_org_units'],
@@ -1040,6 +1048,7 @@ export const routeConfigs = [
     tasksPath,
     devicesPath,
     groupsPath,
+    treePath,
     orgUnitTypesPath,
     entityTypesPath,
     pagesPath,

@@ -59,7 +59,7 @@ export const credentialsAsOptions = credentials => {
     }));
 };
 
-const formatSourceVersionLabel = (formatMessage, sourceVersion) => {
+export const formatSourceVersionLabel = (formatMessage, sourceVersion) => {
     const name = sourceVersion.data_source_name ?? 'Unnamed source';
     const version = formatMessage(MESSAGES.version);
     const number = sourceVersion.number.toString();
@@ -79,7 +79,7 @@ export const versionsAsOptionsWithSourceName = ({
     return versions.map(version => {
         return {
             label: formatSourceVersionLabel(formatMessage, version),
-            value: version.id,
+            value: version.id.toString(),
         };
     });
 };

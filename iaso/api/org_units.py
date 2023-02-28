@@ -6,13 +6,15 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
 from django.core.paginator import Paginator
-from django.db.models import Q, IntegerField, Value
-from django.http import StreamingHttpResponse, HttpResponse
+from django.db.models import Q
+from django.db.models import Value, IntegerField
+from django.http import StreamingHttpResponse, HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
+from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
@@ -21,7 +23,7 @@ from iaso.api.common import safe_api_import, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
 from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
 from iaso.utils import geojson_queryset
 
 
@@ -295,6 +297,69 @@ class OrgUnitViewSet(viewsets.ViewSet):
         response["Content-Disposition"] = f"attachment; filename={filename}"
 
         return response
+
+    @action(detail=False, methods=["GET"], permission_classes=[permissions.IsAuthenticated, permissions.IsAdminUser])
+    def tree_source_data(self, request):
+        tree = {"children": [], "id": "0", "name": "root"}
+        ds: DataSource
+        for ds in DataSource.objects.all():
+            versions = [
+                {
+                    "name": f"version {v.number} - {v.created_at.strftime('%Y-%m-%d')}",
+                    "id": f"{ds.id} - {v.id}",
+                    "num_children": v.orgunit_set.count(),
+                }
+                for v in ds.versions.all()
+            ]
+            tree["children"].append({"name": ds.name, "id": str(ds.id), "children": versions})
+        return JsonResponse(tree)
+
+    @action(detail=False, methods=["GET"], permission_classes=[permissions.IsAuthenticated, permissions.IsAdminUser])
+    def tree(self, request: "Request"):
+        version_id = request.query_params.get("version_id")
+        source_version = SourceVersion.objects.get(pk=version_id)
+
+        # assume parent are already created, hence ordering by path
+        def get_parent_dict(d, path):
+            for part in path.split(".")[:-1]:
+                d = d[part].setdefault("children", {})
+            return d
+
+        def insert_in_tree(tree, path, infos):
+            parent = get_parent_dict(tree, path)
+            cur = path.rsplit(".", maxsplit=1)[-1]
+            parent[cur] = infos
+
+        def add_counts(node):
+            total = 0
+            if "children" in node:
+                for child in node["children"].values():
+                    total += add_counts(child)
+            node["num_children"] = total
+            return total + 1  # count yourself
+
+        tree = {"children": {}, "id": "0", "name": f"Source: {source_version}"}
+        for ou in source_version.orgunit_set.all().select_related("org_unit_type").order_by("path"):
+            insert_in_tree(
+                tree["children"],
+                str(ou.path),
+                {
+                    "name": ou.name,
+                    "type": ou.org_unit_type.name,
+                    "id": str(ou.id),
+                    "has_geo_json": True if ou.simplified_geom else False,
+                },
+            )
+
+        def plop_tree(node):  # convert children dict in list in place
+            if "children" in node:
+                node["children"] = list(node["children"].values())
+                for child in node["children"]:
+                    plop_tree(child)
+
+        add_counts(tree)
+        plop_tree(tree)
+        return JsonResponse(tree)
 
     def partial_update(self, request, pk=None):
         errors = []

@@ -9,6 +9,11 @@
             "name": "LastName",
             "type": "text",
             "label": "Last name SOURCE"
+        },
+        {
+            "name": "Age",
+            "type": "integer",
+            "label": "Age"
         }
     ]
 }

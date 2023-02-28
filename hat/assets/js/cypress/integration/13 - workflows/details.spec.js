@@ -42,6 +42,73 @@ describe('Workflows details', () => {
         const errorCode = cy.get('#error-code');
         errorCode.should('contain', '401');
     });
+    it('with PUBLISHED or UNPUBLISHED status should not be able to publish; create, delete, change order or edit follow-ups and create, edit, delete changes', () => {
+        const testStatus = status => {
+            mockPage();
+            const fixture = {
+                ...details,
+                status,
+            };
+            cy.intercept(
+                {
+                    pathname: '/api/workflowversions/12/',
+                    method: 'GET',
+                },
+                fixture,
+            ).as('getDetails');
+            cy.visit(baseUrl);
+
+            cy.wait([
+                '@getDetails',
+                '@getDescriptor',
+                '@getPossibleFields',
+            ]).then(() => {
+                cy.log('Publish');
+                cy.get('[data-test="publish-workflow-button"]').should(
+                    'not.exist',
+                );
+                cy.log('Create follow-up');
+                cy.get('[data-test="create-follow-ups"]').should('not.exist');
+
+                cy.log('Edit and delete follow-up');
+                cy.get('[data-test="follow-ups"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .last()
+                    .find('button')
+                    .should('not.exist');
+
+                cy.log('Change order');
+                cy.get('[data-test="follow-ups"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .eq(0)
+                    .should('contain', '1');
+                cy.get('[data-test="reset-follow-up-order"]').should(
+                    'not.exist',
+                );
+                cy.get('[data-test="save-follow-up-order"]').should(
+                    'not.exist',
+                );
+
+                cy.log('Create change');
+                cy.get('[data-test="create-change"]').should('not.exist');
+
+                cy.log('Edit and delete change');
+                cy.get('[data-test="changes"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .last()
+                    .find('button')
+                    .should('not.exist');
+            });
+        };
+        testStatus('PUBLISHED');
+        testStatus('UNPUBLISHED');
+    });
     describe('with any status', () => {
         beforeEach(() => {
             mockPage();
@@ -398,10 +465,6 @@ describe('Workflows details', () => {
                 });
             });
         });
-        // TO-DO: implement drag & drop behaviour  with cypress => https://github.com/clauderic/dnd-kit/blob/master/cypress/support/commands.ts
-        it.skip('should change order of follow-ups and save it', () => {});
-        it.skip('should reset order of follow-ups', () => {});
-
         it('should create a change', () => {
             interceptFlag = false;
             cy.intercept(
@@ -587,23 +650,44 @@ describe('Workflows details', () => {
                         .invoke('attr', 'value')
                         .should('eq', '');
                     cy.get('@source').click();
-                    cy.get('#source-option-0').click();
+                    cy.log(
+                        'Selected source should not be present in options list',
+                    );
+                    cy.get('#source-popup').should('not.contain', 'Last name');
+                    cy.get('#source-option-1').click();
 
+                    cy.log("Save should be disabled if type does'nt match");
+                    cy.get('@saveButton')
+                        .invoke('attr', 'disabled')
+                        .should('equal', 'disabled');
+
+                    cy.get('[data-test="change-modal"]')
+                        .find('table tbody tr')
+                        .eq(1)
+                        .find('td')
+                        .eq(1)
+                        .find('#target')
+                        .as('target')
+                        .invoke('attr', 'value')
+                        .should('eq', '');
+                    cy.get('@target').click();
+                    cy.get('#target-popup').should('not.contain', 'Type: text');
+                    cy.get('#target-option-0').click();
                     cy.get('@saveButton')
                         .invoke('attr', 'disabled')
                         .should('equal', undefined);
-                });
 
-                cy.get('@saveButton').click();
-                cy.wait('@editChange').then(xhr => {
-                    cy.wrap(xhr.request.body).its('form').should('eq', 4);
-                    cy.wrap(xhr.request.body.mapping)
-                        .its('first_name')
-                        .should('eq', 'LastName');
-                    cy.wrap(xhr.request.body.mapping)
-                        .its('last_name')
-                        .should('eq', 'firstName');
-                    cy.wrap(interceptFlag).should('eq', true);
+                    cy.get('@saveButton').click();
+                    cy.wait('@editChange').then(xhr => {
+                        cy.wrap(xhr.request.body).its('form').should('eq', 4);
+                        cy.wrap(xhr.request.body.mapping)
+                            .its('first_name')
+                            .should('eq', 'LastName');
+                        cy.wrap(xhr.request.body.mapping)
+                            .its('age')
+                            .should('eq', 'Age');
+                        cy.wrap(interceptFlag).should('eq', true);
+                    });
                 });
             });
         });
@@ -650,24 +734,8 @@ describe('Workflows details', () => {
             });
         });
 
-        describe('follow-up modal', () => {
-            it.skip('should set condition to true if empty', () => {});
-        });
-        describe('changes modal', () => {
-            it.skip('should match fields type', () => {});
-            it.skip('should not have mapping on the same field', () => {});
-        });
-    });
-    describe('with PUBLISHED status', () => {
-        it.skip('should not be possible to publish', () => {});
-        it.skip('should not create edit or delete a follow-up', () => {});
-        it.skip('should not change order of follow-ups and save it', () => {});
-        it.skip('should not create edit or delete a change', () => {});
-    });
-    describe('with UNPUBLISHED status', () => {
-        it.skip('should not be possible to publish', () => {});
-        it.skip('should not create edit or delete a follow-up', () => {});
-        it.skip('should not change order of follow-ups and save it', () => {});
-        it.skip('should not create edit or delete a change', () => {});
+        // TO-DO: implement drag & drop behaviour  with cypress => https://github.com/clauderic/dnd-kit/blob/master/cypress/support/commands.ts
+        it.skip('should change order of follow-ups and save it', () => {});
+        it.skip('should reset order of follow-ups', () => {});
     });
 });

@@ -12,7 +12,7 @@ const mockPage = () => {
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', {
         fixture: 'profiles/me/superuser.json',
-    });
+    }).as('getProfile');
     cy.intercept('GET', '/api/workflowversions/12/', {
         fixture: 'workflows/details.json',
     }).as('getDetails');
@@ -25,7 +25,7 @@ const mockPage = () => {
 
     cy.intercept('GET', '/api/forms/?fields=id,name', {
         fixture: 'forms/list.json',
-    });
+    }).as('getForms');
 };
 const name = 'mario';
 
@@ -130,33 +130,34 @@ describe('Workflows details', () => {
                 .find('tr')
                 .eq(1)
                 .as('secondRow');
+
             cy.get('@firstRow')
                 .find('td')
                 .eq(1)
-                .should('contain', 'Gender = Male AND Entity Group = Group A');
-            cy.get('@firstRow').find('td').eq(2).should('contain', 'FORM_3');
+                .should('contain', 'Last name = last_name_value');
+            cy.get('@firstRow').find('td').eq(2).should('contain', 'FORM_2');
             cy.get('@firstRow')
                 .find('td')
                 .eq(3)
-                .should('contain', '31/01/2023');
+                .should('contain', '01/02/2023');
             cy.get('@firstRow')
                 .find('td')
                 .eq(4)
-                .should('contain', '13/02/2023');
+                .should('contain', '01/02/2023');
 
             cy.get('@secondRow')
                 .find('td')
                 .eq(1)
-                .should('contain', 'Last name = last_name_value');
-            cy.get('@secondRow').find('td').eq(2).should('contain', 'FORM_2');
+                .should('contain', 'Gender = Male AND Entity Group = Group A');
+            cy.get('@secondRow').find('td').eq(2).should('contain', 'FORM_3');
             cy.get('@secondRow')
                 .find('td')
                 .eq(3)
-                .should('contain', '01/02/2023');
+                .should('contain', '31/01/2023');
             cy.get('@secondRow')
                 .find('td')
                 .eq(4)
-                .should('contain', '01/02/2023');
+                .should('contain', '13/02/2023');
         });
         it('should display correct changes', () => {
             cy.get('[data-test="changes"]').find('table').as('changesTable');
@@ -243,8 +244,7 @@ describe('Workflows details', () => {
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
-
-        it.only('should create a follow-up', () => {
+        it('should create a follow-up', () => {
             interceptFlag = false;
             cy.intercept(
                 {
@@ -271,7 +271,7 @@ describe('Workflows details', () => {
                 cy.get('[data-test="create-follow-ups"')
                     .should('be.visible')
                     .click();
-                cy.get('[data-test="follow-up-modal"').should('be.visible');
+                cy.get('[data-test="follow-up-modal"]').should('be.visible');
                 cy.get('[data-test="confirm-button"]').as('saveButton');
                 cy.get('@saveButton')
                     .invoke('attr', 'disabled')
@@ -301,7 +301,7 @@ describe('Workflows details', () => {
                 });
             });
         });
-        it.only('should edit a follow-up', () => {
+        it('should edit a follow-up', () => {
             // TO-DO: test query builder properly, point here is to test edit feature
             interceptFlag = false;
             cy.intercept(
@@ -322,7 +322,9 @@ describe('Workflows details', () => {
                 '@getDetails',
                 '@getDescriptor',
                 '@getPossibleFields',
+                '@getProfile',
             ]).then(() => {
+                cy.wait(500);
                 cy.get('[data-test="follow-ups"]')
                     .find('table tbody tr')
                     .eq(0)
@@ -332,6 +334,7 @@ describe('Workflows details', () => {
                     .first()
                     .click();
                 cy.get('[data-test="follow-up-modal"').should('be.visible');
+
                 cy.get('[data-test="confirm-button"]').as('saveButton');
                 cy.testMultiSelect('#forms', [{ name: 'FORM 1' }]);
                 cy.get('.query-builder button').eq(0).click();
@@ -360,27 +363,299 @@ describe('Workflows details', () => {
                 });
             });
         });
-        it.skip('should delete a follow-up', () => {});
+        it('should delete a follow-up', () => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'delete',
+                    pathname: '/api/workflowfollowups/1/',
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('deleteFollowUp');
+
+            cy.wait('@getDetails').then(() => {
+                cy.get('[data-test="follow-ups"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .last()
+                    .find('button')
+                    .last()
+                    .click();
+
+                cy.get(
+                    '[data-test="delete-dialog-delete-workflow-follow-up-1"]',
+                ).should('be.visible');
+                cy.get('[data-test="confirm-button"]').click();
+                cy.wait('@deleteFollowUp').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+        });
+        // TO-DO: implement drag & drop behaviour  with cypress => https://github.com/clauderic/dnd-kit/blob/master/cypress/support/commands.ts
         it.skip('should change order of follow-ups and save it', () => {});
         it.skip('should reset order of follow-ups', () => {});
 
-        it.skip('should create a change', () => {});
-        it.skip('should edit a change', () => {});
-        it.skip('should delete a change', () => {});
+        it('should create a change', () => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'POST',
+                    pathname: '/api/workflowchanges/',
+                    query: {
+                        version_id: '12',
+                    },
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('addChange');
+
+            cy.wait([
+                '@getDetails',
+                '@getDescriptor',
+                '@getPossibleFields',
+            ]).then(() => {
+                cy.intercept('GET', '/api/forms/1/?fields=possible_fields', {
+                    fixture: 'workflows/possible_fields.json',
+                });
+                cy.get('[data-test="create-change"]').click();
+                cy.get('[data-test="change-modal"]').should('be.visible');
+                cy.get('[data-test="confirm-button"]').as('saveButton');
+                cy.get('@saveButton')
+                    .invoke('attr', 'disabled')
+                    .should('equal', 'disabled');
+                cy.testInputValue('#forms', '');
+                cy.fillSingleSelect('#forms', 0);
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr')
+                    .should('have.length', 0);
+                cy.get('[data-test="create-change-button"]').click();
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr')
+                    .should('have.length', 1);
+
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr td')
+                    .eq(0)
+                    .find('#source')
+                    .click();
+                cy.get('#source-option-1').click();
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr td')
+                    .eq(1)
+                    .find('#target')
+                    .click();
+                cy.get('#target-option-1').click();
+
+                cy.get('@saveButton')
+                    .invoke('attr', 'disabled')
+                    .should('equal', undefined);
+                cy.get('@saveButton').click();
+                cy.wait('@addChange').then(xhr => {
+                    // {"form":67,"mapping":{"registration_id":"nom"}}
+                    cy.wrap(xhr.request.body).its('form').should('eq', 1);
+                    cy.wrap(xhr.request.body.mapping)
+                        .its('middle_names')
+                        .should('eq', 'middle_names');
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+        });
+        it('should edit a change', () => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'PUT',
+                    pathname: '/api/workflowchanges/1/',
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('editChange');
+
+            cy.wait([
+                '@getDetails',
+                '@getDescriptor',
+                '@getPossibleFields',
+                '@getProfile',
+            ]).then(() => {
+                cy.intercept('GET', '/api/forms/2/?fields=possible_fields', {
+                    fixture: 'workflows/possible_fields_source.json',
+                });
+
+                cy.intercept('GET', '/api/forms/?fields=id,name', {
+                    fixture: 'forms/list.json',
+                });
+                cy.get('[data-test="changes"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .last()
+                    .find('button')
+                    .first()
+                    .click();
+                cy.get('[data-test="change-modal"').should('be.visible');
+
+                cy.get('[data-test="confirm-button"]').as('saveButton');
+
+                cy.testInputValue('#forms', 'FORM 1');
+
+                cy.intercept('GET', '/api/forms/4/?fields=possible_fields', {
+                    fixture: 'workflows/possible_fields_source.json',
+                }).as('getSourcePossibleFields');
+
+                cy.log('Should display correct infos');
+
+                cy.log('on first row');
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .eq(0)
+                    .find('#source')
+                    .invoke('attr', 'value')
+                    .should('contain', 'First name');
+
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr')
+                    .eq(1)
+                    .find('td')
+                    .eq(0)
+                    .find('#source')
+                    .invoke('attr', 'value')
+                    .should('contain', 'Last name');
+                cy.log('on second row');
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .eq(1)
+                    .find('#target')
+                    .invoke('attr', 'value')
+                    .should('contain', 'First name');
+
+                cy.get('[data-test="change-modal"]')
+                    .find('table tbody tr')
+                    .eq(1)
+                    .find('td')
+                    .eq(1)
+                    .find('#target')
+                    .invoke('attr', 'value')
+                    .should('contain', 'Last name');
+
+                cy.log('Sources should be empty by changing source form');
+                cy.fillSingleSelect('#forms', 2);
+                cy.get('@saveButton')
+                    .invoke('attr', 'disabled')
+                    .should('equal', 'disabled');
+                cy.wait('@getSourcePossibleFields').then(() => {
+                    cy.wait(200);
+                    cy.get('[data-test="change-modal"]')
+                        .find('table tbody tr')
+                        .eq(0)
+                        .find('td')
+                        .eq(0)
+                        .find('#source')
+                        .as('source')
+                        .invoke('attr', 'value')
+                        .should('eq', '');
+                    cy.get('@source').click();
+                    cy.get('#source-option-1').click();
+
+                    cy.get('[data-test="change-modal"]')
+                        .find('table tbody tr')
+                        .eq(1)
+                        .find('td')
+                        .eq(0)
+                        .find('#source')
+                        .as('source')
+                        .invoke('attr', 'value')
+                        .should('eq', '');
+                    cy.get('@source').click();
+                    cy.get('#source-option-0').click();
+
+                    cy.get('@saveButton')
+                        .invoke('attr', 'disabled')
+                        .should('equal', undefined);
+                });
+
+                cy.get('@saveButton').click();
+                cy.wait('@editChange').then(xhr => {
+                    cy.wrap(xhr.request.body).its('form').should('eq', 4);
+                    cy.wrap(xhr.request.body.mapping)
+                        .its('first_name')
+                        .should('eq', 'LastName');
+                    cy.wrap(xhr.request.body.mapping)
+                        .its('last_name')
+                        .should('eq', 'firstName');
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+        });
+        it('should delete a change', () => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'delete',
+                    pathname: '/api/workflowchanges/1/',
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: {},
+                    });
+                },
+            ).as('deleteChange');
+
+            cy.wait([
+                '@getDetails',
+                '@getDescriptor',
+                '@getPossibleFields',
+            ]).then(() => {
+                cy.intercept('GET', '/api/forms/7/?fields=possible_fields', {
+                    fixture: 'workflows/possible_fields_source.json',
+                });
+                cy.get('[data-test="changes"]')
+                    .find('table tbody tr')
+                    .eq(0)
+                    .find('td')
+                    .last()
+                    .find('button')
+                    .last()
+                    .click();
+
+                cy.get(
+                    '[data-test="delete-dialog-delete-workflow-change-1"]',
+                ).should('be.visible');
+                cy.get('[data-test="confirm-button"]').click();
+                cy.wait('@deleteChange').then(() => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                });
+            });
+        });
 
         describe('follow-up modal', () => {
-            it.skip('should display correct infos', () => {});
-            it.skip('should not save if form is not set', () => {});
             it.skip('should set condition to true if empty', () => {});
-            it.skip('should save correctly', () => {});
         });
         describe('changes modal', () => {
-            it.skip('should display correct infos ', () => {});
             it.skip('should match fields type', () => {});
-            it.skip('should not save if a mapping is empty', () => {});
             it.skip('should not have mapping on the same field', () => {});
-            it.skip('should not save if form is empty', () => {});
-            it.skip('should save correctly', () => {});
         });
     });
     describe('with PUBLISHED status', () => {

@@ -302,7 +302,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
-                                {/* @ts-ignore */}
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}
@@ -312,6 +311,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                     referenceForm={
                                         workflowVersion?.reference_form
                                     }
+                                    iconProps={{
+                                        dataTestId: 'create-change',
+                                    }}
                                 />
                             </Box>
                         )}

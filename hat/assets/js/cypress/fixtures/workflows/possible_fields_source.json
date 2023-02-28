@@ -1,0 +1,14 @@
+{
+    "possible_fields": [
+        {
+            "name": "firstName",
+            "type": "text",
+            "label": "First name SOURCE"
+        },
+        {
+            "name": "LastName",
+            "type": "text",
+            "label": "Last name SOURCE"
+        }
+    ]
+}

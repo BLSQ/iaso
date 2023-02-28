@@ -47,6 +47,10 @@ const getRedirections = overrideLanding => {
             to: `${baseUrls.entityTypes}${getPaginationParams('name')}`,
         },
         {
+            path: `${baseUrls.entityDuplicates}`,
+            to: `${baseUrls.entityDuplicates}${getPaginationParams()}`,
+        },
+        {
             path: `${baseUrls.groups}`,
             to: `${baseUrls.groups}${getPaginationParams('name')}`,
         },

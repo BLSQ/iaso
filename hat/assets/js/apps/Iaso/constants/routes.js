@@ -40,7 +40,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
-import { Duplicates } from '../domains/entities/deduplication/Duplicates.tsx';
+import { Duplicates } from '../domains/entities/duplicates/Duplicates.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -811,10 +811,10 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'search',
         },
-        // ...paginationPathParams.map(p => ({
-        //     ...p,
-        //     isRequired: true,
-        // })),
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
     ],
 };
 export const planningPath = {

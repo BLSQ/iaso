@@ -837,12 +837,10 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.as_dict()["altitude"], form_altitude)
 
     def test_create_org_unit_from_different_level_from_mobile(self):
-
         self.client.force_authenticate(self.yoda)
 
         ou_type = OrgUnitType.objects.create(name="Test_type")
         org_unit_parent = OrgUnit.objects.create(name="A_new_OU")
-
         count_of_orgunits = OrgUnit.objects.all().count()
 
         data = [

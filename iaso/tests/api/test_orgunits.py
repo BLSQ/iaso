@@ -1006,20 +1006,6 @@ class OrgUnitAPITestCase(APITestCase):
     def test_org_unit_search_only_direct_children_true(self):
         self.client.force_authenticate(self.yoda)
 
-        jedi_squad_endor_2_children = m.OrgUnit.objects.create(
-            org_unit_type=self.jedi_council,
-            parent=self.jedi_squad_endor_2,
-            version=self.sw_version_2,
-            name="Endor Jedi Squad 2 Children",
-            geom=self.mock_multipolygon,
-            simplified_geom=self.mock_multipolygon,
-            catchment=self.mock_multipolygon,
-            location=self.mock_point,
-            validation_status=m.OrgUnit.VALIDATION_VALID,
-        )
-
-        jedi_squad_endor_2_children.save()
-
         response = self.client.get(
             f"/api/orgunits/?&parent_id={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=true"
         )

@@ -37,7 +37,7 @@ export const useGetApiParams = (params: StorageDetailsParams): GetAPiParams => {
         type,
         storageId,
     };
-    const baseUrl = `/api/storage/${type}/${storageId}/logs`;
+    const baseUrl = `/api/storages/${type}/${storageId}/logs`;
     const url = makeUrlWithParams(baseUrl, apiParams);
     return {
         url,

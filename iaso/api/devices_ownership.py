@@ -10,7 +10,7 @@ class DevicesOwnershipViewSet(viewsets.ViewSet):
 
     This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
 
-    GET /api/devicesownership/
+    GET /api/devicesownerships/
     """
 
     permission_classes = [

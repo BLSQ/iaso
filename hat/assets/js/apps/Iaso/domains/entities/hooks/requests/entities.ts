@@ -47,18 +47,18 @@ export const useGetPaginated = (
     const searchParams = new URLSearchParams(newParams);
     // @ts-ignore
     return useSnackQuery(['entities', newParams], () =>
-        getRequest(`/api/entity/?${searchParams.toString()}`),
+        getRequest(`/api/entities/?${searchParams.toString()}`),
     );
 };
 
 export const useGet = (): UseQueryResult<Array<Entity>, Error> => {
     // @ts-ignore
-    return useSnackQuery(['entities'], () => getRequest('/api/entity/'));
+    return useSnackQuery(['entities'], () => getRequest('/api/entities/'));
 };
 
 export const useDelete = (): UseMutationResult =>
     useSnackMutation({
-        mutationFn: body => deleteRequest(`/api/entity/${body.id}/`),
+        mutationFn: body => deleteRequest(`/api/entities/${body.id}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         invalidateQueryKey: ['entities'],
@@ -68,7 +68,7 @@ export const useSave = (): UseMutationResult =>
     useSnackMutation({
         mutationFn: body =>
             body.id
-                ? patchRequest(`/api/entity/${body.id}/`, body)
-                : postRequest('/api/entity/', body),
+                ? patchRequest(`/api/entities/${body.id}/`, body)
+                : postRequest('/api/entities/', body),
         invalidateQueryKey: ['entities'],
     });

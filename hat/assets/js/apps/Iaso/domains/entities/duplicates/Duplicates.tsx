@@ -10,6 +10,7 @@ import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink'
 import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { useDuplicationTableColumns } from './hooks/useDuplicationTableColumns';
+import { DuplicatesFilters } from './DuplicatesFilters';
 
 type Params = PaginationParams & { search?: string; accountId?: string };
 
@@ -44,6 +45,7 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <DuplicatesFilters params={params} />
                 <TableWithDeepLink
                     marginTop={false}
                     data={results}

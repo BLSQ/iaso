@@ -33,6 +33,38 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.entityB',
         defaultMessage: 'Entity B',
     },
+    search: {
+        id: 'iaso.search',
+        defaultMessage: 'Search',
+    },
+    entityTypes: {
+        id: 'iaso.entityTypes.title',
+        defaultMessage: 'Beneficiary types',
+    },
+    startDatefrom: {
+        id: 'iaso.label.startDatefrom',
+        defaultMessage: 'Start date from',
+    },
+    endDateUntil: {
+        id: 'iaso.label.endDateUntil',
+        defaultMessage: 'End date until',
+    },
+    submitterTeam: {
+        id: 'iaso.label.submitterTeam',
+        defaultMessage: 'Submitter team',
+    },
+    submitter: {
+        id: 'iaso.label.submitter',
+        defaultMessage: 'Submitter',
+    },
+    location: {
+        id: 'iaso.forms.location',
+        defaultMessage: 'Location',
+    },
+    showIgnored: {
+        id: 'iaso.label.showIgnored',
+        defaultMessage: 'Show ignored',
+    },
 });
 
 export default MESSAGES;

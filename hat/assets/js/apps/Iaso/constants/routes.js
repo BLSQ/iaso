@@ -807,14 +807,58 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'accountId',
         },
-        {
-            isRequired: false,
-            key: 'search',
-        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,
         })),
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'algorithm',
+        },
+        {
+            isRequired: false,
+            key: 'similarity', // needs filter
+        },
+        {
+            isRequired: false,
+            key: 'entity_type',
+        },
+        {
+            isRequired: false,
+            key: 'org_unit',
+        },
+        {
+            isRequired: false,
+            key: 'start_date',
+        },
+        {
+            isRequired: false,
+            key: 'end_date',
+        },
+        {
+            isRequired: false,
+            key: 'submitter',
+        },
+        {
+            isRequired: false,
+            key: 'submitter_team',
+        },
+        {
+            isRequired: false,
+            key: 'ignored',
+        },
+        {
+            isRequired: false,
+            key: 'entity',
+        },
+        {
+            isRequired: false,
+            key: 'fields', // needs filter
+        },
     ],
 };
 export const planningPath = {

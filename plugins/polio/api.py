@@ -1031,10 +1031,8 @@ def handle_ona_request_with_key(request, key, country_id=None):
         cid = int(country_id) if (country_id and country_id.isdigit()) else None
         if country_id is not None and config.get("country_id", None) != cid:
             continue
-        forms = get_url_content(
-            url=config["url"], login=config["login"], password=config["password"], minutes=config.get("minutes", 60)
-        )
         country = OrgUnit.objects.get(id=config["country_id"])
+
         facilities = (
             OrgUnit.objects.hierarchy(country)
             .filter(org_unit_type_id__category="HF")
@@ -1042,12 +1040,27 @@ def handle_ona_request_with_key(request, key, country_id=None):
             .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
+        logger.info(f"vaccines country cache len {len(cache)}")
         # Add fields to speed up detection of campaign day
         campaign_qs = campaigns.filter(country_id=country.id).annotate(
             last_start_date=Max("rounds__started_at"),
             start_date=Min("rounds__started_at"),
             end_date=Max("rounds__ended_at"),
         )
+
+        # If all the country's campaigns has been over for more than five day, don't fetch submission from remote server
+        # use cache
+        last_campaign_date_agg = campaign_qs.aggregate(last_date=Max("end_date"))
+        last_campaign_date: Optional[dt.date] = last_campaign_date_agg["last_date"]
+        prefer_cache = last_campaign_date and (last_campaign_date + timedelta(days=5)) < dt.date.today()
+        forms = get_url_content(
+            url=config["url"],
+            login=config["login"],
+            password=config["password"],
+            minutes=config.get("minutes", 60),
+            prefer_cache=prefer_cache,
+        )
+        logger.info(f"vaccines  {country.name}  forms: {len(forms)}")
 
         for form in forms:
             try:

@@ -93,17 +93,34 @@ class MobileFormsVersionAPITestCase(APITestCase):
         cls.form_no_need_auth = create_add_form("Form no_need_auth", cls.blue_council, cls.blue_project_no_need_auth)
 
     def test_form_versions_list_without_auth(self):
-        """GET /mobile/formversions/: without auth should not be allowed"""
+        """GET /mobile/formversions/: without auth should return no versions"""
 
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        assert response_data["form_versions"] == []
+
+    def test_form_versions_list_without_auth_with_appid(self):
+        """GET /mobile/formversions/: without auth but with app_id should return the version of the form which allow access without auth"""
+
+        response = self.client.get(f"{BASE_URL}?app_id={self.blue_project_no_need_auth.app_id}")
+        self.assertJSONResponse(response, 200)
+        form_versions_data = response.json()["form_versions"]
+
+        assert len(form_versions_data) == 1
+
+        for form_version_data in form_versions_data:
+            self.assertValidFormVersionData(form_version_data)
+            self.assertNotIn("descriptor", form_version_data)
 
     def test_form_versions_list_wrong_permission(self):
-        """GET /mobile/formversions/: without the right permission should not be allowed"""
+        """GET /mobile/formversions/: without the right permission should return no versions"""
 
         self.client.force_authenticate(self.red_no_perms)
         response = self.client.get(BASE_URL)
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        assert response_data["form_versions"] == []
 
     def test_form_versions_list(self):
         """GET /mobile/formversions/: allowed"""
@@ -112,6 +129,8 @@ class MobileFormsVersionAPITestCase(APITestCase):
         response = self.client.get(BASE_URL)
         self.assertJSONResponse(response, 200)
         form_versions_data = response.json()["form_versions"]
+
+        assert len(form_versions_data) == 2
 
         for form_version_data in form_versions_data:
             self.assertValidFormVersionData(form_version_data)
@@ -122,7 +141,7 @@ class MobileFormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.blue_with_perms)
 
-        # it should work both with and without app_id for this project
+        # it should work both with and without app_id for this project as the user is authenticated and has the right
         response_1 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/")
         response_2 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/?app_id={self.blue_project_need_auth.app_id}")
 
@@ -135,32 +154,31 @@ class MobileFormsVersionAPITestCase(APITestCase):
     def test_form_need_auth_should_fail(self):
         self.client.force_authenticate(self.anon)
         response_3 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/")
-
-        self.assertJSONResponse(response_3, 404)
-
         response_4 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/?app_id={self.blue_project_need_auth.app_id}")
 
-        self.assertJSONResponse(response_4, 403)  # should work if app_id is provided and project allows read only
+        # Should fail in both cases as the project needs authentication and the user is not authenticated
+        self.assertJSONResponse(response_3, 404)
+        self.assertJSONResponse(response_4, 403)
 
     def test_form_no_need_auth(self):
         self.client.force_authenticate(self.blue_with_perms)
-        response = self.client.get(f"{BASE_URL}{self.form_no_need_auth.id}/")
+        response = self.client.get(
+            f"{BASE_URL}{self.form_no_need_auth.id}/"
+        )  # should work without app id as the user is authenticated
 
         self.assertJSONResponse(response, 200)
-        form_data = response.json()
-        self.assertValidFormVersionData(form_data)
+        self.assertValidFormVersionData(response.json())
 
     def test_form_no_need_auth_should_fail_without_app_id(self):
         self.client.force_authenticate(self.anon)
         response_1 = self.client.get(f"{BASE_URL}{self.form_no_need_auth.id}/")  # should fail without app id
         self.assertJSONResponse(response_1, 404)
-        var_dump(response_1.json())
 
         response_2 = self.client.get(
             f"{BASE_URL}{self.form_no_need_auth.id}/?app_id={self.blue_project_no_need_auth.app_id}"
         )  # should work with app id
-        self.assertJSONResponse(response_1, 200)
-        var_dump(response_2.json())
+        self.assertJSONResponse(response_2, 200)
+        self.assertValidFormVersionData(response_2.json())
 
     def assertValidFormVersionData(
         self, form_version_data: typing.Mapping, *, check_annotated_fields: bool = True

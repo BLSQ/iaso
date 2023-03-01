@@ -10,6 +10,7 @@ from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing
+from iaso.api.query_params import APP_ID
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
 
@@ -167,8 +168,9 @@ class FormVersionsViewSet(ModelViewSet):
         mapped_filter = self.request.query_params.get("mapped", "")
 
         if self.request.user.is_anonymous:
-            if self.request.query_params.get("app_id") is not None:
-                queryset = FormVersion.objects.filter(form__projects__app_id=self.request.query_params.get("app_id"))
+            app_id = self.request.query_params.get(APP_ID)
+            if app_id is not None:
+                queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
             else:
                 queryset = FormVersion.objects.none()
 

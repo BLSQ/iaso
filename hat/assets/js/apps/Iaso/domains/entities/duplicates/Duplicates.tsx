@@ -5,14 +5,17 @@ import { Box, makeStyles } from '@material-ui/core';
 import { PaginationParams } from '../../../types/general';
 import MESSAGES from './messages';
 import TopBar from '../../../components/nav/TopBarComponent';
-import { useGetDuplicates } from './hooks/useGetDuplicates';
+import {
+    DuplicatesGETParams,
+    useGetDuplicates,
+} from './hooks/useGetDuplicates';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { useDuplicationTableColumns } from './hooks/useDuplicationTableColumns';
 import { DuplicatesFilters } from './DuplicatesFilters';
 
-type Params = PaginationParams & { search?: string; accountId?: string };
+type Params = PaginationParams & DuplicatesGETParams;
 
 type Props = {
     params: Params;
@@ -24,13 +27,18 @@ const defaultSorted = [{ id: 'similarity_star', desc: true }];
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
+        table: {
+            '& tr:nth-of-type(odd) .bg-star path': {
+                fill: '#f7f7f7 !important',
+            },
+        },
     };
 });
 
 export const Duplicates: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const { data, isFetching } = useGetDuplicates();
+    const { data, isFetching } = useGetDuplicates({ params });
     const dispatch = useDispatch();
     const columns = useDuplicationTableColumns();
     const { results, pages, count } = data ?? {
@@ -46,18 +54,22 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <DuplicatesFilters params={params} />
-                <TableWithDeepLink
-                    marginTop={false}
-                    data={results}
-                    pages={pages}
-                    defaultSorted={defaultSorted}
-                    columns={columns}
-                    count={count ?? 0}
-                    baseUrl={baseUrl}
-                    params={params}
-                    extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
-                />
+                <Box className={classes.table}>
+                    <TableWithDeepLink
+                        marginTop={false}
+                        data={results}
+                        pages={pages}
+                        defaultSorted={defaultSorted}
+                        columns={columns}
+                        count={count ?? 0}
+                        baseUrl={baseUrl}
+                        params={params}
+                        extraProps={{ loading: isFetching }}
+                        onTableParamsChange={p =>
+                            dispatch(redirectTo(baseUrl, p))
+                        }
+                    />
+                </Box>
             </Box>
         </>
     );

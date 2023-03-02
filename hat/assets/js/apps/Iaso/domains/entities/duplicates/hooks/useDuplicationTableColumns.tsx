@@ -32,11 +32,6 @@ export const useDuplicationTableColumns = (): Column[] => {
                 resizable: false,
                 sortable: true,
                 Cell: settings => {
-                    const starBgColor =
-                        settings.row.index % 2 === 0
-                            ? // @ts-ignore
-                              theme.palette.ligthGray.main
-                            : 'white';
                     return (
                         <Box display="flex" justifyContent="center">
                             <DuplicatesStars
@@ -44,7 +39,6 @@ export const useDuplicationTableColumns = (): Column[] => {
                                 fullStars={
                                     settings.row.original.similarity_star
                                 }
-                                starBgColor={starBgColor}
                             />
                         </Box>
                     );

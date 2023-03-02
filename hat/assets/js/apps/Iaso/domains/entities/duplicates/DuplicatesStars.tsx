@@ -11,7 +11,6 @@ type Props = {
     score?: number;
     maxScore?: number;
     starCount?: number;
-    starBgColor?: string;
 };
 
 export const DuplicatesStars: FunctionComponent<Props> = ({
@@ -19,13 +18,12 @@ export const DuplicatesStars: FunctionComponent<Props> = ({
     score,
     maxScore = 1000,
     starCount = 5,
-    starBgColor = 'white',
 }) => {
     const classes = useStyles();
     const stars: ReactElement[] = [];
     const fullStarsRatio = (100 * fullStars) / starCount;
     for (let i = 1; i <= starCount; i += 1) {
-        stars.push(<Star key={i} starBgColor={starBgColor} />);
+        stars.push(<Star key={i} />);
     }
     return (
         <>

@@ -299,7 +299,7 @@ class CampaignViewSet(ModelViewSet):
         return data_row
 
     @staticmethod
-    def get_round(round, self):
+    def get_round(round: Any, self: Any) -> Any:
         started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
         ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
         obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""

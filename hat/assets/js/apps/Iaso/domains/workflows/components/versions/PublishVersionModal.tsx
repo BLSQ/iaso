@@ -50,8 +50,8 @@ const PublishVersionModal: FunctionComponent<Props> = ({
             confirmMessage={MESSAGES.confirm}
             open={isOpen}
             closeDialog={closeDialog}
-            dataTestId="add-workflow-version"
-            id="add-workflow-version"
+            dataTestId="publish-workflow-version"
+            id="publish-workflow-version"
             onClose={() => null}
         >
             {formatMessage(MESSAGES.deleteText)}

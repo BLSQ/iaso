@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Condition',
         id: 'iaso.workflows.condition',
     },
+    noCondition: {
+        defaultMessage: 'Always true',
+        id: 'iaso.workflows.noCondition',
+    },
     mapping: {
         defaultMessage: 'Mapping',
         id: 'iaso.workflows.mapping',
@@ -165,6 +169,10 @@ const MESSAGES = defineMessages({
     saveOrder: {
         id: 'iaso.workflows.saveOrder',
         defaultMessage: 'Save order',
+    },
+    resetOrder: {
+        id: 'iaso.workflows.resetOrder',
+        defaultMessage: 'Reset order',
     },
     editChange: {
         id: 'iaso.workflows.editChange',

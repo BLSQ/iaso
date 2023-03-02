@@ -1,47 +1,73 @@
-import React, { useState, useCallback, useEffect } from 'react';
+import React, {
+    useState,
+    useCallback,
+    useEffect,
+    FunctionComponent,
+} from 'react';
 import classnames from 'classnames';
 import mapValues from 'lodash/mapValues';
-import PropTypes from 'prop-types';
 import { Grid, Box, makeStyles } from '@material-ui/core';
 
 import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
-import OrgUnitInfos from './OrgUnitInfosComponent';
+import { OrgUnitInfos } from './OrgUnitInfos';
+import {
+    OrgUnit,
+    OrgUnitType,
+    Group,
+    OrgunitInititialState,
+} from '../types/orgUnit';
 
-const initialFormState = orgUnit => {
-    return {
-        id: orgUnit.id,
-        name: orgUnit.name,
-        org_unit_type_id: orgUnit.org_unit_type_id
-            ? `${orgUnit.org_unit_type_id}`
-            : null,
-        groups: orgUnit.groups?.map(g => g.id) ?? [],
-        sub_source: orgUnit.sub_source,
-        validation_status: orgUnit.validation_status,
-        aliases: orgUnit.aliases,
-        parent_id: orgUnit.parent_id,
-        source_ref: orgUnit.source_ref,
-        creator: orgUnit.creator,
-    };
-};
+const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
+    id: orgUnit.id,
+    name: orgUnit.name,
+    org_unit_type_id: orgUnit.org_unit_type_id
+        ? `${orgUnit.org_unit_type_id}`
+        : undefined,
+    groups: orgUnit.groups?.map(g => g.id) ?? [],
+    sub_source: orgUnit.sub_source,
+    validation_status: orgUnit.validation_status,
+    aliases: orgUnit.aliases,
+    source_id: orgUnit.source_id,
+    parent: orgUnit.parent,
+    source_ref: orgUnit.source_ref,
+    reference_instance_id: orgUnit.reference_instance_id,
+});
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-export const OrgUnitForm = ({
+type Props = {
+    orgUnit: OrgUnit;
+    orgUnitTypes: OrgUnitType[];
+    groups: Group[];
+    saveOrgUnit: (
+        // eslint-disable-next-line no-unused-vars
+        newOu: OrgUnit,
+        // eslint-disable-next-line no-unused-vars
+        onSuccess: (unit: OrgUnit) => void,
+        // eslint-disable-next-line no-unused-vars
+        onError: (error: any) => void,
+    ) => void;
+    params: Record<string, string>;
+    onResetOrgUnit: () => void;
+    isFetchingOrgUnitTypes: boolean;
+    isFetchingGroups: boolean;
+};
+
+export const OrgUnitForm: FunctionComponent<Props> = ({
     orgUnit,
     orgUnitTypes,
     groups,
     saveOrgUnit,
     params,
-    baseUrl,
     onResetOrgUnit,
     isFetchingOrgUnitTypes,
     isFetchingGroups,
 }) => {
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(initialFormState(orgUnit));
     const [orgUnitModified, setOrgUnitModified] = useState(false);
@@ -49,10 +75,11 @@ export const OrgUnitForm = ({
         const newOrgUnit = mapValues(formState, v =>
             Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
         );
+        newOrgUnit.parent_id = newOrgUnit.parent?.id;
         saveOrgUnit(
-            newOrgUnit,
+            newOrgUnit as OrgUnit,
             savedOrgUnit => {
-                setOrgUnitModified(true);
+                setOrgUnitModified(false);
                 setFormState(initialFormState(savedOrgUnit));
             },
             error => {
@@ -82,8 +109,6 @@ export const OrgUnitForm = ({
             const actualAliases = value.filter(alias => alias !== '');
             if (newAlias !== '' && !isEqual(actualAliases, orgUnitAliases)) {
                 setOrgUnitModified(true);
-            } else {
-                setOrgUnitModified(false);
             }
             setFieldValue(key, value);
         },
@@ -115,7 +140,6 @@ export const OrgUnitForm = ({
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [orgUnit.id]);
-
     return (
         <Box pt={isNewOrgunit ? 2 : 0}>
             <Grid
@@ -126,11 +150,8 @@ export const OrgUnitForm = ({
             >
                 <OrgUnitInfos
                     params={params}
-                    baseUrl={baseUrl}
-                    orgUnit={{
-                        ...orgUnit,
-                        ...formState,
-                    }}
+                    orgUnitState={formState}
+                    orgUnit={orgUnit}
                     orgUnitTypes={orgUnitTypes}
                     groups={groups}
                     onChangeInfo={handleChangeInfo}
@@ -140,20 +161,10 @@ export const OrgUnitForm = ({
                     orgUnitModified={orgUnitModified}
                     isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                     isFetchingGroups={isFetchingGroups}
+                    referenceInstance={orgUnit.reference_instance}
+                    setFieldErrors={setFieldErrors}
                 />
             </Grid>
         </Box>
     );
-};
-
-OrgUnitForm.propTypes = {
-    orgUnit: PropTypes.object.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
-    groups: PropTypes.array.isRequired,
-    saveOrgUnit: PropTypes.func.isRequired,
-    onResetOrgUnit: PropTypes.func.isRequired,
-    params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string.isRequired,
-    isFetchingOrgUnitTypes: PropTypes.bool.isRequired,
-    isFetchingGroups: PropTypes.bool.isRequired,
 };

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
+
 import base64
 import hashlib
 import html
@@ -164,6 +165,7 @@ INSTALLED_APPS = [
     "django_comments",
     "django_filters",
     "drf_yasg",
+    "django_json_widget",
 ]
 
 # needed because we customize the comment model

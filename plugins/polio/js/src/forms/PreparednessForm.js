@@ -22,6 +22,11 @@ import MESSAGES from '../constants/messages';
 
 import { PreparednessConfig } from './PreparednessConfig';
 
+export const preparednessFormFields = [
+    'surge_spreadsheet_url',
+    'country_name_in_surge_spreadsheet',
+];
+
 export const PreparednessForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();

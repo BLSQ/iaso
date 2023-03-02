@@ -57,6 +57,7 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
                     onClick={() => copyWorkflowVersion(versionId)}
                     overrideIcon={FileCopyIcon}
                     tooltipMessage={MESSAGES.copy}
+                    dataTestId={`copy-button-${workflowVersion.version_id}`}
                 />
             )}
             {status === 'DRAFT' && (
@@ -72,6 +73,9 @@ export const VersionsActionCell: FunctionComponent<Props> = ({
                     <PublishVersionIconModal
                         workflowVersion={workflowVersion}
                         invalidateQueryKey="workflowVersions"
+                        iconProps={{
+                            dataTestId: `publish-button-${workflowVersion.version_id}`,
+                        }}
                     />
                 </Box>
             )}

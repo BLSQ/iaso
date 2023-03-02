@@ -38,7 +38,10 @@ export const useGetFollowUpsColumns = (
                 const condition = settings.value;
                 return (
                     <>
-                        {condition ? getHumanReadableJsonLogic(condition) : '-'}
+                        {/* If there you add a condition, the value will be an object. Otherwise it will return true */}
+                        {typeof condition === 'object'
+                            ? getHumanReadableJsonLogic(condition)
+                            : formatMessage(MESSAGES.noCondition)}
                     </>
                 );
             },

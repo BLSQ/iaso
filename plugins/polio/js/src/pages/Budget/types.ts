@@ -11,6 +11,8 @@ export type Timeline = {
 export type Item = {
     label: string;
     step_id?: number;
+    cancelled?: boolean;
+    skipped?: boolean;
     performed_at?: string; // datetime
     performed_by?: {
         username;

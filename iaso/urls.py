@@ -53,8 +53,10 @@ from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
+from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
@@ -120,10 +122,11 @@ router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
 router.register(r"entity", EntityViewSet, basename="entity")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
+router.register(r"mobile/entitytypes", MobileEntityTypesViewSet, basename="entitytypes")
 router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
 # At the moment we use the same view set but separate it for the future for when we want to be able to
 # change the format in the future
-router.register(r"mobile/entitytype", EntityTypeViewSet, basename="entitytype")
+router.register(r"mobile/entitytype", MobileEntityTypesViewSet, basename="entitytype")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/planning", PlanningViewSet, basename="planning")
@@ -132,6 +135,7 @@ router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplan
 router.register(r"storage", StorageViewSet, basename="storage")
 router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
+router.register(r"mobile/storage/passwords", MobileStoragePasswordViewSet, basename="storagepasswords")
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")

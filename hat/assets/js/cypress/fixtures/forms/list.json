@@ -3,7 +3,7 @@
     "forms": [
         {
             "id": 1,
-            "name": "FORM",
+            "name": "FORM_A",
             "form_id": "form_1",
             "device_field": "",
             "location_field": "",

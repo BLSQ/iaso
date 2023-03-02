@@ -7,6 +7,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
 import { DuplicatesStars } from '../DuplicatesStars';
 import { Column } from '../../../../types/table';
+import { formatLabel } from '../../../instances/utils';
 
 const getFields = settings => {
     const { algorithms } = settings.row.original;
@@ -52,15 +53,17 @@ export const useDuplicationTableColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.comparedFields),
-                accessor: 'algorithms',
+                accessor: 'fields',
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
-                    const fields = getFields(settings);
+                    const { fields } = settings.row.original;
                     return (
                         <>
                             {fields.map((field, index) => (
-                                <p key={`${field}- ${index}`}>{field}</p>
+                                <p key={`${field.field}- ${index}`}>
+                                    {formatLabel(field)}
+                                </p>
                             ))}
                         </>
                     );

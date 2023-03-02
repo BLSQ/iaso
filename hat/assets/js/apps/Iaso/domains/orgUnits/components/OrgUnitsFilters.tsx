@@ -15,7 +15,6 @@ import {
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { ColorPicker } from '../../../components/forms/ColorPicker';
-import { SearchFilter } from '../../../components/filters/Search';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -236,13 +235,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         }
                     />
                 </Box>
-                <SearchFilter
-                    withMarginTop
-                    uid={`search-${searchIndex}`}
-                    onEnterPressed={() => onSearch()}
-                    onChange={handleChange}
+                <InputComponent
                     keyValue="search"
-                    value={filters?.search ? `${filters?.search}` : ''}
+                    onChange={handleChange}
+                    value={filters.search}
+                    type="search"
+                    label={MESSAGES.search}
+                    hasCharactersCheck
+                    onEnterPressed={onSearch}
                     onErrorChange={setTextSearchError}
                 />
                 <InputComponent

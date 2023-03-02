@@ -4,6 +4,7 @@ import React, {
     useEffect,
     useMemo,
     useRef,
+    useState,
 } from 'react';
 import { Map, TileLayer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import 'leaflet-draw';
@@ -97,6 +98,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     // and we can't predict exactly how many renders that will require
     const didLocationInitialize = useRef(false);
     const didCatchmentInitialize = useRef(false);
+    const [isCreatingMarker, setIsCreatingMarker] = useState<boolean>(false);
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const [state, setStateField, _, setState] = useFormState(
         initialState(currentUser),
@@ -126,6 +128,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         const mapToReset = map.current.leafletElement;
         state.locationGroup.value.reset(mapToReset);
         state.catchmentGroup.value.reset(mapToReset);
+        setIsCreatingMarker(false);
         setStateField('location', buttonsInitialState.location);
         setStateField('catchment', buttonsInitialState.catchment);
         setOrgUnitLocationModified(false);
@@ -297,7 +300,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 onChangeLocation,
                 geoJson: getleafletGeoJson(currentOrgUnit.geo_json),
                 classNames: 'primary',
-                onAdd: () => toggleAddShape('location'),
+                onAddShape: () => toggleAddShape('location'),
+                onAddMArker: () => setIsCreatingMarker(false),
             });
             didLocationInitialize.current = true;
         }
@@ -316,7 +320,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 geoJson: getleafletGeoJson(currentOrgUnit.catchment),
                 classNames: 'secondary',
                 tooltipMessage: formatMessage(MESSAGES.catchment),
-                onAdd: () => toggleAddShape('catchment'),
+                onAddShape: () => toggleAddShape('catchment'),
             });
             didCatchmentInitialize.current = true;
         }
@@ -373,7 +377,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.catchmentGroup.value,
         state.locationGroup.value,
     ]);
-
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -431,10 +434,14 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         toggleDeleteShape={keyValue =>
                             toggleDeleteShape(keyValue)
                         }
+                        isCreatingMarker={isCreatingMarker}
                         toggleAddShape={keyValue => toggleAddShape(keyValue)}
-                        addMarker={() =>
-                            state.locationGroup.value.toggleDrawMarker(true)
-                        }
+                        toggleAddMarker={() => {
+                            setIsCreatingMarker(!isCreatingMarker);
+                            state.locationGroup.value.toggleDrawMarker(
+                                !isCreatingMarker,
+                            );
+                        }}
                         addShape={shapeType => addShape(shapeType)}
                         onChangeLocation={latLong => onChangeLocation(latLong)}
                     />

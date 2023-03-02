@@ -19,7 +19,14 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
     },
 }));
-const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
+const MarkerInputs = ({
+    orgUnit,
+    onChangeLocation,
+    toggleAddMarker,
+    hasMarker,
+    addDisabled,
+    isCreatingMarker,
+}) => {
     const classes = useStyles();
     return (
         <>
@@ -28,12 +35,18 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                     <Box mb={2} mt={2}>
                         <Button
                             variant="outlined"
-                            onClick={() => addMarker()}
+                            disabled={addDisabled}
+                            onClick={() => toggleAddMarker()}
                             className={classes.button}
                             color="primary"
                         >
                             <AddLocation className={classes.buttonIcon} />
-                            <FormattedMessage {...MESSAGES.addLocation} />
+                            {!isCreatingMarker && (
+                                <FormattedMessage {...MESSAGES.addLocation} />
+                            )}
+                            {isCreatingMarker && (
+                                <FormattedMessage {...MESSAGES.done} />
+                            )}
                         </Button>
                     </Box>
                 )}
@@ -41,7 +54,7 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                     <>
                         <InputComponent
                             keyValue="latitude"
-                            onChange={(key, latitude) => {
+                            onChange={(_, latitude) => {
                                 if (latitude) {
                                     onChangeLocation({
                                         lat: parseFloat(latitude),
@@ -101,9 +114,11 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
 };
 MarkerInputs.propTypes = {
     orgUnit: PropTypes.object.isRequired,
-    addMarker: PropTypes.func.isRequired,
+    toggleAddMarker: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
     hasMarker: PropTypes.bool.isRequired,
+    addDisabled: PropTypes.bool.isRequired,
+    isCreatingMarker: PropTypes.bool.isRequired,
 };
 
 export default MarkerInputs;

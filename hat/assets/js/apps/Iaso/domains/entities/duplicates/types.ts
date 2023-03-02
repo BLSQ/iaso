@@ -3,8 +3,8 @@ export type DuplicateEntity = {
     id: number;
     created_at: string; // DateTime
     updated_at: string; // DateTime
-    entity_type: { id: number; name: string };
-    form: { id: number; name: string };
+    // entity_type: { id: number; name: string };
+    // form: { id: number; name: string };
     org_unit: { id: number; name: string };
     json: Record<string, any>;
 };
@@ -18,6 +18,12 @@ export type DuplicationAlgorithm = {
 };
 
 export type DuplicateData = {
+    entity_type: { id: number; name: string };
+    form: { id: number; name: string };
+    fields: {
+        field: string;
+        label: string | Record<string, string>;
+    }[];
     entity1: DuplicateEntity;
     entity2: DuplicateEntity;
     algorithms: DuplicationAlgorithm[];

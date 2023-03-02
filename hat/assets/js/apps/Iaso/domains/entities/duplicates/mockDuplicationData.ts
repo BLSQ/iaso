@@ -28,9 +28,9 @@ const baseEntity = {
     created_at: '2022-08-16T13:26:22.470058Z',
     updated_at: '2022-08-16T13:26:22.470058Z',
     id: 1,
-    form: { name: 'CODA-Registration', id: 85 },
+    // form: { name: 'CODA-Registration', id: 85 },
+    // entity_type: { name: 'Children under 5', id: 11 },
     org_unit: { name: 'bu Ango Hôpital Général de Référence', id: 104099 },
-    entity_type: { name: 'Children under 5', id: 11 },
     json: baseEntityFields,
 };
 
@@ -79,6 +79,13 @@ export const mockDuplicatesTableResponse = ({
             },
         });
         const duplicatesWithData: DuplicateData = {
+            form: { name: 'CODA-Registration', id: 85 },
+            entity_type: { name: 'Children under 5', id: 11 },
+            fields: [
+                { field: 'first_name', label: { English: 'First name' } },
+                { field: 'last_name', label: 'Last name' },
+                { field: 'date_of_birth', label: { English: 'Date of birth' } },
+            ],
             entity1: baseEntity,
             entity2: duplicate,
             ignored: false,

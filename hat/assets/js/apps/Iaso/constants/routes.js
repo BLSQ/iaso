@@ -859,6 +859,10 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'fields', // needs filter
         },
+        {
+            isRequired: false,
+            key: 'form', // needs filter
+        },
     ],
 };
 export const planningPath = {

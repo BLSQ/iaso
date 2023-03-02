@@ -18,7 +18,7 @@ BASE_URL = "/api/formversions/"
 
 def create_add_form(f_name: str, o_unit_type: OrgUnitType, add_to_project: Project):
     the_form = m.Form.objects.create(
-        name="f_name",  # no form_id yet (no version)
+        name=f_name,
         period_type="QUARTER",
         single_per_period=True,
     )
@@ -133,8 +133,10 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.blue_with_perms)
 
         # it should work both with and without app_id for this project as the user is authenticated and has the right
-        response_1 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/")
-        response_2 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/?app_id={self.blue_project_need_auth.app_id}")
+        response_1 = self.client.get(f"{BASE_URL}{self.form_need_auth.latest_version.id}/")
+        response_2 = self.client.get(
+            f"{BASE_URL}{self.form_need_auth.latest_version.id}/?app_id={self.blue_project_need_auth.app_id}"
+        )
 
         self.assertJSONResponse(response_1, 200)
         self.assertJSONResponse(response_2, 200)
@@ -144,8 +146,10 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
 
     def test_form_need_auth_should_fail(self):
         self.client.force_authenticate(self.anon)
-        response_3 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/")
-        response_4 = self.client.get(f"{BASE_URL}{self.form_need_auth.id}/?app_id={self.blue_project_need_auth.app_id}")
+        response_3 = self.client.get(f"{BASE_URL}{self.form_need_auth.latest_version.id}/")
+        response_4 = self.client.get(
+            f"{BASE_URL}{self.form_need_auth.latest_version.id}/?app_id={self.blue_project_need_auth.app_id}"
+        )
 
         # Should fail in both cases as the project needs authentication and the user is not authenticated
         self.assertJSONResponse(response_3, 404)
@@ -162,11 +166,13 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
 
     def test_form_no_need_auth_should_fail_without_app_id(self):
         self.client.force_authenticate(self.anon)
-        response_1 = self.client.get(f"{BASE_URL}{self.form_no_need_auth.id}/")  # should fail without app id
+        response_1 = self.client.get(
+            f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/"
+        )  # should fail without app id
         self.assertJSONResponse(response_1, 404)
 
         response_2 = self.client.get(
-            f"{BASE_URL}{self.form_no_need_auth.id}/?app_id={self.blue_project_no_need_auth.app_id}"
+            f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/?app_id={self.blue_project_no_need_auth.app_id}"
         )  # should work with app id
         self.assertJSONResponse(response_2, 200)
         self.assertValidFormVersionData(response_2.json())

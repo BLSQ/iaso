@@ -65,6 +65,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.showIgnored',
         defaultMessage: 'Show ignored',
     },
+    algorithm: {
+        id: 'iaso.label.algorithm',
+        defaultMessage: 'Algorithm',
+    },
+    similarity: {
+        id: 'iaso.label.similarity_score',
+        defaultMessage: 'Similarity score',
+    },
 });
 
 export default MESSAGES;

@@ -16,15 +16,6 @@ from iaso.test import APITestCase
 BASE_URL = "/api/formversions/"
 
 
-def var_dump(var, indent=0):
-    for key, value in var.items():
-        print("\t" * indent + str(key))
-        if isinstance(value, dict):
-            var_dump(value, indent + 1)
-        else:
-            print("\t" * (indent + 1) + str(value))
-
-
 def create_add_form(f_name: str, o_unit_type: OrgUnitType, add_to_project: Project):
     the_form = m.Form.objects.create(
         name="f_name",  # no form_id yet (no version)
@@ -48,7 +39,7 @@ def create_add_form(f_name: str, o_unit_type: OrgUnitType, add_to_project: Proje
 
 
 @override_settings(MEDIA_ROOT=tempfile.mkdtemp())
-class MobileFormsVersionAPITestCase(APITestCase):
+class ReadOnlyFormsVersionAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         blue_account = m.Account.objects.create(name="Blue Account")

@@ -18,10 +18,9 @@ class CheckVersionViewSet(ViewSet):
 
     This API is open to anonymous users:
 
-    /api/mobile/checkversions/
-    /api/mobile/checkversion/ [Deprecated] will be removed in the future
+    /api/mobile/checkversion/
 
-    `GET /api/mobile/checkversions/?app_id=some.app.id&app_version=1234`
+    `GET /api/mobile/checkversion/?app_id=some.app.id&app_version=1234`
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

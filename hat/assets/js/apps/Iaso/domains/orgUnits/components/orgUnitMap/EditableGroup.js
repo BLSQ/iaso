@@ -33,7 +33,7 @@ class EditableGroup {
         this.onChangeLocation = onChangeLocation;
         this.onChangeShape = onChangeShape;
         this.paneString = `custom-shape-${groupKey}`;
-        this.createPanes(map, groupKey, onChangeShape, onChangeLocation);
+        this.createPanes(map);
         this.addEvents(map, onAddShape, onAddMarker);
         this.addDrawControl(map);
         if (geoJson) {
@@ -56,6 +56,11 @@ class EditableGroup {
             polygonDrawOption(className, this.groupKey),
         );
         this.shapeAdded.enable();
+    }
+
+    updateChanges(onChangeShape, onChangeLocation) {
+        this.onChangeLocation = onChangeLocation;
+        this.onChangeShape = onChangeShape;
     }
 
     addEvents(map, onAddShape, onAddMArker = () => null) {

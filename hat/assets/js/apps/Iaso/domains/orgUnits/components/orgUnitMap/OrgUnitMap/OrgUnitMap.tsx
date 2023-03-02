@@ -287,6 +287,18 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // update changes function in EditableGroup as it has been initalized with first state off current org unit
+    useSkipEffectOnMount(() => {
+        state.locationGroup.value.updateChanges(
+            shape => onChangeShape('geo_json', shape),
+            onChangeLocation,
+        );
+        state.catchmentGroup.value.updateChanges(
+            shape => onChangeShape('catchment', shape),
+            onChangeLocation,
+        );
+    }, [onChangeLocation, onChangeShape]);
+
     useEffect(() => {
         if (
             !didLocationInitialize.current &&

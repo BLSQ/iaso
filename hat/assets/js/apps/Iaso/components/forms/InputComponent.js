@@ -50,6 +50,8 @@ class InputComponent extends Component {
             helperText,
             min,
             max,
+            hasCharactersCheck,
+            onErrorChange,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
         const labelText =
@@ -162,6 +164,8 @@ class InputComponent extends Component {
                             isFocused={isFocused}
                             onChange={newValue => onChange(keyValue, newValue)}
                             value={value}
+                            hasCharactersCheck={hasCharactersCheck}
+                            onErrorChange={onErrorChange}
                         />
                     );
                 case 'checkbox':
@@ -217,6 +221,8 @@ InputComponent.defaultProps = {
     helperText: undefined,
     min: undefined,
     max: undefined,
+    hasCharactersCheck: false,
+    onErrorChange: () => null,
 };
 InputComponent.propTypes = {
     type: PropTypes.string,
@@ -244,6 +250,8 @@ InputComponent.propTypes = {
     helperText: PropTypes.string,
     min: PropTypes.number,
     max: PropTypes.number,
+    hasCharactersCheck: PropTypes.bool,
+    onErrorChange: PropTypes.func,
 };
 
 const translated = injectIntl(InputComponent);

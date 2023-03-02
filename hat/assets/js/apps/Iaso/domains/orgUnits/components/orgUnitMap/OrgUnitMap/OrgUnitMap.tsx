@@ -326,7 +326,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 geoJson: getleafletGeoJson(currentOrgUnit.geo_json),
                 classNames: 'primary',
                 onAddShape: () => toggleAddShape('location'),
-                onAddMArker: () => setIsCreatingMarker(false),
+                onAddMarker: () => setIsCreatingMarker(false),
             });
             didLocationInitialize.current = true;
         }

@@ -63,7 +63,7 @@ class EditableGroup {
         this.onChangeShape = onChangeShape;
     }
 
-    addEvents(map, onAddShape, onAddMArker = () => null) {
+    addEvents(map, onAddShape, onAddMarker = () => null) {
         map.on('draw:created', e => {
             if (e.layerType === 'marker') {
                 // Set a default altitude for the newly created location
@@ -71,7 +71,7 @@ class EditableGroup {
                 this.onChangeLocation(e.layer.getLatLng());
                 this.toggleDrawMarker(false);
                 map.removeLayer(e.layer);
-                onAddMArker();
+                onAddMarker();
             } else if (
                 e.layerType === 'polygon' &&
                 e.layer.options.className.includes(this.groupKey)

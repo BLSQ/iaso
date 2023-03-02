@@ -158,7 +158,7 @@ class ReadOnlyFormsVersionAPITestCase(APITestCase):
     def test_form_no_need_auth(self):
         self.client.force_authenticate(self.blue_with_perms)
         response = self.client.get(
-            f"{BASE_URL}{self.form_no_need_auth.id}/"
+            f"{BASE_URL}{self.form_no_need_auth.latest_version.id}/"
         )  # should work without app id as the user is authenticated
 
         self.assertJSONResponse(response, 200)

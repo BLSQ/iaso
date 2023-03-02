@@ -64,7 +64,6 @@ type Props = {
     currentOrgUnit: any;
     saveOrgUnit: () => void;
     resetOrgUnit: () => void;
-    orgUnitLocationModified: boolean;
     // eslint-disable-next-line no-unused-vars
     setOrgUnitLocationModified: (isModified: boolean) => void;
     // eslint-disable-next-line no-unused-vars
@@ -73,6 +72,7 @@ type Props = {
     onChangeLocation: (location) => void;
     sources: any[];
     orgUnitTypes: any[];
+    orgUnitLocationModified: boolean;
 };
 
 export const OrgUnitMap: FunctionComponent<Props> = ({
@@ -84,10 +84,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     orgUnitTypes,
     resetOrgUnit,
     saveOrgUnit,
-    orgUnitLocationModified,
     setOrgUnitLocationModified,
     onChangeLocation,
     onChangeShape,
+    orgUnitLocationModified,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -377,6 +377,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.catchmentGroup.value,
         state.locationGroup.value,
     ]);
+
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -389,7 +390,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <OrgunitOptionSaveComponent
                         orgUnit={currentOrgUnit}
                         resetOrgUnit={() => handleReset()}
-                        orgUnitLocationModified={orgUnitLocationModified}
+                        saveDisabled={actionBusy || !orgUnitLocationModified}
                         saveOrgUnit={saveOrgUnit}
                     />
                 }
@@ -443,7 +444,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             );
                         }}
                         addShape={shapeType => addShape(shapeType)}
-                        onChangeLocation={latLong => onChangeLocation(latLong)}
+                        onChangeLocation={latLong => {
+                            setIsCreatingMarker(false);
+                            onChangeLocation(latLong);
+                        }}
                     />
                 }
                 settingsOptionComponent={

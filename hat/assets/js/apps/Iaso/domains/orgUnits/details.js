@@ -367,6 +367,7 @@ const OrgUnitDetail = ({ params, router }) => {
         isNewOrgunit,
         sourcesSelected,
     ]);
+    console.log('currentOrgUnit', currentOrgUnit);
     return (
         <section className={classes.root}>
             <TopBar

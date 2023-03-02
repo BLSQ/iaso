@@ -1,3 +1,7 @@
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+
+import iaso.api.workflows.utils as utils
 from iaso.models import (
     Form,
     EntityType,
@@ -7,10 +11,6 @@ from iaso.models import (
     WorkflowFollowup,
 )
 from iaso.models.workflow import WorkflowVersionsStatus
-from rest_framework import serializers
-from django.shortcuts import get_object_or_404
-
-import iaso.api.workflows.utils as utils
 
 
 class FormNestedSerializer(serializers.ModelSerializer):
@@ -139,7 +139,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         if WorkflowChange.objects.filter(workflow_version=wfv, form=form).exists():
             raise serializers.ValidationError(f"WorkflowChange for form {form.id} already exists !")
 
-        # If it does, we return a error
+        # If it does, we return an error
         # If it doesn't, we create the change
 
         wc = WorkflowChange.objects.create(
@@ -301,7 +301,6 @@ class WorkflowPostSerializer(serializers.Serializer):
         wf, wf_created = Workflow.objects.get_or_create(entity_type_id=entity_type_id)
 
         wfv = WorkflowVersion.objects.create(workflow=wf)
-        et = EntityType.objects.get(pk=entity_type_id)
         if "name" in validated_data:
             wfv.name = validated_data["name"]
         wfv.save()

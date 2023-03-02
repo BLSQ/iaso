@@ -1,12 +1,13 @@
+import logging
+
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
 
-from iaso.tasks.copy_version import copy_version
-from iaso.api.tasks import TaskSerializer
-from iaso.models import DataSource, SourceVersion, Task, OrgUnit
-from rest_framework import viewsets, permissions, serializers
 from iaso.api.common import HasPermission
-from django.shortcuts import get_object_or_404
-import logging
+from iaso.api.tasks import TaskSerializer
+from iaso.models import DataSource, SourceVersion, OrgUnit
+from iaso.tasks.copy_version import copy_version
 
 logger = logging.getLogger(__name__)
 

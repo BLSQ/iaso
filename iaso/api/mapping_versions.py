@@ -1,10 +1,11 @@
 import typing
+
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, permissions
-import iaso.models as m
 
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
+import iaso.models as m
 from iaso.models import FormVersion, MappingVersion
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 
 
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
@@ -85,7 +86,6 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
     def validate_create(self, data):
         profile = self.context["request"].user.iaso_profile
 
-        form_version = None
         try:
             form_version = (
                 m.FormVersion.objects.filter(form__projects__account=profile.account)
@@ -95,7 +95,6 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         except ObjectDoesNotExist:
             raise serializers.ValidationError({"form_version": "object doesn't exist"})
 
-        datasource = None
         try:
             datasource = (
                 m.DataSource.objects.filter(projects__account=profile.account)
@@ -153,7 +152,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
                     MappingVersion.QUESTION_MAPPING_MULTIPLE,
                     MappingVersion.QUESTION_MAPPING_NEVER_MAPPED,
                 ):
-                    if data_element.get("id") == None:
+                    if data_element.get("id") is None:
                         raise serializers.ValidationError({path: "should have a least an data element id"})
 
                     if data_element.get("valueType") is None:

@@ -93,6 +93,16 @@ class BulkCreateCsvTestCase(APITestCase):
             response.json()["error"], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
         )
 
+    def test_upload_without_mail_must_work(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_no_mail.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["Accounts created"], 3)
+
     def test_upload_invalid_orgunit_id(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -253,8 +263,6 @@ class BulkCreateCsvTestCase(APITestCase):
 
         for ou in ferdinand_ou:
             ou_f_list.append(ou.id)
-
-        print(self.jedi_council.id, self.jedi_council.id, 9999, self.tatooine.id)
 
         self.assertEqual(ou_list, [9999])
         self.assertCountEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])

@@ -41,6 +41,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "account",
             "fields_detail_info_view",
             "fields_list_view",
+            "fields_duplicate_search",
         ]
 
     created_at = TimestampField(read_only=True)

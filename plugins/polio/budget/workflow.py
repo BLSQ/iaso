@@ -1,13 +1,13 @@
-from dataclasses import dataclass, field
 from typing import Union, List, Optional, Tuple
 
+from dataclasses import dataclass, field
 from django.db.models import Q, QuerySet
 
-from iaso.models.microplanning import Team, TeamType
-import plugins.polio.models
-
 # Move to typing import Literal when upgrading to python 3.8
-from typing_extensions import Literal
+from typing import Literal
+
+import plugins.polio.models
+from iaso.models.microplanning import Team, TeamType
 
 # from plugins.polio.models import Campaign
 # attachment is either file or a links

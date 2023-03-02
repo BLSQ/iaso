@@ -11,7 +11,6 @@ type Lock = {
         name: string;
     };
 };
-
 export type Instance = {
     uuid: string;
     id: number;
@@ -32,7 +31,7 @@ export type Instance = {
     deleted: boolean;
     org_unit: OrgUnit;
     period?: string;
-    file_content: Record<string, string>;
+    file_content: Record<string, any>;
     form_descriptor: unknown;
     last_export_success_at: unknown;
     instance_locks: Lock[];

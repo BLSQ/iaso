@@ -27,8 +27,9 @@ from django.db.models.fields.json import KeyTransformTextLookupMixin, JSONField
 
 class ExtractForceFloat(KeyTransformTextLookupMixin, Transform):
     lookup_name = "forcefloat"
+
     # KeyTransformTextLookupMixin
-    # tell it to use ->> to extract the value as text otherwhise it can't be casted
+    # tell it to use ->> to extract the value as text otherwhise it can't be cast
 
     def as_sql(self, compiler, connection):
         if not connection.ops.extract_trunc_lookup_pattern.fullmatch(self.lookup_name):
@@ -73,8 +74,6 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
     params = jsonlogic[op]
     if len(params) != 2:
         raise ValueError(f"Unsupported JsonLogic. Operator {op} take exactly two operands: {jsonlogic}")
-    if "var" not in params[0]:
-        raise ValueError(f"Unsupported JsonLogic. First argument must be a variable : {jsonlogic}")
 
     lookups = {
         "==": "exact",
@@ -83,6 +82,7 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
         ">=": "gte",
         "<": "lt",
         "<=": "lte",
+        "in": "icontains",
     }
 
     if op not in lookups.keys():
@@ -90,16 +90,24 @@ def jsonlogic_to_q(jsonlogic: Dict[str, Any], field_prefix: str = "") -> Q:
             f"Unsupported JsonLogic (unknown operator {op}): {jsonlogic}. Supported operators: f{lookups.keys()}"
         )
 
-    field_name = params[0]["var"]
+    field_position = 1 if op == "in" else 0
+    field = params[field_position]
+    if "var" not in field:
+        raise ValueError(
+            f"Unsupported JsonLogic. Argument[{field_position}] must contain a variable for given "
+            f"operator : {jsonlogic}"
+        )
+    field_name = field["var"]
+    value = params[0] if op == "in" else params[1]
 
     extract = ""
-    if isinstance(params[1], (int, float)) and field_prefix:
-        # Since inside the json everything is casted as string we cast back as int
+    if isinstance(value, (int, float)) and field_prefix:
+        # Since inside the json everything is cast as string we cast back as int
         extract = "__forcefloat"
 
     lookup = lookups[op]
     f = f"{field_prefix}{field_name}{extract}__{lookup}"
-    q = Q(**{f: params[1]})
+    q = Q(**{f: value})
     if op == "!=":
         # invert the filter
         q = ~q

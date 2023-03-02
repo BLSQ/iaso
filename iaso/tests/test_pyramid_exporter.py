@@ -1,11 +1,11 @@
-from io import StringIO
-from django.test import TestCase
-from django.core import management
-from django.contrib.gis.geos import Point, Polygon, MultiPolygon
-
-from os import environ
-import responses
 import json
+from io import StringIO
+from os import environ
+
+import responses
+from django.contrib.gis.geos import Point, Polygon, MultiPolygon
+from django.core import management
+from django.test import TestCase
 
 from iaso.models import OrgUnit, DataSource, SourceVersion, Group
 
@@ -125,8 +125,6 @@ class CommandTests(TestCase):
 
         def mock_orgunit_page(request):
             gets_request.append(1)
-            fixture_name = "orgunits"
-            # if len(gets_request) > 1:
             fixture_name = "orgunits_page" + str(len(gets_request))
 
             return (200, {}, json.dumps(self.fixture_json(fixture_name)))

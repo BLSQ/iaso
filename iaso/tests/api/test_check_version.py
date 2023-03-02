@@ -1,6 +1,6 @@
-from iaso.test import APITestCase
 from iaso import models as m
 from iaso.api.query_params import APP_ID, APP_VERSION
+from iaso.test import APITestCase
 
 
 class CheckVersionAPITestCase(APITestCase):

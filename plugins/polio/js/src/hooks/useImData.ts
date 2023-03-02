@@ -23,7 +23,7 @@ export const useImData = (
         useGetCampaigns({
             countries: [country],
             enabled: Boolean(country),
-        }).query;
+        });
     const debugData = useDebugData(imData, campaign);
     const hasScope = debugData[campaign]?.hasScope;
 

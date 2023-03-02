@@ -56,12 +56,14 @@ class MobileEntityTypesViewSet(ModelViewSet):
     Mobile API to Serve Entity Types.
 
     /api/mobile/entitytypes
-
+    /api/mobile/entitytype [Deprecated]
     /api/mobile/entitytypes/id
+    /api/mobile/entitytype/id [Deprecated]
 
     It's possible to get all entities of a given type :
 
     /api/mobile/entitytypes/id/entities
+    /api/mobile/entitytype/id/entities [Deprecated]
     """
 
     results_key = "entitytypes"

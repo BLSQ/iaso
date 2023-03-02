@@ -24,7 +24,7 @@ const MarkerInputs = ({
     onChangeLocation,
     toggleAddMarker,
     hasMarker,
-    addDisabled,
+    actionBusy,
     isCreatingMarker,
 }) => {
     const classes = useStyles();
@@ -35,7 +35,7 @@ const MarkerInputs = ({
                     <Box mb={2} mt={2}>
                         <Button
                             variant="outlined"
-                            disabled={addDisabled}
+                            disabled={actionBusy}
                             onClick={() => toggleAddMarker()}
                             className={classes.button}
                             color="primary"
@@ -53,6 +53,7 @@ const MarkerInputs = ({
                 {hasMarker && (
                     <>
                         <InputComponent
+                            disabled={actionBusy}
                             keyValue="latitude"
                             onChange={(_, latitude) => {
                                 if (latitude) {
@@ -66,6 +67,7 @@ const MarkerInputs = ({
                             label={MESSAGES.latitude}
                         />
                         <InputComponent
+                            disabled={actionBusy}
                             keyValue="longitude"
                             onChange={(key, longitude) => {
                                 if (longitude) {
@@ -79,6 +81,7 @@ const MarkerInputs = ({
                             label={MESSAGES.longitude}
                         />
                         <InputComponent
+                            disabled={actionBusy}
                             keyValue="altitude"
                             value={orgUnit.altitude}
                             type="number"
@@ -91,6 +94,7 @@ const MarkerInputs = ({
                         />
                         <Box mb={2} mt={2}>
                             <Button
+                                disabled={actionBusy}
                                 variant="outlined"
                                 color="primary"
                                 className={classes.button}
@@ -117,7 +121,7 @@ MarkerInputs.propTypes = {
     toggleAddMarker: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
     hasMarker: PropTypes.bool.isRequired,
-    addDisabled: PropTypes.bool.isRequired,
+    actionBusy: PropTypes.bool.isRequired,
     isCreatingMarker: PropTypes.bool.isRequired,
 };
 

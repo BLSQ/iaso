@@ -222,14 +222,27 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         keyName => {
             const leafletMap = map.current.leafletElement;
             if (keyName === 'location') {
-                state.locationGroup.value.addShape(leafletMap, 'primary');
+                state.locationGroup.value.addShape(
+                    leafletMap,
+                    'primary',
+                    theme,
+                );
             }
             if (keyName === 'catchment') {
-                state.catchmentGroup.value.addShape(leafletMap, 'secondary');
+                state.catchmentGroup.value.addShape(
+                    leafletMap,
+                    'secondary',
+                    theme,
+                );
             }
             toggleAddShape(keyName);
         },
-        [state.catchmentGroup.value, state.locationGroup.value, toggleAddShape],
+        [
+            state.catchmentGroup.value,
+            state.locationGroup.value,
+            theme,
+            toggleAddShape,
+        ],
     );
 
     const handleFormFilter = useCallback(

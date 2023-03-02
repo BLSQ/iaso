@@ -50,10 +50,10 @@ class EditableGroup {
         }
     }
 
-    addShape(map, className) {
+    addShape(map, className, theme) {
         this.shapeAdded = new L.Draw.Polygon(
             map,
-            polygonDrawOption(className, this.groupKey),
+            polygonDrawOption(className, this.groupKey, theme),
         );
         this.shapeAdded.enable();
     }

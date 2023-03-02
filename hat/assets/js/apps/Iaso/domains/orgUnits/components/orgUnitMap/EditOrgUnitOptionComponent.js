@@ -67,7 +67,7 @@ const EditOrgUnitOptionComponent = ({
                         onChangeLocation={onChangeLocation}
                         toggleAddMarker={toggleAddMarker}
                         hasMarker={hasMarker}
-                        addDisabled={
+                        actionBusy={
                             locationState.edit ||
                             locationState.add ||
                             locationState.delete ||

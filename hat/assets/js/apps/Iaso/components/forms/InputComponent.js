@@ -50,7 +50,7 @@ class InputComponent extends Component {
             helperText,
             min,
             max,
-            hasCharactersCheck,
+            blockForbiddenChars,
             onErrorChange,
         } = this.props;
         const { isFocused, displayPassword } = this.state;
@@ -164,7 +164,7 @@ class InputComponent extends Component {
                             isFocused={isFocused}
                             onChange={newValue => onChange(keyValue, newValue)}
                             value={value}
-                            hasCharactersCheck={hasCharactersCheck}
+                            blockForbiddenChars={blockForbiddenChars}
                             onErrorChange={onErrorChange}
                         />
                     );
@@ -221,7 +221,7 @@ InputComponent.defaultProps = {
     helperText: undefined,
     min: undefined,
     max: undefined,
-    hasCharactersCheck: false,
+    blockForbiddenChars: false,
     onErrorChange: () => null,
 };
 InputComponent.propTypes = {
@@ -250,7 +250,7 @@ InputComponent.propTypes = {
     helperText: PropTypes.string,
     min: PropTypes.number,
     max: PropTypes.number,
-    hasCharactersCheck: PropTypes.bool,
+    blockForbiddenChars: PropTypes.bool,
     onErrorChange: PropTypes.func,
 };
 

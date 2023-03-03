@@ -241,7 +241,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     value={filters.search}
                     type="search"
                     label={MESSAGES.search}
-                    hasCharactersCheck
+                    blockForbiddenChars
                     onEnterPressed={onSearch}
                     onErrorChange={setTextSearchError}
                 />

@@ -27,7 +27,7 @@ class IasoTasksTestCase(APITestCase):
         )
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
 
-    def test_tasks_authoziration_access(self):
+    def test_tasks_user_without_permissions_access(self):
         self.client.force_authenticate(self.miguel)
         response = self.client.get("/api/tasks/")
         self.assertEqual(response.status_code, 403)
@@ -37,5 +37,20 @@ class IasoTasksTestCase(APITestCase):
         Both permissions iaso_sources and iaso_data_tasks are required to access tasks.
         """
         self.client.force_authenticate(self.johnny)
+
+        Task.objects.create(
+            progress_value=1,
+            end_value=1,
+            account=self.johnny.iaso_profile.account,
+            launcher=self.johnny,
+            status="Success",
+            name="The best task",
+        )
+
         response = self.client.get("/api/tasks/")
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["tasks"][0]["name"], "The best task")
+        self.assertEqual(response.json()["tasks"][0]["status"], "Success")
+        self.assertEqual(response.json()["tasks"][0]["id"], 1)
+        self.assertEqual(response.json()["tasks"][0]["end_value"], 1)
+        self.assertEqual(response.json()["tasks"][0]["launcher"]["username"], "johnny")

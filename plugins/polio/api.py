@@ -284,7 +284,7 @@ class CampaignViewSet(ModelViewSet):
                         month = round.started_at.month
                         row["rounds"] = {}
                         row["rounds"][str(month)] = []
-                        row["rounds"][str(month)].append(self.get_round(round, self))
+                        row["rounds"][str(month)].append(self.get_round(round))
                         data_row.append(row)
                     else:
                         row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
@@ -292,14 +292,13 @@ class CampaignViewSet(ModelViewSet):
                         if row is not None:
                             month = round.started_at.month
                             if str(month) in data_row[row_index]["rounds"]:
-                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round, self))
+                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
                             else:
                                 data_row[row_index]["rounds"][str(month)] = []
-                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round, self))
+                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
         return data_row
 
-    @staticmethod
-    def get_round(round: Any, self: Any) -> Any:
+    def get_round(self: Any, round: Any) -> Any:
         started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
         ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
         obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
@@ -332,8 +331,7 @@ class CampaignViewSet(ModelViewSet):
             "nid_or_snid": nid_or_snid,
         }
 
-    @staticmethod
-    def get_campain_vaccine(round: Any) -> Any:
+    def get_campain_vaccine(self: Any, round: Any) -> Any:
         if round.campaign.vacine:
             return round.campaign.vacine
         else:

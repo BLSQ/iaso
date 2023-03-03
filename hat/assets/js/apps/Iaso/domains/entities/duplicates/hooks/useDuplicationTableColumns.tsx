@@ -1,7 +1,7 @@
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
-import { Box, makeStyles, useTheme } from '@material-ui/core';
+import { Box, makeStyles } from '@material-ui/core';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../../constants/urls';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
@@ -24,7 +24,6 @@ const useStyles = makeStyles(theme => {
 export const useDuplicationTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const theme = useTheme();
     return useMemo(() => {
         const columns = [
             {
@@ -143,7 +142,7 @@ export const useDuplicationTableColumns = (): Column[] => {
                 Cell: (settings): ReactElement => (
                     <>
                         <IconButton
-                            url={`/${baseUrls.entity}/entityIds/${settings.row.original.entity1.id}/${settings.row.original.entity2.id}`}
+                            url={`/${baseUrls.entityDuplicateDetails}/entities/${settings.row.original.entity1.id},${settings.row.original.entity2.id}`}
                             overrideIcon={CompareArrowsIcon}
                             tooltipMessage={MESSAGES.seeDetails}
                         />
@@ -153,5 +152,5 @@ export const useDuplicationTableColumns = (): Column[] => {
         ];
         return columns;
         // @ts-ignore
-    }, [classes.diff, formatMessage, theme.palette.ligthGray.main]);
+    }, [classes.diff, formatMessage]);
 };

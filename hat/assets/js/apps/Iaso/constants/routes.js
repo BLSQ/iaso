@@ -41,6 +41,7 @@ import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
 import { Duplicates } from '../domains/entities/duplicates/Duplicates.tsx';
+import { DuplicateDetails } from '../domains/entities/duplicates/DuplicateDetails.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -865,6 +866,25 @@ export const entityDuplicatesPath = {
         },
     ],
 };
+export const entityDuplicatesDetailsPath = {
+    baseUrl: baseUrls.entityDuplicateDetails,
+    permissions: ['iaso_entities'],
+    component: props => <DuplicateDetails {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        // ...paginationPathParams.map(p => ({
+        //     ...p,
+        //     isRequired: true,
+        // })),
+        {
+            isRequired: false,
+            key: 'entities',
+        },
+    ],
+};
 export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
@@ -1120,6 +1140,7 @@ export const routeConfigs = [
     entityDetailsPath,
     entitySubmissionDetailPath,
     entityDuplicatesPath,
+    entityDuplicatesDetailsPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,

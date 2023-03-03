@@ -24,6 +24,7 @@ export const baseUrls = {
     entities: 'entities/list',
     entityTypes: 'entities/types',
     entityDuplicates: 'entities/duplicates',
+    entityDuplicateDetails: 'entities/duplicates/details',
     polio: 'polio/list',
     pages: 'pages',
     planning: 'planning/list',

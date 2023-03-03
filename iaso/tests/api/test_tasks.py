@@ -38,7 +38,7 @@ class IasoTasksTestCase(APITestCase):
         """
         self.client.force_authenticate(self.johnny)
 
-        Task.objects.create(
+        task = Task.objects.create(
             progress_value=1,
             end_value=1,
             account=self.johnny.iaso_profile.account,
@@ -51,6 +51,6 @@ class IasoTasksTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["tasks"][0]["name"], "The best task")
         self.assertEqual(response.json()["tasks"][0]["status"], "Success")
-        self.assertEqual(response.json()["tasks"][0]["id"], 1)
+        self.assertEqual(response.json()["tasks"][0]["id"], task.id)
         self.assertEqual(response.json()["tasks"][0]["end_value"], 1)
         self.assertEqual(response.json()["tasks"][0]["launcher"]["username"], "johnny")

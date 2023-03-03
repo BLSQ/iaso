@@ -6,8 +6,8 @@ from collections import defaultdict
 from datetime import timedelta, datetime
 from functools import lru_cache
 from logging import getLogger
-from typing import Any, Optional
-
+from typing import Any, List, Optional, Union
+from django.db.models.query import QuerySet
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
@@ -28,7 +28,6 @@ from rest_framework import routers, filters, viewsets, serializers, permissions,
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-
 from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
 from plugins.polio.serializers import (
@@ -233,7 +232,7 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
-    def get_calendar_data(self: Any, year: int, params: Any) -> Any:
+    def get_calendar_data(self: "CampaignViewSet", year: int, params: Any) -> Any:
         """
         Returns filtered rounds from database
 
@@ -265,7 +264,7 @@ class CampaignViewSet(ModelViewSet):
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod
-    def loop_on_rounds(self: Any, rounds: Any) -> list:
+    def loop_on_rounds(self: "CampaignViewSet", rounds: Union[QuerySet, List[Round]]) -> list:
         """
         Returns formatted rounds
 
@@ -298,7 +297,7 @@ class CampaignViewSet(ModelViewSet):
                                 data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
         return data_row
 
-    def get_round(self: Any, round: Any) -> Any:
+    def get_round(self: "CampaignViewSet", round: Union[Any, Round]) -> dict:
         started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
         ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
         obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
@@ -331,7 +330,7 @@ class CampaignViewSet(ModelViewSet):
             "nid_or_snid": nid_or_snid,
         }
 
-    def get_campain_vaccine(self: Any, round: Any) -> Any:
+    def get_campain_vaccine(self: "CampaignViewSet", round: Union[Any, Round]) -> str:
         if round.campaign.vacine:
             return round.campaign.vacine
         else:

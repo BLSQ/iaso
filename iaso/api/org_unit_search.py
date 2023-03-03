@@ -25,7 +25,7 @@ def build_org_units_queryset(queryset, params, profile):
     group = params.get("group", None)
     version = params.get("version", None)
     default_version = params.get("defaultVersion", None)
-    direct_children = params.get("onlyDirectChildren", False)
+    direct_children = params.get("onlyDirectChildren", None)
     direct_children = False if direct_children == "false" else True
 
     org_unit_parent_id = params.get("orgUnitParentId", None)

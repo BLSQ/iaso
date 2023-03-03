@@ -39,7 +39,6 @@ const patchProfile = async (body: Partial<SaveProfileQuery>) => {
 };
 
 const postProfile = async (body: SaveProfileQuery) => {
-    console.log('body', body);
     return postRequest(endpoint, body);
 };
 

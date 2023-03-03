@@ -4,15 +4,18 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 
+import { useFormik, FormikProvider } from 'formik';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
-import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
 import PermissionsSwitches from './PermissionsSwitches.tsx';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { useApiErrorValidation } from '../../../libs/validation.tsx';
+import { useProfileValidation } from '../validation';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -45,7 +48,7 @@ const UserDialogComponent = ({
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     const classes = useStyles();
 
     const initialUser = useMemo(() => {
@@ -92,6 +95,57 @@ const UserDialogComponent = ({
             },
         };
     }, [initialData]);
+
+    const [closeModal, setCloseModal] = useState();
+
+    // FORMIK + YUP
+    const {
+        apiErrors,
+        payload,
+        mutation: save,
+    } = useApiErrorValidation({
+        mutationFn: saveProfile,
+        onSuccess: () => {
+            closeModal.closeDialog();
+            formik.resetForm();
+        },
+        // convertError: convertAPIErrorsToState,
+    });
+
+    const schema = useProfileValidation(apiErrors, payload);
+
+    const formik = useFormik({
+        initialValues: {
+            id,
+            user_name,
+            first_name,
+            last_name,
+            email,
+            password,
+            dhis2_id,
+            home_page,
+            language,
+        },
+        enableReinitialize: true,
+        validateOnBlur: true,
+        validationSchema: schema,
+        onSubmit: save, // TODO: convert forms string to Array of IDs
+    });
+
+    const {
+        values,
+        setFieldValue,
+        touched,
+        // setFieldTouched,
+        // errors,
+        isValid,
+        initialValues,
+        handleSubmit,
+        resetForm,
+    } = formik;
+
+    // END FORMIK + YUP
+
     const [user, setUser] = useState(initialUser);
     const [tab, setTab] = useState('infos');
     const onClosed = () => {
@@ -99,133 +153,145 @@ const UserDialogComponent = ({
         setTab('infos');
     };
 
-    const setFieldValue = (fieldName, fieldValue) => {
-        setUser({
-            ...user,
-            [fieldName]: {
-                value: fieldValue,
-                errors: [],
-            },
-        });
-    };
+    // const setFieldValue = (fieldName, fieldValue) => {
+    //     setUser({
+    //         ...user,
+    //         [fieldName]: {
+    //             value: fieldValue,
+    //             errors: [],
+    //         },
+    //     });
+    // };
 
-    const setFieldErrors = (fieldName, fieldError) => {
-        setUser({
-            ...user,
-            [fieldName]: {
-                value: user[fieldName].value,
-                errors: [fieldError],
-            },
-        });
-    };
+    // const setFieldErrors = (fieldName, fieldError) => {
+    //     setUser({
+    //         ...user,
+    //         [fieldName]: {
+    //             value: user[fieldName].value,
+    //             errors: [fieldError],
+    //         },
+    //     });
+    // };
 
-    const onConfirm = closeDialog => {
-        const currentUser = {};
-        Object.keys(user).forEach(key => {
-            currentUser[key] = user[key].value;
-        });
+    // const onConfirm = closeDialog => {
+    //     const currentUser = {};
+    //     Object.keys(user).forEach(key => {
+    //         currentUser[key] = user[key].value;
+    //     });
 
-        saveProfile(currentUser, {
-            onSuccess: () => {
-                closeDialog();
-                setTab('infos');
-                setUser(initialUser);
-                if (currentUser.id === connectedUser.id) {
-                    dispatch(fetchCurrentUser());
-                }
-            },
-            onError: error => {
-                if (error.status === 400) {
-                    setFieldErrors(
-                        error.details.errorKey,
-                        error.details.errorMessage,
-                    );
-                }
-            },
-        });
-    };
+    //     saveProfile(currentUser, {
+    //         onSuccess: () => {
+    //             closeDialog();
+    //             setTab('infos');
+    //             setUser(initialUser);
+    //             if (currentUser.id === connectedUser.id) {
+    //                 dispatch(fetchCurrentUser());
+    //             }
+    //         },
+    //         onError: error => {
+    //             if (error.status === 400) {
+    //                 setFieldErrors(
+    //                     error.details.errorKey,
+    //                     error.details.errorMessage,
+    //                 );
+    //             }
+    //         },
+    //     });
+    // };
 
     useEffect(() => {
         setUser(initialUser);
     }, [initialData, initialUser]);
 
     return (
-        <ConfirmCancelDialogComponent
-            titleMessage={titleMessage}
-            onConfirm={closeDialog => onConfirm(closeDialog)}
-            cancelMessage={MESSAGES.cancel}
-            confirmMessage={MESSAGES.save}
-            onClosed={() => onClosed()}
-            renderTrigger={renderTrigger}
-            maxWidth="sm"
-            dialogProps={{
-                classNames: classes.dialog,
-            }}
-        >
-            <Tabs
-                id="user-dialog-tabs"
-                value={tab}
-                classes={{
-                    root: classes.tabs,
+        <FormikProvider value={formik}>
+            <ConfirmCancelDialogComponent
+                titleMessage={titleMessage}
+                llowConfirm={isValid && !isEqual(values, initialValues)}
+                // TO DO : add closeModal and handleSubmit
+                onConfirm={closeDialog => {
+                    setCloseModal(closeDialog);
+                    handleSubmit();
                 }}
-                onChange={(_event, newtab) => setTab(newtab)}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.save}
+                onClosed={() => onClosed()}
+                onCancel={closeDialog => {
+                    resetForm();
+                    closeDialog();
+                }}
+                renderTrigger={renderTrigger}
+                maxWidth="sm"
+                dialogProps={{
+                    classNames: classes.dialog,
+                }}
             >
-                <Tab
+                <Tabs
+                    id="user-dialog-tabs"
+                    value={tab}
                     classes={{
-                        root: classes.tab,
+                        root: classes.tabs,
                     }}
-                    value="infos"
-                    label={formatMessage(MESSAGES.infos)}
-                />
-                <Tab
-                    classes={{
-                        root: classes.tab,
-                    }}
-                    value="permissions"
-                    label={formatMessage(MESSAGES.permissions)}
-                />
-                <Tab
-                    classes={{
-                        root: classes.tab,
-                    }}
-                    value="locations"
-                    label={formatMessage(MESSAGES.location)}
-                />
-            </Tabs>
-            <div className={classes.root} id="user-profile-dialog">
-                {tab === 'infos' && (
-                    <UsersInfos
-                        setFieldValue={(key, value) =>
-                            setFieldValue(key, value)
-                        }
-                        initialData={initialData}
-                        currentUser={user}
-                        allowSendEmailInvitation={allowSendEmailInvitation}
-                    />
-                )}
-                <div
-                    className={
-                        tab === 'permissions' ? '' : classes.hiddenOpacity
-                    }
+                    onChange={(_event, newtab) => setTab(newtab)}
                 >
-                    <PermissionsSwitches
-                        isSuperUser={initialData?.is_superuser}
-                        currentUser={user}
-                        handleChange={permissions =>
-                            setFieldValue('permissions', permissions)
-                        }
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="infos"
+                        label={formatMessage(MESSAGES.infos)}
                     />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="permissions"
+                        label={formatMessage(MESSAGES.permissions)}
+                    />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="locations"
+                        label={formatMessage(MESSAGES.location)}
+                    />
+                </Tabs>
+                <div className={classes.root} id="user-profile-dialog">
+                    {tab === 'infos' && (
+                        // TO DO : add setTouched and getErrors props
+                        <UsersInfos
+                            setFieldValue={(key, value) =>
+                                setFieldValue(key, value)
+                            }
+                            initialData={initialData}
+                            currentUser={user}
+                            allowSendEmailInvitation={allowSendEmailInvitation}
+                        />
+                    )}
+                    <div
+                        className={
+                            tab === 'permissions' ? '' : classes.hiddenOpacity
+                        }
+                    >
+                        <PermissionsSwitches
+                            isSuperUser={initialData?.is_superuser}
+                            currentUser={user}
+                            handleChange={permissions =>
+                                setFieldValue('permissions', permissions)
+                            }
+                        />
+                    </div>
+                    {tab === 'locations' && (
+                        <UsersLocations
+                            handleChange={ouList =>
+                                setFieldValue('org_units', ouList)
+                            }
+                            currentUser={user}
+                        />
+                    )}
                 </div>
-                {tab === 'locations' && (
-                    <UsersLocations
-                        handleChange={ouList =>
-                            setFieldValue('org_units', ouList)
-                        }
-                        currentUser={user}
-                    />
-                )}
-            </div>
-        </ConfirmCancelDialogComponent>
+            </ConfirmCancelDialogComponent>
+        </FormikProvider>
     );
 };
 

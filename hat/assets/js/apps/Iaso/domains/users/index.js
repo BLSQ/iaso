@@ -51,7 +51,8 @@ const Users = ({ params }) => {
     const { mutate: deleteProfile, isLoading: deletingProfile } =
         useDeleteProfile();
 
-    const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
+    const { mutate: saveProfile, isLoading: savingProfile } =
+        useSaveProfile('create');
 
     const isLoading = fetchingProfiles || deletingProfile || savingProfile;
 

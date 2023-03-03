@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.comparedFields',
         defaultMessage: 'Compared fields',
     },
+    fields: {
+        id: 'iaso.label.fields',
+        defaultMessage: 'Fields',
+    },
     entityA: {
         id: 'iaso.label.entityA',
         defaultMessage: 'Entity A',
@@ -72,6 +76,14 @@ const MESSAGES = defineMessages({
     similarity: {
         id: 'iaso.label.similarity_score',
         defaultMessage: 'Similarity score',
+    },
+    finalValue: {
+        id: 'iaso.label.finalValue',
+        defaultMessage: 'Final value',
+    },
+    field: {
+        id: 'iaso.label.field',
+        defaultMessage: 'Field',
     },
 });
 

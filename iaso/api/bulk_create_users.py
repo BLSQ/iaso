@@ -145,7 +145,7 @@ def bulk_create_users_task(file, user, launch_task):
                                     "again. Use Orgunit ID instead of name.".format(ou, i + 1)
                                 }
                             )
-            profile = Profile.objects.create(account=request_user.iaso_profile.account, user=user)
+            profile = Profile.objects.create(account=request_user.iaso_profile.account, user=created_user)
             try:
                 user_permissions = row[csv_indexes.index("permissions")].split(",")
                 for perm in user_permissions:

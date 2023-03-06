@@ -38,6 +38,8 @@ class EntityType(models.Model):
     fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
     # Fields (subset of the fields from the reference form) that will be shown in the UI - entity detail view
     fields_detail_info_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    # Fields (subset of the fields from the reference form) that will be used to search for duplicate entities
+    fields_duplicate_search = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
     class Meta:
         unique_together = ["name", "account"]

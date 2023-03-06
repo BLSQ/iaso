@@ -145,6 +145,7 @@
     "iaso.entityTypes.errors.referenceForm": "Reference form is required",
     "iaso.entityTypes.fieldsDetailInfoView": "Detail info fields",
     "iaso.entityTypes.fieldsListView": "List fields",
+    "iaso.entityTypes.fieldsDuplicateSearch": "Duplicate search fields",
     "iaso.entityTypes.referenceForm": "Reference form",
     "iaso.entityTypes.selectReferenceForm": "Select a reference form first",
     "iaso.entityTypes.title": "Beneficiary types",

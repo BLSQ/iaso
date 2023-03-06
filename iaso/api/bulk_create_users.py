@@ -18,25 +18,26 @@ from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, ERRORED
 
 
 @task_decorator(task_name="bulk_create_users")
-def bulk_create_users_task(request, user):
-    request_user = request.user
+def bulk_create_users_task(file, user, launch_task):
+    request_user = user
     user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request_user, None)
     user_created_count = 0
     running_task = request_user
 
-    try:
-        running_task.report_progress_and_stop_if_killed(
-            progress_value=user_created_count, progress_message=_("Starting")
-        )
-        user_csv = request.FILES["file"]
-        user_csv_decoded = user_csv.read().decode("utf-8")
-        csv_str = io.StringIO(user_csv_decoded)
-        reader = csv.reader(csv_str)
-    except UnicodeDecodeError as e:
-        running_task.status = ERRORED
-        running_task.result = {"message": e}
-        running_task.save()
-        raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
+    if launch_task:
+        try:
+            running_task.report_progress_and_stop_if_killed(
+                progress_value=user_created_count, progress_message=_("Starting")
+            )
+        except UnicodeDecodeError as e:
+            running_task.status = ERRORED
+            running_task.result = {"message": e}
+            running_task.save()
+            raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
+    user_csv = file
+    user_csv_decoded = user_csv.read().decode("utf-8")
+    csv_str = io.StringIO(user_csv_decoded)
+    reader = csv.reader(csv_str)
     i = 0
     csv_indexes = []
     file_instance = BulkCreateUserCsvFile.objects.create(
@@ -44,7 +45,8 @@ def bulk_create_users_task(request, user):
     )
     file_instance.save()
     for row in reader:
-        running_task.report_progress_and_stop_if_killed(progress_message=_("Creating users"))
+        if launch_task:
+            running_task.report_progress_and_stop_if_killed(progress_message=_("Creating users"))
         org_units_list = []
         if i > 0:
             email_address = True if row[csv_indexes.index("email")] else None
@@ -181,7 +183,8 @@ def bulk_create_users_task(request, user):
             csv_indexes = row
         i += 1
 
-    running_task.report_success(message="%d user created." % user_created_count)
+    if launch_task:
+        running_task.report_success(message="%d user created." % user_created_count)
 
     return {"Accounts created": user_created_count}
 
@@ -251,6 +254,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         user = request.user
-        task = bulk_create_users_task(request=request, user=user)  # type: ignore
+        file = request.FILES["file"]
+        task = bulk_create_users_task(file=file, user=user, launch_task=True)  # type: ignore
 
         return Response({"task": TaskSerializer(instance=task).data})

@@ -93,6 +93,7 @@ const InstancesFiltersComponent = ({
     const [formState, setFormState] = useFormState(
         filterDefault(defaultFilters),
     );
+    const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     useSkipEffectOnMount(() => {
@@ -251,6 +252,8 @@ const InstancesFiltersComponent = ({
                         type="search"
                         label={MESSAGES.textSearch}
                         onEnterPressed={() => handleSearch()}
+                        onErrorChange={setTextSearchError}
+                        blockForbiddenChars
                     />
                     <InputComponent
                         keyValue="formIds"
@@ -441,7 +444,7 @@ const InstancesFiltersComponent = ({
                             </Box>
                         )}
                         <Button
-                            disabled={isSearchDisabled}
+                            disabled={textSearchError || isSearchDisabled}
                             variant="contained"
                             className={classes.button}
                             color="primary"

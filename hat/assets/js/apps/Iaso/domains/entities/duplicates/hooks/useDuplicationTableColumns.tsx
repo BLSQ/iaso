@@ -46,7 +46,7 @@ export const useDuplicationTableColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.form),
-                accessor: 'entity1.form.name',
+                accessor: 'form.name',
                 resizable: false,
                 sortable: false,
             },

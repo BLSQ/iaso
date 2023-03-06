@@ -16,6 +16,7 @@ import { useSelector } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../Styles';
 import { CsvButton } from '../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton.tsx';
+import { capitalize } from '../../../../../../../hat/assets/js/apps/Iaso/utils/index';
 
 const groupsForCampaignRound = (campaign, round) => {
     if (!campaign.separate_scopes_per_round) {
@@ -81,13 +82,13 @@ const RoundPopper = ({
                             <FormattedMessage {...MESSAGES.raStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.risk_assessment_status}
+                            {capitalize(campaign.original.risk_assessment_status)}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.budgetStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.budget_status}
+                            {capitalize(campaign.original.budget_status)}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.vaccine} />:

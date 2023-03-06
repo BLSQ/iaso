@@ -182,41 +182,46 @@ const Modal: FunctionComponent<Props> = ({
             </Box>
 
             {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={5}>
-                    <InputComponent
-                        type="select"
-                        keyValue="forms"
-                        onChange={handleChangeForm}
-                        value={form}
-                        label={MESSAGES.sourceForm}
-                        required
-                        options={formsList}
-                        loading={isLoadingForms}
-                        clearable={false}
-                    />
+            <Box position="relative" data-test="change-modal">
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={5}>
+                        <InputComponent
+                            type="select"
+                            keyValue="forms"
+                            onChange={handleChangeForm}
+                            value={form}
+                            label={MESSAGES.sourceForm}
+                            required
+                            options={formsList}
+                            loading={isLoadingForms}
+                            clearable={false}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={7}>
+                        <Box className={classes.referenceForm}>
+                            <ArrowRightAltIcon
+                                color="primary"
+                                fontSize="large"
+                            />
+                            <span>{formatMessage(MESSAGES.targetForm)}:</span>{' '}
+                            {referenceForm?.name}
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <MappingTable
+                            setIsTouched={setIsTouched}
+                            mappingArray={mappingArray}
+                            setMappingArray={setMappingArray}
+                            sourcePossibleFields={sourcePossibleFields}
+                            targetPossibleFields={targetPossibleFields}
+                            isFetchingSourcePossibleFields={
+                                isFetchingSourcePossibleFields
+                            }
+                            form={form}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} md={7}>
-                    <Box className={classes.referenceForm}>
-                        <ArrowRightAltIcon color="primary" fontSize="large" />
-                        <span>{formatMessage(MESSAGES.targetForm)}:</span>{' '}
-                        {referenceForm?.name}
-                    </Box>
-                </Grid>
-                <Grid item xs={12}>
-                    <MappingTable
-                        setIsTouched={setIsTouched}
-                        mappingArray={mappingArray}
-                        setMappingArray={setMappingArray}
-                        sourcePossibleFields={sourcePossibleFields}
-                        targetPossibleFields={targetPossibleFields}
-                        isFetchingSourcePossibleFields={
-                            isFetchingSourcePossibleFields
-                        }
-                        form={form}
-                    />
-                </Grid>
-            </Grid>
+            </Box>
         </ConfirmCancelModal>
     );
 };

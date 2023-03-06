@@ -1,8 +1,12 @@
 import { createContext } from 'react';
 import pluginsConfigs from '../../../../../../plugins';
 
-export const capitalize = (text, keepEndCase = false) =>
-    text
+export const capitalize = (text, keepEndCase = false) => {
+    if (!text) {
+        return text;
+    }
+
+    return text
         .split(' ')
         .map(
             word =>
@@ -10,6 +14,8 @@ export const capitalize = (text, keepEndCase = false) =>
                 (keepEndCase ? word.slice(1) : word.slice(1).toLowerCase()),
         )
         .join(' ');
+}
+
 
 export const formatThousand = number => {
     if (number) {
@@ -81,8 +87,8 @@ export const waitFor = delay =>
 
 export const fakeResponse =
     response =>
-    async (isError = false) => {
-        if (isError) throw new Error('mock request failed');
-        await waitFor(200);
-        return response;
-    };
+        async (isError = false) => {
+            if (isError) throw new Error('mock request failed');
+            await waitFor(200);
+            return response;
+        };

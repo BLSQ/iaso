@@ -1,3 +1,5 @@
+import json
+
 from django.core.paginator import Paginator
 
 
@@ -20,3 +22,11 @@ def queryset_iterator(queryset, chunk_size=1000):
             yield from paginator.get_page(index + 1)
     else:
         yield from queryset.iterator(chunk_size=chunk_size)
+
+
+def is_json_serializable(x):
+    try:
+        json.dumps(x)
+        return True
+    except (TypeError, OverflowError):
+        return False

@@ -12,7 +12,169 @@ from rest_framework import serializers, permissions
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit
+from beanstalk_worker import task_decorator
+from iaso.api.tasks import TaskSerializer
+from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, ERRORED
+
+
+@task_decorator(task_name="bulk_create_users")
+def bulk_create_users_task(request, user):
+    request_user = request.user
+    user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request_user, None)
+    user_created_count = 0
+    running_task = request_user
+
+    try:
+        running_task.report_progress_and_stop_if_killed(progress_value=user_created_count, progress_message=_("Starting"))
+        user_csv = request.FILES["file"]
+        user_csv_decoded = user_csv.read().decode("utf-8")
+        csv_str = io.StringIO(user_csv_decoded)
+        reader = csv.reader(csv_str)
+    except UnicodeDecodeError as e:
+        running_task.status = ERRORED
+        running_task.result = {"message": e}
+        running_task.save()
+        raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
+    i = 0
+    csv_indexes = []
+    file_instance = BulkCreateUserCsvFile.objects.create(
+        file=user_csv, created_by=request_user, account=request_user.iaso_profile.account
+    )
+    file_instance.save()
+    for row in reader:
+        running_task.report_progress_and_stop_if_killed(progress_message=_("Creating users"))
+        org_units_list = []
+        if i > 0:
+            email_address = True if row[csv_indexes.index("email")] else None
+            if email_address:
+                try:
+                    validators.validate_email(row[csv_indexes.index("email")])
+                except ValidationError:
+                    raise serializers.ValidationError(
+                        {
+                            "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
+                                     "again.".format(i)
+                        }
+                    )
+
+            try:
+                try:
+                    created_user = User.objects.create(
+                        username=row[csv_indexes.index("username")],
+                        first_name=row[csv_indexes.index("first_name")],
+                        last_name=row[csv_indexes.index("last_name")],
+                        email=row[csv_indexes.index("email")],
+                    )
+                    validate_password(row[csv_indexes.index("password")], user)
+                    created_user.set_password(row[csv_indexes.index("password")])
+                    created_user.save()
+                except ValidationError as e:
+                    raise serializers.ValidationError(
+                        {"error": "Operation aborted. Error at row %d. %s" % (i + 1, "; ".join(e.messages))}
+                    )
+            except IntegrityError:
+                raise serializers.ValidationError(
+                    {
+                        "error": "Operation aborted. Error at row {0} Account already exists : {1}. Fix the "
+                                 "error and try "
+                                 "again.".format(i, row[csv_indexes.index("username")])
+                    }
+                )
+            org_units = row[csv_indexes.index("orgunit")]
+            if org_units:
+                org_units = org_units.split(",")
+                for ou in org_units:
+                    ou = ou[1::] if ou[:1] == " " else ou
+                    try:
+                        if int(ou):
+                            try:
+                                ou = OrgUnit.objects.get(id=ou)
+                                if ou not in user_access_ou:
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                                     "You don't have access to this orgunit".format(ou, i + 1)
+                                        }
+                                    )
+                                org_units_list.append(ou)
+                            except ObjectDoesNotExist:
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                                 "Fix the error "
+                                                 "and try "
+                                                 "again.".format(ou, i + 1)
+                                    }
+                                )
+                    except ValueError:
+                        try:
+                            org_unit = OrgUnit.objects.get(name=ou)
+                            if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request_user, None):
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                                 "You don't have access to this orgunit".format(ou, i + 1)
+                                    }
+                                )
+                            org_units_list.append(org_unit)
+                        except MultipleObjectsReturned:
+
+                            raise serializers.ValidationError(
+                                {
+                                    "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
+                                             "Use Orgunit ID instead of name.".format(ou, i + 1)
+                                }
+                            )
+                        except ObjectDoesNotExist:
+                            raise serializers.ValidationError(
+                                {
+                                    "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
+                                             "the error "
+                                             "and try "
+                                             "again. Use Orgunit ID instead of name.".format(ou, i + 1)
+                                }
+                            )
+            profile = Profile.objects.create(account=request_user.iaso_profile.account, user=user)
+            try:
+                user_permissions = row[csv_indexes.index("permissions")].split(",")
+                for perm in user_permissions:
+                    perm = perm[1::] if perm[:1] == " " else perm
+                    if perm:
+                        try:
+                            perm = Permission.objects.get(codename=perm)
+                            created_user.user_permissions.add(perm)
+                            created_user.save()
+                        except ObjectDoesNotExist:
+                            raise serializers.ValidationError(
+                                {
+                                    "error": "Operation aborted. Invalid permission {0} at row : {1}. Fix "
+                                             "the error "
+                                             "and try "
+                                             "again".format(perm, i + 1)
+                                }
+                            )
+            except ValueError:
+                pass
+            if row[csv_indexes.index("profile_language")]:
+                language = row[csv_indexes.index("profile_language")].lower()
+                profile.language = language
+            else:
+                profile.language = "fr"
+            profile.org_units.set(org_units_list)
+            csv_file = pd.read_csv(io.StringIO(file_instance.file.read().decode("utf-8")), delimiter=",")
+            csv_file.at[i - 1, "password"] = ""
+            csv_file = csv_file.to_csv(path_or_buf=None, index=False)
+            content_file = ContentFile(csv_file.encode("utf-8"))
+            file_instance.file.save(f"{file_instance.id}.csv", content_file)
+            profile.save()
+            user_created_count += 1
+        else:
+            csv_indexes = row
+        i += 1
+
+    running_task.report_success(message="%d user created." % user_created_count)
+
+    return {"Accounts created": user_created_count}
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
@@ -79,150 +241,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
-        user_created_count = 0
-        if request.FILES:
-            user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-            try:
-                user_csv = request.FILES["file"]
-                user_csv_decoded = user_csv.read().decode("utf-8")
-                csv_str = io.StringIO(user_csv_decoded)
-                reader = csv.reader(csv_str)
-            except UnicodeDecodeError as e:
-                raise serializers.ValidationError({"error": "Operation aborted. Error: {}".format(e)})
-            i = 0
-            csv_indexes = []
-            file_instance = BulkCreateUserCsvFile.objects.create(
-                file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
-            )
-            file_instance.save()
-            for row in reader:
-                org_units_list = []
-                if i > 0:
-                    email_address = True if row[csv_indexes.index("email")] else None
-                    if email_address:
-                        try:
-                            validators.validate_email(row[csv_indexes.index("email")])
-                        except ValidationError:
-                            raise serializers.ValidationError(
-                                {
-                                    "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
-                                    "again.".format(i)
-                                }
-                            )
+        user = request.user
+        task = bulk_create_users_task(request=request, user=user)  # type: ignore
 
-                    try:
-                        try:
-                            user = User.objects.create(
-                                username=row[csv_indexes.index("username")],
-                                first_name=row[csv_indexes.index("first_name")],
-                                last_name=row[csv_indexes.index("last_name")],
-                                email=row[csv_indexes.index("email")],
-                            )
-                            validate_password(row[csv_indexes.index("password")], user)
-                            user.set_password(row[csv_indexes.index("password")])
-                            user.save()
-                        except ValidationError as e:
-                            raise serializers.ValidationError(
-                                {"error": "Operation aborted. Error at row %d. %s" % (i + 1, "; ".join(e.messages))}
-                            )
-                    except IntegrityError:
-                        raise serializers.ValidationError(
-                            {
-                                "error": "Operation aborted. Error at row {0} Account already exists : {1}. Fix the "
-                                "error and try "
-                                "again.".format(i, row[csv_indexes.index("username")])
-                            }
-                        )
-                    org_units = row[csv_indexes.index("orgunit")]
-                    if org_units:
-                        org_units = org_units.split(",")
-                        for ou in org_units:
-                            ou = ou[1::] if ou[:1] == " " else ou
-                            try:
-                                if int(ou):
-                                    try:
-                                        ou = OrgUnit.objects.get(id=ou)
-                                        if ou not in user_access_ou:
-                                            raise serializers.ValidationError(
-                                                {
-                                                    "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                    "You don't have access to this orgunit".format(ou, i + 1)
-                                                }
-                                            )
-                                        org_units_list.append(ou)
-                                    except ObjectDoesNotExist:
-                                        raise serializers.ValidationError(
-                                            {
-                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                "Fix the error "
-                                                "and try "
-                                                "again.".format(ou, i + 1)
-                                            }
-                                        )
-                            except ValueError:
-                                try:
-                                    org_unit = OrgUnit.objects.get(name=ou)
-                                    if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
-                                        raise serializers.ValidationError(
-                                            {
-                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                "You don't have access to this orgunit".format(ou, i + 1)
-                                            }
-                                        )
-                                    org_units_list.append(org_unit)
-                                except MultipleObjectsReturned:
-
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
-                                            "Use Orgunit ID instead of name.".format(ou, i + 1)
-                                        }
-                                    )
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
-                                            "the error "
-                                            "and try "
-                                            "again. Use Orgunit ID instead of name.".format(ou, i + 1)
-                                        }
-                                    )
-                    profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
-                    try:
-                        user_permissions = row[csv_indexes.index("permissions")].split(",")
-                        for perm in user_permissions:
-                            perm = perm[1::] if perm[:1] == " " else perm
-                            if perm:
-                                try:
-                                    perm = Permission.objects.get(codename=perm)
-                                    user.user_permissions.add(perm)
-                                    user.save()
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": "Operation aborted. Invalid permission {0} at row : {1}. Fix "
-                                            "the error "
-                                            "and try "
-                                            "again".format(perm, i + 1)
-                                        }
-                                    )
-                    except ValueError:
-                        pass
-                    if row[csv_indexes.index("profile_language")]:
-                        language = row[csv_indexes.index("profile_language")].lower()
-                        profile.language = language
-                    else:
-                        profile.language = "fr"
-                    profile.org_units.set(org_units_list)
-                    csv_file = pd.read_csv(io.StringIO(file_instance.file.read().decode("utf-8")), delimiter=",")
-                    csv_file.at[i - 1, "password"] = ""
-                    csv_file = csv_file.to_csv(path_or_buf=None, index=False)
-                    content_file = ContentFile(csv_file.encode("utf-8"))
-                    file_instance.file.save(f"{file_instance.id}.csv", content_file)
-                    profile.save()
-                    user_created_count += 1
-                else:
-                    csv_indexes = row
-                i += 1
-        response = {"Accounts created": user_created_count}
-        return Response(response)
+        return Response(task)

@@ -56,7 +56,7 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
     As the api trigger a task, the tests will cover the function bulk_create_users_task directly
     """
 
-    def test_upload_valid_csv(self):
+    def test_create_from_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
 
@@ -68,45 +68,58 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
 
         create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
 
-        print(create_result)
+        profiles = Profile.objects.filter(account=self.yoda.iaso_profile.account)
+        usernames = [profile.user.username for profile in profiles]
+        username_list = ["yoda", "broly", "obi", "ferdinand", "rsfg"]
 
-        # users = User.objects.all()
-        # profiles = Profile.objects.all()
-        # self.assertEqual(response.status_code, 200)
-        # self.assertEqual(len(users), 6)
-        # self.assertEqual(len(profiles), 6)
+        self.assertEqual(create_result["Accounts created"], 3)
+        self.assertEqual(sorted(usernames), sorted(username_list))
 
-    # def test_upload_valid_csv_with_perms(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     iaso_forms = Permission.objects.get(codename="iaso_forms")
-    #     iaso_submissions = Permission.objects.get(codename="iaso_submissions")
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     pollux = User.objects.get(username="pollux")
-    #     pollux_perms = pollux.user_permissions.all()
-    #     has_perms = False
-    #     if iaso_forms and iaso_submissions in pollux_perms:
-    #         has_perms = True
-    #
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(has_perms, True)
-    #
-    # def test_upload_invalid_mail_csv(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         response.json()["error"], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
-    #     )
-    #
+    def test_upload_valid_csv_with_perms(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        iaso_forms = Permission.objects.get(codename="iaso_forms")
+        iaso_submissions = Permission.objects.get(codename="iaso_submissions")
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        pollux = User.objects.get(username="pollux")
+        pollux_perms = pollux.user_permissions.all()
+        has_perms = False
+        if iaso_forms and iaso_submissions in pollux_perms:
+            has_perms = True
+
+        profiles = Profile.objects.filter(account=self.yoda.iaso_profile.account)
+        usernames = [profile.user.username for profile in profiles]
+        username_list = ["yoda", "pollux", "obi", "ferdinand", "castor"]
+
+        self.assertEqual(create_result["Accounts created"], 3)
+        self.assertEqual(has_perms, True)
+        self.assertEqual(sorted(usernames), sorted(username_list))
+
+    def test_upload_invalid_mail_csv(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        self.assertEqual(
+            create_result.json()["error"], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
+        )
+
     # def test_upload_without_mail_must_work(self):
     #     self.client.force_authenticate(self.yoda)
     #     self.sw_source.projects.set([self.project])

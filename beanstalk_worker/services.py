@@ -10,6 +10,7 @@ from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
+from hat.common.utils import is_json_serializable
 from iaso.models.base import Task, RUNNING, QUEUED, KILLED
 
 logger = getLogger(__name__)
@@ -77,8 +78,9 @@ class _TaskServiceBase:
                 logger.warning(f"Task {task} still in status RUNNING after execution")
 
     def enqueue(self, module_name, method_name, args, kwargs, task_id):
+        kwargs_value = kwargs if is_json_serializable(kwargs) else None
         body = json.dumps(
-            {"module": module_name, "method": method_name, "task_id": task_id, "args": args, "kwargs": kwargs},
+            {"module": module_name, "method": method_name, "task_id": task_id, "args": args, "kwargs": kwargs_value},
             default=json_dump,
         )
         return self._enqueue(body)

@@ -21,7 +21,7 @@ const getDuplicates = async (queryString: string) => {
         return mockDuplicatesDetailsResponse();
     }
     return mockDuplicatesTableResponse({
-        count: 21,
+        count: 5,
         has_next: true,
         has_previous: false,
         limit: 20,

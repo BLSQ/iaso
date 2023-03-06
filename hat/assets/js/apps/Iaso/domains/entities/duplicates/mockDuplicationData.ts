@@ -17,8 +17,8 @@ type MakeDuplicateArgs = {
 };
 
 const baseEntityFields = {
-    first_name: 'Retsu',
-    last_name: 'Ichijouji',
+    first_name: 'David',
+    last_name: 'Jones',
     date_of_birth: '2022-08-16T13:26:22.470058Z',
     father_name: 'Voicer',
     gender: 'M',
@@ -148,15 +148,15 @@ export const mockDuplicatesDetailsTableData = () => {
     return [
         {
             field: { field: 'first_name', label: { English: 'First name' } },
-            entity1: { value: 'Retsu', id: 1 },
-            entity2: { value: 'Retsu0', id: 2 },
+            entity1: { value: 'David', id: 1 },
+            entity2: { value: 'David0', id: 2 },
             final: { value: '' },
         },
         {
             field: { field: 'last_name', label: 'Last name' },
-            entity1: { value: 'Ichijouji', id: 1 },
-            entity2: { value: 'Ichijouji', id: 2 },
-            final: { value: 'Ichijouji', id: 1 }, // randomly using the id of the 1st entity, since the value is the same
+            entity1: { value: 'Jones', id: 1 },
+            entity2: { value: 'Jones', id: 2 },
+            final: { value: 'Jones', id: 1 }, // randomly using the id of the 1st entity, since the value is the same
         },
         {
             field: {
@@ -172,8 +172,8 @@ export const mockDuplicatesDetailsTableData = () => {
                 field: 'stage_name',
                 label: { English: 'Stage name' },
             },
-            entity1: { value: 'Gavan', id: 1 },
-            entity2: { value: 'X-OR', id: 2 },
+            entity1: { value: 'David Bowie', id: 1 },
+            entity2: { value: 'Ziggy Stardust', id: 2 },
             final: { value: '' },
         },
     ];

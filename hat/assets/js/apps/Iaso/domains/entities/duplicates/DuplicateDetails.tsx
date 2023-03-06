@@ -42,7 +42,6 @@ const useStyles = makeStyles(theme => {
 });
 
 export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
-    console.log('params', params);
     const [tableState, setTableState] = useArrayState([]);
     const [query, setQuery] = useObjectState();
     console.log('query', query);

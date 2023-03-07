@@ -333,13 +333,21 @@ class CampaignViewSet(ModelViewSet):
         }
 
     def get_campain_vaccine(self: "CampaignViewSet", round: Round, campain: Campaign) -> str:
-        if campain.vacine:
-            return campain.vacine
+        if campain.separate_scopes_per_round:
+            round_scope_vaccines = []
 
-        if campain.vaccines:
-            return campain.vaccines
+            scopes = RoundScope.objects.filter(round=round)
+            if scopes.count() < 1:
+                return ""
+            # Loop on round scopes
+            for scope in scopes:
+                round_scope_vaccines.append(scope.vaccine)
+            return ", ".join(round_scope_vaccines)
+        else:
+            if campain.vaccines:
+                return campain.vaccines
 
-        return ""
+            return ""
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):

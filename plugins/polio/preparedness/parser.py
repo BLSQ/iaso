@@ -375,7 +375,7 @@ def parse_prepardness_v2(spread: CachedSpread):
     preparedness_data = {
         "national": get_national_level_preparedness_v2(spread),
         **get_regional_level_preparedness_v2(spread),
-        "format": "v3.2",
+        "format": "v3.3",
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data

@@ -11,9 +11,13 @@ import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
 import { testTableSort } from '../../support/testTableSort';
 import { testPageFilters } from '../../support/testPageFilters';
+import { forbiddenCharacters } from '../../constants/forbiddenChars';
+import { containsForbiddenCharacter } from '../../support/utils';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
+const search = 'mugen';
+const searchWithForbiddenChars = 'ma/ri&o';
 const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000`;
 
 let interceptFlag = false;
@@ -155,6 +159,36 @@ describe('Submissions', () => {
             });
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
+        });
+        describe('Search field', () => {
+            beforeEach(() => {
+                goToPage();
+            });
+
+            it('should enable search button', () => {
+                cy.get('[data-test="search-button"]')
+                    .as('search-button')
+                    .should('be.disabled');
+                cy.get('#search-search').type(search);
+                cy.get('[data-test="search-button"]')
+                    .invoke('attr', 'disabled')
+                    .should('equal', undefined);
+            });
+
+            it('should disable search button if search contains forbidden characters', () => {
+                cy.get('[data-test="search-button"]')
+                    .as('search-button')
+                    .should('be.disabled');
+                cy.get('#search-search').type(searchWithForbiddenChars);
+                if (
+                    containsForbiddenCharacter(
+                        searchWithForbiddenChars,
+                        forbiddenCharacters,
+                    )
+                ) {
+                    cy.get('@search-button').should('be.disabled');
+                }
+            });
         });
     });
     describe('Table', () => {

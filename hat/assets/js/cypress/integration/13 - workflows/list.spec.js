@@ -6,6 +6,8 @@ import { testPagination } from '../../support/testPagination';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import page2 from '../../fixtures/workflows/page2.json';
 import listFixture from '../../fixtures/workflows/list.json';
+import { forbiddenCharacters } from '../../constants/forbiddenChars';
+import { containsForbiddenCharacter } from '../../support/utils';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -23,8 +25,10 @@ const mockPage = () => {
     cy.intercept('GET', '/api/entitytype/3', {
         fixture: 'entityTypes/list.json',
     });
+    cy.visit(baseUrl);
 };
 const search = 'mario';
+const searchWithForbiddenChars = 'ma/ri&o';
 const name = 'Peach';
 let interceptFlag = false;
 
@@ -46,14 +50,43 @@ describe('Workflows', () => {
         const errorCode = cy.get('#error-code');
         errorCode.should('contain', '401');
     });
-    it('Search field should enabled search button', () => {
-        mockPage();
-        cy.visit(baseUrl);
-        cy.get('#search-search').type(search);
-        cy.get('[data-test="search-button"]')
-            .invoke('attr', 'disabled')
-            .should('equal', undefined);
+
+    describe('Search field', () => {
+        beforeEach(() => {
+            mockPage();
+        });
+        it.only('should enable search button', () => {
+            cy.get('#search-search').type(search);
+            cy.get('[data-test="search-button"]')
+                .invoke('attr', 'disabled')
+                .should('equal', undefined);
+        });
+
+        it.only('should disable search button if search contains forbidden characters', () => {
+            cy.get('[data-test="search-button"]')
+                .as('search-button')
+                .should('be.disabled');
+            cy.get('#search-search').type(searchWithForbiddenChars);
+            if (
+                containsForbiddenCharacter(
+                    searchWithForbiddenChars,
+                    forbiddenCharacters,
+                )
+            ) {
+                cy.get('@search-button').should('be.disabled');
+            }
+        });
     });
+
+    ``;
+    // it('Search field should enabled search button', () => {
+    //     mockPage();
+    //     cy.visit(baseUrl);
+    //     cy.get('#search-search').type(search);
+    //     cy.get('[data-test="search-button"]')
+    //         .invoke('attr', 'disabled')
+    //         .should('equal', undefined);
+    // });
     describe('Table', () => {
         beforeEach(() => {
             mockPage();

@@ -89,6 +89,19 @@ describe.skip('Entities', () => {
                     .should('equal', undefined);
             });
         });
+
+        it('should disable search button if search contains forbidden characters', () => {
+            cy.get('[data-test="search-button"]').as('search-button');
+            cy.get('#search-search').type(searchWithForbiddenChars);
+            if (
+                containsForbiddenCharacter(
+                    searchWithForbiddenChars,
+                    forbiddenCharacters,
+                )
+            ) {
+                cy.get('@search-button').should('be.disabled');
+            }
+        });
     });
 
     describe('Search button', () => {

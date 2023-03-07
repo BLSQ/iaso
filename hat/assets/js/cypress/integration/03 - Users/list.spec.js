@@ -2,10 +2,13 @@
 
 import listFixture from '../../fixtures/profiles/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { forbiddenCharacters } from '../../constants/forbiddenChars';
+import { containsForbiddenCharacter } from '../../support/utils';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
 const search = 'mario';
+const searchWithForbiddenChars = 'ma/ri&o';
 const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
 
 let interceptFlag = false;
@@ -84,7 +87,7 @@ describe('Users', () => {
         beforeEach(() => {
             goToPage();
         });
-        it('should enabled search button', () => {
+        it('should enable search button', () => {
             cy.wait('@getUsers').then(() => {
                 cy.get('#search-search').type(search);
                 cy.get('[data-test="search-button"]')
@@ -92,8 +95,22 @@ describe('Users', () => {
                     .should('equal', undefined);
             });
         });
-    });
 
+        it('should disable search button if search contains forbidden characters', () => {
+            cy.get('[data-test="search-button"]')
+                .as('search-button')
+                .should('be.disabled');
+            cy.get('#search-search').type(searchWithForbiddenChars);
+            if (
+                containsForbiddenCharacter(
+                    searchWithForbiddenChars,
+                    forbiddenCharacters,
+                )
+            ) {
+                cy.get('@search-button').should('be.disabled');
+            }
+        });
+    });
     describe('Search button', () => {
         beforeEach(() => {
             goToPage();

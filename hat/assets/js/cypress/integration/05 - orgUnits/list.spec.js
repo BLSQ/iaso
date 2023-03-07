@@ -1,23 +1,33 @@
 /// <reference types="cypress" />
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import orgUnits from '../../fixtures/orgunits/list.json';
+import { forbiddenCharacters } from '../../constants/forbiddenChars';
+import { containsForbiddenCharacter } from '../../support/utils';
 
 import { testPagination } from '../../support/testPagination';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
+const search = 'mario';
+const searchWithForbiddenChars = 'ma/ri&o';
+
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list`;
+
+const goToPage = () => {
+    cy.login();
+    cy.intercept('GET', '/api/profiles/me/**', {
+        fixture: 'profiles/me/superuser.json',
+    });
+    cy.intercept('GET', '/api/groups/**', {
+        fixture: 'groups/list.json',
+    });
+    cy.intercept('GET', '/sockjs-node/**');
+    cy.visit(baseUrl);
+};
 
 describe('OrgUnits', () => {
     beforeEach(() => {
-        cy.login();
-        cy.intercept('GET', '/api/profiles/me/**', {
-            fixture: 'profiles/me/superuser.json',
-        });
-        cy.intercept('GET', '/api/groups/**', {
-            fixture: 'groups/list.json',
-        });
-        cy.intercept('GET', '/sockjs-node/**');
+        goToPage();
     });
     describe('page', () => {
         it('page should not be accessible if user does not have permission', () => {
@@ -30,6 +40,32 @@ describe('OrgUnits', () => {
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
+        });
+
+        describe('Search field', () => {
+            beforeEach(() => {
+                goToPage();
+            });
+            it('should enable search button', () => {
+                cy.get('[data-test="search-button"]')
+                    .as('search-button')
+                    .should('not.be.disabled');
+                cy.get('#search-search').type(search);
+                cy.get('@search-button').should('not.be.disabled');
+            });
+
+            it('should disable search button if search contains forbidden characters', () => {
+                cy.get('[data-test="search-button"]').as('search-button');
+                cy.get('#search-search').type(searchWithForbiddenChars);
+                if (
+                    containsForbiddenCharacter(
+                        searchWithForbiddenChars,
+                        forbiddenCharacters,
+                    )
+                ) {
+                    cy.get('@search-button').should('be.disabled');
+                }
+            });
         });
     });
     describe('table', () => {

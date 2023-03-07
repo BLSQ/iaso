@@ -65,7 +65,7 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
         if not app_id:
             return Response()
 
-        queryset = self.get_queryset().prefetch_related("parent", "org_unit_type")
+        queryset = self.get_queryset().order_by("path").prefetch_related("parent", "org_unit_type")
         queryset = queryset.select_related("org_unit_type")
         response = {}
 

@@ -641,12 +641,14 @@ docker-compose exec iaso ./manage.py test
 Translations
 ------------
 
-The few translation for the Django side (login and reset password email etc...)
-are separated from the test. We only translate the template for now
-not the python code (string on model or admin).
+There are a some user facing text in the Django side and they requiere translations. For examples the login and reset password email and their page.
+These are handled separatly and differently from the JS frontend translations, and are storer in the folder `hat/locale/`
 
-When modifying or adding new strings to translate, use the following command to
-regenerate the translations:
+We only require translatations for the html and e-mail template.
+not the python code (e.g. strings on model or the admin), stuff that the end users are going to see directly.
+
+When modifying or adding new strings that require translation, use the following command to
+regenerate the translatios file:
 
 ```manage.py makemessages --locale=fr --extension txt --extension html```
 
@@ -674,7 +676,7 @@ This is done automatically when you launch the docker image so if new translatio
 you just pulled in git don't appear, relaunch the iaso docker.
 
 
-You do not need to manage local for English as it is the default language
+You do not need to add translation for English as it is the default language, so for now only the French correspondance is needed.
 
 
 Code reloading

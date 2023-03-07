@@ -28,6 +28,13 @@ class MobileOrgUnitAPITestCase(APITestCase):
         on_earth.projects.add(project)
         super_saiyans.sub_unit_types.add(on_earth)
 
+        cls.raditz = raditz = OrgUnit.objects.create(
+            org_unit_type=super_saiyans,
+            version=sw_version,
+            name="Raditz",
+            validation_status=OrgUnit.VALIDATION_VALID,
+        )
+
         cls.bardock = bardock = OrgUnit.objects.create(
             parent=None,
             org_unit_type=warriors,
@@ -36,13 +43,8 @@ class MobileOrgUnitAPITestCase(APITestCase):
             validation_status=OrgUnit.VALIDATION_VALID,
         )
 
-        cls.raditz = raditz = OrgUnit.objects.create(
-            parent=bardock,
-            org_unit_type=super_saiyans,
-            version=sw_version,
-            name="Raditz",
-            validation_status=OrgUnit.VALIDATION_VALID,
-        )
+        raditz.parent = bardock
+        raditz.save()
 
         cls.goku = goku = OrgUnit.objects.create(
             parent=bardock,

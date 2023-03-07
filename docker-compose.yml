@@ -16,7 +16,6 @@ services:
       - ./plugins:/opt/app/plugins
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
-      - ./docs:/opt/app/docs
       - ./README.md:/opt/app/README.md
       - ./tsconfig.json:/opt/app/tsconfig.json
       - ./babel-register.js:/opt/app/babel-register.js

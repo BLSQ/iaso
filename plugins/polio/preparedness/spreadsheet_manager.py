@@ -25,13 +25,13 @@ logger = getLogger(__name__)
 
 # you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
-TEMPLATE_VERSION = "v3.2"
+TEMPLATE_VERSION = "v3.3"
 
 
 def create_spreadsheet(title: str, lang: str):
     client = get_client()
     config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
-    if lang not in ("EN", "FR"):
+    if lang not in ("EN", "FR", "PT"):
         # We allow it for future dev but display an error to avoid carelessly adding new language
         logger.error("Unsupported lang for preparedness template")
     if TEMPLATE_VERSION not in config:

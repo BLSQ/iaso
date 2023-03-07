@@ -198,34 +198,40 @@ const OrgUnitDetail = ({ params, router }) => {
         [params, dispatch],
     );
 
-    const handleChangeShape = (geoJson, key) => {
-        setOrgUnitLocationModified(true);
-        setCurrentOrgUnit({
-            ...currentOrgUnit,
-            [key]: geoJson,
-        });
-    };
+    const handleChangeShape = useCallback(
+        (geoJson, key) => {
+            setOrgUnitLocationModified(true);
+            setCurrentOrgUnit({
+                ...currentOrgUnit,
+                [key]: geoJson,
+            });
+        },
+        [currentOrgUnit],
+    );
 
-    const handleChangeLocation = location => {
-        // TODO not sure why, perhaps to remove decimals
-        const convert = pos =>
-            pos !== null ? parseFloat(pos.toFixed(8)) : null;
-        const newPos = {
-            altitude: location.alt ? convert(location.alt) : 0,
-        };
-        // only update dimensions that are presents
-        if (location.lng !== undefined) {
-            newPos.longitude = convert(location.lng);
-        }
-        if (location.lat !== undefined) {
-            newPos.latitude = convert(location.lat);
-        }
-        setOrgUnitLocationModified(true);
-        setCurrentOrgUnit({
-            ...currentOrgUnit,
-            ...newPos,
-        });
-    };
+    const handleChangeLocation = useCallback(
+        location => {
+            // TODO not sure why, perhaps to remove decimals
+            const convert = pos =>
+                pos !== null ? parseFloat(pos.toFixed(8)) : null;
+            const newPos = {
+                altitude: location.alt ? convert(location.alt) : 0,
+            };
+            // only update dimensions that are presents
+            if (location.lng !== undefined) {
+                newPos.longitude = convert(location.lng);
+            }
+            if (location.lat !== undefined) {
+                newPos.latitude = convert(location.lat);
+            }
+            setOrgUnitLocationModified(true);
+            setCurrentOrgUnit({
+                ...currentOrgUnit,
+                ...newPos,
+            });
+        },
+        [currentOrgUnit],
+    );
 
     const {
         algorithms,

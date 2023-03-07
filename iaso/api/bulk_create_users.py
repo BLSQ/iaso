@@ -11,6 +11,9 @@ from django.db import IntegrityError, transaction
 from rest_framework import serializers, permissions
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from drf_yasg.utils import swagger_auto_schema, no_body
+from rest_framework.decorators import action
+from django.http import FileResponse
 
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit
 
@@ -226,3 +229,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 i += 1
         response = {"Accounts created": user_created_count}
         return Response(response)
+
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=["get"], url_path="getsample")
+    def download_sample_csv(self, request):
+        return FileResponse(open("iaso/api/fixtures/sample_bulk_user_creation.csv", "rb"))

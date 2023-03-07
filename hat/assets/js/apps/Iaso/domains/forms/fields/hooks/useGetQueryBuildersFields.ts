@@ -18,7 +18,7 @@ export const useGetQueryBuildersFields = (
     formDescriptors?: FormDescriptor[],
     possibleFields?: PossibleField[],
 ): QueryBuilderFields => {
-    if (!possibleFields) return {};
+    if (!possibleFields || !formDescriptors) return {};
     // you can fields examples here: https://codesandbox.io/s/github/ukrbublik/react-awesome-query-builder/tree/master/sandbox?file=/src/demo/config.tsx:1444-1464
     const fields: QueryBuilderFields = {};
     possibleFields.forEach(field => {

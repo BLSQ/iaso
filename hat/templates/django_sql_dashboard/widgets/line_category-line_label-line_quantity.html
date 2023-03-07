@@ -1,0 +1,182 @@
+{% extends "django_sql_dashboard/widgets/_base_widget.html" %}
+{# Multi Lines Chart widget [0] using Vega
+
+This is a custom django-sql-dashboard that get automatically detected when the query
+has the columns: line_label, line_quantity and line_category
+see https://django-sql-dashboard.datasette.io/en/stable/widgets.html#custom-widgets
+
+SQL query with generated data for demo:
+```sql
+select TO_CHAR(gen_date.generate_series, 'YYYY/MM') as line_label,
+random() * 1000::int                         as line_quantity,
+name                                         as line_category
+from (select *
+from generate_series('2008-03-01 08:00'::timestamp,
+'2009-03-04 12:00'::timestamp, '1 month')) gen_date
+cross join (VALUES ('foo'), ('bar'), ('baz')) as categories (name)
+```
+
+To generate a cumulative sum, wrap it like this:
+```sql
+select line_label,
+line_category,
+sum(line_quantity) over (PARTITION BY line_category order by line_label) as line_quantity
+from (select TO_CHAR(gen_date.generate_series, 'YYYY/MM') as line_label,
+(random() - 0.2) * 1000::int                 as line_quantity,
+name                                         as line_category
+from (select *
+from generate_series('2008-03-01 08:00'::timestamp,
+'2009-03-04 12:00'::timestamp, '1 month')) gen_date
+cross join (VALUES ('foo'), ('bar'), ('baz')) as categories (name)) as data
+```
+
+
+Nice to add later:
+* Removing category by clicking on them e.g: https://vega.github.io/vega/examples/interactive-legend/
+* Tooltip for the whole vertical line with value for each category like in highcharts : https://nvd3.org/examples/cumulativeLine.html
+* ViewFinder: https://nvd3.org/examples/lineWithFocus.html
+#}
+
+{% block widget_results %}
+  <script
+    src="https://cdn.jsdelivr.net/npm/vega@5.19.1"
+    integrity="sha384-dhyUMwHr1RzDslJIbzN+8UMRMobmqrmABSU3vFSBBnARl6XwbW37TVDCTQs+yEc5"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/vega-lite@5.0.0"
+    integrity="sha384-nAwfbn/eKhGkpj7MbyqVuoGEyL/iSeZq4XJ1NNOxA9nT7eXfJuUQgpxYd27m1tAO"
+    crossorigin="anonymous"
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/vega-embed@6.15.1"
+    integrity="sha384-RvXMbul/5q2mGE4PXcky3u5+A/K3lk/jv+oizUX/InRPD9wELInOy6YwUxdk/tEu"
+    crossorigin="anonymous"
+  ></script>
+  <div id="vis{{ result.index }}"></div>
+  {% with "vis-data-"|add:result.index as script_name %}
+    {{ result.rows|json_script:script_name }}
+    <script>
+        // Scope is needed so variable are not redefined in case of multiple viz
+        {
+            const values = JSON.parse(
+                document.getElementById("{{ script_name }}").textContent
+            );
+            const vega_spec = {
+                '$schema': 'https://vega.github.io/schema/vega/v5.json',
+                'description': 'Line chart view',
+                'width': 1000,
+                'height': 200,
+                'padding': 5,
+                'signals': [
+                    {
+                        'name': 'interpolate',
+                        'value': 'linear',
+                        'bind': {
+                            'input': 'select',
+                            'options': [
+                                'basis',
+                                'cardinal',
+                                'catmull-rom',
+                                'linear',
+                                'monotone',
+                                'natural',
+                                'step',
+                                'step-after',
+                                'step-before'
+                            ]
+                        }
+                    },
+                    {
+                        'name': 'tooltip',
+                        'value': {},
+                        'on': [
+                            { 'events': 'line:mouseover', 'update': 'datum' },
+                            { 'events': 'line:mouseout', 'update': '{}' }
+                        ]
+                    }
+                ],
+                'data': [
+                    {
+                        'name': 'table',
+                        'values': values
+                    }
+                ],
+                'scales': [
+                    {
+                        'name': 'x',
+                        'type': 'point',
+                        'range': 'width',
+                        'domain': { 'data': 'table', 'field': 'line_label' }
+                    },
+                    {
+                        'name': 'y',
+                        'type': 'linear',
+                        'range': 'height',
+                        'nice': true,
+                        'zero': true,
+                        'domain': { 'data': 'table', 'field': 'line_quantity' }
+                    },
+                    {
+                        'name': 'color',
+                        'type': 'ordinal',
+                        'range': 'category',
+                        'domain': { 'data': 'table', 'field': 'line_category' }
+                    }
+
+                ],
+                'axes': [
+                    { 'orient': 'bottom', 'scale': 'x' },
+                    { 'orient': 'left', 'scale': 'y' }
+                ],
+                'legends': [
+                    {
+                        'type': 'symbol',
+                        'title': 'Category',
+                        'fill': 'color',
+                        'direction': 'vertical',
+                        'rowPadding': 5,
+                        'columnPadding': 8,
+                        'clipHeight': 0,
+                        'titleOrient': 'top',
+                        'symbolStrokeColor': '#fff',
+                        'symbolStrokeWidth': 1
+                    }
+                ],
+                'marks': [
+                    {
+                        'type': 'group',
+                        'from': { 'facet': { 'name': 'series', 'data': 'table', 'groupby': 'line_category' } },
+                        'marks': [
+                            {
+                                'type': 'line',
+                                'from': { 'data': 'series' },
+                                'encode': {
+                                    'enter': {
+                                        'x': { 'scale': 'x', 'field': 'line_label' },
+                                        'y': { 'scale': 'y', 'field': 'line_quantity' },
+                                        'stroke': { 'scale': 'color', 'field': 'line_category' },
+                                        'strokeWidth': { 'value': 2 },
+                                        'tooltip': {
+                                            'signal': '{' +
+                                                '\'category\': datum.line_category,' +
+                                                '\'label\': datum.line_label,' +
+                                                '\'value\': datum.line_quantity,' +
+                                                '}'
+                                        }
+                                    },
+                                    'update': {
+                                        'interpolate': { 'signal': 'interpolate' }
+                                    }
+                                }
+                            }
+
+                        ]
+                    }
+                ]
+            };
+            vegaEmbed("#vis{{ result.index }}", vega_spec);
+        }
+    </script>
+  {% endwith %}
+{% endblock %}

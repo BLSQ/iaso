@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const EditOrgUnitOptionComponent = ({
+const ShapesButtons = ({
     disabled,
     editEnabled,
     deleteEnabled,
@@ -94,12 +94,12 @@ const EditOrgUnitOptionComponent = ({
     );
 };
 
-EditOrgUnitOptionComponent.defaultProps = {
+ShapesButtons.defaultProps = {
     editDisabledMessage: '',
     color: 'primary',
 };
 
-EditOrgUnitOptionComponent.propTypes = {
+ShapesButtons.propTypes = {
     disabled: PropTypes.bool.isRequired,
     editEnabled: PropTypes.bool.isRequired,
     addEnabled: PropTypes.bool.isRequired,
@@ -114,4 +114,4 @@ EditOrgUnitOptionComponent.propTypes = {
     color: PropTypes.string,
 };
 
-export default EditOrgUnitOptionComponent;
+export default ShapesButtons;

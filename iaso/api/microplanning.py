@@ -1,11 +1,12 @@
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import serializers, filters, permissions
+from rest_framework import serializers, filters
 from rest_framework.decorators import action
 from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from iaso.permissions import ReadOnly
 
 from hat.audit.models import Modification
 from iaso.api.common import (
@@ -569,13 +570,6 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
             # TODO: investigate type error on next line
             r.append({"org_unit_id": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})  # type: ignore
         return r
-
-
-class ReadOnly(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return False
 
 
 class MobilePlanningViewSet(ModelViewSet):

@@ -44,8 +44,8 @@ const mapChange = (change?: Change): Mapping[] => {
     let mapArray: Mapping[] = [];
     if (change?.mapping) {
         mapArray = Object.entries(change.mapping).map(([key, value]) => ({
-            target: key,
-            source: value,
+            target: value,
+            source: key,
         }));
     }
     return mapArray;
@@ -101,7 +101,7 @@ const Modal: FunctionComponent<Props> = ({
         const mappingObject = {};
         mappingArray.forEach(mapping => {
             if (mapping.target && mapping.source) {
-                mappingObject[mapping.target] = mapping.source;
+                mappingObject[mapping.source] = mapping.target;
             }
         });
         saveChange({
@@ -182,41 +182,46 @@ const Modal: FunctionComponent<Props> = ({
             </Box>
 
             {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}
-            <Grid container spacing={2}>
-                <Grid item xs={12} md={5}>
-                    <InputComponent
-                        type="select"
-                        keyValue="forms"
-                        onChange={handleChangeForm}
-                        value={form}
-                        label={MESSAGES.sourceForm}
-                        required
-                        options={formsList}
-                        loading={isLoadingForms}
-                        clearable={false}
-                    />
+            <Box position="relative" data-test="change-modal">
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={5}>
+                        <InputComponent
+                            type="select"
+                            keyValue="forms"
+                            onChange={handleChangeForm}
+                            value={form}
+                            label={MESSAGES.sourceForm}
+                            required
+                            options={formsList}
+                            loading={isLoadingForms}
+                            clearable={false}
+                        />
+                    </Grid>
+                    <Grid item xs={12} md={7}>
+                        <Box className={classes.referenceForm}>
+                            <ArrowRightAltIcon
+                                color="primary"
+                                fontSize="large"
+                            />
+                            <span>{formatMessage(MESSAGES.targetForm)}:</span>{' '}
+                            {referenceForm?.name}
+                        </Box>
+                    </Grid>
+                    <Grid item xs={12}>
+                        <MappingTable
+                            setIsTouched={setIsTouched}
+                            mappingArray={mappingArray}
+                            setMappingArray={setMappingArray}
+                            sourcePossibleFields={sourcePossibleFields}
+                            targetPossibleFields={targetPossibleFields}
+                            isFetchingSourcePossibleFields={
+                                isFetchingSourcePossibleFields
+                            }
+                            form={form}
+                        />
+                    </Grid>
                 </Grid>
-                <Grid item xs={12} md={7}>
-                    <Box className={classes.referenceForm}>
-                        <ArrowRightAltIcon color="primary" fontSize="large" />
-                        <span>{formatMessage(MESSAGES.targetForm)}:</span>{' '}
-                        {referenceForm?.name}
-                    </Box>
-                </Grid>
-                <Grid item xs={12}>
-                    <MappingTable
-                        setIsTouched={setIsTouched}
-                        mappingArray={mappingArray}
-                        setMappingArray={setMappingArray}
-                        sourcePossibleFields={sourcePossibleFields}
-                        targetPossibleFields={targetPossibleFields}
-                        isFetchingSourcePossibleFields={
-                            isFetchingSourcePossibleFields
-                        }
-                        form={form}
-                    />
-                </Grid>
-            </Grid>
+            </Box>
         </ConfirmCancelModal>
     );
 };

@@ -44,8 +44,8 @@ const mapChange = (change?: Change): Mapping[] => {
     let mapArray: Mapping[] = [];
     if (change?.mapping) {
         mapArray = Object.entries(change.mapping).map(([key, value]) => ({
-            target: key,
-            source: value,
+            target: value,
+            source: key,
         }));
     }
     return mapArray;
@@ -101,7 +101,7 @@ const Modal: FunctionComponent<Props> = ({
         const mappingObject = {};
         mappingArray.forEach(mapping => {
             if (mapping.target && mapping.source) {
-                mappingObject[mapping.target] = mapping.source;
+                mappingObject[mapping.source] = mapping.target;
             }
         });
         saveChange({

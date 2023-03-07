@@ -3,12 +3,20 @@ import json
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from rest_framework import viewsets, permissions
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp
 from iaso.api.common import safe_api_import
+from iaso.api.query_params import APP_ID, PAGE_SIZE, PAGE
 from iaso.models import OrgUnit, Project
+
+
+class MobileOrgUnitsSetPagination(PageNumberPagination):
+    page_size_query_param = PAGE_SIZE
+    page_query_param = PAGE
+    page_size = None  # None to disable pagination by default.
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -32,52 +40,66 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 
 class MobileOrgUnitViewSet(viewsets.ViewSet):
-    """Org units API used by the mobile application
+    f"""Org units API used by the mobile application
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
     projects that require authentication).
 
     GET /api/mobile/orgunits/
     POST /api/mobile/orgunits/
+
+    Optionally, {PAGE} and {PAGE_SIZE} parameters can be passed to paginate the results.
+
+    GET /api/mobile/orgunits?{PAGE}=1&{PAGE_SIZE}=100
     """
 
     permission_classes = [HasOrgUnitPermission]
 
     def get_queryset(self):
-        return OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get("app_id")).filter(
+        return OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID)).filter(
             validation_status=OrgUnit.VALIDATION_VALID
         )
 
     def list(self, request):
-        queryset = self.get_queryset().prefetch_related("org_unit_type")
-        queryset = queryset.select_related("org_unit_type")
-        response = {}
-        roots = []
-        if request.user.is_authenticated:
-            roots = request.user.iaso_profile.org_units.values_list("id", flat=True)
-        response["roots"] = roots
-
-        app_id = self.request.query_params.get("app_id")
-        if app_id:
-            cached_response = cache.get(app_id)
-        else:
+        app_id = self.request.query_params.get(APP_ID)
+        if not app_id:
             return Response()
 
+        queryset = self.get_queryset().prefetch_related("parent", "org_unit_type")
+        queryset = queryset.select_related("org_unit_type")
+        response = {}
+
+        pagination = MobileOrgUnitsSetPagination()
+        page = pagination.paginate_queryset(queryset, request)
+        page_number = 1
+        page_size = None
+        if page:
+            queryset = page
+            page_size = pagination.page.paginator.per_page
+            page_number = pagination.page.number
+            response["count"] = pagination.page.paginator.count
+            response["next"] = pagination.page.next_page_number() if pagination.page.has_next() else None
+            response["previous"] = pagination.page.previous_page_number() if pagination.page.has_previous() else None
+
+        if page_number == 1:
+            roots = []
+            if request.user.is_authenticated:
+                roots = request.user.iaso_profile.org_units.values_list("id", flat=True)
+            response["roots"] = roots
+
+        cache_key = f"{app_id}-{page_size}-{page_number}"
+        cached_response = cache.get(cache_key)
         if cached_response is None:
             cached_response = json.dumps([unit.as_dict_for_mobile() for unit in queryset])
-            cache.set(
-                app_id,
-                cached_response,
-                300,
-            )
+            cache.set(cache_key, cached_response, 300)
+
         response["orgUnits"] = json.loads(cached_response)
 
         return Response(response)
 
     @safe_api_import("orgUnit")
     def create(self, _, request):
-        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
-
+        new_org_units = import_data(request.data, request.user, request.query_params.get(APP_ID))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
 

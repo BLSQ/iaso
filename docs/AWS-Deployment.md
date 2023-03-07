@@ -1,11 +1,11 @@
 # How Iaso is deployed on AWS
 
 on ElasticBeanstalk + RDS
-
+![schema archi iaso.svg](schema%20archi%20iaso.svg)
 ---
 ## Main parts 
 - Creation of the HOST environment where the Iaso code will be deployed as well as the related services
-- The deployment of the code it self and of new version
+- The deployment of the code itself and of new version
 
 ---
 

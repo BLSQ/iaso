@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 @task_decorator(task_name="refresh_data")
 def refresh_data(
-    campaigns: Optional[str] = None,
-    task: Optional[Task] = None,
+    campaigns=None,
+    task=None,
 ):
     started_at = datetime.now()
     round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")

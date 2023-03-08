@@ -1,0 +1,4 @@
+Sphinx>=5,<6
+sphinx_rtd_theme
+myst_parser
+django==3.2

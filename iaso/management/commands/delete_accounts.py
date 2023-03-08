@@ -14,7 +14,7 @@ from django.db.models.functions import Cast
 from hat.audit.models import Modification
 from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry
 from iaso.models import BulkCreateUserCsvFile
-from iaso.models import ExportLog
+from iaso.models import ExportLog, ExportRequest
 from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile
 from iaso.models.base import Task, QUEUED, KILLED
 from iaso.models.entity import Entity, EntityType
@@ -24,6 +24,7 @@ from iaso.models.org_unit import OrgUnit
 from iaso.models.pages import Page
 from iaso.models.project import Project
 
+from django_sql_dashboard.models import Dashboard
 
 def flatten(l):
     return [item for sublist in l for item in sublist]
@@ -356,6 +357,12 @@ class Command(BaseCommand):
             f.org_unit_types.clear()
             print("deleting hard", f.name)
             f.delete_hard()
+
+        print("sql dashboard", Dashboard.objects.all().delete())
+        
+        cursor.execute(
+                    "delete from iaso_exportrequest where id not in ( select export_request_id from iaso_exportstatus )"
+                )
 
         print("******* Deleting Modification (might take a while too)")
 

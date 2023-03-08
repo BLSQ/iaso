@@ -65,7 +65,8 @@ export type DuplicatesGETParams = {
 
 export const useGetDuplicates = ({
     params,
-}: DuplicatesGETParams): UseQueryResult<DuplicatesList, any> => {
+}: // TODO add typing for non paginated response
+DuplicatesGETParams): UseQueryResult<DuplicatesList, any> => {
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({
         queryKey: ['entityDuplicates', queryString],
@@ -99,7 +100,7 @@ const getMergedEntityStatus = (final): 'dropped' | 'identical' => {
 
 export const useGetDuplicateDetails = ({
     params,
-}: DuplicatesDetailsGETParams): UseQueryResult => {
+}: DuplicatesDetailsGETParams): UseQueryResult<any[], unknown> => {
     // TODO see with backend exact api
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({

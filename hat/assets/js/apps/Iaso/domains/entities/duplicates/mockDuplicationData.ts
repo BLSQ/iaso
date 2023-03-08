@@ -178,3 +178,40 @@ export const mockDuplicatesDetailsTableData = () => {
         },
     ];
 };
+
+export const mockEntitiesInfo = () => {
+    const duplicate = makeDuplicateEntity({
+        entity: baseEntity,
+        newEntityId: 2,
+        fields: {
+            date_of_birth: '2022-08-17T13:26:22.470058Z',
+            first_name: `${baseEntity.json.first_name}${1}`,
+        },
+    });
+
+    return [
+        {
+            form: { name: 'CODA-Registration', id: 85 },
+            entity_type: { name: 'Children under 5', id: 11 },
+            fields: [
+                { field: 'first_name', label: { English: 'First name' } },
+                { field: 'last_name', label: 'Last name' },
+                { field: 'date_of_birth', label: { English: 'Date of birth' } },
+            ],
+            entity1: baseEntity,
+            entity2: duplicate,
+            ignored: false,
+            similarity: 200,
+            similarity_star: 4,
+            algorithms: [
+                {
+                    analyze_id: '1',
+                    type: 'namesim',
+                    fields: ['first_name', 'last_name', 'date_of_birth'],
+                    similarity: 200,
+                    similarity_star: 4,
+                },
+            ],
+        },
+    ];
+};

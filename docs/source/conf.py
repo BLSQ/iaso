@@ -21,9 +21,9 @@ sys.path.insert(0, os.path.abspath("../../"))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Iaso dev docs'
-copyright = '2023, Bluesquare'
-author = 'Bluesquare'
+project = "Iaso dev docs"
+copyright = "2023, Bluesquare"
+author = "Bluesquare"
 
 
 # -- General configuration ---------------------------------------------------
@@ -44,8 +44,7 @@ intersphinx_mapping = {
     "rtd": ("https://docs.readthedocs.io/en/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "sphinx": ("https://www.sphinx-doc.org/en/master/", None),
-    'django': ('http://docs.djangoproject.com/en/3.2/', 'http://docs.djangoproject.com/en/3.2/_objects/')
-    
+    "django": ("http://docs.djangoproject.com/en/3.2/", "http://docs.djangoproject.com/en/3.2/_objects/"),
 }
 intersphinx_disabled_domains = ["std"]
 
@@ -63,7 +62,7 @@ source_suffix = {
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -81,4 +80,4 @@ html_theme = "sphinx_rtd_theme"
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]

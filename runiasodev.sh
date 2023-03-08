@@ -22,5 +22,10 @@ export PLUGINS="polio"
 set  -o allexport
 source .env
 
-./manage.py runserver
+# like this we can run any manage.py command and by default it will run the dev server
+if (( $# > 0 )); then
+    ./manage.py $@
+else
+    ./manage.py runserver
+fi
 set  +o allexport

@@ -2,10 +2,10 @@
 
 import listFixture from '../../fixtures/entities/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
-const search = 'mario';
 const baseUrl = `${siteBaseUrl}/dashboard/entities/list`;
 
 let interceptFlag = false;
@@ -81,27 +81,7 @@ describe.skip('Entities', () => {
         beforeEach(() => {
             goToPage();
         });
-        it('should enabled search button', () => {
-            cy.wait('@getEntities').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
-        });
-
-        it('should disable search button if search contains forbidden characters', () => {
-            cy.get('[data-test="search-button"]').as('search-button');
-            cy.get('#search-search').type(searchWithForbiddenChars);
-            if (
-                containsForbiddenCharacter(
-                    searchWithForbiddenChars,
-                    forbiddenCharacters,
-                )
-            ) {
-                cy.get('@search-button').should('be.disabled');
-            }
-        });
+        testSearchField(search, searchWithForbiddenChars);
     });
 
     describe('Search button', () => {

@@ -2,13 +2,11 @@
 
 import listFixture from '../../fixtures/forms/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
-import { containsForbiddenCharacter } from '../../support/utils';
-import { forbiddenCharacters } from '../../constants/forbiddenChars';
+import { search, searchWithForbiddenChars } from '../../constants/search';
+import { testSearchField } from '../../support/testSearchField';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const search = 'ZELDA';
-const searchWithForbiddenChars = 'ma/ri&o';
 const baseUrl = `${siteBaseUrl}/dashboard/forms/list/`;
 
 let interceptFlag = false;
@@ -77,28 +75,7 @@ describe('Forms', () => {
             beforeEach(() => {
                 goToPage();
             });
-            it('should enable search button', () => {
-                cy.get('[data-test="search-button"]')
-                    .as('search-button')
-                    .should('be.disabled');
-                cy.get('#search-search').type(search);
-                cy.get('@search-button').should('not.be.disabled');
-            });
-
-            it('should disable search button if search contains forbidden characters', () => {
-                cy.get('[data-test="search-button"]')
-                    .as('search-button')
-                    .should('be.disabled');
-                cy.get('#search-search').type(searchWithForbiddenChars);
-                if (
-                    containsForbiddenCharacter(
-                        searchWithForbiddenChars,
-                        forbiddenCharacters,
-                    )
-                ) {
-                    cy.get('@search-button').should('be.disabled');
-                }
-            });
+            testSearchField(search, searchWithForbiddenChars);
         });
         describe('Show deleted checkbox', () => {
             beforeEach(() => {

@@ -120,7 +120,14 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
             </TopBar>
             <Box p={4} className={classes.container}>
                 <Filters params={params} types={types || []} />
-
+                {!isFetching && (
+                    <Box display="flex" justifyContent="flex-end">
+                        <DownloadButtonsComponent
+                            csvUrl={`${apiUrl}&csv=true`}
+                            xlsxUrl={`${apiUrl}&xlsx=true`}
+                        />
+                    </Box>
+                )}
                 <Box position="relative" width="100%" mt={2}>
                     <Box
                         width="100%"
@@ -161,10 +168,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                 onTableParamsChange={p =>
                                     dispatch(redirectTo(baseUrl, p))
                                 }
-                            />
-                            <DownloadButtonsComponent
-                                csvUrl={`${apiUrl}&csv=true`}
-                                xlsxUrl={`${apiUrl}&xlsx=true`}
                             />
                         </Box>
                     )}

@@ -1,0 +1,5 @@
+version: 1
+cron:
+ - name: "refresh_preparedness_task"
+   url: "/refresh_preparedness_data/polio_refresh_preparedness_task_user/"
+   schedule: "30 5 * * *"

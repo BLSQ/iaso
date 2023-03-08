@@ -3,6 +3,8 @@ from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 
 BASE_API = "/api/workflowchanges/"
 
+import pprint
+
 
 class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
     def test_workflow_create_change_without_auth(self):
@@ -86,7 +88,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
         )
         assert response.data["form"][0].code == "invalid"
 
-        assert "Question data does not exist in source form" in str(response.data["mapping"][0])
+        assert "Question fake does not exist in source form" in str(response.data["mapping"][0])
         assert response.data["mapping"][0].code == "invalid"
 
     def test_should_field_not_exist_on_reference_form(self):
@@ -101,7 +103,7 @@ class WorkflowsChangesAPITestCase(BaseWorkflowsAPITestCase):
         )
 
         self.assertJSONResponse(response, 400)
-        assert "Question XXXX does not exist in reference form" in str(response.data["mapping"][0])
+        assert "Question XXXX does not exist in source form" in str(response.data["mapping"][0])
         assert response.data["mapping"][0].code == "invalid"
 
     def test_delete_non_existing_should_fail(self):

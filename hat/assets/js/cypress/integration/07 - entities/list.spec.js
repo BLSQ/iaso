@@ -26,12 +26,12 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/entitytype', {
+    cy.intercept('GET', '/api/entitytypes', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
     const options = {
         method: 'GET',
-        pathname: '/api/entity',
+        pathname: '/api/entities',
     };
     const query = {
         ...defaultQuery,
@@ -191,7 +191,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'PATCH',
-                        pathname: `/api/entity/${listFixture.entities[entityIndex].id}/`,
+                        pathname: `/api/entities/${listFixture.entities[entityIndex].id}/`,
                     },
                     req => {
                         interceptFlag = true;
@@ -206,7 +206,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entity',
+                        pathname: '/api/entities',
                         query: defaultQuery,
                     },
                     req => {
@@ -251,7 +251,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'DELETE',
-                        pathname: `/api/entity/${listFixture.entities[entityIndex].id}/`,
+                        pathname: `/api/entities/${listFixture.entities[entityIndex].id}/`,
                     },
                     req => {
                         interceptFlag = true;
@@ -264,7 +264,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entity',
+                        pathname: '/api/entities',
                         query: defaultQuery,
                     },
                     req => {
@@ -317,7 +317,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entity',
+                        pathname: '/api/entities',
                         query: {
                             limit: '20',
                             order: 'name',

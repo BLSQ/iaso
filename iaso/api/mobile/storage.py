@@ -28,7 +28,8 @@ class MobileStoragePasswordViewSet(ModelViewSet):
 
     This API requires authentication and an app_id
 
-    GET /api/mobile/storage/passwords?app_id=some.app.id
+    GET /api/mobile/storages/passwords?app_id=some.app.id
+    GET /api/mobile/storage/passwords?app_id=some.app.id [Deprecated] will be removed in the future
     """
 
     http_method_names = ["get", "head", "options"]

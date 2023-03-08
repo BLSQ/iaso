@@ -4,6 +4,7 @@ import React, {
     useEffect,
     useMemo,
     useRef,
+    useState,
 } from 'react';
 import { Map, TileLayer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import 'leaflet-draw';
@@ -63,7 +64,6 @@ type Props = {
     currentOrgUnit: any;
     saveOrgUnit: () => void;
     resetOrgUnit: () => void;
-    orgUnitLocationModified: boolean;
     // eslint-disable-next-line no-unused-vars
     setOrgUnitLocationModified: (isModified: boolean) => void;
     // eslint-disable-next-line no-unused-vars
@@ -72,6 +72,7 @@ type Props = {
     onChangeLocation: (location) => void;
     sources: any[];
     orgUnitTypes: any[];
+    orgUnitLocationModified: boolean;
 };
 
 export const OrgUnitMap: FunctionComponent<Props> = ({
@@ -83,10 +84,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     orgUnitTypes,
     resetOrgUnit,
     saveOrgUnit,
-    orgUnitLocationModified,
     setOrgUnitLocationModified,
     onChangeLocation,
     onChangeShape,
+    orgUnitLocationModified,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -97,6 +98,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     // and we can't predict exactly how many renders that will require
     const didLocationInitialize = useRef(false);
     const didCatchmentInitialize = useRef(false);
+    const [isCreatingMarker, setIsCreatingMarker] = useState<boolean>(false);
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const [state, setStateField, _, setState] = useFormState(
         initialState(currentUser),
@@ -126,6 +128,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         const mapToReset = map.current.leafletElement;
         state.locationGroup.value.reset(mapToReset);
         state.catchmentGroup.value.reset(mapToReset);
+        setIsCreatingMarker(false);
         setStateField('location', buttonsInitialState.location);
         setStateField('catchment', buttonsInitialState.catchment);
         setOrgUnitLocationModified(false);
@@ -219,14 +222,27 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         keyName => {
             const leafletMap = map.current.leafletElement;
             if (keyName === 'location') {
-                state.locationGroup.value.addShape(leafletMap, 'primary');
+                state.locationGroup.value.addShape(
+                    leafletMap,
+                    'primary',
+                    theme,
+                );
             }
             if (keyName === 'catchment') {
-                state.catchmentGroup.value.addShape(leafletMap, 'secondary');
+                state.catchmentGroup.value.addShape(
+                    leafletMap,
+                    'secondary',
+                    theme,
+                );
             }
             toggleAddShape(keyName);
         },
-        [state.catchmentGroup.value, state.locationGroup.value, toggleAddShape],
+        [
+            state.catchmentGroup.value,
+            state.locationGroup.value,
+            theme,
+            toggleAddShape,
+        ],
     );
 
     const handleFormFilter = useCallback(
@@ -284,6 +300,18 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    // update changes function in EditableGroup as it has been initalized with first state off current org unit
+    useSkipEffectOnMount(() => {
+        state.locationGroup.value.updateChanges(
+            shape => onChangeShape('geo_json', shape),
+            onChangeLocation,
+        );
+        state.catchmentGroup.value.updateChanges(
+            shape => onChangeShape('catchment', shape),
+            onChangeLocation,
+        );
+    }, [onChangeLocation, onChangeShape]);
+
     useEffect(() => {
         if (
             !didLocationInitialize.current &&
@@ -297,7 +325,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 onChangeLocation,
                 geoJson: getleafletGeoJson(currentOrgUnit.geo_json),
                 classNames: 'primary',
-                onAdd: () => toggleAddShape('location'),
+                onAddShape: () => toggleAddShape('location'),
+                onAddMarker: () => setIsCreatingMarker(false),
             });
             didLocationInitialize.current = true;
         }
@@ -316,7 +345,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 geoJson: getleafletGeoJson(currentOrgUnit.catchment),
                 classNames: 'secondary',
                 tooltipMessage: formatMessage(MESSAGES.catchment),
-                onAdd: () => toggleAddShape('catchment'),
+                onAddShape: () => toggleAddShape('catchment'),
             });
             didCatchmentInitialize.current = true;
         }
@@ -386,7 +415,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <OrgunitOptionSaveComponent
                         orgUnit={currentOrgUnit}
                         resetOrgUnit={() => handleReset()}
-                        orgUnitLocationModified={orgUnitLocationModified}
+                        saveDisabled={actionBusy || !orgUnitLocationModified}
                         saveOrgUnit={saveOrgUnit}
                     />
                 }
@@ -431,12 +460,19 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         toggleDeleteShape={keyValue =>
                             toggleDeleteShape(keyValue)
                         }
+                        isCreatingMarker={isCreatingMarker}
                         toggleAddShape={keyValue => toggleAddShape(keyValue)}
-                        addMarker={() =>
-                            state.locationGroup.value.toggleDrawMarker(true)
-                        }
+                        toggleAddMarker={() => {
+                            setIsCreatingMarker(!isCreatingMarker);
+                            state.locationGroup.value.toggleDrawMarker(
+                                !isCreatingMarker,
+                            );
+                        }}
                         addShape={shapeType => addShape(shapeType)}
-                        onChangeLocation={latLong => onChangeLocation(latLong)}
+                        onChangeLocation={latLong => {
+                            setIsCreatingMarker(false);
+                            onChangeLocation(latLong);
+                        }}
                     />
                 }
                 settingsOptionComponent={

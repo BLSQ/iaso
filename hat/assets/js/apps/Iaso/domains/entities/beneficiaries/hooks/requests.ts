@@ -78,7 +78,7 @@ export const useGetBeneficiariesApiParams = (params: Params): GetAPiParams => {
         created_by_team_id: params.submitterTeamId,
         entity_type_ids: params.entityTypeIds,
     };
-    const url = makeUrlWithParams('/api/entity/', apiParams);
+    const url = makeUrlWithParams('/api/entities/', apiParams);
     return {
         url,
         apiParams,
@@ -105,23 +105,23 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
 > =>
     useSnackQuery({
         queryKey: ['beneficiaryTypes'],
-        queryFn: () => getRequest('/api/entitytype/'),
+        queryFn: () => getRequest('/api/entitytypes/'),
         options: {
             select: data =>
                 data?.map(
                     type =>
-                        ({
-                            label: type.name,
-                            value: type.id,
-                            original: type,
-                        } || []),
+                    ({
+                        label: type.name,
+                        value: type.id,
+                        original: type,
+                    } || []),
                 ),
         },
     });
 
 export const useDeleteBeneficiary = (): UseMutationResult =>
     useSnackMutation({
-        mutationFn: body => deleteRequest(`/api/entity/${body.id}/`),
+        mutationFn: body => deleteRequest(`/api/entities/${body.id}/`),
         snackSuccessMessage: MESSAGES.deleteSuccess,
         snackErrorMsg: MESSAGES.deleteError,
         invalidateQueryKey: ['beneficiaries'],
@@ -131,15 +131,15 @@ export const useSaveBeneficiary = (): UseMutationResult =>
     useSnackMutation(
         body =>
             body.id
-                ? patchRequest(`/api/entity/${body.id}/`, body)
-                : postRequest('/api/entity/', body),
+                ? patchRequest(`/api/entities/${body.id}/`, body)
+                : postRequest('/api/entities/', body),
         undefined,
         undefined,
         ['beneficiaries'],
     );
 
 const getBeneficiary = (entityId: string | undefined): Promise<Beneficiary> => {
-    return getRequest(`/api/entity/${entityId}/`);
+    return getRequest(`/api/entities/${entityId}/`);
 };
 export const useGetBeneficiary = (
     entityId: string | undefined,

@@ -48,7 +48,6 @@ REGIONAL_DISTRICT_INDICATORS = {
     "vaccine_and_droppers_received": 34,
     "vaccine_cold_chain_assessment": 33,
     "vaccine_monitors_training_and_deployment": 35,
-    "ppe_materials_and_others_supply": 37,
     "penmarkers_supply": 36,  # date
     "sia_training": 17,
     "sia_micro_planning": 26,
@@ -65,13 +64,12 @@ indicators = [
     (2, "vaccine_and_droppers_received", "Vaccines and droppers received", "number"),
     (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
     (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
-    (5, "ppe_materials_and_others_supply", "PPE Materials and other supplies  ", "number"),
-    (6, "penmarkers_supply", "Penmarkers  ", "number"),
-    (7, "sia_training", "Supervisor training & deployment  ", "number"),
-    (8, "sia_micro_planning", "Micro/Macro plan  ", "number"),
-    (9, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),
-    (10, "communication_sm_activities", "SM activities  ", "percent"),
-    (11, "communication_c4d", "C4d", "date"),
+    (5, "penmarkers_supply", "Penmarkers  ", "number"),
+    (6, "sia_training", "Supervisor training & deployment  ", "number"),
+    (7, "sia_micro_planning", "Micro/Macro plan  ", "number"),
+    (8, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),
+    (9, "communication_sm_activities", "SM activities  ", "percent"),
+    (10, "communication_c4d", "C4d", "date"),
     (0, "status_score", "Total score", "percent"),
     # not used atm
     # (0, "training_score", "training_score", "number"),
@@ -377,7 +375,7 @@ def parse_prepardness_v2(spread: CachedSpread):
     preparedness_data = {
         "national": get_national_level_preparedness_v2(spread),
         **get_regional_level_preparedness_v2(spread),
-        "format": "v3.2",
+        "format": "v3.3",
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data

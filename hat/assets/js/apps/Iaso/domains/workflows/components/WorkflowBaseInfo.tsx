@@ -54,12 +54,8 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
         <>
             <DetailsForm workflowVersion={workflowVersion} />
             <Divider />
-            <Table size="small">
+            <Table size="small" data-test="workflow-base-info">
                 <TableBody>
-                    <Row
-                        label={formatMessage(MESSAGES.name)}
-                        value={workflowVersion?.name}
-                    />
                     <Row
                         label={formatMessage(MESSAGES.type)}
                         value={workflowVersion?.entity_type.name}
@@ -99,10 +95,12 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
                 <>
                     <Divider />
                     <Box p={2} display="flex" justifyContent="flex-end">
-                        {/* @ts-ignore */}
                         <PublishVersionModal
                             workflowVersion={workflowVersion}
                             invalidateQueryKey="workflowVersion"
+                            iconProps={{
+                                dataTestId: 'publish-workflow-button',
+                            }}
                         />
                     </Box>
                 </>

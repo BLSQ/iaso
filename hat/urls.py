@@ -7,7 +7,6 @@ from django.views.generic import RedirectView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from django.apps import apps
 
 from iaso.views import page, health
 

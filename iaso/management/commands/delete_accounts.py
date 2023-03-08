@@ -26,6 +26,7 @@ from iaso.models.project import Project
 
 from django_sql_dashboard.models import Dashboard
 
+
 def flatten(l):
     return [item for sublist in l for item in sublist]
 
@@ -359,10 +360,10 @@ class Command(BaseCommand):
             f.delete_hard()
 
         print("sql dashboard", Dashboard.objects.all().delete())
-        
+
         cursor.execute(
-                    "delete from iaso_exportrequest where id not in ( select export_request_id from iaso_exportstatus )"
-                )
+            "delete from iaso_exportrequest where id not in ( select export_request_id from iaso_exportstatus )"
+        )
 
         print("******* Deleting Modification (might take a while too)")
 

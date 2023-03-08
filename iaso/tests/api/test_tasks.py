@@ -16,11 +16,11 @@ class IasoTasksTestCase(APITestCase):
         cls.project = Project(name="The Show", app_id="com.cobrakai.show", account=account)
         cls.project.save()
 
-        unit_type = OrgUnitType(name="Dojo", short_name="dojo")
-        unit_type.save()
-        cls.project.unit_types.add(unit_type)
+        org_unit_type = OrgUnitType(name="Dojo", short_name="dojo")
+        org_unit_type.save()
+        cls.project.unit_types.add(org_unit_type)
         source.projects.add(cls.project)
-        OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=unit_type, source_ref="nomercy")
+        OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=org_unit_type, source_ref="nomercy")
         cls.source = source
         cls.johnny = cls.create_user_with_profile(
             username="johnny", account=account, permissions=["iaso_sources", "iaso_data_tasks"]

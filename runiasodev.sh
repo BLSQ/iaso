@@ -24,7 +24,7 @@ source .env
 
 # like this we can run any manage.py command and by default it will run the dev server
 if (( $# > 0 )); then
-    ./manage.py $@
+    ./manage.py "$@"
 else
     ./manage.py runserver
 fi

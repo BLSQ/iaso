@@ -132,6 +132,7 @@ router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplan
 router.register(r"storages", StorageViewSet, basename="storage")
 router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
 router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
+router.register(r"mobile/storages?/passwords", MobileStoragePasswordViewSet, basename="storagepasswords")
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")

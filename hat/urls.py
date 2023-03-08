@@ -81,9 +81,6 @@ if settings.BEANSTALK_WORKER or settings.DEBUG:
 if settings.DATABASES.get("dashboard"):
     urlpatterns.append(path("explore/", include(django_sql_dashboard.urls)))
 
-if apps.is_installed("plugins.polio"):
-    urlpatterns.append(path("polio/", include("plugins.polio.urls")))
-
 urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

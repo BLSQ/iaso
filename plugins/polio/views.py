@@ -8,8 +8,13 @@ from django.http import JsonResponse
 
 
 @csrf_exempt
-def refresh_preparedness_data(request, launcher_user_id):
-    the_user = get_object_or_404(User, pk=launcher_user_id)
-    the_task = refresh_data(user=the_user)
+def refresh_preparedness_data(request, launcher_username):
+    the_user = get_object_or_404(User, username=launcher_username)
+    campaigns = request.GET.get("campaigns", None)
+
+    if campaigns is not None:
+        the_task = refresh_data(user=the_user, campaigns=campaigns)
+    else:
+        the_task = refresh_data(user=the_user)
 
     return JsonResponse({"status": "OK", "task": the_task.as_dict()})

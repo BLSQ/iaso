@@ -175,6 +175,61 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         return Response(paginated_res)
 
 
+SUB_COMPLETNESS_QUERY = """SELECT JSON_OBJECT_AGG(
+                           'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
+                       'descendants', count_per_root."descendants",
+                       'descendants_ok', count_per_root."descendants_ok",
+                       'percent', count_per_root."percent",
+                       'total_instance', count_per_root."total_instance",
+                       'name', "iaso_form"."name"
+                   )
+                   ) AS "form_stats"
+        FROM
+            (SELECT "iaso_orgunit"."id"                          AS "id",
+                     COUNT(ou_count)                              AS "descendants",
+                     SUM(ou_count."instances_count")              AS "total_instance",
+                     COUNT(NULLIF(ou_count."instances_count", 0)) AS "descendants_ok",
+                     (COUNT(NULLIF(ou_count."instances_count", 0))::float * 100 /
+                      NULLIF(COUNT(ou_count), 0))                 AS "percent",
+                     "ou_count"."form_id",
+                     "ou_count"."form_name"                       AS "form_name"
+              FROM (SELECT "iaso_orgunit"."path",
+                           "iaso_form"."id"                         AS "form_id",
+                           "iaso_form"."name"                       AS "form_name",
+                           COUNT("iaso_instance"."id") FILTER
+                               (WHERE
+                                   ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
+                                   NOT ("iaso_instance"."deleted")) AS "instances_count"
+                    FROM "iaso_form"
+                             LEFT OUTER JOIN "iaso_form_org_unit_types"
+                                  ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
+                             LEFT OUTER JOIN "iaso_orgunit"
+                                             ON ("iaso_orgunit"."org_unit_type_id" =
+                                                 "iaso_form_org_unit_types"."orgunittype_id")
+                             LEFT OUTER JOIN "iaso_instance"
+                                             ON ("iaso_orgunit"."id" =
+                                                 "iaso_instance"."org_unit_id" AND
+                                                 "iaso_form"."id" =
+                                                 "iaso_instance"."form_id")
+                    WHERE "iaso_form"."id" IN %s
+                      AND "iaso_orgunit"."validation_status" IN ('VALID', 'NEW')
+                    GROUP BY "iaso_orgunit"."path", "iaso_form"."id") AS ou_count
+              WHERE "iaso_orgunit"."path" @> ou_count."path"
+                -- don't count yourself
+                and "iaso_orgunit"."path" != ou_count."path"
+              GROUP BY "iaso_orgunit"."id", ou_count."form_id", "ou_count"."form_name"
+              ORDER BY "descendants" DESC) AS count_per_root
+                -- THIS JOIN IS NEED so we have a form entry even for org unit which
+                -- have no descendant that need to be filled.
+                -- not sure of the performance impact, this might be faster to resolve in frontend
+        RIGHT JOIN iaso_form on count_per_root.form_id = iaso_form.id
+        WHERE iaso_form.id in %s
+        GROUP BY "iaso_orgunit"."id"
+        """
+"""QUERY To get completness as embeded in a select
+take in parameters  the form_ids"""
+
+
 COMPLETNESS_QUERY = """select parent_id, id, name,
        (SELECT 
                JSON_OBJECT_AGG(

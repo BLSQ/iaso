@@ -11,9 +11,10 @@ import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
 import { testTableSort } from '../../support/testTableSort';
 import { testPageFilters } from '../../support/testPageFilters';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
 const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000`;
 
 let interceptFlag = false;
@@ -155,6 +156,13 @@ describe('Submissions', () => {
             });
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
+        });
+        describe('Search field', () => {
+            beforeEach(() => {
+                goToPage();
+            });
+
+            testSearchField(search, searchWithForbiddenChars);
         });
     });
     describe('Table', () => {

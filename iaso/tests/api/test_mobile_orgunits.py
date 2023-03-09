@@ -1,4 +1,4 @@
-from iaso.api.query_params import APP_ID, PAGE_SIZE, PAGE
+from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource
 from iaso.test import APITestCase
 
@@ -94,7 +94,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
     def test_org_unit_have_correct_parent_id_with_limit(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", PAGE_SIZE: 1, PAGE: 1})
+        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", LIMIT: 1, PAGE: 1})
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 4)
         self.assertEqual(response.json()["next"], 2)
@@ -104,7 +104,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
 
-        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", PAGE_SIZE: 1, PAGE: 2})
+        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", LIMIT: 1, PAGE: 2})
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 4)
         self.assertEqual(response.json()["next"], 3)
@@ -114,7 +114,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Raditz")
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], self.bardock.id)
 
-        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", PAGE_SIZE: 2, PAGE: 2})
+        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", LIMIT: 2, PAGE: 2})
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 4)
         self.assertEqual(response.json()["next"], None)

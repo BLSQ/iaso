@@ -9,12 +9,12 @@ from rest_framework.response import Response
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp
 from iaso.api.common import safe_api_import
-from iaso.api.query_params import APP_ID, PAGE_SIZE, PAGE
+from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.models import OrgUnit, Project
 
 
 class MobileOrgUnitsSetPagination(PageNumberPagination):
-    page_size_query_param = PAGE_SIZE
+    page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
 
@@ -48,9 +48,9 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
     GET /api/mobile/orgunits/
     POST /api/mobile/orgunits/
 
-    Optionally, {PAGE} and {PAGE_SIZE} parameters can be passed to paginate the results.
+    Optionally, {PAGE} and {LIMIT} parameters can be passed to paginate the results.
 
-    GET /api/mobile/orgunits?{PAGE}=1&{PAGE_SIZE}=100
+    GET /api/mobile/orgunits?{PAGE}=1&{LIMIT}=100
     """
 
     permission_classes = [HasOrgUnitPermission]

@@ -358,7 +358,7 @@ class OrgUnit(TreeModel):
         return {
             "name": self.name,
             "id": self.id,
-            "parent_id": self.get_valid_parent_id(),
+            "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "validation_status": self.validation_status if self.org_unit_type else None,
@@ -368,14 +368,8 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
-            "uuid": self.uuid,
             "aliases": self.aliases,
         }
-
-    def get_valid_parent_id(self):
-        return (
-            self.parent_id if self.parent is None or self.parent.validation_status == OrgUnit.VALIDATION_VALID else None
-        )
 
     def as_dict(self, with_groups=True):
         res = {

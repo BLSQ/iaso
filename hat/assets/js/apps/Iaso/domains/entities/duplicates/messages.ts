@@ -85,6 +85,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.field',
         defaultMessage: 'Field',
     },
+    entities: {
+        id: 'iaso.entities.title',
+        defaultMessage: 'Entities',
+    },
+    algorithmRuns: {
+        id: 'iaso.label.algorithmsRuns',
+        defaultMessage: 'Algorithm runs',
+    },
+    algorithmsUsed: {
+        id: 'iaso.label.algorithmsUsed',
+        defaultMessage: 'Algorithms used',
+    },
+    unmatchedRemaining: {
+        id: 'iaso.label.unmatchedRemaining',
+        defaultMessage: 'Unmatched fields remaining',
+    },
 });
 
 export default MESSAGES;

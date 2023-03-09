@@ -243,14 +243,13 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                     <Grid item xs={12} md={3}>
                         <InputComponent
                             type="checkbox"
-                            multi
-                            keyValue="ignored"
                             value={showIgnored}
+                            keyValue="ignored"
+                            // TODO put in callback
                             onChange={(_key, value) => {
                                 handleChange('ignored', !showIgnored);
                                 setShowIgnored(value);
                             }}
-                            onEnterPressed={handleSearch}
                             label={MESSAGES.showIgnored}
                         />
                     </Grid>

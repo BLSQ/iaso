@@ -5,15 +5,18 @@ import {
     Grid,
     makeStyles,
     Paper,
-    GridItemsAlignment,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
 } from '@material-ui/core';
 import {
     commonStyles,
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import classNames from 'classnames';
-import React, { FunctionComponent, useEffect } from 'react';
+import classnames from 'classnames';
+import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../../components/nav/TopBarComponent';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
@@ -29,6 +32,9 @@ import {
     useGetDuplicates,
 } from './hooks/useGetDuplicates';
 import MESSAGES from './messages';
+import InputComponent from '../../../components/forms/InputComponent';
+import { DuplicateInfos } from './DuplicateInfos';
+import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 
 type Props = {
     params: { accountId?: string; entities: string };
@@ -57,17 +63,30 @@ const useStyles = makeStyles(theme => {
                 fontWeight: 'bold',
             },
         },
+        table: {
+            '& .MuiTable-root': {
+                // border: `1px solid rgb(224, 224, 224)`,
+                borderLeft: `1px solid rgb(224, 224, 224)`,
+                borderRight: `1px solid rgb(224, 224, 224)`,
+                borderBottom: `1px solid rgb(224, 224, 224)`,
+                // marginBottom: theme.spacing(2),
+                width: '100%',
+            },
+        },
+        fullWidth: { width: '100%' },
     };
 });
 
 export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const [tableState, setTableState] = useArrayState([]);
+    console.log('tableState', tableState);
     const [query, setQuery] = useObjectState();
-    console.log('query', query);
+    const [onlyShowUnmatched, setOnlyShowUnmatched] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
-    const { data: duplicatesInfos, isFetching: isFetchingInfos } =
-        useGetDuplicates({ params: { entities: params.entities } });
+    const { data: duplicatesInfos } = useGetDuplicates({
+        params: { entities: params.entities },
+    });
 
     console.log('dupe infos', duplicatesInfos);
     // TODO params as array, since comma is modified
@@ -79,7 +98,18 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
         state: tableState,
         setState: setTableState,
         setQuery,
+        onlyShowUnmatched,
     });
+    const {
+        unmatchedRemaining,
+        formName,
+        algorithmRuns,
+        algorithmsUsed,
+        similarityScore,
+        isLoading: isLoadingInfos,
+        entityIds,
+    } = useDuplicateInfos({ tableState, duplicatesInfos, params });
+
     useEffect(() => {
         if (tableState.length === 0 && entities) {
             setTableState({ index: 'all', value: entities });
@@ -93,7 +123,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton
             />
             <Box
-                className={classNames(
+                className={classnames(
                     classes.diffCell,
                     classes.droppedCell,
                     classes.selectedCell,
@@ -101,60 +131,50 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
                 )}
             >
                 <Grid container>
-                    <Grid item xs={12} md={4}>
+                    <Grid item xs={12}>
                         <Box pb={4}>
-                            <WidgetPaper
-                                //  className={classes.infoPaper}
-                                title="CACA PROUT"
-                            >
-                                <Box style={{ minHeight: '100px' }}>
-                                    {!duplicatesInfos?.length && (
-                                        <LoadingSpinner />
-                                    )}
-                                    <DuplicatesStars
-                                        starCount={5}
-                                        fullStars={
-                                            duplicatesInfos?.[0].similarity_star
-                                        }
-                                    />
-                                </Box>
-                            </WidgetPaper>
+                            <DuplicateInfos
+                                unmatchedRemaining={unmatchedRemaining}
+                                formName={formName}
+                                algorithmRuns={algorithmRuns}
+                                algorithmsUsed={algorithmsUsed}
+                                similarityScore={similarityScore}
+                                isLoading={isLoadingInfos}
+                                entityIds={entityIds}
+                            />
                         </Box>
                     </Grid>
-                    <Grid container item xs={12} md={8}>
-                        <Grid
-                            container
-                            item
-                            xs={12}
-                            justifyContent="flex-end"
-                            alignItems="flex-end"
-                            spacing={2}
-                        >
-                            <Box pb={4}>
-                                <Button color="primary" variant="outlined">
-                                    Ignore
-                                </Button>
-                            </Box>
-                            <Box ml={2} pb={4}>
-                                <Button variant="contained" color="primary">
-                                    Merge
-                                </Button>
+                </Grid>
+                <Paper elevation={2} className={classes.fullWidth}>
+                    <Grid container>
+                        <Grid item xs={4}>
+                            <Box pb={2} pt={2} pl={2}>
+                                <InputComponent
+                                    withMarginTop={false}
+                                    type="checkbox"
+                                    value={onlyShowUnmatched}
+                                    keyValue="onlyShowUnmatched"
+                                    onChange={(_key, value) => {
+                                        setOnlyShowUnmatched(value);
+                                    }}
+                                    label={MESSAGES.showIgnored}
+                                />
                             </Box>
                         </Grid>
-                    </Grid>
-                </Grid>
-                <Paper elevation={2}>
-                    <Box padding={2}>
-                        <Grid container justifyContent="flex-end">
+                        <Grid container item xs={8} justifyContent="flex-end">
                             <Box
                                 pb={2}
+                                pt={2}
+                                pr={2}
                                 style={{
                                     display: 'inline-flex',
                                 }}
                             >
-                                <Button variant="contained" color="primary">
-                                    Take values from A
-                                </Button>
+                                <Box>
+                                    <Button variant="contained" color="primary">
+                                        Take values from A
+                                    </Button>
+                                </Box>
                                 <Box ml={2}>
                                     <Button variant="contained" color="primary">
                                         Take values from B
@@ -162,26 +182,28 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
                                 </Box>
                             </Box>
                         </Grid>
-                        <Divider />
-                        <TableWithDeepLink
-                            showPagination={false}
-                            baseUrl={baseUrls.entityDuplicateDetails}
-                            columns={columns}
-                            marginTop={false}
-                            data={tableState}
-                            // defaultSorted={}
-                            params={params}
-                            extraProps={{ loading: isFetching }}
-                            onTableParamsChange={p =>
-                                dispatch(
-                                    redirectTo(
-                                        baseUrls.entityDuplicateDetails,
-                                        p,
-                                    ),
-                                )
-                            }
-                        />
-                    </Box>
+                    </Grid>
+                    <Divider />
+                    <TableWithDeepLink
+                        showPagination={false}
+                        baseUrl={baseUrls.entityDuplicateDetails}
+                        columns={columns}
+                        marginTop={false}
+                        countOnTop={false}
+                        elevation={0}
+                        data={tableState}
+                        // defaultSorted={}
+                        params={params}
+                        extraProps={{
+                            loading: isFetching,
+                            onlyShowUnmatched,
+                        }}
+                        onTableParamsChange={p =>
+                            dispatch(
+                                redirectTo(baseUrls.entityDuplicateDetails, p),
+                            )
+                        }
+                    />
                 </Paper>
             </Box>
         </>

@@ -23,9 +23,15 @@ const getEntityStatus = (
 const useStyles = makeStyles({
     dropped: { color: 'rgba(0,0,0,0.6)' },
     selected: { fontWeight: 'bold' },
+    hidden: { display: 'none' },
 });
 
-export const useDuplicationDetailsColumns = ({ state, setState, setQuery }) => {
+export const useDuplicationDetailsColumns = ({
+    state,
+    setState,
+    setQuery,
+    onlyShowUnmatched,
+}) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
 
@@ -65,7 +71,10 @@ export const useDuplicationDetailsColumns = ({ state, setState, setQuery }) => {
                     const rowIndex = state.findIndex(
                         row => row.field === field,
                     );
-
+                    const hidden =
+                        entity1.status === 'identical' && onlyShowUnmatched
+                            ? classes.hidden
+                            : '';
                     return (
                         <Box
                             onClick={() => {
@@ -80,6 +89,7 @@ export const useDuplicationDetailsColumns = ({ state, setState, setQuery }) => {
                             className={classNames(
                                 entity1.status,
                                 classes[entity1.status],
+                                hidden,
                             )}
                         >
                             {convertValueIfDate(
@@ -160,5 +170,5 @@ export const useDuplicationDetailsColumns = ({ state, setState, setQuery }) => {
                 },
             },
         ];
-    }, [classes, formatMessage, setQuery, setState, state]);
+    }, [classes, formatMessage, onlyShowUnmatched, setQuery, setState, state]);
 };

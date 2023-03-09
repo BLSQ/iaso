@@ -175,63 +175,57 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         return Response(paginated_res)
 
 
-COMPLETNESS_QUERY = """WITH "ou_count" AS (SELECT "iaso_orgunit"."path",
-                           "iaso_form"."id"                            AS "form_id",
-                           COUNT("iaso_instance"."id") FILTER
-                               (WHERE ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
-                                      NOT ("iaso_instance"."deleted")) AS "instances_count"
-                    FROM "iaso_form"
-                             JOIN "iaso_form_org_unit_types" ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
-                             LEFT OUTER JOIN "iaso_orgunit" ON ("iaso_orgunit"."org_unit_type_id" =
-                                                                "iaso_form_org_unit_types"."orgunittype_id")
-                             LEFT OUTER JOIN "iaso_instance"
-                                             ON ("iaso_orgunit"."id" = "iaso_instance"."org_unit_id" AND
-                                                 "iaso_form"."id" = "iaso_instance"."form_id")
-                    WHERE "iaso_form"."id" IN %(form_ids)s
-                      AND "iaso_orgunit"."validation_status" IN ('VALID', 'NEW')
-                    GROUP BY "iaso_orgunit"."path", "iaso_form"."id"),
-     "root_form" AS (SELECT "root"."id"                                    AS "org_unit_id",
-                            -- "root"."name",
-                            -- root.version_id,
-                            COUNT("ou_count")                              AS "descendants",
-                            SUM("ou_count"."instances_count")              AS "total_instance",
-                            COUNT(NULLIF("ou_count"."instances_count", 0)) AS "descendants_ok",
-                            (COUNT(NULLIF("ou_count"."instances_count", 0))::float * 100 /
-                             NULLIF(COUNT("ou_count"), 0))                 AS "percent",
-                            "ou_count"."form_id"
-                     FROM "iaso_orgunit" AS "root"
-                              LEFT OUTER JOIN "ou_count" ON "root"."path" @> "ou_count"."path"
-                          -- and ou_count.path != "root"."path"
-                     WHERE "root"."id" IN %(root_ids)s
-                     GROUP BY "root"."id", "ou_count"."form_id"
-                              -- , root.version_id
-                     ORDER BY "descendants" DESC)
-SELECT "iaso_orgunit"."id",
-       "iaso_orgunit"."name",
-       "iaso_orgunit"."org_unit_type_id",
-       "iaso_orgunit"."version_id",
-       -- Can't fetch all result because of geom conversion problem
-       --  https://code.djangoproject.com/ticket/28632
-       --"iaso_orgunit".*,
-       --location::bytea,
-       --geom::bytea,
-       --simplified_geom::bytea,
-       JSON_OBJECT_AGG(
-                   'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
-               'descendants', "root_form"."descendants",
-               'descendants_ok', "root_form"."descendants_ok",
-               'percent', "root_form"."percent",
-               'name', "iaso_form"."name"
-           )
-           ) AS "form_stats"
-FROM "iaso_orgunit"
-         CROSS JOIN "iaso_form"
-         LEFT JOIN "root_form" ON ("iaso_form"."id" = "root_form"."form_id"
-    AND "iaso_orgunit"."id" = "root_form"."org_unit_id")
-WHERE "iaso_form"."id" IN %(form_ids)s
-  AND "iaso_orgunit"."id" IN %(root_ids)s
-GROUP BY "iaso_orgunit"."id"
-"""
+COMPLETNESS_QUERY = """select parent_id, id, name,
+       (SELECT 
+               JSON_OBJECT_AGG(
+                           'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
+                       'descendants', root_form."descendants",
+                       'descendants_ok', root_form."descendants_ok",
+                       'percent', root_form."percent",
+                       'name', "iaso_form"."name"
+                   )
+                   ) AS "form_stats"
+        FROM "iaso_orgunit" AS "roots_to_pivot"
+                 CROSS JOIN "iaso_form"
+                 LEFT JOIN (SELECT "root"."id"                                  AS "org_unit_id",
+                                   COUNT(ou_count)                              AS "descendants",
+                                   SUM(ou_count."instances_count")              AS "total_instance",
+                                   COUNT(NULLIF(ou_count."instances_count", 0)) AS "descendants_ok",
+                                   (COUNT(NULLIF(ou_count."instances_count", 0))::float * 100 /
+                                    NULLIF(COUNT(ou_count), 0))                 AS "percent",
+                                   ou_count."form_id"
+                            FROM "iaso_orgunit" AS "root"
+                                     LEFT OUTER JOIN (SELECT "iaso_orgunit"."path",
+                                                             "iaso_form"."id"                         AS "form_id",
+                                                             COUNT("iaso_instance"."id") FILTER
+                                                                 (WHERE
+                                                                     ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
+                                                                     NOT ("iaso_instance"."deleted")) AS "instances_count"
+                                                      FROM "iaso_form"
+                                                               JOIN "iaso_form_org_unit_types"
+                                                                    ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
+                                                               LEFT OUTER JOIN "iaso_orgunit"
+                                                                               ON ("iaso_orgunit"."org_unit_type_id" =
+                                                                                   "iaso_form_org_unit_types"."orgunittype_id")
+                                                               LEFT OUTER JOIN "iaso_instance"
+                                                                               ON ("iaso_orgunit"."id" =
+                                                                                   "iaso_instance"."org_unit_id" AND
+                                                                                   "iaso_form"."id" =
+                                                                                   "iaso_instance"."form_id")
+                                                      WHERE "iaso_form"."id" IN %(form_ids)s
+                                                        AND "iaso_orgunit"."validation_status" IN ('VALID', 'NEW')
+                                                      GROUP BY "iaso_orgunit"."path", "iaso_form"."id") ou_count
+                                                     ON "root"."path" @> ou_count."path"
+                            WHERE "root"."id" IN %(root_ids)s
+                            GROUP BY "root"."id", ou_count."form_id"
+                            ORDER BY "descendants" DESC) root_form ON ("iaso_form"."id" = root_form."form_id"
+            AND "roots_to_pivot"."id" = root_form."org_unit_id")
+        WHERE "iaso_form"."id" IN %(form_ids)s
+          AND "roots_to_pivot"."id" = iaso_orgunit.id
+        GROUP BY "roots_to_pivot"."id")
+from iaso_orgunit 
+--where id=1
+order by id;"""
 """QUERY To get completness
 take in parameters root_ids for the base orgunit and form_ids"""
 

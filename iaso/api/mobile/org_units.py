@@ -1,13 +1,15 @@
-import json
+from collections import OrderedDict
 
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
-from rest_framework import viewsets, permissions
+from rest_framework import permissions
+from rest_framework.fields import SerializerMethodField
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso.api.common import get_timestamp
+from iaso.api.common import get_timestamp, TimestampField, ModelViewSet
 from iaso.api.common import safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.models import OrgUnit, Project
@@ -17,6 +19,71 @@ class MobileOrgUnitsSetPagination(PageNumberPagination):
     page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
+
+    def get_paginated_response(self, data):
+        return Response(
+            OrderedDict(
+                [
+                    ("count", self.page.paginator.count),
+                    ("next", self.get_next_link()),
+                    ("previous", self.get_previous_link()),
+                    ("orgUnits", data),
+                ]
+            )
+        )
+
+
+class MobileOrgUnitSerializer(ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = [
+            "name",
+            "id",
+            "parent_id",
+            "org_unit_type_id",
+            "org_unit_type_name",
+            "validation_status",
+            "created_at",
+            "updated_at",
+            "latitude",
+            "longitude",
+            "altitude",
+            "reference_instance_id",
+            "uuid",
+            "aliases",
+        ]
+
+    parent_id = SerializerMethodField()
+    org_unit_type_name = SerializerMethodField()
+    created_at = TimestampField()
+    updated_at = TimestampField()
+    latitude = SerializerMethodField()
+    longitude = SerializerMethodField()
+    altitude = SerializerMethodField()
+
+    @staticmethod
+    def get_org_unit_type_name(org_unit: OrgUnit):
+        return org_unit.org_unit_type.name if org_unit.org_unit_type else None
+
+    @staticmethod
+    def get_parent_id(org_unit: OrgUnit):
+        return (
+            org_unit.parent_id
+            if org_unit.parent is None or org_unit.parent.validation_status == OrgUnit.VALIDATION_VALID
+            else None
+        )
+
+    @staticmethod
+    def get_latitude(org_unit: OrgUnit):
+        return org_unit.location.y if org_unit.location else None
+
+    @staticmethod
+    def get_longitude(org_unit: OrgUnit):
+        return org_unit.location.x if org_unit.location else None
+
+    @staticmethod
+    def get_altitude(org_unit: OrgUnit):
+        return org_unit.location.z if org_unit.location else None
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -39,7 +106,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
-class MobileOrgUnitViewSet(viewsets.ViewSet):
+class MobileOrgUnitViewSet(ModelViewSet):
     f"""Org units API used by the mobile application
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
@@ -53,49 +120,42 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
     GET /api/mobile/orgunits?{PAGE}=1&{LIMIT}=100
     """
 
+    pagination_class = MobileOrgUnitsSetPagination
     permission_classes = [HasOrgUnitPermission]
+    serializer_class = MobileOrgUnitSerializer
+    results_key = "orgUnits"
 
     def get_queryset(self):
-        return OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID)).filter(
-            validation_status=OrgUnit.VALIDATION_VALID
+        return (
+            OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID))
+            .filter(validation_status=OrgUnit.VALIDATION_VALID)
+            .order_by("path")
+            .prefetch_related("parent", "org_unit_type")
+            .select_related("org_unit_type")
         )
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         app_id = self.request.query_params.get(APP_ID)
         if not app_id:
             return Response()
-
-        queryset = self.get_queryset().order_by("path").prefetch_related("parent", "org_unit_type")
-        queryset = queryset.select_related("org_unit_type")
-        response = {}
-
-        pagination = MobileOrgUnitsSetPagination()
-        page = pagination.paginate_queryset(queryset, request)
-        page_number = 1
-        page_size = None
-        if page:
-            queryset = page
-            page_size = pagination.page.paginator.per_page
-            page_number = pagination.page.number
-            response["count"] = pagination.page.paginator.count
-            response["next"] = pagination.page.next_page_number() if pagination.page.has_next() else None
-            response["previous"] = pagination.page.previous_page_number() if pagination.page.has_previous() else None
-
-        if page_number == 1:
-            roots = []
-            if request.user.is_authenticated:
-                roots = request.user.iaso_profile.org_units.values_list("id", flat=True)
-            response["roots"] = roots
+        page = self.paginator.paginate_queryset(queryset=self.get_queryset(), request=request)
+        page_size = self.paginator.page.paginator.per_page if page else None
+        page_number = self.paginator.page.number if page else 1
 
         cache_key = f"{app_id}-{page_size}-{page_number}"
         cached_response = cache.get(cache_key)
         if cached_response is None:
-            cached_response = json.dumps([unit.as_dict_for_mobile() for unit in queryset])
+            super_response = super().list(request, *args, **kwargs)
+            cached_response = super_response.data
             cache.set(cache_key, cached_response, 300)
 
-        response["orgUnits"] = json.loads(cached_response)
+        if page_number == 1:
+            roots = []
+            if request.user.is_authenticated:
+                roots = self.request.user.iaso_profile.org_units.values_list("id", flat=True)
+            cached_response["roots"] = roots
 
-        return Response(response)
+        return Response(cached_response)
 
     @safe_api_import("orgUnit")
     def create(self, _, request):

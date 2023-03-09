@@ -372,11 +372,9 @@ class OrgUnit(TreeModel):
             "aliases": self.aliases,
         }
 
-    def get_valid_parent_id(self, default_to_none: bool = True):
+    def get_valid_parent_id(self):
         return (
-            self.parent_id
-            if self.parent is None or self.parent.validation_status == OrgUnit.VALIDATION_VALID
-            else (self.parent.get_valid_parent_id(default_to_none) if default_to_none is not True else None)
+            self.parent_id if self.parent is None or self.parent.validation_status == OrgUnit.VALIDATION_VALID else None
         )
 
     def as_dict(self, with_groups=True):

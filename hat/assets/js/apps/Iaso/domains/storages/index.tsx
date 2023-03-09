@@ -44,14 +44,13 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={apiParams} />
-                {!isFetching && (
-                    <Box display="flex" justifyContent="flex-end" mt={2}>
-                        <DownloadButtonsComponent
-                            csvUrl={`${apiUrl}&csv=true`}
-                            xlsxUrl={`${apiUrl}&xlsx=true`}
-                        />
-                    </Box>
-                )}
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <DownloadButtonsComponent
+                        csvUrl={`${apiUrl}&csv=true`}
+                        xlsxUrl={`${apiUrl}&xlsx=true`}
+                        disabled={isFetching}
+                    />
+                </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}

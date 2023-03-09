@@ -3,13 +3,14 @@ from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, D
 from iaso.test import APITestCase
 
 BASE_URL = "/api/mobile/orgunits/"
+BASE_APP_ID = "dragon.ball.saiyans"
 
 
 class MobileOrgUnitAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.account = account = Account.objects.create(name="Dragon Ball")
-        cls.project = project = Project.objects.create(name="Saiyans", app_id="dragon.ball.saiyans", account=account)
+        cls.project = project = Project.objects.create(name="Saiyans", app_id=BASE_APP_ID, account=account)
         cls.user = user = cls.create_user_with_profile(username="user", account=account, permissions=["iaso_org_units"])
         cls.sw_source = sw_source = DataSource.objects.create(name="Vegeta Planet")
         sw_source.projects.add(project)
@@ -75,7 +76,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
     def test_org_unit_have_correct_parent_id_without_limit(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans"})
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
         self.assertJSONResponse(response, 200)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertNotIn("count", response.json())
@@ -94,34 +95,40 @@ class MobileOrgUnitAPITestCase(APITestCase):
     def test_org_unit_have_correct_parent_id_with_limit(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", LIMIT: 1, PAGE: 1})
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 1})
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 4)
-        self.assertEqual(response.json()["next"], 2)
+        self.assertEqual(response.json()["next"], self.get_page_url(1, 2))
         self.assertEqual(response.json()["previous"], None)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertEqual(len(response.json()["orgUnits"]), 1)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
 
-        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", LIMIT: 1, PAGE: 2})
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 2})
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 4)
-        self.assertEqual(response.json()["next"], 3)
-        self.assertEqual(response.json()["previous"], 1)
+        self.assertEqual(response.json()["next"], self.get_page_url(1, 3))
+        self.assertEqual(response.json()["previous"], self.get_page_url(1, 1))
         self.assertNotIn("roots", response.json())
         self.assertEqual(len(response.json()["orgUnits"]), 1)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Raditz")
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], self.bardock.id)
 
-        response = self.client.get(BASE_URL, data={APP_ID: "dragon.ball.saiyans", LIMIT: 2, PAGE: 2})
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 2, PAGE: 2})
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 4)
         self.assertEqual(response.json()["next"], None)
-        self.assertEqual(response.json()["previous"], 1)
+        self.assertEqual(response.json()["previous"], self.get_page_url(2, 1))
         self.assertNotIn("roots", response.json())
         self.assertEqual(len(response.json()["orgUnits"]), 2)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Son Gohan")
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
         self.assertEqual(response.json()["orgUnits"][1]["name"], "Son Goten")
         self.assertEqual(response.json()["orgUnits"][1]["parent_id"], None)
+
+    @staticmethod
+    def get_page_url(limit: int, page: int):
+        if page == 1:
+            return f"http://testserver/api/mobile/orgunits/?{APP_ID}={BASE_APP_ID}&{LIMIT}={limit}"
+        return f"http://testserver/api/mobile/orgunits/?{APP_ID}={BASE_APP_ID}&{LIMIT}={limit}&{PAGE}={page}"

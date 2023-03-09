@@ -30,29 +30,6 @@ type Props = {
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
-    // @ts-ignore
-    allBorders: { border: `1px solid ${theme.palette.mediumGray.main}` },
-    allButTopBorder: {
-        // @ts-ignore
-        border: `1px solid ${theme.palette.mediumGray.main}`,
-        borderTop: 'none',
-    },
-    allButBottomBorder: {
-        // @ts-ignore
-        border: `1px solid ${theme.palette.mediumGray.main}`,
-        borderBottom: 'none',
-    },
-    allButLeftBorder: {
-        // @ts-ignore
-        border: `1px solid ${theme.palette.mediumGray.main}`,
-        borderLeft: 'none',
-    },
-    BottomAndRightBorders: {
-        // @ts-ignore
-        border: `1px solid ${theme.palette.mediumGray.main}`,
-        borderLeft: 'none',
-        borderTop: 'none',
-    },
     titleRow: { fontWeight: 'bold' },
     fullWidth: { width: '100%' },
     infoPaper: { width: '100%', position: 'relative' },

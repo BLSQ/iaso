@@ -18,20 +18,20 @@ import {
 
 // @ts-ignore
 import DatesRange from 'Iaso/components/filters/DatesRange';
-import InputComponent from '../../../../components/forms/InputComponent';
-import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import InputComponent from '../../../components/forms/InputComponent';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 
-import { redirectTo } from '../../../../routing/actions';
-import MESSAGES from '../../messages';
+import { redirectTo } from '../../../routing/actions';
+import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
 
-import { useGetOrgUnit } from '../../../orgUnits/components/TreeView/requests';
-import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
+import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { useGetUsersDropDown } from '../hooks/requests';
 import { useFiltersParams } from '../hooks/useFiltersParams';
 
-import { DropdownOptions } from '../../../../types/utils';
+import { DropdownOptions } from '../../../types/utils';
 import { Params, Filters as FilterType } from '../types/filters';
 
 const useStyles = makeStyles(theme => ({

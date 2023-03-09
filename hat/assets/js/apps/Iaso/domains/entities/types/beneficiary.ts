@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 export type FileContent = {
     name?: string;

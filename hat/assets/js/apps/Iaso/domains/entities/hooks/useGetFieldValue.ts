@@ -5,9 +5,9 @@ import { useSafeIntl } from 'bluesquare-components';
 
 import { FileContent, Beneficiary } from '../types/beneficiary';
 
-import { FieldType } from '../../../forms/types/forms';
+import { FieldType } from '../../forms/types/forms';
 
-import MESSAGES from '../../messages';
+import MESSAGES from '../messages';
 
 const textPlaceholder = '--';
 

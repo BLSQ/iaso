@@ -9,21 +9,21 @@ import {
 } from 'bluesquare-components';
 import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
-import TopBar from '../../../components/nav/TopBarComponent';
-import MESSAGES from '../messages';
+import TopBar from '../../components/nav/TopBarComponent';
+import MESSAGES from './messages';
 
-import { redirectToReplace } from '../../../routing/actions';
-import { baseUrls } from '../../../constants/urls';
+import { redirectToReplace } from '../../routing/actions';
+import { baseUrls } from '../../constants/urls';
 
 import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
 
 import { Beneficiary } from './types/beneficiary';
 import { useBeneficiariesDetailsColumns } from './config';
-import { CsvButton } from '../../../components/Buttons/CsvButton';
-import { XlsxButton } from '../../../components/Buttons/XslxButton';
+import { CsvButton } from '../../components/Buttons/CsvButton';
+import { XlsxButton } from '../../components/Buttons/XslxButton';
 import { BeneficiaryBaseInfo } from './components/BeneficiaryBaseInfo';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
+import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 
 type Props = {
     router: any;

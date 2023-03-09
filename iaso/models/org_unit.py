@@ -374,7 +374,7 @@ class OrgUnit(TreeModel):
     def get_valid_parent_id(self, default_to_none: bool = True):
         return (
             self.parent_id
-            if self.parent_id is None or self.parent.validation_status == OrgUnit.VALIDATION_VALID
+            if self.parent is None or self.parent.validation_status == OrgUnit.VALIDATION_VALID
             else (self.parent.get_valid_parent_id(default_to_none) if default_to_none is not True else None)
         )
 

@@ -326,6 +326,7 @@
     "iaso.label.comments": "Comments",
     "iaso.label.compare": "Compare",
     "iaso.label.comparedFields": "Compared fields",
+    "iaso.label.compareDuplicates": "Compare duplicates",
     "iaso.label.config": "Admin",
     "iaso.label.confirm": "Confirm",
     "iaso.label.confirmApplyFormGpsToOrgUnit": "Apply directly gps from form to org unit",

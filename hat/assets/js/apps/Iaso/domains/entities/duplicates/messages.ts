@@ -101,6 +101,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.unmatchedRemaining',
         defaultMessage: 'Unmatched fields remaining',
     },
+    compareDuplicates: {
+        id: 'iaso.label.compareDuplicates',
+        defaultMessage: 'Compare duplicates',
+    },
 });
 
 export default MESSAGES;

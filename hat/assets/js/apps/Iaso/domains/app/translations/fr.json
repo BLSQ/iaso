@@ -325,6 +325,7 @@
     "iaso.label.comments": "Commentaires",
     "iaso.label.compare": "Comparer",
     "iaso.label.comparedFields": "Champs à comparer",
+    "iaso.label.compareDuplicates": "Comparer les doublons",
     "iaso.label.config": "Admin",
     "iaso.label.confirm": "Valider",
     "iaso.label.confirmApplyFormGpsToOrgUnit": "Appliquer directement les GPS de la soumission à l'unité d'org.",

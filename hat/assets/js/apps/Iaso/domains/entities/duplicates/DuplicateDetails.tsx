@@ -5,27 +5,17 @@ import {
     Grid,
     makeStyles,
     Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
 } from '@material-ui/core';
-import {
-    commonStyles,
-    LoadingSpinner,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import TopBar from '../../../components/nav/TopBarComponent';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../constants/urls';
 import { useArrayState } from '../../../hooks/useArrayState';
 import { useObjectState } from '../../../hooks/useObjectState';
 import { redirectTo } from '../../../routing/actions';
-import { DuplicatesStars } from './DuplicatesStars';
 import { useDuplicationDetailsColumns } from './hooks/useDuplicationDetailsColumns';
 import {
     useGetDuplicateDetails,
@@ -46,19 +36,24 @@ const useStyles = makeStyles(theme => {
         diffCell: {
             '& td:has(.diff)': {
                 backgroundColor: '#FFEB99',
+                // @ts-ignore
                 borderRight: `2px solid ${theme.palette.ligthGray.main}`,
             },
         },
         droppedCell: {
             '& td:has(.dropped)': {
+                // @ts-ignore
                 backgroundColor: theme.palette.error.background,
+                // @ts-ignore
                 borderRight: `2px solid ${theme.palette.ligthGray.main}`,
                 color: 'rgba(0,0,0,0.6)',
             },
         },
         selectedCell: {
             '& td:has(.selected)': {
+                // @ts-ignore
                 backgroundColor: theme.palette.success.background,
+                // @ts-ignore
                 borderRight: `2px solid ${theme.palette.ligthGray.main}`,
                 fontWeight: 'bold',
             },
@@ -119,7 +114,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.duplicates)}
+                title={formatMessage(MESSAGES.compareDuplicates)}
                 displayBackButton
             />
             <Box

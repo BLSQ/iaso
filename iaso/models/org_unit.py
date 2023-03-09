@@ -368,6 +368,7 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
+            "uuid": self.uuid,
             "aliases": self.aliases,
         }
 

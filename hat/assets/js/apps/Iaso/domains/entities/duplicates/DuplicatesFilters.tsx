@@ -13,7 +13,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
 import { useFilterState } from '../../../hooks/useFilterState';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { useGetMultipleOrgUnits } from '../../orgUnits/components/TreeView/requests';
 import MESSAGES from './messages';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { TeamType } from '../../teams/constants';
@@ -50,8 +50,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             saveSearchInHistory: false,
         });
     // additional filter state. Should be put in a hook
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.orgUnitId);
-    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.org_unit);
+    const { data: initialOrgUnit } = useGetMultipleOrgUnits(initialOrgUnitId);
+    // const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const [showIgnored, setShowIgnored] = useState<boolean>(
         filters.ignored === 'true',
     );
@@ -80,7 +81,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         usePossibleFieldsDropdown(isFetchingForms, selectedForm);
 
     useSkipEffectOnMount(() => {
-        setInitialOrgUnitId(params?.orgUnitId);
+        if (params?.orgUnitId) {
+            setInitialOrgUnitId(params?.orgUnitId);
+        }
     }, [params]);
 
     // Reset fields if no form
@@ -91,10 +94,11 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
     }, [filters.fields, filters.form, handleChange]);
 
     const handleOrgUnitChange = useCallback(
-        orgUnit => {
-            const id = orgUnit ? [orgUnit.id] : undefined;
-            setInitialOrgUnitId(id);
-            handleChange('org_unit', id);
+        orgUnits => {
+            const ids = orgUnits ? orgUnits.map(orgUnit => orgUnit.id) : [];
+            // When "emptying" the treeview, the value is [], so we force it to undefined to avoid an empty string in the param org_unit which leads to a 404
+            handleChange('org_unit', ids.length ? ids : undefined);
+            setInitialOrgUnitId(ids);
         },
         [handleChange],
     );
@@ -235,6 +239,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                                 toggleOnLabelClick={false}
                                 titleMessage={MESSAGES.location}
                                 onConfirm={handleOrgUnitChange}
+                                multiselect
                                 initialSelection={initialOrgUnit}
                             />
                         </Box>

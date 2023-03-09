@@ -60,11 +60,9 @@ const useStyles = makeStyles(theme => {
         },
         table: {
             '& .MuiTable-root': {
-                // border: `1px solid rgb(224, 224, 224)`,
                 borderLeft: `1px solid rgb(224, 224, 224)`,
                 borderRight: `1px solid rgb(224, 224, 224)`,
                 borderBottom: `1px solid rgb(224, 224, 224)`,
-                // marginBottom: theme.spacing(2),
                 width: '100%',
             },
         },
@@ -75,7 +73,6 @@ const useStyles = makeStyles(theme => {
 export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const [tableState, setTableState] = useArrayState([]);
-    console.log('tableState', tableState);
     const [query, setQuery] = useObjectState();
     const [onlyShowUnmatched, setOnlyShowUnmatched] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
@@ -83,7 +80,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
         params: { entities: params.entities },
     });
 
-    console.log('dupe infos', duplicatesInfos);
     // TODO params as array, since comma is modified
     const { data: entities, isFetching } = useGetDuplicateDetails({
         params,
@@ -110,6 +106,8 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
             setTableState({ index: 'all', value: entities });
         }
     }, [entities, setTableState, tableState.length]);
+    console.log('tableState', tableState);
+    console.log('dupe infos', duplicatesInfos);
 
     return (
         <>

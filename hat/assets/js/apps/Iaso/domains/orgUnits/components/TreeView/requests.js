@@ -117,3 +117,26 @@ export const useGetOrgUnit = OrgUnitId =>
             enabled: OrgUnitId !== undefined && OrgUnitId !== null,
         },
     );
+
+// TODO decide wheteher to show only valid org units
+const getOrgUnits = orgUnitsIds => {
+    const idsString = Array.isArray(orgUnitsIds)
+        ? orgUnitsIds?.join(',')
+        : orgUnitsIds;
+    const searchParam = `[{"validation_status":"all","search": "ids:${idsString}" }]`;
+    return getRequest(`/api/orgunits/?limit=10&searches=${searchParam}`);
+};
+
+export const useGetMultipleOrgUnits = orgUnitsIds => {
+    return useSnackQuery({
+        queryKey: ['orgunits', orgUnitsIds],
+        queryFn: () => getOrgUnits(orgUnitsIds),
+        options: {
+            enabled: Boolean(orgUnitsIds.length),
+            select: data => {
+                if (!data) return {};
+                return data.orgunits;
+            },
+        },
+    });
+};

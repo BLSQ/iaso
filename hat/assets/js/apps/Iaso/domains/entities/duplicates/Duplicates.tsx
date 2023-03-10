@@ -14,6 +14,7 @@ import { redirectTo } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { useDuplicationTableColumns } from './hooks/useDuplicationTableColumns';
 import { DuplicatesFilters } from './DuplicatesFilters';
+import { starsStyleForTable } from '../../../components/stars/StarsComponent';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -27,11 +28,7 @@ const defaultSorted = [{ id: 'similarity_star', desc: true }];
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
-        table: {
-            '& tr:nth-of-type(odd) .bg-star path': {
-                fill: '#f7f7f7 !important',
-            },
-        },
+        ...starsStyleForTable,
     };
 });
 

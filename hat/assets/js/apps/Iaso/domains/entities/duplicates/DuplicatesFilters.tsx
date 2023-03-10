@@ -1,19 +1,15 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@material-ui/core';
-import { useSkipEffectOnMount } from 'bluesquare-components';
 import { FilterButton } from '../../../components/FilterButton';
 import DatesRange from '../../../components/filters/DatesRange';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
-import { useFilterState } from '../../../hooks/useFilterState';
+import {
+    useCheckBoxFilter,
+    useFilterState,
+    useMultiTreeviewFilterState,
+} from '../../../hooks/useFilterState';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import { useGetMultipleOrgUnits } from '../../orgUnits/components/TreeView/requests';
 import MESSAGES from './messages';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import { TeamType } from '../../teams/constants';
@@ -49,14 +45,19 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             params,
             saveSearchInHistory: false,
         });
-    // additional filter state. Should be put in a hook
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.org_unit);
-    const { data: initialOrgUnit } = useGetMultipleOrgUnits(initialOrgUnitId);
-    // const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const [showIgnored, setShowIgnored] = useState<boolean>(
-        filters.ignored === 'true',
-    );
-    // end additional filter state
+
+    const { initialOrgUnits, handleOrgUnitChange } =
+        useMultiTreeviewFilterState({
+            paramIds: params?.org_unit,
+            handleChange,
+        });
+
+    const { checkBoxValue: showIgnored, handleCheckboxChange } =
+        useCheckBoxFilter({
+            initialValue: filters.ignored === 'true',
+            handleChange,
+            keyValue: 'ignored',
+        });
 
     const { data: submitterTeamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown({
@@ -80,12 +81,6 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
     const { dropdown: possibleFields, isFetching: isFetchingFields } =
         usePossibleFieldsDropdown(isFetchingForms, selectedForm);
 
-    useSkipEffectOnMount(() => {
-        if (params?.orgUnitId) {
-            setInitialOrgUnitId(params?.orgUnitId);
-        }
-    }, [params]);
-
     // Reset fields if no form
     useEffect(() => {
         if (!filters.form && filters.fields) {
@@ -93,15 +88,6 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         }
     }, [filters.fields, filters.form, handleChange]);
 
-    const handleOrgUnitChange = useCallback(
-        orgUnits => {
-            const ids = orgUnits ? orgUnits.map(orgUnit => orgUnit.id) : [];
-            // When "emptying" the treeview, the value is [], so we force it to undefined to avoid an empty string in the param org_unit which leads to a 404
-            handleChange('org_unit', ids.length ? ids : undefined);
-            setInitialOrgUnitId(ids);
-        },
-        [handleChange],
-    );
     return (
         <>
             <Grid container spacing={0}>
@@ -240,7 +226,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                                 titleMessage={MESSAGES.location}
                                 onConfirm={handleOrgUnitChange}
                                 multiselect
-                                initialSelection={initialOrgUnit}
+                                initialSelection={initialOrgUnits}
                             />
                         </Box>
                     </Grid>
@@ -251,10 +237,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                             value={showIgnored}
                             keyValue="ignored"
                             // TODO put in callback
-                            onChange={(_key, value) => {
-                                handleChange('ignored', !showIgnored);
-                                setShowIgnored(value);
-                            }}
+                            onChange={handleCheckboxChange}
                             label={MESSAGES.showIgnored}
                         />
                     </Grid>

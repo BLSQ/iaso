@@ -6,10 +6,14 @@ import { testPagination } from '../../support/testPagination';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import page2 from '../../fixtures/workflows/page2.json';
 import listFixture from '../../fixtures/workflows/list.json';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
 const baseUrl = `${siteBaseUrl}/dashboard/workflows/entityTypeId/3/order/-id/pageSize/10/page/1`;
+
+const name = 'Peach';
+let interceptFlag = false;
 
 const mockPage = () => {
     cy.login();
@@ -23,10 +27,8 @@ const mockPage = () => {
     cy.intercept('GET', '/api/entitytype/3', {
         fixture: 'entityTypes/list.json',
     });
+    cy.visit(baseUrl);
 };
-const search = 'mario';
-const name = 'Peach';
-let interceptFlag = false;
 
 const getActionCellButton = (rowIndex, buttonIndex) => {
     cy.get('table tbody tr').eq(rowIndex).find('td').last().as('actionCell');
@@ -46,14 +48,14 @@ describe('Workflows', () => {
         const errorCode = cy.get('#error-code');
         errorCode.should('contain', '401');
     });
-    it('Search field should enabled search button', () => {
-        mockPage();
-        cy.visit(baseUrl);
-        cy.get('#search-search').type(search);
-        cy.get('[data-test="search-button"]')
-            .invoke('attr', 'disabled')
-            .should('equal', undefined);
+
+    describe('Search field', () => {
+        beforeEach(() => {
+            mockPage();
+        });
+        testSearchField(search, searchWithForbiddenChars);
     });
+
     describe('Table', () => {
         beforeEach(() => {
             mockPage();

@@ -33,6 +33,7 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
+    const [textSearchError, setTextSearchError] = useState(false);
     const dispatch = useDispatch();
     // const { data, isFetching: isFetchingCountries } = useGetCountries();
     // const countriesList = data?.orgUnits ?? [];
@@ -68,6 +69,8 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                             type="search"
                             label={MESSAGES.search}
                             onEnterPressed={handleSearch}
+                            blockForbiddenChars
+                            onErrorChange={setTextSearchError}
                         />
                         {!disableOnlyDeleted && (
                             <InputComponent
@@ -105,7 +108,7 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
             <Box display="inline-flex" width="15%" justifyContent="flex-end">
                 <Box position="relative" top={16}>
                     <Button
-                        disabled={!filtersUpdated}
+                        disabled={textSearchError || !filtersUpdated}
                         variant="contained"
                         color="primary"
                         onClick={handleSearch}

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@material-ui/core';
 import { FilterButton } from '../../../components/FilterButton';
@@ -20,10 +21,13 @@ import {
 import { useGetFormsOptions } from '../../completenessStats/hooks/api/useGetFormsOptions';
 import { usePossibleFieldsDropdown } from '../../forms/hooks/useGetPossibleFields';
 import FullStarsSvg from '../../../components/stars/FullStarsSvgComponent';
+import { DuplicatesGETParams } from './hooks/useGetDuplicates';
+import { PaginationParams } from '../../../types/general';
 
-// TODO proper typing
+type Params = PaginationParams & DuplicatesGETParams;
+
 type Props = {
-    params: any;
+    params: Params;
 };
 
 // TODO move to more accessible const
@@ -48,6 +52,8 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
 
     const { initialOrgUnits, handleOrgUnitChange } =
         useMultiTreeviewFilterState({
+            // ts wrongly mark the property as not existing in type
+            // @ts-ignore
             paramIds: params?.org_unit,
             handleChange,
         });

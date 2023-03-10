@@ -1,11 +1,4 @@
-import {
-    Box,
-    Button,
-    Divider,
-    Grid,
-    makeStyles,
-    Paper,
-} from '@material-ui/core';
+import { Box, Divider, Grid, makeStyles, Paper } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import React, { FunctionComponent, useEffect, useState } from 'react';
@@ -22,9 +15,9 @@ import {
     useGetDuplicates,
 } from './hooks/useGetDuplicates';
 import MESSAGES from './messages';
-import InputComponent from '../../../components/forms/InputComponent';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
+import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 
 type Props = {
     params: { accountId?: string; entities: string };
@@ -106,8 +99,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
             setTableState({ index: 'all', value: entities });
         }
     }, [entities, setTableState, tableState.length]);
-    console.log('tableState', tableState);
-    console.log('dupe infos', duplicatesInfos);
 
     return (
         <>
@@ -139,43 +130,10 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
                     </Grid>
                 </Grid>
                 <Paper elevation={2} className={classes.fullWidth}>
-                    <Grid container>
-                        <Grid item xs={4}>
-                            <Box pb={2} pt={2} pl={2}>
-                                <InputComponent
-                                    withMarginTop={false}
-                                    type="checkbox"
-                                    value={onlyShowUnmatched}
-                                    keyValue="onlyShowUnmatched"
-                                    onChange={(_key, value) => {
-                                        setOnlyShowUnmatched(value);
-                                    }}
-                                    label={MESSAGES.showIgnored}
-                                />
-                            </Box>
-                        </Grid>
-                        <Grid container item xs={8} justifyContent="flex-end">
-                            <Box
-                                pb={2}
-                                pt={2}
-                                pr={2}
-                                style={{
-                                    display: 'inline-flex',
-                                }}
-                            >
-                                <Box>
-                                    <Button variant="contained" color="primary">
-                                        Take values from A
-                                    </Button>
-                                </Box>
-                                <Box ml={2}>
-                                    <Button variant="contained" color="primary">
-                                        Take values from B
-                                    </Button>
-                                </Box>
-                            </Box>
-                        </Grid>
-                    </Grid>
+                    <DuplicateDetailsTableButtons
+                        onlyShowUnmatched={onlyShowUnmatched}
+                        setOnlyShowUnmatched={setOnlyShowUnmatched}
+                    />
                     <Divider />
                     <TableWithDeepLink
                         showPagination={false}

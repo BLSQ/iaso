@@ -105,6 +105,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.compareDuplicates',
         defaultMessage: 'Compare duplicates',
     },
+    takeValuesFromA: {
+        id: 'iaso.label.entities.takeValuesFromA',
+        defaultMessage: 'Take all values from A',
+    },
+    takeValuesFromB: {
+        id: 'iaso.label.entities.takeValuesFromB',
+        defaultMessage: 'Take all values from B',
+    },
 });
 
 export default MESSAGES;

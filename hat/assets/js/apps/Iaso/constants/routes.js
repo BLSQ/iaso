@@ -822,7 +822,7 @@ export const entityDuplicatesPath = {
         },
         {
             isRequired: false,
-            key: 'similarity', // needs filter
+            key: 'similarity', 
         },
         {
             isRequired: false,
@@ -858,11 +858,11 @@ export const entityDuplicatesPath = {
         },
         {
             isRequired: false,
-            key: 'fields', // needs filter
+            key: 'fields', 
         },
         {
             isRequired: false,
-            key: 'form', // needs filter
+            key: 'form',
         },
     ],
 };

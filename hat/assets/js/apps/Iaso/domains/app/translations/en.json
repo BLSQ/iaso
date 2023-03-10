@@ -369,6 +369,8 @@
     "iaso.label.endDateUntil": "End date until",
     "iaso.label.ended_at": "Stopped at",
     "iaso.label.endPeriod": "End period",
+    "iaso.label.entities.takeValuesFromA": "Take all values from A",
+    "iaso.label.entities.takeValuesFromB": "Take all values from B",
     "iaso.label.entityA": "Beneficiary A",
     "iaso.label.entityB": "Beneficiary B",
     "iaso.label.execute": "Execute",

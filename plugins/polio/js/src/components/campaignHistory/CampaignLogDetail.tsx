@@ -29,8 +29,8 @@ import MESSAGES from '../../constants/messages';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 import { Row } from './Row';
-import { RowArray } from './RowArray';
-import { LogStructure } from './constants';
+import { logStructure } from './constants';
+import { mapLogStructure } from './mapStructure';
 
 type Props = {
     logId?: string;
@@ -141,7 +141,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
 
-    console.log('campaign log detail', campaignLogDetail);
     return (
         <>
             {campaignLogDetail && (
@@ -164,34 +163,18 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                     </TableHead>
 
                     <TableBody>
-                        {LogStructure.map(
-                            ({
-                                type,
-                                getLogValue,
-                                key,
-                                children,
-                                childrenLabel,
-                            }) => {
-                                if (type === 'array' && children) {
-                                    return (
-                                        <RowArray
-                                            key={key}
-                                            logKey={key}
-                                            logDetail={campaignLogDetail}
-                                            childrenArray={children}
-                                            childrenLabel={childrenLabel}
-                                        />
-                                    );
-                                }
-
+                        {mapLogStructure(logStructure, campaignLogDetail)}
+                        {Object.entries(campaignLogDetail).map(
+                            ([key, value]) => {
                                 return (
                                     <Row
                                         key={key}
-                                        value={
-                                            getLogValue
-                                                ? getLogValue(campaignLogDetail)
-                                                : campaignLogDetail[key]
-                                        }
+                                        value={getComplexValue(
+                                            value,
+                                            getValue,
+                                            key,
+                                            getLabel,
+                                        )}
                                         fieldKey={key}
                                     />
                                 );

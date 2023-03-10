@@ -349,3 +349,13 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             create_result.get("error"),
             "Operation aborted. Invalid OrgUnit None Dagobah 9999 at row : 2. Fix the error and try again. Error code: {'error': ErrorDetail(string=\"Operation aborted. Invalid OrgUnit None Dagobah 9999 at row : 2. You don't have access to this orgunit\", code='invalid')}",
         )
+
+    def test_creating_bulk_create_user_task(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
+            response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
+
+        self.assertEqual(response.json()["task"]["launcher"]["username"], "yoda")
+        self.assertEqual(response.json()["task"]["name"], "bulk_create_users")

@@ -248,3 +248,14 @@ export const mockEntitiesInfo = () => {
         },
     ];
 };
+
+export const mergedEntity = {
+    id: 2,
+    uuid: '7f0be2bc-16b8-4532-ae0d-c3712e0539aa',
+    name: 'Lisa Sampson',
+    created_at: '2022-08-16T13:26:22.470058Z',
+    updated_at: '2022-08-16T13:26:22.470058Z',
+    attributes: 5,
+    entity_type: 11,
+    entity_type_name: 'Children under 5',
+};

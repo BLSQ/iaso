@@ -14,6 +14,7 @@ import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import MESSAGES from './messages';
 import { StarsComponent } from '../../../components/stars/StarsComponent';
+import { useMergeDuplicate } from './hooks/useMergeDuplicate';
 
 type Props = {
     isLoading: boolean;
@@ -23,6 +24,7 @@ type Props = {
     unmatchedRemaining: number;
     formName: string;
     entityIds: string;
+    query: Record<string, any>;
 };
 
 const useStyles = makeStyles({
@@ -45,9 +47,11 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     similarityScore,
     isLoading,
     entityIds,
+    query,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const { mutate: mergeEntities } = useMergeDuplicate();
     return (
         <WidgetPaper className={classnames(classes.table)} title={formName}>
             <Grid container>
@@ -108,7 +112,13 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                         </Button>
                     </Box>
                     <Box ml={2} pb={2} mr={2}>
-                        <Button variant="contained" color="primary">
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => {
+                                mergeEntities(query);
+                            }}
+                        >
                             {formatMessage(MESSAGES.merge)}
                         </Button>
                     </Box>

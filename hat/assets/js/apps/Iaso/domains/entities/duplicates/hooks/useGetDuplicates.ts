@@ -9,7 +9,7 @@ import {
     mockDuplicatesDetailsTableData,
     mockDuplicatesTableResponse,
 } from '../mockDuplicationData';
-import { DuplicateEntityForTable, DuplicatesList } from '../types';
+import { DuplicateData, DuplicateEntityForTable, DuplicatesList } from '../types';
 
 const apiUrl = '/api/entityduplicates';
 
@@ -66,7 +66,7 @@ export type DuplicatesGETParams = {
 export const useGetDuplicates = ({
     params,
 }: // TODO add typing for non paginated response
-DuplicatesGETParams): UseQueryResult<DuplicatesList, any> => {
+DuplicatesGETParams): UseQueryResult<DuplicatesList|DuplicateData[], any> => {
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({
         queryKey: ['entityDuplicates', queryString],

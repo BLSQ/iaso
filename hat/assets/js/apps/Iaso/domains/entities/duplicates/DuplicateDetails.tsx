@@ -18,6 +18,7 @@ import MESSAGES from './messages';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
+import { DuplicateData } from './types';
 
 type Props = {
     params: { accountId?: string; entities: string };
@@ -71,8 +72,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
-    });
-    console.log('tableState', tableState);
+    }) as { data: DuplicateData[] };
 
     // TODO params as array, since comma is modified
     const { data: entities, isFetching } = useGetDuplicateDetails({
@@ -126,6 +126,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
                                 similarityScore={similarityScore}
                                 isLoading={isLoadingInfos}
                                 entityIds={entityIds}
+                                query={query}
                             />
                         </Box>
                     </Grid>

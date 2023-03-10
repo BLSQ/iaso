@@ -2,14 +2,13 @@ import django_sql_dashboard  # type: ignore
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
-from django.urls import path, include, re_path
+from django.urls import include, path, re_path
 from django.views.generic import RedirectView
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
-from django.apps import apps
 
-from iaso.views import page, health
+from iaso.views import health, page, task_launcher
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -55,6 +54,7 @@ urlpatterns = [
         name="reset_password_complete",
     ),
     path("sync/", include("hat.sync.urls")),
+    path("launch_task/<task_name>/<user_name>/", task_launcher, name="background_task_launcher"),
 ]
 
 # Swagger config
@@ -80,9 +80,6 @@ if settings.BEANSTALK_WORKER or settings.DEBUG:
 
 if settings.DATABASES.get("dashboard"):
     urlpatterns.append(path("explore/", include(django_sql_dashboard.urls)))
-
-if apps.is_installed("plugins.polio"):
-    urlpatterns.append(path("polio/", include("plugins.polio.urls")))
 
 urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 

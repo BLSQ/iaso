@@ -63,7 +63,6 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: teamOptions } = useGetTeamsDropdown({});
-
     const selectedTeam = useMemo(() => {
         return teamOptions?.find(
             option => option.value === filters.submitterTeamId,

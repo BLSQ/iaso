@@ -11,10 +11,15 @@ import {
 } from '@material-ui/core';
 import classnames from 'classnames';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+// import { useDispatch } from 'react-redux';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import MESSAGES from './messages';
 import { StarsComponent } from '../../../components/stars/StarsComponent';
 import { useMergeDuplicate } from './hooks/useMergeDuplicate';
+import { useIgnoreDuplicate } from './hooks/useIgnoreDuplicate';
+// import { successfullSnackBarWithButtons } from '../../../constants/snackBars';
+// import { baseUrls } from '../../../constants/urls';
+// import { redirectTo } from '../../../routing/actions';
 
 type Props = {
     isLoading: boolean;
@@ -23,7 +28,7 @@ type Props = {
     algorithmRuns: number;
     unmatchedRemaining: number;
     formName: string;
-    entityIds: string;
+    entityIds: [number, number];
     query: Record<string, any>;
 };
 
@@ -37,6 +42,11 @@ const useStyles = makeStyles({
         },
     },
     fullWidth: { width: '100%' },
+    successSnackBar: {
+        '& .MuiButton-label': {
+            color: '#fff',
+        },
+    },
 });
 
 export const DuplicateInfos: FunctionComponent<Props> = ({
@@ -51,7 +61,9 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+
     const { mutate: mergeEntities } = useMergeDuplicate();
+    const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate();
     return (
         <WidgetPaper className={classnames(classes.table)} title={formName}>
             <Grid container>
@@ -74,7 +86,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 <TableCell>
                                     {formatMessage(MESSAGES.entities)}
                                 </TableCell>
-                                <TableCell>{entityIds}</TableCell>
+                                <TableCell>{entityIds.join(',')}</TableCell>
                             </TableRow>
                             <TableRow>
                                 <TableCell>
@@ -107,7 +119,16 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                     alignItems="flex-end"
                 >
                     <Box pb={2}>
-                        <Button color="primary" variant="outlined">
+                        <Button
+                            color="primary"
+                            variant="outlined"
+                            onClick={() => {
+                                ignoreDuplicate({
+                                    entity1_id: entityIds[0],
+                                    entity2_id: entityIds[1],
+                                });
+                            }}
+                        >
                             {formatMessage(MESSAGES.ignore)}
                         </Button>
                     </Box>

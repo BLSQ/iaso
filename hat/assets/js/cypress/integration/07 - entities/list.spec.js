@@ -2,10 +2,10 @@
 
 import listFixture from '../../fixtures/entities/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
-const search = 'mario';
 const baseUrl = `${siteBaseUrl}/dashboard/entities/list`;
 
 let interceptFlag = false;
@@ -26,12 +26,12 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/entitytype', {
+    cy.intercept('GET', '/api/entitytypes', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
     const options = {
         method: 'GET',
-        pathname: '/api/entity',
+        pathname: '/api/entities',
     };
     const query = {
         ...defaultQuery,
@@ -81,14 +81,7 @@ describe.skip('Entities', () => {
         beforeEach(() => {
             goToPage();
         });
-        it('should enabled search button', () => {
-            cy.wait('@getEntities').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
-        });
+        testSearchField(search, searchWithForbiddenChars);
     });
 
     describe('Search button', () => {
@@ -191,7 +184,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'PATCH',
-                        pathname: `/api/entity/${listFixture.entities[entityIndex].id}/`,
+                        pathname: `/api/entities/${listFixture.entities[entityIndex].id}/`,
                     },
                     req => {
                         interceptFlag = true;
@@ -206,7 +199,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entity',
+                        pathname: '/api/entities',
                         query: defaultQuery,
                     },
                     req => {
@@ -251,7 +244,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'DELETE',
-                        pathname: `/api/entity/${listFixture.entities[entityIndex].id}/`,
+                        pathname: `/api/entities/${listFixture.entities[entityIndex].id}/`,
                     },
                     req => {
                         interceptFlag = true;
@@ -264,7 +257,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entity',
+                        pathname: '/api/entities',
                         query: defaultQuery,
                     },
                     req => {
@@ -317,7 +310,7 @@ describe.skip('Entities', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entity',
+                        pathname: '/api/entities',
                         query: {
                             limit: '20',
                             order: 'name',

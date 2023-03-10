@@ -1,10 +1,9 @@
-import { Button, withStyles } from '@material-ui/core';
+import { Button, makeStyles } from '@material-ui/core';
 import PublicIcon from '@material-ui/icons/Public';
 import { ExcellSvg, CsvSvg } from 'bluesquare-components';
-import PropTypes from 'prop-types';
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 
-const styles = theme => ({
+export const useDownloadButtonStyles = makeStyles(theme => ({
     button: {
         marginLeft: theme.spacing(2),
         '& svg, & i': {
@@ -16,11 +15,22 @@ const styles = theme => ({
         width: 'auto',
         marginRight: theme.spacing(1),
     },
-});
+}));
 
-function DownloadButtonsComponent(props) {
-    const { csvUrl, xlsxUrl, gpkgUrl, classes } = props;
+type Props = {
+    csvUrl?: string;
+    xlsxUrl?: string;
+    gpkgUrl?: string;
+    disabled?: boolean;
+};
 
+const DownloadButtonsComponent: FunctionComponent<Props> = ({
+    csvUrl,
+    xlsxUrl,
+    gpkgUrl,
+    disabled = false,
+}) => {
+    const classes = useDownloadButtonStyles();
     return (
         <div data-test="download-buttons">
             <Button
@@ -29,6 +39,7 @@ function DownloadButtonsComponent(props) {
                 className={classes.button}
                 color="primary"
                 href={csvUrl}
+                disabled={disabled}
             >
                 <CsvSvg />
                 CSV
@@ -39,6 +50,7 @@ function DownloadButtonsComponent(props) {
                 className={classes.button}
                 color="primary"
                 href={xlsxUrl}
+                disabled={disabled}
             >
                 <ExcellSvg className={classes.icon} />
                 XLSX
@@ -50,6 +62,7 @@ function DownloadButtonsComponent(props) {
                     className={classes.button}
                     color="primary"
                     href={gpkgUrl}
+                    disabled={disabled}
                 >
                     <PublicIcon className={classes.icon} />
                     GPKG
@@ -57,19 +70,6 @@ function DownloadButtonsComponent(props) {
             )}
         </div>
     );
-}
-
-DownloadButtonsComponent.defaultProps = {
-    csvUrl: '',
-    xlsxUrl: '',
-    gpkgUrl: null,
 };
 
-DownloadButtonsComponent.propTypes = {
-    csvUrl: PropTypes.string,
-    xlsxUrl: PropTypes.string,
-    gpkgUrl: PropTypes.string,
-    classes: PropTypes.object.isRequired,
-};
-
-export default withStyles(styles)(DownloadButtonsComponent);
+export default DownloadButtonsComponent;

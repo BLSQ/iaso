@@ -16,11 +16,8 @@ export const CurrentOrgUnitMarker: FunctionComponent<Props> = ({
     currentOrgUnit,
     onChangeLocation,
 }) => {
-    const name = isEdit
-        ? `${orgunitsPane}-edit-markers`
-        : `${orgunitsPane}-current-marker`;
     return (
-        <Pane name={name} style={{ zIndex: 699 }}>
+        <Pane name={`${orgunitsPane}-current-marker`} style={{ zIndex: 699 }}>
             <MarkerComponent
                 item={currentOrgUnit}
                 draggable={isEdit}

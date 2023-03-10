@@ -11,9 +11,10 @@ import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
 import { testTableSort } from '../../support/testTableSort';
 import { testPageFilters } from '../../support/testPageFilters';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
 const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000`;
 
 let interceptFlag = false;
@@ -106,7 +107,7 @@ const goToPage = (
         },
     );
     cy.intercept('GET', '/api/formversions/**', {
-        fixture: 'devicesownership/list.json',
+        fixture: 'devicesownerships/list.json',
     });
     const options = {
         method: 'GET',
@@ -155,6 +156,13 @@ describe('Submissions', () => {
             });
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
+        });
+        describe('Search field', () => {
+            beforeEach(() => {
+                goToPage();
+            });
+
+            testSearchField(search, searchWithForbiddenChars);
         });
     });
     describe('Table', () => {
@@ -483,14 +491,14 @@ describe('Submissions', () => {
 });
 
 describe('Map Tab', () => {
-    it.skip('should display a map', () => {});
-    it.skip('should different location', () => {});
-    it.skip('should have working cluster', () => {});
+    it.skip('should display a map', () => { });
+    it.skip('should different location', () => { });
+    it.skip('should have working cluster', () => { });
 });
 
 describe('Files Tab', () => {
-    it.skip('should display a files list', () => {});
-    it.skip('should display a warning if no files', () => {});
-    it.skip('should have a working pagination', () => {});
-    it.skip('should split files types into tabs', () => {});
+    it.skip('should display a files list', () => { });
+    it.skip('should display a warning if no files', () => { });
+    it.skip('should have a working pagination', () => { });
+    it.skip('should split files types into tabs', () => { });
 });

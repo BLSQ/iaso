@@ -3,9 +3,10 @@
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
-import { injectIntl, theme } from 'bluesquare-components';
+import { injectIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import { MapControl, withLeaflet } from 'react-leaflet';
+import { Theme } from '@material-ui/core/styles';
 import { ZoomBar } from '../components/leaflet/zoom-bar';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../domains/orgUnits/types/orgunitTypes';
@@ -192,13 +193,16 @@ type ShapeOptions = {
 export const polygonDrawOption = (
     customClass = 'primary',
     extraClass = '',
-): ShapeOptions => ({
-    shapeOptions: {
-        color: theme.palette[customClass].main,
-        className: `${customClass} ${extraClass}`,
-        pane: 'custom-shape-draw',
-    },
-});
+    theme: Theme,
+): ShapeOptions => {
+    return {
+        shapeOptions: {
+            color: theme.palette[customClass].main,
+            className: `${customClass} ${extraClass}`,
+            pane: 'custom-shape-draw',
+        },
+    };
+};
 
 export const getleafletGeoJson = (geoJson: any): void =>
     geoJson ? L.geoJson(geoJson, shapeOptions) : null;

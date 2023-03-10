@@ -1,3 +1,3 @@
 export const publishingStatuses = ['all', 'published', 'draft'];
 
-export const endpoint = '/api/microplanning/planning/';
+export const endpoint = '/api/microplanning/plannings/';

@@ -59,6 +59,7 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
     });
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: teamOptions } = useGetTeamsDropdown({});
@@ -115,6 +116,8 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                        blockForbiddenChars
+                        onErrorChange={setTextSearchError}
                     />
                     <InputComponent
                         keyValue="entityTypeIds"
@@ -187,7 +190,7 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
                 >
                     <Button
                         data-test="search-button"
-                        disabled={!filtersUpdated}
+                        disabled={textSearchError || !filtersUpdated}
                         variant="contained"
                         className={classes.button}
                         color="primary"

@@ -328,6 +328,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                         MESSAGES.selectOrgUnit,
                                     )}
                                     name="selectedOrgUnit"
+                                    errors={getErrors('selectedOrgUnit')}
                                 />
                             </Box>
                         </Grid>

@@ -124,7 +124,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         formDescriptors,
         targetPossibleFields,
     );
-
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
         fields,
@@ -191,7 +190,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2}>
+                <Box mt={2} data-test="follow-ups">
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.followUps)}
@@ -250,7 +249,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         {formatMessage(MESSAGES.saveOrder)}
                                     </Button>
                                 </Box>
-                                {/* @ts-ignore */}
                                 <AddFollowUpsModal
                                     fields={fields}
                                     versionId={versionId}
@@ -258,12 +256,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         followUps[followUps.length - 1]?.order +
                                         1
                                     }
+                                    iconProps={{
+                                        dataTestId: 'create-follow-ups',
+                                    }}
                                 />
                             </Box>
                         )}
                     </WidgetPaper>
                 </Box>
-                <Box mt={2}>
+                <Box mt={2} data-test="changes">
                     <WidgetPaper
                         className={classes.infoPaper}
                         title={formatMessage(MESSAGES.changes)}
@@ -301,7 +302,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
-                                {/* @ts-ignore */}
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}
@@ -311,6 +311,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                     referenceForm={
                                         workflowVersion?.reference_form
                                     }
+                                    iconProps={{
+                                        dataTestId: 'create-change',
+                                    }}
                                 />
                             </Box>
                         )}

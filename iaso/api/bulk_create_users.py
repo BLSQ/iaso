@@ -54,19 +54,16 @@ def bulk_create_users_task(file, user, launch_task):
                 try:
                     try:
                         validators.validate_email(row[csv_indexes.index("email")])
-                    except ValueError:
-                        raise serializers.ValidationError(
-                            {
-                                "error": "Email Column Missing. Email column is required even if you don't provide an email address"
-                            }
-                        )
-                except ValidationError:
-                    raise serializers.ValidationError(
-                        {
-                            "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
-                            "again.".format(i)
+                    except Exception as e:
+                        return {
+                            "error": f"Email Column Missing. Email column is required even if you don't provide an email address. Error code: {e}"
                         }
-                    )
+
+                except Exception as e:
+                    return {
+                        "error": f"Operation aborted. Invalid Email at row : {i}. Fix the error and try "
+                        f"again. Error code :{e} "
+                    }
 
             try:
                 try:
@@ -79,18 +76,18 @@ def bulk_create_users_task(file, user, launch_task):
                     validate_password(row[csv_indexes.index("password")], user)
                     created_user.set_password(row[csv_indexes.index("password")])
                     created_user.save()
-                except ValidationError as e:
-                    raise serializers.ValidationError(
-                        {"error": "Operation aborted. Error at row %d. %s" % (i + 1, "; ".join(e.messages))}
-                    )
-            except IntegrityError:
-                raise serializers.ValidationError(
-                    {
-                        "error": "Operation aborted. Error at row {0} Account already exists : {1}. Fix the "
-                        "error and try "
-                        "again.".format(i, row[csv_indexes.index("username")])
-                    }
-                )
+                except Exception as e:
+                    return {"error": f"Operation aborted. Error at row {i + 1}. {e}"}
+
+            except Exception as e:
+                row_error = row[csv_indexes.index("username")]
+                return {
+                    "error": f"Operation aborted. Error at row {i} Account already exists : {row_error}. Fix the "
+                    "error and try "
+                    "again. "
+                    f"Error details: {e}"
+                }
+
             org_units = row[csv_indexes.index("orgunit")]
             if org_units:
                 org_units = org_units.split(",")
@@ -108,15 +105,15 @@ def bulk_create_users_task(file, user, launch_task):
                                         }
                                     )
                                 org_units_list.append(ou)
-                            except ObjectDoesNotExist:
-                                raise serializers.ValidationError(
-                                    {
-                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                        "Fix the error "
-                                        "and try "
-                                        "again.".format(ou, i + 1)
-                                    }
-                                )
+                            except Exception as e:
+                                return {
+                                    "error": f"Operation aborted. Invalid OrgUnit {ou} at row : {i + 1}. "
+                                    "Fix the error "
+                                    "and try "
+                                    "again. "
+                                    f"Error code: {e}"
+                                }
+
                     except ValueError:
                         try:
                             org_unit = OrgUnit.objects.get(name=ou)
@@ -128,23 +125,20 @@ def bulk_create_users_task(file, user, launch_task):
                                     }
                                 )
                             org_units_list.append(org_unit)
-                        except MultipleObjectsReturned:
+                        except Exception as e:
+                            return {
+                                "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
+                                "Use Orgunit ID instead of name.".format(ou, i + 1)
+                            }
 
-                            raise serializers.ValidationError(
-                                {
-                                    "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
-                                    "Use Orgunit ID instead of name.".format(ou, i + 1)
-                                }
-                            )
-                        except ObjectDoesNotExist:
-                            raise serializers.ValidationError(
-                                {
-                                    "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
-                                    "the error "
-                                    "and try "
-                                    "again. Use Orgunit ID instead of name.".format(ou, i + 1)
-                                }
-                            )
+                        except Exception as e:
+                            return {
+                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
+                                "the error "
+                                "and try "
+                                "again. Use Orgunit ID instead of name.".format(ou, i + 1)
+                            }
+
             profile = Profile.objects.create(account=request_user.iaso_profile.account, user=created_user)
             try:
                 user_permissions = row[csv_indexes.index("permissions")].split(",")

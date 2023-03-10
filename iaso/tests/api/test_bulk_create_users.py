@@ -117,188 +117,235 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
         create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
 
         self.assertEqual(
-            create_result.json()["error"], "Operation aborted. Invalid Email at row : 3. Fix the error and try again."
+            create_result.get("error"),
+            "Email Column Missing. Email column is required even if you don't provide an email address. Error code: ['Enter a valid email address.']",
         )
 
-    # def test_upload_without_mail_must_work(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_no_mail.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 200)
-    #     self.assertEqual(response.json()["Accounts created"], 3)
-    #
-    # def test_upload_invalid_orgunit_id(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         response.json()["error"],
-    #         "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error " "and try again.",
-    #     )
-    #
-    # def test_upload_user_already_exists(self):
-    #
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     user = User.objects.create(
-    #         username="broly", first_name="broly", last_name="Smith", email="broly-smith@bluesquarehub.com"
-    #     )
-    #     user.save()
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         response.json()["error"],
-    #         "Operation aborted. Error at row 1 Account already exists : broly. " "Fix the error and try again.",
-    #     )
-    #
-    # def test_upload_invalid_csv_dont_create_entries(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     users = User.objects.all()
-    #     profiles = Profile.objects.all()
-    #
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         response.json()["error"],
-    #         "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error " "and try again.",
-    #     )
-    #     self.assertEqual(len(users), 3)
-    #     self.assertEqual(len(profiles), 3)
-    #
-    # def test_user_cant_access_without_permission(self):
-    #
-    #     self.client.force_authenticate(self.obi)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     response = self.client.get("/api/bulkcreateuser/")
-    #
-    #     self.assertEqual(response.status_code, 403)
-    #
-    # def test_password_delete_after_import(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     pswd_deleted = True
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     csv_file = BulkCreateUserCsvFile.objects.last()
-    #
-    #     file = open(csv_file.file.path, "r")
-    #     reader = csv.reader(file)
-    #     i = 0
-    #     csv_indexes = []
-    #     for row in reader:
-    #         if i > 0:
-    #             pswd_deleted = True if row[csv_indexes.index("password")] == "" else False
-    #         else:
-    #             csv_indexes = row
-    #         i += 1
-    #
-    #     self.assertEqual(pswd_deleted, True)
-    #     self.assertEqual(response.status_code, 200)
-    #
-    # def test_upload_invalid_password(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_invalid_password.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         response.json()["error"],
-    #         "Operation aborted. Error at row 4. This password is too short. It must contain at least 8 characters.",
-    #     )
+    def test_upload_without_mail_must_work(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
 
-    # def test_created_users_can_login(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 200)
-    #
-    #     login_data = {"username": "broly", "password": "yodnj!30dln"}
-    #
-    #     login_response = self.client.post("/api/token/", data=login_data, format="json")
-    #
-    #     self.assertEqual(login_response.status_code, 200)
-    #
-    # def test_upload_duplicate_ou_names(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         response.json()["error"],
-    #         "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
-    #     )
-    #
-    # def test_upload_invalid_orgunit_name(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_invalid_ou_name.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 400)
-    #     self.assertEqual(
-    #         response.json()["error"],
-    #         "Operation aborted. Invalid OrgUnit Bazarre at row : 4. Fix "
-    #         "the error "
-    #         "and try "
-    #         "again. Use Orgunit ID instead of name.",
-    #     )
-    #
-    # # FIXME This test is flaky
-    # def test_users_profiles_have_right_ou(self):
-    #     self.client.force_authenticate(self.yoda)
-    #     self.sw_source.projects.set([self.project])
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     broly_ou = Profile.objects.get(user=User.objects.get(username="broly").id).org_units.all()
-    #     ou_list = []
-    #
-    #     for ou in broly_ou:
-    #         ou_list.append(ou.id)
-    #
-    #     ferdinand_ou = Profile.objects.get(user=User.objects.get(username="ferdinand").id).org_units.all()
-    #     ou_f_list = []
-    #
-    #     for ou in ferdinand_ou:
-    #         ou_f_list.append(ou.id)
-    #
-    #     self.assertEqual(ou_list, [9999])
-    #     self.assertCountEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])
-    #     self.assertEqual(response.status_code, 200)
-    #
-    # def test_cant_create_user_without_access_to_ou(self):
-    #     self.client.force_authenticate(self.yoda)
-    #
-    #     with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
-    #         response = self.client.post(f"/api/bulkcreateuser/", {"file": csv_users})
-    #
-    #     self.assertEqual(response.status_code, 400)
+        file = open("iaso/tests/fixtures/test_user_bulk_create_no_mail.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        profiles = Profile.objects.filter(account=self.yoda.iaso_profile.account)
+        usernames = [profile.user.username for profile in profiles]
+        username_list = ["broly", "yoda", "obi", "ferdinand", "rsfg"]
+
+        self.assertEqual(create_result["Accounts created"], 3)
+        self.assertEqual(sorted(usernames), sorted(username_list))
+
+    def test_upload_invalid_orgunit_id(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        self.assertEqual(
+            create_result.get("error"),
+            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error and try again. Error code: OrgUnit matching query does not exist.",
+        )
+
+    def test_upload_user_already_exists(self):
+
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        user = User.objects.create(
+            username="broly", first_name="broly", last_name="Smith", email="broly-smith@bluesquarehub.com"
+        )
+        user.save()
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        self.assertEqual(
+            create_result.get("error"),
+            'Operation aborted. Error at row 2. duplicate key value violates unique constraint "auth_user_username_key"\nDETAIL:  Key (username)=(broly) already exists.\n',
+        )
+
+    def test_upload_invalid_csv_dont_create_entries(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        users = User.objects.all()
+
+        self.assertEqual(
+            create_result.get("error"),
+            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error and try again. Error code: OrgUnit matching query does not exist.",
+        )
+        self.assertEqual(len(users), 4)
+
+    def test_user_cant_access_without_permission(self):
+
+        self.client.force_authenticate(self.obi)
+        self.sw_source.projects.set([self.project])
+
+        response = self.client.get("/api/bulkcreateuser/")
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_password_delete_after_import(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        pswd_deleted = False
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_valid.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        csv_file = BulkCreateUserCsvFile.objects.last()
+
+        file = open(csv_file.file.path, "r")
+        reader = csv.reader(file)
+        i = 0
+        csv_indexes = []
+        for row in reader:
+            if i > 0:
+                pswd_deleted = True if row[csv_indexes.index("password")] == "" else False
+            else:
+                csv_indexes = row
+            i += 1
+
+        self.assertEqual(pswd_deleted, True)
+
+    def test_upload_invalid_password(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_invalid_password.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        self.assertEqual(
+            create_result.get("error"),
+            "Operation aborted. Error at row 4. ['This password is too short. It must contain at least 8 characters.']",
+        )
+
+    def test_created_users_can_login(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_valid.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        login_data = {"username": "broly", "password": "yodnj!30dln"}
+
+        login_response = self.client.post("/api/token/", data=login_data, format="json")
+
+        self.assertEqual(login_response.status_code, 200)
+
+    def test_upload_duplicate_ou_names(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        self.assertEqual(
+            create_result.get("error"),
+            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
+        )
+
+    def test_upload_invalid_orgunit_name(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_invalid_ou_name.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        self.assertEqual(
+            create_result.get("error"),
+            "Operation aborted. Multiple OrgUnits with the name: Bazarre at row : 4.Use Orgunit ID instead of name.",
+        )
+
+    def test_users_profiles_have_right_ou(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_valid.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        broly_ou = Profile.objects.get(user=User.objects.get(username="broly").id).org_units.all()
+        ou_list = []
+
+        for ou in broly_ou:
+            ou_list.append(ou.id)
+
+        ferdinand_ou = Profile.objects.get(user=User.objects.get(username="ferdinand").id).org_units.all()
+        ou_f_list = []
+
+        for ou in ferdinand_ou:
+            ou_f_list.append(ou.id)
+
+        self.assertEqual(ou_list, [9999])
+        self.assertCountEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])
+
+    def test_cant_create_user_without_access_to_ou(self):
+        self.client.force_authenticate(self.yoda)
+
+        file = open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv")
+
+        request = RequestFactory().post("/upload", {"file": file})
+
+        uploaded_file = request.FILES["file"]
+
+        create_result = bulk_create_users_task.__wrapped__(uploaded_file, self.yoda, False)
+
+        self.assertEqual(
+            create_result.get("error"),
+            "Operation aborted. Invalid OrgUnit None Dagobah 9999 at row : 2. Fix the error and try again. Error code: {'error': ErrorDetail(string=\"Operation aborted. Invalid OrgUnit None Dagobah 9999 at row : 2. You don't have access to this orgunit\", code='invalid')}",
+        )

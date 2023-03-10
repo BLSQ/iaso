@@ -12,8 +12,8 @@ import {
 import classnames from 'classnames';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import { DuplicatesStars } from './DuplicatesStars';
 import MESSAGES from './messages';
+import { StarsComponent } from '../../../components/stars/StarsComponent';
 
 type Props = {
     isLoading: boolean;
@@ -63,7 +63,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 </TableCell>
                                 <TableCell>
                                     {isLoading && <LoadingSpinner />}
-                                    <DuplicatesStars
+                                    <StarsComponent
                                         starCount={5}
                                         fullStars={similarityScore}
                                     />

@@ -5,9 +5,9 @@ import { Box, makeStyles } from '@material-ui/core';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../../constants/urls';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
-import { DuplicatesStars } from '../DuplicatesStars';
 import { Column } from '../../../../types/table';
 import { formatLabel } from '../../../instances/utils';
+import { StarsComponent } from '../../../../components/stars/StarsComponent';
 
 const getFields = settings => {
     const { algorithms } = settings.row.original;
@@ -34,7 +34,7 @@ export const useDuplicationTableColumns = (): Column[] => {
                 Cell: settings => {
                     return (
                         <Box display="flex" justifyContent="center">
-                            <DuplicatesStars
+                            <StarsComponent
                                 starCount={5}
                                 fullStars={
                                     settings.row.original.similarity_star

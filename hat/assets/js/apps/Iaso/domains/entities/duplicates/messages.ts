@@ -113,6 +113,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.entities.takeValuesFromB',
         defaultMessage: 'Take all values from B',
     },
+    ignore: {
+        id: 'iaso.label.ignore',
+        defaultMessage: 'Ignore',
+    },
+    merge: {
+        id: 'iaso.label.merge',
+        defaultMessage: 'Merge',
+    },
 });
 
 export default MESSAGES;

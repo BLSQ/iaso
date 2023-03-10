@@ -40,7 +40,7 @@ const getCompletenessStats = async (
         }
     });
     const queryString = new URLSearchParams(queryParams);
-    return getRequest(`/api/completeness_stats/?${queryString}`);
+    return getRequest(`/api/v2/completeness_stats/?${queryString}`);
 };
 
 export const useGetCompletenessStats = (

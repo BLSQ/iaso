@@ -4,20 +4,56 @@ import {
     useSafeIntl,
     // @ts-ignore
     IconButton as IconButtonComponent,
+    InfoHeader,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { cloneDeep } from 'lodash';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
 import Tooltip from '@material-ui/core/Tooltip';
-import { Box } from '@material-ui/core';
+import { Box, LinearProgress } from '@material-ui/core';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
+import Typography from '@material-ui/core/Typography';
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
-export const useCompletenessStatsColumns = (params: any) => {
+// From https://v4.mui.com/components/progress/ to clean
+const LinearProgressWithLabel = props => (
+    <Box display="flex" alignItems="center">
+        <Box width="100%" mr={1}>
+            <LinearProgress variant="determinate" {...props} />
+        </Box>
+        <Box minWidth={35}>
+            <Typography variant="body2" color="textSecondary">{`${Math.round(
+                props.value,
+            )}%`}</Typography>
+        </Box>
+    </Box>
+);
+
+export type FormDesc = {
+    id: number;
+    name: string;
+    slug: string;
+};
+
+export type FormStat = {
+    descendants: number; // int
+    descendants_ok: number; // int
+    percent: number; // on 1
+    total_instances: number; // total number of instance
+    name: string; // Name of the form (for debug)
+    itself_target: number; // Does this orgunit need to fill 0 if No, 1 if yes
+    itself_has_instances: number; // Does this orgunit has submission? (idem)
+    itself_instances_count: number; // Number of submission on this orgunit
+};
+
+export type FormStatRow = {
+    value: FormStat;
+};
+export const useCompletenessStatsColumns = (params: any, completenessStats) => {
     const { formatMessage } = useSafeIntl();
     const redirectionParams: Record<string, any> = useMemo(() => {
         const clonedParams = cloneDeep(params);
@@ -25,8 +61,8 @@ export const useCompletenessStatsColumns = (params: any) => {
         return clonedParams;
     }, [params]);
     const dispatch = useDispatch();
-    return useMemo(
-        () => [
+    return useMemo(() => {
+        let columns = [
             {
                 Header: formatMessage(MESSAGES.orgUnit),
                 id: 'name',
@@ -61,121 +97,247 @@ export const useCompletenessStatsColumns = (params: any) => {
                 sortable: false,
                 Cell: settings => (
                     <span>
-                        {settings.row.original.parent_org_unit?.[0].name ??
-                            '--'}
+                        {settings.row.original.parent_org_unit?.name ?? '--'}
                     </span>
                 ),
             },
-            {
-                Header: formatMessage(MESSAGES.form),
-                id: 'form__name',
-                accessor: 'form__name',
-                sortable: false,
-                Cell: settings => (
-                    <span>{settings.row.original.form?.name ?? '--'}</span>
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.formsFilledDirect),
-                id: 'forms_filled_direct',
-                accessor: 'forms_filled_direct',
-                sortable: false,
-                Cell: settings => (
-                    <Box>
-                        <Box
-                            style={{
-                                // marginTop: '2px', // The margin will align the icon in FF but misalign it in Chrome
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                            }}
-                        >
-                            {`${
-                                settings.row.original.forms_filled_direct ??
-                                '--'
-                            }/
-                            ${
-                                settings.row.original.forms_to_fill_direct ??
-                                '--'
-                            }`}
-                        </Box>
-                        {settings.row.original
-                            .has_multiple_direct_submissions && (
-                            <Tooltip
-                                title={formatMessage(
-                                    MESSAGES.orgUnitHasMultipleSubmissions,
-                                )}
-                            >
-                                <Box
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        verticalAlign: 'middle',
-                                    }}
-                                >
-                                    <AddCircleOutlineIcon
-                                        style={{
-                                            fontSize: '16px',
-                                            marginLeft: '4px',
-                                        }}
-                                        color="action"
-                                    />
-                                </Box>
-                            </Tooltip>
-                        )}
-                    </Box>
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.completenessDirect),
-                id: 'completeness_ratio_direct',
-                accessor: 'completeness_ratio_direct',
-                sortable: false,
-            },
-            {
-                Header: formatMessage(MESSAGES.formsFilledWithDescendants),
-                id: 'forms_filled',
-                accessor: 'forms_filled',
-                sortable: false,
-                Cell: settings => (
-                    <span>
-                        {settings.row.original.forms_filled ?? '--'}/
-                        {settings.row.original.forms_to_fill ?? '--'}
-                    </span>
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.completenessWithDescendants),
-                id: 'completeness_ratio',
-                accessor: 'completeness_ratio',
-                sortable: false,
-            },
-            {
-                Header: formatMessage(MESSAGES.actions),
-                id: 'bleh',
-                accessor: 'blej',
-                sortable: false,
-                Cell: settings => {
-                    return (
-                        <>
-                            <IconButtonComponent
-                                onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original.org_unit
-                                                    ?.id,
-                                        }),
+            // {
+            //     // Uncomment for debug
+            //     Header: 'DEBUG',
+            //     id: 'form_stats',
+            //     accessor: 'form_stats',
+            //     sortable: false,
+            //     Cell: settings => JSON.stringify(settings.value),
+            // },
+            // {
+            //     Header: formatMessage(MESSAGES.form),
+            //     id: 'form__name',
+            //     accessor: 'form__name',
+            //     sortable: false,
+            //     Cell: settings => (
+            //         <span>{settings.row.original.form?.name ?? '--'}</span>
+            //     ),
+            // },
+            // {
+            //     Header: formatMessage(MESSAGES.formsFilledDirect),
+            //     id: 'forms_filled_direct',
+            //     accessor: 'forms_filled_direct',
+            //     sortable: false,
+            //     Cell: settings => (
+            //         <Box>
+            //             <Box
+            //                 style={{
+            //                     // marginTop: '2px', // The margin will align the icon in FF but misalign it in Chrome
+            //                     display: 'inline-flex',
+            //                     alignItems: 'center',
+            //                 }}
+            //             >
+            //                 {`${
+            //                     settings.row.original.forms_filled_direct ??
+            //                     '--'
+            //                 }/
+            //                 ${
+            //                     settings.row.original.forms_to_fill_direct ??
+            //                     '--'
+            //                 }`}
+            //             </Box>
+            //             {settings.row.original
+            //                 .has_multiple_direct_submissions && (
+            //                 <Tooltip
+            //                     title={formatMessage(
+            //                         MESSAGES.orgUnitHasMultipleSubmissions,
+            //                     )}
+            //                 >
+            //                     <Box
+            //                         style={{
+            //                             display: 'inline-flex',
+            //                             alignItems: 'center',
+            //                             verticalAlign: 'middle',
+            //                         }}
+            //                     >
+            //                         <AddCircleOutlineIcon
+            //                             style={{
+            //                                 fontSize: '16px',
+            //                                 marginLeft: '4px',
+            //                             }}
+            //                             color="action"
+            //                         />
+            //                     </Box>
+            //                 </Tooltip>
+            //             )}
+            //         </Box>
+            //     ),
+            // },
+            // {
+            //     Header: formatMessage(MESSAGES.completenessDirect),
+            //     id: 'completeness_ratio_direct',
+            //     accessor: 'completeness_ratio_direct',
+            //     sortable: false,
+            // },
+            // {
+            //     Header: formatMessage(MESSAGES.formsFilledWithDescendants),
+            //     id: 'forms_filled',
+            //     accessor: 'forms_filled',
+            //     sortable: false,
+            //     Cell: settings => (
+            //         <span>
+            //             {settings.row.original.forms_filled ?? '--'}/
+            //             {settings.row.original.forms_to_fill ?? '--'}
+            //         </span>
+            //     ),
+            // },
+            // {
+            //     Header: formatMessage(MESSAGES.completenessWithDescendants),
+            //     id: 'completeness_ratio',
+            //     accessor: 'completeness_ratio',
+            //     sortable: false,
+            // },
+        ];
+        // Add column and sub column per form
+        // console.dir(completenessStats);
+        if (completenessStats?.forms) {
+            columns = columns.concat(
+                completenessStats.forms.map((form: FormDesc) => {
+                    return {
+                        Header: form.name,
+                        id: `form_stats[${form.slug}]`,
+                        accessor: `form_stats[${form.slug}]`,
+
+                        // accessor: 'completeness_ratio',
+                        sortable: false,
+                        Cell: settings => JSON.stringify(settings.value) ?? '',
+                        columns: [
+                            {
+                                Header: (
+                                    <InfoHeader
+                                        message={'Submission on this org unit'}
+                                    >
+                                        Own
+                                    </InfoHeader>
+                                ),
+                                id: `form_stats[${form.slug}]`,
+                                accessor: `form_stats[${form.slug}]`,
+                                Cell: ({ value }: FormStatRow) => {
+                                    return value.itself_target > 0 ? (
+                                        <>
+                                            {value.itself_has_instances ? (
+                                                <span
+                                                    title={`Total submission %{value.itself_instances_count}`}
+                                                >
+                                                    ✅
+                                                </span>
+                                            ) : (
+                                                <>❌</>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div
+                                            title={
+                                                "This level doesn't need to fill this form"
+                                            }
+                                            style={{
+                                                textDecoration:
+                                                    'underline dotted',
+                                            }}
+                                        >
+                                            N/A
+                                        </div>
                                     );
-                                }}
-                                tooltipMessage={MESSAGES.seeChildren}
-                                overrideIcon={AccountTreeIcon}
-                            />
-                        </>
-                    );
-                },
+                                },
+                                sortable: false,
+                            },
+                            {
+                                Header: 'Descendants',
+                                id: `form_stats[${form.slug}].global_status`,
+                                accessor: `form_stats[${form.slug}]`,
+                                Cell: ({ value }: FormStatRow) => {
+                                    return value.descendants > 0 ? (
+                                        <>
+                                            {/* TODO if descendant = 0  display NA message*/}
+                                            <LinearProgressWithLabel
+                                                value={value.percent}
+                                            />
+                                            {value.descendants_ok} /
+                                            {value.descendants}
+                                            {/*{value.percent} %*/}
+                                        </>
+                                    ) : (
+                                        <div
+                                            title={
+                                                'No descendants OrgUnit requiere filling that form. See form config if unexpected'
+                                            }
+                                            style={{
+                                                textDecoration:
+                                                    'underline dotted',
+                                            }}
+                                        >
+                                            N/A
+                                        </div>
+                                    );
+                                },
+                                sortable: false,
+                            },
+                            // {
+                            //     Header: (
+                            //         <InfoHeader
+                            //             message={
+                            //                 'Number of org unit to fill for this form'
+                            //             }
+                            //         >
+                            //             Target
+                            //         </InfoHeader>
+                            //     ),
+                            //     id: `form_stats[${form.slug}].descendants`,
+                            //     accessor: `form_stats[${form.slug}].descendants`,
+                            //     Cell: ({ value }) => <>{value}</>,
+                            //     sortable: false,
+                            // },
+                            // {
+                            //     Header: (
+                            //         <InfoHeader
+                            //             message={
+                            //                 'Submissions filled on org unit bellow'
+                            //             }
+                            //         >
+                            //             Submissions
+                            //         </InfoHeader>
+                            //     ),
+                            //     id: `form_stats[${form.slug}].total_instances`,
+                            //     accessor: `form_stats[${form.slug}].total_instances`,
+                            //     Cell: ({ value }) => <>{value}</>,
+                            //     sortable: false,
+                            // },
+                        ],
+                    };
+                }),
+            );
+        }
+        columns.push({
+            Header: formatMessage(MESSAGES.actions),
+            id: 'actions',
+            accessor: 'actions',
+            sortable: false,
+            Cell: settings => {
+                return (
+                    <>
+                        <IconButtonComponent
+                            onClick={() => {
+                                dispatch(
+                                    redirectTo(baseUrl, {
+                                        ...redirectionParams,
+                                        parentId:
+                                            settings.row.original.org_unit?.id,
+                                    }),
+                                );
+                            }}
+                            tooltipMessage={MESSAGES.seeChildren}
+                            overrideIcon={AccountTreeIcon}
+                        />
+                    </>
+                );
             },
-        ],
-        [dispatch, formatMessage, redirectionParams],
-    );
+        });
+        console.log(columns);
+        return columns;
+    }, [dispatch, formatMessage, redirectionParams, completenessStats]);
 };

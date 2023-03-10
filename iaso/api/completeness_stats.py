@@ -11,7 +11,7 @@ from typing import Tuple, Optional
 
 from django.core.paginator import Paginator
 from django.db import connection
-from django.db.models import QuerySet
+from django.db.models import QuerySet, Count, Q, OuterRef, Subquery
 from rest_framework import viewsets, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -175,24 +175,30 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         return Response(paginated_res)
 
 
-SUB_COMPLETNESS_QUERY = """SELECT JSON_OBJECT_AGG(
+SUB_COMPLETENESS_QUERY = """SELECT JSON_OBJECT_AGG(
                            'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
-                       'descendants', count_per_root."descendants",
-                       'descendants_ok', count_per_root."descendants_ok",
-                       'percent', count_per_root."percent",
-                       'total_instance', count_per_root."total_instance",
+                       'descendants', COALESCE(count_per_root."descendants", 0),
+                       'descendants_ok', COALESCE(count_per_root."descendants_ok", 0),
+                       'percent', COALESCE(count_per_root."percent", 0),
+                       'total_instances', COALESCE(count_per_root."total_instances", 0),
+                       'itself_target', COALESCE(count_per_root."itself_target", 0),
+                       'itself_has_instances', COALESCE(count_per_root."itself_has_instances", 0),
+                       'itself_instances_count', COALESCE(count_per_root."itself_instances_count", 0),
                        'name', "iaso_form"."name"
                    )
                    ) AS "form_stats"
         FROM
             (SELECT "iaso_orgunit"."id"                          AS "id",
-                     COUNT(ou_count)                              AS "descendants",
-                     SUM(ou_count."instances_count")              AS "total_instance",
-                     COUNT(NULLIF(ou_count."instances_count", 0)) AS "descendants_ok",
-                     (COUNT(NULLIF(ou_count."instances_count", 0))::float * 100 /
-                      NULLIF(COUNT(ou_count), 0))                 AS "percent",
-                     "ou_count"."form_id",
-                     "ou_count"."form_name"                       AS "form_name"
+                     COUNT(ou_count)                                   FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")    AS "descendants",
+                     SUM(ou_count."instances_count")           FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")     AS "total_instances",
+                     COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")  AS "descendants_ok",
+                     (COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "iaso_orgunit"."path" != ou_count."path") ::float * 100 /
+                      NULLIF(COUNT(ou_count)    FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")              , 0)) AS "percent",
+                     "ou_count"."form_id" ,
+                     "ou_count"."form_name"                       AS "form_name",
+                      COUNT(NULLIF(ou_count."instances_count", 0))  FILTER (WHERE "iaso_orgunit"."path" = ou_count."path")  AS "itself_has_instances",
+                      SUM(ou_count."instances_count")               FILTER (WHERE "iaso_orgunit"."path" = ou_count."path")  AS "itself_instances_count",
+                      COUNT(ou_count)                               FILTER (WHERE "iaso_orgunit"."path" = ou_count."path")  AS "itself_target"
               FROM (SELECT "iaso_orgunit"."path",
                            "iaso_form"."id"                         AS "form_id",
                            "iaso_form"."name"                       AS "form_name",
@@ -216,21 +222,20 @@ SUB_COMPLETNESS_QUERY = """SELECT JSON_OBJECT_AGG(
                     GROUP BY "iaso_orgunit"."path", "iaso_form"."id") AS ou_count
               WHERE "iaso_orgunit"."path" @> ou_count."path"
                 -- don't count yourself
-                and "iaso_orgunit"."path" != ou_count."path"
+                -- AND "iaso_orgunit"."path" != ou_count."path"
               GROUP BY "iaso_orgunit"."id", ou_count."form_id", "ou_count"."form_name"
               ORDER BY "descendants" DESC) AS count_per_root
                 -- THIS JOIN IS NEED so we have a form entry even for org unit which
                 -- have no descendant that need to be filled.
                 -- not sure of the performance impact, this might be faster to resolve in frontend
-        RIGHT JOIN iaso_form on count_per_root.form_id = iaso_form.id
-        WHERE iaso_form.id in %s
+        RIGHT JOIN iaso_form ON count_per_root.form_id = iaso_form.id
+        WHERE iaso_form.id IN %s
         GROUP BY "iaso_orgunit"."id"
         """
-"""QUERY To get completness as embeded in a select
+"""QUERY To get completeness as embedded in a select
 take in parameters  the form_ids"""
 
-
-COMPLETNESS_QUERY = """select parent_id, id, name,
+COMPLETNESS_QUERY = """SELECT parent_id, id, name,
        (SELECT 
                JSON_OBJECT_AGG(
                            'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
@@ -278,9 +283,9 @@ COMPLETNESS_QUERY = """select parent_id, id, name,
         WHERE "iaso_form"."id" IN %(form_ids)s
           AND "roots_to_pivot"."id" = iaso_orgunit.id
         GROUP BY "roots_to_pivot"."id")
-from iaso_orgunit 
+FROM iaso_orgunit 
 --where id=1
-order by id;"""
+ORDER BY id;"""
 """QUERY To get completness
 take in parameters root_ids for the base orgunit and form_ids"""
 
@@ -339,80 +344,75 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             # This needs to be applied on the top_ous, not on the org_units (to act as a real filter, not something that changes the level of OUs in the table)
             top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in requested_org_unit_types])
 
-        form_ids = list(form_qs.values_list("id", flat=True))
+        form_ids = tuple(list(form_qs.values_list("id", flat=True)))
         top_ou_ids = list(top_ous.values_list("id", flat=True))
         # TODO later so we can filter on orgunit
         # top_ous = top_ous.order_by(*order)
+        top_ous = top_ous.prefetch_related("org_unit_type", "parent")
+        ou_with_stats: QuerySet = top_ous.extra(
+            select={"form_stats": SUB_COMPLETENESS_QUERY},
+            select_params=((form_ids, form_ids)),
+        )
 
-        # cur.
+        def to_dict(row_ou):
+            return {
+                "name": row_ou.name,
+                "id": row_ou.id,
+                "org_unit": row_ou.as_dict_for_completeness_stats(),
+                "form_stats": row_ou.form_stats,
+                "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
+                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats() if row_ou.parent else None,
+            }
 
-        results = []
-        for row_ou in top_ous:
-            for form in form_qs:
-                form = Form.objects.get(id=form.id)
+        # return Response([to_dict(ou) for ou in ou_with_stats[:10]])
 
-                ou_types_of_form = form.org_unit_types.all()
-
-                # Instance counters for the row OU + all descendants
-                ou_to_fill_with_descendants = (
-                    row_ou.descendants().filter(org_unit_type__in=ou_types_of_form).filter(**common_ou_filters)
-                )  # Apparently .descendants() also includes the row_ou itself
-
-                ou_to_fill_with_descendants_count, ou_filled_with_descendants_count = get_instance_counters(
-                    ou_to_fill_with_descendants, form
-                )
-
-                # Instance counters strictly/directly for the row OU
-                ou_to_fill_direct = (
-                    org_units.filter(org_unit_type__in=ou_types_of_form)
-                    .filter(pk=row_ou.pk)
-                    .filter(**common_ou_filters)
-                )
-                ou_to_fill_direct_count, ou_filled_direct_count = get_instance_counters(ou_to_fill_direct, form)
-
-                # TODO: response as serializer for Swagger
-
-                parent_data = None
-                if row_ou.parent is not None:
-                    parent_data = (row_ou.parent.as_dict_for_completeness_stats(),)
-
-                if ou_to_fill_with_descendants_count > 0:
-                    results.append(
-                        {
-                            "parent_org_unit": parent_data,
-                            "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
-                            "org_unit": row_ou.as_dict_for_completeness_stats(),
-                            "form": form.as_dict_for_completeness_stats(),
-                            # Those counts target the row org unit and all of its descendants
-                            "forms_filled": ou_filled_with_descendants_count,
-                            "forms_to_fill": ou_to_fill_with_descendants_count,
-                            "completeness_ratio": formatted_percentage(
-                                part=ou_filled_with_descendants_count, total=ou_to_fill_with_descendants_count
-                            ),
-                            # Those counts strictly/directly target the row org unit (no descendants included)
-                            "forms_filled_direct": ou_filled_direct_count,
-                            "forms_to_fill_direct": ou_to_fill_direct_count,
-                            "completeness_ratio_direct": formatted_percentage(
-                                part=ou_filled_direct_count, total=ou_to_fill_direct_count
-                            ),
-                            "has_multiple_direct_submissions": get_number_direct_submissions(row_ou, form) > 1,
-                        }
-                    )
+        # convert to proper pagination
         limit = int(request.GET.get("limit", 10))
         page_offset = int(request.GET.get("page", "1"))
-        paginator = Paginator(results, limit)
+        paginator = Paginator(ou_with_stats, limit)
         if page_offset > paginator.num_pages:
             page_offset = paginator.num_pages
         page = paginator.page(page_offset)
 
+        # If a particular parent is requested we calcule it's own stats
+        #  as it might be nice to display
+        if requested_parent_org_unit:
+            ou = requested_parent_org_unit
+            form_stats_qs = Form.objects.annotate(
+                instance_count=Count(
+                    Subquery(ou.instance_set.all().filter(~(Q(file=""))).filter(form_id=OuterRef("id")).values("id"))
+                )
+            ).prefetch_related("org_unit_types")
+            request_parent_forms_stats = {
+                f"form_{form.id}": {
+                    "name": form.name,
+                    "itself_target": ou.org_unit_type in form.org_unit_types.all(),
+                    "itself_has_instances": form.instance_count > 0,
+                    "itself_instances_count": form.instance_count,
+                }
+                for form in form_stats_qs
+            }
+        else:
+            request_parent_forms_stats = {}
+
+        object_list = [to_dict(ou) for ou in page.object_list]
         paginated_res = {
+            "forms": [
+                {
+                    "id": form.id,
+                    "name": form.name,
+                    "slug": f"form_{form.id}",  # accessor in the form stats dict
+                }
+                for form in form_qs
+            ],
             "count": paginator.count,
-            "results": page.object_list,
+            "results": object_list,
             "has_next": page.has_next(),
             "has_previous": page.has_previous(),
             "page": page_offset,
             "pages": paginator.num_pages,
             "limit": limit,
+            "request_parent_forms_stats": request_parent_forms_stats,
         }
 
         return Response(paginated_res)

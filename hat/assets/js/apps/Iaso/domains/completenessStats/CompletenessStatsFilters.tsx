@@ -12,6 +12,8 @@ import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
 import MESSAGES from './messages';
+import PeriodPicker from '../periods/components/PeriodPicker';
+import { PERIOD_TYPE_MONTH, PERIOD_TYPE_YEAR } from '../periods/constants';
 
 type Props = {
     params: UrlParams & any;
@@ -63,6 +65,22 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         <>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
+                    {/*FIXME Connect to the rest*/}
+                    <PeriodPicker
+                        hasError={false}
+                        // hasError={periodError || startPeriodError}
+                        // activePeriodString={formState.startPeriod.value}
+                        // periodType={formState.periodType.value}
+                        periodType={PERIOD_TYPE_MONTH}
+                        title={'Period'}
+                        // title={formatMessage(MESSAGES.startPeriod)}
+                        // keyName="startPeriod"
+                        // onChange={startPeriod =>
+                        //     handleFormChange('startPeriod', startPeriod)
+                        // }
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -73,14 +91,14 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingForms}
                         options={forms ?? []}
                     />
-                    <Box id="ou-tree-input">
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.orgUnit}
-                            onConfirm={handleOrgUnitChange}
-                            initialSelection={initialOrgUnit}
-                        />
-                    </Box>
+                    {/*<Box id="ou-tree-input">*/}
+                    {/*    <OrgUnitTreeviewModal*/}
+                    {/*        toggleOnLabelClick={false}*/}
+                    {/*        titleMessage={MESSAGES.orgUnit}*/}
+                    {/*        onConfirm={handleOrgUnitChange}*/}
+                    {/*        initialSelection={initialOrgUnit}*/}
+                    {/*    />*/}
+                    {/*</Box>*/}
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input-parent">
@@ -91,6 +109,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                             initialSelection={initialParent}
                         />
                     </Box>
+                </Grid>
+
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
                         multi
@@ -105,8 +126,10 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 <Grid
                     container
                     item
-                    xs={isLargeLayout ? 6 : 12}
+                    // xs={isLargeLayout ? 6 : 12}
                     justifyContent="flex-end"
+                    xs={12}
+                    md={3}
                 >
                     <Box mt={isLargeLayout ? 2 : 0}>
                         <FilterButton

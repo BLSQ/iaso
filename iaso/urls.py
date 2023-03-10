@@ -23,7 +23,7 @@ from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
-from .api.completeness_stats import CompletenessStatsViewSet
+from .api.completeness_stats import CompletenessStatsViewSet, CompletenessStatsV2ViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.derived_instances import DerivedInstancesViewSet
 from .api.devices import DevicesViewSet
@@ -105,6 +105,7 @@ router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsru
 router.register(r"groups", GroupsViewSet, basename="groups")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"completeness_stats", CompletenessStatsViewSet, basename="completeness_stats")
+router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
 router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")

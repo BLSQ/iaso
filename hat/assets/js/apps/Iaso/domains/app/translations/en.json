@@ -813,6 +813,7 @@
     "iaso.snackBar.generateDerivedRequestSuccess": "Generation scheduled",
     "iaso.snackBar.getChildrenDataError": "An error occurred while fetching Treeview item children",
     "iaso.snackBar.getRootDataError": "An error occurred while fetching Treeview items",
+    "iaso.snackBar.goToEntity": "Go to entity",
     "iaso.snackBar.importGpkgError": "An error occurred while importing gpkg file",
     "iaso.snackBar.importGpkgSuccess": "Import of gpkg file was planned with success",
     "iaso.snackBar.locationLimitWarning": "Display too much items on the map can reduce the performance",

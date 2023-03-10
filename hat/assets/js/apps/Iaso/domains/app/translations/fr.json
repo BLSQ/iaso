@@ -804,6 +804,7 @@
     "iaso.snackBar.generateDerivedRequestSuccess": "La création des soumissions dérivées est terminée avec succès",
     "iaso.snackBar.getChildrenDataError": "Une erreur est survenue en récupérant les enfants de la vue en arbre",
     "iaso.snackBar.getRootDataError": "Une erreur est survenue en récupérant les données de la vue en arbre",
+    "iaso.snackBar.goToEntity": "Voir l'entité",
     "iaso.snackBar.importFromDhis2Error": "Une erreur s'est produite lors de l'import DHIS2",
     "iaso.snackBar.importFromDhis2Success": "L'import de DHIS2 a été planifié avec succès",
     "iaso.snackBar.importGkpgError": "Une erreur s'est produite lors de l'import du ficher gpkg",

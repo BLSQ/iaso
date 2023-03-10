@@ -18,7 +18,7 @@ type DuplicateInfos = {
     algorithmsUsed: ('namesim' | 'invert')[];
     similarityScore: number;
     isLoading: boolean;
-    entityIds: string;
+    entityIds: [number, number];
 };
 
 type UseDuplicateInfosArgs = {
@@ -33,6 +33,8 @@ export const useDuplicateInfos = ({
     params,
 }: UseDuplicateInfosArgs): DuplicateInfos => {
     return useMemo(() => {
+        const ids = params?.entities ?? '';
+        const entityIds = ids.split(',').map(id => parseInt(id, 10));
         return {
             unmatchedRemaining: calculateRemainingUnmatched(tableState),
             formName: duplicatesInfos?.[0].form.name ?? '',
@@ -42,7 +44,8 @@ export const useDuplicateInfos = ({
             ),
             similarityScore: duplicatesInfos?.[0].similarity_star,
             isLoading: !duplicatesInfos?.length,
-            entityIds: params?.entities ?? '',
+            // TODO prevent longer arrays of ids
+            entityIds: entityIds as [number, number],
         };
     }, [duplicatesInfos, params?.entities, tableState]);
 };

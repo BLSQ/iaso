@@ -11,15 +11,15 @@ import {
 } from '@material-ui/core';
 import classnames from 'classnames';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
-// import { useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import MESSAGES from './messages';
 import { StarsComponent } from '../../../components/stars/StarsComponent';
 import { useMergeDuplicate } from './hooks/useMergeDuplicate';
 import { useIgnoreDuplicate } from './hooks/useIgnoreDuplicate';
-// import { successfullSnackBarWithButtons } from '../../../constants/snackBars';
-// import { baseUrls } from '../../../constants/urls';
-// import { redirectTo } from '../../../routing/actions';
+import { successfullSnackBarWithButtons } from '../../../constants/snackBars';
+import { baseUrls } from '../../../constants/urls';
+import { redirectTo } from '../../../routing/actions';
 
 type Props = {
     isLoading: boolean;
@@ -61,8 +61,19 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-
-    const { mutate: mergeEntities } = useMergeDuplicate();
+    const dispatch = useDispatch();
+    const successSnackBar = (msg, data) => {
+        return successfullSnackBarWithButtons({
+            messageObject: msg,
+            persist: true,
+            buttonMessageKey: 'goToEntity',
+            buttonAction: () =>
+                dispatch(
+                    redirectTo(baseUrls.entityDetails, { entityId: data.id }),
+                ),
+        });
+    };
+    const { mutate: mergeEntities } = useMergeDuplicate(successSnackBar);
     const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate();
     return (
         <WidgetPaper className={classnames(classes.table)} title={formName}>

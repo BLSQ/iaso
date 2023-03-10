@@ -19,9 +19,12 @@ import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 import { DuplicateData } from './types';
+import { useGoBack } from '../../../routing/useGoBack';
+import { Router } from '../../../types/general';
 
 type Props = {
     params: { accountId?: string; entities: string };
+    router: Router;
 };
 
 const useStyles = makeStyles(theme => {
@@ -64,12 +67,16 @@ const useStyles = makeStyles(theme => {
     };
 });
 
-export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
+export const DuplicateDetails: FunctionComponent<Props> = ({
+    router,
+    params,
+}) => {
     const { formatMessage } = useSafeIntl();
     const [tableState, setTableState] = useArrayState([]);
     const [query, setQuery] = useObjectState();
     const [onlyShowUnmatched, setOnlyShowUnmatched] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
+    const goBack = useGoBack(router, baseUrls.entityDuplicates);
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
     }) as { data: DuplicateData[] };
@@ -106,6 +113,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
             <TopBar
                 title={formatMessage(MESSAGES.compareDuplicates)}
                 displayBackButton
+                goBack={() => goBack()}
             />
             <Box
                 className={classnames(

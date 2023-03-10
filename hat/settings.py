@@ -244,6 +244,12 @@ DATABASES = {
     },
 }
 
+"""
+Enable the SQL  dashboard Feature
+see docs/SQL Dashboard feature.md
+
+[SQL Dashboard feature.md](docs%2FSQL%20Dashboard%20feature.md)
+"""
 if os.environ.get("DB_READONLY_USERNAME"):
     DATABASES["dashboard"] = {
         "ENGINE": "django.db.backends.postgresql",
@@ -256,6 +262,8 @@ if os.environ.get("DB_READONLY_USERNAME"):
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")
+    # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
+    DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
 
 DATABASES["worker"] = DATABASES["default"].copy()
 DATABASE_ROUTERS = [
@@ -486,5 +494,3 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}
-
-DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore

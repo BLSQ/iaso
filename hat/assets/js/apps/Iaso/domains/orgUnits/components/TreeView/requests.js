@@ -118,21 +118,28 @@ export const useGetOrgUnit = OrgUnitId =>
         },
     );
 
-// TODO decide wheteher to show only valid org units
-const getOrgUnits = orgUnitsIds => {
+const getOrgUnits = (orgUnitsIds, validationStatus = 'all') => {
     const idsString = Array.isArray(orgUnitsIds)
         ? orgUnitsIds?.join(',')
         : orgUnitsIds;
-    const searchParam = `[{"validation_status":"all","search": "ids:${idsString}" }]`;
+    const searchParam = `[{"validation_status":"${validationStatus}","search": "ids:${idsString}" }]`;
     return getRequest(`/api/orgunits/?limit=10&searches=${searchParam}`);
 };
 
-export const useGetMultipleOrgUnits = orgUnitsIds => {
+/**
+ * Use this hook with for the TreeviewModal in multiselect mode
+ *
+ */
+
+export const useGetMultipleOrgUnits = (
+    orgUnitsIds,
+    validationStatus = 'all',
+) => {
     return useSnackQuery({
-        queryKey: ['orgunits', orgUnitsIds],
-        queryFn: () => getOrgUnits(orgUnitsIds),
+        queryKey: ['orgunits', orgUnitsIds, validationStatus],
+        queryFn: () => getOrgUnits(orgUnitsIds, validationStatus),
         options: {
-            enabled: Boolean(orgUnitsIds.length),
+            enabled: Boolean(orgUnitsIds?.length),
             select: data => {
                 if (!data) return {};
                 return data.orgunits;

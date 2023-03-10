@@ -11,9 +11,6 @@ const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/entities/list`;
 
 let interceptFlag = false;
-const emptyFixture = 'entities/empty.json';
-let table;
-let row;
 const defaultQuery = {
     limit: '20',
     order_columns: 'last_saved_instance',
@@ -53,14 +50,6 @@ const mockPage = (
     }).as('getEntities');
 };
 
-const openDialogForEntityIndex = index => {
-    table = cy.get('table');
-    row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').last();
-    const editButton = actionCol.find('button').eq(1);
-    editButton.click();
-    cy.get('#entity-dialog').should('be.visible');
-};
 describe('Entities', () => {
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {
@@ -83,6 +72,25 @@ describe('Entities', () => {
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
+        });
+        it('click on a row button should open entity detail page', () => {
+            mockPage();
+            cy.visit(baseUrl);
+
+            cy.wait('@getEntities').then(() => {
+                cy.get('table tbody tr')
+                    .eq(1)
+                    .find('td')
+                    .last()
+                    .as('actionCell');
+                cy.get('@actionCell')
+                    .find('a')
+                    .should(
+                        'have.attr',
+                        'href',
+                        '/dashboard/entities/details/entityId/2',
+                    );
+            });
         });
     });
 
@@ -233,7 +241,7 @@ describe('Entities', () => {
         });
     });
 
-    it.only('submitter team and submitter filters should be linked', () => {
+    it('submitter team and submitter filters should be linked', () => {
         mockPage();
         cy.visit(baseUrl);
         cy.testInputValue('#submitterTeamId', '');
@@ -251,8 +259,4 @@ describe('Entities', () => {
             cy.testInputValue('#submitterId', '');
         });
     });
-
-    // TEST SPECIAL BEHAVIOUR submitterTeamId vs submitterId
-
-    // click on a row should redirect to beneficiary detail
 });

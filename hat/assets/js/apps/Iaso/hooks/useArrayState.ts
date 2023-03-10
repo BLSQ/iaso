@@ -1,12 +1,12 @@
 import { Dispatch, useReducer } from 'react';
 import { cloneDeep } from 'lodash';
 
-type ArrayUpdate<T> = {
+export type ArrayUpdate<T> = {
     index: number;
     value: T;
 };
 
-type FullArrayUpdate<T> = {
+export type FullArrayUpdate<T> = {
     index: 'all';
     value: T[];
 };

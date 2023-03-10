@@ -28,11 +28,9 @@ type Props = {
 const useStyles = makeStyles({
     table: {
         '& .MuiTable-root': {
-            // border: `1px solid rgb(224, 224, 224)`,
             borderLeft: `1px solid rgb(224, 224, 224)`,
             borderRight: `1px solid rgb(224, 224, 224)`,
             borderBottom: `1px solid rgb(224, 224, 224)`,
-            // marginBottom: theme.spacing(2),
             width: '100%',
         },
     },
@@ -54,7 +52,6 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
         <WidgetPaper className={classnames(classes.table)} title={formName}>
             <Grid container>
                 <Grid item xs={12} md={4}>
-                    {/* TODO add padding bottom to table */}
                     <Table>
                         <TableBody>
                             <TableRow>
@@ -107,12 +104,12 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                 >
                     <Box pb={2}>
                         <Button color="primary" variant="outlined">
-                            Ignore
+                            {formatMessage(MESSAGES.ignore)}
                         </Button>
                     </Box>
                     <Box ml={2} pb={2} mr={2}>
                         <Button variant="contained" color="primary">
-                            Merge
+                            {formatMessage(MESSAGES.merge)}
                         </Button>
                     </Box>
                 </Grid>

@@ -1,3 +1,4 @@
+/* eslint-disable react/no-array-index-key */
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
@@ -8,9 +9,11 @@ import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
 import { Column } from '../../../../types/table';
 import { formatLabel } from '../../../instances/utils';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
+import { DuplicationAlgorithm } from '../types';
 
-const getFields = settings => {
-    const { algorithms } = settings.row.original;
+const getFields = (settings: any): string[] => {
+    const { algorithms }: { algorithms: DuplicationAlgorithm[] } =
+        settings.row.original;
     const allFields = algorithms.map(algo => algo.fields).flat();
     return [...new Set(allFields)];
 };
@@ -151,6 +154,5 @@ export const useDuplicationTableColumns = (): Column[] => {
             },
         ];
         return columns;
-        // @ts-ignore
     }, [classes.diff, formatMessage]);
 };

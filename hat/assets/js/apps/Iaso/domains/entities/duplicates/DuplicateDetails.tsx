@@ -72,6 +72,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({ params }) => {
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
     });
+    console.log('tableState', tableState);
 
     // TODO params as array, since comma is modified
     const { data: entities, isFetching } = useGetDuplicateDetails({

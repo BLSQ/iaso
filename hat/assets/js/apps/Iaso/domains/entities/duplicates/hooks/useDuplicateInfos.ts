@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { DuplicateData } from '../types';
 
 const findAlgorithmsUsed = (algos: any[]): ('namesim' | 'invert')[] => {
     const allTypes = algos.map(algo => algo.type);
@@ -6,11 +7,31 @@ const findAlgorithmsUsed = (algos: any[]): ('namesim' | 'invert')[] => {
 };
 
 // fields is tableState
-const calculateRemainingUnmatched = (fields: any[]) => {
+const calculateRemainingUnmatched = (fields: any[]): number => {
     return fields.filter(field => !field.final.value).length;
 };
 
-export const useDuplicateInfos = ({ tableState, duplicatesInfos, params }) => {
+type DuplicateInfos = {
+    unmatchedRemaining: number;
+    formName: string;
+    algorithmRuns: number;
+    algorithmsUsed: ('namesim' | 'invert')[];
+    similarityScore: number;
+    isLoading: boolean;
+    entityIds: string;
+};
+
+type UseDuplicateInfosArgs = {
+    tableState: Record<string, any>[];
+    duplicatesInfos: DuplicateData[];
+    params: { accountId?: string; entities: string };
+};
+
+export const useDuplicateInfos = ({
+    tableState,
+    duplicatesInfos,
+    params,
+}: UseDuplicateInfosArgs): DuplicateInfos => {
     return useMemo(() => {
         return {
             unmatchedRemaining: calculateRemainingUnmatched(tableState),

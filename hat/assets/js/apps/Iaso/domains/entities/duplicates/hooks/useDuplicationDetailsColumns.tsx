@@ -1,24 +1,14 @@
 import React, { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
-import { cloneDeep } from 'lodash';
 import classNames from 'classnames';
 import MESSAGES from '../messages';
 import { formatLabel } from '../../../instances/utils';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
-
-const getEntityStatus = (
-    base,
-    compare,
-    final,
-): 'selected' | 'dropped' | 'diff' | 'identical' => {
-    if (base?.value !== compare?.value && !final?.value) return 'diff';
-    if (base?.value !== compare?.value && base?.value === final?.value)
-        return 'selected';
-    if (base?.value !== compare?.value && base?.value !== final?.value)
-        return 'dropped';
-    return 'identical';
-};
+import { Column } from '../../../../types/table';
+import { DuplicateEntityForTable } from '../types';
+import { ArrayUpdate, FullArrayUpdate } from '../../../../hooks/useArrayState';
+import { useEntityCell } from './useEntityCell';
 
 const useStyles = makeStyles({
     dropped: { color: 'rgba(0,0,0,0.6)' },
@@ -26,12 +16,24 @@ const useStyles = makeStyles({
     hidden: { display: 'none' },
 });
 
+type UseDupliactionDetailsColumnsArgs = {
+    state: DuplicateEntityForTable[];
+    setState: (
+        // eslint-disable-next-line no-unused-vars
+        value:
+            | ArrayUpdate<DuplicateEntityForTable>
+            | FullArrayUpdate<DuplicateEntityForTable>,
+    ) => void;
+    setQuery: React.Dispatch<any>;
+    onlyShowUnmatched: boolean;
+};
+
 export const useDuplicationDetailsColumns = ({
     state,
     setState,
     setQuery,
     onlyShowUnmatched,
-}) => {
+}: UseDupliactionDetailsColumnsArgs): Column[] => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
 
@@ -43,7 +45,9 @@ export const useDuplicationDetailsColumns = ({
                 resizable: false,
                 sortable: true,
                 Cell: settings => {
-                    return formatLabel(settings.row.original.field);
+                    return (
+                        <span>{formatLabel(settings.row.original.field)}</span>
+                    );
                 },
             },
             {
@@ -53,39 +57,23 @@ export const useDuplicationDetailsColumns = ({
                 sortable: false,
                 Cell: settings => {
                     const { field, entity1, entity2 } = settings.row.original;
-                    const newRowValues = {
+                    const onClick = useEntityCell({
                         field,
-                        entity1: {
-                            ...cloneDeep(entity1),
-                            status: getEntityStatus(entity1, entity2, entity1),
-                        },
-                        entity2: {
-                            ...cloneDeep(entity2),
-                            status: getEntityStatus(entity2, entity1, entity1),
-                        },
-                        final: {
-                            ...cloneDeep(entity1),
-                            status: getEntityStatus(entity1, entity2, entity1),
-                        },
-                    };
-                    const rowIndex = state.findIndex(
-                        row => row.field === field,
-                    );
+                        entity1,
+                        entity2,
+                        key: 'entity1',
+                        setQuery,
+                        state,
+                        setState,
+                    });
+                    // TODO remove when getCellProps works
                     const hidden =
                         entity1.status === 'identical' && onlyShowUnmatched
                             ? classes.hidden
                             : '';
                     return (
                         <Box
-                            onClick={() => {
-                                if (entity1.status !== 'identical') {
-                                    setState({
-                                        index: rowIndex,
-                                        value: newRowValues,
-                                    });
-                                    setQuery({ [field.field]: entity1.id });
-                                }
-                            }}
+                            onClick={onClick}
                             className={classNames(
                                 entity1.status,
                                 classes[entity1.status],
@@ -106,37 +94,20 @@ export const useDuplicationDetailsColumns = ({
                 sortable: false,
                 Cell: settings => {
                     const { field, entity1, entity2 } = settings.row.original;
-                    const newRowValues = {
+                    const onClick = useEntityCell({
                         field,
-                        entity1: {
-                            ...cloneDeep(entity1),
-                            status: getEntityStatus(entity1, entity2, entity2),
-                        },
-                        entity2: {
-                            ...cloneDeep(entity2),
-                            status: getEntityStatus(entity2, entity1, entity2),
-                        },
-                        final: {
-                            ...cloneDeep(entity2),
-                            status: getEntityStatus(entity2, entity1, entity2),
-                        },
-                    };
-                    const rowIndex = state.findIndex(
-                        row => row.field === field,
-                    );
+                        entity1,
+                        entity2,
+                        key: 'entity2',
+                        setQuery,
+                        state,
+                        setState,
+                    });
 
                     return (
                         // eslint-disable-next-line jsx-a11y/no-static-element-interactions
                         <div
-                            onClick={() => {
-                                if (entity2.status !== 'identical') {
-                                    setState({
-                                        index: rowIndex,
-                                        value: newRowValues,
-                                    });
-                                    setQuery({ [field.field]: entity2.id });
-                                }
-                            }}
+                            onClick={onClick}
                             className={classNames(
                                 entity2.status,
                                 classes[entity2.status],
@@ -157,7 +128,6 @@ export const useDuplicationDetailsColumns = ({
                 Cell: settings => {
                     const { final } = settings.row.original;
                     return (
-                        // the class should apply to the td as empty sring has no width
                         <div
                             className={classNames(
                                 final.status,

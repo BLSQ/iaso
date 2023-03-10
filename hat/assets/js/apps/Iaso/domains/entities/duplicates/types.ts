@@ -41,3 +41,19 @@ export type DuplicatesList = {
     limit: number;
     results: DuplicateData[];
 };
+
+export type EntityForTableData = {
+    id?: number;
+    value?: string;
+    status: 'identical' | 'diff' | 'dropped' | 'selected';
+};
+
+export type DuplicateEntityForTable = {
+    field: {
+        field: string;
+        label: string | Record<string, string>;
+    };
+    entity1: EntityForTableData;
+    entity2: EntityForTableData;
+    final: EntityForTableData;
+};

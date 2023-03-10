@@ -82,9 +82,18 @@ export const mockDuplicatesTableResponse = ({
             form: { name: 'CODA-Registration', id: 85 },
             entity_type: { name: 'Children under 5', id: 11 },
             fields: [
-                { field: 'first_name', label: { English: 'First name' } },
+                {
+                    field: 'first_name',
+                    label: { English: 'First name', French: 'Prénom' },
+                },
                 { field: 'last_name', label: 'Last name' },
-                { field: 'date_of_birth', label: { English: 'Date of birth' } },
+                {
+                    field: 'date_of_birth',
+                    label: {
+                        English: 'Date of birth',
+                        French: 'Date de naissance',
+                    },
+                },
             ],
             entity1: baseEntity,
             entity2: duplicate,
@@ -121,9 +130,18 @@ export const mockDuplicatesDetailsResponse = () => {
             form: { name: 'CODA-Registration', id: 85 },
             entity_type: { name: 'Children under 5', id: 11 },
             fields: [
-                { field: 'first_name', label: { English: 'First name' } },
+                {
+                    field: 'first_name',
+                    label: { English: 'First name', French: 'Prénom' },
+                },
                 { field: 'last_name', label: 'Last name' },
-                { field: 'date_of_birth', label: { English: 'Date of birth' } },
+                {
+                    field: 'date_of_birth',
+                    label: {
+                        English: 'Date of birth',
+                        French: 'Date de naissance',
+                    },
+                },
             ],
             entity1: baseEntity,
             entity2: duplicate,
@@ -147,7 +165,10 @@ export const mockDuplicatesDetailsResponse = () => {
 export const mockDuplicatesDetailsTableData = () => {
     return [
         {
-            field: { field: 'first_name', label: { English: 'First name' } },
+            field: {
+                field: 'first_name',
+                label: { English: 'First name', French: 'Prénom' },
+            },
             entity1: { value: 'David', id: 1 },
             entity2: { value: 'David0', id: 2 },
             final: { value: '' },
@@ -161,7 +182,10 @@ export const mockDuplicatesDetailsTableData = () => {
         {
             field: {
                 field: 'date_of_birth',
-                label: { English: 'Date of birth' },
+                label: {
+                    English: 'Date of birth',
+                    French: 'Date de naissance',
+                },
             },
             entity1: { id: 1, value: '2022-08-16T13:26:22.470058Z' },
             entity2: { id: 2, value: '2022-08-17T13:26:22.470058Z' },
@@ -170,7 +194,7 @@ export const mockDuplicatesDetailsTableData = () => {
         {
             field: {
                 field: 'stage_name',
-                label: { English: 'Stage name' },
+                label: { English: 'Stage name', French: 'Nom de scène' },
             },
             entity1: { value: 'David Bowie', id: 1 },
             entity2: { value: 'Ziggy Stardust', id: 2 },
@@ -194,9 +218,18 @@ export const mockEntitiesInfo = () => {
             form: { name: 'CODA-Registration', id: 85 },
             entity_type: { name: 'Children under 5', id: 11 },
             fields: [
-                { field: 'first_name', label: { English: 'First name' } },
+                {
+                    field: 'first_name',
+                    label: { English: 'First name', French: 'Prénom' },
+                },
                 { field: 'last_name', label: 'Last name' },
-                { field: 'date_of_birth', label: { English: 'Date of birth' } },
+                {
+                    field: 'date_of_birth',
+                    label: {
+                        English: 'Date of birth',
+                        French: 'Date de naissance',
+                    },
+                },
             ],
             entity1: baseEntity,
             entity2: duplicate,

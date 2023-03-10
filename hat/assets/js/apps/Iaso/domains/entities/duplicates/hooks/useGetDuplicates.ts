@@ -9,7 +9,7 @@ import {
     mockDuplicatesDetailsTableData,
     mockDuplicatesTableResponse,
 } from '../mockDuplicationData';
-import { DuplicatesList } from '../types';
+import { DuplicateEntityForTable, DuplicatesList } from '../types';
 
 const apiUrl = '/api/entityduplicates';
 
@@ -100,7 +100,7 @@ const getMergedEntityStatus = (final): 'dropped' | 'identical' => {
 
 export const useGetDuplicateDetails = ({
     params,
-}: DuplicatesDetailsGETParams): UseQueryResult<any[], unknown> => {
+}: DuplicatesDetailsGETParams): UseQueryResult<DuplicateEntityForTable[], unknown> => {
     // TODO see with backend exact api
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({

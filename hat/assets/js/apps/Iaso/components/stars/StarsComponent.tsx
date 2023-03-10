@@ -33,6 +33,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+export const starsStyleForTable = {
+    table: {
+        '& tr:nth-of-type(odd) .bg-star path': {
+            fill: '#f7f7f7 !important',
+        },
+    },
+};
+
 type Props = {
     fullStars?: number;
     score?: number;

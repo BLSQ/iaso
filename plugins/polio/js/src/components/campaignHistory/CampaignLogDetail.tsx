@@ -1,11 +1,8 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useMemo } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     commonStyles,
 } from 'bluesquare-components';
 
@@ -32,6 +29,8 @@ import MESSAGES from '../../constants/messages';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 import { Row } from './Row';
+import { RowArray } from './RowArray';
+import { LogStructure } from './constants';
 
 type Props = {
     logId?: string;
@@ -141,6 +140,8 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
+
+    console.log('campaign log detail', campaignLogDetail);
     return (
         <>
             {campaignLogDetail && (
@@ -163,17 +164,34 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                     </TableHead>
 
                     <TableBody>
-                        {Object.entries(campaignLogDetail).map(
-                            ([key, value]) => {
+                        {LogStructure.map(
+                            ({
+                                type,
+                                getLogValue,
+                                key,
+                                children,
+                                childrenLabel,
+                            }) => {
+                                if (type === 'array' && children) {
+                                    return (
+                                        <RowArray
+                                            key={key}
+                                            logKey={key}
+                                            logDetail={campaignLogDetail}
+                                            childrenArray={children}
+                                            childrenLabel={childrenLabel}
+                                        />
+                                    );
+                                }
+
                                 return (
                                     <Row
                                         key={key}
-                                        value={getComplexValue(
-                                            value,
-                                            getValue,
-                                            key,
-                                            getLabel,
-                                        )}
+                                        value={
+                                            getLogValue
+                                                ? getLogValue(campaignLogDetail)
+                                                : campaignLogDetail[key]
+                                        }
                                         fieldKey={key}
                                     />
                                 );

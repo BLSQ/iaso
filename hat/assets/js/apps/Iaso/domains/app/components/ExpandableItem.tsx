@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactChildren, useState } from 'react';
+import React, { FunctionComponent, ReactNode, useState } from 'react';
 import {
     Collapse,
     ListItem,
@@ -10,7 +10,7 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 
 type Props = {
     openOnMount?: boolean;
-    children: ReactChildren;
+    children: ReactNode;
     label: string;
     preventCollapse?: boolean;
 };

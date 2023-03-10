@@ -5,6 +5,7 @@ import { Row } from './Row';
 import { CampaignLogData } from '../../constants/types';
 import { ExpandableItem } from '../../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem';
 import { IntlMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
+import { mapLogStructure } from './mapStructure';
 
 type RowArrayProps = {
     logKey: string;
@@ -20,6 +21,7 @@ export const RowArray: FunctionComponent<RowArrayProps> = ({
     childrenLabel,
 }) => {
     const { formatMessage } = useSafeIntl();
+
     return (
         <Row
             key={logKey}
@@ -29,28 +31,21 @@ export const RowArray: FunctionComponent<RowArrayProps> = ({
                         {logDetail[logKey].map((arrayItem, index) => {
                             return (
                                 <Row
-                                    key={`Round${index}`}
+                                    key={index}
                                     value={
                                         <ExpandableItem
+                                            // TO DO : implement useGetChildrenLabel
                                             label={`${formatMessage(
                                                 childrenLabel,
-                                            )} ${index}`}
+                                            )} ${index + 1}`}
                                         >
                                             <Table size="small">
                                                 <TableBody>
-                                                    {childrenArray.map(
-                                                        child => (
-                                                            <Row
-                                                                key={child.key}
-                                                                value={
-                                                                    arrayItem[
-                                                                        child
-                                                                            .key
-                                                                    ]
-                                                                }
-                                                            />
-                                                        ),
-                                                    )}
+                                                    {childrenArray &&
+                                                        mapLogStructure(
+                                                            childrenArray,
+                                                            arrayItem,
+                                                        )}
                                                 </TableBody>
                                             </Table>
                                         </ExpandableItem>

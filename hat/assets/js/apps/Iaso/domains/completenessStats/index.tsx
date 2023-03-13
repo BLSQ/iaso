@@ -15,7 +15,8 @@ import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
-import { UrlParams } from '../../types/table';
+import { Paginated, UrlParams } from '../../types/table';
+import { CompletenessStats } from './types';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -28,6 +29,24 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     params: UrlParams & CompletenessGETParams;
+};
+
+const RequestedOrgUnitStat = (props: {
+    data: undefined | Paginated<CompletenessStats>;
+}) => {
+    const data = props.data;
+    if (!data || !data.request_parent_forms_stats) {
+        return null;
+    }
+    return (
+        <div>
+            {Object.values(data.request_parent_forms_stats).map(form_stats => (
+                <li>
+                    {form_stats.name}: {form_stats.itself_instances_count}
+                </li>
+            ))}
+        </div>
+    );
 };
 
 export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
@@ -47,6 +66,9 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
             <Box p={4} className={classes.container}>
                 <Box>
                     <CompletenessStatsFilters params={params} />
+                </Box>
+                <Box>
+                    <RequestedOrgUnitStat data={completenessStats} />
                 </Box>
                 <Box>
                     <TableWithDeepLink

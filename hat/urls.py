@@ -8,7 +8,7 @@ from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
-from iaso.views import health, page, task_launcher
+from iaso.views import health, page
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -54,7 +54,6 @@ urlpatterns = [
         name="reset_password_complete",
     ),
     path("sync/", include("hat.sync.urls")),
-    path("launch_task/<task_name>/<user_name>/", task_launcher, name="background_task_launcher"),
 ]
 
 # Swagger config
@@ -75,7 +74,7 @@ urlpatterns = urlpatterns + [
     re_path(r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]
 
-if settings.BEANSTALK_WORKER or settings.DEBUG:
+if settings.BEANSTALK_WORKER or settings.DEBUG or settings.IN_TESTS:
     urlpatterns.append(path("tasks/", include("beanstalk_worker.urls")))
 
 if settings.DATABASES.get("dashboard"):

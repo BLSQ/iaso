@@ -12,6 +12,7 @@ type RowObjectProps = {
     logDetail: CampaignLogData;
     childrenArray: Record<any, any>[];
     childrenLabel: IntlMessage;
+    type: 'array' | 'object';
 };
 
 export const RowObject: FunctionComponent<RowObjectProps> = ({
@@ -19,16 +20,19 @@ export const RowObject: FunctionComponent<RowObjectProps> = ({
     logDetail,
     childrenArray,
     childrenLabel,
+    type,
 }) => {
     const { formatMessage } = useSafeIntl();
-
+    const items = type === 'array' ? logDetail[logKey] : childrenArray;
     return (
         <Row
             key={logKey}
             value={
                 <Table size="small">
                     <TableBody>
-                        {childrenArray.map((children, index) => {
+                        {items.map((subItem, index) => {
+                            const item =
+                                type === 'array' ? subItem : logDetail[logKey];
                             return (
                                 <Row
                                     key={index}
@@ -44,7 +48,7 @@ export const RowObject: FunctionComponent<RowObjectProps> = ({
                                                     {childrenArray &&
                                                         mapLogStructure(
                                                             childrenArray,
-                                                            logDetail[logKey],
+                                                            item,
                                                         )}
                                                 </TableBody>
                                             </Table>

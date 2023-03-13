@@ -160,7 +160,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
                     <TableBody>
                         {mapLogStructure(logStructure, campaignLogDetail)}
-                        {/* {Object.entries(campaignLogDetail).map(
+                        {Object.entries(campaignLogDetail).map(
                             ([key, value]) => {
                                 return (
                                     <Row
@@ -175,7 +175,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                                     />
                                 );
                             },
-                        )} */}
+                        )}
                     </TableBody>
                 </Table>
             )}

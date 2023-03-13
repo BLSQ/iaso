@@ -52,7 +52,7 @@ export const Row: FunctionComponent<RowProps> = ({ fieldKey, value }) => {
     return (
         <TableRow className={classes.round}>
             {fieldKey && (
-                <TableCell className={classes.tableCellLabel}>
+                <TableCell className={classes.tableCellLabel} width={150}>
                     {getLabel(fieldKey)}
                 </TableCell>
             )}

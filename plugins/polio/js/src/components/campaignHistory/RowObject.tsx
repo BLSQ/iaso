@@ -28,33 +28,31 @@ export const RowObject: FunctionComponent<RowObjectProps> = ({
             value={
                 <Table size="small">
                     <TableBody>
-                        {Object.entries(logDetail[logKey]).map(
-                            ([_k, arrayItem], index) => {
-                                return (
-                                    <Row
-                                        key={index}
-                                        value={
-                                            <ExpandableItem
-                                                // TO DO : implement useGetChildrenLabel
-                                                label={`${formatMessage(
-                                                    childrenLabel,
-                                                )} ${index + 1}`}
-                                            >
-                                                <Table size="small">
-                                                    <TableBody>
-                                                        {childrenArray &&
-                                                            mapLogStructure(
-                                                                childrenArray,
-                                                                arrayItem,
-                                                            )}
-                                                    </TableBody>
-                                                </Table>
-                                            </ExpandableItem>
-                                        }
-                                    />
-                                );
-                            },
-                        )}
+                        {childrenArray.map((children, index) => {
+                            return (
+                                <Row
+                                    key={index}
+                                    value={
+                                        <ExpandableItem
+                                            // TO DO : implement useGetChildrenLabel
+                                            label={`${formatMessage(
+                                                childrenLabel,
+                                            )} ${index + 1}`}
+                                        >
+                                            <Table size="small">
+                                                <TableBody>
+                                                    {childrenArray &&
+                                                        mapLogStructure(
+                                                            childrenArray,
+                                                            logDetail[logKey],
+                                                        )}
+                                                </TableBody>
+                                            </Table>
+                                        </ExpandableItem>
+                                    }
+                                />
+                            );
+                        })}
                     </TableBody>
                 </Table>
             }

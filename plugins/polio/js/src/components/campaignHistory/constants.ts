@@ -38,9 +38,15 @@ export const logStructure = [
                 key: 'group',
                 type: 'object',
                 childrenLabel: MESSAGES.group,
-                children: {
-                    key: 'id',
-                },
+                children: [
+                    {
+                        key: 'id',
+                    },
+                    {
+                        key: 'org_units',
+                        getLogValue: log => log.org_units.join(', '),
+                    },
+                ],
             },
         ],
     },

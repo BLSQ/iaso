@@ -140,7 +140,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
-
     return (
         <>
             {campaignLogDetail && (
@@ -153,10 +152,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                             >
                                 {formatMessage(MESSAGES.label)}
                             </TableCell>
-                            <TableCell
-                                width={150}
-                                className={classes.tableCellHead}
-                            >
+                            <TableCell className={classes.tableCellHead}>
                                 {formatMessage(MESSAGES.value)}
                             </TableCell>
                         </TableRow>
@@ -164,7 +160,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
 
                     <TableBody>
                         {mapLogStructure(logStructure, campaignLogDetail)}
-                        {Object.entries(campaignLogDetail).map(
+                        {/* {Object.entries(campaignLogDetail).map(
                             ([key, value]) => {
                                 return (
                                     <Row
@@ -179,7 +175,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                                     />
                                 );
                             },
-                        )}
+                        )} */}
                     </TableBody>
                 </Table>
             )}

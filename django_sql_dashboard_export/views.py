@@ -4,13 +4,22 @@ from io import StringIO
 from django.conf import settings
 from django.db import connections
 from django.http import HttpResponseForbidden, StreamingHttpResponse
-
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
+from django.views.decorators.http import require_safe
 from django_sql_dashboard.models import Dashboard
 from django_sql_dashboard.utils import extract_named_parameters
 
-
+# Changed to get to enable permalinking
+@require_safe
 def export_sql_results_for_dashboard(request, slug):
+    """Export a saved SQL Dashboard as a file
+
+    Parameters:
+        * index: Which query from the dashboard to export
+        * format: 'csv' or 'tsv'
+    """
+    if not getattr(settings, "DASHBOARD_ENABLE_FULL_EXPORT", None):
+        return HttpResponseForbidden("The export feature is not enabled")
     ## copy pasted from the report, to extract
     dashboard = get_object_or_404(Dashboard, slug=slug)
     # Can current user see it, based on view_policy?

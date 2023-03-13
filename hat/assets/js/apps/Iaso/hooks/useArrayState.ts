@@ -1,5 +1,7 @@
-import { Dispatch, useReducer } from 'react';
-import { cloneDeep } from 'lodash';
+import { Dispatch } from 'react';
+import { useImmerReducer } from 'use-immer';
+
+// TODO DO WE REALLY NEED THIS ONE?
 
 export type ArrayUpdate<T> = {
     index: number;
@@ -12,19 +14,17 @@ export type FullArrayUpdate<T> = {
 };
 
 const arrayReducer = <T>(
-    state: T[],
+    draft: T[],
     value: ArrayUpdate<T> | FullArrayUpdate<T>,
 ) => {
     if (value.index === 'all') {
         if (Array.isArray(value.value)) {
-            return value.value;
+            draft.splice(1, 0);
         }
-        console.warn(`expected valeu of type "Array", got ${value.value}`);
-        return state;
+        console.error(`expected value of type "Array", got ${value.value}`);
+    } else {
+        draft.splice(value.index, 1, value.value);
     }
-    const copy = cloneDeep(state);
-    copy.splice(value.index, 1, value.value);
-    return copy;
 };
 
 /** Use and modify an array state :
@@ -39,5 +39,5 @@ const arrayReducer = <T>(
 export const useArrayState = <T>(
     initialState: T[] = [],
 ): [any, Dispatch<any>] => {
-    return useReducer(arrayReducer, initialState);
+    return useImmerReducer(arrayReducer, initialState);
 };

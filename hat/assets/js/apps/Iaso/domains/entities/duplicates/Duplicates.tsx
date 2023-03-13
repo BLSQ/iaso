@@ -43,6 +43,7 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
         pages: 1,
         count: 0,
     };
+
     return (
         <>
             <TopBar

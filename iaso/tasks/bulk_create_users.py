@@ -123,16 +123,10 @@ def bulk_create_users_task(file, user, launch_task):
                             org_units_list.append(org_unit)
                         except Exception as e:
                             return {
-                                "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
-                                "Use Orgunit ID instead of name.".format(ou, i + 1)
-                            }
-
-                        except Exception as e:
-                            return {
                                 "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
                                 "the error "
                                 "and try "
-                                "again. Use Orgunit ID instead of name.".format(ou, i + 1)
+                                "again.".format(ou, i + 1)
                             }
 
             profile = Profile.objects.create(account=request_user.iaso_profile.account, user=created_user)

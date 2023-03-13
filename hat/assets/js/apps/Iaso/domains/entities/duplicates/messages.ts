@@ -65,6 +65,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.location',
         defaultMessage: 'Location',
     },
+    showUnmatchedOnly: {
+        id: 'iaso.label.showUnmatchedOnly',
+        defaultMessage: 'Show unmatched fields only',
+    },
     showIgnored: {
         id: 'iaso.label.showIgnored',
         defaultMessage: 'Show ignored',

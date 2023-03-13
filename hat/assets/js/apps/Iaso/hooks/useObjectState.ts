@@ -4,7 +4,10 @@ import { useImmerReducer } from 'use-immer';
 const recursiveCheck = (obj, fields): void => {
     Object.keys(fields).forEach(key => {
         if (!Array.isArray(fields[key]) && typeof fields[key] !== 'object') {
-            if (typeof obj[key] === typeof fields[key]) {
+            if (
+                typeof obj[key] === typeof fields[key] ||
+                obj[key] === undefined
+            ) {
                 // Can be disabled because we're using Immer
                 // eslint-disable-next-line no-param-reassign
                 obj[key] = fields[key];

@@ -1,3 +1,4 @@
+import { Draft } from 'immer';
 import { Dispatch } from 'react';
 import { useImmerReducer } from 'use-immer';
 
@@ -16,15 +17,16 @@ export type FullArrayUpdate<T> = {
 const arrayReducer = <T>(
     draft: T[],
     value: ArrayUpdate<T> | FullArrayUpdate<T>,
-) => {
+): void | T[] => {
     if (value.index === 'all') {
         if (Array.isArray(value.value)) {
-            draft.splice(1, 0);
+            return value.value;
         }
         console.error(`expected value of type "Array", got ${value.value}`);
     } else {
         draft.splice(value.index, 1, value.value);
     }
+    return draft;
 };
 
 /** Use and modify an array state :
@@ -37,7 +39,7 @@ const arrayReducer = <T>(
  */
 
 export const useArrayState = <T>(
-    initialState: T[] = [],
+    initialState: T[] = [] as T[],
 ): [any, Dispatch<any>] => {
-    return useImmerReducer(arrayReducer, initialState);
+    return useImmerReducer<T[], any>(arrayReducer, initialState);
 };

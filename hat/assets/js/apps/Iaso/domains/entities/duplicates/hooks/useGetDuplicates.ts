@@ -9,7 +9,11 @@ import {
     mockDuplicatesDetailsTableData,
     mockDuplicatesTableResponse,
 } from '../mockDuplicationData';
-import { DuplicateData, DuplicateEntityForTable, DuplicatesList } from '../types';
+import {
+    DuplicateData,
+    DuplicateEntityForTable,
+    DuplicatesList,
+} from '../types';
 
 const apiUrl = '/api/entityduplicates';
 
@@ -66,7 +70,7 @@ export type DuplicatesGETParams = {
 export const useGetDuplicates = ({
     params,
 }: // TODO add typing for non paginated response
-DuplicatesGETParams): UseQueryResult<DuplicatesList|DuplicateData[], any> => {
+DuplicatesGETParams): UseQueryResult<DuplicatesList | DuplicateData[], any> => {
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({
         queryKey: ['entityDuplicates', queryString],
@@ -100,7 +104,10 @@ const getMergedEntityStatus = (final): 'dropped' | 'identical' => {
 
 export const useGetDuplicateDetails = ({
     params,
-}: DuplicatesDetailsGETParams): UseQueryResult<DuplicateEntityForTable[], unknown> => {
+}: DuplicatesDetailsGETParams): UseQueryResult<
+    DuplicateEntityForTable[],
+    unknown
+> => {
     // TODO see with backend exact api
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({

@@ -7,8 +7,8 @@ const findAlgorithmsUsed = (algos: any[]): ('namesim' | 'invert')[] => {
 };
 
 // fields is tableState
-const calculateRemainingUnmatched = (fields: any[]): number => {
-    return fields.filter(field => !field.final.value).length;
+const calculateRemainingUnmatched = (fields: any[] = []): number => {
+    return fields.filter(field => !field?.final.value).length;
 };
 
 type DuplicateInfos = {

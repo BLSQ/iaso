@@ -1,8 +1,16 @@
 import { Box, Divider, Grid, makeStyles, Paper } from '@material-ui/core';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
-import React, { FunctionComponent, useEffect, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
+} from 'react';
 import { useDispatch } from 'react-redux';
+// import { useImmer } from 'use-immer';
+// import { isEqual } from 'lodash';
+import { isEqual } from 'lodash';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../../constants/urls';
@@ -30,31 +38,6 @@ type Props = {
 const useStyles = makeStyles(theme => {
     return {
         ...commonStyles(theme),
-        diffCell: {
-            '& td:has(.diff)': {
-                backgroundColor: '#FFEB99',
-                // @ts-ignore
-                borderRight: `2px solid ${theme.palette.ligthGray.main}`,
-            },
-        },
-        droppedCell: {
-            '& td:has(.dropped)': {
-                // @ts-ignore
-                backgroundColor: theme.palette.error.background,
-                // @ts-ignore
-                borderRight: `2px solid ${theme.palette.ligthGray.main}`,
-                color: 'rgba(0,0,0,0.6)',
-            },
-        },
-        selectedCell: {
-            '& td:has(.selected)': {
-                // @ts-ignore
-                backgroundColor: theme.palette.success.background,
-                // @ts-ignore
-                borderRight: `2px solid ${theme.palette.ligthGray.main}`,
-                fontWeight: 'bold',
-            },
-        },
         table: {
             '& .MuiTable-root': {
                 borderLeft: `1px solid rgb(224, 224, 224)`,
@@ -64,6 +47,26 @@ const useStyles = makeStyles(theme => {
             },
         },
         fullWidth: { width: '100%' },
+        hidden: { visibility: 'collapse' },
+        diff: {
+            backgroundColor: '#FFEB99',
+            // @ts-ignore
+            borderRight: `2px solid ${theme.palette.ligthGray.main}`,
+        },
+        dropped: {
+            // @ts-ignore
+            backgroundColor: theme.palette.error.background,
+            // @ts-ignore
+            borderRight: `2px solid ${theme.palette.ligthGray.main}`,
+            color: 'rgba(0,0,0,0.6)',
+        },
+        selected: {
+            // @ts-ignore
+            backgroundColor: theme.palette.success.background,
+            // @ts-ignore
+            borderRight: `2px solid ${theme.palette.ligthGray.main}`,
+            fontWeight: 'bold',
+        },
     };
 });
 
@@ -72,7 +75,9 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     params,
 }) => {
     const { formatMessage } = useSafeIntl();
+    // const [tableState, setTableState] = useArrayState([]);
     const [tableState, setTableState] = useArrayState([]);
+    const [unfilteredTableState, setUnfilteredTableState] = useArrayState([]);
     const [query, setQuery] = useObjectState();
     const [onlyShowUnmatched, setOnlyShowUnmatched] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
@@ -86,12 +91,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         params,
     });
     const dispatch = useDispatch();
-    const columns = useDuplicationDetailsColumns({
-        state: tableState,
-        setState: setTableState,
-        setQuery,
-        onlyShowUnmatched,
-    });
+
     const {
         unmatchedRemaining,
         formName,
@@ -102,11 +102,99 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         entityIds,
     } = useDuplicateInfos({ tableState, duplicatesInfos, params });
 
+    const getRowProps = useCallback(
+        row => {
+            if (
+                row.original.entity1.status === 'identical' &&
+                row.original.entity2.status === 'identical' &&
+                row.original.final.status === 'identical' &&
+                onlyShowUnmatched
+            ) {
+                return { className: `${classes.hidden}` };
+            }
+            return {};
+        },
+        [classes.hidden, onlyShowUnmatched],
+    );
+
+    const getCellProps = useCallback(
+        cell => {
+            return { className: classes[cell.value.status] };
+        },
+        [classes],
+    );
+
+    const toggleUnmatchedDisplay = useCallback(
+        (value: boolean) => {
+            setOnlyShowUnmatched(value);
+            if (value) {
+                const filtered = tableState.filter(
+                    item => item.entity1.status !== 'identical',
+                );
+                setTableState({ index: 'all', value: filtered });
+                // setTableState(state => {
+                //     return state.filter(
+                //         item => item.entity1.status !== 'identical',
+                //     );
+                // });
+            }
+            if (!value) {
+                setTableState({ index: 'all', value: unfilteredTableState });
+            }
+        },
+        [setTableState, tableState, unfilteredTableState],
+    );
+
+    const updateCellState = useCallback(
+        (index, newValues) => {
+            setTableState({
+                index,
+                value: newValues,
+            });
+            const unfilteredIndex = unfilteredTableState.findIndex(row =>
+                isEqual(row.field, newValues.field),
+            );
+
+            setUnfilteredTableState({
+                index: unfilteredIndex,
+                value: newValues,
+            });
+        },
+        [setTableState, setUnfilteredTableState, unfilteredTableState],
+    );
+
+    // const updateCellState = useCallback(
+    //     (index: number, newRowValues: never, field: string) => {
+    //         setTableState(draft => {
+    //             draft.splice(index, 1, newRowValues);
+    //         });
+    //         setUnfilteredTableState(draft => {
+    //             let toUpdate = draft.find(row => isEqual(row.field, field));
+    //             // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+    //             toUpdate = newRowValues;
+    //         });
+    //     },
+    //     [setTableState, setUnfilteredTableState],
+    // );
+    console.log('states', tableState, unfilteredTableState);
+    const columns = useDuplicationDetailsColumns({
+        state: tableState,
+        setState: updateCellState,
+        setQuery,
+    });
+
     useEffect(() => {
         if (tableState.length === 0 && entities) {
             setTableState({ index: 'all', value: entities });
+            setUnfilteredTableState({ index: 'all', value: entities });
+            // setTableState(draft => {
+            //     return entities;
+            // });
+            // setUnfilteredTableState(draft => {
+            //     return entities;
+            // });
         }
-    }, [entities, setTableState, tableState.length]);
+    }, [entities, setTableState, setUnfilteredTableState, tableState.length]);
 
     return (
         <>
@@ -142,7 +230,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                 <Paper elevation={2} className={classes.fullWidth}>
                     <DuplicateDetailsTableButtons
                         onlyShowUnmatched={onlyShowUnmatched}
-                        setOnlyShowUnmatched={setOnlyShowUnmatched}
+                        setOnlyShowUnmatched={toggleUnmatchedDisplay}
                     />
                     <Divider />
                     <TableWithDeepLink
@@ -153,11 +241,15 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                         countOnTop={false}
                         elevation={0}
                         data={tableState}
+                        rowProps={getRowProps}
+                        cellProps={getCellProps}
                         // defaultSorted={}
                         params={params}
                         extraProps={{
                             loading: isFetching,
                             onlyShowUnmatched,
+                            entities,
+                            getRowProps,
                         }}
                         onTableParamsChange={p =>
                             dispatch(

@@ -1,5 +1,5 @@
 import { useCallback, Dispatch } from 'react';
-import { cloneDeep } from 'lodash';
+import { isEqual } from 'lodash';
 import { DuplicateEntityForTable, EntityForTableData } from '../types';
 import { ArrayUpdate, FullArrayUpdate } from '../../../../hooks/useArrayState';
 
@@ -26,19 +26,20 @@ const makeNewRowValues = (
     base: 'entity1' | 'entity2',
 ): DuplicateEntityForTable => {
     const final = base === 'entity1' ? entity1 : entity2;
+    const compare = base === 'entity1' ? entity2 : entity1;
     return {
         field,
         entity1: {
-            ...cloneDeep(entity1),
+            ...entity1,
             status: getEntityStatus(entity1, entity2, final),
         },
         entity2: {
-            ...cloneDeep(entity2),
+            ...entity2,
             status: getEntityStatus(entity2, entity1, final),
         },
         final: {
-            ...cloneDeep(entity1),
-            status: getEntityStatus(final, entity2, final),
+            ...final,
+            status: getEntityStatus(final, compare, final),
         },
     };
 };
@@ -71,14 +72,14 @@ export const useEntityCell = ({
     key,
 }: UseEntityCellArgs): (() => void) => {
     const newRowValues = makeNewRowValues(field, entity1, entity2, key);
-    const rowIndex = state.findIndex(row => row.field === field);
+    const rowIndex = state.findIndex(row => isEqual(row.field, field));
     const onClick = useCallback(() => {
         const reference = key === 'entity1' ? entity1 : entity2;
         if (reference?.status !== 'identical') {
-            setState({
-                index: rowIndex,
-                value: newRowValues,
-            });
+            setState(rowIndex, newRowValues);
+            // setState(draft => {
+            //     draft.splice(rowIndex, 1, newRowValues);
+            // });
             setQuery({ [field.field]: reference?.id });
         }
     }, [
@@ -86,10 +87,10 @@ export const useEntityCell = ({
         entity1,
         entity2,
         setState,
-        rowIndex,
-        newRowValues,
         setQuery,
         field.field,
+        rowIndex,
+        newRowValues,
     ]);
     return onClick;
 };

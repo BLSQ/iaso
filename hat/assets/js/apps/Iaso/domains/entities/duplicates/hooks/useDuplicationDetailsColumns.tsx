@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Box, makeStyles } from '@material-ui/core';
-import classNames from 'classnames';
+import { Box } from '@material-ui/core';
 import MESSAGES from '../messages';
 import { formatLabel } from '../../../instances/utils';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
@@ -9,12 +8,6 @@ import { Column } from '../../../../types/table';
 import { DuplicateEntityForTable } from '../types';
 import { ArrayUpdate, FullArrayUpdate } from '../../../../hooks/useArrayState';
 import { useEntityCell } from './useEntityCell';
-
-const useStyles = makeStyles({
-    dropped: { color: 'rgba(0,0,0,0.6)' },
-    selected: { fontWeight: 'bold' },
-    hidden: { display: 'none' },
-});
 
 type UseDupliactionDetailsColumnsArgs = {
     state: DuplicateEntityForTable[];
@@ -25,17 +18,14 @@ type UseDupliactionDetailsColumnsArgs = {
             | FullArrayUpdate<DuplicateEntityForTable>,
     ) => void;
     setQuery: React.Dispatch<any>;
-    onlyShowUnmatched: boolean;
 };
 
 export const useDuplicationDetailsColumns = ({
     state,
     setState,
     setQuery,
-    onlyShowUnmatched,
 }: UseDupliactionDetailsColumnsArgs): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
 
     return useMemo(() => {
         return [
@@ -66,20 +56,8 @@ export const useDuplicationDetailsColumns = ({
                         state,
                         setState,
                     });
-                    // TODO remove when getCellProps works
-                    const hidden =
-                        entity1.status === 'identical' && onlyShowUnmatched
-                            ? classes.hidden
-                            : '';
                     return (
-                        <Box
-                            onClick={onClick}
-                            className={classNames(
-                                entity1.status,
-                                classes[entity1.status],
-                                hidden,
-                            )}
-                        >
+                        <Box onClick={onClick}>
                             {convertValueIfDate(
                                 settings.row.original.entity1.value,
                             )}
@@ -106,13 +84,7 @@ export const useDuplicationDetailsColumns = ({
 
                     return (
                         // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-                        <div
-                            onClick={onClick}
-                            className={classNames(
-                                entity2.status,
-                                classes[entity2.status],
-                            )}
-                        >
+                        <div onClick={onClick}>
                             {convertValueIfDate(
                                 settings.row.original.entity2.value,
                             )}
@@ -127,18 +99,9 @@ export const useDuplicationDetailsColumns = ({
                 sortable: false,
                 Cell: settings => {
                     const { final } = settings.row.original;
-                    return (
-                        <div
-                            className={classNames(
-                                final.status,
-                                classes[final.status],
-                            )}
-                        >
-                            {convertValueIfDate(final.value)}
-                        </div>
-                    );
+                    return <div>{convertValueIfDate(final.value)}</div>;
                 },
             },
         ];
-    }, [classes, formatMessage, onlyShowUnmatched, setQuery, setState, state]);
+    }, [formatMessage, setQuery, setState, state]);
 };

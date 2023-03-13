@@ -27,7 +27,7 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                         onChange={(_key, value) => {
                             setOnlyShowUnmatched(value);
                         }}
-                        label={MESSAGES.showIgnored}
+                        label={MESSAGES.showUnmatchedOnly}
                     />
                 </Box>
             </Grid>

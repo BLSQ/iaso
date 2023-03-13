@@ -4,7 +4,7 @@ from django.contrib.auth.models import User, Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 
 from iaso import models as m
-from iaso.api.bulk_create_users import bulk_create_users_task
+from iaso.tasks.bulk_create_users import bulk_create_users_task
 from iaso.models import Profile, BulkCreateUserCsvFile
 from iaso.test import APITestCase
 from django.test import RequestFactory

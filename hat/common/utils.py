@@ -28,5 +28,6 @@ def is_json_serializable(x):
     try:
         json.dumps(x)
         return True
-    except (TypeError, OverflowError):
+    except Exception as e:
+        print(e)
         return False

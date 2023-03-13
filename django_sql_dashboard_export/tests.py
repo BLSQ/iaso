@@ -3,7 +3,7 @@ from django_sql_dashboard.models import Dashboard, DashboardQuery
 
 
 class ExportTestCase(TestCase):
-    databases = ["dashboard", "default"]
+    databases = {"dashboard", "default"}
 
     def test_download_csv(self):
         dashboard = Dashboard.objects.create(

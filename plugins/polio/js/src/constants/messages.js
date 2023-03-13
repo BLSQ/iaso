@@ -1767,7 +1767,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Key',
     },
     label: {
-        id: 'iaso.polio.label.labl',
+        id: 'iaso.polio.label.label',
         defaultMessage: 'Label',
     },
     value: {

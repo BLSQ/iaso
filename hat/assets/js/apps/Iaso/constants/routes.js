@@ -801,7 +801,10 @@ export const entityTypesPath = {
 };
 export const entityDuplicatesPath = {
     baseUrl: baseUrls.entityDuplicates,
-    permissions: ['iaso_entities'],
+    permissions: [
+        'iaso_entity_duplicates_read',
+        'iaso_entity_duplicates_write',
+    ],
     component: props => <Duplicates {...props} />,
     params: [
         {
@@ -822,7 +825,7 @@ export const entityDuplicatesPath = {
         },
         {
             isRequired: false,
-            key: 'similarity', 
+            key: 'similarity',
         },
         {
             isRequired: false,
@@ -858,7 +861,7 @@ export const entityDuplicatesPath = {
         },
         {
             isRequired: false,
-            key: 'fields', 
+            key: 'fields',
         },
         {
             isRequired: false,
@@ -868,7 +871,10 @@ export const entityDuplicatesPath = {
 };
 export const entityDuplicatesDetailsPath = {
     baseUrl: baseUrls.entityDuplicateDetails,
-    permissions: ['iaso_entities'],
+    permissions: [
+        'iaso_entity_duplicates_read',
+        'iaso_entity_duplicates_write',
+    ],
     component: props => <DuplicateDetails {...props} />,
     params: [
         {

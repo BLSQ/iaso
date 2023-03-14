@@ -24,6 +24,8 @@ import {
 } from '../../../constants/snackBars';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
 
 type Props = {
     isLoading: boolean;
@@ -66,6 +68,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     disableMerge = true,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     const successSnackBar = (msg, data) => {
@@ -134,41 +137,46 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                         </TableBody>
                     </Table>
                 </Grid>
-                <Grid
-                    container
-                    item
-                    xs={12}
-                    md={8}
-                    justifyContent="flex-end"
-                    alignItems="flex-end"
-                >
-                    <Box pb={2}>
-                        <Button
-                            color="primary"
-                            variant="outlined"
-                            onClick={() => {
-                                ignoreDuplicate({
-                                    entity1_id: entityIds[0],
-                                    entity2_id: entityIds[1],
-                                });
-                            }}
-                        >
-                            {formatMessage(MESSAGES.ignore)}
-                        </Button>
-                    </Box>
-                    <Box ml={2} pb={2} mr={2}>
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={() => {
-                                mergeEntities(query);
-                            }}
-                            disabled={disableMerge}
-                        >
-                            {formatMessage(MESSAGES.merge)}
-                        </Button>
-                    </Box>
-                </Grid>
+                {userHasPermission(
+                    'iaso_entity_duplicates_write',
+                    currentUser,
+                ) && (
+                    <Grid
+                        container
+                        item
+                        xs={12}
+                        md={8}
+                        justifyContent="flex-end"
+                        alignItems="flex-end"
+                    >
+                        <Box pb={2}>
+                            <Button
+                                color="primary"
+                                variant="outlined"
+                                onClick={() => {
+                                    ignoreDuplicate({
+                                        entity1_id: entityIds[0],
+                                        entity2_id: entityIds[1],
+                                    });
+                                }}
+                            >
+                                {formatMessage(MESSAGES.ignore)}
+                            </Button>
+                        </Box>
+                        <Box ml={2} pb={2} mr={2}>
+                            <Button
+                                variant="contained"
+                                color="primary"
+                                onClick={() => {
+                                    mergeEntities(query);
+                                }}
+                                disabled={disableMerge}
+                            >
+                                {formatMessage(MESSAGES.merge)}
+                            </Button>
+                        </Box>
+                    </Grid>
+                )}
             </Grid>
         </WidgetPaper>
     );

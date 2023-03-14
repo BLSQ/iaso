@@ -1,0 +1,114 @@
+[
+    {
+        "id": 25,
+        "project": 14,
+        "name": "team a",
+        "description": "",
+        "created_at": "2022-09-21T10:52:01.122492Z",
+        "deleted_at": null,
+        "type": "TEAM_OF_USERS",
+        "users": [
+            2
+        ],
+        "users_details": [
+            {
+                "id": 2,
+                "username": "oneFistPunch"
+            }
+        ],
+        "manager": 5,
+        "parent": null,
+        "sub_teams": [],
+        "sub_teams_details": []
+    },
+    {
+        "id": 26,
+        "project": 14,
+        "name": "team b",
+        "description": "",
+        "created_at": "2022-09-21T10:52:09.173051Z",
+        "deleted_at": null,
+        "type": null,
+        "users": [],
+        "users_details": [],
+        "manager": 5,
+        "parent": null,
+        "sub_teams": [],
+        "sub_teams_details": []
+    },
+    {
+        "id": 27,
+        "project": 14,
+        "name": "team c",
+        "description": "",
+        "created_at": "2022-09-21T10:52:24.692346Z",
+        "deleted_at": null,
+        "type": null,
+        "users": [],
+        "users_details": [],
+        "manager": 5,
+        "parent": null,
+        "sub_teams": [],
+        "sub_teams_details": []
+    },
+    {
+        "id": 28,
+        "project": 14,
+        "name": "team d",
+        "description": "",
+        "created_at": "2022-09-21T10:53:57.084208Z",
+        "deleted_at": null,
+        "type": null,
+        "users": [],
+        "users_details": [],
+        "manager": 5,
+        "parent": null,
+        "sub_teams": [],
+        "sub_teams_details": []
+    },
+    {
+        "id": 29,
+        "project": 14,
+        "name": "team e",
+        "description": "",
+        "created_at": "2022-09-21T10:54:07.297520Z",
+        "deleted_at": null,
+        "type": null,
+        "users": [],
+        "users_details": [],
+        "manager": 5,
+        "parent": null,
+        "sub_teams": [],
+        "sub_teams_details": []
+    },
+    {
+        "id": 30,
+        "project": 14,
+        "name": "team f",
+        "description": "",
+        "created_at": "2022-09-21T10:54:14.095153Z",
+        "deleted_at": null,
+        "type": null,
+        "users": [],
+        "users_details": [],
+        "manager": 5,
+        "parent": null,
+        "sub_teams": [],
+        "sub_teams_details": []
+    },
+    {
+        "id": 38,
+        "project": 4,
+        "name": "TEST",
+        "description": "rere",
+        "created_at": "2023-02-28T13:27:01.844018Z",
+        "deleted_at": null,
+        "type": null,
+        "users": [],
+        "users_details": [],
+        "manager": 5,
+        "parent": null,
+        "sub_teams": [],
+        "sub_teams_details": []
+    }
+]

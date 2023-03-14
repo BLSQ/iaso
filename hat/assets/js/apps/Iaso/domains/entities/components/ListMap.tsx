@@ -9,15 +9,12 @@ import {
     commonStyles,
 } from 'bluesquare-components';
 
-import {
-    TilesSwitch,
-    Tile,
-} from '../../../../components/maps/tools/TileSwitch';
+import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import { PopupComponent as Popup } from './Popup';
 
-import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 
-import tiles from '../../../../constants/mapTiles';
+import tiles from '../../../constants/mapTiles';
 import { ExtraColumn } from '../types/fields';
 
 import { Beneficiary } from '../types/beneficiary';
@@ -27,8 +24,8 @@ import {
     circleColorMarkerOptions,
     getLatLngBounds,
     clusterCustomMarker,
-} from '../../../../utils/mapUtils';
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+} from '../../../utils/mapUtils';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 const defaultViewport = {
     center: [1, 20],

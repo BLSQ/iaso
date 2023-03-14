@@ -16,16 +16,16 @@ const recursiveCheck = (state, fields): Record<string, any> => {
                 // fields[key] should be allowed to be undefined otherwise we can never reset state values
                 fields[key] === undefined
             ) {
-                // Can be disabled because we're using Immer
-                // eslint-disable-next-line no-param-reassign
                 copy[key] = fields[key];
             } else {
                 console.error(
-                    `Updated value type doesn not match original type for ${key}: expected ${typeof state[
+                    `Updated value type does not match original type for ${key}: expected ${typeof state[
                         key
                     ]}, got ${typeof fields[key]}`,
                 );
             }
+        } else if (state[key] === undefined) {
+            copy[key] = fields[key];
         } else {
             copy[key] = recursiveCheck(state[key], fields[key]);
         }
@@ -33,8 +33,8 @@ const recursiveCheck = (state, fields): Record<string, any> => {
     return copy;
 };
 
-const recursiveReducer = (draft, fieldDict): Record<string, any> => {
-    return recursiveCheck(draft, fieldDict);
+export const recursiveReducer = (state, fieldDict): Record<string, any> => {
+    return recursiveCheck(state, fieldDict);
 };
 
 /** Use and modify an object (dictionnay) state in the same fashion as the class components of old:

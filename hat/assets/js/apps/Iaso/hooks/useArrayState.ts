@@ -10,10 +10,10 @@ export type FullArrayUpdate<T> = {
     value: T[];
 };
 
-const arrayReducer = <T>(
+export const arrayReducer = <T>(
     state: T[],
     value: ArrayUpdate<T> | FullArrayUpdate<T>,
-) => {
+): T[] => {
     if (value.index === 'all') {
         if (Array.isArray(value.value)) {
             return value.value;
@@ -38,5 +38,5 @@ const arrayReducer = <T>(
 export const useArrayState = <T>(
     initialState: T[] = [],
 ): [any, Dispatch<any>] => {
-    return useReducer<T[], any, any>(arrayReducer, initialState);
+    return useReducer(arrayReducer, initialState);
 };

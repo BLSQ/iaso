@@ -14,15 +14,15 @@ import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgU
 import MESSAGES from '../messages';
 import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
 import { TeamType } from '../../../teams/constants';
-import {
-    useGetBeneficiaryTypesDropdown,
-    useGetUsersDropDown,
-} from '../../beneficiaries/hooks/requests';
 import { useGetFormsOptions } from '../../../completenessStats/hooks/api/useGetFormsOptions';
 import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
 import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
 import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
 import { PaginationParams } from '../../../../types/general';
+import {
+    useGetBeneficiaryTypesDropdown,
+    useGetUsersDropDown,
+} from '../../hooks/requests';
 
 type Params = PaginationParams & DuplicatesGETParams;
 

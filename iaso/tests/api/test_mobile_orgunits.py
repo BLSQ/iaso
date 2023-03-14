@@ -97,9 +97,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 1})
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 4)
-        self.assertEqual(response.json()["next"], self.get_page_url(1, 2))
-        self.assertEqual(response.json()["previous"], None)
+        self.assert_page(response.json(), count=4, limit=1, page=1, pages=4, has_next=True, has_previous=False)
         self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
         self.assertEqual(len(response.json()["orgUnits"]), 1)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
@@ -107,9 +105,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 1, PAGE: 2})
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 4)
-        self.assertEqual(response.json()["next"], self.get_page_url(1, 3))
-        self.assertEqual(response.json()["previous"], self.get_page_url(1, 1))
+        self.assert_page(response.json(), count=4, limit=1, page=2, pages=4, has_next=True, has_previous=True)
         self.assertNotIn("roots", response.json())
         self.assertEqual(len(response.json()["orgUnits"]), 1)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Raditz")
@@ -117,9 +113,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, LIMIT: 2, PAGE: 2})
         self.assertJSONResponse(response, 200)
-        self.assertEqual(response.json()["count"], 4)
-        self.assertEqual(response.json()["next"], None)
-        self.assertEqual(response.json()["previous"], self.get_page_url(2, 1))
+        self.assert_page(response.json(), count=4, limit=2, page=2, pages=2, has_next=False, has_previous=True)
         self.assertNotIn("roots", response.json())
         self.assertEqual(len(response.json()["orgUnits"]), 2)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Son Gohan")
@@ -127,8 +121,10 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][1]["name"], "Son Goten")
         self.assertEqual(response.json()["orgUnits"][1]["parent_id"], None)
 
-    @staticmethod
-    def get_page_url(limit: int, page: int):
-        if page == 1:
-            return f"http://testserver/api/mobile/orgunits/?{APP_ID}={BASE_APP_ID}&{LIMIT}={limit}"
-        return f"http://testserver/api/mobile/orgunits/?{APP_ID}={BASE_APP_ID}&{LIMIT}={limit}&{PAGE}={page}"
+    def assert_page(self, json, count: int, limit: int, page: int, pages: int, has_next: bool, has_previous: bool):
+        self.assertEqual(json["count"], count)
+        self.assertEqual(json["limit"], limit)
+        self.assertEqual(json["page"], page)
+        self.assertEqual(json["pages"], pages)
+        self.assertEqual(json["has_next"], has_next)
+        self.assertEqual(json["has_previous"], has_previous)

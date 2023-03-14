@@ -1,36 +1,20 @@
-from collections import OrderedDict
-
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from rest_framework import permissions
 from rest_framework.fields import SerializerMethodField
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso.api.common import get_timestamp, TimestampField, ModelViewSet
-from iaso.api.common import safe_api_import
+from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.models import OrgUnit, Project
 
 
-class MobileOrgUnitsSetPagination(PageNumberPagination):
+class MobileOrgUnitsSetPagination(Paginator):
     page_size_query_param = LIMIT
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
-
-    def get_paginated_response(self, data):
-        return Response(
-            OrderedDict(
-                [
-                    ("count", self.page.paginator.count),
-                    ("next", self.get_next_link()),
-                    ("previous", self.get_previous_link()),
-                    ("orgUnits", data),
-                ]
-            )
-        )
 
 
 class MobileOrgUnitSerializer(ModelSerializer):
@@ -120,10 +104,12 @@ class MobileOrgUnitViewSet(ModelViewSet):
     GET /api/mobile/orgunits?{PAGE}=1&{LIMIT}=100
     """
 
-    pagination_class = MobileOrgUnitsSetPagination
     permission_classes = [HasOrgUnitPermission]
     serializer_class = MobileOrgUnitSerializer
     results_key = "orgUnits"
+
+    def pagination_class(self):
+        return MobileOrgUnitsSetPagination(self.results_key)
 
     def get_queryset(self):
         return (

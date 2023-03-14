@@ -98,7 +98,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         }
         return data;
     }, [data]);
-    const columns = useColumns(entityTypeIds, extraColumns);
+    const columns = useColumns(entityTypeIds, extraColumns || []);
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}

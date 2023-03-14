@@ -33,7 +33,6 @@ export const testPagination = ({
         it('click on next should display next page', () => {
             cy.get('@selector')
                 .find('.pagination-page-select input')
-                .first()
                 .should('have.value', 1);
 
             cy.get('@selector')

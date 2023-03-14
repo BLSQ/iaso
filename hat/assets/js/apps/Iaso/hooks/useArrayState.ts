@@ -1,8 +1,4 @@
-import { Draft } from 'immer';
-import { Dispatch } from 'react';
-import { useImmerReducer } from 'use-immer';
-
-// TODO DO WE REALLY NEED THIS ONE?
+import { Dispatch, useReducer } from 'react';
 
 export type ArrayUpdate<T> = {
     index: number;
@@ -15,18 +11,19 @@ export type FullArrayUpdate<T> = {
 };
 
 const arrayReducer = <T>(
-    draft: T[],
+    state: T[],
     value: ArrayUpdate<T> | FullArrayUpdate<T>,
-): void | T[] => {
+) => {
     if (value.index === 'all') {
         if (Array.isArray(value.value)) {
             return value.value;
         }
         console.error(`expected value of type "Array", got ${value.value}`);
-    } else {
-        draft.splice(value.index, 1, value.value);
+        return state;
     }
-    return draft;
+    const copy = [...state];
+    copy.splice(value.index, 1, value.value);
+    return copy;
 };
 
 /** Use and modify an array state :
@@ -39,7 +36,7 @@ const arrayReducer = <T>(
  */
 
 export const useArrayState = <T>(
-    initialState: T[] = [] as T[],
+    initialState: T[] = [],
 ): [any, Dispatch<any>] => {
-    return useImmerReducer<T[], any>(arrayReducer, initialState);
+    return useReducer<T[], any>(arrayReducer, initialState);
 };

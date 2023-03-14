@@ -1,31 +1,40 @@
-import { Dispatch } from 'react';
-import { useImmerReducer } from 'use-immer';
+import { Dispatch, useReducer } from 'react';
+import { isEqual } from 'lodash';
 
-const recursiveCheck = (obj, fields): void => {
+const recursiveCheck = (state, fields): Record<string, any> => {
+    if (isEqual(fields, {})) {
+        // Can be disabled because we're using Immer
+        // eslint-disable-next-line no-param-reassign
+        return fields;
+    }
+    const copy = { ...state };
     Object.keys(fields).forEach(key => {
         if (!Array.isArray(fields[key]) && typeof fields[key] !== 'object') {
             if (
-                typeof obj[key] === typeof fields[key] ||
-                obj[key] === undefined
+                typeof state[key] === typeof fields[key] ||
+                state[key] === undefined ||
+                // fields[key] should be allowed to be undefined otherwise we can never reset state values
+                fields[key] === undefined
             ) {
                 // Can be disabled because we're using Immer
                 // eslint-disable-next-line no-param-reassign
-                obj[key] = fields[key];
+                copy[key] = fields[key];
             } else {
                 console.error(
-                    `Updated value type doesn not match original type for ${key}: expected ${typeof obj[
+                    `Updated value type doesn not match original type for ${key}: expected ${typeof state[
                         key
                     ]}, got ${typeof fields[key]}`,
                 );
             }
         } else {
-            recursiveCheck(obj[key], fields[key]);
+            copy[key] = recursiveCheck(state[key], fields[key]);
         }
     });
+    return copy;
 };
 
-const recursiveReducer = (draft, fieldDict): void => {
-    recursiveCheck(draft, fieldDict);
+const recursiveReducer = (draft, fieldDict): Record<string, any> => {
+    return recursiveCheck(draft, fieldDict);
 };
 
 /** Use and modify an object (dictionnay) state in the same fashion as the class components of old:
@@ -40,5 +49,5 @@ const recursiveReducer = (draft, fieldDict): void => {
 export const useObjectState = (
     initialState: Record<string, any> = {},
 ): [any, Dispatch<any>] => {
-    return useImmerReducer(recursiveReducer, initialState);
+    return useReducer(recursiveReducer, initialState);
 };

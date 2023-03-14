@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     Box,
     Button,
@@ -17,7 +17,11 @@ import MESSAGES from './messages';
 import { StarsComponent } from '../../../components/stars/StarsComponent';
 import { useMergeDuplicate } from './hooks/useMergeDuplicate';
 import { useIgnoreDuplicate } from './hooks/useIgnoreDuplicate';
-import { successfullSnackBarWithButtons } from '../../../constants/snackBars';
+import {
+    formSuccessFullMessageKey,
+    succesfullSnackBar,
+    // successfullSnackBarWithButtons,
+} from '../../../constants/snackBars';
 import { baseUrls } from '../../../constants/urls';
 import { redirectTo } from '../../../routing/actions';
 
@@ -30,6 +34,7 @@ type Props = {
     formName: string;
     entityIds: [number, number];
     query: Record<string, any>;
+    disableMerge: boolean;
 };
 
 const useStyles = makeStyles({
@@ -58,23 +63,31 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     isLoading,
     entityIds,
     query,
+    disableMerge = true,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     const successSnackBar = (msg, data) => {
-        return successfullSnackBarWithButtons({
-            messageObject: msg,
-            persist: true,
-            buttonMessageKey: 'goToEntity',
-            buttonAction: () =>
-                dispatch(
-                    redirectTo(baseUrls.entityDetails, { entityId: data.id }),
-                ),
-        });
+        return succesfullSnackBar(formSuccessFullMessageKey, msg);
+        // return successfullSnackBar({
+        // messageObject: msg,
+        // persist: true,
+        // buttonMessageKey: 'goToEntity',
+        // buttonAction: () =>
+        //     dispatch(
+        //         redirectTo(baseUrls.entityDetails, { entityId: data.id }),
+        //     ),
+        // });
     };
-    const { mutate: mergeEntities } = useMergeDuplicate(successSnackBar);
-    const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate();
+    const onSuccess = useCallback(() => {
+        dispatch(redirectTo(baseUrls.entityDuplicates, {}));
+    }, [dispatch]);
+    const { mutate: mergeEntities } = useMergeDuplicate(
+        successSnackBar,
+        onSuccess,
+    );
+    const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate(onSuccess);
     return (
         <WidgetPaper className={classnames(classes.table)} title={formName}>
             <Grid container>
@@ -150,6 +163,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             onClick={() => {
                                 mergeEntities(query);
                             }}
+                            disabled={disableMerge}
                         >
                             {formatMessage(MESSAGES.merge)}
                         </Button>

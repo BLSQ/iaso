@@ -11,10 +11,15 @@ const mergeDuplicate = async (query: Record<string, any>): Promise<any> => {
     return mergedEntity;
 };
 
-export const useMergeDuplicate = (successSnackBar): UseMutationResult => {
+export const useMergeDuplicate = (
+    successSnackBar: any,
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+    onSuccess: (data: any) => void = _data => {},
+): UseMutationResult => {
     return useSnackMutation({
         mutationFn: query => mergeDuplicate(query),
         invalidateQueryKey: 'entityDuplicates',
         successSnackBar,
+        options: { onSuccess },
     });
 };

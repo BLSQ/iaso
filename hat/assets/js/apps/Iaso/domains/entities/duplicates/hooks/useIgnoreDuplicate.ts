@@ -18,8 +18,12 @@ const ignoreDuplicate = async (args: IgnoreDuplicateArgs) => {
     console.log('PATCH', apiUrl, query);
 };
 
-export const useIgnoreDuplicate = (): UseMutationResult => {
+export const useIgnoreDuplicate = (
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
+    onSuccess: (data: any) => void = _data => {},
+): UseMutationResult => {
     return useSnackMutation({
         mutationFn: args => ignoreDuplicate(args),
+        options: { onSuccess },
     });
 };

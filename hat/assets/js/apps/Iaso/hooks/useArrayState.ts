@@ -38,5 +38,5 @@ const arrayReducer = <T>(
 export const useArrayState = <T>(
     initialState: T[] = [],
 ): [any, Dispatch<any>] => {
-    return useReducer<T[], any>(arrayReducer, initialState);
+    return useReducer<T[], any, any>(arrayReducer, initialState);
 };

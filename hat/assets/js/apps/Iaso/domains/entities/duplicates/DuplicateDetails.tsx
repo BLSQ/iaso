@@ -86,6 +86,10 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         params: { entities: params.entities },
     }) as { data: DuplicateData[] };
 
+    const disableMerge = Boolean(
+        tableState.find(row => row.final.status === 'dropped'),
+    );
+
     // TODO params as array, since comma is modified
     const { data: entities, isFetching } = useGetDuplicateDetails({
         params,
@@ -242,6 +246,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                                 isLoading={isLoadingInfos}
                                 entityIds={entityIds}
                                 query={query}
+                                disableMerge={disableMerge}
                             />
                         </Box>
                     </Grid>

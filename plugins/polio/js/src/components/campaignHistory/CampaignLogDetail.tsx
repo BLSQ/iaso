@@ -1,21 +1,7 @@
-/* eslint-disable camelcase */
 import React, { FunctionComponent, useMemo } from 'react';
-import {
-    useSafeIntl,
-    LoadingSpinner,
-    commonStyles,
-} from 'bluesquare-components';
+import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
-import {
-    Box,
-    Table,
-    TableHead,
-    TableBody,
-    TableRow,
-    TableCell,
-    makeStyles,
-    Theme,
-} from '@material-ui/core';
+import { Box, Table, TableBody } from '@material-ui/core';
 
 import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
 import { useGetCampaignFieldValue } from '../../hooks/useGetCampaignFieldValue';
@@ -29,8 +15,9 @@ import MESSAGES from '../../constants/messages';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 import { Row } from './Row';
-import { logStructure } from './constants';
-import { mapLogStructure } from './mapStructure';
+import { config } from './config';
+import { useGetMapLog } from './useGetMapLog';
+import { Head } from './Head';
 
 type Props = {
     logId?: string;
@@ -40,19 +27,6 @@ export type Result = {
     user: Profile;
     logDetail: CampaignLogData;
 };
-
-const useStyles = makeStyles((theme: Theme) => ({
-    ...commonStyles(theme),
-    tableCellHead: {
-        fontWeight: 'bold',
-    },
-    linkToChangesLog: {
-        color: theme.palette.primary.main,
-        textAlign: 'right',
-        flex: '1',
-        cursor: 'pointer',
-    },
-}));
 
 const objectLoop = (obj, getValue, getLabel) => {
     return (
@@ -120,8 +94,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     }, [data]);
 
     const { formatMessage } = useSafeIntl();
-
-    const classes: Record<string, string> = useStyles();
+    const getMapLog = useGetMapLog(config);
 
     const getLabel = useGetCampaignFieldLabel();
     const getValue = useGetCampaignFieldValue();
@@ -144,22 +117,9 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
         <>
             {campaignLogDetail && (
                 <Table size="small">
-                    <TableHead>
-                        <TableRow>
-                            <TableCell
-                                width={150}
-                                className={classes.tableCellHead}
-                            >
-                                {formatMessage(MESSAGES.label)}
-                            </TableCell>
-                            <TableCell className={classes.tableCellHead}>
-                                {formatMessage(MESSAGES.value)}
-                            </TableCell>
-                        </TableRow>
-                    </TableHead>
-
+                    <Head />
                     <TableBody>
-                        {mapLogStructure(logStructure, campaignLogDetail)}
+                        {getMapLog(campaignLogDetail)}
                         {Object.entries(campaignLogDetail).map(
                             ([key, value]) => {
                                 return (

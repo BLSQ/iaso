@@ -1,41 +1,55 @@
 import React, { FunctionComponent } from 'react';
-import { Table, TableBody } from '@material-ui/core';
+import { Table, TableBody, makeStyles } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { Row } from './Row';
 import { CampaignLogData } from '../../constants/types';
 import { ExpandableItem } from '../../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem';
 import { IntlMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
-import { mapLogStructure } from './mapStructure';
+
+import { useGetMapLog } from './useGetMapLog';
+import { Head } from './Head';
 
 type RowObjectProps = {
     logKey: string;
     logDetail: CampaignLogData;
-    childrenArray: Record<any, any>[];
+    childrenArray: Record<string, any>[];
     childrenLabel: IntlMessage;
     type: 'array' | 'object';
 };
 
-export const RowObject: FunctionComponent<RowObjectProps> = ({
+const useStyles = makeStyles(() => ({
+    table: {
+        '& tr:last-child > td': {
+            borderBottom: 'none',
+        },
+    },
+}));
+export const MultiRows: FunctionComponent<RowObjectProps> = ({
     logKey,
     logDetail,
     childrenArray,
     childrenLabel,
     type,
 }) => {
+    const classes: Record<string, string> = useStyles();
+
     const { formatMessage } = useSafeIntl();
+    const getMapLog = useGetMapLog(childrenArray);
     const items = type === 'array' ? logDetail[logKey] : childrenArray;
     return (
         <Row
+            cellWithMargin={false}
             key={logKey}
             value={
-                <Table size="small">
+                <Table size="small" className={classes.table}>
                     <TableBody>
                         {items.map((subItem, index) => {
                             const item =
                                 type === 'array' ? subItem : logDetail[logKey];
                             return (
                                 <Row
-                                    key={index}
+                                    cellWithMargin={false}
+                                    key={`${logKey}-${index}`}
                                     value={
                                         <ExpandableItem
                                             // TO DO : implement useGetChildrenLabel
@@ -44,12 +58,10 @@ export const RowObject: FunctionComponent<RowObjectProps> = ({
                                             )} ${index + 1}`}
                                         >
                                             <Table size="small">
+                                                <Head />
                                                 <TableBody>
                                                     {childrenArray &&
-                                                        mapLogStructure(
-                                                            childrenArray,
-                                                            item,
-                                                        )}
+                                                        getMapLog(item)}
                                                 </TableBody>
                                             </Table>
                                         </ExpandableItem>

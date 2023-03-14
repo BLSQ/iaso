@@ -1,7 +1,9 @@
+import React from 'react';
 import moment from 'moment';
 import MESSAGES from '../../constants/messages';
+import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 
-export const logStructure = [
+export const config: Record<string, any> = [
     {
         key: 'id',
     },
@@ -19,6 +21,9 @@ export const logStructure = [
         children: [
             {
                 key: 'id',
+            },
+            {
+                key: 'number',
             },
             {
                 key: 'started_at',
@@ -49,5 +54,9 @@ export const logStructure = [
                 ],
             },
         ],
+    },
+    {
+        key: 'geojson',
+        getLogValue: log => <GeoJsonMap geoJson={log.geojson} />,
     },
 ];

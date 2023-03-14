@@ -51,7 +51,7 @@ type UseEntityCellArgs = {
     entity1: EntityForTableData | undefined;
     entity2: EntityForTableData | undefined;
     state: DuplicateEntityForTable[];
-    setState: (
+    updateCellState: (
         // eslint-disable-next-line no-unused-vars
         index: number,
         // eslint-disable-next-line no-unused-vars
@@ -66,7 +66,7 @@ export const useEntityCell = ({
     entity1,
     entity2,
     state,
-    setState,
+    updateCellState,
     setQuery,
     key,
 }: UseEntityCellArgs): (() => void) => {
@@ -75,14 +75,14 @@ export const useEntityCell = ({
     const onClick = useCallback(() => {
         const reference = key === 'entity1' ? entity1 : entity2;
         if (reference?.status !== 'identical') {
-            setState(rowIndex, newRowValues);
+            updateCellState(rowIndex, newRowValues);
             setQuery({ [field.field]: reference?.id });
         }
     }, [
         key,
         entity1,
         entity2,
-        setState,
+        updateCellState,
         setQuery,
         field.field,
         rowIndex,

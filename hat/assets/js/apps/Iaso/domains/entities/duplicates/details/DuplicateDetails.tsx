@@ -73,7 +73,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     params,
 }) => {
     const { formatMessage } = useSafeIntl();
-    // const [tableState, setTableState] = useArrayState([]);
+    const dispatch = useDispatch();
     const [tableState, setTableState] = useArrayState([]);
     const [unfilteredTableState, setUnfilteredTableState] = useArrayState([]);
     const [query, setQuery] = useObjectState();
@@ -88,11 +88,9 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         tableState.find(row => row.final.status === 'dropped'),
     );
 
-    // TODO params as array, since comma is modified
     const { data: entities, isFetching } = useGetDuplicateDetails({
         params,
     });
-    const dispatch = useDispatch();
 
     const {
         unmatchedRemaining,
@@ -103,44 +101,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         isLoading: isLoadingInfos,
         entityIds,
     } = useDuplicateInfos({ tableState, duplicatesInfos, params });
-
-    const getRowProps = useCallback(
-        row => {
-            if (
-                row.original.entity1.status === 'identical' &&
-                row.original.entity2.status === 'identical' &&
-                row.original.final.status === 'identical' &&
-                onlyShowUnmatched
-            ) {
-                return { className: `${classes.hidden}` };
-            }
-            return {};
-        },
-        [classes.hidden, onlyShowUnmatched],
-    );
-
-    const getCellProps = useCallback(
-        cell => {
-            return { className: classes[cell.value.status] };
-        },
-        [classes],
-    );
-
-    const toggleUnmatchedDisplay = useCallback(
-        (value: boolean) => {
-            setOnlyShowUnmatched(value);
-            if (value) {
-                const filtered = tableState.filter(
-                    item => item.entity1.status !== 'identical',
-                );
-                setTableState({ index: 'all', value: filtered });
-            }
-            if (!value) {
-                setTableState({ index: 'all', value: unfilteredTableState });
-            }
-        },
-        [setTableState, tableState, unfilteredTableState],
-    );
 
     const updateCellState = useCallback(
         (index, newValues) => {
@@ -160,12 +120,17 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         [setTableState, setUnfilteredTableState, unfilteredTableState],
     );
 
+    const columns = useDuplicationDetailsColumns({
+        state: tableState,
+        updateCellState,
+        setQuery,
+    });
+
     const takeAllValuesFromEntity = useCallback(
         (entity: 'entity1' | 'entity2') => {
-            const stateCopy = [...tableState];
             const selected = entity;
             const dropped = entity === 'entity1' ? 'entity2' : 'entity1';
-            const newState = stateCopy.map(row => {
+            const newState = [...tableState].map(row => {
                 if (row.entity1.status === 'identical') return row;
                 return {
                     ...row,
@@ -204,11 +169,43 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         setQuery({});
     }, [setQuery, setTableState, tableState]);
 
-    const columns = useDuplicationDetailsColumns({
-        state: tableState,
-        setState: updateCellState,
-        setQuery,
-    });
+    const toggleUnmatchedDisplay = useCallback(
+        (value: boolean) => {
+            setOnlyShowUnmatched(value);
+            if (value) {
+                const filtered = tableState.filter(
+                    item => item.entity1.status !== 'identical',
+                );
+                setTableState({ index: 'all', value: filtered });
+            }
+            if (!value) {
+                setTableState({ index: 'all', value: unfilteredTableState });
+            }
+        },
+        [setTableState, tableState, unfilteredTableState],
+    );
+
+    const getRowProps = useCallback(
+        row => {
+            if (
+                row.original.entity1.status === 'identical' &&
+                row.original.entity2.status === 'identical' &&
+                row.original.final.status === 'identical' &&
+                onlyShowUnmatched
+            ) {
+                return { className: `${classes.hidden}` };
+            }
+            return {};
+        },
+        [classes.hidden, onlyShowUnmatched],
+    );
+
+    const getCellProps = useCallback(
+        cell => {
+            return { className: classes[cell.value.status] };
+        },
+        [classes],
+    );
 
     useEffect(() => {
         if (tableState.length === 0 && entities) {
@@ -267,7 +264,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                         data={tableState}
                         rowProps={getRowProps}
                         cellProps={getCellProps}
-                        // defaultSorted={}
                         params={params}
                         extraProps={{
                             loading: isFetching,

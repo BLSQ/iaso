@@ -10,7 +10,7 @@ import { useEntityCell } from './useEntityCell';
 
 type UseDupliactionDetailsColumnsArgs = {
     state: DuplicateEntityForTable[];
-    setState: (
+    updateCellState: (
         // eslint-disable-next-line no-unused-vars
         index: number,
         // eslint-disable-next-line no-unused-vars
@@ -21,7 +21,7 @@ type UseDupliactionDetailsColumnsArgs = {
 
 export const useDuplicationDetailsColumns = ({
     state,
-    setState,
+    updateCellState,
     setQuery,
 }: UseDupliactionDetailsColumnsArgs): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -53,7 +53,7 @@ export const useDuplicationDetailsColumns = ({
                         key: 'entity1',
                         setQuery,
                         state,
-                        setState,
+                        updateCellState,
                     });
                     return (
                         <Box onClick={onClick}>
@@ -78,7 +78,7 @@ export const useDuplicationDetailsColumns = ({
                         key: 'entity2',
                         setQuery,
                         state,
-                        setState,
+                        updateCellState,
                     });
 
                     return (
@@ -102,5 +102,5 @@ export const useDuplicationDetailsColumns = ({
                 },
             },
         ];
-    }, [formatMessage, setQuery, setState, state]);
+    }, [formatMessage, setQuery, updateCellState, state]);
 };

@@ -15,6 +15,7 @@ import { baseUrls } from '../../../../constants/urls';
 import { DuplicatesFilters } from './DuplicatesFilters';
 import { starsStyleForTable } from '../../../../components/stars/StarsComponent';
 import { useDuplicationTableColumns } from './useDuplicationTableColumns';
+import { DuplicatesList } from '../types';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -38,7 +39,7 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
     const { data, isFetching } = useGetDuplicates({ params });
     const dispatch = useDispatch();
     const columns = useDuplicationTableColumns();
-    const { results, pages, count } = data ?? {
+    const { results, pages, count } = (data as DuplicatesList) ?? {
         results: [],
         pages: 1,
         count: 0,

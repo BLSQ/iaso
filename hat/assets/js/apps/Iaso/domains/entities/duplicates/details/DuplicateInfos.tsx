@@ -93,48 +93,8 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                         algorithmsUsed={algorithmsUsed}
                         algorithmRuns={algorithmRuns}
                         unmatchedRemaining={unmatchedRemaining}
+                        similarityScore={similarityScore}
                     />
-                    {/* <Table>
-                        <TableBody>
-                            <TableRow>
-                                <TableCell>
-                                    {formatMessage(MESSAGES.similarityScore)}
-                                </TableCell>
-                                <TableCell>
-                                    {isLoading && <LoadingSpinner />}
-                                    <StarsComponent
-                                        starCount={5}
-                                        fullStars={similarityScore ?? 5}
-                                    />
-                                </TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>
-                                    {formatMessage(MESSAGES.entities)}
-                                </TableCell>
-                                <TableCell>{entityIds.join(',')}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>
-                                    {formatMessage(MESSAGES.algorithmRuns)}
-                                </TableCell>
-                                <TableCell>{algorithmRuns}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>
-                                    {' '}
-                                    {formatMessage(MESSAGES.algorithmsUsed)}
-                                </TableCell>
-                                <TableCell>{algorithmsUsed}</TableCell>
-                            </TableRow>
-                            <TableRow>
-                                <TableCell>
-                                    {formatMessage(MESSAGES.unmatchedRemaining)}
-                                </TableCell>
-                                <TableCell>{unmatchedRemaining}</TableCell>
-                            </TableRow>
-                        </TableBody>
-                    </Table> */}
                 </Grid>
                 {userHasPermission(
                     'iaso_entity_duplicates_write',

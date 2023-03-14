@@ -153,6 +153,7 @@ export const testPagination = ({
                     },
                     fixture,
                 ).as('getData');
+
                 cy.get('@selector')
                     .find('button.pagination-next')
                     .click({ force: true });
@@ -163,7 +164,7 @@ export const testPagination = ({
                         .as('pageInput')
                         .should('have.value', 2);
                     const search = 'ZELDA';
-                    cy.get('@selector').find('#search-search-0').type(search);
+                    cy.get('@selector').find('#search-search').type(search);
                     const res = { ...fixture };
                     res[apiKey] = res[apiKey].slice(0, 1);
                     cy.intercept(

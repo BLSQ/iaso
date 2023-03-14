@@ -1,10 +1,10 @@
-import { PossibleField } from '../../../forms/types/forms';
+import { PossibleField } from '../../forms/types/forms';
 
 import { useGetFieldValue } from './useGetFieldValue';
 
 import { Beneficiary } from '../types/beneficiary';
 import { Field } from '../types/fields';
-import { formatLabel } from '../../../instances/utils';
+import { formatLabel } from '../../instances/utils';
 
 export const useGetFields = (
     fieldsKeys: string[],

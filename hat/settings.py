@@ -16,9 +16,10 @@ import hashlib
 import html
 import os
 import re
+import sys
 import urllib.parse
 from datetime import timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 from urllib.parse import urlparse
 
 import sentry_sdk
@@ -34,6 +35,7 @@ from plugins.wfp.wfp_pkce_generator import generate_pkce
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
+IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)

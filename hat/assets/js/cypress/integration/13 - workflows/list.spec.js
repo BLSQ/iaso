@@ -319,7 +319,7 @@ describe('Workflows', () => {
         });
     });
 
-    it('Create button should open dialog with empty fieldand save new workflow version', () => {
+    it('Create button should open dialog with empty field and save new workflow version', () => {
         mockPage();
         cy.visit(baseUrl);
         cy.get('[data-test="add-workflow-version-button"]').click();

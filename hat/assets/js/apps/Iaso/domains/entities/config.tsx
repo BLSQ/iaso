@@ -10,23 +10,23 @@ import {
 
 import moment from 'moment';
 import _ from 'lodash';
-import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import {
     DateCell,
     DateTimeCell,
     DateTimeCellRfc,
-} from '../../../components/Cells/DateTimeCell';
+} from '../../components/Cells/DateTimeCell';
 
-import { IntlFormatMessage } from '../../../types/intl';
-import MESSAGES from '../messages';
+import { IntlFormatMessage } from '../../types/intl';
+import MESSAGES from './messages';
 
-import { baseUrls } from '../../../constants/urls';
+import { baseUrls } from '../../constants/urls';
 
-import { Column } from '../../../types/table';
+import { Column } from '../../types/table';
 import { ExtraColumn } from './types/fields';
-import getDisplayName from '../../../utils/usersUtils';
+import getDisplayName from '../../utils/usersUtils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';
-import { formatLabel } from '../../instances/utils';
+import { formatLabel } from '../instances/utils';
 
 export const baseUrl = baseUrls.entities;
 

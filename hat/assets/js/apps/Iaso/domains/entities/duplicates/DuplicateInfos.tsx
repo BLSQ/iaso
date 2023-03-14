@@ -105,7 +105,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                     {isLoading && <LoadingSpinner />}
                                     <StarsComponent
                                         starCount={5}
-                                        fullStars={similarityScore}
+                                        fullStars={similarityScore ?? 5}
                                     />
                                 </TableCell>
                             </TableRow>

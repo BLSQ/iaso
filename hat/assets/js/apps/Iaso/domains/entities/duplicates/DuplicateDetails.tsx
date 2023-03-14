@@ -8,8 +8,6 @@ import React, {
     useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
-// import { useImmer } from 'use-immer';
-// import { isEqual } from 'lodash';
 import { isEqual } from 'lodash';
 import TopBar from '../../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
@@ -29,7 +27,6 @@ import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
 import { DuplicateData } from './types';
 import { useGoBack } from '../../../routing/useGoBack';
 import { Router } from '../../../types/general';
-import { useCurrentUser } from '../../../utils/usersUtils';
 
 type Props = {
     params: { accountId?: string; entities: string };
@@ -76,7 +73,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     params,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     // const [tableState, setTableState] = useArrayState([]);
     const [tableState, setTableState] = useArrayState([]);
     const [unfilteredTableState, setUnfilteredTableState] = useArrayState([]);

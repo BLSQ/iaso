@@ -1,5 +1,4 @@
 /* eslint-disable camelcase */
-import { cloneDeep } from 'lodash';
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { PaginationParams } from '../../../../types/general';
@@ -33,7 +32,7 @@ const getDuplicates = async (queryString: string) => {
 };
 
 const formatParams = (params: Record<string, any>) => {
-    const copy = cloneDeep(params);
+    const copy = { ...params };
     Object.keys(params).forEach(key => {
         if (copy[key] === undefined) {
             delete copy[key];
@@ -69,8 +68,10 @@ export type DuplicatesGETParams = {
 
 export const useGetDuplicates = ({
     params,
-}: // TODO add typing for non paginated response
-DuplicatesGETParams): UseQueryResult<DuplicatesList | DuplicateData[], any> => {
+}: DuplicatesGETParams): UseQueryResult<
+    DuplicatesList | DuplicateData[],
+    any
+> => {
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({
         queryKey: ['entityDuplicates', queryString],

@@ -8,11 +8,16 @@ type Props = {
     onlyShowUnmatched: boolean;
     // eslint-disable-next-line no-unused-vars
     setOnlyShowUnmatched: (value: SetStateAction<boolean>) => void;
+    // eslint-disable-next-line no-unused-vars
+    fillValues: (entity: 'entity1' | 'entity2') => void;
+    resetSelection: () => void;
 };
 
 export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
     onlyShowUnmatched,
     setOnlyShowUnmatched,
+    fillValues,
+    resetSelection,
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
@@ -41,13 +46,30 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                     }}
                 >
                     <Box>
-                        <Button variant="contained" color="primary">
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => fillValues('entity1')}
+                        >
                             {formatMessage(MESSAGES.takeValuesFromA)}
                         </Button>
                     </Box>
                     <Box ml={2}>
-                        <Button variant="contained" color="primary">
-                            {formatMessage(MESSAGES.takeValuesFromA)}
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => fillValues('entity2')}
+                        >
+                            {formatMessage(MESSAGES.takeValuesFromB)}
+                        </Button>
+                    </Box>
+                    <Box ml={2}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            onClick={() => resetSelection()}
+                        >
+                            {formatMessage(MESSAGES.reset)}
                         </Button>
                     </Box>
                 </Box>

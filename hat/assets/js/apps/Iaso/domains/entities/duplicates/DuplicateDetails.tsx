@@ -163,6 +163,42 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         [setTableState, setUnfilteredTableState, unfilteredTableState],
     );
 
+    const takeAllValuesFromEntity = useCallback(
+        (entity: 'entity1' | 'entity2') => {
+            const stateCopy = [...tableState];
+            const selected = entity;
+            const dropped = entity === 'entity1' ? 'entity2' : 'entity1';
+            const newState = stateCopy.map(row => {
+                if (row.entity1.status === 'identical') return row;
+                return {
+                    ...row,
+                    [selected]: { ...row[selected], status: 'selected' },
+                    final: {
+                        ...row.final,
+                        status: 'selected',
+                        value: row[selected].value,
+                    },
+                    [dropped]: { ...row[dropped], status: 'dropped' },
+                };
+            });
+            setTableState({ index: 'all', value: newState });
+        },
+        [setTableState, tableState],
+    );
+
+    const resetSelection = useCallback(() => {
+        const newState = [...tableState].map(row => {
+            if (row.entity1.status === 'identical') return row;
+            return {
+                ...row,
+                entity1: { ...row.entity1, status: 'diff' },
+                entity2: { ...row.entity2, status: 'diff' },
+                final: { ...row.final, status: 'dropped', value: '' },
+            };
+        });
+        setTableState({ index: 'all', value: newState });
+    }, [setTableState, tableState]);
+
     // const updateCellState = useCallback(
     //     (index: number, newRowValues: never, field: string) => {
     //         setTableState(draft => {
@@ -176,7 +212,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     //     },
     //     [setTableState, setUnfilteredTableState],
     // );
-    console.log('states', tableState, unfilteredTableState);
     const columns = useDuplicationDetailsColumns({
         state: tableState,
         setState: updateCellState,
@@ -231,6 +266,8 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                     <DuplicateDetailsTableButtons
                         onlyShowUnmatched={onlyShowUnmatched}
                         setOnlyShowUnmatched={toggleUnmatchedDisplay}
+                        fillValues={takeAllValuesFromEntity}
+                        resetSelection={resetSelection}
                     />
                     <Divider />
                     <TableWithDeepLink

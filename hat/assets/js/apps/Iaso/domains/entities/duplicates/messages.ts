@@ -125,6 +125,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.merge',
         defaultMessage: 'Merge',
     },
+    reset: {
+        id: 'iaso.storages.reset',
+        defaultMessage: 'Reset',
+    },
 });
 
 export default MESSAGES;

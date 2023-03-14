@@ -4,26 +4,23 @@ import moment from 'moment';
 
 // @ts-ignore
 import { apiDateFormat } from 'Iaso/utils/dates.ts';
-import { useSnackMutation, useSnackQuery } from '../../../../libs/apiHooks';
+import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
 import {
     deleteRequest,
     getRequest,
     postRequest,
     patchRequest,
-} from '../../../../libs/Api';
-import MESSAGES from '../../messages';
+} from '../../../libs/Api';
+import MESSAGES from '../messages';
 
-import { makeUrlWithParams } from '../../../../libs/utils';
+import { makeUrlWithParams } from '../../../libs/utils';
 
 import { Beneficiary } from '../types/beneficiary';
-import { Pagination, UrlParams } from '../../../../types/table';
-import {
-    Instance,
-    PaginatedInstances,
-} from '../../../instances/types/instance';
-import { DropdownOptions } from '../../../../types/utils';
-import getDisplayName, { Profile } from '../../../../utils/usersUtils';
-import { DropdownTeamsOptions, Team } from '../../../teams/types/team';
+import { Pagination, UrlParams } from '../../../types/table';
+import { Instance, PaginatedInstances } from '../../instances/types/instance';
+import { DropdownOptions } from '../../../types/utils';
+import getDisplayName, { Profile } from '../../../utils/usersUtils';
+import { DropdownTeamsOptions, Team } from '../../teams/types/team';
 import { ExtraColumn } from '../types/fields';
 
 export interface PaginatedBeneficiaries extends Pagination {
@@ -110,11 +107,11 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
             select: data =>
                 data?.map(
                     type =>
-                    ({
-                        label: type.name,
-                        value: type.id,
-                        original: type,
-                    } || []),
+                        ({
+                            label: type.name,
+                            value: type.id,
+                            original: type,
+                        } || []),
                 ),
         },
     });

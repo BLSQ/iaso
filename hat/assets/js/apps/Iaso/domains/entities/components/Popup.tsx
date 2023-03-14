@@ -15,22 +15,17 @@ import {
     Divider,
 } from '@material-ui/core';
 
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    mapPopupStyles,
-} from 'bluesquare-components';
-import PopupItemComponent from '../../../../components/maps/popups/PopupItemComponent';
-import { LinkToOrgUnit } from '../../../orgUnits/components/LinkToOrgUnit';
+import { useSafeIntl, mapPopupStyles } from 'bluesquare-components';
+import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
 import { Location } from './ListMap';
-import { baseUrls } from '../../../../constants/urls';
+import { baseUrls } from '../../../constants/urls';
 import { ExtraColumn } from '../types/fields';
 import { useGetFieldValue } from '../hooks/useGetFieldValue';
-import { formatLabel } from '../../../instances/utils';
+import { formatLabel } from '../../instances/utils';
 
-import MESSAGES from '../../messages';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     ...mapPopupStyles(theme),

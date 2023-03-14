@@ -52,6 +52,7 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
                                     key={`${logKey}-${index}`}
                                     value={
                                         <ExpandableItem
+                                            backgroundColor="#f7f7f7"
                                             // TO DO : implement useGetChildrenLabel
                                             label={`${formatMessage(
                                                 childrenLabel,

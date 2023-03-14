@@ -13,6 +13,7 @@ type Props = {
     children: ReactNode;
     label: string;
     preventCollapse?: boolean;
+    backgroundColor?: string;
 };
 
 export const ExpandableItem: FunctionComponent<Props> = ({
@@ -20,11 +21,13 @@ export const ExpandableItem: FunctionComponent<Props> = ({
     children,
     label,
     preventCollapse = false,
+    backgroundColor = 'transparent',
 }) => {
     const [open, setOpen] = useState<boolean>(openOnMount);
     return (
         <>
             <ListItem
+                style={{ backgroundColor }}
                 button
                 onClick={() => {
                     setOpen(value => !value);

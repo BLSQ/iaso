@@ -17,6 +17,10 @@ const useStyles = makeStyles((theme: Theme) => ({
     tableCellHead: {
         fontWeight: 'bold',
     },
+    tableCellHeadNoPadding: {
+        fontWeight: 'bold',
+        paddingLeft: 0,
+    },
 }));
 
 export const Head: FunctionComponent = () => {
@@ -29,7 +33,7 @@ export const Head: FunctionComponent = () => {
                 <TableCell width={150} className={classes.tableCellHead}>
                     {formatMessage(MESSAGES.label)}
                 </TableCell>
-                <TableCell className={classes.tableCellHead}>
+                <TableCell className={classes.tableCellHeadNoPadding}>
                     {formatMessage(MESSAGES.value)}
                 </TableCell>
             </TableRow>

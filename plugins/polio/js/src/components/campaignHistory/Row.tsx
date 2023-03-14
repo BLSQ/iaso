@@ -28,7 +28,7 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
     tableCellLabel: {
         ...commonStyles(theme).tableCell,
-        verticalAlign: 'top',
+        verticalAlign: 'middle',
     },
     value: {
         maxWidth: '300px',

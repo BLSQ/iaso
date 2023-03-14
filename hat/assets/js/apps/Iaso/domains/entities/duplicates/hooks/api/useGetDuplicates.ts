@@ -1,18 +1,18 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
-import { useSnackQuery } from '../../../../libs/apiHooks';
-import { PaginationParams } from '../../../../types/general';
-import { waitFor } from '../../../../utils';
+import { useSnackQuery } from '../../../../../libs/apiHooks';
+import { PaginationParams } from '../../../../../types/general';
+import { waitFor } from '../../../../../utils';
 import {
     mockDuplicatesDetailsResponse,
     mockDuplicatesDetailsTableData,
     mockDuplicatesTableResponse,
-} from '../mockDuplicationData';
+} from '../../mockDuplicationData';
 import {
     DuplicateData,
     DuplicateEntityForTable,
     DuplicatesList,
-} from '../types';
+} from '../../types';
 
 const apiUrl = '/api/entityduplicates';
 

@@ -40,8 +40,8 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
-import { Duplicates } from '../domains/entities/duplicates/Duplicates.tsx';
-import { DuplicateDetails } from '../domains/entities/duplicates/DuplicateDetails.tsx';
+import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
+import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({

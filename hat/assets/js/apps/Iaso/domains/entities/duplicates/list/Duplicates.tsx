@@ -2,19 +2,19 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { Box, makeStyles } from '@material-ui/core';
-import { PaginationParams } from '../../../types/general';
-import MESSAGES from './messages';
-import TopBar from '../../../components/nav/TopBarComponent';
+import { PaginationParams } from '../../../../types/general';
+import MESSAGES from '../messages';
+import TopBar from '../../../../components/nav/TopBarComponent';
 import {
     DuplicatesGETParams,
     useGetDuplicates,
-} from './hooks/useGetDuplicates';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { redirectTo } from '../../../routing/actions';
-import { baseUrls } from '../../../constants/urls';
-import { useDuplicationTableColumns } from './hooks/useDuplicationTableColumns';
+} from '../hooks/api/useGetDuplicates';
+import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
+import { redirectTo } from '../../../../routing/actions';
+import { baseUrls } from '../../../../constants/urls';
 import { DuplicatesFilters } from './DuplicatesFilters';
-import { starsStyleForTable } from '../../../components/stars/StarsComponent';
+import { starsStyleForTable } from '../../../../components/stars/StarsComponent';
+import { useDuplicationTableColumns } from './useDuplicationTableColumns';
 
 type Params = PaginationParams & DuplicatesGETParams;
 

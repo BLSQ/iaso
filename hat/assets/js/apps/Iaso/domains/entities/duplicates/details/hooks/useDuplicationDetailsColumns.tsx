@@ -1,11 +1,11 @@
 import React, { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
-import MESSAGES from '../messages';
-import { formatLabel } from '../../../instances/utils';
-import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
-import { Column } from '../../../../types/table';
-import { DuplicateEntityForTable } from '../types';
+import MESSAGES from '../../messages';
+import { formatLabel } from '../../../../instances/utils';
+import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell';
+import { Column } from '../../../../../types/table';
+import { DuplicateEntityForTable } from '../../types';
 import { useEntityCell } from './useEntityCell';
 
 type UseDupliactionDetailsColumnsArgs = {

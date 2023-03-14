@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
-import { useSnackMutation } from '../../../../libs/apiHooks';
-import { waitFor } from '../../../../utils';
+import { useSnackMutation } from '../../../../../libs/apiHooks';
+import { waitFor } from '../../../../../utils';
 
 type IgnoreDuplicateArgs = {
     entity1_id: number;

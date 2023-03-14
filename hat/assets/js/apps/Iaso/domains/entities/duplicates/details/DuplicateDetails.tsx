@@ -9,24 +9,24 @@ import React, {
 } from 'react';
 import { useDispatch } from 'react-redux';
 import { isEqual } from 'lodash';
-import TopBar from '../../../components/nav/TopBarComponent';
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import { baseUrls } from '../../../constants/urls';
-import { useArrayState } from '../../../hooks/useArrayState';
-import { useObjectState } from '../../../hooks/useObjectState';
-import { redirectTo } from '../../../routing/actions';
+import TopBar from '../../../../components/nav/TopBarComponent';
+import { TableWithDeepLink } from '../../../../components/tables/TableWithDeepLink';
+import { baseUrls } from '../../../../constants/urls';
+import { useArrayState } from '../../../../hooks/useArrayState';
+import { useObjectState } from '../../../../hooks/useObjectState';
+import { redirectTo } from '../../../../routing/actions';
 import { useDuplicationDetailsColumns } from './hooks/useDuplicationDetailsColumns';
 import {
     useGetDuplicateDetails,
     useGetDuplicates,
-} from './hooks/useGetDuplicates';
-import MESSAGES from './messages';
+} from '../hooks/api/useGetDuplicates';
+import MESSAGES from '../messages';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
+import { DuplicateData } from '../types';
+import { useGoBack } from '../../../../routing/useGoBack';
+import { Router } from '../../../../types/general';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
-import { DuplicateData } from './types';
-import { useGoBack } from '../../../routing/useGoBack';
-import { Router } from '../../../types/general';
 
 type Props = {
     params: { accountId?: string; entities: string };

@@ -1,7 +1,7 @@
 import { UseMutationResult } from 'react-query';
-import { useSnackMutation } from '../../../../libs/apiHooks';
-import { waitFor } from '../../../../utils';
-import { mergedEntity } from '../mockDuplicationData';
+import { useSnackMutation } from '../../../../../libs/apiHooks';
+import { waitFor } from '../../../../../utils';
+import { mergedEntity } from '../../mockDuplicationData';
 
 const apiUrl = '/api/entityduplicates';
 

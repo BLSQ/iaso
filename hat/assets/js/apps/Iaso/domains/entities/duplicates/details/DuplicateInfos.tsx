@@ -1,31 +1,22 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import {
-    Box,
-    Button,
-    Grid,
-    makeStyles,
-    Table,
-    TableBody,
-    TableCell,
-    TableRow,
-} from '@material-ui/core';
+import { Box, Button, Grid, makeStyles } from '@material-ui/core';
 import classnames from 'classnames';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import MESSAGES from './messages';
-import { StarsComponent } from '../../../components/stars/StarsComponent';
-import { useMergeDuplicate } from './hooks/useMergeDuplicate';
-import { useIgnoreDuplicate } from './hooks/useIgnoreDuplicate';
+import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
+import MESSAGES from '../messages';
+import { useMergeDuplicate } from '../hooks/api/useMergeDuplicate';
+import { useIgnoreDuplicate } from '../hooks/api/useIgnoreDuplicate';
 import {
     formSuccessFullMessageKey,
     succesfullSnackBar,
     // successfullSnackBarWithButtons,
-} from '../../../constants/snackBars';
-import { baseUrls } from '../../../constants/urls';
-import { redirectTo } from '../../../routing/actions';
-import { useCurrentUser } from '../../../utils/usersUtils';
-import { userHasPermission } from '../../users/utils';
+} from '../../../../constants/snackBars';
+import { baseUrls } from '../../../../constants/urls';
+import { redirectTo } from '../../../../routing/actions';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { userHasPermission } from '../../../users/utils';
+import { DuplicateInfosTable } from './DuplicateInfosTable';
 
 type Props = {
     isLoading: boolean;
@@ -73,6 +64,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
     const successSnackBar = (msg, data) => {
         return succesfullSnackBar(formSuccessFullMessageKey, msg);
+        // TODO uncomment when we figured out hwo to style the button
         // return successfullSnackBar({
         // messageObject: msg,
         // persist: true,
@@ -95,7 +87,14 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
         <WidgetPaper className={classnames(classes.table)} title={formName}>
             <Grid container>
                 <Grid item xs={12} md={4}>
-                    <Table>
+                    <DuplicateInfosTable
+                        isLoading={isLoading}
+                        entityIds={entityIds}
+                        algorithmsUsed={algorithmsUsed}
+                        algorithmRuns={algorithmRuns}
+                        unmatchedRemaining={unmatchedRemaining}
+                    />
+                    {/* <Table>
                         <TableBody>
                             <TableRow>
                                 <TableCell>
@@ -135,7 +134,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 <TableCell>{unmatchedRemaining}</TableCell>
                             </TableRow>
                         </TableBody>
-                    </Table>
+                    </Table> */}
                 </Grid>
                 {userHasPermission(
                     'iaso_entity_duplicates_write',

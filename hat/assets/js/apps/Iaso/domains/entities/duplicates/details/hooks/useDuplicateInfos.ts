@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { DuplicateData } from '../types';
+import { DuplicateData } from '../../types';
 
 const findAlgorithmsUsed = (algos: any[]): ('namesim' | 'invert')[] => {
     const allTypes = algos.map(algo => algo.type);

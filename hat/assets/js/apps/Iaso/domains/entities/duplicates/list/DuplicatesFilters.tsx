@@ -1,28 +1,28 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 import { Box, Grid } from '@material-ui/core';
-import { FilterButton } from '../../../components/FilterButton';
-import DatesRange from '../../../components/filters/DatesRange';
-import InputComponent from '../../../components/forms/InputComponent';
-import { baseUrls } from '../../../constants/urls';
+import { FilterButton } from '../../../../components/FilterButton';
+import DatesRange from '../../../../components/filters/DatesRange';
+import InputComponent from '../../../../components/forms/InputComponent';
+import { baseUrls } from '../../../../constants/urls';
 import {
     useCheckBoxFilter,
     useFilterState,
     useMultiTreeviewFilterState,
-} from '../../../hooks/useFilterState';
-import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
-import MESSAGES from './messages';
-import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
-import { TeamType } from '../../teams/constants';
+} from '../../../../hooks/useFilterState';
+import { OrgUnitTreeviewModal } from '../../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import MESSAGES from '../messages';
+import { useGetTeamsDropdown } from '../../../teams/hooks/requests/useGetTeams';
+import { TeamType } from '../../../teams/constants';
 import {
     useGetBeneficiaryTypesDropdown,
     useGetUsersDropDown,
-} from '../beneficiaries/hooks/requests';
-import { useGetFormsOptions } from '../../completenessStats/hooks/api/useGetFormsOptions';
-import { usePossibleFieldsDropdown } from '../../forms/hooks/useGetPossibleFields';
-import FullStarsSvg from '../../../components/stars/FullStarsSvgComponent';
-import { DuplicatesGETParams } from './hooks/useGetDuplicates';
-import { PaginationParams } from '../../../types/general';
+} from '../../beneficiaries/hooks/requests';
+import { useGetFormsOptions } from '../../../completenessStats/hooks/api/useGetFormsOptions';
+import { usePossibleFieldsDropdown } from '../../../forms/hooks/useGetPossibleFields';
+import FullStarsSvg from '../../../../components/stars/FullStarsSvgComponent';
+import { DuplicatesGETParams } from '../hooks/api/useGetDuplicates';
+import { PaginationParams } from '../../../../types/general';
 
 type Params = PaginationParams & DuplicatesGETParams;
 

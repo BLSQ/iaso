@@ -1,7 +1,6 @@
 import { useCallback, Dispatch } from 'react';
 import { isEqual } from 'lodash';
 import { DuplicateEntityForTable, EntityForTableData } from '../types';
-import { ArrayUpdate, FullArrayUpdate } from '../../../../hooks/useArrayState';
 
 const getEntityStatus = (
     base: EntityForTableData | undefined,
@@ -54,9 +53,9 @@ type UseEntityCellArgs = {
     state: DuplicateEntityForTable[];
     setState: (
         // eslint-disable-next-line no-unused-vars
-        value:
-            | ArrayUpdate<DuplicateEntityForTable>
-            | FullArrayUpdate<DuplicateEntityForTable>,
+        index: number,
+        // eslint-disable-next-line no-unused-vars
+        value: DuplicateEntityForTable,
     ) => void;
     setQuery: Dispatch<any>;
     key: 'entity1' | 'entity2';
@@ -77,9 +76,6 @@ export const useEntityCell = ({
         const reference = key === 'entity1' ? entity1 : entity2;
         if (reference?.status !== 'identical') {
             setState(rowIndex, newRowValues);
-            // setState(draft => {
-            //     draft.splice(rowIndex, 1, newRowValues);
-            // });
             setQuery({ [field.field]: reference?.id });
         }
     }, [

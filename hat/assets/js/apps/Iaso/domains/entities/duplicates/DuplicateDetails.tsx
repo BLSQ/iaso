@@ -132,11 +132,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                     item => item.entity1.status !== 'identical',
                 );
                 setTableState({ index: 'all', value: filtered });
-                // setTableState(state => {
-                //     return state.filter(
-                //         item => item.entity1.status !== 'identical',
-                //     );
-                // });
             }
             if (!value) {
                 setTableState({ index: 'all', value: unfilteredTableState });
@@ -181,9 +176,16 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                     [dropped]: { ...row[dropped], status: 'dropped' },
                 };
             });
+            const newQuery = {};
+            newState.forEach(row => {
+                if (row.entity1.status !== 'identical') {
+                    newQuery[row.field.field] = row[selected].id;
+                }
+            });
             setTableState({ index: 'all', value: newState });
+            setQuery(newQuery);
         },
-        [setTableState, tableState],
+        [setQuery, setTableState, tableState],
     );
 
     const resetSelection = useCallback(() => {
@@ -197,21 +199,9 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
             };
         });
         setTableState({ index: 'all', value: newState });
-    }, [setTableState, tableState]);
+        setQuery({});
+    }, [setQuery, setTableState, tableState]);
 
-    // const updateCellState = useCallback(
-    //     (index: number, newRowValues: never, field: string) => {
-    //         setTableState(draft => {
-    //             draft.splice(index, 1, newRowValues);
-    //         });
-    //         setUnfilteredTableState(draft => {
-    //             let toUpdate = draft.find(row => isEqual(row.field, field));
-    //             // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-    //             toUpdate = newRowValues;
-    //         });
-    //     },
-    //     [setTableState, setUnfilteredTableState],
-    // );
     const columns = useDuplicationDetailsColumns({
         state: tableState,
         setState: updateCellState,
@@ -222,12 +212,6 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         if (tableState.length === 0 && entities) {
             setTableState({ index: 'all', value: entities });
             setUnfilteredTableState({ index: 'all', value: entities });
-            // setTableState(draft => {
-            //     return entities;
-            // });
-            // setUnfilteredTableState(draft => {
-            //     return entities;
-            // });
         }
     }, [entities, setTableState, setUnfilteredTableState, tableState.length]);
 

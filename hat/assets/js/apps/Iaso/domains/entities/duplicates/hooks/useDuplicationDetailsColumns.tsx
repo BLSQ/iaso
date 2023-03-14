@@ -6,16 +6,15 @@ import { formatLabel } from '../../../instances/utils';
 import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
 import { Column } from '../../../../types/table';
 import { DuplicateEntityForTable } from '../types';
-import { ArrayUpdate, FullArrayUpdate } from '../../../../hooks/useArrayState';
 import { useEntityCell } from './useEntityCell';
 
 type UseDupliactionDetailsColumnsArgs = {
     state: DuplicateEntityForTable[];
     setState: (
         // eslint-disable-next-line no-unused-vars
-        value:
-            | ArrayUpdate<DuplicateEntityForTable>
-            | FullArrayUpdate<DuplicateEntityForTable>,
+        index: number,
+        // eslint-disable-next-line no-unused-vars
+        value: DuplicateEntityForTable,
     ) => void;
     setQuery: React.Dispatch<any>;
 };

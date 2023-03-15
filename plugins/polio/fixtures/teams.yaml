@@ -155,7 +155,7 @@
     description: ''
     project: 1
     parent: 8
-    path: '10'
+    path: '8.10'
     type: TEAM_OF_USERS
     created_at: 2022-10-27 14:03:45.778294+00:00
     updated_at: 2022-10-27 14:03:45.778322+00:00
@@ -172,7 +172,7 @@
     description: ''
     project: 1
     parent: 7
-    path: '11'
+    path: '7.11'
     type: TEAM_OF_USERS
     created_at: 2022-10-27 14:03:45.778294+00:00
     updated_at: 2022-10-27 14:03:45.778322+00:00
@@ -189,7 +189,7 @@
     description: ''
     project: 1
     parent: 6
-    path: '12'
+    path: '6.12'
     type: TEAM_OF_USERS
     created_at: 2022-10-27 14:03:45.778294+00:00
     updated_at: 2022-10-27 14:03:45.778322+00:00
@@ -206,7 +206,7 @@
     description: ''
     project: 1
     parent: 9
-    path: '13'
+    path: '9.13'
     type: TEAM_OF_USERS
     created_at: 2022-10-27 14:03:45.778294+00:00
     updated_at: 2022-10-27 14:03:45.778322+00:00

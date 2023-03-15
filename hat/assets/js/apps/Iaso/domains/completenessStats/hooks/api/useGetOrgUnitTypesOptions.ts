@@ -1,7 +1,25 @@
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
+import { memoize } from 'lodash';
+import { UseQueryResult } from 'react-query';
 
-export const useGetOrgUnitTypesOptions = rootOrgUnitId => {
+type DropDownOption = {
+    value: number;
+    label: string;
+    orignal: any;
+};
+const apiToDropDown = data => {
+    if (!data) return [];
+    return data.map(orgUnitType => ({
+        value: orgUnitType.id,
+        label: orgUnitType.name,
+        original: orgUnitType,
+    }));
+};
+
+export const useGetOrgUnitTypesOptions: (
+    number?,
+) => UseQueryResult<DropDownOption[]> = rootOrgUnitId => {
     const params = {
         org_unit_id: rootOrgUnitId,
         version_id: ':default',
@@ -19,14 +37,7 @@ export const useGetOrgUnitTypesOptions = rootOrgUnitId => {
                 `/api/v2/completeness_stats/types_for_version_ou/?${queryString}`,
             ),
         options: {
-            select: data => {
-                if (!data) return [];
-                return data.map(orgUnitType => ({
-                    value: orgUnitType.id,
-                    label: orgUnitType.name,
-                    original: orgUnitType,
-                }));
-            },
+            select: memoize(apiToDropDown),
             cacheTime: 60000,
         },
     });

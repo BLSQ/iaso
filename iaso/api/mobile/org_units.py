@@ -20,7 +20,7 @@ class MobileOrgUnitsSetPagination(Paginator):
     page_size = None  # None to disable pagination by default.
 
     def get_page_number(self, request):
-        return request.query_params.get(self.page_query_param, 1)
+        return int(request.query_params.get(self.page_query_param, 1))
 
 
 class MobileOrgUnitSerializer(ModelSerializer):
@@ -116,6 +116,10 @@ class MobileOrgUnitViewSet(ModelViewSet):
     Optionally, {PAGE} and {LIMIT} parameters can be passed to paginate the results.
 
     GET /api/mobile/orgunits?{PAGE}=1&{LIMIT}=100
+
+    You can also request the Geo Shape by adding the `shapes=1` to your query parameters.
+
+    GET /api/mobile/orgunits?shapes=1
     """
 
     permission_classes = [HasOrgUnitPermission]

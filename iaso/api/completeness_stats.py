@@ -322,10 +322,10 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         account = profile.account
         version = account.default_version
 
-        # Those filters will apply to all OUs touched by this API (listed, counted, etc.)
-        common_ou_filters = {"version": version, "validation_status": "VALID"}
-
-        org_units = OrgUnit.objects.filter(version=version).filter(**common_ou_filters)
+        # Calculate the ou for which we want reporting top_ous
+        org_units = OrgUnit.objects.filter(version=version).filter(
+            validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID)
+        )
 
         # Filtering per org unit: we drop the rows that don't match the requested org_unit
         if requested_org_unit:
@@ -377,7 +377,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         #  as it might be nice to display
         if requested_parent_org_unit:
             ou = requested_parent_org_unit
-            form_stats_qs = Form.objects.annotate(
+            form_stats_qs = form_qs.annotate(
                 instance_count=Count(
                     Subquery(ou.instance_set.all().filter(~(Q(file=""))).filter(form_id=OuterRef("id")).values("id"))
                 )

@@ -31,8 +31,15 @@ type Props = {
     params: UrlParams & CompletenessGETParams;
 };
 
+type PaginatedCompletenessStats = Paginated<CompletenessStats> & {
+    request_parent_forms_stats: {
+        name: string;
+        itself_instances_count: number;
+    }[];
+};
+
 const RequestedOrgUnitStat = (props: {
-    data: undefined | Paginated<CompletenessStats>;
+    data: undefined | PaginatedCompletenessStats;
 }) => {
     const data = props.data;
     if (!data || !data.request_parent_forms_stats) {
@@ -41,7 +48,7 @@ const RequestedOrgUnitStat = (props: {
     return (
         <div>
             {Object.values(data.request_parent_forms_stats).map(form_stats => (
-                <li>
+                <li key={form_stats.name}>
                     {form_stats.name}: {form_stats.itself_instances_count}
                 </li>
             ))}

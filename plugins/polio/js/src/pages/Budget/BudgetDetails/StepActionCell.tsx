@@ -1,5 +1,7 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import { useMediaQuery, useTheme, Box } from '@material-ui/core';
+import moment from 'moment';
+
 import { Transition, BudgetStep, Params } from '../types';
 import { DeleteRestoreButton } from './DeleteRestoreButton';
 import { CreateBudgetStepIcon } from '../CreateBudgetStep/CreateBudgetStep';
@@ -22,11 +24,67 @@ export const StepActionCell: FunctionComponent<Props> = ({
     const classes = useStyles();
     const getRowColor = getStyle(classes);
     const theme = useTheme();
-    const repeatTransition = repeatTransitions.find(transition => {
-        return (
-            transition.key.replace('repeat_', '') === budgetStep.transition_key
-        );
-    });
+
+    const repeatTransition = useMemo(() => {
+        if (budgetDetails?.results) {
+            // Already repeated step
+            if (budgetStep.transition_key.includes('repeat_')) {
+                const tempTransition = repeatTransitions.find(
+                    transition => transition.key === budgetStep.transition_key,
+                );
+                // if is present in list of steps to repeat
+                if (tempTransition && budgetDetails.results) {
+                    // step can be repeated multiple times, we need to repeat only the last one
+                    const repeatedSteps = budgetDetails.results
+                        .filter(
+                            step =>
+                                step.transition_key ===
+                                budgetStep.transition_key,
+                        )
+                        .sort((a, b) =>
+                            moment(a.created_at).isBefore(b.created_at)
+                                ? 1
+                                : -1,
+                        );
+                    // Repeated multiple times
+                    if (repeatedSteps.length > 1) {
+                        const lastRepeat = repeatedSteps[0];
+                        // if this is the last one
+                        if (lastRepeat.id === budgetStep.id) {
+                            return tempTransition;
+                        }
+                        // Repeated only once
+                    } else {
+                        return tempTransition;
+                    }
+                }
+            }
+            // Original step
+            if (
+                // if this step has not been repeated
+                !budgetDetails.results.find(
+                    tr =>
+                        tr.transition_key ===
+                        `repeat_${budgetStep.transition_key}`,
+                )
+            ) {
+                // if is present in list of steps to repeat
+                return repeatTransitions.find(
+                    transition =>
+                        transition.key.replace('repeat_', '') ===
+                        budgetStep.transition_key,
+                );
+            }
+            return undefined;
+        }
+        return undefined;
+    }, [
+        budgetDetails?.results,
+        budgetStep.id,
+        budgetStep.transition_key,
+        repeatTransitions,
+    ]);
+
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
     const { previousStep, quickTransition, campaignId } = params;

@@ -25,8 +25,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     params,
 }) => {
     const { data: forms, isFetching: fetchingForms } = useGetFormsOptions();
-    const { data: orgUnitTypes, isFetching: fetchingTypes } =
-        useGetOrgUnitTypesOptions();
+
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
 
@@ -35,6 +34,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const [initialParentId, setInitialParentId] = useState(params?.parentId);
     const { data: initialParent } = useGetOrgUnit(initialParentId);
+
+    const { data: orgUnitTypes, isFetching: fetchingTypes } =
+        useGetOrgUnitTypesOptions(filters.parentId);
 
     useSkipEffectOnMount(() => {
         setInitialParentId(params?.parentId);
@@ -117,7 +119,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         multi
                         onChange={handleChange}
                         keyValue="orgUnitTypeIds"
-                        label={MESSAGES.orgUnitType}
+                        label={MESSAGES.orgUnitTypeGroupBy}
                         value={filters.orgUnitTypeIds}
                         loading={fetchingTypes}
                         options={orgUnitTypes ?? []}

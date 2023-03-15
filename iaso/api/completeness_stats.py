@@ -12,11 +12,15 @@ from typing import Tuple, Optional
 from django.core.paginator import Paginator
 from django.db.models import QuerySet, Count, Q, OuterRef, Subquery
 from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import ModelSerializer
 
-from iaso.models import OrgUnit, Form, OrgUnitType
+from iaso.models import OrgUnit, Form, OrgUnitType, SourceVersion
 from .common import HasPermission
+from ..models.org_unit import OrgUnitQuerySet
 
 
 def formatted_percentage(part: int, total: int) -> str:
@@ -289,6 +293,12 @@ ORDER BY id;"""
 take in parameters root_ids for the base orgunit and form_ids"""
 
 
+class OrgUnitTypeSerializer(ModelSerializer):
+    class Meta:
+        model = OrgUnitType
+        fields = ["id", "name", "depth"]
+
+
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
@@ -322,7 +332,8 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         account = profile.account
         version = account.default_version
 
-        # Calculate the ou for which we want reporting top_ous
+        # Calculate the ou for which we want reporting `top_ous`
+        org_units: OrgUnitQuerySet
         org_units = OrgUnit.objects.filter(version=version).filter(
             validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID)
         )
@@ -333,18 +344,33 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         # Filtering per parent org unit: we drop the rows that are not direct children of the requested parent org unit
         if requested_parent_org_unit:
-            org_units = org_units.filter(parent=requested_parent_org_unit)
+            org_units = org_units.hierarchy(requested_parent_org_unit)
+        else:
+            # we want everything in the source, but we will filter for what the user has access too.
+            if profile.org_units.all():
+                # do the intersection
+                roots = org_units.filter(id__in=profile.org_units.all())
+                # take the whole hierarchy
+                org_units = org_units.hierarchy(roots)
 
-        # Cutting the list, so we only keep the heads (top-level of the selection)
-        top_ous = org_units.exclude(parent__in=org_units)
+        # How we group them. If none we take the direct descendants
+        if not requested_org_unit_types:
+            if requested_parent_org_unit:
+                top_ous = org_units.filter(parent=requested_parent_org_unit)
+            elif profile.org_units.all():
+                top_ous = org_units.filter(id__in=profile.org_units.all())
+            else:
+                top_ous = org_units.filter(parent=None)
+        else:
+            # org_units = org_units.hierarchy(requested_org_unit)
+            top_ous = org_units.filter(org_unit_type__in=requested_org_unit_types)
 
         # Filtering by org unit type
-        if requested_org_unit_types is not None:
-            # This needs to be applied on the top_ous, not on the org_units (to act as a real filter, not something that changes the level of OUs in the table)
-            top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in requested_org_unit_types])
+        # if requested_org_unit_types is not None:
+        #     This needs to be applied on the top_ous, not on the org_units (to act as a real filter, not something that changes the level of OUs in the table)
+        #     top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in requested_org_unit_types])
 
         form_ids = tuple(list(form_qs.values_list("id", flat=True)))
-        top_ou_ids = list(top_ous.values_list("id", flat=True))
         # TODO later so we can filter on orgunit
         # top_ous = top_ous.order_by(*order)
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
@@ -415,3 +441,22 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         }
 
         return Response(paginated_res)
+
+    @action(methods=["GET"], detail=False)
+    def types_for_version_ou(self, request):
+        "all the org unit type below this ou, or all"
+        org_units = OrgUnit.objects.filter_for_user(request.user)
+        org_unit_id = self.request.query_params.get("org_unit_id")
+        version_id = self.request.query_params.get("version_id")
+        if org_unit_id is not None:
+            top_org_unit = get_object_or_404(org_units, id=org_unit_id)
+            org_units = org_units.hierarchy(top_org_unit)
+        if version_id is not None:
+            if version_id == ":default":
+                default_version = self.request.user.iaso_profile.account.default_version
+                org_units = org_units.filter(version=default_version)
+            else:
+                org_units = org_units.filter(version_id=version_id)
+        types = OrgUnitType.objects.filter(id__in=org_units.values("org_unit_type").distinct()).order_by("depth")
+        serialized = OrgUnitTypeSerializer(types, many=True).data
+        return Response(serialized)

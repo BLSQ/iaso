@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
+    orgUnitTypeGroupBy: {
+        id: 'iaso.completeness.org_unit_type_ids',
+        defaultMessage: 'Group by type',
+    },
     orgUnit: {
         id: 'iaso.instance.org_unit',
         defaultMessage: 'Org unit',

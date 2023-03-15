@@ -63,16 +63,6 @@ class BudgetStep(SoftDeletableModel):
     def __str__(self):
         return f"{self.campaign}, {self.transition_key}"
 
-    def save(self, *args, **kwargs):
-        campaign = self.campaign
-        end_state = self.node_key_to
-        field = end_state + "_at_WFEDITABLE"
-        if model_field_exists(campaign, field):
-            if not getattr(campaign, field):
-                setattr(campaign, field, self.created_at)
-                campaign.save()
-        super().save(*args, **kwargs)
-
 
 class BudgetStepFile(models.Model):
     step = models.ForeignKey(BudgetStep, on_delete=models.PROTECT, related_name="files")

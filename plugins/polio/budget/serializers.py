@@ -9,7 +9,7 @@ from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
+from .models import BudgetStep, BudgetStepFile, BudgetStepLink, model_field_exists, send_budget_mails, get_workflow
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
 
@@ -435,6 +435,13 @@ class TransitionToSerializer(serializers.Serializer):
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+            with transaction.atomic():
+                field = transition.to_node + "_at_WFEDITABLE"
+                if model_field_exists(campaign, field):
+                    # Write the value only if doesn't exist yet, this way we keep track of when a step was first submitted
+                    if not getattr(campaign, field):
+                        setattr(campaign, field, step.created_at)
+                        campaign.save()
 
         return step
 

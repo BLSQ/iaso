@@ -441,7 +441,7 @@ class TransitionToSerializer(serializers.Serializer):
                     # Write the value only if doesn't exist yet, this way we keep track of when a step was first submitted
                     if not getattr(campaign, field, None):
                         setattr(campaign, field, step.created_at)
-                        # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps". 
+                        # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps".
                         # eg: if we move from state "who_sent_budget" to "gpei_consolidation", we will miss "unicef_sent_budget" without this check
                         # Needs to be updated when state key names change
                         if transition.to_node == "gpei_consolidation":
@@ -521,7 +521,7 @@ class TransitionOverrideSerializer(serializers.Serializer):
                     setattr(campaign, field, step.created_at)
                     order = to_node.order
                     nodes_to_cancel = workflow.get_nodes_after(order)
-                    campaign_fields_to_cancel = [node.key+"_at_WFEDITABLE" for node in nodes_to_cancel]
+                    campaign_fields_to_cancel = [node.key + "_at_WFEDITABLE" for node in nodes_to_cancel]
                     # steps that come after the step we override to are cancelled
                     for field_to_cancel in campaign_fields_to_cancel:
                         if model_field_exists(campaign, field):

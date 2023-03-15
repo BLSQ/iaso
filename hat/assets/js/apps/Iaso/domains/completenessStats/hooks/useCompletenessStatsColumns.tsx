@@ -264,7 +264,7 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                     ) : (
                                         <div
                                             title={
-                                                'No descendants OrgUnit requiere filling that form. See form config if unexpected'
+                                                'No descendant OrgUnit require filling for that form. See Form config if this is unexpected'
                                             }
                                             style={{
                                                 textDecoration:

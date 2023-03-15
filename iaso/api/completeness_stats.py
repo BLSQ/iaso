@@ -10,7 +10,6 @@ completeness API.
 from typing import Tuple, Optional
 
 from django.core.paginator import Paginator
-from django.db import connection
 from django.db.models import QuerySet, Count, Q, OuterRef, Subquery
 from rest_framework import viewsets, permissions
 from rest_framework.request import Request

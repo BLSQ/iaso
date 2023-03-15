@@ -1,21 +1,15 @@
 import React, { FunctionComponent } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     commonStyles,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import moment from 'moment';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
-import {
-    useGetVisitSubmission,
-    useGetBeneficiary,
-} from '../beneficiaries/hooks/requests';
-import { BeneficiaryBaseInfo } from '../beneficiaries/components/BeneficiaryBaseInfo';
+import { useGetVisitSubmission, useGetBeneficiary } from '../hooks/requests';
+import { BeneficiaryBaseInfo } from './BeneficiaryBaseInfo';
 import TopBar from '../../../components/nav/TopBarComponent';
 import MESSAGES from '../messages';
 import { redirectToReplace } from '../../../routing/actions';
@@ -23,8 +17,6 @@ import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { baseUrls } from '../../../constants/urls';
 
 type Props = {
-    // instanceId: string;
-    // entityId: string;
     params: { instanceId: string; entityId: string };
     router: Record<string, any>;
 };

@@ -11,10 +11,10 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
-import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
-import TopBar from '../../../components/nav/TopBarComponent';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import {
     useGetBeneficiariesPaginated,
     useGetBeneficiariesApiParams,
@@ -22,12 +22,12 @@ import {
 } from './hooks/requests';
 
 import { useColumns, baseUrl, defaultSorted } from './config';
-import MESSAGES from '../messages';
+import MESSAGES from './messages';
 
-import { redirectTo } from '../../../routing/actions';
+import { redirectTo } from '../../routing/actions';
 import { ListMap } from './components/ListMap';
 
-import { MENU_HEIGHT_WITH_TABS } from '../../../constants/uiConstants';
+import { MENU_HEIGHT_WITH_TABS } from '../../constants/uiConstants';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -98,7 +98,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         }
         return data;
     }, [data]);
-    const columns = useColumns(entityTypeIds, extraColumns);
+    const columns = useColumns(entityTypeIds, extraColumns || []);
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
@@ -120,7 +120,13 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
             </TopBar>
             <Box p={4} className={classes.container}>
                 <Filters params={params} types={types || []} />
-
+                <Box display="flex" justifyContent="flex-end">
+                    <DownloadButtonsComponent
+                        csvUrl={`${apiUrl}&csv=true`}
+                        xlsxUrl={`${apiUrl}&xlsx=true`}
+                        disabled={isFetching}
+                    />
+                </Box>
                 <Box position="relative" width="100%" mt={2}>
                     <Box
                         width="100%"
@@ -161,10 +167,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                                 onTableParamsChange={p =>
                                     dispatch(redirectTo(baseUrl, p))
                                 }
-                            />
-                            <DownloadButtonsComponent
-                                csvUrl={`${apiUrl}&csv=true`}
-                                xlsxUrl={`${apiUrl}&xlsx=true`}
                             />
                         </Box>
                     )}

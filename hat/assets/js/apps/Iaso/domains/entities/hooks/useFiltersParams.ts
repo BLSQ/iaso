@@ -5,7 +5,7 @@ import {
 
 import { useStaticColumns, defaultSorted } from '../config';
 
-import { Column } from '../../../../types/table';
+import { Column } from '../../../types/table';
 import { Filters, Params } from '../types/filters';
 
 export const useFiltersParams = (): ((

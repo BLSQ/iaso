@@ -385,12 +385,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             instance_args = 'AND "iaso_instance"."period" = %s'
             extra_params = (period,) + (form_ids, form_ids)
 
-            print(top_ous)
         SUB_COMPLETENESS_QUERY = SUB_COMPLETENESS_QUERY_TEMPLATE.format(additional_instance_args=instance_args)
         ou_with_stats: QuerySet = top_ous.extra(
             select={"form_stats": SUB_COMPLETENESS_QUERY},
             select_params=extra_params,
         )
+        ou_with_stats = ou_with_stats.order_by(*order)
 
         def to_dict(row_ou):
             return {
@@ -401,8 +401,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
                 "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats() if row_ou.parent else None,
             }
-
-        # return Response([to_dict(ou) for ou in ou_with_stats[:10]])
 
         # convert to proper pagination
         limit = int(request.GET.get("limit", 10))

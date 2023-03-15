@@ -18,7 +18,11 @@ import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
 import MESSAGES from './messages';
 import PeriodPicker from '../periods/components/PeriodPicker';
-import { PERIOD_TYPE_MONTH, PERIOD_TYPE_YEAR } from '../periods/constants';
+import {
+    PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_YEAR,
+} from '../periods/constants';
 import _ from 'lodash';
 
 type Props = {
@@ -52,7 +56,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     // React to org unit type filtering, if the type is not available anymore
     // we remove it
     useEffect(() => {
-        console.count('useEffectCalled');
         if (filters.orgUnitTypeIds && orgUnitTypes) {
             const out: string = filters.orgUnitTypeIds as string;
             const selectedOrgUnitIDs = out
@@ -91,26 +94,11 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+    console.log(filters, filtersUpdated);
 
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} md={3}>
-                    {/*FIXME Connect to the rest*/}
-                    <PeriodPicker
-                        hasError={false}
-                        // hasError={periodError || startPeriodError}
-                        // activePeriodString={formState.startPeriod.value}
-                        // periodType={formState.periodType.value}
-                        periodType={PERIOD_TYPE_MONTH}
-                        title={'Period'}
-                        // title={formatMessage(MESSAGES.startPeriod)}
-                        // keyName="startPeriod"
-                        // onChange={startPeriod =>
-                        //     handleFormChange('startPeriod', startPeriod)
-                        // }
-                    />
-                </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
@@ -130,6 +118,25 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     {/*        initialSelection={initialOrgUnit}*/}
                     {/*    />*/}
                     {/*</Box>*/}
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    {/*FIXME Connect to the rest*/}
+                    <PeriodPicker
+                        hasError={false}
+                        // hasError={periodError || startPeriodError}
+                        // activePeriodString={formState.startPeriod.value}
+                        // periodType={formState.periodType.value}
+                        periodType={PERIOD_TYPE_QUARTER}
+                        title={'Period'}
+                        // title={formatMessage(MESSAGES.startPeriod)}
+                        keyName={'period'}
+                        onChange={v => handleChange('period', v)}
+                        activePeriodString={filters?.period as string}
+                        // keyName="startPeriod"
+                        // onChange={startPeriod =>
+                        //     handleFormChange('startPeriod', startPeriod)
+                        // }
+                    />
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input-parent">
@@ -154,20 +161,22 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={orgUnitTypes ?? []}
                     />
                 </Grid>
-                <Grid
-                    container
-                    item
-                    // xs={isLargeLayout ? 6 : 12}
-                    justifyContent="flex-end"
-                    xs={12}
-                    md={3}
-                >
-                    <Box mt={isLargeLayout ? 2 : 0}>
-                        <FilterButton
-                            disabled={!filtersUpdated}
-                            onFilter={handleSearch}
-                        />
-                    </Box>
+                <Grid container item md={6}>
+                    <Grid
+                        container
+                        item
+                        // xs={isLargeLayout ? 6 : 12}
+                        justifyContent="flex-end"
+                        xs={12}
+                        md={3}
+                    >
+                        <Box mt={isLargeLayout ? 2 : 0}>
+                            <FilterButton
+                                disabled={!filtersUpdated}
+                                onFilter={handleSearch}
+                            />
+                        </Box>
+                    </Grid>
                 </Grid>
             </Grid>
         </>

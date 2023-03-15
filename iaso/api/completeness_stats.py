@@ -178,7 +178,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         return Response(paginated_res)
 
 
-SUB_COMPLETENESS_QUERY = """SELECT JSON_OBJECT_AGG(
+SUB_COMPLETENESS_QUERY_TEMPLATE = """SELECT JSON_OBJECT_AGG(
                            'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
                        'descendants', COALESCE(count_per_root."descendants", 0),
                        'descendants_ok', COALESCE(count_per_root."descendants_ok", 0),
@@ -208,7 +208,10 @@ SUB_COMPLETENESS_QUERY = """SELECT JSON_OBJECT_AGG(
                            COUNT("iaso_instance"."id") FILTER
                                (WHERE
                                    ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
-                                   NOT ("iaso_instance"."deleted")) AS "instances_count"
+                                   NOT ("iaso_instance"."deleted")
+                                   {additional_instance_args}
+                                   ) AS "instances_count"
+                                   
                     FROM "iaso_form"
                              LEFT OUTER JOIN "iaso_form_org_unit_types"
                                   ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
@@ -313,6 +316,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         requested_forms_str = request.query_params.get("form_id", None)
         requested_form_ids = requested_forms_str.split(",") if requested_forms_str is not None else []
+        period = request.query_params.get("period", None)
 
         if requested_org_unit_type_str is not None:
             requested_org_unit_types = OrgUnitType.objects.filter(id__in=requested_org_unit_type_str.split(","))
@@ -371,12 +375,21 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         #     top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in requested_org_unit_types])
 
         form_ids = tuple(list(form_qs.values_list("id", flat=True)))
-        # TODO later so we can filter on orgunit
-        # top_ous = top_ous.order_by(*order)
+
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
+
+        extra_params = (form_ids, form_ids)
+
+        instance_args = ""
+        if period:
+            instance_args = 'AND "iaso_instance"."period" = %s'
+            extra_params = (period,) + (form_ids, form_ids)
+
+            print(top_ous)
+        SUB_COMPLETENESS_QUERY = SUB_COMPLETENESS_QUERY_TEMPLATE.format(additional_instance_args=instance_args)
         ou_with_stats: QuerySet = top_ous.extra(
             select={"form_stats": SUB_COMPLETENESS_QUERY},
-            select_params=((form_ids, form_ids)),
+            select_params=extra_params,
         )
 
         def to_dict(row_ou):

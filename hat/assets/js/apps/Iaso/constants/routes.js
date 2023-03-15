@@ -558,6 +558,10 @@ export const completenessStatsPath = {
         },
         {
             isRequired: false,
+            key: 'period',
+        },
+        {
+            isRequired: false,
             key: 'parentId',
         },
     ],

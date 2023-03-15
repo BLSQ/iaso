@@ -15,9 +15,10 @@ export type CompletenessGETParams = UrlParams & {
     orgUnitId?: string;
     formId?: string;
     orgUnitTypeIds?: string;
+    period?: string;
 };
 
-const apiParamsKeys = ['order', 'page', 'limit', 'search'];
+const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
 
 const getCompletenessStats = async (
     params: CompletenessGETParams,

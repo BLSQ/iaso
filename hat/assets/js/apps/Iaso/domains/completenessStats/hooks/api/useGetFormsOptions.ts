@@ -18,6 +18,7 @@ export const useGetFormsOptions = () => {
                 return data.forms.map(form => ({
                     value: form.id,
                     label: form.name,
+                    original: form,
                 }));
             },
         },

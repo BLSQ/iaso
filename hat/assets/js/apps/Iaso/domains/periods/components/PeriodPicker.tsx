@@ -52,7 +52,7 @@ type Props = {
     periodType: string | object;
     title: string;
     onChange: (_) => {};
-    activePeriodString: string;
+    activePeriodString?: string;
     hasError: boolean;
     errors?: string[];
     keyName: string;

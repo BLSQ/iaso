@@ -830,7 +830,12 @@ class IMStatsViewSet(viewsets.ViewSet):
                 .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
-            forms = get_url_content(country_config["url"], country_config["login"], country_config["password"])
+            forms = get_url_content(
+                country_config["url"],
+                country_config["login"],
+                country_config["password"],
+                minutes=country_config.get("minutes", 60 * 24 * 10),
+            )
             debug_response = set()
             for form in forms:
                 form_count += 1

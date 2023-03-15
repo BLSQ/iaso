@@ -222,7 +222,7 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                         <>
                                             {value.itself_has_instances ? (
                                                 <span
-                                                    title={`Total submission %{value.itself_instances_count}`}
+                                                    title={`Total #submission ${value.itself_instances_count}`}
                                                 >
                                                     ✅
                                                 </span>

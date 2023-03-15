@@ -10,7 +10,7 @@ completeness API.
 from typing import Tuple, Optional
 
 from django.core.paginator import Paginator
-from django.db.models import QuerySet, Count, Q, OuterRef, Subquery
+from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -418,7 +418,14 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             ou = requested_parent_org_unit
             form_stats_qs = form_qs.annotate(
                 instance_count=Count(
-                    Subquery(ou.instance_set.all().filter(~(Q(file=""))).filter(form_id=OuterRef("id")).values("id"))
+                    expression=Subquery(
+                        ou.instance_set.all()
+                        .filter(~(Q(file="")))
+                        .filter(form_id=OuterRef("id"))
+                        .values("id")
+                        .annotate(count=Func(F("id"), function="Count"))
+                        .values("count")
+                    )
                 )
             ).prefetch_related("org_unit_types")
             request_parent_forms_stats = {

@@ -424,7 +424,5 @@
     created_at: 2021-10-15 10:42:13.542692+00:00
     updated_at: 2022-09-13 13:18:33.328634+00:00
     default_version: 2
-    users:
-    - - test
     feature_flags:
     - ALLOW_SHAPE_EDITION

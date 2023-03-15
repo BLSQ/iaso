@@ -52,7 +52,12 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <AddVersionModal entityTypeId={entityTypeId} />
+                    <AddVersionModal
+                        entityTypeId={entityTypeId}
+                        iconProps={{
+                            dataTestId: 'add-workflow-version-button',
+                        }}
+                    />
                 </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}

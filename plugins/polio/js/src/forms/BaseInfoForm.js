@@ -6,7 +6,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import { SendEmailButton } from '../components/Buttons/SendEmailButton';
 import { polioViruses } from '../constants/virus.ts';
-import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect';
+import { OrgUnitsLevels } from '../components/Inputs/OrgUnitsSelect.tsx';
 import {
     BooleanInput,
     DateInput,
@@ -17,6 +17,8 @@ import { MultiSelect } from '../components/Inputs/MultiSelect.tsx';
 import MESSAGES from '../constants/messages';
 import { EmailListForCountry } from '../components/EmailListForCountry/EmailListForCountry';
 import { useGetGroupedCampaigns } from '../hooks/useGetGroupedCampaigns.ts';
+import { useCurrentUser } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
+import { userHasPermission } from '../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 
 export const baseInfoFormFields = [
     'epid',
@@ -40,6 +42,7 @@ export const BaseInfoForm = () => {
     const classes = useStyles();
 
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     const { data: groupedCampaigns } = useGetGroupedCampaigns();
     const groupedCampaignsOptions = useMemo(
         () =>
@@ -133,12 +136,14 @@ export const BaseInfoForm = () => {
                         name="is_preventive"
                         component={BooleanInput}
                     />
-                    <Field
-                        className={classes.input}
-                        label={formatMessage(MESSAGES.testCampaign)}
-                        name="is_test"
-                        component={BooleanInput}
-                    />
+                    {userHasPermission('iaso_polio_config', currentUser) && (
+                        <Field
+                            className={classes.input}
+                            label={formatMessage(MESSAGES.testCampaign)}
+                            name="is_test"
+                            component={BooleanInput}
+                        />
+                    )}
                     <SendEmailButton />
                     <Field
                         className={classes.input}

@@ -505,6 +505,7 @@ class PolioAPITestCase(APITestCase):
         c = Campaign.objects.create(
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
+
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -550,7 +551,8 @@ class PolioAPITestCase(APITestCase):
             + " - "
             + ended_at
             + "\n"
-            + campaign.vacine
+            + campaign.vaccines
+            + "\n"
         )
 
     def test_handle_restore_active_campaign(self):

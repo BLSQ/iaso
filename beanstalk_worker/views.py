@@ -1,7 +1,14 @@
-from django.http import HttpResponse
+import http
+
+from django.apps import apps
+from django.contrib.auth.models import User
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from . import task_service
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
 @csrf_exempt
@@ -22,3 +29,76 @@ def run_all(request):
     count = task_service.run_all()
 
     return HttpResponse(f"Ran {count} tasks")
+
+
+@csrf_exempt
+def task_launcher(request, task_name: str, user_name: str):
+    if task_name.startswith("plugins.polio") and not apps.is_installed("plugins.polio"):
+        error = f"Skipping task {task_name}: because polio plugin is not enabled"
+        logger.info(error)
+        return JsonResponse(
+            {"status": "skipped", "error": error},
+            status=http.HTTPStatus.BAD_REQUEST,
+        )
+    try:
+        the_user = User.objects.get(username=user_name)
+    except User.DoesNotExist:
+        return JsonResponse({"status": "fail", "error": f"User not found for {user_name}"})
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(
+            {"status": "fail", "error": f"Error while loading user {user_name}", "error_details": str(e)},
+            status=http.HTTPStatus.BAD_REQUEST,
+        )
+
+    try:
+        task_module_str: str
+        task_module_str, task_fn_str = task_name.rsplit(sep=".", maxsplit=1)
+    except Exception as e:
+        logger.exception("Error while loading task")
+        return JsonResponse(
+            {
+                "status": "fail",
+                "error": f"Bad task name argument {task_name}. Should be module.function",
+                "error_details": str(e),
+            },
+            status=http.HTTPStatus.BAD_REQUEST,
+        )
+    try:
+        import importlib
+
+        task_module = importlib.import_module(task_module_str)
+        the_task_fn = getattr(task_module, task_fn_str)
+
+    except Exception as e:
+        logger.exception("Error while loading task")
+        return JsonResponse(
+            {
+                "status": "fail",
+                "error": f"Error while loading task {task_name} - {task_module_str} : {task_fn_str}",
+                "error_details": str(e),
+            },
+            status=http.HTTPStatus.BAD_REQUEST,
+        )
+
+    call_args = {"user": the_user}
+    try:
+        if len(request.POST) > 0:
+            call_args = {**call_args, **request.POST}
+
+        if len(request.GET) > 0:
+            call_args = {**call_args, **request.GET}
+
+        the_task = the_task_fn(**call_args)
+        return JsonResponse({"status": "success", "task": the_task.as_dict()}, status=http.HTTPStatus.CREATED)
+
+    except Exception as e:
+        logger.exception(e)
+        return JsonResponse(
+            {
+                "status": "fail",
+                "error": f"Error while launching the task {task_name} with call args {call_args}",
+                "error_details": str(e),
+            },
+            status=http.HTTPStatus.BAD_REQUEST,
+        )

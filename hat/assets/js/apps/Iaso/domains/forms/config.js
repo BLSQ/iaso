@@ -3,6 +3,7 @@ import { Grid } from '@material-ui/core';
 import { Link } from 'react-router';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import FormVersionsDialog from './components/FormVersionsDialogComponent';
 import { baseUrls } from '../../constants/urls';
 import { userHasPermission } from '../users/utils';
@@ -211,8 +212,8 @@ const formsTableColumns = ({
                                 ) && (
                                     <IconButtonComponent
                                         url={`${urlToInstances}`}
-                                        icon="remove-red-eye"
                                         tooltipMessage={MESSAGES.viewInstances}
+                                        overrideIcon={FormatListBulleted}
                                     />
                                 )}
                                 {userHasPermission('iaso_forms', user) && (

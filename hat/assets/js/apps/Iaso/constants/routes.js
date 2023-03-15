@@ -20,8 +20,8 @@ import Devices from '../domains/devices';
 import { CompletessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
-import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
-import { Details as BeneficiaryDetail } from '../domains/entities/beneficiaries/details.tsx';
+import { Beneficiaries } from '../domains/entities/index.tsx';
+import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
@@ -39,7 +39,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
-import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
+import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({

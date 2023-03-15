@@ -16,7 +16,7 @@ import MESSAGES from '../../messages';
 
 export const useDelete = (): UseMutationResult =>
     useSnackMutation(
-        body => deleteRequest(`/api/entitytype/${body.id}/`),
+        body => deleteRequest(`/api/entitytypes/${body.id}/`),
         MESSAGES.deleteSuccess,
         MESSAGES.deleteError,
         ['entitytypes'],
@@ -52,7 +52,7 @@ export const useGetTypesPaginated = (
     const searchParams = new URLSearchParams(newParams);
     // @ts-ignore
     return useSnackQuery(['entitytypes', newParams], () =>
-        getRequest(`/api/entitytype/?${searchParams.toString()}`),
+        getRequest(`/api/entitytypes/?${searchParams.toString()}`),
     );
 };
 
@@ -60,7 +60,7 @@ export const useGetTypes = (): UseQueryResult<Array<EntityType>, Error> => {
     // @ts-ignore
     return useSnackQuery({
         queryKey: ['entitytypes'],
-        queryFn: () => getRequest('/api/entitytype/'),
+        queryFn: () => getRequest('/api/entitytypes/'),
         options: {
             staleTime: 60000,
         },
@@ -73,7 +73,7 @@ export const useGetType = (
     // @ts-ignore
     return useSnackQuery({
         queryKey: ['entitytype', typeId],
-        queryFn: () => getRequest(`/api/entitytype/${typeId}`),
+        queryFn: () => getRequest(`/api/entitytypes/${typeId}`),
     });
 };
 
@@ -82,11 +82,11 @@ export const useSave = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: body => {
             return body.id
-                ? patchRequest(`/api/entitytype/${body.id}/`, body)
-                : postRequest('/api/entitytype/', {
-                      ...body,
-                      account: account.id,
-                  });
+                ? patchRequest(`/api/entitytypes/${body.id}/`, body)
+                : postRequest('/api/entitytypes/', {
+                    ...body,
+                    account: account.id,
+                });
         },
         invalidateQueryKey: ['entitytypes'],
     });

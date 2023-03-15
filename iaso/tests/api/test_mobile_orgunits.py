@@ -1,3 +1,5 @@
+from django.contrib.gis.geos import Polygon, MultiPolygon
+
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource
 from iaso.test import APITestCase
@@ -42,6 +44,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
             version=sw_version,
             name="Bardock",
             validation_status=OrgUnit.VALIDATION_VALID,
+            simplified_geom=MultiPolygon(Polygon([(1, 2), (3, 4), (5, 6), (1, 2)])),
         )
 
         raditz.parent = bardock
@@ -120,6 +123,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
         self.assertEqual(response.json()["orgUnits"][1]["name"], "Son Goten")
         self.assertEqual(response.json()["orgUnits"][1]["parent_id"], None)
+        self.assertNotIn("geojson", response.json()["orgUnits"][1])
 
     def assert_page(self, json, count: int, limit: int, page: int, pages: int, has_next: bool, has_previous: bool):
         self.assertEqual(json["count"], count)
@@ -128,3 +132,23 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(json["pages"], pages)
         self.assertEqual(json["has_next"], has_next)
         self.assertEqual(json["has_previous"], has_previous)
+
+    def test_org_unit_have_correct_parent_id_without_limit_with_shape(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID, "shapes": "true"}, format="json")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual([self.raditz.id, self.goku.id], response.json()["roots"])
+        self.assertNotIn("count", response.json())
+        self.assertNotIn("next", response.json())
+        self.assertNotIn("previous", response.json())
+        self.assertEqual(len(response.json()["orgUnits"]), 4)
+        self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
+        self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        self.assertEqual(
+            response.json()["orgUnits"][0]["geo_json"],
+            {"type": "MultiPolygon", "coordinates": [[[[1, 2], [3, 4], [5, 6], [1, 2]]]]},
+        )
+        self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
+        self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
+        self.assertEqual(response.json()["orgUnits"][1]["geo_json"], None)

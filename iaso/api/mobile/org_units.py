@@ -1,9 +1,12 @@
+from typing import Dict, Any
+
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
+from django.db.models.expressions import RawSQL
 from rest_framework import permissions
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, JSONField
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
@@ -16,8 +19,17 @@ class MobileOrgUnitsSetPagination(Paginator):
     page_query_param = PAGE
     page_size = None  # None to disable pagination by default.
 
+    def get_page_number(self, request):
+        return request.query_params.get(self.page_query_param, 1)
+
 
 class MobileOrgUnitSerializer(ModelSerializer):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Do not include the geo_json if not requested
+        if not kwargs["context"].get("include_geo_json"):
+            self.fields.pop("geo_json")
+
     class Meta:
         model = OrgUnit
         fields = [
@@ -35,6 +47,7 @@ class MobileOrgUnitSerializer(ModelSerializer):
             "reference_instance_id",
             "uuid",
             "aliases",
+            "geo_json",
         ]
 
     parent_id = SerializerMethodField()
@@ -44,6 +57,7 @@ class MobileOrgUnitSerializer(ModelSerializer):
     latitude = SerializerMethodField()
     longitude = SerializerMethodField()
     altitude = SerializerMethodField()
+    geo_json = JSONField()
 
     @staticmethod
     def get_org_unit_type_name(org_unit: OrgUnit):
@@ -112,23 +126,39 @@ class MobileOrgUnitViewSet(ModelViewSet):
         return MobileOrgUnitsSetPagination(self.results_key)
 
     def get_queryset(self):
-        return (
+        queryset = (
             OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID))
             .filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")
             .prefetch_related("parent", "org_unit_type")
             .select_related("org_unit_type")
         )
+        include_geo_json = self.check_include_geo_json()
+        if include_geo_json:
+            queryset = queryset.annotate(
+                geo_json=RawSQL("ST_AsGeoJson(COALESCE(simplified_geom, geom, location))::json", [])
+            )
+        return queryset
+
+    def get_serializer_context(self) -> Dict[str, Any]:
+        context = super().get_serializer_context()
+        context["include_geo_json"] = self.check_include_geo_json()
+        return context
+
+    def check_include_geo_json(self):
+        return self.request.query_params.get("shapes", "") == "true"
 
     def list(self, request, *args, **kwargs):
         app_id = self.request.query_params.get(APP_ID)
         if not app_id:
             return Response()
-        page = self.paginator.paginate_queryset(queryset=self.get_queryset(), request=request)
-        page_size = self.paginator.page.paginator.per_page if page else None
-        page_number = self.paginator.page.number if page else 1
 
-        cache_key = f"{app_id}-{page_size}-{page_number}"
+        page_size = self.paginator.get_page_size(request)
+        page_number = self.paginator.get_page_number(request)
+
+        include_geo_json = self.check_include_geo_json()
+
+        cache_key = f"{app_id}-{page_size}-{page_number}-{'geo_json' if include_geo_json else '' }"
         cached_response = cache.get(cache_key)
         if cached_response is None:
             super_response = super().list(request, *args, **kwargs)

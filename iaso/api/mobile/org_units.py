@@ -135,9 +135,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
         )
         include_geo_json = self.check_include_geo_json()
         if include_geo_json:
-            queryset = queryset.annotate(
-                geo_json=RawSQL("ST_AsGeoJson(COALESCE(simplified_geom, geom, location))::json", [])
-            )
+            queryset = queryset.annotate(geo_json=RawSQL("ST_AsGeoJson(COALESCE(simplified_geom, geom))::json", []))
         return queryset
 
     def get_serializer_context(self) -> Dict[str, Any]:

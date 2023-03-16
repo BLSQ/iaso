@@ -1,6 +1,10 @@
 #!/bin/bash
 set -euxo pipefail
 
+# This script is used to create the custom AMI for GeoDjango (see Deploying on Beanstalk documentation )
+# this is mainly there for reference and documentation as there is no garantee this will work with later version
+# so don't expect it to run as is.
+
 # packages
 sudo yum-config-manager --enable epel
 sudo yum -y update

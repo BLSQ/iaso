@@ -37,6 +37,7 @@ VACCINES = [
 LANGUAGES = [
     ("FR", "Français"),
     ("EN", "English"),
+    ("PT", "Português"),
 ]
 
 RESPONSIBLES = [

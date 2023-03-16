@@ -132,7 +132,7 @@ const FollowUpsModal: FunctionComponent<Props> = ({
             id="workflow-follow-up"
             onClose={() => null}
         >
-            <Box position="relative">
+            <Box position="relative" data-test="follow-up-modal">
                 <Box
                     position="absolute"
                     top={theme.spacing(-7)}

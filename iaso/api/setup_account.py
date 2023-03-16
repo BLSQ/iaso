@@ -46,8 +46,8 @@ class SetupAccountSerializer(serializers.Serializer):
             last_name=validated_data.get("user_last_name", ""),
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
-        account.users.add(user)
-        Profile.objects.create(account=account, user=user)
+
+        profile = Profile.objects.create(account=account, user=user)
 
         permissions_to_add = CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)

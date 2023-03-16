@@ -62,6 +62,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         reference_form: undefined,
         fields_detail_info_view: undefined,
         fields_list_view: undefined,
+        fields_duplicate_search: undefined,
     },
     saveEntityType,
 }) => {
@@ -92,6 +93,10 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     .of(yup.string())
                     .nullable()
                     .required(),
+                fields_duplicate_search: yup
+                    .array()
+                    .of(yup.string())
+                    .nullable(),
             }),
         );
 
@@ -244,6 +249,26 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                 : []
                         }
                         label={MESSAGES.fieldsDetailInfoView}
+                        options={possibleFields.map(field => ({
+                            value: field.name,
+                            label: field.label,
+                        }))}
+                        helperText={
+                            isNew && !values.reference_form
+                                ? formatMessage(MESSAGES.selectReferenceForm)
+                                : undefined
+                        }
+                    />
+                    <InputComponent
+                        type="select"
+                        multi
+                        disabled={isFetchingForm || !values.reference_form}
+                        keyValue="fields_duplicate_search"
+                        onChange={(key, value) =>
+                            onChange(key, value ? value.split(',') : null)
+                        }
+                        value={!isFetchingForm ? values.fields_duplicate_search : []}
+                        label={MESSAGES.fieldsDuplicateSearch}
                         options={possibleFields.map(field => ({
                             value: field.name,
                             label: field.label,

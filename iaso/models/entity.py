@@ -21,7 +21,7 @@ from iaso.models import Instance, Form, Account
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 
 
-## TODO: Remove blank=True, null=True on FK once the models are sets and validated
+# TODO: Remove blank=True, null=True on FK once the models are sets and validated
 
 
 class EntityType(models.Model):
@@ -38,6 +38,8 @@ class EntityType(models.Model):
     fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
     # Fields (subset of the fields from the reference form) that will be shown in the UI - entity detail view
     fields_detail_info_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    # Fields (subset of the fields from the reference form) that will be used to search for duplicate entities
+    fields_duplicate_search = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
     class Meta:
         unique_together = ["name", "account"]

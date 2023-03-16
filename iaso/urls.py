@@ -53,8 +53,10 @@ from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
+from .api.mobile.entity_type import MobileEntityTypesViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
+from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
@@ -90,8 +92,8 @@ router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
-router.register(r"devicesownership", DevicesOwnershipViewSet, basename="devicesownership")
-router.register(r"devicesposition", DevicesPositionViewSet, basename="devicesposition")
+router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
+router.register(r"devicespositions?", DevicesPositionViewSet, basename="devicesposition")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"accounts", AccountViewSet, basename="accounts")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
@@ -118,20 +120,19 @@ router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
-router.register(r"entity", EntityViewSet, basename="entity")
+router.register(r"entities", EntityViewSet, basename="entity")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
-router.register(r"entitytype", EntityTypeViewSet, basename="entitytype")
-# At the moment we use the same view set but separate it for the future for when we want to be able to
-# change the format in the future
-router.register(r"mobile/entitytype", EntityTypeViewSet, basename="entitytype")
+router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
+router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
-router.register(r"microplanning/planning", PlanningViewSet, basename="planning")
+router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
 router.register(r"microplanning/assignments", AssignmentViewSet, basename="assignments")
 router.register(r"mobile/plannings", MobilePlanningViewSet, basename="mobileplanning")
-router.register(r"storage", StorageViewSet, basename="storage")
-router.register(r"mobile/storage/logs", StorageLogViewSet, basename="storagelogs")
-router.register(r"mobile/storage/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
+router.register(r"storages", StorageViewSet, basename="storage")
+router.register(r"mobile/storages?/logs", StorageLogViewSet, basename="storagelogs")
+router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, basename="storageblacklisted")
+router.register(r"mobile/storages?/passwords", MobileStoragePasswordViewSet, basename="storagepasswords")
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")
@@ -178,7 +179,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 urlpatterns = urlpatterns + [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("storage/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
+    path("storages/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
     path("", include(router.urls)),
 ]
 # External Auth

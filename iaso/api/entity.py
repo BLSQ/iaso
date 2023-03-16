@@ -41,6 +41,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "account",
             "fields_detail_info_view",
             "fields_list_view",
+            "fields_duplicate_search",
         ]
 
     created_at = TimestampField(read_only=True)
@@ -98,6 +99,12 @@ class EntitySerializer(serializers.ModelSerializer):
 
 
 class EntityTypeViewSet(ModelViewSet):
+    """Entity Type API
+    /api/entitytypes
+    /api/mobile/entitytypes
+    /api/mobile/entitytype [Deprecated] will be removed in the future
+    """
+
     results_key = "types"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
@@ -116,17 +123,17 @@ class EntityTypeViewSet(ModelViewSet):
 class EntityViewSet(ModelViewSet):
     """Entity API
 
-    list: /api/entity
+    list: /api/entities
 
-    list entity by entity type: /api/entity/?entity_type_id=ids
+    list entity by entity type: /api/entities/?entity_type_id=ids
 
-    details =/api/entity/<id>
+    details =/api/entities/<id>
 
-    export entity list: /api/entity/?xlsx=true
+    export entity list: /api/entities/?xlsx=true
 
-    export entity by entity type: /api/entity/entity_type_ids=ids&?xlsx=true
+    export entity by entity type: /api/entities/entity_type_ids=ids&?xlsx=true
 
-    export entity submissions list: /api/entity/export_entity_submissions_list/?id=id
+    export entity submissions list: /api/entities/export_entity_submissions_list/?id=id
 
     **replace xlsx by csv to export as csv
     """

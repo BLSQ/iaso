@@ -170,6 +170,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.saveOrder',
         defaultMessage: 'Save order',
     },
+    resetOrder: {
+        id: 'iaso.workflows.resetOrder',
+        defaultMessage: 'Reset order',
+    },
     editChange: {
         id: 'iaso.workflows.editChange',
         defaultMessage: 'Edit change',

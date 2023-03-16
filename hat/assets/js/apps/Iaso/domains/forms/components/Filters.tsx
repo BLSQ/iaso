@@ -17,8 +17,6 @@ import { useFilterState } from '../../../hooks/useFilterState';
 
 import MESSAGES from '../messages';
 
-import { containsForbiddenCharacter } from '../../../constants/filters';
-
 import { baseUrl } from '../config';
 
 const useStyles = makeStyles(theme => ({
@@ -35,43 +33,20 @@ type Params = {
 
 type Props = {
     params: Params;
-    // eslint-disable-next-line no-unused-vars
-    onErrorChange: (hasError: boolean) => void;
-    hasErrors: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({
-    params,
-    onErrorChange,
-    hasErrors,
-}) => {
+const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const [textSearchErrors, setTextSearchErrors] = useState<Array<string>>([]);
-    const [hasError, setHasError] = useState<boolean>(false);
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
     );
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
-
-    useEffect(() => {
-        if (filters.search !== undefined) {
-            const hasForbiddenChar = containsForbiddenCharacter(filters.search);
-            setHasError(hasForbiddenChar);
-            const newErrors = hasForbiddenChar
-                ? [formatMessage(MESSAGES.forbiddenChars)]
-                : [];
-            setTextSearchErrors(newErrors);
-        }
-    }, [filters.search, formatMessage]);
-
-    useEffect(() => {
-        onErrorChange(hasError);
-    }, [hasError, onErrorChange]);
 
     return (
         <>
@@ -83,8 +58,9 @@ const Filters: FunctionComponent<Props> = ({
                         value={filters.search}
                         type="search"
                         label={MESSAGES.search}
-                        onEnterPressed={!hasError ? handleSearch : null}
-                        errors={textSearchErrors}
+                        blockForbiddenChars
+                        onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
                     />
                 </Grid>
 
@@ -101,7 +77,8 @@ const Filters: FunctionComponent<Props> = ({
                         <Button
                             data-test="search-button"
                             disabled={
-                                (!showDeleted && !filtersUpdated) || hasErrors
+                                (!showDeleted && !filtersUpdated) ||
+                                textSearchError
                             }
                             variant="contained"
                             className={classes.button}

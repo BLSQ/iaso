@@ -11,6 +11,7 @@ import {
     Box,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
+import { useSafeIntl } from 'bluesquare-components';
 
 import { useSelector } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
@@ -42,6 +43,7 @@ const RoundPopper = ({
     round,
 }) => {
     const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
     // We don't want to show the edit button if there is no connected user
     const isLogged = useSelector(state => Boolean(state.users.current));
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
@@ -81,13 +83,24 @@ const RoundPopper = ({
                             <FormattedMessage {...MESSAGES.raStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.risk_assessment_status}
+                            {campaign.original.risk_assessment_status
+                                ? formatMessage(
+                                      MESSAGES[
+                                          campaign.original
+                                              .risk_assessment_status
+                                      ],
+                                  )
+                                : ''}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.budgetStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.budget_status}
+                            {campaign.original.budget_status
+                                ? formatMessage(
+                                      MESSAGES[campaign.original.budget_status],
+                                  )
+                                : ''}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.vaccine} />:

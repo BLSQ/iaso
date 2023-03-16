@@ -103,6 +103,7 @@ Timeline tracker Automated message.
 def send_email(task=None):
     campaigns = Campaign.objects.exclude(enable_send_weekly_email=False)
     total = campaigns.count()
+    email_sent = 0
 
     for i, campaign in enumerate(campaigns):
 
@@ -120,5 +121,7 @@ def send_email(task=None):
         status = send_notification_email(campaign)
         if not status:
             logger.info(f"... skipped")
+        else:
+            email_sent += 1
 
-    task.report_success(f"Finished in weekly-email")
+    task.report_success(f"Finished sending {email_sent} weekly-email(s)")

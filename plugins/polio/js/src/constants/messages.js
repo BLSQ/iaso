@@ -2050,6 +2050,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.editionDisabled',
         defaultMessage: 'Edition disabled',
     },
+    repeatBudgetStep: {
+        id: 'iaso.polio.form.label.repeatBudgetStep',
+        defaultMessage: 'Re-send step for corrections or as reminder',
+    },
 });
 
 export default MESSAGES;

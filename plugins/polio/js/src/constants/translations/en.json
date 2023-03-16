@@ -101,6 +101,7 @@
     "iaso.polio.form.label.re_submission_to_orpg_operations_2": "Resubmitted to ORPG Operations",
     "iaso.polio.form.label.re_submitted_to_orpg": "Resubmitted to ORPG wider group",
     "iaso.polio.form.label.re_submitted_to_rrt": "Resubmitted to RRT",
+    "iaso.polio.form.label.repeatBudgetStep": "Re-send step for corrections or as reminder",
     "iaso.polio.form.label.REVIEWED": "Reviewed by RRT",
     "iaso.polio.form.label.risk_assessment_first_draft_submitted_at": "1st Draft Submission",
     "iaso.polio.form.label.roundOneEnd": "Round 1 End",

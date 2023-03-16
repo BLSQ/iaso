@@ -102,11 +102,13 @@ Timeline tracker Automated message.
 @task_decorator(task_name="send_weekly_email")
 def send_email(task=None):
     campaigns = Campaign.objects.exclude(enable_send_weekly_email=False)
+    total = campaigns.count()
 
-    for campaign in campaigns:
+    for i, campaign in enumerate(campaigns):
 
         task.report_progress_and_stop_if_killed(
-            progress_value=campaign.pk,
+            progress_value=i,
+            end_value=total,
             progress_message=f"Campaign {campaign.pk} started",
         )
 

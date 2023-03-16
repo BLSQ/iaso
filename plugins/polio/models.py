@@ -389,6 +389,10 @@ class Campaign(SoftDeletableModel):
     approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    # LEGACY deprecated fields
+    budget_requested_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt3_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(
         null=True,

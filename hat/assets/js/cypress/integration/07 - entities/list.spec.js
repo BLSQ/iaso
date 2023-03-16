@@ -239,7 +239,7 @@ describe('Entities', () => {
         testTablerender({
             baseUrl,
             rows: 20,
-            columns: 6,
+            columns: 5,
             apiKey: 'entities',
         });
         testPagination({

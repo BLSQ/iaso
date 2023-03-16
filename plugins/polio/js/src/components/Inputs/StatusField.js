@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { useSafeIntl, useTranslatedOptions } from 'bluesquare-components';
 import { Select } from './Select';

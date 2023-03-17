@@ -273,3 +273,18 @@ class FormVersion(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
+
+
+class FormPredefinedFilter(models.Model):
+    """A Predefined filter allows to add quick filters in the UI to surface some instance which needs attention.
+
+    The predefined filters rely on the form's possible fields.
+    The json_logic must return a boolean.
+    """
+
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="predefined_filters")
+    name = models.TextField(null=False, blank=False)
+    short_name = models.CharField(null=False, blank=False, max_length=25)
+    json_logic = models.JSONField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

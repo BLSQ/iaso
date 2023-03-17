@@ -157,6 +157,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Storages',
         id: 'iaso.label.storages',
     },
+    registry: {
+        defaultMessage: 'Registry',
+        id: 'iaso.registy.title',
+    },
 });
 
 export default MESSAGES;

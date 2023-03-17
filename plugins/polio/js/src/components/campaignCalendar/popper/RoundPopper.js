@@ -83,24 +83,19 @@ const RoundPopper = ({
                             <FormattedMessage {...MESSAGES.raStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.risk_assessment_status
-                                ? formatMessage(
-                                      MESSAGES[
-                                          campaign.original
-                                              .risk_assessment_status
-                                      ],
-                                  )
-                                : ''}
+                            {formatMessage(
+                                MESSAGES[
+                                    campaign.original.risk_assessment_status
+                                ],
+                            ) ?? campaign.original.risk_assessment_status}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.budgetStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {campaign.original.budget_status
-                                ? formatMessage(
-                                      MESSAGES[campaign.original.budget_status],
-                                  )
-                                : ''}
+                            {formatMessage(
+                                MESSAGES[campaign.original.budget_status],
+                            ) ?? campaign.original.budget_status}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.vaccine} />:

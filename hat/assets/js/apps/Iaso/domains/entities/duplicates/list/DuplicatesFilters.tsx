@@ -119,17 +119,6 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         labelTo={MESSAGES.endDateUntil}
                     />
                 </Grid>
-                <Grid container item xs={3} justifyContent="flex-end">
-                    <Box mt={2} mb={2}>
-                        <FilterButton
-                            disabled={!filtersUpdated}
-                            onFilter={handleSearch}
-                        />
-                    </Box>
-                </Grid>
-            </Grid>
-            {/* line 2 */}
-            <Grid container item spacing={2}>
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
@@ -143,6 +132,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetchingEntityTypes}
                     />
                 </Grid>
+            </Grid>
+            {/* line 2 */}
+            <Grid container item spacing={2}>
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
@@ -167,9 +159,6 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetchingUsers}
                     />
                 </Grid>
-            </Grid>
-            {/* line 3 */}
-            <Grid container item spacing={2}>
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
@@ -198,6 +187,9 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         )}
                     />
                 </Grid>
+            </Grid>
+            {/* line 3 */}
+            <Grid container item spacing={2}>
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
@@ -209,9 +201,6 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         loading={isFetchingForms}
                     />
                 </Grid>
-            </Grid>
-            {/* line 4 */}
-            <Grid container item spacing={2}>
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
@@ -246,6 +235,15 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         label={MESSAGES.showIgnored}
                     />
                 </Grid>
+            </Grid>
+            {/* line 4 */}
+            <Grid container item xs={12} justifyContent="flex-end" spacing={2}>
+                <Box mb={2}>
+                    <FilterButton
+                        disabled={!filtersUpdated}
+                        onFilter={handleSearch}
+                    />
+                </Box>
             </Grid>
         </Grid>
     );

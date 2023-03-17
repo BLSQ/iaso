@@ -23,10 +23,39 @@ import {
 import MESSAGES from '../messages';
 import { DuplicateInfos } from './DuplicateInfos';
 import { useDuplicateInfos } from './hooks/useDuplicateInfos';
-import { DuplicateData } from '../types';
+import { DuplicateData, DuplicateEntityForTable } from '../types';
 import { useGoBack } from '../../../../routing/useGoBack';
 import { Router } from '../../../../types/general';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
+
+const updateCellColors =
+    (selected: 'entity1' | 'entity2') =>
+    (row: DuplicateEntityForTable): DuplicateEntityForTable => {
+        const dropped = selected === 'entity1' ? 'entity2' : 'entity1';
+        if (row.entity1.status === 'identical') return row;
+        return {
+            ...row,
+            [selected]: { ...row[selected], status: 'selected' },
+            final: {
+                ...row.final,
+                status: 'selected',
+                value: row[selected].value,
+            },
+            [dropped]: { ...row[dropped], status: 'dropped' },
+        };
+    };
+
+const resetCellColors = (
+    row: DuplicateEntityForTable,
+): DuplicateEntityForTable => {
+    if (row.entity1.status === 'identical') return row;
+    return {
+        ...row,
+        entity1: { ...row.entity1, status: 'diff' },
+        entity2: { ...row.entity2, status: 'diff' },
+        final: { ...row.final, status: 'dropped', value: '' },
+    };
+};
 
 type Props = {
     params: { accountId?: string; entities: string };
@@ -65,6 +94,7 @@ const useStyles = makeStyles(theme => {
             borderRight: `2px solid ${theme.palette.ligthGray.main}`,
             fontWeight: 'bold',
         },
+        pointer: { cursor: 'pointer' },
     };
 });
 
@@ -129,20 +159,11 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     const takeAllValuesFromEntity = useCallback(
         (entity: 'entity1' | 'entity2') => {
             const selected = entity;
-            const dropped = entity === 'entity1' ? 'entity2' : 'entity1';
-            const newState = [...tableState].map(row => {
-                if (row.entity1.status === 'identical') return row;
-                return {
-                    ...row,
-                    [selected]: { ...row[selected], status: 'selected' },
-                    final: {
-                        ...row.final,
-                        status: 'selected',
-                        value: row[selected].value,
-                    },
-                    [dropped]: { ...row[dropped], status: 'dropped' },
-                };
-            });
+            // const dropped = entity === 'entity1' ? 'entity2' : 'entity1';
+            const newState = [...tableState].map(updateCellColors(entity));
+            const newUnfilteredState = [...unfilteredTableState].map(
+                updateCellColors(entity),
+            );
             const newQuery = {};
             newState.forEach(row => {
                 if (row.entity1.status !== 'identical') {
@@ -150,24 +171,39 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                 }
             });
             setTableState({ index: 'all', value: newState });
+            setUnfilteredTableState({
+                index: 'all',
+                value: newUnfilteredState,
+            });
             setQuery(newQuery);
         },
-        [setQuery, setTableState, tableState],
+        [
+            setQuery,
+            setTableState,
+            setUnfilteredTableState,
+            tableState,
+            unfilteredTableState,
+        ],
     );
 
     const resetSelection = useCallback(() => {
-        const newState = [...tableState].map(row => {
-            if (row.entity1.status === 'identical') return row;
-            return {
-                ...row,
-                entity1: { ...row.entity1, status: 'diff' },
-                entity2: { ...row.entity2, status: 'diff' },
-                final: { ...row.final, status: 'dropped', value: '' },
-            };
-        });
+        const newState = [...tableState].map(resetCellColors);
+        const newUnfilteredState = [...unfilteredTableState].map(
+            resetCellColors,
+        );
         setTableState({ index: 'all', value: newState });
+        setUnfilteredTableState({
+            index: 'all',
+            value: newUnfilteredState,
+        });
         setQuery({});
-    }, [setQuery, setTableState, tableState]);
+    }, [
+        setQuery,
+        setTableState,
+        setUnfilteredTableState,
+        tableState,
+        unfilteredTableState,
+    ]);
 
     const toggleUnmatchedDisplay = useCallback(
         (value: boolean) => {
@@ -202,7 +238,15 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
 
     const getCellProps = useCallback(
         cell => {
-            return { className: classes[cell.value.status] };
+            if (cell.column.id === 'final') {
+                return { className: classes[cell.value.status] };
+            }
+            return {
+                className: classnames(
+                    classes[cell.value.status],
+                    classes.pointer,
+                ),
+            };
         },
         [classes],
     );

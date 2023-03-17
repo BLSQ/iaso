@@ -2,7 +2,6 @@ import { makeStyles } from '@material-ui/core';
 import React, { FunctionComponent, ReactElement } from 'react';
 import Star from './StarSvgComponent';
 
-// @ts-ignore
 const useStyles = makeStyles(theme => ({
     stars: {
         width: 100,
@@ -77,7 +76,6 @@ export const StarsComponent: FunctionComponent<Props> = ({
         maxScore,
         starCount,
     });
-    // const fullStarsRatio = (100 * fullStars) / starCount;
     for (let i = 1; i <= starCount; i += 1) {
         stars.push(<Star key={i} />);
     }

@@ -56,7 +56,7 @@ export const useDuplicationDetailsColumns = ({
                         updateCellState,
                     });
                     return (
-                        <Box onClick={onClick}>
+                        <Box onClick={onClick} role="button" tabIndex={0}>
                             {convertValueIfDate(
                                 settings.row.original.entity1.value,
                             )}
@@ -82,8 +82,7 @@ export const useDuplicationDetailsColumns = ({
                     });
 
                     return (
-                        // eslint-disable-next-line jsx-a11y/no-static-element-interactions
-                        <div onClick={onClick}>
+                        <div onClick={onClick} role="button" tabIndex={0}>
                             {convertValueIfDate(
                                 settings.row.original.entity2.value,
                             )}

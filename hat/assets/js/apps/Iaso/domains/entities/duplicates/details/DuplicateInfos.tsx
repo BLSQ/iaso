@@ -84,17 +84,22 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     );
     const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate(onSuccess);
     return (
-        <WidgetPaper className={classnames(classes.table)} title={formName}>
+        <>
             <Grid container>
                 <Grid item xs={12} md={4}>
-                    <DuplicateInfosTable
-                        isLoading={isLoading}
-                        entityIds={entityIds}
-                        algorithmsUsed={algorithmsUsed}
-                        algorithmRuns={algorithmRuns}
-                        unmatchedRemaining={unmatchedRemaining}
-                        similarityScore={similarityScore}
-                    />
+                    <WidgetPaper
+                        className={classnames(classes.table)}
+                        title={formName}
+                    >
+                        <DuplicateInfosTable
+                            isLoading={isLoading}
+                            entityIds={entityIds}
+                            algorithmsUsed={algorithmsUsed}
+                            algorithmRuns={algorithmRuns}
+                            unmatchedRemaining={unmatchedRemaining}
+                            similarityScore={similarityScore}
+                        />
+                    </WidgetPaper>
                 </Grid>
                 {userHasPermission(
                     'iaso_entity_duplicates_write',
@@ -108,7 +113,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                         justifyContent="flex-end"
                         alignItems="flex-end"
                     >
-                        <Box pb={2}>
+                        <Box>
                             <Button
                                 color="primary"
                                 variant="outlined"
@@ -122,7 +127,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 {formatMessage(MESSAGES.ignore)}
                             </Button>
                         </Box>
-                        <Box ml={2} pb={2} mr={2}>
+                        <Box ml={2} mr={2}>
                             <Button
                                 variant="contained"
                                 color="primary"
@@ -137,6 +142,6 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                     </Grid>
                 )}
             </Grid>
-        </WidgetPaper>
+        </>
     );
 };

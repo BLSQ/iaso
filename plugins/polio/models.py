@@ -358,6 +358,7 @@ class Campaign(SoftDeletableModel):
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
+    # Deprecated
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     is_test = models.BooleanField(default=False)
 

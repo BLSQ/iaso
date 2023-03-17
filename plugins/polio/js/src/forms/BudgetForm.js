@@ -49,7 +49,7 @@ const findErrorInFieldList = (keys, errors, touched) => {
 export const budgetFormFields = rounds => {
     return [
         'budget_status_at_WFEDITABLE',
-        'budget_responsible_at_WFEDITABLE',
+        // 'budget_responsible_at_WFEDITABLE',
         'rounds_at_WFEDITABLE',
         'who_sent_budget_at_WFEDITABLE',
         'unicef_sent_budget_at_WFEDITABLE',
@@ -213,11 +213,11 @@ export const BudgetForm = () => {
                     </Box>
                 </Grid>
                 <Grid item md={3}>
-                    <Box mb={2}>
+                    <Box mb={2} style={{ visibility: 'hidden' }}>
                         <Field
                             name="budget_responsible"
                             component={ResponsibleField}
-                            disabled={disableEdition}
+                            disabled
                         />
                     </Box>
                     <Box mt={2}>

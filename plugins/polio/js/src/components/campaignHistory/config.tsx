@@ -1,5 +1,6 @@
 import React from 'react';
 import moment from 'moment';
+import { Link } from 'react-router';
 import MESSAGES from '../../constants/messages';
 import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 
@@ -23,16 +24,16 @@ export const config: Record<string, any> = [
         getLogValue: log => convertDate(log.deleted_at, 'LTS'),
     },
     {
+        key: 'group',
+    },
+    {
+        key: 'eomg',
+    },
+    {
         key: 'obr_name',
     },
     {
         key: 'gpei_email',
-    },
-    {
-        key: 'source_ref',
-    },
-    {
-        key: 'vaccines',
     },
     {
         key: 'rounds',
@@ -43,29 +44,62 @@ export const config: Record<string, any> = [
                 key: 'id',
             },
             {
-                key: 'started_at',
-                getLogValue: log => convertDate(log.started_at),
+                key: 'cost',
+            },
+            {
+                key: 'number',
+            },
+            {
+                key: 'scopes',
+                type: 'array',
+                childrenLabel: MESSAGES.scope,
+                children: [
+                    {
+                        key: 'id',
+                    },
+                    {
+                        key: 'group',
+                        type: 'object',
+                        childrenLabel: MESSAGES.group,
+                        children: [
+                            {
+                                key: 'id',
+                            },
+                            {
+                                key: 'org_units',
+                                getLogValue: log =>
+                                    log.org_units.map((ouId, index) => {
+                                        const lastArrayItem =
+                                            log.org_units[
+                                                log.org_units.length - 1
+                                            ];
+                                        return (
+                                            <Link
+                                                target="_blank"
+                                                href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
+                                            >
+                                                {ouId}
+                                                {log.org_units[index] !==
+                                                    lastArrayItem && ','}
+                                            </Link>
+                                        );
+                                    }),
+                            },
+                        ],
+                    },
+                ],
+            },
+            {
+                key: 'campaign',
             },
             {
                 key: 'ended_at',
                 getLogValue: log => convertDate(log.ended_at),
             },
             {
-                key: 'cost',
-            },
-            {
-                key: 'number',
-            },
-            // {
-            //     key: 'scopes',
-            // },
-            {
-                key: 'campaign',
-            },
-            {
                 key: 'vaccines',
                 type: 'array',
-                childrenLabel: MESSAGES.vaccines,
+                childrenLabel: MESSAGES.vaccine,
                 children: [
                     {
                         key: 'id',
@@ -84,11 +118,81 @@ export const config: Record<string, any> = [
                     },
                 ],
             },
-            // {
-            //     key: 'shipments',
-            // },
+            {
+                key: 'shipments',
+                type: 'array',
+                childrenLabel: MESSAGES.shipment,
+                children: [
+                    {
+                        key: 'id',
+                    },
+                    {
+                        key: 'round',
+                    },
+                    {
+                        key: 'comment',
+                    },
+                    {
+                        key: 'po_numbers',
+                    },
+                    {
+                        key: 'vaccine_name',
+                    },
+                    {
+                        key: 'date_reception',
+                    },
+                    {
+                        key: 'vials_received',
+                    },
+                    {
+                        key: 'reception_pre_alert',
+                    },
+                    {
+                        key: 'estimated_arrival_date',
+                    },
+                ],
+            },
             {
                 key: 'forma_date',
+            },
+            {
+                key: 'started_at',
+                getLogValue: log => convertDate(log.started_at),
+            },
+            {
+                key: 'im_ended_at',
+                getLogValue: log => convertDate(log.im_ended_at),
+            },
+            {
+                key: 'destructions',
+                type: 'array',
+                childrenLabel: MESSAGES.destruction,
+                children: [
+                    {
+                        key: 'id',
+                    },
+                    {
+                        key: 'round',
+                    },
+                    {
+                        key: 'comment',
+                    },
+                    {
+                        key: 'destructionReportDate',
+                        getLogValue: log => convertDate(log.date_report),
+                    },
+                    {
+                        key: 'vials_destroyed',
+                    },
+                    {
+                        key: 'destructionReceptionDate',
+                        getLogValue: log =>
+                            convertDate(log.date_report_received),
+                    },
+                ],
+            },
+            {
+                key: 'forma_comment',
             },
             {
                 key: 'im_started_at',
@@ -185,33 +289,39 @@ export const config: Record<string, any> = [
                     },
                     {
                         key: 'org_units',
-                        getLogValue: log => log.org_units.join(', '),
+                        getLogValue: log =>
+                            log.org_units.map((ouId, index) => {
+                                const lastArrayItem =
+                                    log.org_units[log.org_units.length - 1];
+                                return (
+                                    <Link
+                                        target="_blank"
+                                        href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
+                                    >
+                                        {ouId}
+                                        {log.org_units[index] !==
+                                            lastArrayItem && ','}
+                                    </Link>
+                                );
+                            }),
                     },
                 ],
             },
-            {
-                key: 'created_at',
-                getLogValue: log => convertDate(log.created_at),
-            },
-            {
-                key: 'source_ref',
-            },
-            {
-                key: 'updated_at',
-            },
-            {
-                key: 'source_version',
-            },
         ],
-    },
-    {
-        key: 'vacine',
     },
     {
         key: 'account',
     },
     {
         key: 'country',
+        getLogValue: log => (
+            <Link
+                target="_blank"
+                href={`/dashboard/or).its/detail/orgUnitId/${log.country}`}
+            >
+                {log.country}
+            </Link>
+        ),
     },
     {
         key: 'geojson',

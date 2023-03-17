@@ -365,6 +365,7 @@
     "iaso.polio.label.sendFile": "Envoyer fichier",
     "iaso.polio.label.sentByTeam": "Envoyé par",
     "iaso.polio.label.sentToTeam": "Envoyé à",
+    "iaso.polio.label.shipment": "Shipment",
     "iaso.polio.label.shipmentFieldsTogether": "Tous les champs relatifs à la livraison doivent être complétés ensemble",
     "iaso.polio.label.shipments": "Livraisons",
     "iaso.polio.label.showDeleted": "Montrer les entrées effacées",

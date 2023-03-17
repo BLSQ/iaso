@@ -1728,6 +1728,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vaccineManagement',
         defaultMessage: 'Vaccine management',
     },
+    shipment: {
+        id: 'iaso.polio.label.shipment',
+        defaultMessage: 'Shipment',
+    },
     shipments: {
         id: 'iaso.polio.label.shipments',
         defaultMessage: 'Shipments',

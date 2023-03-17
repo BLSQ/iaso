@@ -95,160 +95,158 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
     }, [filters.fields, filters.form, handleChange]);
 
     return (
-        <>
-            <Grid container spacing={0}>
-                {/* Line 1 */}
-                <Grid container item spacing={2}>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="search"
-                            keyValue="search"
-                            value={filters.search}
-                            onChange={handleChange}
-                            onEnterPressed={handleSearch}
-                            label={MESSAGES.search}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={6}>
-                        <DatesRange
-                            keyDateFrom="start_date"
-                            keyDateTo="end_date"
-                            onChangeDate={handleChange}
-                            dateFrom={filters.start_date}
-                            dateTo={filters.end_date}
-                            labelFrom={MESSAGES.startDatefrom}
-                            labelTo={MESSAGES.endDateUntil}
-                        />
-                    </Grid>
-                    <Grid container item xs={3} justifyContent="flex-end">
-                        <Box mt={2} mb={2}>
-                            <FilterButton
-                                disabled={!filtersUpdated}
-                                onFilter={handleSearch}
-                            />
-                        </Box>
-                    </Grid>
+        <Grid container spacing={0}>
+            {/* Line 1 */}
+            <Grid container item spacing={2}>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="search"
+                        keyValue="search"
+                        value={filters.search}
+                        onChange={handleChange}
+                        onEnterPressed={handleSearch}
+                        label={MESSAGES.search}
+                    />
                 </Grid>
-                {/* line 2 */}
-                <Grid container item spacing={2}>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            multi
-                            keyValue="entity_type"
-                            value={filters.entity_type}
-                            onChange={handleChange}
-                            onEnterPressed={handleSearch}
-                            label={MESSAGES.entityTypes}
-                            options={entityTypesDropdown}
-                            loading={isFetchingEntityTypes}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            keyValue="submitter_team"
-                            value={filters.submitter_team}
-                            onChange={handleChange}
-                            onEnterPressed={handleSearch}
-                            label={MESSAGES.submitterTeam}
-                            options={submitterTeamsDropdown}
-                            loading={isFetchingTeams}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            keyValue="submitter"
-                            value={filters.submitter}
-                            onChange={handleChange}
-                            onEnterPressed={handleSearch}
-                            label={MESSAGES.submitter}
-                            options={usersDropdown}
-                            loading={isFetchingUsers}
-                        />
-                    </Grid>
+                <Grid item xs={12} md={6}>
+                    <DatesRange
+                        keyDateFrom="start_date"
+                        keyDateTo="end_date"
+                        onChangeDate={handleChange}
+                        dateFrom={filters.start_date}
+                        dateTo={filters.end_date}
+                        labelFrom={MESSAGES.startDatefrom}
+                        labelTo={MESSAGES.endDateUntil}
+                    />
                 </Grid>
-                {/* line 3 */}
-                <Grid container item spacing={2}>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            keyValue="algorithm"
-                            value={filters.algorithm}
-                            onChange={handleChange}
-                            onEnterPressed={handleSearch}
-                            label={MESSAGES.algorithm}
-                            options={algorithmDropDown}
+                <Grid container item xs={3} justifyContent="flex-end">
+                    <Box mt={2} mb={2}>
+                        <FilterButton
+                            disabled={!filtersUpdated}
+                            onFilter={handleSearch}
                         />
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            keyValue="similarity"
-                            value={filters.similarity}
-                            onChange={handleChange}
-                            label={MESSAGES.similarity}
-                            options={similarityDropdown}
-                            renderOption={option => (
-                                <FullStarsSvg
-                                    // @ts-ignore
-                                    score={parseInt(option.label as string, 10)}
-                                />
-                            )}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            keyValue="form"
-                            value={filters.form}
-                            onChange={handleChange}
-                            label={MESSAGES.form}
-                            options={formsDropdown}
-                            loading={isFetchingForms}
-                        />
-                    </Grid>
-                </Grid>
-                {/* line 4 */}
-                <Grid container item spacing={2}>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            multi
-                            keyValue="fields"
-                            value={filters.fields}
-                            onChange={handleChange}
-                            label={MESSAGES.comparedFields}
-                            options={possibleFields}
-                            loading={isFetchingFields}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={3}>
-                        <Box id="ou-tree-input">
-                            <OrgUnitTreeviewModal
-                                toggleOnLabelClick={false}
-                                titleMessage={MESSAGES.location}
-                                onConfirm={handleOrgUnitChange}
-                                multiselect
-                                initialSelection={initialOrgUnits}
-                            />
-                        </Box>
-                    </Grid>
-
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="checkbox"
-                            value={showIgnored}
-                            keyValue="ignored"
-                            // TODO put in callback
-                            onChange={handleCheckboxChange}
-                            label={MESSAGES.showIgnored}
-                        />
-                    </Grid>
+                    </Box>
                 </Grid>
             </Grid>
-        </>
+            {/* line 2 */}
+            <Grid container item spacing={2}>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="entity_type"
+                        value={filters.entity_type}
+                        onChange={handleChange}
+                        onEnterPressed={handleSearch}
+                        label={MESSAGES.entityTypes}
+                        options={entityTypesDropdown}
+                        loading={isFetchingEntityTypes}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        keyValue="submitter_team"
+                        value={filters.submitter_team}
+                        onChange={handleChange}
+                        onEnterPressed={handleSearch}
+                        label={MESSAGES.submitterTeam}
+                        options={submitterTeamsDropdown}
+                        loading={isFetchingTeams}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        keyValue="submitter"
+                        value={filters.submitter}
+                        onChange={handleChange}
+                        onEnterPressed={handleSearch}
+                        label={MESSAGES.submitter}
+                        options={usersDropdown}
+                        loading={isFetchingUsers}
+                    />
+                </Grid>
+            </Grid>
+            {/* line 3 */}
+            <Grid container item spacing={2}>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        keyValue="algorithm"
+                        value={filters.algorithm}
+                        onChange={handleChange}
+                        onEnterPressed={handleSearch}
+                        label={MESSAGES.algorithm}
+                        options={algorithmDropDown}
+                    />
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        keyValue="similarity"
+                        value={filters.similarity}
+                        onChange={handleChange}
+                        label={MESSAGES.similarity}
+                        options={similarityDropdown}
+                        renderOption={option => (
+                            <FullStarsSvg
+                                // @ts-ignore
+                                score={parseInt(option.label as string, 10)}
+                            />
+                        )}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        keyValue="form"
+                        value={filters.form}
+                        onChange={handleChange}
+                        label={MESSAGES.form}
+                        options={formsDropdown}
+                        loading={isFetchingForms}
+                    />
+                </Grid>
+            </Grid>
+            {/* line 4 */}
+            <Grid container item spacing={2}>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="fields"
+                        value={filters.fields}
+                        onChange={handleChange}
+                        label={MESSAGES.comparedFields}
+                        options={possibleFields}
+                        loading={isFetchingFields}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.location}
+                            onConfirm={handleOrgUnitChange}
+                            multiselect
+                            initialSelection={initialOrgUnits}
+                        />
+                    </Box>
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="checkbox"
+                        value={showIgnored}
+                        keyValue="ignored"
+                        // TODO put in callback
+                        onChange={handleCheckboxChange}
+                        label={MESSAGES.showIgnored}
+                    />
+                </Grid>
+            </Grid>
+        </Grid>
     );
 };

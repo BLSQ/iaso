@@ -23,7 +23,7 @@ export const DuplicateInfosTable: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     return (
-        <Table>
+        <Table size="small">
             <TableBody>
                 <TableRow>
                     <TableCell>

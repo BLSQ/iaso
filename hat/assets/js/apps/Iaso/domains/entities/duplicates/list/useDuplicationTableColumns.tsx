@@ -2,31 +2,16 @@
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
-import { Box, makeStyles } from '@material-ui/core';
-import MESSAGES from '../messages';
-import { baseUrls } from '../../../../constants/urls';
-import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
+import { Box } from '@material-ui/core';
 import { Column } from '../../../../types/table';
-import { formatLabel } from '../../../instances/utils';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
-import { DuplicationAlgorithm } from '../types';
-
-const getFields = (settings: any): string[] => {
-    const { algorithms }: { algorithms: DuplicationAlgorithm[] } =
-        settings.row.original;
-    const allFields = algorithms.map(algo => algo.fields).flat();
-    return [...new Set(allFields)];
-};
-
-const useStyles = makeStyles(theme => {
-    return {
-        diff: { color: theme.palette.error.main },
-    };
-});
+import { DuplicateCell } from './DuplicateCell';
+import { formatLabel } from '../../../instances/utils';
+import { baseUrls } from '../../../../constants/urls';
+import MESSAGES from '../messages';
 
 export const useDuplicationTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const classes: Record<string, string> = useStyles();
     return useMemo(() => {
         const columns = [
             {
@@ -77,30 +62,8 @@ export const useDuplicationTableColumns = (): Column[] => {
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
-                    const { entity1, entity2 } = settings.row.original;
-                    const fields = getFields(settings);
-                    const entityFields = fields.map(
-                        (field: string) => entity1.json[field],
-                    );
-                    const duplicateField = fields.map(
-                        (field: string) => entity2.json[field],
-                    );
                     return (
-                        <>
-                            {entityFields.map((field, index) => {
-                                const duplicate = duplicateField[index];
-                                const className =
-                                    field !== duplicate ? classes.diff : '';
-                                return (
-                                    <p
-                                        className={className}
-                                        key={`entity1-${field}-${index}`}
-                                    >
-                                        {convertValueIfDate(field)}
-                                    </p>
-                                );
-                            })}
-                        </>
+                        <DuplicateCell settings={settings} entity="entity1" />
                     );
                 },
             },
@@ -110,30 +73,8 @@ export const useDuplicationTableColumns = (): Column[] => {
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
-                    const { entity1, entity2 } = settings.row.original;
-                    const fields = getFields(settings);
-                    const entityFields = fields.map(
-                        (field: string) => entity2.json[field],
-                    );
-                    const duplicateField = fields.map(
-                        (field: string) => entity1.json[field],
-                    );
                     return (
-                        <>
-                            {entityFields.map((field, index) => {
-                                const duplicate = duplicateField[index];
-                                const className =
-                                    field !== duplicate ? classes.diff : '';
-                                return (
-                                    <p
-                                        className={className}
-                                        key={`entity2-${field}-${index}`}
-                                    >
-                                        {convertValueIfDate(field)}
-                                    </p>
-                                );
-                            })}
-                        </>
+                        <DuplicateCell settings={settings} entity="entity2" />
                     );
                 },
             },
@@ -154,5 +95,5 @@ export const useDuplicationTableColumns = (): Column[] => {
             },
         ];
         return columns;
-    }, [classes.diff, formatMessage]);
+    }, [formatMessage]);
 };

@@ -42,8 +42,7 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
             {userHasPermission('iaso_entity_duplicates_write', currentUser) && (
                 <Grid container item xs={8} justifyContent="flex-end">
                     <Box
-                        pb={2}
-                        pt={2}
+                        py={2}
                         pr={2}
                         style={{
                             display: 'inline-flex',

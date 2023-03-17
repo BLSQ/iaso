@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    account: {
+        id: 'iaso.polio.label.account',
+        defaultMessage: 'Account ID',
+    },
+    geojson: {
+        id: 'iaso.polio.label.geoJson',
+        defaultMessage: 'Geojson',
+    },
     selectOrgUnit: {
         id: 'iaso.polio.label.selectOrgUnit',
         defaultMessage: 'Select intial region',
@@ -20,6 +28,10 @@ const MESSAGES = defineMessages({
     infos: {
         defaultMessage: 'Infos',
         id: 'iaso.label.infos',
+    },
+    scopes: {
+        defaultMessage: 'Scopes',
+        id: 'iaso.polio.label.scopes',
     },
     separate_scopes_per_round: {
         defaultMessage: 'Separate scope per round',
@@ -1599,6 +1611,10 @@ const MESSAGES = defineMessages({
     vials_destroyed: {
         id: 'iaso.polio.label.vialsDestroyed',
         defaultMessage: 'Unusable vials destroyed',
+    },
+    destructions: {
+        id: 'iaso.polio.label.destructions',
+        defaultMessage: 'Destructions',
     },
     destructionReceptionDate: {
         id: 'iaso.polio.label.destructionReceptionDate',

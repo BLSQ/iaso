@@ -296,7 +296,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.fieldInvestigationDate',
         defaultMessage: 'Field Investigation Date',
     },
-    risk_assessment_first_draft_submitted_at: {
+    risk_assessment_first_draft_submitted: {
         id: 'iaso.polio.form.label.risk_assessment_first_draft_submitted_at',
         defaultMessage: '1st Draft Submission',
     },
@@ -1596,6 +1596,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vialsDestroyed',
         defaultMessage: 'Unusable vials destroyed',
     },
+    vials_destroyed: {
+        id: 'iaso.polio.label.vialsDestroyed',
+        defaultMessage: 'Unusable vials destroyed',
+    },
     destructionReceptionDate: {
         id: 'iaso.polio.label.destructionReceptionDate',
         defaultMessage: 'Reception of the destruction report',
@@ -1605,6 +1609,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Date of the destruction report',
     },
     dateSignedVrf: {
+        id: 'iaso.polio.label.dateSignedVrf',
+        defaultMessage: 'Date signed VRF received',
+    },
+    date_signed_vrf_received: {
         id: 'iaso.polio.label.dateSignedVrf',
         defaultMessage: 'Date signed VRF received',
     },
@@ -1619,6 +1627,18 @@ const MESSAGES = defineMessages({
     reportingDelays: {
         id: 'iaso.polio.label.reportingDelays',
         defaultMessage: 'Reporting delays',
+    },
+    reporting_delays_hc_to_district: {
+        id: 'iaso.polio.label.reporting_delays_hc_to_district',
+        defaultMessage: 'Reporting delays',
+    },
+    reporting_delays_district_to_region: {
+        id: 'iaso.polio.label.reporting_delays_district_to_region',
+        defaultMessage: 'Reporting delays district to region',
+    },
+    reporting_delays_region_to_national: {
+        id: 'iaso.polio.label.reporting_delays_region_to_national',
+        defaultMessage: 'Reporting delays region to national',
     },
     healthCentreToDistrict: {
         id: 'iaso.polio.label.healthCentreToDistrict',
@@ -1656,7 +1676,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAReception',
         defaultMessage: 'Reception of national Form A',
     },
+    forma_reception: {
+        id: 'iaso.polio.label.formAReception',
+        defaultMessage: 'Reception of national Form A',
+    },
     formADate: {
+        id: 'iaso.polio.label.formADate',
+        defaultMessage: 'Form A date',
+    },
+    forma_date: {
         id: 'iaso.polio.label.formADate',
         defaultMessage: 'Form A date',
     },
@@ -1664,7 +1692,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAComment',
         defaultMessage: 'Comment on form A',
     },
+    forma_comment: {
+        id: 'iaso.polio.label.formAComment',
+        defaultMessage: 'Comment on form A',
+    },
     formAUsableVials: {
+        id: 'iaso.polio.label.formAUsableVials',
+        defaultMessage: 'Usable vials',
+    },
+    forma_usable_vials: {
         id: 'iaso.polio.label.formAUsableVials',
         defaultMessage: 'Usable vials',
     },
@@ -1672,7 +1708,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.formAUnusableVials',
         defaultMessage: 'Unusable vials',
     },
+    forma_unusable_vials: {
+        id: 'iaso.polio.label.formAUnusableVials',
+        defaultMessage: 'Unusable vials',
+    },
     formAMissingVials: {
+        id: 'iaso.polio.label.formAMissingVials',
+        defaultMessage: 'Number of missing vials from the national form',
+    },
+    forma_missing_vials: {
         id: 'iaso.polio.label.formAMissingVials',
         defaultMessage: 'Number of missing vials from the national form',
     },
@@ -1695,6 +1739,10 @@ const MESSAGES = defineMessages({
     destruction: {
         id: 'iaso.polio.label.destruction',
         defaultMessage: 'Destruction',
+    },
+    date_destruction: {
+        id: 'iaso.polio.label.destructionDate',
+        defaultMessage: 'Destruction date',
     },
     addVaccine: {
         id: 'iaso.polio.label.addVaccine',
@@ -1914,6 +1962,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.approved_by_who',
         defaultMessage: 'Approved by WHO',
     },
+    approved_by_who_at_WFEDITABLE: {
+        id: 'iaso.polio.form.label.approved_by_who_at_WFEDITABLE',
+        defaultMessage: 'Date of approval by WHO',
+    },
     feedback_sent_to_orpg_operations_who: {
         id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_who',
         defaultMessage: 'Feedback requested by WHO',
@@ -2015,6 +2067,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Override',
     },
     newBudgetState: {
+        id: 'iaso.polio.form.label.newBudgetState',
+        defaultMessage: 'New budget state',
+    },
+    budget_current_state_label: {
         id: 'iaso.polio.form.label.newBudgetState',
         defaultMessage: 'New budget state',
     },

@@ -28,7 +28,7 @@ export const useGetMapLog = (
                             value={
                                 getLogValue
                                     ? getLogValue(logDetail)
-                                    : logDetail[key]
+                                    : logDetail[key] || '--'
                             }
                             fieldKey={key}
                         />

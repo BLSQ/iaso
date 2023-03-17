@@ -96,8 +96,8 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const { formatMessage } = useSafeIntl();
     const getMapLog = useGetMapLog(config);
 
-    const getLabel = useGetCampaignFieldLabel();
-    const getValue = useGetCampaignFieldValue();
+    // const getLabel = useGetCampaignFieldLabel();
+    // const getValue = useGetCampaignFieldValue();
 
     if (isLoading)
         return (
@@ -113,6 +113,9 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     if (isError) {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
+
+    console.log('log detail', campaignLogDetail);
+
     return (
         <>
             {campaignLogDetail && (
@@ -120,7 +123,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                     <Head />
                     <TableBody>
                         {getMapLog(campaignLogDetail)}
-                        {Object.entries(campaignLogDetail).map(
+                        {/* {Object.entries(campaignLogDetail).map(
                             ([key, value]) => {
                                 return (
                                     <Row
@@ -135,7 +138,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
                                     />
                                 );
                             },
-                        )}
+                        )} */}
                     </TableBody>
                 </Table>
             )}

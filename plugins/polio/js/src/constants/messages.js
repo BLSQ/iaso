@@ -1926,36 +1926,32 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.submitted_for_approval',
         defaultMessage: 'Submitted for approval',
     },
-    re_submission_to_orpg_operations_2: {
-        id: 'iaso.polio.form.label.re_submission_to_orpg_operations_2',
+    re_submitted_to_orpg_operations2: {
+        id: 'iaso.polio.form.label.re_submitted_to_orpg_operations2',
         defaultMessage: 'Resubmitted to ORPG Operations',
     },
-    feedback_sent_to_rrt3: {
-        id: 'iaso.polio.form.label.feedback_sent_to_rrt3',
-        defaultMessage: 'Feedback sent to RRT(ORPG ops)',
-    },
-    submission_to_orpg_operations_2: {
-        id: 'iaso.polio.form.label.submission_to_orpg_operations_2',
+    submitted_to_orpg_operations2: {
+        id: 'iaso.polio.form.label.submitted_to_orpg_operations2',
         defaultMessage: 'Submitted to ORPG ops (2)',
     },
     re_submitted_to_orpg: {
-        id: 'iaso.polio.form.label.re_submitted_to_orpg',
+        id: 'iaso.polio.form.label.re_submitted_to_orpg_wider',
         defaultMessage: 'Resubmitted to ORPG wider group',
     },
     feedback_sent_to_rrt2: {
         id: 'iaso.polio.form.label.feedback_sent_to_rrt2',
         defaultMessage: 'Feedback sent to RRT (ORPG wider)',
     },
-    submitted_to_orpg: {
-        id: 'iaso.polio.form.label.submitted_to_orpg',
+    submitted_to_orpg_wider: {
+        id: 'iaso.polio.form.label.submitted_to_orpg_wider',
         defaultMessage: 'Submitted to ORPG wider',
     },
     feedback_sent_to_rrt1: {
         id: 'iaso.polio.form.label.feedback_sent_to_rrt1',
         defaultMessage: 'Feedback sent to RRT',
     },
-    submission_to_orpg_operations_1: {
-        id: 'iaso.polio.form.label.submission_to_orpg_operations_1',
+    submitted_to_orpg_operations1: {
+        id: 'iaso.polio.form.label.submitted_to_orpg_operations1',
         defaultMessage: 'Submitted to ORPG Ops (1)',
     },
     re_submitted_to_rrt: {
@@ -1970,8 +1966,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.submitted_to_rrt',
         defaultMessage: 'Submitted to RRT',
     },
-    gpei_consolidation: {
-        id: 'iaso.polio.form.label.gpei_consolidation',
+    gpei_consolidated_budgets: {
+        id: 'iaso.polio.form.label.gpei_consolidated_budgets',
         defaultMessage: 'Consolidation by GPEI coordinator',
     },
     unicef_sent_budget: {
@@ -1982,9 +1978,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.who_sent_budget',
         defaultMessage: 'WHO CO sent budget',
     },
-    budget_requested: {
-        id: 'iaso.polio.form.label.budget_requested',
-        defaultMessage: 'Budget requested',
+    approval_confirmed: {
+        id: 'iaso.polio.form.label.approval_confirmed',
+        defaultMessage: 'Approval confirmed',
     },
     fundsRelease: {
         id: 'iaso.polio.form.label.fundsRelease',
@@ -2049,6 +2045,10 @@ const MESSAGES = defineMessages({
     editionDisabled: {
         id: 'iaso.polio.form.label.editionDisabled',
         defaultMessage: 'Edition disabled',
+    },
+    repeatBudgetStep: {
+        id: 'iaso.polio.form.label.repeatBudgetStep',
+        defaultMessage: 'Re-send step for corrections or as reminder',
     },
 });
 

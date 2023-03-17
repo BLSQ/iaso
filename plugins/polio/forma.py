@@ -274,9 +274,9 @@ def get_forma_scope_df(campaigns):
             if districts.count() == 0:
                 logger.info(f"skipping {campaign}, no scope")
                 continue
-            facilities = OrgUnit.objects.filter(parent__in=districts)
-            regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
-            countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)
+            facilities = OrgUnit.objects.filter(parent__in=districts).filter(status="VALID")
+            regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2).filter(status="VALID")
+            countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1).filter(status="VALID")
 
             for ous in [districts, facilities, regions, countries]:
                 scope_df = DataFrame.from_records(

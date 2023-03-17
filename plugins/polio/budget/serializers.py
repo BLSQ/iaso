@@ -272,7 +272,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             start_node = start_node_list[0]
             start_position = start_node.order
             destination_node_list = [node for node in all_nodes if node.key == destination_node_key]
-            destination_node = destination_node_list[0]
+            destination_node = destination_node_list[0]  # This is buggy with the latest config  migration
             destination_position = destination_node.order
             is_skipping = destination_position >= start_position
             reference_date = override_step.created_at

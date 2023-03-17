@@ -2,9 +2,7 @@
 /* eslint-disable camelcase */
 import React, { ReactElement, useMemo } from 'react';
 import {
-    // @ts-ignore
     IconButton as IconButtonComponent,
-    // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
 
@@ -56,14 +54,6 @@ export const useStaticColumns = (): Array<Column> => {
                         )}
                     </>
                 );
-            },
-        },
-        {
-            Header: formatMessage(MESSAGES.program),
-            id: 'program',
-            accessor: 'program',
-            Cell: settings => {
-                return <>{settings.row.original?.program ?? '--'}</>;
             },
         },
         {

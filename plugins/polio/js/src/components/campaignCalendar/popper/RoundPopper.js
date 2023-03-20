@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 
@@ -49,7 +49,10 @@ const RoundPopper = ({
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
     const url = `/api/orgunits/?csv=true&group=${groupIds}&app_id=com.poliooutbreaks.app`;
-
+    const getMessage = useCallback(
+        key => (MESSAGES[key] ? formatMessage(MESSAGES[key]) : key),
+        [formatMessage],
+    );
     return (
         <Popper
             id={id}
@@ -83,19 +86,15 @@ const RoundPopper = ({
                             <FormattedMessage {...MESSAGES.raStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {formatMessage(
-                                MESSAGES[
-                                    campaign.original.risk_assessment_status
-                                ],
-                            ) ?? campaign.original.risk_assessment_status}
+                            {getMessage(
+                                campaign.original.risk_assessment_status,
+                            )}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.budgetStatus} />:
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-start">
-                            {formatMessage(
-                                MESSAGES[campaign.original.budget_status],
-                            ) ?? campaign.original.budget_status}
+                            {getMessage(campaign.original.budget_status)}
                         </Grid>
                         <Grid item sm={6} container justifyContent="flex-end">
                             <FormattedMessage {...MESSAGES.vaccine} />:

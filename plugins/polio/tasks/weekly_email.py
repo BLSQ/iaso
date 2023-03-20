@@ -2,9 +2,9 @@ from logging import getLogger
 
 from django.conf import settings
 from django.core.mail import send_mail
-from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
+from beanstalk_worker import task_decorator
 from plugins.polio.models import Campaign, CountryUsersGroup, Round
 from plugins.polio.serializers import preparedness_from_url
 
@@ -99,22 +99,29 @@ Timeline tracker Automated message.
     return True
 
 
-class Command(BaseCommand):
-    """Send an e-mail to all GPEI coordinator for the campaign
-    run weekly email after the refresh so data is up to date
-    """
+@task_decorator(task_name="send_weekly_email")
+def send_email(task=None):
+    campaigns = Campaign.objects.exclude(enable_send_weekly_email=False)
+    total = campaigns.count()
+    email_sent = 0
 
-    def handle(self, *args, **options):
-        campaigns = Campaign.objects.exclude(enable_send_weekly_email=False)
+    for i, campaign in enumerate(campaigns):
 
-        for campaign in campaigns:
-            latest_round_end = campaign.rounds.order_by("ended_at").last()
-            if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at > now().date():
-                print(f"Campaign {campaign} is finished, skipping")
-                continue
-            logger.info(f"Email for {campaign.obr_name}")
-            status = send_notification_email(campaign)
-            if not status:
-                logger.info(f"... skipped")
+        task.report_progress_and_stop_if_killed(
+            progress_value=i,
+            end_value=total,
+            progress_message=f"Campaign {campaign.pk} started",
+        )
 
-        logger.info(f"Finished weekly-email")
+        latest_round_end = campaign.rounds.order_by("ended_at").last()
+        if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at > now().date():
+            print(f"Campaign {campaign} is finished, skipping")
+            continue
+        logger.info(f"Email for {campaign.obr_name}")
+        status = send_notification_email(campaign)
+        if not status:
+            logger.info(f"... skipped")
+        else:
+            email_sent += 1
+
+    task.report_success(f"Finished sending {email_sent} weekly-email(s)")

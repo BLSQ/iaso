@@ -320,7 +320,7 @@ export const config: Record<string, any> = [
         getLogValue: log => (
             <Link
                 target="_blank"
-                href={`/dashboard/or).its/detail/orgUnitId/${log.country}`}
+                href={`/dashboard/orgunits/detail/orgUnitId/${log.country}`}
             >
                 {log.country}
             </Link>

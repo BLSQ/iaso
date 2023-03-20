@@ -1,6 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { Link } from 'react-router';
+import { Box } from '@material-ui/core';
 import MESSAGES from '../../constants/messages';
 import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 
@@ -294,14 +295,16 @@ export const config: Record<string, any> = [
                                 const lastArrayItem =
                                     log.org_units[log.org_units.length - 1];
                                 return (
-                                    <Link
-                                        target="_blank"
-                                        href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
-                                    >
-                                        {ouId}
+                                    <Box key={ouId} display="inline-block">
+                                        <Link
+                                            target="_blank"
+                                            href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
+                                        >
+                                            {ouId}
+                                        </Link>
                                         {log.org_units[index] !==
                                             lastArrayItem && ','}
-                                    </Link>
+                                    </Box>
                                 );
                             }),
                     },
@@ -368,6 +371,14 @@ export const config: Record<string, any> = [
     },
     {
         key: 'initial_org_unit',
+        getLogValue: log => (
+            <Link
+                target="_blank"
+                href={`/dashboard/orgunits/detail/orgUnitId/${log.initial_org_unit}`}
+            >
+                {log.initial_org_unit}
+            </Link>
+        ),
     },
     {
         key: 'investigation_at',

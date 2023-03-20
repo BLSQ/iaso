@@ -4,7 +4,6 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { Box, Table, TableBody } from '@material-ui/core';
 
 import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
-import { useGetCampaignFieldValue } from '../../hooks/useGetCampaignFieldValue';
 
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
@@ -12,7 +11,6 @@ import { CampaignLogData } from '../../constants/types';
 import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import MESSAGES from '../../constants/messages';
-import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 import { Row } from './Row';
 import { config } from './config';
@@ -96,9 +94,6 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const { formatMessage } = useSafeIntl();
     const getMapLog = useGetMapLog(config);
 
-    // const getLabel = useGetCampaignFieldLabel();
-    // const getValue = useGetCampaignFieldValue();
-
     if (isLoading)
         return (
             <Box height="70vh">
@@ -114,32 +109,12 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
         return <ErrorPaperComponent message={formatMessage(MESSAGES.error)} />;
     }
 
-    console.log('log detail', campaignLogDetail);
-
     return (
         <>
             {campaignLogDetail && (
                 <Table size="small">
                     <Head />
-                    <TableBody>
-                        {getMapLog(campaignLogDetail)}
-                        {/* {Object.entries(campaignLogDetail).map(
-                            ([key, value]) => {
-                                return (
-                                    <Row
-                                        key={key}
-                                        value={getComplexValue(
-                                            value,
-                                            getValue,
-                                            key,
-                                            getLabel,
-                                        )}
-                                        fieldKey={key}
-                                    />
-                                );
-                            },
-                        )} */}
-                    </TableBody>
+                    <TableBody>{getMapLog(campaignLogDetail)}</TableBody>
                 </Table>
             )}
         </>

@@ -23,15 +23,13 @@ import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../../routing/actions';
+import { PaginationParams } from '../../../types/general';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Params = {
-    pageSize: string;
-    order: string;
-    page: string;
+type Params = PaginationParams & {
     search?: string;
 };
 

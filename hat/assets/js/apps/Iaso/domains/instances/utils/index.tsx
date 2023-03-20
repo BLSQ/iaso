@@ -78,7 +78,6 @@ const localizeLabel = (field: Field): string => {
 
     let localeOptions: Record<string, string> = { [localeKey]: field.name };
     if (typeof field === 'object') {
-        // console.log('BUG!', field.label);
         if (typeof field.label === 'string') {
             const singleToDoubleQuotes: string = (field.label || '').replaceAll(
                 "'",

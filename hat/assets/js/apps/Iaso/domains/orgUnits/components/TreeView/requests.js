@@ -117,3 +117,33 @@ export const useGetOrgUnit = OrgUnitId =>
             enabled: OrgUnitId !== undefined && OrgUnitId !== null,
         },
     );
+
+const getOrgUnits = (orgUnitsIds, validationStatus = 'all') => {
+    const idsString = Array.isArray(orgUnitsIds)
+        ? orgUnitsIds?.join(',')
+        : orgUnitsIds;
+    const searchParam = `[{"validation_status":"${validationStatus}","search": "ids:${idsString}" }]`;
+    return getRequest(`/api/orgunits/?limit=10&searches=${searchParam}`);
+};
+
+/**
+ * Use this hook with for the TreeviewModal in multiselect mode
+ *
+ */
+
+export const useGetMultipleOrgUnits = (
+    orgUnitsIds,
+    validationStatus = 'all',
+) => {
+    return useSnackQuery({
+        queryKey: ['orgunits', orgUnitsIds, validationStatus],
+        queryFn: () => getOrgUnits(orgUnitsIds, validationStatus),
+        options: {
+            enabled: Boolean(orgUnitsIds?.length),
+            select: data => {
+                if (!data) return {};
+                return data.orgunits;
+            },
+        },
+    });
+};

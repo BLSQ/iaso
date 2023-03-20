@@ -200,6 +200,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_workflows',
         defaultMessage: 'Workflows',
     },
+    iaso_entity_duplicates_read: {
+        id: 'iaso.permissions.iaso_entity_duplicates_read',
+        defaultMessage: 'See entity duplicates',
+    },
+    iaso_entity_duplicates_write: {
+        id: 'iaso.permissions.iaso_entity_duplicates_write',
+        defaultMessage: 'Edit entity duplicates',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',

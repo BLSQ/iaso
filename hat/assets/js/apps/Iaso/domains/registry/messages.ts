@@ -29,6 +29,42 @@ const MESSAGES = defineMessages({
         id: 'blsq.treeview.error',
         defaultMessage: 'Please select an org unit',
     },
+    search: {
+        id: 'blsq.treeview.label.selectSingle',
+        defaultMessage: 'Select an org unit',
+    },
+    selectedOrgUnit: {
+        id: 'instance.selectedOrgUnit',
+        defaultMessage: 'Selected Org unit',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    type: {
+        defaultMessage: 'Type',
+        id: 'iaso.entities.type',
+    },
+    NEW: {
+        id: 'iaso.forms.new',
+        defaultMessage: 'new',
+    },
+    REJECTED: {
+        id: 'iaso.forms.rejected',
+        defaultMessage: 'rejected',
+    },
+    VALID: {
+        defaultMessage: 'Valid',
+        id: 'iaso.label.valid',
+    },
+    status: {
+        id: 'iaso.forms.status',
+        defaultMessage: 'Status',
+    },
+    seeRegistry: {
+        id: 'iaso.registry.seeRegistry',
+        defaultMessage: 'See registry',
+    },
 });
 
 export default MESSAGES;

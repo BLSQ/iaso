@@ -750,6 +750,7 @@
     "iaso.queryBuilder.supportedTypeFields": "Supported type of fields",
     "iaso.queryBuilder.title": "Query builder",
     "iaso.queryBuilder.xlsQuestionsTypesLink": "Possible questions types",
+    "iaso.registry.seeRegistry": "See registry",
     "iaso.registry.title": "Registry",
     "iaso.restricted_submissions_by_orgunits": "You're only allowed to see submissions for the following orgunits:",
     "iaso.runs.dialog.deleteRunText": "All created links will be deleted.",

@@ -86,8 +86,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         orgunitTypes,
         childrenOrgunits,
         orgUnits,
+        orgUnitsList,
         sidebarData,
         isFetchingOrgUnits,
+        isFetchingOrgUnitsList,
         isLoadingPlanning,
         isSaving,
         isFetchingOrgunitTypes,
@@ -335,14 +337,13 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                             teams={teams || []}
                                             profiles={profiles}
                                             currentTeam={currentTeam}
-                                            orgUnits={orgUnits?.all || []}
+                                            orgUnits={orgUnitsList || []}
                                             handleSaveAssignment={
                                                 handleSaveAssignment
                                             }
                                             isFetchingOrgUnits={
                                                 isLoadingAssignments ||
-                                                isFetchingOrgUnits ||
-                                                !orgUnits
+                                                isFetchingOrgUnitsList
                                             }
                                             selectedItem={selectedItem}
                                         />

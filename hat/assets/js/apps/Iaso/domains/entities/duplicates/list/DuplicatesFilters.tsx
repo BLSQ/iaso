@@ -76,7 +76,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
         useGetBeneficiaryTypesDropdown();
 
     const { data: formsDropdown, isFetching: isFetchingForms } =
-        useGetFormsOptions('possible_fields');
+        useGetFormsOptions(['possible_fields']);
 
     const selectedForm = useMemo(() => {
         return (formsDropdown as any[])

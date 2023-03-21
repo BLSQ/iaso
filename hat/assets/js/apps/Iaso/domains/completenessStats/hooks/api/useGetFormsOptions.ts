@@ -3,12 +3,16 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
 export const useGetFormsOptions = (
-    additionalFields?: string,
+    additionalFields?: string[],
 ): UseQueryResult => {
+    const fields = ['name', 'id'];
+    if (additionalFields) {
+        fields.push(...additionalFields);
+    }
     const params = {
         all: 'true',
         order: 'name',
-        fields: `name,id,${additionalFields ?? ''}`,
+        fields: fields.join(','),
     };
     const queryString = new URLSearchParams(params);
 

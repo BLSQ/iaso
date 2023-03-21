@@ -1,19 +1,6 @@
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-
-import { Box, Typography } from '@material-ui/core';
-
 import { useGetInstance } from '../hooks/useGetInstance';
 import { Instance } from '../../types/instance';
-
-import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
-import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
-import InstanceFileContent from '../../components/InstanceFileContent';
-import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
-import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
-
-import MESSAGES from '../messages';
 import { InstanceDetailRaw } from './InstanceDetailRaw';
 
 type Props = {

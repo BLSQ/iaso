@@ -27,6 +27,7 @@ import { DuplicateData, DuplicateEntityForTable } from '../types';
 import { useGoBack } from '../../../../routing/useGoBack';
 import { Router } from '../../../../types/general';
 import { DuplicateDetailsTableButtons } from './DuplicateDetailsTableButtons';
+import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
 
 const updateCellColors =
     (selected: 'entity1' | 'entity2') =>
@@ -113,6 +114,8 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
     }) as { data: DuplicateData[] };
+
+    const [entityIdA, entityIdB] = params.entities.split(',');
 
     const disableMerge = Boolean(
         tableState.find(row => row.final.status === 'dropped'),
@@ -322,6 +325,8 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                         }
                     />
                 </Paper>
+                <SubmissionsForEntity entityId={entityIdA} />
+                <SubmissionsForEntity entityId={entityIdB} />
             </Box>
         </>
     );

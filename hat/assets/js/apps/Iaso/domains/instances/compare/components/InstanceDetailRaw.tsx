@@ -7,9 +7,10 @@ import MESSAGES from '../messages';
 import InstanceDetailsInfos from '../../components/InstanceDetailsInfos';
 import InstanceDetailsLocation from '../../components/InstanceDetailsLocation';
 import InstanceFileContent from '../../components/InstanceFileContent';
+import { Instance } from '../../types/instance';
 
 type Props = {
-    data: any;
+    data?: Instance;
     isLoading: boolean;
     isError: boolean;
 };

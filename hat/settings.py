@@ -201,7 +201,7 @@ CORS_ALLOW_CREDENTIALS = False
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["./hat/templates"],
+        "DIRS": ["./hat/templates", "./django_sql_dashboard_export/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -264,8 +264,18 @@ if os.environ.get("DB_READONLY_USERNAME"):
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
     # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
     DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+elif "test" in sys.argv and DEBUG:
+    # For when running unit test
+    DATABASES["dashboard"] = DATABASES["default"]
+
+    INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
+    # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
+    DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+
 
 DATABASES["worker"] = DATABASES["default"].copy()
 DATABASE_ROUTERS = [

@@ -12,6 +12,7 @@ services:
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
       - ./beanstalk_worker:/opt/app/beanstalk_worker
+      - ./django_sql_dashboard_export:/opt/app/django_sql_dashboard_export
       - ./media:/opt/app/media
       - ./plugins:/opt/app/plugins
       - ./scripts:/opt/app/scripts

@@ -62,6 +62,7 @@ export const budgetFormFields = rounds => {
         'submitted_to_orpg_wider_at_WFEDITABLE',
         'feedback_sent_to_rrt2_at_WFEDITABLE',
         'submitted_to_orpg_operations2_at_WFEDITABLE',
+        're_submitted_to_orpg_operations1_at_WFEDITABLE',
         're_submitted_to_orpg_operations2_at_WFEDITABLE',
         'submitted_for_approval_at_WFEDITABLE',
         'feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE',

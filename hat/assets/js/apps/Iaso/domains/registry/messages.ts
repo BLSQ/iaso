@@ -65,6 +65,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.registry.seeRegistry',
         defaultMessage: 'See registry',
     },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
 });
 
 export default MESSAGES;

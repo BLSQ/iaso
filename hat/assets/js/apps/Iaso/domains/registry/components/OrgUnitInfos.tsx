@@ -85,7 +85,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     data-test="csv-export-button"
                     variant="contained"
                     color="primary"
-                    href={`/dashboard/${baseUrls.registryDetail}/accountId/${accountId}/registryId/${orgUnit.id}`}
+                    href={`/dashboard/${baseUrls.registryDetail}/accountId/${accountId}/orgUnitId/${orgUnit.id}`}
                 >
                     {formatMessage(MESSAGES.seeRegistry)}
                 </Button>

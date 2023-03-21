@@ -441,7 +441,7 @@ export const registryDetailPath = {
         },
         {
             isRequired: true,
-            key: 'registryId',
+            key: 'orgUnitId',
         },
         ...paginationPathParams,
     ],

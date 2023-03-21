@@ -415,11 +415,11 @@ except Exception as e:
     VERSION = "undetected_version"
 
 if SENTRY_URL:
-    traces_sample_rate = os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")
+    traces_sample_rate_str: str = os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")
     try:
-        traces_sample_rate = float(traces_sample_rate)
+        traces_sample_rate = float(traces_sample_rate_str)
     except ValueError:
-        raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate}, should be float")
+        raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate_str}, should be float")
 
     sentry_sdk.init(
         SENTRY_URL,

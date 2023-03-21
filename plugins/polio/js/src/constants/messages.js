@@ -1926,6 +1926,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.submitted_for_approval',
         defaultMessage: 'Submitted for approval',
     },
+    re_submitted_to_orpg_operations1: {
+        id: 'iaso.polio.form.label.re_submitted_to_orpg_operations1',
+        defaultMessage: 'Resubmitted to ORPG Operations',
+    },
     re_submitted_to_orpg_operations2: {
         id: 'iaso.polio.form.label.re_submitted_to_orpg_operations2',
         defaultMessage: 'Resubmitted to ORPG Operations',

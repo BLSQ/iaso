@@ -97,6 +97,8 @@
     "iaso.polio.form.label.ratioChildrenMissedInHousehold": "% d'enfants manqués DANS les ménages",
     "iaso.polio.form.label.ratioChildrenMissedOutOfHousehold": "% d'enfants manqués EN DEHORS des ménages",
     "iaso.polio.form.label.re_ssubmitted_to_orpg_operations2": "Resoumis à ORPG Operations",
+    "iaso.polio.form.label.re_submitted_to_orpg_operations1": "Resoumis à ORPG Operations",
+    "iaso.polio.form.label.re_submitted_to_orpg_operations2": "Resoumis à ORPG Operations",
     "iaso.polio.form.label.re_submitted_to_orpg_wider": "Resoumis à ORPG wider group",
     "iaso.polio.form.label.re_submitted_to_rrt": "Resoumis à to RRT",
     "iaso.polio.form.label.repeatBudgetStep": "Renvoyer l'étape pour corrections ou comme rappel",

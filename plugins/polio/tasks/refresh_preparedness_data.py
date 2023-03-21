@@ -1,11 +1,9 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Optional
 
 from django.utils.timezone import now
 
 from beanstalk_worker import task_decorator
-from iaso.models import Task
 from plugins.polio.models import Campaign, Round, SpreadSheetImport
 from plugins.polio.preparedness import warning_email
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
@@ -20,20 +18,24 @@ def refresh_data(
 ):
     started_at = datetime.now()
     round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")
+    round_qs = round_qs.filter(started_at__gte=now() - timedelta(days=180))
+    round_qs = round_qs.order_by("-started_at")
     round_qs = round_qs.exclude(campaign__isnull=True)
     if campaigns is not None:
         for campaign_name in campaigns:
             round_qs = round_qs.filter(campaign__obr_name__icontains=campaign_name)
-    round_qs.update(preparedness_sync_status="QUEUED")
+        round_qs.update(preparedness_sync_status="QUEUED")
     logger.info(round_qs)
+    count = round_qs.count()
 
     round: Round
-    for round in round_qs:
+    for i, round in enumerate(round_qs):
         round.preparedness_sync_status = "ONGOING"
         round.save()
 
         task.report_progress_and_stop_if_killed(
-            progress_value=round.pk,
+            progress_value=i,
+            end_value=count,
             progress_message=f"Round {round.pk} refresh started: {round.preparedness_spreadsheet_url}",
         )
         try:

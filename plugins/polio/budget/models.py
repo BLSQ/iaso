@@ -148,9 +148,11 @@ class MailTemplate(models.Model):
 
         workflow = get_workflow()
         transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+        # filter out repeat steps. I do it here so it's easy to remove
+        filtered_transitions = [transition for transition in transitions if "repeat" not in transition.key.split("_")]
 
         buttons = []
-        for transition in transitions:
+        for transition in filtered_transitions:
             transition_url_template = "/quickTransition/{transition_key}/previousStep/{step_id}"
             button_url = campaign_url + transition_url_template.format(transition_key=transition.key, step_id=step.id)
             # link that will auto auth

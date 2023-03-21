@@ -95,7 +95,7 @@ class CachedSheet:
         "Return first cell for sprint, searching right down"
         for row_num, row in enumerate(self.values):
             for col_num, cell in enumerate(row):
-                if cell == query:
+                if str(cell).lower() == query.lower():
                     return row_num + 1, col_num + 1
         return None
 

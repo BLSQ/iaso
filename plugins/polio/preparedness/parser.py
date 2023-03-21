@@ -269,6 +269,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
             "Résumé du niveau de préparation Lomé Commune",
             "Résumé de la préparation au niveau régional",
             "Resumo da preparação em Nível Regional",
+            "Summary of district Level Preparedness",
         )
         if not cell:
             print(f"No regional data found on worksheet: {sheet.title}")

@@ -30,7 +30,7 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     treeContainer: {
         '& ul[role="tree"]': {
-            maxHeight: '84vh',
+            maxHeight: '75vh',
         },
     },
 }));

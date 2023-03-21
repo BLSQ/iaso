@@ -9,6 +9,7 @@ import {
 } from 'react-leaflet';
 import { useSkipEffectOnMount } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
+// @ts-ignore
 import L from 'leaflet';
 
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
@@ -33,7 +34,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     orgUnit,
     isLoading,
 }) => {
-    // const classes: Record<string, string> = useStyles();
     const map: any = useRef();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const fitToBounds = useCallback(() => {
@@ -54,7 +54,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
             fitToBounds();
         }
     }, [orgUnit?.geo_json]);
-    console.log('orgUnit', orgUnit);
     return (
         <Box position="relative">
             <TilesSwitch
@@ -66,7 +65,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 zoomSnap={0.25}
                 maxZoom={currentTile.maxZoom}
                 ref={map}
-                style={{ height: '65vh' }}
+                style={{ height: '500px' }}
                 center={defaultViewport.center}
                 zoom={defaultViewport.zoom}
                 scrollWheelZoom={false}

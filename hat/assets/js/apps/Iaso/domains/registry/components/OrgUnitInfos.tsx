@@ -7,7 +7,6 @@ import {
     TableCell,
     Box,
     Button,
-    Divider,
 } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
@@ -44,7 +43,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     );
     return (
         <>
-            <Divider />
             <Table size="small">
                 <TableBody>
                     <TableRow>
@@ -64,6 +62,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         <TableCell>
                             {isFetching && <CircularProgress size={15} />}
                             {!isFetching && orgUnitType?.name}
+                            {!orgUnitType && orgUnit.org_unit_type_name}
                         </TableCell>
                     </TableRow>
                     <TableRow>

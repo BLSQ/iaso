@@ -65,9 +65,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.registry.seeRegistry',
         defaultMessage: 'See registry',
     },
-    downloadXml: {
-        id: 'iaso.label.downloadXml',
-        defaultMessage: 'Download XML',
+    submission: {
+        id: 'iaso.instance.titleSingle',
+        defaultMessage: 'Submission',
+    },
+    editOnEnketo: {
+        id: 'iaso.instance.instanceEditAction',
+        defaultMessage: 'Edit the answers in Enketo',
     },
 });
 

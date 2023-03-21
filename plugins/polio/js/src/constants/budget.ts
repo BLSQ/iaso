@@ -6,6 +6,7 @@ export const BUDGET_STATES = [
     'feedback_sent_to_gpei',
     're_submitted_to_rrt',
     'submitted_to_orpg_operations1',
+    're_submitted_to_orpg_operations1',
     'feedback_sent_to_rrt1',
     'submitted_to_orpg_wider',
     'submitted_to_orpg_operations2',
@@ -34,6 +35,7 @@ export const RRT_REVIEW = [
 export const ORPG_REVIEW = [
     'submitted_to_orpg_operations1',
     'feedback_sent_to_rrt1',
+    're_submitted_to_orpg_operations1',
     'submitted_to_orpg_wider',
     'submitted_to_orpg_operations2',
     'feedback_sent_to_rrt2',

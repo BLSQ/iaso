@@ -380,6 +380,7 @@ class Campaign(SoftDeletableModel):
     re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
     submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
     submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
     submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)

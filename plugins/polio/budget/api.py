@@ -113,7 +113,6 @@ class BudgetCampaignViewSet(ModelViewSet):
     @action(
         detail=False,
         methods=["GET"],
-        # serializer_class=CampaignBudgetSerializer,
         permission_classes=[HasPermission("iaso_polio_budget"), HasPermission("iaso_polio_budget_admin")],
     )
     def export_csv(self, request):
@@ -146,7 +145,7 @@ class BudgetCampaignViewSet(ModelViewSet):
                 c.country.name,
                 c.budget_current_state_label,
                 c.cvdpv2_notified_at,
-                "",
+                c.budget_last_updated_at.strftime("%Y-%m-%d"),
             ]
             writer.writerow(data_list)
         return response

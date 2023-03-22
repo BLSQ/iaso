@@ -137,6 +137,7 @@
     "iaso.entities.types": "Types",
     "iaso.entities.update": "Mettre l'entité à jour",
     "iaso.entities.vaccinationNumber": "Numéro de vaccination",
+    "iaso.entity.label.noSubmissionFound": "Aucune soumission trouvée",
     "iaso.entityTypes.count": "Nombre d'entités",
     "iaso.entityTypes.create": "Créer un type d'entité",
     "iaso.entityTypes.dialog.deleteTitle": "Êtes-vous certain de vouloir effacer ce type d'entité ?",

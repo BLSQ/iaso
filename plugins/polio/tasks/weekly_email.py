@@ -33,6 +33,7 @@ def send_notification_email(campaign):
         return False
     try:
         cug = CountryUsersGroup.objects.get(country=country)
+        lang = cug.language
     except CountryUsersGroup.DoesNotExist:
         return False
     users = cug.users.all()
@@ -40,13 +41,13 @@ def send_notification_email(campaign):
     if not emails:
         return False
     day_number = (
-        (now().date() - campaign.cvdpv_notified_at).days
-        if campaign.cvdpv_notified_at
+        (now().date() - campaign.cvdpv2_notified_at).days
+        if campaign.cvdpv2_notified_at
         else "{Error: No cVDPV notification available. Enter a notification date in order to have the days count.}"
     )
     onset_days = (
-        (campaign.cvdpv_notified_at - campaign.onset_at).days
-        if campaign.onset_at and campaign.cvdpv_notified_at
+        (campaign.cvdpv2_notified_at - campaign.onset_at).days
+        if campaign.onset_at and campaign.cvdpv2_notified_at
         else "{Error: No cVDPV notification or campaign on set available. Enter a date in order to have the days count.}"
     )
     try:
@@ -55,7 +56,7 @@ def send_notification_email(campaign):
         first_round = None
     round1_days = (
         (first_round.started_at - campaign.onset_at).days
-        if first_round and first_round.started_at and campaign.cvdpv_notified_at
+        if first_round and first_round.started_at and campaign.cvdpv2_notified_at
         else ""
     )
     c = campaign
@@ -65,7 +66,53 @@ def send_notification_email(campaign):
 
     preparedness = get_last_preparedness(campaign)
 
-    email_text = f"""Dear GPEI coordinator – {country.name},
+    # French
+    if lang == "fr":
+        email_text = f"""Cher·ère coordinateur.rice de la GPEI – {country.name},
+
+Statut hebdomadaire: {day_number} jours se sont écoulés depuis la date de notification de la campagne. 
+Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles dans la plateforme. . Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
+
+* Date de notification              : {c.cvdpv2_notified_at}
+* Premier passage                   : {first_round.started_at if first_round and first_round.started_at else ''}
+* Type de vaccin                    : {c.vaccines}
+* Population cible                  : {target_population} 
+* Statut de l'évaluation du risque  : {c.get_risk_assessment_status_display() or 'Pending'}
+* Date de soumission du budget      : {c.budget_submitted_at}
+* Jours entre date de détection et de notification   : {onset_days}
+* Jours entre dates de notification et de passage 1 : {round1_days}
+* Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
+* Prep. régional                 : {preparedness.get('regional_score') if preparedness else ''}
+* Prep. district                 : {preparedness.get('district_score') if preparedness else ''}
+
+Pour toute question, contacter l'équipe RRT.
+Ceci est un message automatique.
+    """
+    # Portuguese
+    elif lang == "pt":
+        email_text = f"""Prezado(a) coordenador(a) do GPEI – {country.name},
+
+Estado semanal: passaram-se {day_number} dias desde a data de notificação da campanha.
+Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
+
+* Data de notificação: {c.cvdpv2_notified_at}
+* Primeira ronda: {first_round.started_at if first_round and first_round.started_at else ''}
+* Tipo de vacina: {c.vaccines}
+* População-alvo: {target_population}
+* Estado da avaliação de risco: {c.get_risk_assessment_status_display() or 'Pending'}
+* Data de envio do orçamento: {c.budget_submitted_at}
+* Dias entre a data de detecção e a data de notificação: {onset_days}
+* Dias entre a data de notificação e as datas da primeira ronda: {round1_days}
+* Prep. nacional: {preparedness.get('national_score') if preparedness else ''}
+* Prep. regional: {preparedness.get('regional_score') if preparedness else ''}
+* Prep. distrital: {preparedness.get('district_score') if preparedness else ''}
+
+Por favor, em caso de qualquer dúvida entre em contato com a equipa RRT.
+Esta é uma mensagem automática.
+    """
+    # English
+    else:
+        email_text = f"""Dear GPEI coordinator – {country.name},
 
 Weekly status update: Today is day {day_number} since outbreak notification.
 Below is the summary of the campaign {c.obr_name}. for more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary

@@ -33,7 +33,7 @@ import formsTableColumns from '../forms/config';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
-import { OrgUnitForm } from './components/OrgUnitForm';
+import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 // import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';

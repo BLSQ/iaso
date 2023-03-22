@@ -250,17 +250,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     alignItems="center"
                 >
                     <Box mt={1}>
-                        <Button
-                            id="save-ou"
-                            disabled={isSaveDisabled}
-                            variant="contained"
-                            className={classes.marginLeft}
-                            color="primary"
-                            onClick={handleSave}
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-
                         {!isNewOrgunit && (
                             <Button
                                 className={classes.marginLeft}
@@ -271,6 +260,16 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                                 {formatMessage(MESSAGES.cancel)}
                             </Button>
                         )}
+                        <Button
+                            id="save-ou"
+                            disabled={isSaveDisabled}
+                            variant="contained"
+                            className={classes.marginLeft}
+                            color="primary"
+                            onClick={handleSave}
+                        >
+                            {formatMessage(MESSAGES.save)}
+                        </Button>
                     </Box>
                 </Grid>
             </Grid>

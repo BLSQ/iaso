@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { UrlParams } from '../../../types/table';
+import { UrlParams, Pagination } from '../../../types/table';
 import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
@@ -67,6 +67,9 @@ export type OrgUnit = {
     reference_instance_id: Nullable<number>;
     reference_instance: Instance;
 };
+export interface PaginatedOrgUnits extends Pagination {
+    orgunits: OrgUnit[];
+}
 
 export type OrgUnitParams = UrlParams & {
     locationLimit: string;

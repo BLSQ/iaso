@@ -1,6 +1,7 @@
 from typing import Type
-
-from django.db.models import QuerySet, Max
+import csv
+from datetime import datetime
+from django.db.models import QuerySet, Max, Q
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -108,6 +109,47 @@ class BudgetCampaignViewSet(ModelViewSet):
         budget_step = serializer.save()
 
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
+
+    @action(
+        detail=False,
+        methods=["GET"],
+        # serializer_class=CampaignBudgetSerializer,
+        permission_classes=[HasPermission("iaso_polio_budget"), HasPermission("iaso_polio_budget_admin")],
+    )
+    def export_csv(self, request):
+        countries = request.GET.get("country__id__in", None)
+        current_state = request.GET.get("budget_current_state_key__in", None)
+        search = request.GET.get("search",None)
+        order = request.GET.get("order", "-cvdpv2_notified_at")
+        campaigns = self.get_queryset()
+        if countries:
+            campaigns = campaigns.filter(country__id__in=countries.split(","))
+        if current_state:
+            campaigns = campaigns.filter(budget_current_state_key__in=current_state.split(","))
+        if search:
+            campaigns = campaigns.filter(Q(obr_name__icontains=search) | Q(epid__icontains=search)| Q(country__name__icontains=search))
+        campaigns = campaigns.order_by(order)
+        date = datetime.now().strftime("%Y-%m-%d")
+        fields = ["Campaign", "Country", "Status", "Notification date", "Latest step"]
+        filename = f"campaigns_budget_list_{date}.csv"
+        response = HttpResponse(
+            content_type="txt/csv",
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
+        )
+        writer = csv.writer(response)
+        writer.writerow(fields)
+        for c in campaigns:
+            data_list = [
+                c.obr_name,
+                c.country.name,
+                c.budget_current_state_label,
+                c.cvdpv2_notified_at,
+                "",
+                "",
+            ]
+            writer.writerow(data_list)
+        return response
+
 
 
 @swagger_auto_schema(tags=["budget"])

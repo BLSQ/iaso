@@ -8,15 +8,17 @@ import {
     Tooltip,
 } from 'react-leaflet';
 import { useSkipEffectOnMount } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box, useTheme } from '@material-ui/core';
 // @ts-ignore
 import L from 'leaflet';
 
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
+import { MapLegend } from '../../../components/maps/MapLegend';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 import tiles from '../../../constants/mapTiles';
+import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
 const defaultViewport = {
     center: [1, 20],
@@ -28,13 +30,18 @@ const boundsOptions = {
 type Props = {
     orgUnit?: OrgUnit;
     isLoading: boolean;
+    subOrgUnitTypes: OrgunitTypes;
+    childrenOrgUnits: OrgUnit[];
 };
 
 export const OrgUnitMap: FunctionComponent<Props> = ({
     orgUnit,
     isLoading,
+    subOrgUnitTypes,
+    childrenOrgUnits,
 }) => {
     const map: any = useRef();
+    const theme = useTheme();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const fitToBounds = useCallback(() => {
         let newBounds;
@@ -56,6 +63,17 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     }, [orgUnit?.geo_json]);
     return (
         <Box position="relative">
+            <MapLegend
+                top="auto"
+                bottom={theme.spacing(3)}
+                width="auto"
+                padding={2}
+                options={subOrgUnitTypes.map(subOuType => ({
+                    value: `${subOuType.id}`,
+                    label: subOuType.name,
+                    color: subOuType.color || '',
+                }))}
+            />
             <TilesSwitch
                 currentTile={currentTile}
                 setCurrentTile={setCurrentTile}
@@ -79,15 +97,36 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 />
                 {orgUnit?.geo_json && (
                     <Pane name="orgunit-shapes">
-                        <GeoJSON
-                            // onClick={() => onClick(shape)}
-                            className="secondary"
-                            data={orgUnit.geo_json}
-                        >
+                        <GeoJSON className="secondary" data={orgUnit.geo_json}>
                             <Tooltip>{orgUnit.name}</Tooltip>
                         </GeoJSON>
                     </Pane>
                 )}
+                {subOrgUnitTypes.map(subType => (
+                    <Pane name={`children-orgunit-type-${subType.id}`}>
+                        {childrenOrgUnits.map(childrenOrgUnit => {
+                            if (
+                                childrenOrgUnit.org_unit_type_id === subType.id
+                            ) {
+                                if (childrenOrgUnit.geo_json) {
+                                    return (
+                                        <GeoJSON
+                                            style={() => ({
+                                                color: subType.color || '',
+                                            })}
+                                            data={childrenOrgUnit.geo_json}
+                                        >
+                                            <Tooltip>
+                                                {childrenOrgUnit.name}
+                                            </Tooltip>
+                                        </GeoJSON>
+                                    );
+                                }
+                            }
+                            return null;
+                        })}
+                    </Pane>
+                ))}
             </Map>
         </Box>
     );

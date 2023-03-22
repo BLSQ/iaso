@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import {
     useSafeIntl,
     commonStyles,
@@ -11,6 +11,7 @@ import MESSAGES from './messages';
 
 import { useGoBack } from '../../routing/useGoBack';
 import { baseUrls } from '../../constants/urls';
+import { getOtChipColors } from '../../constants/chipColors';
 
 import { useGetOrgUnit, useGetOrgUnitsChildren } from './hooks/useGetOrgUnit';
 import { useGetEnketoUrl } from './hooks/useGetEnketoUrl';
@@ -18,8 +19,8 @@ import { useGetEnketoUrl } from './hooks/useGetEnketoUrl';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { OrgUnitMap } from './components/OrgUnitMap';
 import InstanceFileContent from '../instances/components/InstanceFileContent';
-
 import EnketoIcon from '../instances/components/EnketoIcon';
+import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 
 type Params = {
     accountId: string;
@@ -59,7 +60,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         window.location.href,
         orgUnit?.reference_instance,
     );
-    console.log('childrenOrgUnits', childrenOrgUnits);
+
+    const subOrgUnitTypes: OrgunitTypes = useMemo(
+        () =>
+            orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
+                ...subType,
+                color: getOtChipColors(index) as string,
+            })) || [],
+        [orgUnit],
+    );
     return (
         <>
             <TopBar
@@ -78,6 +87,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             <OrgUnitMap
                                 orgUnit={orgUnit}
                                 isLoading={isFetching}
+                                subOrgUnitTypes={subOrgUnitTypes}
+                                childrenOrgUnits={childrenOrgUnits || []}
                             />
                         </WidgetPaper>
                     </Grid>

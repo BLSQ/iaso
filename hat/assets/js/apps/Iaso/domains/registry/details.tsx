@@ -12,7 +12,7 @@ import MESSAGES from './messages';
 import { useGoBack } from '../../routing/useGoBack';
 import { baseUrls } from '../../constants/urls';
 
-import { useGetOrgUnit } from './hooks/useGetOrgUnit';
+import { useGetOrgUnit, useGetOrgUnitsChildren } from './hooks/useGetOrgUnit';
 import { useGetEnketoUrl } from './hooks/useGetEnketoUrl';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
@@ -54,10 +54,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const { data: childrenOrgUnits } = useGetOrgUnitsChildren(orgUnitId);
     const getEnketoUrl = useGetEnketoUrl(
         window.location.href,
         orgUnit?.reference_instance,
     );
+    console.log('childrenOrgUnits', childrenOrgUnits);
     return (
         <>
             <TopBar

@@ -71,7 +71,7 @@ def send_notification_email(campaign):
         email_text = f"""Cher·ère coordinateur.rice de la GPEI – {country.name},
 
 Statut hebdomadaire: {day_number} jours se sont écoulés depuis la date de notification de la campagne. 
-Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles dans la plateforme. . Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
+Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles dans la plateforme. Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
 
 * Date de notification              : {c.cvdpv2_notified_at}
 * Premier passage                   : {first_round.started_at if first_round and first_round.started_at else ''}
@@ -90,7 +90,7 @@ Ceci est un message automatique.
     """
     # Portuguese
     elif lang == "pt":
-        email_text = f"""Prezado(a) coordenador(a) do GPEI – {country.name},
+        email_text = f"""Prezado(a) coordenador(a) da GPEI – {country.name},
 
 Estado semanal: passaram-se {day_number} dias desde a data de notificação da campanha.
 Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
@@ -115,7 +115,7 @@ Esta é uma mensagem automática.
         email_text = f"""Dear GPEI coordinator – {country.name},
 
 Weekly status update: Today is day {day_number} since outbreak notification.
-Below is the summary of the campaign {c.obr_name}. for more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
+Below is the summary of the campaign {c.obr_name}. For more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
 If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}

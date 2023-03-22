@@ -6,10 +6,13 @@ import { Instance } from '../../../../instances/types/instance';
 type QueryParams = {
     entityId?: string;
 };
+type QueryResult = {
+    instances: Instance[];
+};
 
 export const useGetInstancesForEntity = ({
     entityId,
-}: QueryParams): UseQueryResult<Instance, any> => {
+}: QueryParams): UseQueryResult<QueryResult, any> => {
     const params: { order: string; entityId?: string } = {
         order: '-created_at',
     };

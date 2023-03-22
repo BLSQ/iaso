@@ -13,12 +13,16 @@ type Props = {
     data?: Instance;
     isLoading: boolean;
     isError: boolean;
+    showTitle?: boolean;
+    elevation?: number;
 };
 
 export const InstanceDetailRaw: FunctionComponent<Props> = ({
     data,
     isLoading,
     isError,
+    showTitle = true,
+    elevation = 1,
 }) => {
     const { formatMessage } = useSafeIntl();
     if (isLoading)
@@ -37,16 +41,21 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
     }
     return (
         <>
-            <Box mb={4}>
-                <Typography variant="h5" color="secondary">
-                    {`${formatMessage(MESSAGES.submissionTitle)} - ${data?.id}`}
-                </Typography>
-            </Box>
+            {showTitle && (
+                <Box mb={4}>
+                    <Typography variant="h5" color="secondary">
+                        {`${formatMessage(MESSAGES.submissionTitle)} - ${
+                            data?.id
+                        }`}
+                    </Typography>
+                </Box>
+            )}
             <WidgetPaper
                 expandable
                 isExpanded={false}
                 title={formatMessage(MESSAGES.infos)}
                 padded
+                elevation={elevation}
             >
                 <InstanceDetailsInfos currentInstance={data} />
             </WidgetPaper>
@@ -54,10 +63,14 @@ export const InstanceDetailRaw: FunctionComponent<Props> = ({
                 expandable
                 isExpanded={false}
                 title={formatMessage(MESSAGES.location)}
+                elevation={elevation}
             >
                 <InstanceDetailsLocation currentInstance={data} />
             </WidgetPaper>
-            <WidgetPaper title={formatMessage(MESSAGES.form)}>
+            <WidgetPaper
+                title={formatMessage(MESSAGES.form)}
+                elevation={elevation}
+            >
                 <InstanceFileContent instance={data} />
             </WidgetPaper>
         </>

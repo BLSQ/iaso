@@ -325,8 +325,20 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                         }
                     />
                 </Paper>
-                <SubmissionsForEntity entityId={entityIdA} />
-                <SubmissionsForEntity entityId={entityIdB} />
+                <Grid container item spacing={2}>
+                    <Grid item xs={12} sm={6}>
+                        <SubmissionsForEntity
+                            entityId={entityIdA}
+                            title="Submissions for Beneficiary A"
+                        />
+                    </Grid>
+                    <Grid item xs={12} sm={6}>
+                        <SubmissionsForEntity
+                            entityId={entityIdB}
+                            title="Submissions for Beneficiary B"
+                        />
+                    </Grid>
+                </Grid>
             </Box>
         </>
     );

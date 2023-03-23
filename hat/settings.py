@@ -278,7 +278,6 @@ elif os.environ.get("DB_READONLY_USERNAME"):
     DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
 
 
-
 DATABASES["worker"] = DATABASES["default"].copy()
 DATABASE_ROUTERS = [
     "hat.common.dbrouter.DbRouter",

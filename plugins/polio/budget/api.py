@@ -39,7 +39,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     exporter_serializer_class = ExportCampaignBudgetSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
-    remove_results_key_if_paginated = True
 
     # Make this read only
     # FIXME : remove POST

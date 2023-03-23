@@ -378,7 +378,7 @@ class CSVExportMixin:
         date = datetime.now().strftime("%Y-%m-%d")
         filename = self.export_filename.format(date=date)
         response = HttpResponse(
-            content_type="txt/csv",
+            content_type="text/csv",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
             content=renderer.render(data),
         )

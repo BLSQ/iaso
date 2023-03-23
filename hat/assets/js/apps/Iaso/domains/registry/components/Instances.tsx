@@ -4,35 +4,29 @@ import { useSkipEffectOnMount } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
 import InputComponent from '../../../components/forms/InputComponent';
+import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 
 import { redirectToReplace } from '../../../routing/actions';
 
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes, OrgunitType } from '../../orgUnits/types/orgunitTypes';
-import { Form } from '../../forms/types/forms';
 import { RegistryDetailParams } from '../types';
 
 import { useGetForms } from '../hooks/useGetForms';
+import { useGetInstances } from '../hooks/useGetInstances';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
+import { defaultSorted } from '../config';
 
 type Props = {
-    orgUnit?: OrgUnit;
     isLoading: boolean;
     subOrgUnitTypes: OrgunitTypes;
-    childrenOrgUnits: OrgUnit[];
     params: RegistryDetailParams;
 };
 
-// Select a form
-// fetch instances with org unit of org unit type selected using this form
-
 export const Instances: FunctionComponent<Props> = ({
-    orgUnit,
     isLoading,
     subOrgUnitTypes,
-    childrenOrgUnits,
     params,
 }) => {
     const { formId } = params;
@@ -41,7 +35,10 @@ export const Instances: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
 
     const { data: formsList, isFetching: isFetchingForms } = useGetForms();
-
+    const { data, isFetching: isFetchingList } = useGetInstances(
+        params,
+        currentType?.id,
+    );
     const handleFilterChange = (key: string, value: number | string) => {
         dispatch(
             redirectToReplace(baseUrls.registryDetail, {
@@ -56,6 +53,7 @@ export const Instances: FunctionComponent<Props> = ({
             setCurrentType(subOrgUnitTypes[0]);
         }
     }, [subOrgUnitTypes]);
+
     return (
         <Box>
             {currentType && !isLoading && (
@@ -84,16 +82,41 @@ export const Instances: FunctionComponent<Props> = ({
                                     loading={isFetchingForms}
                                     value={formId}
                                     type="select"
-                                    options={
-                                        formsList?.map(t => ({
-                                            label: t.name,
-                                            value: t.id,
-                                        })) || []
-                                    }
+                                    options={formsList}
                                     label={MESSAGES.form}
                                 />
                             </Grid>
                         </Grid>
+                        <TableWithDeepLink
+                            marginTop={false}
+                            baseUrl={baseUrls.registryDetail}
+                            data={data?.instances ?? []}
+                            pages={data?.pages ?? 1}
+                            defaultSorted={defaultSorted}
+                            columns={[
+                                {
+                                    Header: 'uuid',
+                                    accessor: 'uuid',
+                                },
+                                {
+                                    Header: 'Ou Name',
+                                    accessor: 'org_unit__name',
+                                    Cell: settings =>
+                                        `${settings.row.original.org_unit.name} ${settings.row.original.org_unit.org_unit_type_name}`,
+                                },
+                            ]}
+                            count={data?.count ?? 0}
+                            params={params}
+                            onTableParamsChange={p =>
+                                dispatch(
+                                    redirectToReplace(
+                                        baseUrls.registryDetail,
+                                        p,
+                                    ),
+                                )
+                            }
+                            extraProps={{ loading: isFetchingList }}
+                        />
                     </Box>
                 </>
             )}

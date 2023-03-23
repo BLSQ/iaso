@@ -44,12 +44,12 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-// test org unit http://localhost:8081/dashboard/orgunits/detail/accountId/1/orgUnitId/104090/levels/126083,104133,104090/tab/infos
-// ref instance http://localhost:8081/dashboard/forms/submission/accountId/1/instanceId/9813
 export const Details: FunctionComponent<Props> = ({ router }) => {
-    const { params } = router;
+    const {
+        params: { orgUnitId, accountId },
+        params,
+    } = router;
     const classes: Record<string, string> = useStyles();
-    const { orgUnitId, accountId } = params;
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
@@ -122,10 +122,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 </Grid>
                 <Box mt={2}>
                     <Instances
-                        orgUnit={orgUnit}
                         isLoading={isFetching}
                         subOrgUnitTypes={subOrgUnitTypes}
-                        childrenOrgUnits={childrenOrgUnits || []}
                         params={params}
                     />
                 </Box>

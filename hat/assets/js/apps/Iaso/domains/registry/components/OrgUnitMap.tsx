@@ -29,6 +29,7 @@ import tiles from '../../../constants/mapTiles';
 import { circleColorMarkerOptions, ZoomControl } from '../../../utils/mapUtils';
 
 import MESSAGES from '../messages';
+import { MapPopUp } from './MapPopUp';
 
 const defaultViewport = {
     center: [1, 20],
@@ -132,7 +133,13 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 />
                 {orgUnit?.geo_json && (
                     <Pane name="orgunit-shapes">
-                        <GeoJSON className="secondary" data={orgUnit.geo_json}>
+                        <GeoJSON
+                            className="secondary"
+                            data={orgUnit.geo_json}
+                            style={() => ({
+                                color: theme.palette.secondary.main,
+                            })}
+                        >
                             <Tooltip>{orgUnit.name}</Tooltip>
                         </GeoJSON>
                     </Pane>
@@ -143,6 +150,9 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             latitude: orgUnit.latitude,
                             longitude: orgUnit.longitude,
                         }}
+                        TooltipComponent={() => (
+                            <Tooltip>{orgUnit.name}</Tooltip>
+                        )}
                         markerProps={() => ({
                             ...circleColorMarkerOptions(
                                 theme.palette.secondary.main,
@@ -150,52 +160,80 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         })}
                     />
                 )}
-                {subOrgUnitTypes.map(subType => (
-                    <Pane
-                        name={`children-orgunit-type-${subType.id}`}
-                        key={subType.id}
-                    >
-                        {childrenOrgUnits.map(childrenOrgUnit => {
-                            if (
-                                childrenOrgUnit.org_unit_type_id === subType.id
-                            ) {
-                                const { latitude, longitude, geo_json } =
-                                    childrenOrgUnit;
-                                if (geo_json) {
-                                    return (
-                                        <GeoJSON
-                                            key={childrenOrgUnit.id}
-                                            style={() => ({
-                                                color: subType.color || '',
-                                            })}
-                                            data={childrenOrgUnit.geo_json}
-                                        >
-                                            <Tooltip>
-                                                {childrenOrgUnit.name}
-                                            </Tooltip>
-                                        </GeoJSON>
-                                    );
-                                }
-                                if (latitude && longitude) {
-                                    return (
-                                        <CircleMarkerComponent
-                                            key={childrenOrgUnit.id}
-                                            markerProps={() => ({
-                                                ...circleColorMarkerOptions(
-                                                    subType.color || '',
-                                                ),
-                                            })}
-                                            item={{
-                                                latitude,
-                                                longitude,
-                                            }}
-                                        />
-                                    );
-                                }
-                            }
-                            return null;
-                        })}
-                    </Pane>
+                {subOrgUnitTypes.map((subType, index) => (
+                    <Box key={subType.id}>
+                        <Pane
+                            name={`children-shapes-orgunit-type-${subType.id}`}
+                            style={{ zIndex: 400 + index }}
+                        >
+                            {childrenOrgUnits
+                                .filter(childrenOrgUnit =>
+                                    Boolean(childrenOrgUnit.geo_json),
+                                )
+                                .map(childrenOrgUnit => {
+                                    if (
+                                        childrenOrgUnit.org_unit_type_id ===
+                                        subType.id
+                                    ) {
+                                        return (
+                                            <GeoJSON
+                                                key={childrenOrgUnit.id}
+                                                style={() => ({
+                                                    color: subType.color || '',
+                                                })}
+                                                data={childrenOrgUnit.geo_json}
+                                            >
+                                                <MapPopUp
+                                                    orgUnit={childrenOrgUnit}
+                                                />
+                                            </GeoJSON>
+                                        );
+                                    }
+                                    return null;
+                                })}
+                        </Pane>
+
+                        <Pane
+                            name={`children-locations-orgunit-type-${subType.id}`}
+                            style={{ zIndex: 401 + index }}
+                        >
+                            {childrenOrgUnits
+                                .filter(childrenOrgUnit =>
+                                    Boolean(
+                                        childrenOrgUnit.latitude &&
+                                            childrenOrgUnit.longitude,
+                                    ),
+                                )
+                                .map(childrenOrgUnit => {
+                                    if (
+                                        childrenOrgUnit.org_unit_type_id ===
+                                        subType.id
+                                    ) {
+                                        const { latitude, longitude } =
+                                            childrenOrgUnit;
+                                        return (
+                                            <CircleMarkerComponent
+                                                PopupComponent={MapPopUp}
+                                                popupProps={() => ({
+                                                    orgUnit: childrenOrgUnit,
+                                                })}
+                                                key={childrenOrgUnit.id}
+                                                markerProps={() => ({
+                                                    ...circleColorMarkerOptions(
+                                                        subType.color || '',
+                                                    ),
+                                                })}
+                                                item={{
+                                                    latitude,
+                                                    longitude,
+                                                }}
+                                            />
+                                        );
+                                    }
+                                    return null;
+                                })}
+                        </Pane>
+                    </Box>
                 ))}
             </Map>
         </Box>

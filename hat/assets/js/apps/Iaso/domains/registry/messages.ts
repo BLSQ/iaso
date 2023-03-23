@@ -77,6 +77,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.formShort',
         defaultMessage: 'Form',
     },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
 });
 
 export default MESSAGES;

@@ -451,6 +451,10 @@ export const registryDetailPath = {
             isRequired: false,
             key: 'columns',
         },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
         ...paginationPathParams,
     ],
 };

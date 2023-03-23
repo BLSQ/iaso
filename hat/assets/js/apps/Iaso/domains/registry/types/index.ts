@@ -5,4 +5,5 @@ export type RegistryDetailParams = UrlParams & {
     accountId: string;
     formIds?: string;
     columns?: string;
+    tab?: string;
 };

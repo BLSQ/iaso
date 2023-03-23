@@ -3,7 +3,7 @@ import React, { ReactElement } from 'react';
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';
 
-export const defaultSorted = [{ id: 'updated_at', desc: false }];
+export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
 
 export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
     {

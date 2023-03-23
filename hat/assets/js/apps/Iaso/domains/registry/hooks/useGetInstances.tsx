@@ -28,6 +28,8 @@ export const useGetInstances = (
         queryFn: () => getRequest(url),
         options: {
             enabled: Boolean(orgUnitTypeId && params.formIds),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };

@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
 import { Box, Tabs, Tab, Grid } from '@material-ui/core';
 import { useSkipEffectOnMount } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
@@ -34,7 +39,7 @@ export const Instances: FunctionComponent<Props> = ({
     params,
 }) => {
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
-    const { formIds } = params;
+    const { formIds, tab } = params;
     const [currentType, setCurrentType] = useState<OrgunitType | undefined>();
 
     const dispatch = useDispatch();
@@ -44,18 +49,40 @@ export const Instances: FunctionComponent<Props> = ({
         params,
         currentType?.id,
     );
-    const handleFilterChange = (key: string, value: number | string) => {
-        dispatch(
-            redirectToReplace(baseUrls.registryDetail, {
-                ...params,
-                [key]: value,
-            }),
-        );
-    };
+    const handleFilterChange = useCallback(
+        (key: string, value: number | string) => {
+            dispatch(
+                redirectToReplace(baseUrls.registryDetail, {
+                    ...params,
+                    [key]: value,
+                }),
+            );
+        },
+        [dispatch, params],
+    );
+
+    const handleChangeTab = useCallback(
+        (newType: OrgunitType) => {
+            setCurrentType(newType);
+            dispatch(
+                redirectToReplace(baseUrls.registryDetail, {
+                    ...params,
+                    tab: newType.id,
+                }),
+            );
+        },
+        [dispatch, params],
+    );
 
     useSkipEffectOnMount(() => {
         if (subOrgUnitTypes?.length > 0 && !currentType) {
-            setCurrentType(subOrgUnitTypes[0]);
+            if (tab) {
+                setCurrentType(
+                    subOrgUnitTypes.find(subType => `${subType.id}` === tab),
+                );
+            } else {
+                setCurrentType(subOrgUnitTypes[0]);
+            }
         }
     }, [subOrgUnitTypes]);
     const currentForm: Form | undefined = useMemo(() => {
@@ -67,7 +94,7 @@ export const Instances: FunctionComponent<Props> = ({
                 <>
                     <Tabs
                         value={currentType}
-                        onChange={(_, newtab) => setCurrentType(newtab)}
+                        onChange={(_, newtab) => handleChangeTab(newtab)}
                     >
                         {subOrgUnitTypes.map(subType => (
                             <Tab
@@ -100,8 +127,7 @@ export const Instances: FunctionComponent<Props> = ({
                                 md={9}
                                 justifyContent="flex-end"
                                 alignItems="baseline"
-                                // @ts-ignore
-                                alignContent="middle"
+                                alignContent="center"
                             >
                                 {formIds && currentForm && (
                                     <ColumnSelect

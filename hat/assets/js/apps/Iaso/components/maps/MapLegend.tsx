@@ -29,7 +29,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-type Legend = {
+export type Legend = {
     value: string;
     label: string;
     color: string; // has to be an hexa color

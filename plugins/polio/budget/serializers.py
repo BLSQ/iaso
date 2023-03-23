@@ -599,7 +599,7 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
         fields = ["obr_name", "budget_current_state_label", "country", "cvdpv2_notified_at", "budget_last_updated_at"]
         labels = {
             "obr_name": "OBR name",
-            "budget_last_updated_at": "Budget last updated at",
+            "budget_last_updated_at": "Last update",
             "cvdpv2_notified_at": "Notification date",
             "country": "Country",
             "budget_current_state_label": "Budget state",

@@ -53,6 +53,7 @@ const getParentOrgUnit = (orgUnit: OrgUnit): Partial<OrgUnit> =>
         source_id: orgUnit.parent.source_id,
         parent: orgUnit.parent.parent,
         parent_name: orgUnit.parent.parent_name,
+        validation_status: orgUnit.parent.validation_status,
     };
 
 type Props = {

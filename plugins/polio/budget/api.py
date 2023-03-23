@@ -1,8 +1,5 @@
 from typing import Type
-import csv
-from rest_framework_csv import renderers as r
-from datetime import datetime
-from django.db.models import QuerySet, Max, Q
+from django.db.models import QuerySet, Max
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -13,7 +10,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
+from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
@@ -31,7 +28,7 @@ from plugins.polio.models import Campaign
 # FIXME maybe: Maybe we should inherit from CampaignViewSet directly to not duplicate all the order and filter logic
 # But then we would inherit all the other actions too
 @swagger_auto_schema(tags=["budget"])
-class BudgetCampaignViewSet(ModelViewSet):
+class BudgetCampaignViewSet(ModelViewSet,CSVExportMixin):
     """
     Campaign endpoint with budget information.
 
@@ -39,6 +36,8 @@ class BudgetCampaignViewSet(ModelViewSet):
     """
 
     serializer_class = CampaignBudgetSerializer
+    exporter_serializer_class = ExportCampaignBudgetSerializer
+    export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
     remove_results_key_if_paginated = True
 
@@ -51,19 +50,6 @@ class BudgetCampaignViewSet(ModelViewSet):
         DeletionFilterBackend,
         CustomFilterBackend,
     ]
-
-    def get_serializer_class(self):
-        if "text/csv" in self.request.accepted_media_type:
-            return ExportCampaignBudgetSerializer
-        return super().get_serializer_class()
-
-    def get_renderer_context(self):
-        context = super().get_renderer_context()
-        serializer_class = self.get_serializer_class()
-        context["header"] = serializer_class.Meta.fields
-        if hasattr(serializer_class.Meta, "labels"):
-            context["labels"] = serializer_class.Meta.labels
-        return context
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
@@ -126,45 +112,6 @@ class BudgetCampaignViewSet(ModelViewSet):
 
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
 
-    @action(
-        detail=False,
-        methods=["GET"],
-        permission_classes=[HasPermission("iaso_polio_budget"), HasPermission("iaso_polio_budget_admin")],
-    )
-    def export_csv(self, request):
-        countries = request.GET.get("country__id__in", None)
-        current_state = request.GET.get("budget_current_state_key__in", None)
-        search = request.GET.get("search", None)
-        order = request.GET.get("order", "-cvdpv2_notified_at")
-        campaigns = self.filter_queryset(self.get_queryset())
-        # if countries:
-        #     campaigns = campaigns.filter(country__id__in=countries.split(","))
-        # if current_state:
-        #     campaigns = campaigns.filter(budget_current_state_key__in=current_state.split(","))
-        # if search:
-        #     campaigns = campaigns.filter(
-        #         Q(obr_name__icontains=search) | Q(epid__icontains=search) | Q(country__name__icontains=search)
-        #     )
-        campaigns = campaigns.order_by(order)
-        date = datetime.now().strftime("%Y-%m-%d")
-        fields = ["Campaign", "Country", "Status", "Notification date", "Latest step"]
-        filename = f"campaigns_budget_list_{date}.csv"
-        response = HttpResponse(
-            content_type="txt/csv",
-            headers={"Content-Disposition": f"attachment; filename={filename}"},
-        )
-        writer = csv.writer(response)
-        writer.writerow(fields)
-        for c in campaigns:
-            data_list = [
-                c.obr_name,
-                c.country.name,
-                c.budget_current_state_label,
-                c.cvdpv2_notified_at,
-                c.budget_last_updated_at.strftime("%Y-%m-%d"),
-            ]
-            writer.writerow(data_list)
-        return response
 
 
 @swagger_auto_schema(tags=["budget"])
@@ -260,3 +207,4 @@ class WorkflowViewSet(ViewSet):
         except Exception as e:
             return Response({"error": "Error getting workflow", "details": str(e)})
         return Response(WorkflowSerializer(workflow).data)
+    

@@ -13,13 +13,15 @@ from iaso.api.common import (
     DeletionFilterBackend,
     TimestampField,
 )
+from iaso.api.query_params import LIMIT, PAGE
 from iaso.models import Entity, Instance, OrgUnit, FormVersion
 from iaso.utils.jsonlogic import jsonlogic_to_q
 
 
 class LargeResultsSetPagination(PageNumberPagination):
     page_size = 1000
-    page_size_query_param = "page_size"
+    page_size_query_param = LIMIT
+    page_query_param = PAGE
     max_page_size = 1000
 
 
@@ -97,7 +99,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
 
 class MobileEntityViewSet(ModelViewSet):
-    """Entity API for mobile
+    f"""Entity API for mobile
 
     list: /api/mobile/entities
 
@@ -107,7 +109,7 @@ class MobileEntityViewSet(ModelViewSet):
 
     details = /api/mobile/entities/uuid
 
-    sample usage: /api/mobile/entities/?limit_date=2022-12-29&limit=1&page=1
+    sample usage: /api/mobile/entities/?limit_date=2022-12-29&{LIMIT}=1&{PAGE}=1
 
     """
 

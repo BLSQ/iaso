@@ -18,6 +18,7 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import BeneficiarySvg from '../components/svg/Beneficiary';
@@ -159,6 +160,12 @@ const menuItems = defaultSourceId => [
                 permissions: paths.entityTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
+            },
+            {
+                label: MESSAGES.entityDuplicatesTitle,
+                permissions: paths.entityDuplicatesPath.permissions,
+                key: 'duplicates',
+                icon: props => <FileCopyIcon {...props} />,
             },
         ],
     },

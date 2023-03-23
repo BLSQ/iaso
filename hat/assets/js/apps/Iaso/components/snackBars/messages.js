@@ -315,6 +315,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.searchOrgUnitsError',
         defaultMessage: 'An error occurred while searching org units',
     },
+    goToEntity: {
+        id: 'iaso.snackBar.goToEntity',
+        defaultMessage: 'Go to entity',
+    },
 });
 
 export default MESSAGES;

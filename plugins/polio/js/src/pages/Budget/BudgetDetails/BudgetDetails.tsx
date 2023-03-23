@@ -65,19 +65,26 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
 
     const nextSteps = useMemo(() => {
         const regular = budgetInfos?.next_transitions?.filter(
-            transition => transition.key !== 'override',
+            transition =>
+                transition.key !== 'override' &&
+                !transition.key.includes('repeat'),
+        );
+        const repeat = budgetInfos?.next_transitions?.filter(
+            step => step.key.includes('repeat') && step.allowed,
         );
         const toDisplay = new Set(
             regular
                 ?.filter(transition => !transition.key.includes('repeat'))
                 .map(transition => transition.label),
         );
-        return { regular, toDisplay };
+        return { regular, toDisplay, repeat };
     }, [budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,
         params,
+        budgetDetails,
+        repeatTransitions: nextSteps.repeat || [],
     });
     const [page, setPage] = useBoundState<Optional<number | string>>(
         1,
@@ -95,7 +102,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     ).map(([label, items]) => {
         return { label, value: items.map(i => i.key).join(',') };
     });
-
     return (
         <>
             <TopBar

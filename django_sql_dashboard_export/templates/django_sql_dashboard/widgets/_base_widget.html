@@ -1,0 +1,8 @@
+<div class="query-results">
+  {% block widget_results %}{% endblock %}
+{%  if saved_dashboard  %}
+  <p>
+      <a href="export/?index={{ result.index }}&format=csv" >Download as CSV 📉</a>
+  </p>
+{% endif %}
+</div>

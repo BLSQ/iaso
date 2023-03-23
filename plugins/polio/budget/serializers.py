@@ -9,7 +9,7 @@ from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
 from plugins.polio.serializers import CampaignSerializer, UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink, send_budget_mails, get_workflow
+from .models import BudgetStep, BudgetStepFile, BudgetStepLink, model_field_exists, send_budget_mails, get_workflow
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
 
@@ -272,7 +272,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             start_node = start_node_list[0]
             start_position = start_node.order
             destination_node_list = [node for node in all_nodes if node.key == destination_node_key]
-            destination_node = destination_node_list[0]
+            destination_node = destination_node_list[0]  # This is buggy with the latest config  migration
             destination_position = destination_node.order
             is_skipping = destination_position >= start_position
             reference_date = override_step.created_at
@@ -435,6 +435,27 @@ class TransitionToSerializer(serializers.Serializer):
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+            with transaction.atomic():
+                field = transition.to_node + "_at_WFEDITABLE"
+                if model_field_exists(campaign, field):
+                    # Write the value only if doesn't exist yet, this way we keep track of when a step was first submitted
+                    if not getattr(campaign, field, None):
+                        setattr(campaign, field, step.created_at)
+                        setattr(campaign, "budget_status", transition.to_node)
+                        # Custom checks for current workflow. Since we're checking the destination, we'll miss the data for the "concurrent steps".
+                        # eg: if we move from state "who_sent_budget" to "gpei_consolidated_budgets", we will miss "unicef_sent_budget" without this check
+                        # Needs to be updated when state key names change
+                        if transition.to_node == "gpei_consolidated_budgets":
+                            if campaign.who_sent_budget_at_WFEDITABLE is None:
+                                setattr(campaign, "who_sent_budget_at_WFEDITABLE", step.created_at)
+                            elif campaign.unicef_sent_budget_at_WFEDITABLE is None:
+                                setattr(campaign, "unicef_sent_budget_at_WFEDITABLE", step.created_at)
+                        if transition.to_node == "approved":
+                            if campaign.approved_by_who_at_WFEDITABLE is None:
+                                setattr(campaign, "approved_by_who_at_WFEDITABLE", step.created_at)
+                            elif campaign.approved_by_unicef_at_WFEDITABLE is None:
+                                setattr(campaign, "approved_by_unicef_at_WFEDITABLE", step.created_at)
+                        campaign.save()
 
         return step
 
@@ -494,6 +515,21 @@ class TransitionOverrideSerializer(serializers.Serializer):
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+            with transaction.atomic():
+                field = to_node.key + "_at_WFEDITABLE"
+                if model_field_exists(campaign, field):
+                    # since we override, we don't check that the field is empty
+                    setattr(campaign, field, step.created_at)
+                    setattr(campaign, "budget_status", to_node.key)
+                    order = to_node.order
+                    nodes_to_cancel = workflow.get_nodes_after(order)
+                    campaign_fields_to_cancel = [node.key + "_at_WFEDITABLE" for node in nodes_to_cancel]
+                    # steps that come after the step we override to are cancelled
+                    for field_to_cancel in campaign_fields_to_cancel:
+                        if model_field_exists(campaign, field):
+                            if getattr(campaign, field_to_cancel, None):
+                                setattr(campaign, field_to_cancel, None)
+                    campaign.save()
 
             campaign.budget_current_state_key = node_key
             for file in data.get("files", []):

@@ -61,10 +61,6 @@ const getCsvParams = (apiParams: Record<string, any>): string => {
         pageSize,
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         page,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        roundStartFrom,
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        roundStartTo,
         ...paramsForCsv
     } = apiParams;
     const filteredParams: Record<string, any> = Object.fromEntries(

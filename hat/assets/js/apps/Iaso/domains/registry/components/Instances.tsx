@@ -1,22 +1,26 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import { Box, Tabs, Tab, Grid } from '@material-ui/core';
 import { useSkipEffectOnMount } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
+import { ColumnSelect } from '../../instances/components/ColumnSelect';
+import { ActionCell } from './ActionCell';
 
 import { redirectToReplace } from '../../../routing/actions';
 
 import { OrgunitTypes, OrgunitType } from '../../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from '../types';
+import { Column } from '../../../types/table';
+import { Form } from '../../forms/types/forms';
 
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstances } from '../hooks/useGetInstances';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-import { defaultSorted } from '../config';
+import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
 
 type Props = {
     isLoading: boolean;
@@ -29,7 +33,8 @@ export const Instances: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     params,
 }) => {
-    const { formId } = params;
+    const [tableColumns, setTableColumns] = useState<Column[]>([]);
+    const { formIds } = params;
     const [currentType, setCurrentType] = useState<OrgunitType | undefined>();
 
     const dispatch = useDispatch();
@@ -53,7 +58,9 @@ export const Instances: FunctionComponent<Props> = ({
             setCurrentType(subOrgUnitTypes[0]);
         }
     }, [subOrgUnitTypes]);
-
+    const currentForm: Form | undefined = useMemo(() => {
+        return formsList?.find(f => `${f.value}` === formIds)?.original;
+    }, [formIds, formsList]);
     return (
         <Box>
             {currentType && !isLoading && (
@@ -75,16 +82,47 @@ export const Instances: FunctionComponent<Props> = ({
                             <Grid item xs={12} md={3}>
                                 <InputComponent
                                     required
-                                    keyValue="formId"
+                                    keyValue="formIds"
                                     clearable={false}
                                     onChange={handleFilterChange}
                                     disabled={isFetchingForms}
                                     loading={isFetchingForms}
-                                    value={formId}
+                                    value={formIds}
                                     type="select"
                                     options={formsList}
                                     label={MESSAGES.form}
                                 />
+                            </Grid>
+                            <Grid
+                                item
+                                container
+                                xs={12}
+                                md={9}
+                                justifyContent="flex-end"
+                                alignItems="baseline"
+                                // @ts-ignore
+                                alignContent="middle"
+                            >
+                                {formIds && currentForm && (
+                                    <ColumnSelect
+                                        params={params}
+                                        disabled={!formIds}
+                                        periodType={currentForm.period_type}
+                                        setTableColumns={newCols =>
+                                            setTableColumns(newCols)
+                                        }
+                                        baseUrl={baseUrls.registryDetail}
+                                        labelKeys={currentForm.label_keys || []}
+                                        formDetails={currentForm}
+                                        tableColumns={tableColumns}
+                                        instanceMetasFields={
+                                            INSTANCE_METAS_FIELDS
+                                        }
+                                        getActionCell={settings => (
+                                            <ActionCell settings={settings} />
+                                        )}
+                                    />
+                                )}
                             </Grid>
                         </Grid>
                         <TableWithDeepLink
@@ -93,18 +131,7 @@ export const Instances: FunctionComponent<Props> = ({
                             data={data?.instances ?? []}
                             pages={data?.pages ?? 1}
                             defaultSorted={defaultSorted}
-                            columns={[
-                                {
-                                    Header: 'uuid',
-                                    accessor: 'uuid',
-                                },
-                                {
-                                    Header: 'Ou Name',
-                                    accessor: 'org_unit__name',
-                                    Cell: settings =>
-                                        `${settings.row.original.org_unit.name} ${settings.row.original.org_unit.org_unit_type_name}`,
-                                },
-                            ]}
+                            columns={tableColumns}
                             count={data?.count ?? 0}
                             params={params}
                             onTableParamsChange={p =>

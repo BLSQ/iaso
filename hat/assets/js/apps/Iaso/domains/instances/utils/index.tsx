@@ -14,7 +14,6 @@ import CallMade from '@material-ui/icons/CallMade';
 import { truncateText, useSafeIntl, getTableUrl } from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { VisibleColumn } from '../types/visibleColumns';
 import { Instance } from '../types/instance';
@@ -161,9 +160,12 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
 export const useGetInstancesColumns = (
     showDeleted = false,
     // eslint-disable-next-line no-unused-vars
+    getActionCell: (settings: any) => ReactElement = settings => (
+        <ActionTableColumnComponent settings={settings} />
+    ),
+    // eslint-disable-next-line no-unused-vars
 ): ((visibleColumns: VisibleColumn[]) => Column[]) => {
     const { formatMessage } = useSafeIntl();
-    const currentUser = useCurrentUser();
     const metasColumns = useMemo(
         () => [...instancesTableColumns(formatMessage)],
         [formatMessage],
@@ -224,16 +226,11 @@ export const useGetInstancesColumns = (
                 resizable: false,
                 sortable: false,
                 width: 150,
-                Cell: settings => (
-                    <ActionTableColumnComponent
-                        settings={settings}
-                        user={currentUser}
-                    />
-                ),
+                Cell: getActionCell,
             });
             return tableColumns;
         },
-        [currentUser, formatMessage, metasColumns],
+        [formatMessage, getActionCell, metasColumns],
     );
     return getInstancesColumns;
 };

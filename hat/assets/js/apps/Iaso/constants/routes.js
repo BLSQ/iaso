@@ -445,7 +445,11 @@ export const registryDetailPath = {
         },
         {
             isRequired: false,
-            key: 'formId',
+            key: 'formIds',
+        },
+        {
+            isRequired: false,
+            key: 'columns',
         },
         ...paginationPathParams,
     ],

@@ -16,7 +16,7 @@ export const useGetInstances = (
 ): UseQueryResult<PaginatedInstances, Error> => {
     const apiParams: Record<string, any> = {
         orgUnitTypeId,
-        form_ids: params.formId,
+        form_ids: params.formIds,
         limit: params.pageSize || 20,
         order: params.order || getSort(defaultSorted),
         page: params.page || 1,
@@ -27,7 +27,7 @@ export const useGetInstances = (
         queryKey: ['registry-instances', params, orgUnitTypeId],
         queryFn: () => getRequest(url),
         options: {
-            enabled: Boolean(orgUnitTypeId && params.formId),
+            enabled: Boolean(orgUnitTypeId && params.formIds),
         },
     });
 };

@@ -454,3 +454,10 @@ class TeamAPITestCase(APITestCase):
         hello, olivier
         """,
         )
+
+    def test_csv_export(self):
+        self.client.force_login(self.user)
+        r = self.client.get("/api/polio/budget/export_csv/?fields=obr_name")
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(r["Content-Type"], "text/csv")
+        self.assertEqual(r.content, b"OBR name\r\ntest campaign\r\n")

@@ -591,3 +591,26 @@ class UpdateBudgetStepSerializer(serializers.ModelSerializer):
         fields = [
             "deleted_at",
         ]
+
+
+class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
+    class Meta:
+        model = Campaign
+        fields = ["obr_name", "budget_current_state_label", "country", "cvdpv2_notified_at", "budget_last_updated_at"]
+        labels = {
+            "obr_name": "OBR name",
+            "budget_last_updated_at": "Last update",
+            "cvdpv2_notified_at": "Notification date",
+            "country": "Country",
+            "budget_current_state_label": "Budget state",
+        }
+
+    country = serializers.SerializerMethodField()
+    budget_last_updated_at = serializers.SerializerMethodField()
+
+    def get_country(self, campaign: Campaign):
+        return campaign.country.name
+
+    def get_budget_last_updated_at(self, campaign: Campaign):
+        if campaign.budget_last_updated_at:
+            return campaign.budget_last_updated_at.strftime("%Y-%m-%d")

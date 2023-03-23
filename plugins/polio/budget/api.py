@@ -1,5 +1,6 @@
 from typing import Type
 import csv
+from rest_framework_csv import renderers as r
 from datetime import datetime
 from django.db.models import QuerySet, Max, Q
 from django.http import HttpResponse
@@ -16,6 +17,7 @@ from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
+    ExportCampaignBudgetSerializer,
     TransitionToSerializer,
     BudgetStepSerializer,
     UpdateBudgetStepSerializer,
@@ -38,6 +40,7 @@ class BudgetCampaignViewSet(ModelViewSet):
 
     serializer_class = CampaignBudgetSerializer
     permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    remove_results_key_if_paginated = True
 
     # Make this read only
     # FIXME : remove POST
@@ -48,6 +51,19 @@ class BudgetCampaignViewSet(ModelViewSet):
         DeletionFilterBackend,
         CustomFilterBackend,
     ]
+
+    def get_serializer_class(self):
+        if "text/csv" in self.request.accepted_media_type:
+            return ExportCampaignBudgetSerializer
+        return super().get_serializer_class()
+
+    def get_renderer_context(self):
+        context = super().get_renderer_context()
+        serializer_class = self.get_serializer_class()
+        context["header"] = serializer_class.Meta.fields
+        if hasattr(serializer_class.Meta, "labels"):
+            context["labels"] = serializer_class.Meta.labels
+        return context
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
@@ -120,15 +136,15 @@ class BudgetCampaignViewSet(ModelViewSet):
         current_state = request.GET.get("budget_current_state_key__in", None)
         search = request.GET.get("search", None)
         order = request.GET.get("order", "-cvdpv2_notified_at")
-        campaigns = self.get_queryset()
-        if countries:
-            campaigns = campaigns.filter(country__id__in=countries.split(","))
-        if current_state:
-            campaigns = campaigns.filter(budget_current_state_key__in=current_state.split(","))
-        if search:
-            campaigns = campaigns.filter(
-                Q(obr_name__icontains=search) | Q(epid__icontains=search) | Q(country__name__icontains=search)
-            )
+        campaigns = self.filter_queryset(self.get_queryset())
+        # if countries:
+        #     campaigns = campaigns.filter(country__id__in=countries.split(","))
+        # if current_state:
+        #     campaigns = campaigns.filter(budget_current_state_key__in=current_state.split(","))
+        # if search:
+        #     campaigns = campaigns.filter(
+        #         Q(obr_name__icontains=search) | Q(epid__icontains=search) | Q(country__name__icontains=search)
+        #     )
         campaigns = campaigns.order_by(order)
         date = datetime.now().strftime("%Y-%m-%d")
         fields = ["Campaign", "Country", "Status", "Notification date", "Latest step"]

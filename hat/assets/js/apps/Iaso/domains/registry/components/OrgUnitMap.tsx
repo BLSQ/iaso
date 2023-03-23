@@ -16,9 +16,9 @@ import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import { MapLegend } from '../../../components/maps/MapLegend';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
 import tiles from '../../../constants/mapTiles';
-import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
 const defaultViewport = {
     center: [1, 20],
@@ -103,7 +103,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     </Pane>
                 )}
                 {subOrgUnitTypes.map(subType => (
-                    <Pane name={`children-orgunit-type-${subType.id}`}>
+                    <Pane
+                        name={`children-orgunit-type-${subType.id}`}
+                        key={subType.id}
+                    >
                         {childrenOrgUnits.map(childrenOrgUnit => {
                             if (
                                 childrenOrgUnit.org_unit_type_id === subType.id
@@ -111,6 +114,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 if (childrenOrgUnit.geo_json) {
                                     return (
                                         <GeoJSON
+                                            key={childrenOrgUnit.id}
                                             style={() => ({
                                                 color: subType.color || '',
                                             })}

@@ -31,6 +31,9 @@ const useStyles = makeStyles(theme => ({
     treeContainer: {
         '& ul[role="tree"]': {
             maxHeight: '75vh',
+            '& li>div>div>div svg': {
+                display: 'none',
+            },
         },
     },
 }));
@@ -72,8 +75,10 @@ export const Registry: FunctionComponent<Props> = ({ params }) => {
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={6} className={classes.treeContainer}>
                         <TreeViewWithSearch
-                            getChildrenData={getChildrenData}
-                            getRootData={getRootData}
+                            getChildrenData={id => getChildrenData(id, 'VALID')}
+                            getRootData={(id, type) =>
+                                getRootData(id, type, 'VALID')
+                            }
                             label={makeTreeviewLabel(classes, true)}
                             toggleOnLabelClick={false}
                             request={(value, count) => {

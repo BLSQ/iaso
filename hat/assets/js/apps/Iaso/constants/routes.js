@@ -443,6 +443,10 @@ export const registryDetailPath = {
             isRequired: true,
             key: 'orgUnitId',
         },
+        {
+            isRequired: false,
+            key: 'formId',
+        },
         ...paginationPathParams,
     ],
 };

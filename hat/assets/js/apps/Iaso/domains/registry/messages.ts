@@ -73,6 +73,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.instanceEditAction',
         defaultMessage: 'Edit the answers in Enketo',
     },
+    form: {
+        id: 'iaso.instance.formShort',
+        defaultMessage: 'Form',
+    },
 });
 
 export default MESSAGES;

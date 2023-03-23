@@ -20,16 +20,14 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { OrgUnitMap } from './components/OrgUnitMap';
 import InstanceFileContent from '../instances/components/InstanceFileContent';
 import EnketoIcon from '../instances/components/EnketoIcon';
-import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
+import { Instances } from './components/Instances';
 
-type Params = {
-    accountId: string;
-    orgUnitId: string;
-};
+import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
+import { RegistryDetailParams } from './types';
 
 type Router = {
     goBack: () => void;
-    params: Params;
+    params: RegistryDetailParams;
 };
 type Props = {
     router: Router;
@@ -122,6 +120,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </Grid>
                     )}
                 </Grid>
+                <Box mt={2}>
+                    <Instances
+                        orgUnit={orgUnit}
+                        isLoading={isFetching}
+                        subOrgUnitTypes={subOrgUnitTypes}
+                        childrenOrgUnits={childrenOrgUnits || []}
+                        params={params}
+                    />
+                </Box>
             </Box>
         </>
     );

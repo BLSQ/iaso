@@ -28,7 +28,7 @@ from plugins.polio.models import Campaign
 # FIXME maybe: Maybe we should inherit from CampaignViewSet directly to not duplicate all the order and filter logic
 # But then we would inherit all the other actions too
 @swagger_auto_schema(tags=["budget"])
-class BudgetCampaignViewSet(ModelViewSet,CSVExportMixin):
+class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     """
     Campaign endpoint with budget information.
 
@@ -111,7 +111,6 @@ class BudgetCampaignViewSet(ModelViewSet,CSVExportMixin):
         budget_step = serializer.save()
 
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
-
 
 
 @swagger_auto_schema(tags=["budget"])
@@ -207,4 +206,3 @@ class WorkflowViewSet(ViewSet):
         except Exception as e:
             return Response({"error": "Error getting workflow", "details": str(e)})
         return Response(WorkflowSerializer(workflow).data)
-    

@@ -357,7 +357,8 @@ class FileFormatEnum(enum.Enum):
 def get_timestamp(d):
     return float(d["created_at"])
 
-class CSVExportMixin():
+
+class CSVExportMixin:
     @action(
         detail=False,
         methods=["GET"],
@@ -379,7 +380,6 @@ class CSVExportMixin():
         response = HttpResponse(
             content_type="txt/csv",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
-            content = renderer.render(data)
+            content=renderer.render(data),
         )
         return response
-    

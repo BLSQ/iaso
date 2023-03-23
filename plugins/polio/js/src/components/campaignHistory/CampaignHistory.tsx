@@ -78,7 +78,7 @@ export const CampaignHistory: FunctionComponent<Props> = ({
         isError: boolean;
     } = useGetCampaignLogDetail(params.logId);
 
-    const { user: campaignUser } = useMemo(() => {
+    const { user: campaignUser, logDetail: campaignLogDetail } = useMemo(() => {
         if (!data) {
             return { user: undefined, logDetail: undefined };
         }
@@ -175,6 +175,10 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                                 <Typography variant="body1" color="inherit">
                                     {formatMessage(MESSAGES.last_modified_by)} :{' '}
                                     {campaignUser?.user_name}
+                                </Typography>
+                                <Typography variant="body1" color="inherit">
+                                    {formatMessage(MESSAGES.obr_name)} :{' '}
+                                    {campaignLogDetail?.obr_name}
                                 </Typography>
                             </WidgetPaper>
                         </Box>

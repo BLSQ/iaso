@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Table, TableBody, makeStyles } from '@material-ui/core';
 import { Row } from './Row';
-import { CampaignLogData } from '../../constants/types';
+import { Campaign } from '../../constants/types';
 import { ExpandableItem } from '../../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem';
 import { IntlMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
 
@@ -11,7 +11,7 @@ import { Head } from './Head';
 
 type RowObjectProps = {
     logKey: string;
-    logDetail: CampaignLogData;
+    logDetail: Campaign;
     childrenArray: Record<string, any>[];
     childrenLabel: IntlMessage;
     type: 'array' | 'object';

@@ -7,12 +7,11 @@ import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
 
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
-import { CampaignLogData } from '../../constants/types';
+import { Campaign } from '../../constants/types';
 import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import MESSAGES from '../../constants/messages';
 
-import { Row } from './Row';
 import { config } from './config';
 import { useGetMapLog } from './useGetMapLog';
 import { Head } from './Head';
@@ -23,53 +22,7 @@ type Props = {
 
 export type Result = {
     user: Profile;
-    logDetail: CampaignLogData;
-};
-
-const objectLoop = (obj, getValue, getLabel) => {
-    return (
-        <Table size="small">
-            <TableBody>
-                {Object.entries(obj).map(([key, value], index) => (
-                    <Row
-                        key={`${key}-${index}`}
-                        fieldKey={key}
-                        value={getComplexValue(value, getValue, key, getLabel)}
-                    />
-                ))}
-            </TableBody>
-        </Table>
-    );
-};
-
-const displayAsStringKeysArray = ['org_units'];
-
-const arrayLoop = (arr, getValue, key, getLabel) => {
-    if (displayAsStringKeysArray.includes(key)) {
-        return arr.join(', ');
-    }
-    return (
-        <Table size="small">
-            <TableBody>
-                {arr.map((value, index) => (
-                    <Row
-                        key={`${key}-${index}`}
-                        value={getComplexValue(value, getValue, key, getLabel)}
-                    />
-                ))}
-            </TableBody>
-        </Table>
-    );
-};
-
-const getComplexValue = (value, getValue, key, getLabel) => {
-    if (Array.isArray(value)) {
-        return arrayLoop(value, getValue, key, getLabel);
-    }
-    if (value && typeof value === 'object') {
-        return objectLoop(value, getValue, getLabel);
-    }
-    return getValue(value, typeof value);
+    logDetail: Campaign;
 };
 
 export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {

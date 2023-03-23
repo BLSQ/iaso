@@ -8,6 +8,7 @@ import {
     CampaignLogDetail,
     CampaignLogData,
     CampaignLogsDetail,
+    Campaign,
 } from '../constants/types';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
@@ -48,7 +49,7 @@ export const useGetCampaignLogs = (
 
 export type CampaignLogDetailResult = {
     user: Profile;
-    logDetail: CampaignLogData;
+    logDetail: Campaign;
 };
 
 export const useGetCampaignLogDetail = (

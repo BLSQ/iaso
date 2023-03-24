@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from enum import Enum
 from typing import TypedDict
+from typing_extensions import Annotated
 
 from django.db import transaction
 from django_stubs_ext import WithAnnotations
@@ -618,6 +619,6 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     def get_country(self, campaign: Campaign):
         return campaign.country.name if campaign.country else None
 
-    def get_budget_last_updated_at(self, campaign: WithAnnotations[Campaign, LastBudgetAnnotation]):
+    def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
         if campaign.budget_last_updated_at:
             return campaign.budget_last_updated_at.strftime("%Y-%m-%d")

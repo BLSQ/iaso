@@ -403,7 +403,7 @@
     "iaso.label.images": "Images",
     "iaso.label.infos": "Infos",
     "iaso.label.instanceLocks": "Instance locks",
-    "iaso.label.instanceStatus": "status",
+    "iaso.label.instanceStatus": "Status",
     "iaso.label.instanceStatus.duplicatedSingle": "duplicated",
     "iaso.label.instanceStatus.duplicateMulti": "Duplicated",
     "iaso.label.instanceStatus.error": "Error(s)",

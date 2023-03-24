@@ -16,7 +16,7 @@ from rest_framework.test import APIClient
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase, TestCase
-from plugins.polio.management.commands.weekly_email import send_notification_email
+from plugins.polio.tasks.weekly_email import send_notification_email
 from ..api import CACHE_VERSION
 from ..export_utils import format_date
 from ..models import Config, Round

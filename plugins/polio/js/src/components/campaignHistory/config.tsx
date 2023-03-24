@@ -1,14 +1,27 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import moment from 'moment';
+import { upperCase } from 'lodash';
 import { Link } from 'react-router';
 import { Box } from '@material-ui/core';
-import MESSAGES from '../../constants/messages';
+import { FormattedMessage } from 'react-intl';
 import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
+import MESSAGES from '../../constants/messages';
 
 const convertDate = (value: string, format = 'L') => {
     return value ? moment(value).format(format) : '--';
 };
+
+const convertBoolean = (value: boolean) => {
+    return value ? (
+        <FormattedMessage {...MESSAGES.yes} />
+    ) : (
+        <FormattedMessage {...MESSAGES.no} />
+    );
+};
+
 export const config: Record<string, any> = [
+    // Global
     {
         key: 'id',
     },
@@ -25,17 +38,325 @@ export const config: Record<string, any> = [
         getLogValue: log => convertDate(log.deleted_at, 'LTS'),
     },
     {
+        key: 'account',
+    },
+    // Base Info
+    {
+        key: 'epid',
+    },
+    {
+        key: 'obr_name',
+    },
+    {
         key: 'group',
     },
     {
         key: 'eomg',
     },
     {
-        key: 'obr_name',
+        key: 'description',
+    },
+    {
+        key: 'gpei_coordinator',
     },
     {
         key: 'gpei_email',
     },
+    {
+        key: 'country',
+        getLogValue: log => (
+            <Link
+                target="_blank"
+                href={`/dashboard/orgunits/detail/orgUnitId/${log.country}`}
+            >
+                {log.country}
+            </Link>
+        ),
+    },
+    {
+        key: 'onset_at',
+    },
+    {
+        key: 'cvdpv2_notified_at',
+        getLogValue: log => convertDate(log.cvdpv2_notified_at),
+    },
+    {
+        key: 'virus',
+    },
+    {
+        key: 'vacine',
+    },
+    {
+        key: 'is_preventive',
+        getLogValue: log => convertBoolean(log.is_preventive),
+    },
+    {
+        key: 'is_test',
+        getLogValue: log => convertBoolean(log.is_test),
+    },
+    {
+        key: 'enable_send_weekly_email',
+        getLogValue: log => convertBoolean(log.enable_send_weekly_email),
+    },
+    {
+        key: 'pv_notified_at',
+        getLogValue: log => convertDate(log.pv_notified_at),
+    },
+    {
+        key: 'three_level_call_at',
+        getLogValue: log => convertDate(log.three_level_call_at),
+    },
+    // Detection
+    {
+        key: 'detection_status',
+    },
+    {
+        key: 'detection_responsible',
+    },
+    // deprecated fields ?
+    // {
+    //     key: 'detection_rrt_oprtt_approval_at',
+
+    //     getLogValue: log =>
+    //         convertDate(log.detection_rrt_oprtt_approval_at_WFEDITABLE, 'L'),
+    // },
+    // {
+    //     key: 'detection_first_draft_submitted_at',
+    //     getLogValue: log =>
+    //         convertDate(log.detection_first_draft_submitted_at_WFEDITABLE, 'L'),
+    // },
+    // Risk assessment
+    {
+        key: 'risk_assessment_status',
+    },
+    {
+        key: 'verification_score',
+    },
+    {
+        key: 'investigation_at',
+        getLogValue: log => convertDate(log.investigation_at),
+    },
+    {
+        key: 'risk_assessment_first_draft_submitted_at',
+        getLogValue: log =>
+            convertDate(log.risk_assessment_first_draft_submitted_at),
+    },
+    {
+        key: 'risk_assessment_rrt_oprtt_approval_at',
+        getLogValue: log =>
+            convertDate(log.risk_assessment_rrt_oprtt_approval_at),
+    },
+    {
+        key: 'ag_nopv_group_met_at',
+        getLogValue: log => convertDate(log.ag_nopv_group_met_at),
+    },
+    {
+        key: 'dg_authorized_at',
+        getLogValue: log => convertDate(log.dg_authorized_at),
+    },
+    {
+        key: 'risk_assessment_responsible',
+    },
+    // Budget
+    {
+        key: 'budget_status',
+        getLogValue: log => upperCase(log.budget_status),
+    },
+    {
+        key: 'budget_current_state_label',
+    },
+    // Budget request
+    {
+        key: 'who_sent_budget',
+        getLogValue: log => convertDate(log.who_sent_budget_at_WFEDITABLE),
+    },
+    {
+        key: 'unicef_sent_budget',
+        getLogValue: log =>
+            convertDate(log.unicef_sent_budget_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 'gpei_consolidated_budgets',
+        getLogValue: log =>
+            convertDate(log.gpei_consolidated_budgets_at_WFEDITABLE, 'L'),
+    },
+    // RRT review
+    {
+        key: 'submitted_to_rrt',
+        getLogValue: log =>
+            convertDate(log.submitted_to_rrt_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 'feedback_sent_to_gpei',
+        getLogValue: log =>
+            convertDate(log.feedback_sent_to_gpei_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 're_submitted_to_rrt',
+        getLogValue: log =>
+            convertDate(log.re_submitted_to_rrt_at_WFEDITABLE, 'L'),
+    },
+    // ORPG review
+    {
+        key: 'submitted_to_orpg_operations1',
+        getLogValue: log =>
+            convertDate(log.submitted_to_orpg_operations1_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 'feedback_sent_to_rrt1',
+        getLogValue: log =>
+            convertDate(log.feedback_sent_to_rrt1_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 're_submitted_to_orpg_operations1',
+        getLogValue: log =>
+            convertDate(
+                log.re_submitted_to_orpg_operations1_at_WFEDITABLE,
+                'L',
+            ),
+    },
+    {
+        key: 'submitted_to_orpg_wider',
+        getLogValue: log =>
+            convertDate(log.submitted_to_orpg_wider_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 'submitted_to_orpg_operations2',
+        getLogValue: log =>
+            convertDate(log.submitted_to_orpg_operations2_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 'feedback_sent_to_rrt2',
+        getLogValue: log =>
+            convertDate(log.feedback_sent_to_rrt2_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 're_submitted_to_orpg_operations2',
+        getLogValue: log =>
+            convertDate(
+                log.re_submitted_to_orpg_operations2_at_WFEDITABLE,
+                'L',
+            ),
+    },
+    // APPROVAL
+    {
+        key: 'submitted_for_approval',
+        getLogValue: log =>
+            convertDate(log.submitted_for_approval_at_WFEDITABLE, 'L'),
+    },
+    {
+        key: 'feedback_sent_to_orpg_operations_unicef',
+        getLogValue: log =>
+            convertDate(
+                log.feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE,
+                'L',
+            ),
+    },
+    {
+        key: 'feedback_sent_to_orpg_operations_who',
+        getLogValue: log =>
+            convertDate(
+                log.feedback_sent_to_orpg_operations_who_at_WFEDITABLE,
+                'L',
+            ),
+    },
+    {
+        key: 'approved_by_who',
+        getLogValue: log => convertDate(log.approved_by_who_at_WFEDITABLE),
+    },
+    {
+        key: 'approved_by_unicef',
+        getLogValue: log => convertDate(log.approved_by_unicefat_WFEDITABLE),
+    },
+    {
+        key: 'approved',
+        getLogValue: log => convertDate(log.approved_at_WFEDITABLE),
+    },
+    {
+        key: 'approval_confirmed',
+        getLogValue: log => convertDate(log.approval_confirmed_at_WFEDITABLE),
+    },
+    {
+        key: 'payment_mode',
+    },
+    {
+        key: 'who_disbursed_to_co_at',
+        getLogValue: log => convertDate(log.who_disbursed_to_co_at),
+    },
+    {
+        key: 'unicef_disbursed_to_co_at',
+        getLogValue: log => convertDate(log.unicef_disbursed_to_co_at),
+    },
+    {
+        key: 'district_count',
+    },
+    {
+        key: 'no_regret_fund_amount',
+    },
+    {
+        key: 'budget_submitted_at',
+        getLogValue: log => convertDate(log.budget_submitted_at),
+    },
+    // deprecated field?
+    // {
+    //     key: 'last_budget_event',
+    // },
+    // Preparedness
+    {
+        key: 'preparedness_spreadsheet_url',
+    },
+    {
+        key: 'surge_spreadsheet_url',
+    },
+    {
+        key: 'preperadness_sync_status',
+    },
+    // Scopes
+    {
+        key: 'scopes',
+        type: 'array',
+        childrenLabel: MESSAGES.scope,
+        children: [
+            {
+                key: 'id',
+            },
+            {
+                key: 'group',
+                type: 'object',
+                childrenLabel: MESSAGES.group,
+                children: [
+                    {
+                        key: 'id',
+                    },
+                    {
+                        key: 'org_units',
+                        getLogValue: log =>
+                            log.org_units.map((ouId, index) => {
+                                const lastArrayItem =
+                                    log.org_units[log.org_units.length - 1];
+                                return (
+                                    <Box key={ouId} display="inline-block">
+                                        <Link
+                                            target="_blank"
+                                            href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
+                                        >
+                                            {ouId}
+                                        </Link>
+                                        {log.org_units[index] !==
+                                            lastArrayItem && ','}
+                                    </Box>
+                                );
+                            }),
+                    },
+                ],
+            },
+        ],
+    },
+    {
+        key: 'separate_scopes_per_round',
+        getLogValue: log => convertBoolean(log.separate_scopes_per_round),
+    },
+    // Rounds
     {
         key: 'rounds',
         type: 'array',
@@ -49,6 +370,56 @@ export const config: Record<string, any> = [
             },
             {
                 key: 'number',
+            },
+            {
+                key: 'started_at',
+                getLogValue: log => convertDate(log.started_at),
+            },
+            {
+                key: 'ended_at',
+                getLogValue: log => convertDate(log.ended_at),
+            },
+            {
+                key: 'mop_up_started_at',
+                getLogValue: log => convertDate(log.mop_up_started_at),
+            },
+            {
+                key: 'mop_up_ended_at',
+                getLogValue: log => convertDate(log.mop_up_ended_at),
+            },
+            {
+                key: 'im_started_at',
+                getLogValue: log => convertDate(log.im_started_at),
+            },
+            {
+                key: 'im_ended_at',
+                getLogValue: log => convertDate(log.im_ended_at),
+            },
+            {
+                key: 'lqas_started_at',
+                getLogValue: log => convertDate(log.lqas_started_at),
+            },
+            {
+                key: 'lqas_ended_at',
+                getLogValue: log => convertDate(log.lqas_ended_at),
+            },
+            {
+                key: 'lqas_district_passing',
+            },
+            {
+                key: 'lqas_district_failing',
+            },
+            {
+                key: 'main_awareness_problem',
+            },
+            {
+                key: 'im_percentage_children_missed_in_household',
+            },
+            {
+                key: 'im_percentage_children_missed_out_household',
+            },
+            {
+                key: 'awareness_of_campaign_planning',
             },
             {
                 key: 'scopes',
@@ -93,10 +464,7 @@ export const config: Record<string, any> = [
             {
                 key: 'campaign',
             },
-            {
-                key: 'ended_at',
-                getLogValue: log => convertDate(log.ended_at),
-            },
+            // Vaccines
             {
                 key: 'vaccines',
                 type: 'array',
@@ -106,7 +474,7 @@ export const config: Record<string, any> = [
                         key: 'id',
                     },
                     {
-                        key: 'doses_per_vial',
+                        key: 'dosesPerVial',
                     },
                     {
                         key: 'name',
@@ -115,9 +483,18 @@ export const config: Record<string, any> = [
                         key: 'round',
                     },
                     {
-                        key: 'wastage_ratio_forecast',
+                        key: 'wastageRatio',
                     },
                 ],
+            },
+            {
+                key: 'reporting_delays_hc_to_district',
+            },
+            {
+                key: 'reporting_delays_district_to_region',
+            },
+            {
+                key: 'reporting_delays_region_to_national',
             },
             {
                 key: 'shipments',
@@ -131,39 +508,54 @@ export const config: Record<string, any> = [
                         key: 'round',
                     },
                     {
-                        key: 'comment',
-                    },
-                    {
                         key: 'po_numbers',
                     },
                     {
                         key: 'vaccine_name',
                     },
                     {
-                        key: 'date_reception',
+                        key: 'receptionVaccineArrivalReport',
+                        getLogValue: log => convertDate(log.date_reception),
                     },
                     {
                         key: 'vials_received',
                     },
                     {
-                        key: 'reception_pre_alert',
+                        key: 'receptionPreAlert',
+                        getLogValue: log =>
+                            convertDate(log.reception_pre_alert),
                     },
                     {
-                        key: 'estimated_arrival_date',
+                        key: 'estimatedDateOfArrival',
+                        getLogValue: log =>
+                            convertDate(log.estimated_arrival_date),
+                    },
+                    {
+                        key: 'comment',
                     },
                 ],
             },
             {
+                key: 'forma_reception',
+                getLogValue: log => convertDate(log.forma_reception),
+            },
+            {
                 key: 'forma_date',
+                getLogValue: log => convertDate(log.forma_date),
             },
             {
-                key: 'started_at',
-                getLogValue: log => convertDate(log.started_at),
+                key: 'forma_unusable_vials',
             },
             {
-                key: 'im_ended_at',
-                getLogValue: log => convertDate(log.im_ended_at),
+                key: 'forma_usable_vials',
             },
+            {
+                key: 'forma_missing_vials',
+            },
+            {
+                key: 'forma_comment',
+            },
+            // Destructions
             {
                 key: 'destructions',
                 type: 'array',
@@ -176,7 +568,9 @@ export const config: Record<string, any> = [
                         key: 'round',
                     },
                     {
-                        key: 'comment',
+                        key: 'destructionReceptionDate',
+                        getLogValue: log =>
+                            convertDate(log.date_report_received),
                     },
                     {
                         key: 'destructionReportDate',
@@ -186,189 +580,21 @@ export const config: Record<string, any> = [
                         key: 'vials_destroyed',
                     },
                     {
-                        key: 'destructionReceptionDate',
-                        getLogValue: log =>
-                            convertDate(log.date_report_received),
-                    },
-                ],
-            },
-            {
-                key: 'forma_comment',
-            },
-            {
-                key: 'im_started_at',
-                getLogValue: log => convertDate(log.im_started_at),
-            },
-            {
-                key: 'lqas_ended_at',
-                getLogValue: log => convertDate(log.lqas_ended_at),
-            },
-            {
-                key: 'doses_requested',
-            },
-
-            {
-                key: 'forma_reception',
-            },
-            {
-                key: 'lqas_started_at',
-                getLogValue: log => convertDate(log.lqas_started_at),
-            },
-            {
-                key: 'mop_up_ended_at',
-                getLogValue: log => convertDate(log.mop_up_ended_at),
-            },
-            {
-                key: 'vials_destroyed',
-            },
-            {
-                key: 'mop_up_started_at',
-                getLogValue: log => convertDate(log.mop_up_started_at),
-            },
-            {
-                key: 'date_destruction',
-            },
-            {
-                key: 'target_population',
-            },
-            {
-                key: 'forma_usable_vials',
-            },
-            {
-                key: 'forma_missing_vials',
-            },
-            {
-                key: 'lqas_district_failing',
-            },
-            {
-                key: 'lqas_district_passing',
-            },
-            {
-                key: 'main_awareness_problem',
-            },
-            {
-                key: 'date_signed_vrf_received',
-            },
-            {
-                key: 'preparedness_spreadsheet_url',
-            },
-            {
-                key: 'awareness_of_campaign_planning',
-            },
-            {
-                key: 'reporting_delays_hc_to_district',
-            },
-            {
-                key: 'reporting_delays_district_to_region',
-            },
-            {
-                key: 'reporting_delays_region_to_national',
-            },
-            {
-                key: 'im_percentage_children_missed_in_household',
-            },
-            {
-                key: 'im_percentage_children_missed_out_household',
-            },
-        ],
-    },
-    {
-        key: 'scopes',
-        type: 'array',
-        childrenLabel: MESSAGES.scope,
-        children: [
-            {
-                key: 'id',
-            },
-            {
-                key: 'group',
-                type: 'object',
-                childrenLabel: MESSAGES.group,
-                children: [
-                    {
-                        key: 'id',
-                    },
-                    {
-                        key: 'org_units',
-                        getLogValue: log =>
-                            log.org_units.map((ouId, index) => {
-                                const lastArrayItem =
-                                    log.org_units[log.org_units.length - 1];
-                                return (
-                                    <Box key={ouId} display="inline-block">
-                                        <Link
-                                            target="_blank"
-                                            href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
-                                        >
-                                            {ouId}
-                                        </Link>
-                                        {log.org_units[index] !==
-                                            lastArrayItem && ','}
-                                    </Box>
-                                );
-                            }),
+                        key: 'comment',
                     },
                 ],
             },
         ],
-    },
-    {
-        key: 'account',
-    },
-    {
-        key: 'country',
-        getLogValue: log => (
-            <Link
-                target="_blank"
-                href={`/dashboard/orgunits/detail/orgUnitId/${log.country}`}
-            >
-                {log.country}
-            </Link>
-        ),
     },
     {
         key: 'geojson',
         getLogValue: log => <GeoJsonMap geoJson={log.geojson} />,
     },
-    {
-        key: 'onset_at',
-    },
-    {
-        key: 'description',
-    },
-    {
-        key: 'payment_mode',
-    },
-    {
-        key: 'budget_status',
-    },
-    {
-        key: 'is_preventive',
-    },
-    {
-        key: 'district_count',
-    },
-    {
-        key: 'pv_notified_at',
-        getLogValue: log => convertDate(log.pv_notified_at),
-    },
-    {
-        key: 'doses_requested',
-    },
-    {
-        key: 'pv2_notified_at',
-        getLogValue: log => convertDate(log.pv2_notified_at),
-    },
-    {
-        key: 'detection_status',
-    },
-    {
-        key: 'dg_authorized_at',
-        getLogValue: log => convertDate(log.dg_authorized_at),
-    },
-    {
-        key: 'gpei_coordinator',
-    },
+    // deprecated field ?
+    // {
+    //     key: 'pv2_notified_at',
+    //     getLogValue: log => convertDate(log.pv2_notified_at),
+    // },
     {
         key: 'initial_org_unit',
         getLogValue: log => (
@@ -381,205 +607,6 @@ export const config: Record<string, any> = [
         ),
     },
     {
-        key: 'investigation_at',
-        getLogValue: log => convertDate(log.investigation_at),
-    },
-    {
-        key: 'cvdpv_notified_at',
-        getLogValue: log => convertDate(log.cvdpv_notified_at),
-    },
-    {
-        key: 'last_budget_event',
-    },
-    {
-        key: 'budget_responsible',
-    },
-    {
-        key: 'cvdpv2_notified_at',
-        getLogValue: log => convertDate(log.cvdpv2_notified_at),
-    },
-    {
-        key: 'verification_score',
-    },
-    {
-        key: 'budget_submitted_at',
-        getLogValue: log => convertDate(log.budget_submitted_at),
-    },
-    {
-        key: 'three_level_call_at',
-        getLogValue: log => convertDate(log.three_level_call_at),
-    },
-    {
-        key: 'ag_nopv_group_met_at',
-        getLogValue: log => convertDate(log.ag_nopv_group_met_at),
-    },
-    {
-        key: 'detection_responsible',
-    },
-    {
-        key: 'no_regret_fund_amount',
-    },
-    {
-        key: 'surge_spreadsheet_url',
-    },
-    {
-        key: 'approved',
-        getLogValue: log => convertDate(log.approved),
-    },
-    {
         key: 'creation_email_send_at',
-    },
-    {
-        key: 'risk_assessment_status',
-    },
-    {
-        key: 'who_disbursed_to_co_at',
-    },
-    {
-        key: 'enable_send_weekly_email',
-    },
-    {
-        key: 'preperadness_sync_status',
-    },
-    {
-        key: 'separate_scopes_per_round',
-    },
-    {
-        key: 'unicef_disbursed_to_co_at',
-        getLogValue: log =>
-            convertDate(log.unicef_disbursed_to_co_at_WFEDITABLE),
-    },
-    {
-        key: 'budget_current_state_label',
-    },
-    {
-        key: 'risk_assessment_responsible',
-    },
-    {
-        key: 'budget_rrt_oprtt_approval_at',
-        getLogValue: log =>
-            convertDate(log.budget_rrt_oprtt_approval_at_WFEDITABLE),
-    },
-    {
-        key: 'preperadness_spreadsheet_url',
-    },
-    {
-        key: 'approved_by_who',
-        getLogValue: log => convertDate(log.approved_by_who_at_WFEDITABLE),
-    },
-    {
-        key: 'who_sent_budget',
-        getLogValue: log => convertDate(log.who_sent_budget_at_WFEDITABLE),
-    },
-    {
-        key: 'budget_requested',
-        getLogValue: log =>
-            convertDate(log.budget_requested_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'submitted_to_rrt',
-        getLogValue: log =>
-            convertDate(log.submitted_to_rrt_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'submitted_to_orpg',
-        getLogValue: log =>
-            convertDate(log.submitted_to_orpg_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'detection_rrt_oprtt_approval_at',
-
-        getLogValue: log =>
-            convertDate(log.detection_rrt_oprtt_approval_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'gpei_consolidation',
-        getLogValue: log =>
-            convertDate(log.gpei_consolidation_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'unicef_sent_budget',
-        getLogValue: log =>
-            convertDate(log.unicef_sent_budget_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 're_submitted_to_rrt',
-        getLogValue: log =>
-            convertDate(log.re_submitted_to_rrt_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'detection_first_draft_submitted_at',
-        getLogValue: log =>
-            convertDate(log.detection_first_draft_submitted_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 're_submitted_to_orpg',
-        getLogValue: log =>
-            convertDate(log.re_submitted_to_orpg_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'feedback_sent_to_rrt1',
-        getLogValue: log =>
-            convertDate(log.feedback_sent_to_rrt1_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'feedback_sent_to_rrt2',
-        getLogValue: log =>
-            convertDate(log.feedback_sent_to_rrt2_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'feedback_sent_to_rrt3',
-        getLogValue: log =>
-            convertDate(log.feedback_sent_to_rrt3_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'submitted_for_approval',
-        getLogValue: log =>
-            convertDate(log.submitted_for_approval_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 'risk_assessment_rrt_oprtt_approval_at',
-        getLogValue: log =>
-            convertDate(
-                log.risk_assessment_rrt_oprtt_approval_at_WFEDITABLE,
-                'L',
-            ),
-    },
-    {
-        key: 'risk_assessment_first_draft_submitted',
-        getLogValue: log =>
-            convertDate(
-                log.risk_assessment_first_draft_submitted_at_WFEDITABLE,
-                'L',
-            ),
-    },
-    {
-        key: 'submission_to_orpg_operations_1',
-        getLogValue: log =>
-            convertDate(log.submission_to_orpg_operations_1_at_WFEDITABLE, 'L'),
-    },
-    {
-        key: 're_submission_to_orpg_operations_2',
-        getLogValue: log =>
-            convertDate(
-                log.re_submission_to_orpg_operations_2_at_WFEDITABLE,
-                'L',
-            ),
-    },
-    {
-        key: 'feedback_sent_to_orpg_operations_who',
-        getLogValue: log =>
-            convertDate(
-                log.feedback_sent_to_orpg_operations_who_at_WFEDITABLE,
-                'L',
-            ),
-    },
-    {
-        key: 'feedback_sent_to_orpg_operations_unicef',
-        getLogValue: log =>
-            convertDate(
-                log.feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE,
-                'L',
-            ),
     },
 ];

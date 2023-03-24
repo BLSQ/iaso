@@ -2,11 +2,11 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     account: {
-        id: 'iaso.polio.label.account',
+        id: 'iaso.label.account',
         defaultMessage: 'Account ID',
     },
     geojson: {
-        id: 'iaso.polio.label.geoJson',
+        id: 'iaso.polio.label.geojson',
         defaultMessage: 'Geojson',
     },
     selectOrgUnit: {
@@ -181,6 +181,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.vaccine',
         defaultMessage: 'Vaccine',
     },
+    vaccine_name: {
+        id: 'iaso.polio.vaccine',
+        defaultMessage: 'Vaccine',
+    },
     vaccines: {
         id: 'iaso.polio.vaccines',
         defaultMessage: 'Vaccines',
@@ -308,12 +312,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.fieldInvestigationDate',
         defaultMessage: 'Field Investigation Date',
     },
-    risk_assessment_first_draft_submitted: {
+    risk_assessment_first_draft_submitted_at: {
         id: 'iaso.polio.form.label.risk_assessment_first_draft_submitted_at',
         defaultMessage: '1st Draft Submission',
     },
     detection_first_draft_submitted_at: {
-        id: 'iaso.polio.form.label.firstDraftSubmission',
+        id: 'iaso.polio.form.label.risk_assessment_first_draft_submitted_at',
         defaultMessage: '1st Draft Submission',
     },
     detection_responsible: {
@@ -325,7 +329,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'RRT/OPRTT Approval',
     },
     budget_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.budget_rrt_oprtt_approval_at',
+        id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/OPRTT Approval',
     },
     ag_nopv_group_met_at: {
@@ -409,7 +413,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Disbursed to MOH (Unicef)',
     },
     eomg: {
-        id: 'iaso.polio.form.label.eomgGroup',
+        id: 'iaso.polio.form.label.eomg',
         defaultMessage: 'EOMG Group',
     },
     budget_submitted_at: {
@@ -922,7 +926,7 @@ const MESSAGES = defineMessages({
     },
     vacine: {
         id: 'iaso.polio.label.vaccine',
-        defaultMessage: 'Vaccine',
+        defaultMessage: 'Vaccines',
     },
     vaccinated: {
         id: 'iaso.polio.label.vaccinated',
@@ -1684,7 +1688,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.vialsShipped',
         defaultMessage: 'Vials shipped',
     },
-    poNumbers: {
+    vials_received: {
+        id: 'iaso.polio.label.vialsShipped',
+        defaultMessage: 'Vials shipped',
+    },
+    po_numbers: {
         id: 'iaso.polio.label.poNumbers',
         defaultMessage: 'PO numbers',
     },

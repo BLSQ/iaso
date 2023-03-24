@@ -370,7 +370,7 @@ class CSVExportMixin:
         data = serializer.data
         renderer = CSVRenderer()
         # Determine the order of fields
-        renderer.header = serializer.child.fields
+        # renderer.header = serializer.child.fields
         # Get column names
         if hasattr(serializer_class.Meta, "labels"):
             renderer.labels = serializer_class.Meta.labels

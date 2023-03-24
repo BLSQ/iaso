@@ -1,10 +1,12 @@
 from django.db import models
 from django.db.models import Count, F, Q
 from django_filters import rest_framework as filters
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import mixins, serializers, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
+from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import Entity, EntityType
 
 
@@ -110,105 +112,78 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
-class EntityDuplicateViewSet(mixins.ListModelMixin, mixins.UpdateModelMixin, viewsets.GenericViewSet):
-    queryset = EntityDuplicate.objects.all()
+class EntityDuplicateViewSet(viewsets.ViewSet):
+    """Entity Duplicates API
+    GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
+    PATCH /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
+    GET /api/entityduplicates/analyzes : Provides an API to retrieve the list of running and finished analyzes
+    GET /api/entityduplicates/analyzes/{id} : Provides an API to retrieve the status of an analyze
+    PATCH /api/entityduplicates/analyzes/{id} : Provides an API to change the status of an analyze
+    DELETE /api/entityduplicates/analyzes/{id} : Provides an API to delete the possible duplicates of an analyze
+    POST /api/entityduplicates/analyzes : Provides an API to launch a duplicate analyzes
+    """
+
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     serializer_class = EntityDuplicateSerializer
-    filterset_class = EntityDuplicateFilterSet
-    filterset_fields = [
-        "entity_type",
-        "org_unit",
-        "start_date",
-        "end_date",
-        "search",
-        "submitter",
-        "submitter_team",
-        "ignored",
-        "entities",
-        "fields",
-        "analyze_id",
-    ]
-    ordering_fields = ["created_at", "similarity"]
-    ordering = ["-created_at"]
 
-    def get_paginated_response(self, data):
-        return Response(
-            {
-                "pagination": {
-                    "page": self.paginator.page.number,
-                    "page_size": self.paginator.page_size,
-                    "total_pages": self.paginator.num_pages,
-                    "total_items": self.paginator.count,
-                },
-                "results": data,
-            }
-        )
-
-    def list(self, request, *args, **kwargs):
-        queryset = self.filter_queryset(self.get_queryset())
-        page = self.request.query_params.get("page", 1)
-        limit = self.request.query_params.get("limit", 1000)
-        similarity = self.request.query_params.get("similarity", 250)
-        paginator = self.pagination_class()
-        paginator.page_size = limit
-        queryset = queryset.filter(similarity__lte=similarity)
-        page_queryset = paginator.paginate_queryset(queryset, request)
-        serializer = self.get_serializer(page_queryset, many=True)
-        return self.get_paginated_response(serializer.data)
-
-    @action(detail=False, methods=["patch"])
-    def merge(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = self.get_object()
-        instance.merge(serializer.validated_data)
-        serializer = self.get_serializer(instance)
+    def list(self, request):
+        """
+        GET /api/entityduplicates/
+        Provides an API to retrieve potentially duplicated entities.
+        """
+        queryset = EntityDuplicate.objects.all()
+        serializer = EntityDuplicateSerializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=False, methods=["patch"])
-    def ignore(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = self.get_object()
-        instance.ignore(serializer.validated_data.get("reason", None))
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+    def update(self, request):
+        """
+        PATCH /api/entityduplicates/
+        Provides an API to merge duplicate entities or to ignore the matc
+        """
+        duplicate = EntityDuplicate.objects.get(pk=pk)
+        serializer = EntityDuplicateSerializer(duplicate, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    @action(detail=False, methods=["get"], url_path="analyzes")
+    def analyzes_list(self, request, *args, **kwargs):
+        """
+        GET /api/entityduplicates/analyzes
+        Provides an API to retrieve the list of running and finished analyzes
+        """
+        pass
 
-class EntityDuplicateAnalyzeViewSet(
-    mixins.CreateModelMixin,
-    mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
-    mixins.UpdateModelMixin,
-    viewsets.GenericViewSet,
-):
-    queryset = EntityDuplicateAnalyze.objects.all()
-    serializer_class = EntityDuplicateAnalyzeSerializer
-    filter_backends = [filters.DjangoFilterBackend]
-    filterset_fields = [
-        "algorithm",
-        "entity_type_id",
-        "start_date",
-        "end_date",
-        "submitter",
-        "submitter_team",
-        "fields",
-    ]
+    @action(detail=True, methods=["get"], url_path="analyzes")
+    def analyzes_detail(self, request, pk=None, *args, **kwargs):
+        """
+        GET /api/entityduplicates/analyzes/{id}
+        Provides an API to retrieve the status of an analyze
 
-    @action(detail=True, methods=["delete"])
-    def delete_duplicates(self, request, pk=None):
-        instance = self.get_object()
-        instance.delete_duplicates()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        """
+        pass
 
-    @action(detail=False, methods=["post"])
-    def launch(self, request):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save(created_by=request.user)
-        return Response({"analyze_id": instance.pk}, status=status.HTTP_200_OK)
+    @action(detail=True, methods=["patch"], url_path="analyzes")
+    def analyzes_update(self, request, pk=None, *args, **kwargs):
+        """
+        PATCH /api/entityduplicates/analyzes/{id}
+        Provides an API to change the status of an analyze
+        """
+        pass
 
-    @action(detail=True, methods=["patch"])
-    def merge(self, request, pk=None):
-        instance = self.get_object()
-        instance.merge()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    @action(detail=True, methods=["delete"], url_path="analyzes")
+    def analyzes_delete(self, request, pk=None, *args, **kwargs):
+        """
+        DELETE /api/entityduplicates/analyzes/{id}
+        Provides an API to delete the possible duplicates of an analyze
+        """
+        pass
+
+    @action(detail=False, methods=["post"], url_path="analyzes")
+    def analyzes_launch(self, request, *args, **kwargs):
+        """
+        POST /api/entityduplicates/analyzes
+        Provides an API to launch a duplicate analyzes
+        """
+        pass

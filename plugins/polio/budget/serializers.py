@@ -1,7 +1,9 @@
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
+from typing import TypedDict
 
 from django.db import transaction
+from django_stubs_ext import WithAnnotations
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
@@ -593,6 +595,11 @@ class UpdateBudgetStepSerializer(serializers.ModelSerializer):
         ]
 
 
+class LastBudgetAnnotation(TypedDict):
+    budget_last_updated_at: datetime
+
+
+# noinspection PyMethodMayBeStatic
 class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     class Meta:
         model = Campaign
@@ -606,11 +613,11 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
         }
 
     country = serializers.SerializerMethodField()
-    budget_last_updated_at = serializers.SerializerMethodField()
+    budget_last_updated_at = serializers.SerializerMethodField()  # type: ignore
 
     def get_country(self, campaign: Campaign):
-        return campaign.country.name
+        return campaign.country.name if campaign.country else None
 
-    def get_budget_last_updated_at(self, campaign: Campaign):
+    def get_budget_last_updated_at(self, campaign: WithAnnotations[Campaign, LastBudgetAnnotation]):
         if campaign.budget_last_updated_at:
             return campaign.budget_last_updated_at.strftime("%Y-%m-%d")

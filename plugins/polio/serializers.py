@@ -1041,8 +1041,6 @@ class ExportCampaignSerializer(CampaignSerializer):
                     "wastage_ratio_forecast",
                 ]
 
-      
-
         class Meta:
             model = Round
             fields = [
@@ -1084,11 +1082,12 @@ class ExportCampaignSerializer(CampaignSerializer):
                 "forma_date",
                 "forma_comment",
             ]
+
         scopes = NestedRoundScopeSerializer(many=True, required=False)
         vaccines = NestedRoundVaccineSerializer(many=True, required=False)
         shipments = NestedShipmentSerializer(many=True, required=False)
         destructions = NestedDestructionSerializer(many=True, required=False)
-        
+
     class ExportCampaignScopeSerializer(CampaignScopeSerializer):
         class Meta:
             model = CampaignScope

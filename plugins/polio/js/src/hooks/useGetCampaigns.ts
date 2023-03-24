@@ -78,7 +78,6 @@ const useGetCampaignsOptions = (
             enabled: options.enabled ?? true,
             last_budget_event__status: options.last_budget_event__status,
             fieldset: asCsv ? undefined : options.fieldset ?? undefined,
-            format: asCsv ? 'csv' : undefined,
         }),
         [
             asCsv,
@@ -128,7 +127,7 @@ export const useGetCampaigns = (
 
 export const useGetCampaignsAsCsv = (
     options: Options = {},
-    url = '/api/polio/campaigns/',
+    url = '/api/polio/campaigns/export_csv/',
 ): string => {
     const params = useGetCampaignsOptions(options, true);
     return `${getURL(params, url)}`;

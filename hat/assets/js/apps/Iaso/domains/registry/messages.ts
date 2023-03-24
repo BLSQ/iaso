@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     title: {
         defaultMessage: 'Registry',
-        id: 'iaso.registy.title',
+        id: 'iaso.registry.title',
     },
     selectSingle: {
         id: 'blsq.treeview.label.selectSingle',
@@ -34,7 +34,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Select an org unit',
     },
     selectedOrgUnit: {
-        id: 'instance.selectedOrgUnit',
+        id: 'iaso.instance.selectedOrgUnit',
         defaultMessage: 'Selected Org unit',
     },
     name: {

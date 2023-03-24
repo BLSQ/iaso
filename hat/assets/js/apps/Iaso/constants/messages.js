@@ -159,7 +159,7 @@ const MESSAGES = defineMessages({
     },
     registry: {
         defaultMessage: 'Registry',
-        id: 'iaso.registy.title',
+        id: 'iaso.registry.title',
     },
     entityDuplicatesTitle: {
         defaultMessage: 'Duplicates',

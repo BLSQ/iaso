@@ -195,7 +195,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
                         <Pane
                             name={`children-locations-orgunit-type-${subType.id}`}
-                            style={{ zIndex: 401 + index }}
+                            style={{ zIndex: 600 + index }}
                         >
                             {childrenOrgUnits
                                 .filter(childrenOrgUnit =>

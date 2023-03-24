@@ -6,6 +6,7 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import { Box, Grid, makeStyles } from '@material-ui/core';
+import { orderBy } from 'lodash';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -59,14 +60,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         orgUnit?.reference_instance,
     );
 
-    const subOrgUnitTypes: OrgunitTypes = useMemo(
-        () =>
+    const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
+        const options =
             orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
                 ...subType,
                 color: getOtChipColors(index) as string,
-            })) || [],
-        [orgUnit],
-    );
+            })) || [];
+        return orderBy(options, [f => f.depth], ['asc']);
+    }, [orgUnit]);
+
     return (
         <>
             <TopBar

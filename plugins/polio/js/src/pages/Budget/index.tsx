@@ -45,15 +45,6 @@ import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/
 type Props = {
     router: any;
 };
-const style = () => {
-    return {
-        pagination: {
-            '&.MuiPagination-root > .MuiPagination-ul': {
-                justifyContent: 'center',
-            },
-        },
-    };
-};
 
 const getCsvParams = (apiParams: Record<string, any>): string => {
     const {
@@ -72,7 +63,14 @@ const getCsvParams = (apiParams: Record<string, any>): string => {
     return new URLSearchParams(filteredParams).toString();
 };
 
-const usePaginationStyles = makeStyles(style);
+const usePaginationStyles = makeStyles({
+    pagination: {
+        '&.MuiPagination-root > .MuiPagination-ul': {
+            justifyContent: 'center',
+        },
+    },
+    alignRight: { textAlign: 'right' },
+});
 
 export const BudgetList: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
@@ -152,13 +150,11 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             params={params}
                             statesList={possibleStates}
                         />
-                        <Grid container justifyContent="flex-end">
-                            <Box mb={2}>
-                                <CsvButton
-                                    csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
-                                />
-                            </Box>
-                        </Grid>
+                        <Box mb={2} className={paginationStyle.alignRight}>
+                            <CsvButton
+                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                            />
+                        </Box>
 
                         <TableWithDeepLink
                             data={budgets?.results ?? []}

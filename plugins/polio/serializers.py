@@ -1000,3 +1000,173 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
     campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")
+
+
+class ExportCampaignSerializer(CampaignSerializer):
+    class NestedRoundSerializer(RoundSerializer):
+        class NestedRoundScopeSerializer(RoundScopeSerializer):
+            class Meta:
+                model = RoundScope
+                fields = ["vaccine"]
+
+        class NestedShipmentSerializer(ShipmentSerializer):
+            class Meta:
+                model = Shipment
+                fields = [
+                    "vaccine_name",
+                    "po_numbers",
+                    "vials_received",
+                    "estimated_arrival_date",
+                    "reception_pre_alert",
+                    "date_reception",
+                    "comment",
+                ]
+
+        class NestedDestructionSerializer(DestructionSerializer):
+            class Meta:
+                model = Destruction
+                fields = [
+                    "vials_destroyed",
+                    "date_report_received",
+                    "date_report",
+                    "comment",
+                ]
+
+        class NestedRoundVaccineSerializer(RoundVaccineSerializer):
+            class Meta:
+                model = RoundVaccine
+                fields = [
+                    "name",
+                    "doses_per_vial",
+                    "wastage_ratio_forecast",
+                ]
+
+      
+
+        class Meta:
+            model = Round
+            fields = [
+                "scopes",
+                "vaccines",
+                "shipments",
+                "destructions",
+                "number",
+                "started_at",
+                "ended_at",
+                "mop_up_started_at",
+                "mop_up_ended_at",
+                "im_started_at",
+                "im_ended_at",
+                "lqas_started_at",
+                "lqas_ended_at",
+                "target_population",
+                "doses_requested",
+                "cost",
+                "im_percentage_children_missed_in_household",
+                "im_percentage_children_missed_out_household",
+                "im_percentage_children_missed_in_plus_out_household",
+                "awareness_of_campaign_planning",
+                "main_awareness_problem",
+                "lqas_district_passing",
+                "lqas_district_failing",
+                "preparedness_spreadsheet_url",
+                "preparedness_sync_status",
+                "date_signed_vrf_received",
+                "date_destruction",
+                "vials_destroyed",
+                "reporting_delays_hc_to_district",
+                "reporting_delays_district_to_region",
+                "reporting_delays_region_to_national",
+                "forma_reception",
+                "forma_missing_vials",
+                "forma_usable_vials",
+                "forma_unusable_vials",
+                "forma_date",
+                "forma_comment",
+            ]
+        scopes = NestedRoundScopeSerializer(many=True, required=False)
+        vaccines = NestedRoundVaccineSerializer(many=True, required=False)
+        shipments = NestedShipmentSerializer(many=True, required=False)
+        destructions = NestedDestructionSerializer(many=True, required=False)
+        
+    class ExportCampaignScopeSerializer(CampaignScopeSerializer):
+        class Meta:
+            model = CampaignScope
+            fields = ["vaccine"]
+
+    rounds = NestedRoundSerializer(many=True, required=False)
+    scopes = ExportCampaignScopeSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "obr_name",
+            "rounds",
+            "scopes",
+            "gpei_coordinator",
+            "gpei_email",
+            "description",
+            "initial_org_unit",
+            "country",
+            "creation_email_send_at",
+            "onset_at",
+            "three_level_call_at",
+            "cvdpv_notified_at",
+            "cvdpv2_notified_at",
+            "pv_notified_at",
+            "pv2_notified_at",
+            "virus",
+            "vacine",
+            "detection_status",
+            "detection_responsible",
+            "detection_first_draft_submitted_at",
+            "detection_rrt_oprtt_approval_at",
+            "risk_assessment_status",
+            "risk_assessment_responsible",
+            "investigation_at",
+            "risk_assessment_first_draft_submitted_at",
+            "risk_assessment_rrt_oprtt_approval_at",
+            "ag_nopv_group_met_at",
+            "dg_authorized_at",
+            "verification_score",
+            "doses_requested",
+            "surge_spreadsheet_url",
+            "country_name_in_surge_spreadsheet",
+            "budget_status",
+            "is_test",
+            "budget_current_state_key",
+            "budget_current_state_label",
+            "who_sent_budget_at_WFEDITABLE",
+            "unicef_sent_budget_at_WFEDITABLE",
+            "gpei_consolidated_budgets_at_WFEDITABLE",
+            "submitted_to_rrt_at_WFEDITABLE",
+            "feedback_sent_to_gpei_at_WFEDITABLE",
+            "re_submitted_to_rrt_at_WFEDITABLE",
+            "submitted_to_orpg_operations1_at_WFEDITABLE",
+            "feedback_sent_to_rrt1_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+            "submitted_to_orpg_wider_at_WFEDITABLE",
+            "submitted_to_orpg_operations2_at_WFEDITABLE",
+            "feedback_sent_to_rrt2_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+            "submitted_for_approval_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+            "approved_by_who_at_WFEDITABLE",
+            "approved_by_unicef_at_WFEDITABLE",
+            "approved_at_WFEDITABLE",
+            "approval_confirmed_at_WFEDITABLE",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "eomg",
+            "no_regret_fund_amount",
+            "payment_mode",
+            "created_at",
+            "updated_at",
+            "district_count",
+            "is_preventive",
+            "enable_send_weekly_email",
+        ]
+        read_only_fields = fields

@@ -26,8 +26,6 @@ nav:
       - FAQ: ./pages/users/FAQ/faq.md
   - Developers:
     - References:
-      - API: 
-        - ./pages/dev/reference/API/entity.md
       - SQL dashboard : 
         - ./pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.md
       - Entities:
@@ -40,6 +38,8 @@ nav:
         - ./pages/dev/reference/audit/audit.md
       - Vector control:
         - ./pages/dev/reference/vector_control/vector_control.md
+      - API: 
+        - ./pages/dev/reference/API/entity.md
     - How to:
       - Contribute:
         - ./pages/dev/how_to/contribute/contribute.md 

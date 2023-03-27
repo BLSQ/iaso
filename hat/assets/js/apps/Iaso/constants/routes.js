@@ -421,7 +421,7 @@ export const orgUnitsDetailsPath = {
 
 export const registryPath = {
     baseUrl: baseUrls.registry,
-    permissions: [],
+    permissions: ['iaso_registry'],
     component: props => <Registry {...props} />,
     params: [
         {
@@ -432,7 +432,7 @@ export const registryPath = {
 };
 export const registryDetailPath = {
     baseUrl: baseUrls.registryDetail,
-    permissions: [],
+    permissions: ['iaso_registry'],
     component: props => <RegistryDetail {...props} />,
     params: [
         {

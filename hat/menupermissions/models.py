@@ -8,6 +8,7 @@ FORMS = _("Formulaires")
 MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
+REGISTRY = _("Registre")
 LINKS = _("Correspondances sources")
 PAGES = _("Pages")
 PROJECTS = _("Projets")
@@ -68,6 +69,7 @@ class CustomPermissionSupport(models.Model):
             ("iaso_mappings", MAPPINGS),
             ("iaso_completeness", COMPLETENESS),
             ("iaso_org_units", ORG_UNITS),
+            ("iaso_registry", REGISTRY),
             ("iaso_links", LINKS),
             ("iaso_users", USERS),
             ("iaso_pages", PAGES),

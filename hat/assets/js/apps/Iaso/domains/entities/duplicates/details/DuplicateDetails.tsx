@@ -329,13 +329,19 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                     <Grid item xs={12} sm={6}>
                         <SubmissionsForEntity
                             entityId={entityIdA}
-                            title="Submissions for Beneficiary A"
+                            title={formatMessage(
+                                MESSAGES.submissionsForEntity,
+                                { entity: 'A' },
+                            )}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
                         <SubmissionsForEntity
                             entityId={entityIdB}
-                            title="Submissions for Beneficiary B"
+                            title={formatMessage(
+                                MESSAGES.submissionsForEntity,
+                                { entity: 'B' },
+                            )}
                         />
                     </Grid>
                 </Grid>

@@ -47,7 +47,6 @@ export const SubmissionsForEntity: FunctionComponent<Props> = ({
                                 isError={isError}
                                 data={instance}
                                 showTitle={false}
-                                // elevation={0}
                             />
                         </ExpandableItem>
                         <Divider style={{ height: '1px', width: '100%' }} />

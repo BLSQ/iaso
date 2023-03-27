@@ -2054,6 +2054,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.repeatBudgetStep',
         defaultMessage: 'Re-send step for corrections or as reminder',
     },
+    importExcelLinefile: {
+        id: 'iaso.polio.import_file.label',
+        defaultMessage: 'Excel Line File',
+    },
+    importLineList: {
+        id: 'iaso.polio.import_line_list',
+        defaultMessage: 'Import Line List',
+    },
+    campaignImportSuccess: {
+        id: 'iaso.polio.import_line_list.successMessage',
+        defaultMessage: 'Imported successfully {amount} campaign(s)',
+    },
 });
 
 export default MESSAGES;

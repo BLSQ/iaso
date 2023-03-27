@@ -8,12 +8,14 @@ from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
 from django.db.models.query import QuerySet
+from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
+from django.http import FileResponse
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
@@ -666,6 +668,11 @@ class LineListImportViewSet(ModelViewSet):
 
     def get_queryset(self):
         return LineListImport.objects.all()
+
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=["get"], url_path="getsample")
+    def download_sample_csv(self, request):
+        return FileResponse(open("plugins/polio/fixtures/linelist_template.xls", "rb"))
 
 
 class PreparednessDashboardViewSet(viewsets.ViewSet):

@@ -33,6 +33,7 @@ const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
         }
         onSearch();
     };
+
     return (
         <>
             <Grid container spacing={4}>

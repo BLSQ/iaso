@@ -118,7 +118,9 @@ def get_cell_data(round: Any) -> str:
     cell_data = obr_name + "\n"
     cell_data += "Round " + str(round_number) + "\n"
     cell_data += "Dates: " + started_at + " - " + ended_at + "\n"
-    cell_data += round["vacine"] if round["vacine"] is not None else ""
+    cell_data += round["vacine"] + "\n" if round["vacine"] is not None else ""
+    cell_data += "Target population: " + str(round["target_population"]) + "\n" if round["target_population"] else ""
+    cell_data += "Geographic scope: " + round["nid_or_snid"] if round["nid_or_snid"] else ""
 
     return cell_data
 

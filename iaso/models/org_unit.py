@@ -292,6 +292,11 @@ class OrgUnit(TreeModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        # work around https://code.djangoproject.com/ticket/33787
+        # where we had empty Z point in the database but couldn't save the OrgUnit back.
+        # because it was missing a dimension
+        if self.location is not None and self.location.empty:
+            self.location = None
 
         if skip_calculate_path:
             super().save(*args, **kwargs)

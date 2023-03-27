@@ -15,6 +15,22 @@ export const succesfullSnackBar = (
         persist: false,
     },
 });
+export const successfullSnackBarWithButtons = ({
+    messageKey = formSuccessFullMessageKey,
+    messageObject,
+    persist,
+    buttonMessageKey,
+    buttonAction,
+}) => ({
+    messageKey,
+    messageObject,
+    options: {
+        variant: 'success',
+        persist,
+    },
+    buttonMessageKey,
+    buttonAction,
+});
 
 export const errorSnackBar = (
     messageKey = formErrorMessageKey,

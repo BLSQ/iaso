@@ -16,7 +16,7 @@ const getStorage = async (
     if (pageSize) {
         params.limit = pageSize;
     }
-    const url = makeUrlWithParams('/api/storage/', params);
+    const url = makeUrlWithParams('/api/storages/', params);
     return getRequest(url) as Promise<StoragePaginated>;
 };
 

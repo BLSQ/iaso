@@ -1,6 +1,6 @@
 /* eslint-disable react/require-default-props */
 import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
@@ -34,6 +34,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
 }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     const { data, isFetching: isFetchingCountries } = useGetCountries();
@@ -49,6 +50,8 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                        blockForbiddenChars
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -81,7 +84,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                 <Grid container item xs={12} md={3} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
-                            disabled={!filtersUpdated}
+                            disabled={textSearchError || !filtersUpdated}
                             onFilter={handleSearch}
                             size={buttonSize}
                         />

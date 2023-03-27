@@ -170,3 +170,11 @@ hat/settings_local.py
 runpycharmdev.sh
 
 venv
+
+
+#mkdocs
+/bin/**/*
+/include/**/*
+/lib/**/*
+pyvenv.cfg
+originals

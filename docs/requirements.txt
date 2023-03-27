@@ -6,6 +6,8 @@
 #
 beautifulsoup4==4.11.2
     # via mkdocs-mermaid2-plugin
+bracex==2.3.post1
+    # via wcmatch
 certifi==2022.12.7
     # via requests
 charset-normalizer==3.1.0
@@ -51,11 +53,14 @@ mkdocs==1.4.2
     # via
     #   -r ./docs/requirements.in
     #   mkdocs-autorefs
+    #   mkdocs-awesome-pages-plugin
     #   mkdocs-material
     #   mkdocs-mermaid2-plugin
     #   mkdocstrings
 mkdocs-autorefs==0.4.1
     # via mkdocstrings
+mkdocs-awesome-pages-plugin==2.8.0
+    # via -r ./docs/requirements.in
 mkdocs-material==9.1.1
     # via mkdocs-mermaid2-plugin
 mkdocs-material-extensions==1.1.1
@@ -68,6 +73,8 @@ mkdocstrings[python]==0.20.0
     #   mkdocstrings-python
 mkdocstrings-python==0.8.3
     # via mkdocstrings
+natsort==8.3.1
+    # via mkdocs-awesome-pages-plugin
 packaging==23.0
     # via mkdocs
 pygments==2.14.0
@@ -103,6 +110,8 @@ urllib3==1.26.14
     # via requests
 watchdog==2.3.1
     # via mkdocs
+wcmatch==8.4.1
+    # via mkdocs-awesome-pages-plugin
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools

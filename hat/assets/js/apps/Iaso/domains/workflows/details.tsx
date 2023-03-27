@@ -42,7 +42,7 @@ import { AddChangeModal } from './components/changes/Modal';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns } from './config/changes';
-import { useGetFollowUpsColumns } from './config/followUps';
+import { useGetFollowUpsColumns, getConfigFields } from './config/followUps';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
 
 type Router = {
@@ -123,6 +123,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const fields = useGetQueryBuildersFields(
         formDescriptors,
         targetPossibleFields,
+        getConfigFields(),
     );
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(

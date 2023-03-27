@@ -1,13 +1,15 @@
-site_name: Iaso dev docs
+site_name: Iaso
 theme:
   name: readthedocs
   highlightjs: true
 plugins:
   - search
   - mermaid2
+  - awesome-pages:
+          collapse_single_pages: true
   - mkdocstrings:
       handlers:
-        # See: https://mkdocstrings.github.io/python/usage/
+        # See: https://mkdocstrings.gipip3 thub.io/python/usage/
         python:
           options:
             docstring_style: sphinx
@@ -17,6 +19,43 @@ markdown_extensions:
   - admonition
 nav:
   - Home: index.md
-  - API: permissions.md
+  - Users: 
+    - References:
+      - User guide:
+        - ./pages/users/reference/user_guide/user_guide.md
+      - FAQ: ./pages/users/FAQ/faq.md
+  - Developers:
+    - References:
+      - API: 
+        - ./pages/dev/reference/API/entity.md
+      - SQL dashboard : 
+        - ./pages/dev/reference/sql_dashboard/SQL_Dashboard_feature.md
+      - Entities:
+        - ./pages/dev/reference/entities_in_iaso/entities_in_iaso.md
+      - Front-end:
+        - ./pages/dev/reference/front-end_reference/front-end_reference.md
+      - Data model glossary:
+        - ./pages/dev/reference/data_model_glossary/data_model_glossary.md
+      - Audit:
+        - ./pages/dev/reference/audit/audit.md
+      - Vector control:
+        - ./pages/dev/reference/vector_control/vector_control.md
+    - How to:
+      - Contribute:
+        - ./pages/dev/how_to/contribute/contribute.md 
+      - Set up your dev environment:
+        - ./pages/dev/how_to/setup_dev_env/setup_dev_env.md 
+      - Manually test Enketo public_create_url:
+        - ./pages/dev/how_to/manually_test_enketo/manually_test_enketo.md 
+      - Deploy:
+        - ./pages/dev/how_to/deploy/deploy.md
+      - Use the APIs:
+        - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
+      
+
+  - More about Iaso:
+    - Bluesquare: https://www.bluesquarehub.com/
+    - Source code: https://github.com/BLSQ/iaso
+
 
 

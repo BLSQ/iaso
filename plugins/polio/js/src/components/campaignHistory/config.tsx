@@ -588,7 +588,15 @@ export const config: Record<string, any> = [
     },
     {
         key: 'geojson',
-        getLogValue: log => <GeoJsonMap geoJson={log.geojson} />,
+        getLogValue: log => {
+            const hasGeoJson =
+                log.geojson !== undefined && log.geojson.length > 0;
+
+            if (hasGeoJson) {
+                return <GeoJsonMap geoJson={log.geojson} />;
+            }
+            return null;
+        },
     },
     // deprecated field ?
     // {

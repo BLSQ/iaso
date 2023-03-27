@@ -155,7 +155,7 @@ def log_campaign_modification(campaign: Campaign, old_campaign_dump, request_use
 
 
 @transaction.atomic
-def campaign_from_files(file):
+def campaign_from_files(file, account):
     try:
         df = pd.read_excel(file)
     except Exception as exc:
@@ -176,7 +176,7 @@ def campaign_from_files(file):
         onset_date = df["Onset Date"][ind]
         virus = df["VDPV Category"][ind]
         print(epid, onset_date, type(onset_date), virus)
-        c, created = Campaign.objects.get_or_create(epid=epid)
+        c, created = Campaign.objects.get_or_create(epid=epid, account=account)
         if not created:
             skipped_campaigns.append(epid)
             print(f"Skipping existing campaign {c.epid}")
@@ -208,6 +208,7 @@ class LineListImportSerializer(serializers.ModelSerializer):
         read_only_fields = ["import_result", "created_by", "created_at"]
 
     def create(self, validated_data):
+        account = self.context["request"].user.iaso_profile.account
         line_list_import = LineListImport(
             file=validated_data.get("file"),
             import_result="pending",
@@ -218,7 +219,7 @@ class LineListImportSerializer(serializers.ModelSerializer):
 
         # Tentatively created campaign, will transaction.abort in case of error
         try:
-            res = campaign_from_files(line_list_import.file)
+            res = campaign_from_files(line_list_import.file, account)
         except Exception as exc:
             logging.exception(exc)
             if isinstance(exc, serializers.ValidationError):

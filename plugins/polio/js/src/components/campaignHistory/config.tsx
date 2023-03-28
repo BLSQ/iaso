@@ -81,6 +81,10 @@ export const config: Record<string, any> = [
         getLogValue: log => <OrgUnit log={log} logKey="country" />,
     },
     {
+        key: 'initial_org_unit',
+        getLogValue: log => <OrgUnit log={log} logKey="initial_org_unit" />,
+    },
+    {
         key: 'onset_at',
     },
     {
@@ -588,10 +592,6 @@ export const config: Record<string, any> = [
             }
             return null;
         },
-    },
-    {
-        key: 'initial_org_unit',
-        getLogValue: log => <OrgUnit log={log} logKey="initial_org_unit" />,
     },
     {
         key: 'creation_email_send_at',

@@ -61,6 +61,32 @@ export const config: Record<string, any> = [
     },
     {
         key: 'group',
+        type: 'object',
+        childrenLabel: MESSAGES.group,
+        children: [
+            {
+                key: 'id',
+            },
+            {
+                key: 'org_units',
+                getLogValue: log =>
+                    log.org_units.map((ouId, index) => {
+                        const lastArrayItem =
+                            log.org_units[log.org_units.length - 1];
+                        return (
+                            <Box key={ouId} display="inline-block">
+                                <Link
+                                    target="_blank"
+                                    href={`/dashboard/orgunits/detail/orgUnitId/${ouId}`}
+                                >
+                                    {ouId}
+                                </Link>
+                                {log.org_units[index] !== lastArrayItem && ','}
+                            </Box>
+                        );
+                    }),
+            },
+        ],
     },
     {
         key: 'eomg',

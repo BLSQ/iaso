@@ -10,6 +10,7 @@ export const useGetMapLog = (
         logDetail =>
             structure.map(
                 ({ type, getLogValue, key, children, childrenLabel }) => {
+                    if (!logDetail[key]) return null;
                     if ((type === 'object' || type === 'array') && children) {
                         return (
                             <MultiRows

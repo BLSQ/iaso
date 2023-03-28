@@ -1,12 +1,17 @@
 from django.db import models
 from iaso.models import Entity, EntityType, Task
 import iaso.models.base as base_models
-from iaso.api.deduplication.algos import POSSIBLE_ALGORITHMS
+from iaso.api.deduplication.algos import POSSIBLE_ALGORITHMS, DEFAULT_ALGORITHM
 
-VALIDATION_STATUS = [("PENDING", "Pending"), ("VALIDATED", "Validated"), ("IGNORED", "Ignored")]
-DUPLICATE_TYPES = [("DUPLICATE", "Duplicate"), ("COUSIN", "Cousin"), ("PRODUCED", "Produced")]
+PENDING = "PENDING"
+VALIDATED = "VALIDATED"
+IGNORED = "IGNORED"
+VALIDATION_STATUS = [(PENDING, "Pending"), (VALIDATED, "Validated"), (IGNORED, "Ignored")]
 
-DEFAULT_ALGORITHM = "namesim"
+DUPLICATE = "DUPLICATE"
+COUSIN = "COUSIN"
+PRODUCED = "PRODUCED"
+DUPLICATE_TYPES = [(DUPLICATE, "Duplicate"), (COUSIN, "Cousin"), (PRODUCED, "Produced")]
 
 
 class EntityDuplicateAnalyze(models.Model):
@@ -20,18 +25,15 @@ class EntityDuplicateAnalyze(models.Model):
         if self.task.status == base_models.SUCCESS:
             list_pot_dup = self.task.result
             for pot_dup in list_pot_dup:
-                try:
-                    ed, ed_created = EntityDuplicate.objects.get_or_create(
-                        entity1=pot_dup["entity1"], entity2=pot_dup["entity2"]
-                    )
-                    if ed_created:
-                        ed.validation_status = EntityDuplicate.VALIDATION_STATUS[0][0]
-                        ed.similarity_score = pot_dup["score"]
-                    ed.analyzes_set.add(self)
-                    ed.save()
-                except Exception as e:
-                    print(e)
-                    pass
+                ed, _ = EntityDuplicate.objects.get_or_create(
+                    entity1=pot_dup["entity1"],
+                    entity2=pot_dup["entity2"],
+                    defaults={
+                        "similarity_score": pot_dup["score"],
+                    },
+                )
+                ed.analyzes_set.add(self)
+                ed.save()
 
         self.save()
 
@@ -40,8 +42,8 @@ class EntityDuplicate(models.Model):
     entity1 = models.ForeignKey(Entity, on_delete=models.CASCADE, related_name="duplicates1")
     entity2 = models.ForeignKey(Entity, on_delete=models.CASCADE, related_name="duplicates2")
     created_at = models.DateTimeField(auto_now_add=True)
-    validation_status = models.CharField(max_length=20, choices=VALIDATION_STATUS, default=VALIDATION_STATUS[0][0])
-    type_of_relation = models.CharField(max_length=20, choices=DUPLICATE_TYPES, default=DUPLICATE_TYPES[0][0])
+    validation_status = models.CharField(max_length=20, choices=VALIDATION_STATUS, default=PENDING)
+    type_of_relation = models.CharField(max_length=20, choices=DUPLICATE_TYPES, default=DUPLICATE)
     similarity_score = models.SmallIntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

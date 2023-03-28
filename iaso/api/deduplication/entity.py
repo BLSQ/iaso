@@ -22,33 +22,6 @@ class PotentialEntityDuplicate:
     score = None
 
 
-class EntityDuplicateFilterSet(filters.FilterSet):
-    is_duplicate = filters.BooleanFilter(method="filter_is_duplicate")
-
-    class Meta:
-        model = Entity
-        fields = ["is_duplicate"]
-
-    def filter_is_duplicate(self, queryset, name, value):
-        """
-        Filter entities by duplicates.
-        """
-        if value:
-            # Get all the entity ids which are duplicates
-            duplicate_ids = EntityDuplicate.objects.filter(is_duplicate=True).values_list("entity_id", flat=True)
-
-            # Filter the queryset to only include entities which are duplicates
-            queryset = queryset.filter(id__in=duplicate_ids)
-
-        return queryset
-
-
-class EntityDuplicateAnalyzeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EntityDuplicateAnalyze
-        fields = "__all__"
-
-
 class EntityDuplicateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityDuplicate
@@ -124,6 +97,12 @@ class AnalyzePostBodySerializer(serializers.Serializer):
                 raise serializers.ValidationError(f"Field {f_name} does not exist on reference form")
 
         return data
+
+
+class EntityDuplicateAnalyzeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityDuplicateAnalyze
+        fields = "__all__"
 
 
 class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):

@@ -15,14 +15,3 @@ export const useGetCampaignFieldLabel = (): ((fieldKey: string) => string) => {
 
     return getLabel;
 };
-
-export const useGetChildrenLabel = (): ((
-    childrenLabel: IntlMessage,
-) => string) => {
-    const { formatMessage } = useSafeIntl();
-    const getLabel = (childrenLabel): string => {
-        return formatMessage(childrenLabel);
-    };
-
-    return getLabel;
-};

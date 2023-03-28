@@ -1,12 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { Table, TableBody, makeStyles } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
 import { Row } from './Row';
 import { Campaign } from '../../constants/types';
 import { ExpandableItem } from '../../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem';
 import { IntlMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
 
 import { useGetMapLog } from './useGetMapLog';
-import { useGetChildrenLabel } from '../../hooks/useGetCampaignFieldLabel';
 import { Head } from './Head';
 
 type RowObjectProps = {
@@ -33,7 +33,7 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
 
-    const getLabel = useGetChildrenLabel();
+    const { formatMessage } = useSafeIntl();
     const getMapLog = useGetMapLog(childrenArray);
     const items = type === 'array' ? logDetail[logKey] : childrenArray;
 
@@ -47,6 +47,11 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
                         {items.map((subItem, index) => {
                             const item =
                                 type === 'array' ? subItem : logDetail[logKey];
+                            const multiRowIndex =
+                                logKey === 'rounds' &&
+                                logDetail.rounds[0].number === 0
+                                    ? index
+                                    : index + 1;
                             return (
                                 <Row
                                     cellWithMargin={false}
@@ -54,9 +59,9 @@ export const MultiRows: FunctionComponent<RowObjectProps> = ({
                                     value={
                                         <ExpandableItem
                                             backgroundColor="#f7f7f7"
-                                            label={`${getLabel(
+                                            label={`${formatMessage(
                                                 childrenLabel,
-                                            )} ${index + 1}`}
+                                            )} ${multiRowIndex}`}
                                         >
                                             <Table size="small">
                                                 <Head />

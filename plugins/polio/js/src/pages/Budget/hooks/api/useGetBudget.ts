@@ -51,18 +51,18 @@ export const useBudgetParams = params => {
             search: params.search,
             roundStartFrom: getApiParamDateString(params.roundStartFrom),
             roundStartTo: getApiParamDateString(params.roundStartTo),
-            budget_current_state_key__in: params.current_state__key,
-            country__id__in: params?.countries,
+            budget_current_state_key__in: params.budget_current_state_key__in,
+            country__id__in: params?.country__id__in,
         };
     }, [
-        params.current_state__key,
         params?.order,
-        params?.page,
         params?.pageSize,
-        params?.countries,
+        params?.page,
+        params.search,
         params.roundStartFrom,
         params.roundStartTo,
-        params.search,
+        params.budget_current_state_key__in,
+        params?.country__id__in,
     ]);
 };
 

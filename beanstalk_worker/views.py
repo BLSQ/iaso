@@ -95,11 +95,6 @@ def task_launcher(request, task_name: str, user_name: str):
         created_at__gte=time_threshold,
     ).count()
 
-    print("task_name", task_name)
-    print("the_user", the_user)
-    print("time_threshold", time_threshold)
-    print("Running tasks count", running_tasks_count)
-
     if running_tasks_count > 0:
         return JsonResponse(
             {

@@ -8,6 +8,7 @@ import { FormattedMessage } from 'react-intl';
 import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 import MESSAGES from '../../constants/messages';
 import { useGetOrgUnitDetail } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
+import { LinkToOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/LinkToOrgUnit';
 
 const convertDate = (value: string, format = 'L') => {
     return value ? moment(value).format(format) : '--';
@@ -21,17 +22,10 @@ const convertBoolean = (value: boolean) => {
     );
 };
 
-const OrgUnit = (log: Record<string, any>, logKey: string) => {
-    const { data: currentOrgUnit } = useGetOrgUnitDetail(log[logKey]);
+const OrgUnit = ({ orgUnitId }) => {
+    const { data: currentOrgUnit } = useGetOrgUnitDetail(orgUnitId);
 
-    return (
-        <Link
-            target="_blank"
-            href={`/dashboard/orgunits/detail/orgUnitId/${log[logKey]}`}
-        >
-            {currentOrgUnit?.name}
-        </Link>
-    );
+    return <LinkToOrgUnit orgUnit={currentOrgUnit} />;
 };
 
 export const config: Record<string, any> = [
@@ -78,11 +72,11 @@ export const config: Record<string, any> = [
     },
     {
         key: 'country',
-        getLogValue: log => <OrgUnit log={log} logKey="country" />,
+        getLogValue: log => <OrgUnit orgUnitId={log.country} />,
     },
     {
         key: 'initial_org_unit',
-        getLogValue: log => <OrgUnit log={log} logKey="initial_org_unit" />,
+        getLogValue: log => <OrgUnit orgUnitId={log.initial_org_unit} />,
     },
     {
         key: 'onset_at',

@@ -116,6 +116,7 @@ def _make_prep(c: Campaign, round: Round):
         "campaign_obr_name": c.obr_name,
         "indicators": {},
         "round": f"Round{round.number}",
+        "round_number": round.number,
         "round_id": round.id,
         "round_start": round.started_at,
         "round_end": round.ended_at,

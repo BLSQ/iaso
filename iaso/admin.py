@@ -76,6 +76,8 @@ from .models import (
     WorkflowFollowup,
     Report,
     ReportVersion,
+    EntityDuplicate,
+    EntityDuplicateAnalyze,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -560,6 +562,14 @@ class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+class EntityDuplicateAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+class EntityDuplicateAnalyzeAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -601,3 +611,5 @@ admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
+admin.site.register(EntityDuplicate, EntityDuplicateAdmin)
+admin.site.register(EntityDuplicateAnalyze, EntityDuplicateAnalyzeAdmin)

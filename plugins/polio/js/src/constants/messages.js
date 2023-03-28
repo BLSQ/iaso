@@ -325,7 +325,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Detection responsible',
     },
     risk_assessment_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.risk_assessment_rrt_oprtt_approval_at',
+        id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/OPRTT Approval',
     },
     budget_rrt_oprtt_approval_at: {
@@ -417,7 +417,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'EOMG Group',
     },
     budget_submitted_at: {
-        id: 'iaso.polio.form.label.budgetSubmittedAt',
+        id: 'iaso.polio.form.label.budget_submitted_at',
         defaultMessage: 'Budget Submitted At',
     },
     district_count: {
@@ -925,7 +925,7 @@ const MESSAGES = defineMessages({
             'Vaccination ratio per region (based on districts found)',
     },
     vacine: {
-        id: 'iaso.polio.label.vaccine',
+        id: 'iaso.polio.vaccines',
         defaultMessage: 'Vaccines',
     },
     vaccinated: {
@@ -1649,16 +1649,16 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Reporting delays',
     },
     reporting_delays_hc_to_district: {
-        id: 'iaso.polio.label.reporting_delays_hc_to_district',
-        defaultMessage: 'Reporting delays',
+        id: 'iaso.polio.label.healthCentreToDistrict',
+        defaultMessage: 'Health centers to district',
     },
     reporting_delays_district_to_region: {
-        id: 'iaso.polio.label.reporting_delays_district_to_region',
-        defaultMessage: 'Reporting delays district to region',
+        id: 'iaso.polio.label.districtToRegionalLevel',
+        defaultMessage: 'District to regional level',
     },
     reporting_delays_region_to_national: {
-        id: 'iaso.polio.label.reporting_delays_region_to_national',
-        defaultMessage: 'Reporting delays region to national',
+        id: 'iaso.polio.label.regionalToNationalLevel',
+        defaultMessage: 'Regional to national level',
     },
     healthCentreToDistrict: {
         id: 'iaso.polio.label.healthCentreToDistrict',

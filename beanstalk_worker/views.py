@@ -99,9 +99,9 @@ def task_launcher(request, task_name: str, user_name: str):
         return JsonResponse(
             {
                 "status": "fail",
-                "error": f"Error while launching the task {task_name} - already running for this user and in the last 24 hours",
+                "error": f"Error while launching the task {task_name} - already running for this user and in the last 12 hours",
             },
-            status=http.HTTPStatus.FORBIDDEN,
+            status=http.HTTPStatus.OK,
         )
 
     call_args = {"user": the_user}

@@ -41,6 +41,25 @@ const FormVersionsComponent = ({
             >
                 <FormattedMessage {...MESSAGES.versions} />
             </Typography>
+            <Box
+                mb={2}
+                justifyContent="flex-end"
+                alignItems="center"
+                display="flex"
+            >
+                <FormVersionsDialog
+                    formId={formId}
+                    periodType={periodType}
+                    titleMessage={MESSAGES.createFormVersion}
+                    renderTrigger={({ openDialog }) => (
+                        <AddButtonComponent
+                            onClick={openDialog}
+                            message={MESSAGES.createFormVersion}
+                        />
+                    )}
+                    onConfirmed={() => setForceRefresh(true)}
+                />
+            </Box>
             <SingleTable
                 isFullHeight={false}
                 baseUrl={baseUrl}
@@ -79,22 +98,6 @@ const FormVersionsComponent = ({
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
             />
-            <Box
-                mt={2}
-                justifyContent="flex-end"
-                alignItems="center"
-                display="flex"
-            >
-                <FormVersionsDialog
-                    formId={formId}
-                    periodType={periodType}
-                    titleMessage={MESSAGES.createFormVersion}
-                    renderTrigger={({ openDialog }) => (
-                        <AddButtonComponent onClick={openDialog} />
-                    )}
-                    onConfirmed={() => setForceRefresh(true)}
-                />
-            </Box>
         </Box>
     );
 };

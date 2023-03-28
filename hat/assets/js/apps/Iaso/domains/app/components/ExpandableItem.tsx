@@ -57,6 +57,7 @@ export const ExpandableItem: FunctionComponent<Props> = ({
     return (
         <>
             <ListItem
+                style={{ backgroundColor }}
                 button
                 onClick={() => {
                     setOpen(value => !value);

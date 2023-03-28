@@ -1,16 +1,16 @@
-import React from 'react';
+import React, { FunctionComponent } from 'react';
 
-import { withStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
 import Warning from '@material-ui/icons/Warning';
 
-import PropTypes from 'prop-types';
 import { commonStyles } from 'bluesquare-components';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     root: {
+        // @ts-ignore
         backgroundColor: theme.palette.error.background,
         padding: theme.spacing(3, 2),
     },
@@ -25,10 +25,14 @@ const styles = theme => ({
         width: 35,
         height: 35,
     },
-});
+}));
 
-function ErrorPaperComponent(props) {
-    const { classes, message } = props;
+type Props = {
+    message?: string;
+};
+
+const ErrorPaperComponent: FunctionComponent<Props> = ({ message = '' }) => {
+    const classes: Record<string, string> = useStyles();
     return (
         <Paper className={classes.root}>
             <Typography component="p" className={classes.paragraph}>
@@ -37,14 +41,6 @@ function ErrorPaperComponent(props) {
             </Typography>
         </Paper>
     );
-}
-ErrorPaperComponent.defaultProps = {
-    message: '',
 };
 
-ErrorPaperComponent.propTypes = {
-    classes: PropTypes.object.isRequired,
-    message: PropTypes.string,
-};
-
-export default withStyles(styles)(ErrorPaperComponent);
+export default ErrorPaperComponent;

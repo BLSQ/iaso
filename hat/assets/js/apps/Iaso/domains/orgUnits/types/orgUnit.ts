@@ -43,7 +43,7 @@ export type OrgUnit = {
     source_ref: string;
     source_url: null;
     parent_id: number;
-    validation_status: string;
+    validation_status: 'NEW' | 'VALID' | 'REJECTED';
     parent_name: string;
     parent: OrgUnit;
     org_unit_type_id: number;

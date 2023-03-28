@@ -12,7 +12,7 @@ import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import CircularProgress from '@material-ui/core/CircularProgress';
 
-import { OrgUnit } from '../types/orgUnit';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 import MESSAGES from '../messages';
 

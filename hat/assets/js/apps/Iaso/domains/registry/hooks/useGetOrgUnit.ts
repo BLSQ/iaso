@@ -4,6 +4,7 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { makeUrlWithParams } from '../../../libs/utils';
 
 export const useGetOrgUnit = (
@@ -25,6 +26,7 @@ type Result = {
 
 export const useGetOrgUnitsChildren = (
     orgUnitParentId: string,
+    orgUnitTypes: OrgunitTypes,
 ): UseQueryResult<OrgUnit[], Error> => {
     const params: Record<string, any> = {
         validation_status: 'all',
@@ -38,7 +40,16 @@ export const useGetOrgUnitsChildren = (
         queryKey: ['orgUnits', params],
         queryFn: () => getRequest(url),
         options: {
-            select: (data: Result): OrgUnit[] => data?.orgUnits,
+            select: (data: Result): OrgUnit[] => {
+                if (!data) return [];
+                const { orgUnits } = data;
+                // adding this because backend can send children that are not sub org unit types of the parent org unit type
+                return orgUnits?.filter(child =>
+                    orgUnitTypes.some(
+                        subType => subType.id === child.org_unit_type_id,
+                    ),
+                );
+            },
         },
     });
 };

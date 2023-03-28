@@ -22,7 +22,7 @@ import {
     getChildrenData,
     searchOrgUnits,
 } from '../orgUnits/components/TreeView/requests';
-import { OrgUnit } from './types/orgUnit';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
 
 import MESSAGES from './messages';
 

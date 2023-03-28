@@ -53,12 +53,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
+
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
-    const { data: childrenOrgUnits } = useGetOrgUnitsChildren(orgUnitId);
-    const getEnketoUrl = useGetEnketoUrl(
-        window.location.href,
-        orgUnit?.reference_instance,
-    );
 
     const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
         const options =
@@ -69,6 +65,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit]);
 
+    const { data: childrenOrgUnits } = useGetOrgUnitsChildren(
+        orgUnitId,
+        subOrgUnitTypes,
+    );
+
+    const getEnketoUrl = useGetEnketoUrl(
+        window.location.href,
+        orgUnit?.reference_instance,
+    );
     return (
         <>
             <TopBar
@@ -80,17 +85,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 {isFetching && <LoadingSpinner />}
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={5}>
-                        <WidgetPaper
-                            className={classes.paper}
-                            title={orgUnit?.name ?? ''}
-                        >
-                            <OrgUnitMap
-                                orgUnit={orgUnit}
-                                isLoading={isFetching}
-                                subOrgUnitTypes={subOrgUnitTypes}
-                                childrenOrgUnits={childrenOrgUnits || []}
-                            />
-                        </WidgetPaper>
+                        {orgUnit && (
+                            <WidgetPaper
+                                className={classes.paper}
+                                title={orgUnit?.name ?? ''}
+                            >
+                                <OrgUnitMap
+                                    orgUnit={orgUnit}
+                                    subOrgUnitTypes={subOrgUnitTypes}
+                                    childrenOrgUnits={childrenOrgUnits || []}
+                                />
+                            </WidgetPaper>
+                        )}
                     </Grid>
                     {orgUnit?.reference_instance && (
                         <Grid

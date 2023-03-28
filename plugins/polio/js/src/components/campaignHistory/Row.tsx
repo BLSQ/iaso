@@ -64,7 +64,7 @@ export const Row: FunctionComponent<RowProps> = ({
     const getLabel = useGetCampaignFieldLabel();
     const regex = '^(http|https):\\/\\/';
     return (
-        <TableRow className={classes.round}>
+        <TableRow>
             {fieldKey && (
                 <TableCell className={classes.tableCellLabel} width={300}>
                     {getLabel(fieldKey)}

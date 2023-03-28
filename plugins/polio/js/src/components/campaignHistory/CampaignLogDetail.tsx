@@ -3,12 +3,12 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box, Table, TableBody } from '@material-ui/core';
 
-import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
+import {
+    useGetCampaignLogDetail,
+    CampaignLogDetailResult,
+} from '../../hooks/useGetCampaignHistory';
 
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
-
-import { Campaign } from '../../constants/types';
-import { Profile } from '../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 import MESSAGES from '../../constants/messages';
 
@@ -20,18 +20,13 @@ type Props = {
     logId?: string;
 };
 
-export type Result = {
-    user: Profile;
-    logDetail: Campaign;
-};
-
 export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const {
         data,
         isLoading,
         isError,
     }: {
-        data?: Result | undefined;
+        data?: CampaignLogDetailResult | undefined;
         isLoading: boolean;
         isError: boolean;
     } = useGetCampaignLogDetail(logId);

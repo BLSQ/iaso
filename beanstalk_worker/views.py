@@ -86,7 +86,7 @@ def task_launcher(request, task_name: str, user_name: str):
             status=http.HTTPStatus.BAD_REQUEST,
         )
 
-    time_threshold = timezone.now() - timedelta(hours=24)
+    time_threshold = timezone.now() - timedelta(hours=12)
     running_tasks_count = Task.objects.filter(
         launcher=the_user,
         params__method=task_fn_str,

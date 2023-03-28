@@ -1,9 +1,14 @@
 import http
 
+from datetime import timedelta
+
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
+from iaso.models.base import Task, RUNNING, QUEUED
 
 from . import task_service
 from logging import getLogger
@@ -79,6 +84,29 @@ def task_launcher(request, task_name: str, user_name: str):
                 "error_details": str(e),
             },
             status=http.HTTPStatus.BAD_REQUEST,
+        )
+
+    time_threshold = timezone.now() - timedelta(hours=24)
+    running_tasks_count = Task.objects.filter(
+        launcher=the_user,
+        params__method=task_fn_str,
+        params__module=task_module_str,
+        status__in=[RUNNING, QUEUED],
+        created_at__gte=time_threshold,
+    ).count()
+
+    print("task_name", task_name)
+    print("the_user", the_user)
+    print("time_threshold", time_threshold)
+    print("Running tasks count", running_tasks_count)
+
+    if running_tasks_count > 0:
+        return JsonResponse(
+            {
+                "status": "fail",
+                "error": f"Error while launching the task {task_name} - already running for this user and in the last 24 hours",
+            },
+            status=http.HTTPStatus.FORBIDDEN,
         )
 
     call_args = {"user": the_user}

@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
+import React, { ReactElement } from 'react';
 import moment from 'moment';
 import { upperCase } from 'lodash';
 import { Link } from 'react-router';
@@ -9,6 +9,16 @@ import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components
 import MESSAGES from '../../constants/messages';
 import { useGetOrgUnitDetail } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
 import { LinkToOrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/LinkToOrgUnit';
+
+type OrgUnitLinkProps = {
+    orgUnitId: number;
+};
+
+const OrgUnitLink = ({ orgUnitId }): ReactElement<OrgUnitLinkProps> => {
+    const { data: currentOrgUnit } = useGetOrgUnitDetail(orgUnitId);
+
+    return <LinkToOrgUnit orgUnit={currentOrgUnit} />;
+};
 
 const convertDate = (value: string, format = 'L') => {
     return value ? moment(value).format(format) : '--';
@@ -20,12 +30,6 @@ const convertBoolean = (value: boolean) => {
     ) : (
         <FormattedMessage {...MESSAGES.no} />
     );
-};
-
-const OrgUnit = ({ orgUnitId }) => {
-    const { data: currentOrgUnit } = useGetOrgUnitDetail(orgUnitId);
-
-    return <LinkToOrgUnit orgUnit={currentOrgUnit} />;
 };
 
 export const config: Record<string, any> = [
@@ -72,11 +76,11 @@ export const config: Record<string, any> = [
     },
     {
         key: 'country',
-        getLogValue: log => <OrgUnit orgUnitId={log.country} />,
+        getLogValue: log => <OrgUnitLink orgUnitId={log.country} />,
     },
     {
         key: 'initial_org_unit',
-        getLogValue: log => <OrgUnit orgUnitId={log.initial_org_unit} />,
+        getLogValue: log => <OrgUnitLink orgUnitId={log.initial_org_unit} />,
     },
     {
         key: 'onset_at',

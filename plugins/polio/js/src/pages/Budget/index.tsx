@@ -1,10 +1,7 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     useSkipEffectOnMount,
-    // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
 import {
@@ -22,25 +19,20 @@ import { Pagination } from '@material-ui/lab';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
-import { useStyles } from '../../styles/theme';
-import { BUDGET } from '../../constants/routes';
-import MESSAGES from '../../constants/messages';
-import { useBudgetColumns } from './hooks/config';
-
-import { convertObjectToString } from '../../utils';
-
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
-
+import { useBudgetColumns } from './hooks/config';
+import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import {
     useBudgetParams,
     useGetBudgets,
     useGetWorkflowStatesForDropdown,
 } from './hooks/api/useGetBudget';
 import { Budget } from './types';
-
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
-import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
+import { useStyles } from '../../styles/theme';
+import { BUDGET } from '../../constants/routes';
+import MESSAGES from '../../constants/messages';
 
 type Props = {
     router: any;
@@ -77,7 +69,6 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();
     const classes = useStyles();
-    const [resetPageToOne, setResetPageToOne] = useState<string>('');
     const [expand, setExpand] = useState<boolean>(false);
 
     const apiParams = useBudgetParams(params);
@@ -94,7 +85,6 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
         };
         delete newParams.page;
         delete newParams.order;
-        setResetPageToOne(convertObjectToString(newParams));
     }, [apiParams.pageSize, apiParams.search]);
 
     const onCardPaginationChange = useCallback(
@@ -166,8 +156,8 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             marginTop={false}
                             extraProps={{
                                 loading: isFetching,
+                                apiParams,
                             }}
-                            resetPageToOne={resetPageToOne}
                         />
                     </>
                 )}

@@ -1,6 +1,5 @@
 title: <span id="_gjdgxs"
-  class="anchor"></span><img src="./media/image1.png"
-  style="width:3.02211in;height:0.79688in" />
+  class="anchor"></span><img src="./attachments/image1.png"style="width:3.02211in;height:0.79688in" />
   .
   <span id="_30j0zll" class="anchor"></span>
   .

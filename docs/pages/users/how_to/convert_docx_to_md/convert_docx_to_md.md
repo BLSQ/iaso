@@ -10,6 +10,17 @@ pandoc -s -f docx -t markdown_mmd --extract-media=. -o ./my_new_page.md ../../..
 ``` 
 This will copy all the attached media of you `docx`file (like screenshots) in `iaso/docs/pages/users/how_to/my_new_page/my_new_page/media`, and create `my_new_page.md` in `iaso/docs/pages/users/how_to/my_new_page/my_new_page`
 - Move `my_new_page.md` up one folder level. It should now sit in `iaso/docs/pages/users/how_to/my_new_page/`. These gymnastics happen because `pandoc` and `mkDocs` handle file paths differently
+- Rename the `media` folder to `attachments`
+- Open `my_new_pages.md`. search (ctrl+F/cmd+F) for the word "media" and replace it with "attachment" whenever it is a path to a file, eg:
+```html
+<!-->Initial value<-->
+<img src="./media/image1.png"style="width:3.02211in;height:0.79688in" />
+<!-->Correct value<-->
+<img src="./attachments/image1.png"style="width:3.02211in;height:0.79688in" />
+```
+This is because `media` folders are not pushed on github, so if we don't rename it, the screenshots in your docs will be lost
+
+- Go through `my_new_pages.md` and fix any layout issues that may have been caused by the conversion.
 - Now you can add you page to the docs: go to `iaso/mkDocs.yml` and locate the `nav` entry. 
 - Add you new page:
 ```yaml

@@ -73,7 +73,7 @@ In order to create an entity, your project must first enable the entity
 feature flag. You can set this flag either during its creation or by
 updating it later.
 
-<img src="./media/image13.png"
+<img src="./attachments/image13.png"
 style="width:3.07813in;height:1.59244in" />
 
 ## Create and upload the profile form
@@ -94,7 +94,7 @@ In the entity types screen, click on the “CREATE” button. Give the
 entity type a name and select the newly uploaded form as a reference
 form:
 
-<img src="./media/image19.png"
+<img src="./attachments/image19.png"
 style="width:2.55729in;height:2.41208in" />
 
 | **Note:** We’ll see later what “List fields” and “Detail info fields” are. |
@@ -111,15 +111,15 @@ interface.
 
 Click the “Add” button in the application.
 
-<img src="./media/image10.png" style="width:6.5in;height:1.13542in" />
+<img src="./attachments/image10.png" style="width:6.5in;height:1.13542in" />
 
 Select the entity type you want to create.
 
-<img src="./media/image5.png" style="width:6.5in;height:3.20833in" />
+<img src="./attachments/image5.png" style="width:6.5in;height:3.20833in" />
 
 You will be prompted to confirm your selection.
 
-<img src="./media/image12.png" style="width:6.5in;height:3.48958in" />
+<img src="./attachments/image12.png" style="width:6.5in;height:3.48958in" />
 
 You can then fill out the form to finalize your first entity.
 
@@ -129,7 +129,7 @@ Within the entity type’s configuration, it is possible for
 administrators to define which questions are displayed within lists and
 within the details screen.
 
-<img src="./media/image17.png"
+<img src="./attachments/image17.png"
 style="width:2.51956in;height:2.83854in" />
 
 This impacts how the web and mobile applications display entities, as
@@ -139,22 +139,22 @@ shown below.
 
 ### In the list
 
-<img src="./media/image3.png" style="width:6.5in;height:1.5in" />
+<img src="./attachments/image3.png" style="width:6.5in;height:1.5in" />
 
 ### In the details screen
 
-<img src="./media/image14.png" style="width:6.5in;height:3.70833in" />
+<img src="./attachments/image14.png" style="width:6.5in;height:3.70833in" />
 
 ## In the mobile application
 
 ### In the list
 
-<img src="./media/image8.png"
+<img src="./attachments/image8.png"
 style="width:5.96875in;height:1.46875in" />
 
 ### In the details screen
 
-<img src="./media/image15.png" style="width:6.5in;height:5.1875in" />
+<img src="./attachments/image15.png" style="width:6.5in;height:5.1875in" />
 
 # Searching for an entity
 
@@ -163,7 +163,7 @@ style="width:5.96875in;height:1.46875in" />
 In the beneficiary list, you can filter by type and/or enter a query to
 filter based on the identifier or any of the list fields values.
 
-<img src="./media/image2.png" style="width:6.5in;height:0.73611in" />
+<img src="./attachments/image2.png" style="width:6.5in;height:0.73611in" />
 
 ## In the application
 
@@ -174,8 +174,8 @@ on the identifier or any of the list fields values.
 If you need a more fine-grained selection, you can click on the funnel
 icon, select a type and fill out the search form (second picture)
 
-<img src="./media/image4.png"
-style="width:1.66386in;height:3.61979in" /><img src="./media/image9.png"
+<img src="./attachments/image4.png"
+style="width:1.66386in;height:3.61979in" /><img src="./attachments/image9.png"
 style="width:1.67824in;height:3.64063in" />
 
 # What are workflows?
@@ -190,15 +190,15 @@ workflow.
 ## Create a workflow
 
 In the entity types’ list, click on the workflow icon
-<img src="./media/image1.png"
+<img src="./attachments/image1.png"
 style="width:0.23958in;height:0.21875in" />
 
-<img src="./media/image1.png" style="width:6.5in;height:0.22222in" />
+<img src="./attachments/image1.png" style="width:6.5in;height:0.22222in" />
 
 In the list of the workflow versions, create the “CREATE” button and
 give the version a name:
 
-<img src="./media/image18.png" style="width:3.69271in;height:1.728in" />
+<img src="./attachments/image18.png" style="width:3.69271in;height:1.728in" />
 
 ## Follow-ups and changes
 
@@ -209,7 +209,7 @@ profile. They are based on a condition.
 In the following example, the mobile application will offer “U5
 Registration WFP” as the next possible form if the first name is “Bill”.
 
-<img src="./media/image20.png" style="width:6.5in;height:2.16667in" />
+<img src="./attachments/image20.png" style="width:6.5in;height:2.16667in" />
 
 | **Reminder**: “First Name” is one of the questions in the Entity Type’s form. |
 |------------------------------------------------------------------------|
@@ -227,7 +227,7 @@ When a “U5 Registration WFP” form is filled out, the value entered in
 question. And the value entered in “Child’s Name” will be copied into
 the profile’s “First Name” question.
 
-<img src="./media/image16.png" style="width:6.5in;height:2.16667in" />
+<img src="./attachments/image16.png" style="width:6.5in;height:2.16667in" />
 
 ## Using values from the profile in subsequent forms
 

@@ -55,6 +55,8 @@ nav:
         - ./pages/dev/how_to/use_iaso_apis/use_iaso_apis.md
       - Run docs locally:
         - ./pages/dev/how_to/run_docs_locally/run_docs_locally.md
+      - Write a visit on an NFC card: 
+        - ./pages/dev/how_to/write_visit_on_nfc/write_visit_on_nfc.md
 
   - More about Iaso:
     - Bluesquare: https://www.bluesquarehub.com/

@@ -1,19 +1,12 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 
-import {
-    TableHead,
-    TableRow,
-    TableCell,
-    makeStyles,
-    Theme,
-} from '@material-ui/core';
+import { TableHead, TableRow, TableCell, makeStyles } from '@material-ui/core';
 
 import MESSAGES from '../../constants/messages';
 
-const useStyles = makeStyles((theme: Theme) => ({
-    ...commonStyles(theme),
+const useStyles = makeStyles(() => ({
     tableCellHead: {
         fontWeight: 'bold',
     },

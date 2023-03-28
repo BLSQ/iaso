@@ -7,6 +7,7 @@ import { Box } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 import MESSAGES from '../../constants/messages';
+import { useGetOrgUnitDetail } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
 
 const convertDate = (value: string, format = 'L') => {
     return value ? moment(value).format(format) : '--';
@@ -17,6 +18,19 @@ const convertBoolean = (value: boolean) => {
         <FormattedMessage {...MESSAGES.yes} />
     ) : (
         <FormattedMessage {...MESSAGES.no} />
+    );
+};
+
+const OrgUnit = (log: Record<string, any>, logKey: string) => {
+    const { data: currentOrgUnit } = useGetOrgUnitDetail(log[logKey]);
+
+    return (
+        <Link
+            target="_blank"
+            href={`/dashboard/orgunits/detail/orgUnitId/${log[logKey]}`}
+        >
+            {currentOrgUnit?.name}
+        </Link>
     );
 };
 
@@ -64,14 +78,7 @@ export const config: Record<string, any> = [
     },
     {
         key: 'country',
-        getLogValue: log => (
-            <Link
-                target="_blank"
-                href={`/dashboard/orgunits/detail/orgUnitId/${log.country}`}
-            >
-                {log.country}
-            </Link>
-        ),
+        getLogValue: log => <OrgUnit log={log} logKey="country" />,
     },
     {
         key: 'onset_at',
@@ -113,18 +120,6 @@ export const config: Record<string, any> = [
     {
         key: 'detection_responsible',
     },
-    // deprecated fields ?
-    // {
-    //     key: 'detection_rrt_oprtt_approval_at',
-
-    //     getLogValue: log =>
-    //         convertDate(log.detection_rrt_oprtt_approval_at_WFEDITABLE, 'L'),
-    // },
-    // {
-    //     key: 'detection_first_draft_submitted_at',
-    //     getLogValue: log =>
-    //         convertDate(log.detection_first_draft_submitted_at_WFEDITABLE, 'L'),
-    // },
     // Risk assessment
     {
         key: 'risk_assessment_status',
@@ -297,10 +292,6 @@ export const config: Record<string, any> = [
         key: 'budget_submitted_at',
         getLogValue: log => convertDate(log.budget_submitted_at),
     },
-    // deprecated field?
-    // {
-    //     key: 'last_budget_event',
-    // },
     // Preparedness
     {
         key: 'preparedness_spreadsheet_url',
@@ -598,23 +589,30 @@ export const config: Record<string, any> = [
             return null;
         },
     },
-    // deprecated field ?
-    // {
-    //     key: 'pv2_notified_at',
-    //     getLogValue: log => convertDate(log.pv2_notified_at),
-    // },
     {
         key: 'initial_org_unit',
-        getLogValue: log => (
-            <Link
-                target="_blank"
-                href={`/dashboard/orgunits/detail/orgUnitId/${log.initial_org_unit}`}
-            >
-                {log.initial_org_unit}
-            </Link>
-        ),
+        getLogValue: log => <OrgUnit log={log} logKey="initial_org_unit" />,
     },
     {
         key: 'creation_email_send_at',
     },
+    // DEPRECATED FIELDS ?
+    // {
+    //     key: 'last_budget_event',
+    // },
+    // {
+    //     key: 'pv2_notified_at',
+    //     getLogValue: log => convertDate(log.pv2_notified_at),
+    // },
+    // {
+    //     key: 'detection_rrt_oprtt_approval_at',
+
+    //     getLogValue: log =>
+    //         convertDate(log.detection_rrt_oprtt_approval_at_WFEDITABLE, 'L'),
+    // },
+    // {
+    //     key: 'detection_first_draft_submitted_at',
+    //     getLogValue: log =>
+    //         convertDate(log.detection_first_draft_submitted_at_WFEDITABLE, 'L'),
+    // },
 ];

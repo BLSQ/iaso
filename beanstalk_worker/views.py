@@ -113,7 +113,7 @@ def task_launcher(request, task_name: str, user_name: str):
             call_args = {**call_args, **request.GET}
 
         the_task = the_task_fn(**call_args)
-        return JsonResponse({"status": "success", "task": the_task.as_dict()}, status=http.HTTPStatus.CREATED)
+        return JsonResponse({"status": "success", "task": the_task.as_dict()}, status=http.HTTPStatus.OK)
 
     except Exception as e:
         logger.exception(e)

@@ -1,9 +1,14 @@
 import http
 
+from datetime import timedelta
+
 from django.apps import apps
 from django.contrib.auth.models import User
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.utils import timezone
+
+from iaso.models.base import Task, RUNNING, QUEUED
 
 from . import task_service
 from logging import getLogger
@@ -81,6 +86,24 @@ def task_launcher(request, task_name: str, user_name: str):
             status=http.HTTPStatus.BAD_REQUEST,
         )
 
+    time_threshold = timezone.now() - timedelta(hours=12)
+    running_tasks_count = Task.objects.filter(
+        launcher=the_user,
+        params__method=task_fn_str,
+        params__module=task_module_str,
+        status__in=[RUNNING, QUEUED],
+        created_at__gte=time_threshold,
+    ).count()
+
+    if running_tasks_count > 0:
+        return JsonResponse(
+            {
+                "status": "fail",
+                "error": f"Error while launching the task {task_name} - already running for this user and in the last 12 hours",
+            },
+            status=http.HTTPStatus.OK,
+        )
+
     call_args = {"user": the_user}
     try:
         if len(request.POST) > 0:
@@ -90,7 +113,7 @@ def task_launcher(request, task_name: str, user_name: str):
             call_args = {**call_args, **request.GET}
 
         the_task = the_task_fn(**call_args)
-        return JsonResponse({"status": "success", "task": the_task.as_dict()}, status=http.HTTPStatus.CREATED)
+        return JsonResponse({"status": "success", "task": the_task.as_dict()}, status=http.HTTPStatus.OK)
 
     except Exception as e:
         logger.exception(e)

@@ -37,7 +37,7 @@ class TaskLauncher(APITestCase):
 
     def test_with_ok_username_ok_taskname_should_succeed(self):
         res = self.client.get("/tasks/launch_task/iaso.tests.test_task_launcher.fake_empty_task/test_task_user/")
-        res_json = self.assertJSONResponse(res, 201)
+        res_json = self.assertJSONResponse(res, 200)
 
         print(res_json)
 
@@ -51,7 +51,7 @@ class TaskLauncher(APITestCase):
         res = self.client.get(
             "/tasks/launch_task/iaso.tests.test_task_launcher.fake_empty_task/test_task_user/?a=1&b=2"
         )
-        res_json = self.assertJSONResponse(res, 201)
+        res_json = self.assertJSONResponse(res, 200)
 
         print(res_json)
 
@@ -69,9 +69,7 @@ class TaskLauncher(APITestCase):
             data={"a": "1", "b": "2"},
         )
 
-        res_json = self.assertJSONResponse(res, 201)
-
-        print(res_json)
+        res_json = self.assertJSONResponse(res, 200)
 
         assert res_json["status"] == "success"
         assert res_json["task"]["id"] > 0

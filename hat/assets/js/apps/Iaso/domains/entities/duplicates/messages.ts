@@ -129,6 +129,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.storages.reset',
         defaultMessage: 'Reset',
     },
+    submissionTitle: {
+        defaultMessage: 'Submission',
+        id: 'iaso.instance.titleSingle',
+    },
+    noSubmissionFound: {
+        defaultMessage: 'No submission found',
+        id: 'iaso.entity.label.noSubmissionFound',
+    },
+    submissionsForEntity: {
+        defaultMessage: 'Submissions for Beneficiary {entity}',
+        id: 'iaso.entity.label.submissionsForEntity',
+    },
 });
 
 export default MESSAGES;

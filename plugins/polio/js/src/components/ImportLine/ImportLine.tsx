@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import {
     useSafeIntl,
     makeFullModal,
@@ -8,12 +8,16 @@ import {
 } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { useFormik } from 'formik';
-import MESSAGES from '../../messages';
-import { BulkImportButton } from './BulkImportButton';
-import { useBulkUserValidation } from './hooks/useBulkUserValidation';
-import { useApiErrorValidation } from '../../../../libs/validation';
-import { useUploadCsv } from './hooks/useUploadCsv';
-import { FileUploadButtons } from '../../../../components/Buttons/FileUploadButtons';
+
+import { useQueryClient } from 'react-query';
+import { useDispatch } from 'react-redux';
+import MESSAGES from '../../constants/messages';
+import { useUploadLine } from './useUploadLine';
+import { useApiErrorValidation } from '../../../../../../hat/assets/js/apps/Iaso/libs/validation';
+import { enqueueSnackbar } from '../../../../../../hat/assets/js/apps/Iaso/redux/snackBarsReducer';
+import { useImportLineValidation } from './useImportLineValidation';
+import { ImportLineButton } from './ImportLineButton';
+import { FileUploadButtons } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/FileUploadButtons';
 
 type Props = {
     closeDialog: () => void;
@@ -25,15 +29,35 @@ type Values = {
     file?: File[];
 };
 
-export const BulkImportDialogModal: FunctionComponent<Props> = ({
-    isOpen,
-    closeDialog,
-    id,
-}) => {
+const ImportLine: FunctionComponent<Props> = ({ isOpen, closeDialog, id }) => {
     const { formatMessage } = useSafeIntl();
-    const titleMessage = formatMessage(MESSAGES.createUsersFromFile);
+    const titleMessage = formatMessage(MESSAGES.importLineList);
 
-    const { mutateAsync: upload, isLoading } = useUploadCsv();
+    const { mutateAsync: upload, isLoading } = useUploadLine();
+    const queryClient = useQueryClient();
+    const dispatch = useDispatch();
+
+    const onSuccess = useCallback(
+        data => {
+            queryClient.invalidateQueries(['polio', 'campaigns']);
+            dispatch(
+                enqueueSnackbar({
+                    messageObject: formatMessage(
+                        MESSAGES.campaignImportSuccess,
+                        {
+                            amount: data.import_result.created,
+                        },
+                    ),
+                    options: {
+                        variant: 'success',
+                        persist: false,
+                    },
+                }),
+            );
+            closeDialog();
+        },
+        [closeDialog, dispatch, formatMessage, queryClient],
+    );
 
     const {
         apiErrors,
@@ -41,10 +65,10 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
         mutation: save,
     } = useApiErrorValidation<Partial<any>, any>({
         mutationFn: upload,
-        onSuccess: () => closeDialog(),
+        onSuccess,
     });
 
-    const validationSchema = useBulkUserValidation(apiErrors, payload);
+    const validationSchema = useImportLineValidation(apiErrors, payload);
 
     const formik = useFormik<Values>({
         initialValues: { file: undefined },
@@ -92,7 +116,7 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                 onConfirm={() => {
                     handleSubmit();
                 }}
-                url="/api/bulkcreateuser/getsample/"
+                url="/api/polio/linelistimport/getsample/"
             />
         );
     };
@@ -104,8 +128,8 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                 maxWidth="sm"
                 open={isOpen}
                 closeDialog={closeDialog}
-                id={id ?? 'bulk-user-create'}
-                dataTestId="test-bulk-user-create"
+                id={id ?? 'linelist-import'}
+                dataTestId="test-linelist-import"
                 onClose={() => resetForm()}
                 buttons={Buttons}
             >
@@ -119,7 +143,9 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
                         required
                         multi={false}
                         errors={formikAndApiErrors}
-                        placeholder={formatMessage(MESSAGES.selectCsvFile)}
+                        placeholder={formatMessage(
+                            MESSAGES.importExcelLinefile,
+                        )}
                     />
                 </Box>
                 {/* The loading spinner is set so users can still close the modal when the users are loading */}
@@ -129,6 +155,6 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
     );
 };
 
-const withButton = makeFullModal(BulkImportDialogModal, BulkImportButton);
+const withButton = makeFullModal(ImportLine, ImportLineButton);
 
-export { withButton as BulkImportUsersDialog };
+export { withButton as ImportLine };

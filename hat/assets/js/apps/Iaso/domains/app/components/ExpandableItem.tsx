@@ -43,6 +43,7 @@ type Props = {
         | 'overline'
         | 'srOnly'
         | 'inherit';
+    backgroundColor?: string;
 };
 
 export const ExpandableItem: FunctionComponent<Props> = ({
@@ -52,6 +53,7 @@ export const ExpandableItem: FunctionComponent<Props> = ({
     preventCollapse = false,
     titleVariant = 'body1',
     titleColor = 'initial',
+    backgroundColor = 'transparent',
 }) => {
     const [open, setOpen] = useState<boolean>(openOnMount);
     return (

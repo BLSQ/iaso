@@ -20,10 +20,6 @@ export const getCampaignLog = (
     );
 };
 
-const getCampaignLogDetail = (logId?: string): Promise<CampaignLogData> => {
-    return getRequest(`/api/logs/${logId}/`);
-};
-
 export const useGetCampaignLogs = (
     campaignId?: string,
     isOpen = true,
@@ -46,26 +42,37 @@ export const useGetCampaignLogs = (
         },
     });
 };
-
+export const initialLogDetail = { user: undefined, logDetail: undefined };
 export type CampaignLogDetailResult = {
-    user: Profile;
-    logDetail: Campaign;
+    user?: Profile;
+    logDetail?: Campaign;
+};
+
+const getCampaignLogDetail = (logId?: string): Promise<CampaignLogData> => {
+    return getRequest(`/api/logs/${logId}/`);
 };
 
 export const useGetCampaignLogDetail = (
+    initialData: CampaignLogDetailResult,
     logId?: string,
-): UseQueryResult<CampaignLogDetailResult | undefined, Error> => {
+): UseQueryResult<CampaignLogDetailResult, Error> => {
     return useSnackQuery({
         queryKey: ['campaignLogDetail', logId],
         queryFn: () => getCampaignLogDetail(logId),
         options: {
             enabled: Boolean(logId),
+            initialData,
             select: data => {
                 if (data) {
-                    return { user: data.user, logDetail: data.new_value[0] };
+                    return {
+                        user: data.user,
+                        logDetail: data.new_value
+                            ? data.new_value[0]
+                            : undefined,
+                    };
                 }
 
-                return undefined;
+                return initialData;
             },
         },
     });

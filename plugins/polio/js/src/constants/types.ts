@@ -149,8 +149,8 @@ export type CampaignLogsDetail = Pagination & {
 };
 
 export type CampaignLogData = {
-    user: Profile;
-    new_value: Record<string, any>;
+    user?: Profile;
+    new_value?: Record<string, any>;
 };
 
 export type CampaignFieldType =

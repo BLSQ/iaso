@@ -1,9 +1,13 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
 import { Box, Table, TableBody } from '@material-ui/core';
 
-import { useGetCampaignLogDetail } from '../../hooks/useGetCampaignHistory';
+import {
+    useGetCampaignLogDetail,
+    CampaignLogDetailResult,
+    initialLogDetail,
+} from '../../hooks/useGetCampaignHistory';
 
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
 
@@ -27,22 +31,14 @@ export type Result = {
 
 export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     const {
-        data,
+        data: { logDetail: campaignLogDetail } = initialLogDetail,
         isLoading,
         isError,
     }: {
-        data?: Result | undefined;
+        data?: CampaignLogDetailResult;
         isLoading: boolean;
         isError: boolean;
-    } = useGetCampaignLogDetail(logId);
-
-    const { logDetail: campaignLogDetail } = useMemo(() => {
-        if (!data) {
-            return { logDetail: undefined };
-        }
-
-        return data;
-    }, [data]);
+    } = useGetCampaignLogDetail(initialLogDetail, logId);
 
     const { formatMessage } = useSafeIntl();
     const getMapLog = useGetMapLog(config);

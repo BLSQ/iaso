@@ -21,9 +21,14 @@ export type CompletenessGETParams = UrlParams & {
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
 
-const getCompletenessStats = async (
-    params: CompletenessGETParams,
-): Promise<CompletenessApiResponse> => {
+export const buildQueryString = (
+    params: UrlParams & {
+        orgUnitId?: string;
+        formId?: string;
+        orgUnitTypeIds?: string;
+        period?: string;
+    },
+) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { pageSize, orgUnitId, orgUnitTypeIds, formId, ...urlParams } =
         params;
@@ -42,6 +47,13 @@ const getCompletenessStats = async (
         }
     });
     const queryString = new URLSearchParams(queryParams);
+    return queryString;
+};
+
+const getCompletenessStats = async (
+    params: CompletenessGETParams,
+): Promise<CompletenessApiResponse> => {
+    const queryString = buildQueryString(params);
     return getRequest(`/api/v2/completeness_stats/?${queryString}`);
 };
 

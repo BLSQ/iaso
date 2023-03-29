@@ -1,12 +1,13 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 // @ts-ignore
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, Grid, makeStyles } from '@material-ui/core';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
 import {
+    buildQueryString,
     CompletenessGETParams,
     useGetCompletenessStats,
 } from './hooks/api/useGetCompletnessStats';
@@ -17,6 +18,7 @@ import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
 import { Paginated, UrlParams } from '../../types/table';
 import { CompletenessStats } from './types';
+import { CsvButton } from '../../components/Buttons/CsvButton';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -63,6 +65,10 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
     const { data: completenessStats, isFetching } =
         useGetCompletenessStats(params);
     const columns = useCompletenessStatsColumns(params, completenessStats);
+    const csvUrl = useMemo(
+        () => `/api/v2/completeness_stats.csv?${buildQueryString(params)}`,
+        [params],
+    );
 
     return (
         <>
@@ -74,6 +80,15 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                 <Box>
                     <CompletenessStatsFilters params={params} />
                 </Box>
+                <Grid
+                    container
+                    item
+                    style={{ paddingTop: '5px', paddingBottom: '5px' }}
+                >
+                    <Grid item container justifyContent={'flex-end'}>
+                        <CsvButton csvUrl={csvUrl} />
+                    </Grid>
+                </Grid>
                 <Box>
                     <RequestedOrgUnitStat data={completenessStats} />
                 </Box>

@@ -13,7 +13,6 @@ import { push } from 'react-router-redux';
 import { Box, Tooltip } from '@material-ui/core';
 import AddIcon from '@material-ui/icons/Add';
 import DownloadIcon from '@material-ui/icons/GetApp';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
 import { PolioCreateEditDialog as CreateEditDialog } from '../components/CreateEditDialog';
@@ -29,12 +28,12 @@ import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import ImportLineListDialog from '../components/ImportLineListDialog';
 import { genUrl } from '../utils/routing';
 import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
 import { useSingleTableParams } from '../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';
 import { PageActionWithLink } from '../components/Buttons/PageActionWithLink.tsx';
+import { ImportLine } from '../components/ImportLine/ImportLine.tsx';
 
 const Dashboard = ({ router }) => {
     const { params } = router;
@@ -305,16 +304,7 @@ const Dashboard = ({ router }) => {
                     <PageActionWithLink icon={DownloadIcon} url={exportToCSV}>
                         {formatMessage(MESSAGES.csv)}
                     </PageActionWithLink>
-                    <ImportLineListDialog
-                        renderTrigger={({ openDialog }) => (
-                            <PageAction
-                                icon={CloudUploadIcon}
-                                onClick={openDialog}
-                            >
-                                {formatMessage(MESSAGES.import)}
-                            </PageAction>
-                        )}
-                    />
+                    <ImportLine />
                 </PageActions>
                 <TableWithDeepLink
                     data={campaigns?.campaigns ?? []}

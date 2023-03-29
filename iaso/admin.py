@@ -1,4 +1,5 @@
 from typing import Any
+from typing import Protocol
 
 from django.contrib.admin import widgets
 from django.contrib.gis import admin, forms
@@ -6,9 +7,6 @@ from django.contrib.gis.db import models as geomodels
 from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
-from typing import Protocol
-
-
 from django_json_widget.widgets import JSONEditorWidget  # type: ignore
 
 
@@ -39,6 +37,7 @@ from .models import (
     OrgUnit,
     Form,
     FormVersion,
+    FormPredefinedFilter,
     Instance,
     InstanceFile,
     Account,
@@ -164,6 +163,12 @@ class FormVersionAdmin(admin.GeoModelAdmin):
 
     form_id.short_description = "Form ID"
     form_id.admin_order_field = "form__id"
+
+
+class FormPredefinedFilterAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at", "updated_at")
+    list_display = ("form", "name", "short_name", "json_logic")
+    list_filter = ("form", "name", "short_name")
 
 
 class InstanceFileAdminInline(admin.TabularInline):
@@ -571,6 +576,7 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun, AlgorithmRunAdmin)
 admin.site.register(FormVersion, FormVersionAdmin)
+admin.site.register(FormPredefinedFilter, FormPredefinedFilterAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
 admin.site.register(Mapping, MappingAdmin)

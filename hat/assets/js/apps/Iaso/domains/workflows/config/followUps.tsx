@@ -12,10 +12,32 @@ import { Column } from '../../../types/table';
 
 import { FollowUpActionCell } from '../components/followUps/ActionCell';
 import { WorkflowVersionDetail } from '../types';
+import { iasoFields, Field } from '../../forms/fields/constants';
 
 interface FollowUpsColumns extends Column {
     accessor: string;
 }
+
+export const getConfigFields = (): Field[] => {
+    const configFields = [...iasoFields];
+    if (configFields[2].queryBuilder?.operators) {
+        configFields[2].queryBuilder.operators = [
+            'equal',
+            'not_equal',
+            'greater_or_equal',
+            'less_or_equal',
+        ];
+    }
+    if (configFields[3].queryBuilder?.operators) {
+        configFields[3].queryBuilder.operators = [
+            'equal',
+            'not_equal',
+            'greater_or_equal',
+            'less_or_equal',
+        ];
+    }
+    return configFields;
+};
 
 export const useGetFollowUpsColumns = (
     getHumanReadableJsonLogic: (

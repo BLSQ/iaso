@@ -17,12 +17,13 @@ const findDescriptorInChildren = (field, descriptor) =>
 export const useGetQueryBuildersFields = (
     formDescriptors?: FormDescriptor[],
     possibleFields?: PossibleField[],
+    configFields: Field[] = iasoFields,
 ): QueryBuilderFields => {
-    if (!possibleFields) return {};
+    if (!possibleFields || !formDescriptors) return {};
     // you can fields examples here: https://codesandbox.io/s/github/ukrbublik/react-awesome-query-builder/tree/master/sandbox?file=/src/demo/config.tsx:1444-1464
     const fields: QueryBuilderFields = {};
     possibleFields.forEach(field => {
-        const currentField: Field | undefined = iasoFields.find(
+        const currentField: Field | undefined = configFields.find(
             iasoField =>
                 iasoField.type === field.type || iasoField.alias === field.type,
         );

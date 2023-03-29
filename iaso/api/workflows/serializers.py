@@ -12,6 +12,9 @@ from iaso.models import (
 )
 from iaso.models.workflow import WorkflowVersionsStatus
 
+CALCULATE_TYPE = "calculate"
+TEXT_TYPE = "text"
+
 
 class FormNestedSerializer(serializers.ModelSerializer):
     class Meta:
@@ -111,22 +114,27 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
         if len(mapping.values()) != len(list(set(mapping.values()))):
             raise serializers.ValidationError(f"Mapping cannot have two identical values")
 
-        for key, value in mapping.items():
+        for _source, _target in mapping.items():
 
-            q = find_question_by_name(value, s_questions)
+            q = find_question_by_name(_source, s_questions)
             if q is None:
-                raise serializers.ValidationError(f"Question {value} does not exist in source form")
+                raise serializers.ValidationError(f"Question {_source} does not exist in source form")
             else:
                 s_type = q["type"]
 
-            q = find_question_by_name(key, r_questions)
+            q = find_question_by_name(_target, r_questions)
             if q is None:
-                raise serializers.ValidationError(f"Question {key} does not exist in reference form")
+                raise serializers.ValidationError(f"Question {_target} does not exist in reference/target form")
             else:
                 r_type = q["type"]
 
-            if s_type != r_type:
-                raise serializers.ValidationError(f"Question {key} and {value} do not have the same type")
+            if s_type == CALCULATE_TYPE:
+                if r_type != TEXT_TYPE:
+                    raise serializers.ValidationError(
+                        f"Question {_source} is a 'calculate' question and cannot only be mapped to 'string' type, found : {r_type}"
+                    )
+            elif s_type != r_type:
+                raise serializers.ValidationError(f"Question {_source} and {_target} do not have the same type")
 
         return mapping
 

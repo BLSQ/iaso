@@ -200,6 +200,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_workflows',
         defaultMessage: 'Workflows',
     },
+    iaso_entity_duplicates_read: {
+        id: 'iaso.permissions.iaso_entity_duplicates_read',
+        defaultMessage: 'See entity duplicates',
+    },
+    iaso_entity_duplicates_write: {
+        id: 'iaso.permissions.iaso_entity_duplicates_write',
+        defaultMessage: 'Edit entity duplicates',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',
@@ -249,6 +257,46 @@ const MESSAGES = defineMessages({
     wrongAccountTitle: {
         defaultMessage: 'Wrong account',
         id: 'iaso.label.wrongAccountTitle',
+    },
+    createUsersFromFile: {
+        id: 'iaso.user.label.createUsersFromFile',
+        defaultMessage: 'Create users from file',
+    },
+    createFromFile: {
+        id: 'iaso.user.label.createFromFile',
+        defaultMessage: 'Create from file',
+    },
+    downloadTemplate: {
+        id: 'iaso.user.label.downloadTemplate',
+        defaultMessage: 'Download template',
+    },
+    selectCsvFile: {
+        id: 'iaso.user.label.selectCsvFile',
+        defaultMessage: 'Select CSV file',
+    },
+    uploadError: {
+        id: 'iaso.user.label.uploadError',
+        defaultMessage: 'Error uploading file',
+    },
+    uploadSuccess: {
+        id: 'iaso.user.label.uploadSuccess',
+        defaultMessage: 'Users created from CSV',
+    },
+    backendIsBusy: {
+        id: 'iaso.user.label.backendIsBusy',
+        defaultMessage: 'The server is already processing another request',
+    },
+    confirm: {
+        id: 'iaso.mappings.confirm',
+        defaultMessage: 'Confirm',
+    },
+    fieldRequired: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
     },
 });
 

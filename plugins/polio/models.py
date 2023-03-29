@@ -37,6 +37,7 @@ VACCINES = [
 LANGUAGES = [
     ("FR", "Français"),
     ("EN", "English"),
+    ("PT", "Português"),
 ]
 
 RESPONSIBLES = [
@@ -357,6 +358,7 @@ class Campaign(SoftDeletableModel):
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
+    # Deprecated
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
     is_test = models.BooleanField(default=False)
 
@@ -370,27 +372,30 @@ class Campaign(SoftDeletableModel):
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
     # Budget tab
-    budget_requested_at_WFEDITABLE = models.DateField(null=True, blank=True)
     who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
     unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    gpei_consolidation_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
     submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
     re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submission_to_orpg_operations_1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submission_to_orpg_operations_2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt3_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submission_to_orpg_operations_2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
     submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    # LEGACY deprecated fields
+    budget_requested_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt3_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
 
     who_disbursed_to_co_at = models.DateField(
         null=True,
@@ -473,19 +478,25 @@ class Campaign(SoftDeletableModel):
 
     def get_districts_for_round(self, round):
         if self.separate_scopes_per_round:
-            districts = OrgUnit.objects.filter(groups__roundScope__round=round).distinct()
+            districts = (
+                OrgUnit.objects.filter(groups__roundScope__round=round).filter(validation_status="VALID").distinct()
+            )
         else:
             districts = self.get_campaign_scope_districts()
         return districts
 
     def get_campaign_scope_districts(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
-        return OrgUnit.objects.filter(groups__campaignScope__campaign=self)
+        return OrgUnit.objects.filter(groups__campaignScope__campaign=self).filter(validation_status="VALID")
 
     def get_all_districts(self):
         """District from all round merged as one"""
         if self.separate_scopes_per_round:
-            return OrgUnit.objects.filter(groups__roundScope__round__campaign=self).distinct()
+            return (
+                OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
+                .filter(validation_status="VALID")
+                .distinct()
+            )
         return self.get_campaign_scope_districts()
 
     def last_surge(self):

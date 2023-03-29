@@ -18,6 +18,8 @@ class CheckVersionViewSet(ViewSet):
 
     This API is open to anonymous users:
 
+    /api/mobile/checkversion/
+
     `GET /api/mobile/checkversion/?app_id=some.app.id&app_version=1234`
     """
 

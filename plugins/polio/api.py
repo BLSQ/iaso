@@ -345,7 +345,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             if scopes.count() < 1:
                 return ""
             # Loop on round scopes
-            for scope in scopes:
+            for scope in scopes.all():
                 round_scope_vaccines.append(scope.vaccine)
             return ", ".join(round_scope_vaccines)
         else:

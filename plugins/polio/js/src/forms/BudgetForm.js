@@ -51,6 +51,16 @@ const findBudgetStateIndex = values => {
     return -1;
 };
 
+const findNewBudgetState = (fieldIndex, values) => {
+    for (let i = fieldIndex - 1; i >= 0; i -= 1) {
+        const key = `${BUDGET_STATES[i]}${WORKFLOW_SUFFIX}`;
+        if (values[key]) {
+            return BUDGET_STATES[i];
+        }
+    }
+    return null;
+};
+
 export const budgetFormFields = rounds => {
     return [
         'budget_status_at_WFEDITABLE',
@@ -132,23 +142,17 @@ export const BudgetForm = () => {
             const fieldIndex = BUDGET_STATES.findIndex(
                 budgetState => budgetState === fieldKey,
             );
-            console.log('click', fieldIndex, computedBudgetStatusIndex);
             if (fieldIndex > computedBudgetStatusIndex && value) {
-                console.log('setting value', fieldKey);
                 setFieldValue('budget_status', fieldKey);
                 setFieldValue('budget_current_state_key', fieldKey);
             } else if (!value && fieldIndex >= computedBudgetStatusIndex) {
-                // Need to fall back on next available status
-                console.log('removing value');
-                setFieldValue('budget_status', null);
-                setFieldValue('budget_current_state_key', '-');
+                const newBudgetState = findNewBudgetState(fieldIndex, values);
+                setFieldValue('budget_status', newBudgetState);
+                setFieldValue(
+                    'budget_current_state_key',
+                    newBudgetState ?? '-',
+                );
             }
-
-            // if (computedBudgetStatus !== values.budget_status) {
-            //     console.log('updating', computedBudgetStatus, values.budget_status);
-            //     setFieldValue('budget_status', computedBudgetStatus);
-            //     setFieldValue('budget_current_state_key', computedBudgetStatus);
-            // }
         },
         [setFieldValue, values],
     );
@@ -164,7 +168,6 @@ export const BudgetForm = () => {
         : values.budget_status ?? values.budget_current_state_key;
     return (
         <Grid container spacing={2} direction="row">
-            {/* Budget: xs={12} md={6} */}
             <Grid
                 container
                 item
@@ -296,7 +299,6 @@ export const BudgetForm = () => {
                     </Grid>
                 </Grid>
             </Grid>
-            {/* Funds release xs={12} md={3} */}
             <Grid container item xs={12} md={4} lg={3}>
                 <Grid item xs={12}>
                     <Box mb={2} textAlign="center">
@@ -353,7 +355,6 @@ export const BudgetForm = () => {
                     />
                 </Grid>
             </Grid>
-            {/* cost per child xs={12} md={3} */}
             <Grid container item xs={12} md={4} lg={3}>
                 <Grid item xs={12}>
                     <Box mb={2} textAlign="center">

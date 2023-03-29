@@ -7,7 +7,6 @@ import MESSAGES from '../constants/messages';
 import {
     DateInput,
     ResponsibleField,
-    RABudgetStatusField,
     TextInput,
     NumberInput,
 } from '../components/Inputs';

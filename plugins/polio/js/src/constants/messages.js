@@ -326,7 +326,7 @@ const MESSAGES = defineMessages({
     },
     risk_assessment_rrt_oprtt_approval_at: {
         id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/OPRTT Approval',
+        defaultMessage: 'RRT/ORPG-Approval',
     },
     budget_rrt_oprtt_approval_at: {
         id: 'iaso.polio.form.label.rrtOprttApproval',

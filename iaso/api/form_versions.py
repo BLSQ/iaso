@@ -142,7 +142,7 @@ class HasFormVersionPermission(HasFormPermission):
             request.user, request.query_params.get("app_id")
         )
 
-        return obj.form in ok_forms
+        return ok_forms.filter(id=obj.form_id).exists()
 
 
 class FormVersionsViewSet(ModelViewSet):

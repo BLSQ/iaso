@@ -197,7 +197,7 @@ export const BudgetForm = () => {
                         <Divider />
                     </Box>
                 </Grid>
-                <Grid container direction="row" item>
+                <Grid container direction="row" item spacing={2}>
                     <Grid item xs={12} lg={6}>
                         <ExpandableItem
                             label={formatMessage(MESSAGES.budgetRequest)}

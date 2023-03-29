@@ -5,7 +5,7 @@ export const useGetFormsOptions = () => {
     const params = {
         all: 'true',
         order: 'name',
-        fields: 'name,id',
+        fields: 'name,id,period_type',
     };
     const queryString = new URLSearchParams(params);
 

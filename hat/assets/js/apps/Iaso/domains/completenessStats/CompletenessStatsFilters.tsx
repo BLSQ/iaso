@@ -3,6 +3,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 // @ts-ignore
@@ -75,6 +76,26 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         }
     }, [handleChange, orgUnitTypes]);
 
+    const periodType = useMemo(() => {
+        if (filters.formId && forms) {
+            const formIdStr = filters.formId as string;
+            const selectedFormIds = formIdStr
+                .split(',')
+                .map(x => parseInt(x))
+                .sort();
+            const selectedForms = forms.filter(
+                f => selectedFormIds.indexOf(f.value) != -1,
+            );
+
+            const periods = selectedForms
+                .map(f => f.original.period_type)
+                .filter(period_type => Boolean(period_type));
+            const uniqPeriods = _.uniq(periods);
+            return uniqPeriods ? uniqPeriods[0] : null;
+        }
+        return null;
+    }, [filters]);
+
     const handleOrgUnitChange = useCallback(
         orgUnit => {
             const id = orgUnit ? [orgUnit.id] : undefined;
@@ -94,7 +115,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
-    console.log(filters, filtersUpdated);
 
     return (
         <>
@@ -126,7 +146,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         // hasError={periodError || startPeriodError}
                         // activePeriodString={formState.startPeriod.value}
                         // periodType={formState.periodType.value}
-                        periodType={PERIOD_TYPE_QUARTER}
+                        periodType={periodType}
                         title={'Period'}
                         // title={formatMessage(MESSAGES.startPeriod)}
                         keyName={'period'}

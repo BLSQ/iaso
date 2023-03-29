@@ -172,7 +172,7 @@ const PeriodPicker: FunctionComponent<Props> = ({
                                 clearable
                                 value={currentPeriod && currentPeriod.year}
                                 type="select"
-                                options={getYears(15, 10, true).map(y => ({
+                                options={getYears(20, 10, true).map(y => ({
                                     label: y.toString(),
                                     value: y.toString(),
                                 }))}

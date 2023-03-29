@@ -9,6 +9,8 @@ completeness API.
 """
 from typing import Tuple, Optional
 
+import rest_framework.renderers
+import rest_framework_csv.renderers
 from django.core.paginator import Paginator
 from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F
 from rest_framework import viewsets, permissions
@@ -305,12 +307,18 @@ class OrgUnitTypeSerializer(ModelSerializer):
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
+    renderer_classes = [
+        rest_framework.renderers.JSONRenderer,
+        rest_framework.renderers.BrowsableAPIRenderer,
+        rest_framework_csv.renderers.PaginatedCSVRenderer,
+    ]
+
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission("menupermissions.iaso_completeness_stats"),
     ]  # type: ignore
 
-    def list(self, request: Request) -> Response:
+    def list(self, request: Request, *args, **kwargs) -> Response:
         order = request.GET.get("order", "name").split(",")
         requested_org_unit_type_str = request.query_params.get("org_unit_type_id", None)
 

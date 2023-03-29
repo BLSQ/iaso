@@ -292,7 +292,7 @@ COMPLETNESS_QUERY = """SELECT parent_id, id, name,
 FROM iaso_orgunit 
 --where id=1
 ORDER BY id;"""
-"""QUERY To get completness
+"""QUERY To get completeness
 take in parameters root_ids for the base orgunit and form_ids"""
 
 

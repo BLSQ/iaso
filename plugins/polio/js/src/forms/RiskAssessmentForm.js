@@ -1,5 +1,5 @@
-import React from 'react';
-import { Grid } from '@material-ui/core';
+import React, { useCallback } from 'react';
+import { Grid, Box, Typography, Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
@@ -27,18 +27,107 @@ export const riskAssessmentFormFields = [
 export const RiskAssessmentForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { values } = useFormikContext();
+    const { values, setFieldValue } = useFormikContext();
     const { rounds = [] } = values;
+    const updateFirstDraftSubmission = useCallback(
+        (fieldName, date) => {
+            if (
+                date &&
+                !values.risk_assessment_rrt_oprtt_approval_at &&
+                !values.dg_authorized_at
+            ) {
+                setFieldValue('risk_assessment_status', 'SUBMITTED');
+            }
+            if (
+                !date &&
+                !values.risk_assessment_rrt_oprtt_approval_at &&
+                !values.dg_authorized_at
+            ) {
+                setFieldValue('risk_assessment_status', 'TO_SUBMIT');
+            }
+        },
+        [
+            setFieldValue,
+            values.dg_authorized_at,
+            values.risk_assessment_rrt_oprtt_approval_at,
+        ],
+    );
+    const updateRRTApproval = useCallback(
+        (fieldName, date) => {
+            if (date && !values.dg_authorized_at) {
+                setFieldValue('risk_assessment_status', 'REVIEWED');
+            }
+            if (
+                !date &&
+                values.risk_assessment_first_draft_submitted_at &&
+                !values.dg_authorized_at
+            ) {
+                setFieldValue('risk_assessment_status', 'SUBMITTED');
+            }
+            if (
+                !date &&
+                !values.risk_assessment_first_draft_submitted_at &&
+                !values.dg_authorized_at
+            ) {
+                setFieldValue('risk_assessment_status', 'TO_SUBMIT');
+            }
+        },
+        [
+            setFieldValue,
+            values.dg_authorized_at,
+            values.risk_assessment_first_draft_submitted_at,
+        ],
+    );
+    const updateDGAuthorized = useCallback(
+        (fieldName, date) => {
+            if (date) {
+                setFieldValue('risk_assessment_status', 'APPROVED');
+            }
+            if (
+                !date &&
+                values.risk_assessment_rrt_oprtt_approval_at &&
+                !values.risk_assessment_first_draft_submitted_at
+            ) {
+                setFieldValue('risk_assessment_status', 'REVIEWED');
+            }
+            if (
+                !date &&
+                !values.risk_assessment_rrt_oprtt_approval_at &&
+                values.risk_assessment_first_draft_submitted_at
+            ) {
+                setFieldValue('risk_assessment_status', 'SUBMITTED');
+            }
+            if (
+                !date &&
+                !values.risk_assessment_rrt_oprtt_approval_at &&
+                !values.risk_assessment_first_draft_submitted_at
+            ) {
+                setFieldValue('risk_assessment_status', 'TO_SUBMIT');
+            }
+        },
+        [
+            setFieldValue,
+            values.risk_assessment_first_draft_submitted_at,
+            values.risk_assessment_rrt_oprtt_approval_at,
+        ],
+    );
+    const status = values.risk_assessment_status
+        ? formatMessage(MESSAGES[values.risk_assessment_status])
+        : formatMessage(MESSAGES.TO_SUBMIT);
 
     return (
         <>
             <Grid container spacing={2}>
                 <Grid container direction="row" item spacing={2}>
-                    <Grid xs={12} md={6} item>
-                        <Field
-                            name="risk_assessment_status"
-                            component={RABudgetStatusField}
-                        />
+                    <Grid xs={12} item>
+                        <Box mb={2} px={2}>
+                            <Typography variant="button">
+                                {`${formatMessage(MESSAGES.status)}: ${status}`}
+                            </Typography>
+                        </Box>
+                        <Box mr={2}>
+                            <Divider style={{ width: '50%' }} />
+                        </Box>
                     </Grid>
                     <Grid xs={12} md={6} item>
                         <Field
@@ -77,12 +166,14 @@ export const RiskAssessmentForm = () => {
                         name="risk_assessment_first_draft_submitted_at"
                         component={DateInput}
                         fullWidth
+                        onChange={updateFirstDraftSubmission}
                     />
                     <Field
                         label={formatMessage(MESSAGES.rrtOprttApproval)}
                         name="risk_assessment_rrt_oprtt_approval_at"
                         component={DateInput}
                         fullWidth
+                        onChange={updateRRTApproval}
                     />
                     <Field
                         label={formatMessage(MESSAGES.ag_nopv_group_met_at)}
@@ -95,6 +186,7 @@ export const RiskAssessmentForm = () => {
                         name="dg_authorized_at"
                         component={DateInput}
                         fullWidth
+                        onChange={updateDGAuthorized}
                     />
                 </Grid>
                 <Grid item md={6}>

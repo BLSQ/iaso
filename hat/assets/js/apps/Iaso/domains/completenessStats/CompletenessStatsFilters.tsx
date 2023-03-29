@@ -25,6 +25,11 @@ import {
     PERIOD_TYPE_YEAR,
 } from '../periods/constants';
 import _ from 'lodash';
+import {
+    useGetPlannings,
+    useGetPlanningsOptions,
+} from '../plannings/hooks/requests/useGetPlannings';
+import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 
 type Props = {
     params: UrlParams & any;
@@ -48,7 +53,8 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const { data: orgUnitTypes, isFetching: fetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
-
+    const { data: availablePlannings, isFetching: fetchingPlannings } =
+        useGetPlanningsOptions();
     useSkipEffectOnMount(() => {
         setInitialParentId(params?.parentId);
         setInitialOrgUnitId(params?.orgUnitId);
@@ -181,6 +187,20 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={orgUnitTypes ?? []}
                     />
                 </Grid>
+                <DisplayIfUserHasPerm permission={'iaso.permissions.planning'}>
+                    <Grid item xs={12} md={3}>
+                        <InputComponent
+                            type="select"
+                            multi
+                            onChange={handleChange}
+                            keyValue="planningId"
+                            label={MESSAGES.planning}
+                            value={filters.planningId}
+                            loading={fetchingPlannings}
+                            options={availablePlannings ?? []}
+                        />
+                    </Grid>
+                </DisplayIfUserHasPerm>
                 <Grid container item md={6}>
                     <Grid
                         container

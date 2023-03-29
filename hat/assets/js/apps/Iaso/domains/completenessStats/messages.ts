@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'See children',
         id: 'iaso.label.seeChildren',
     },
+    planning: {
+        defaultMessage: 'Planning',
+        id: 'iaso.label.planning',
+    },
 });
 
 export default MESSAGES;

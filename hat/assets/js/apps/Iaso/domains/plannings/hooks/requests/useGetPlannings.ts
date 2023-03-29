@@ -82,3 +82,26 @@ export const useGetPlannings = (
         },
     });
 };
+
+const getPlanningsOptions = async (): Promise<PlanningApi[]> => {
+    const url = makeUrlWithParams(endpoint, {});
+    return getRequest(url) as Promise<PlanningApi[]>;
+};
+export const useGetPlanningsOptions = (): UseQueryResult<Planning[], Error> => {
+    const queryKey: any[] = ['planningsList'];
+    // @ts-ignore
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getPlanningsOptions(),
+        options: {
+            select: (data: Planning[]) => {
+                return data?.map(planning => {
+                    return {
+                        value: planning.id,
+                        label: planning.name,
+                    };
+                });
+            },
+        },
+    });
+};

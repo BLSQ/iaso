@@ -9,6 +9,7 @@ const queryParamsMap = new Map([
     ['orgUnitTypeIds', 'org_unit_type_id'],
     ['formId', 'form_id'],
     ['parentId', 'parent_org_unit_id'],
+    ['planningId', 'planning_id'],
 ]);
 
 export type CompletenessGETParams = UrlParams & {

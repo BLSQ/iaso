@@ -564,6 +564,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'parentId',
         },
+        {
+            isRequired: false,
+            key: 'planningId',
+        },
     ],
 };
 

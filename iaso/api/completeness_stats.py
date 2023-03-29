@@ -317,6 +317,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         requested_forms_str = request.query_params.get("form_id", None)
         requested_form_ids = requested_forms_str.split(",") if requested_forms_str is not None else []
         period = request.query_params.get("period", None)
+        planning_id = request.query_params.get("planning_id", None)
 
         if requested_org_unit_type_str is not None:
             requested_org_unit_types = OrgUnitType.objects.filter(id__in=requested_org_unit_type_str.split(","))
@@ -378,12 +379,17 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
-        extra_params = (form_ids, form_ids)
-
+        extra_params = tuple()
         instance_args = ""
         if period:
             instance_args = 'AND "iaso_instance"."period" = %s'
-            extra_params = (period,) + (form_ids, form_ids)
+            extra_params += (period,)
+        if planning_id:
+            # the current planning filter has limitation as it filter the submissiosn but not the org unit
+            #  that need filing according to the planing. so the percentage are wrong.
+            instance_args = 'AND "iaso_instance"."planning_id" = %s'
+            extra_params += (planning_id,)
+        extra_params += (form_ids, form_ids)
 
         SUB_COMPLETENESS_QUERY = SUB_COMPLETENESS_QUERY_TEMPLATE.format(additional_instance_args=instance_args)
         ou_with_stats: QuerySet = top_ous.extra(

@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import List
+
+from ..common import PotentialDuplicate
 
 
 class DeduplicationAlgorithm(ABC):
@@ -8,7 +11,7 @@ class DeduplicationAlgorithm(ABC):
     # other fields as needed
 
     @abstractmethod
-    def run(self, params):
+    def run(self, params, task=None) -> List[PotentialDuplicate]:
         # code for running the algorithm (empty implementation)
         pass
 

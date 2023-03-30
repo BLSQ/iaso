@@ -268,6 +268,14 @@ class Task(models.Model):
             self.end_value = end_value
         self.save()
 
+    def report_success_with_result(self, message=None, result_data=None):
+        logger.info(f"Task {self} reported success with message {message}")
+        self.progress_message = message
+        self.status = SUCCESS
+        self.ended_at = timezone.now()
+        self.result = {"result": SUCCESS, "data": result_data}
+        self.save()
+
     def report_success(self, message=None):
         logger.info(f"Task {self} reported success with message {message}")
         self.progress_message = message

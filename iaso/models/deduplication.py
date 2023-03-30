@@ -20,6 +20,9 @@ class EntityDuplicateAnalyze(models.Model):
     metadata = models.JSONField(default=dict)
     task = models.ForeignKey(Task, on_delete=models.CASCADE, null=True)
 
+    def __str__(self):
+        return f"Analyze {self.id} - {self.algorithm} ({self.task.status}) @ {self.created_at.strftime('%d/%m/%Y %H:%M') if self.created_at else 'None'}"
+
     def finalize_from_task(self):
 
         if self.task.status == base_models.SUCCESS:

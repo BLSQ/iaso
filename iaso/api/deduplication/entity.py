@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models import Count, F, Q
+from django.http import JsonResponse
 from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
@@ -11,15 +12,10 @@ from rest_framework.response import Response
 
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import Form, Entity, EntityType, EntityDuplicate, EntityDuplicateAnalyze
-
+from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
 from .algos import POSSIBLE_ALGORITHMS, run_algo
-
-
-class PotentialEntityDuplicate:
-    entity1_id = None
-    entity2_id = None
-    score = None
+from .common import PotentialDuplicate
 
 
 class EntityDuplicateSerializer(serializers.ModelSerializer):
@@ -172,5 +168,22 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
         Provides an API to launch a duplicate analyzes
         """
 
+        serializer = AnalyzePostBodySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data = serializer.validated_data
+
+        algo_name = data["algorithm"]
+        algo_params = {
+            "entity_type_id": data["entity_type_id"],
+            "fields": data["fields"],
+            "parameters": data["parameters"],
+        }
+
+        the_task = run_deduplication_algo(algo_name=algo_name, algo_params=algo_params, user=request.user)
+
         # Create an EntityDuplicateAnalyze object
-        # Run the algorithm in a task and change the status of the EntityDuplicateAnalyze object
+        analyze = EntityDuplicateAnalyze.objects.create(algorithm=algo_name, metadata=algo_params, task=the_task)
+        analyze.save()
+
+        return Response({"analyze_id": analyze.pk}, status=status.HTTP_201_CREATED)

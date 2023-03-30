@@ -2,6 +2,7 @@ import operator
 import typing
 from functools import reduce
 
+import django_cte
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
@@ -150,7 +151,7 @@ class OrgUnitType(models.Model):
 
 
 # noinspection PyTypeChecker
-class OrgUnitQuerySet(models.QuerySet):
+class OrgUnitQuerySet(django_cte.CTEQuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream

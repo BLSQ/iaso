@@ -7,6 +7,7 @@ from functools import reduce
 from logging import getLogger
 from urllib.request import urlopen
 
+import django_cte
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -498,7 +499,7 @@ class ExternalCredentials(models.Model):
         }
 
 
-class InstanceQuerySet(models.QuerySet):
+class InstanceQuerySet(django_cte.CTEQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.

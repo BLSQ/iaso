@@ -7,20 +7,24 @@ for a given form in a given orgunit.
 This one is planned to become a "default" and be reused, not to be confused with the more specialized preexisting
 completeness API.
 """
+import typing
 from typing import Tuple, Optional
 
 import rest_framework.renderers
 import rest_framework_csv.renderers
 from django.core.paginator import Paginator
+
 from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F
+
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
+from typing_extensions import Annotated
 
-from iaso.models import OrgUnit, Form, OrgUnitType, SourceVersion
+from iaso.models import OrgUnit, Form, OrgUnitType, SourceVersion, Instance
 from .common import HasPermission
 from ..models.org_unit import OrgUnitQuerySet
 
@@ -180,6 +184,7 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         return Response(paginated_res)
 
 
+# noinspection SqlResolve
 SUB_COMPLETENESS_QUERY_TEMPLATE = """SELECT JSON_OBJECT_AGG(
                            'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
                        'descendants', COALESCE(count_per_root."descendants", 0),
@@ -243,6 +248,7 @@ SUB_COMPLETENESS_QUERY_TEMPLATE = """SELECT JSON_OBJECT_AGG(
 """QUERY To get completeness as embedded in a select
 take in parameters  the form_ids"""
 
+# noinspection SqlResolve
 COMPLETNESS_QUERY = """SELECT parent_id, id, name,
        (SELECT 
                JSON_OBJECT_AGG(
@@ -302,6 +308,13 @@ class OrgUnitTypeSerializer(ModelSerializer):
     class Meta:
         model = OrgUnitType
         fields = ["id", "name", "depth"]
+
+
+class FormStatAnnotation(typing.TypedDict):
+    form_stats: typing.Mapping[str, typing.Mapping]
+
+
+OrgUnitWithFormStat = Annotated[OrgUnit, FormStatAnnotation]
 
 
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):
@@ -383,7 +396,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         #     This needs to be applied on the top_ous, not on the org_units (to act as a real filter, not something that changes the level of OUs in the table)
         #     top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in requested_org_unit_types])
 
-        form_ids = tuple(list(form_qs.values_list("id", flat=True)))
+        # form_ids = tuple(list(form_qs.values_list("id", flat=True)))
 
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
@@ -397,13 +410,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             #  that need filing according to the planing. so the percentage are wrong.
             instance_args = 'AND "iaso_instance"."planning_id" = %s'
             extra_params += (planning_id,)
-        extra_params += (form_ids, form_ids)
+        # extra_params += (form_ids, form_ids)
 
-        SUB_COMPLETENESS_QUERY = SUB_COMPLETENESS_QUERY_TEMPLATE.format(additional_instance_args=instance_args)
-        ou_with_stats: QuerySet = top_ous.extra(
-            select={"form_stats": SUB_COMPLETENESS_QUERY},
-            select_params=extra_params,
-        )
+        # form_qs = Form.objects.filter(id__in=form_ids)
+        instance_qs = Instance.objects.all()  # .filter(form_id__in=(17, 22))
+        ou_with_stats = get_annotated_queryset(root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs)
+        print(ou_with_stats.query.sql_with_params())
         ou_with_stats = ou_with_stats.order_by(*order)
 
         def to_dict(row_ou):
@@ -492,3 +504,114 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         types = OrgUnitType.objects.filter(id__in=org_units.values("org_unit_type").distinct()).order_by("depth")
         serialized = OrgUnitTypeSerializer(types, many=True).data
         return Response(serialized)
+
+
+# noinspection SqlResolve
+pivot_query = """SELECT JSONB_OBJECT_AGG(
+                   'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
+                'descendants', COALESCE(count_per_root."descendants", 0),
+                'descendants_ok', COALESCE(count_per_root."descendants_ok", 0),
+                'percent', COALESCE(count_per_root."percent", 0),
+                'total_instances', COALESCE(count_per_root."total_instances", 0),
+            --                        'itself_target', COALESCE(count_per_root."itself_target", 0),
+--                        'itself_has_instances', COALESCE(count_per_root."itself_has_instances", 0),
+--                        'itself_instances_count', COALESCE(count_per_root."itself_instances_count", 0),
+                'name', "iaso_form"."name"
+            )
+           )             AS "form_stats",
+       filtered_roots.id AS org_unit_id
+FROM filtered_roots
+         CROSS JOIN filtered_forms AS iaso_form
+         LEFT OUTER JOIN "count_per_root" ON (count_per_root.form_id = iaso_form.id AND
+                                              count_per_root.id = filtered_roots.id)
+GROUP BY filtered_roots.id
+               """
+
+from django_cte import With
+from django.db import models
+from django_cte.raw import raw_cte_sql
+
+# noinspection SqlResolve
+ou_count_query = """ 
+
+SELECT "iaso_orgunit"."path",
+       "iaso_form"."id"                         AS "form_id",
+       COUNT("iaso_instance"."id") FILTER
+           (WHERE
+               ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
+               NOT ("iaso_instance"."deleted")) AS "instances_count"
+FROM "filtered_forms" AS "iaso_form"
+         JOIN "iaso_form_org_unit_types"
+              ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
+         LEFT OUTER JOIN "iaso_orgunit"
+                         ON ("iaso_orgunit"."org_unit_type_id" =
+                             "iaso_form_org_unit_types"."orgunittype_id")
+         LEFT OUTER JOIN "filtered_instance" AS iaso_instance
+                         ON ("iaso_orgunit"."id" =
+                             "iaso_instance"."org_unit_id" AND
+                             "iaso_form"."id" =
+                             "iaso_instance"."form_id")
+GROUP BY "iaso_orgunit"."path", "iaso_form"."id"
+                  """
+
+# noinspection SqlResolve
+count_per_root_query = """
+SELECT root.id,
+       form_id,
+       COUNT(ou_count.path)                         AS "descendants",
+       SUM(ou_count."instances_count")              AS "total_instances",
+       COUNT(NULLIF(ou_count."instances_count", 0)) AS "descendants_ok",
+       (COUNT(NULLIF(ou_count."instances_count", 0))::float * 100 /
+        NULLIF(COUNT(ou_count), 0))                 AS "percent"
+FROM filtered_roots AS root
+         LEFT OUTER JOIN ou_count ON "root"."path" @> ou_count."path"
+GROUP BY root.id, ou_count.form_id"""
+
+
+def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Instance], form_qs: QuerySet[Form]):
+    """Annotate via CTE
+
+    This is 10 times slower that the previous version but the only way I found to implement
+    filter without it being a mess. 0.3s -> 3s on my benchmark"""
+
+    # root_qs = OrgUnit.objects.prefetch_related("org_unit_type").filter(parent_id=162489)
+    # form_qs = Form.objects.filter(id__in=(17, 12, 13))
+    # Name are reference by the other cte query so don't modify them
+    ou_cte = With(root_qs, name="filtered_roots")
+    form_cte = With(form_qs.only("id", "name"), name="filtered_forms")
+    instances_cte = With(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")
+
+    pivot_cte = raw_cte_sql(
+        sql=pivot_query,
+        params=[],
+        refs={
+            "form_stats": models.JSONField(),
+            "org_unit_id": models.ForeignKey("iaso.orgunit", on_delete=models.PROTECT),
+        },
+    )
+    pivot_with = With(pivot_cte, name="pivot")
+    ou_count_cte = raw_cte_sql(
+        ou_count_query,
+        [],
+        {
+            "path": models.CharField(),
+            "form_id": models.IntegerField(),
+            "instances_count": models.IntegerField(),
+        },
+    )
+    ou_count_with = With(ou_count_cte, name="ou_count")
+
+    count_per_root_cte = raw_cte_sql(count_per_root_query, [], {})
+    count_per_root_with = With(count_per_root_cte, "count_per_root")
+
+    annotated_query: QuerySet[OrgUnitWithFormStat] = (
+        pivot_with.join(root_qs, id=pivot_with.col.org_unit_id)
+        .with_cte(pivot_with)
+        .with_cte(count_per_root_with)
+        .with_cte(ou_count_with)
+        .with_cte(ou_cte)
+        .with_cte(form_cte)
+        .with_cte(instances_cte)
+        .annotate(form_stats=pivot_with.col.form_stats)
+    )
+    return annotated_query

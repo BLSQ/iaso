@@ -12,9 +12,9 @@ from typing import TypedDict, Mapping, List, Union
 
 import rest_framework.renderers
 import rest_framework_csv.renderers
+import rest_framework.fields
 from django.core.paginator import Paginator
 from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F
-from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -212,9 +212,9 @@ class Params(TypedDict):
 class PrimaryKeysRelatedField(serializers.ManyRelatedField):
     """Primary key separated by , like we do often in iaso"""
 
-    def get_value(self, dictionary: Mapping[Any, Any]) -> List[Any]:
+    def get_value(self, dictionary: Mapping[Any, Any]) -> Union[Any, List[Any]]:
         if self.field_name not in dictionary:
-            return serializers.empty
+            return rest_framework.fields.empty
         else:
             value = dictionary.get(self.field_name)
             return value.split(",")
@@ -309,7 +309,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         order = params["order"]
         form_qs = params["forms"]
-        print(form_qs)
         period = params.get("period", None)
         planning = params.get("planning", None)
 
@@ -410,7 +409,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             }
         else:
             request_parent_forms_stats = {}
-        object_list = [to_dict(ou) for ou in page.object_list]
+        # fix a bug somewhere in django-cte and pagination that make the whole thing crash
+        # if the set is empty
+        if paginator.count <= 0:
+            object_list = []
+        else:
+            object_list = [to_dict(ou) for ou in page.object_list]
         paginated_res = {
             "forms": [
                 {

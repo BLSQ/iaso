@@ -24,7 +24,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from typing_extensions import Annotated
 
-from iaso.models import OrgUnit, Form, OrgUnitType, SourceVersion, Instance
+from iaso.models import OrgUnit, Form, OrgUnitType, Instance
 from .common import HasPermission
 from ..models.org_unit import OrgUnitQuerySet
 
@@ -184,126 +184,6 @@ class CompletenessStatsViewSet(viewsets.ViewSet):
         return Response(paginated_res)
 
 
-# noinspection SqlResolve
-SUB_COMPLETENESS_QUERY_TEMPLATE = """SELECT JSON_OBJECT_AGG(
-                           'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
-                       'descendants', COALESCE(count_per_root."descendants", 0),
-                       'descendants_ok', COALESCE(count_per_root."descendants_ok", 0),
-                       'percent', COALESCE(count_per_root."percent", 0),
-                       'total_instances', COALESCE(count_per_root."total_instances", 0),
-                       'itself_target', COALESCE(count_per_root."itself_target", 0),
-                       'itself_has_instances', COALESCE(count_per_root."itself_has_instances", 0),
-                       'itself_instances_count', COALESCE(count_per_root."itself_instances_count", 0),
-                       'name', "iaso_form"."name"
-                   )
-                   ) AS "form_stats"
-        FROM
-            (SELECT "iaso_orgunit"."id"                          AS "id",
-                     COUNT(ou_count)                                   FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")    AS "descendants",
-                     SUM(ou_count."instances_count")           FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")     AS "total_instances",
-                     COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")  AS "descendants_ok",
-                     (COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "iaso_orgunit"."path" != ou_count."path") ::float * 100 /
-                      NULLIF(COUNT(ou_count)    FILTER (WHERE "iaso_orgunit"."path" != ou_count."path")              , 0)) AS "percent",
-                     "ou_count"."form_id" ,
-                     "ou_count"."form_name"                       AS "form_name",
-                      COUNT(NULLIF(ou_count."instances_count", 0))  FILTER (WHERE "iaso_orgunit"."path" = ou_count."path")  AS "itself_has_instances",
-                      SUM(ou_count."instances_count")               FILTER (WHERE "iaso_orgunit"."path" = ou_count."path")  AS "itself_instances_count",
-                      COUNT(ou_count)                               FILTER (WHERE "iaso_orgunit"."path" = ou_count."path")  AS "itself_target"
-              FROM (SELECT "iaso_orgunit"."path",
-                           "iaso_form"."id"                         AS "form_id",
-                           "iaso_form"."name"                       AS "form_name",
-                           COUNT("iaso_instance"."id") FILTER
-                               (WHERE
-                                   ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
-                                   NOT ("iaso_instance"."deleted")
-                                   {additional_instance_args}
-                                   ) AS "instances_count"
-                                   
-                    FROM "iaso_form"
-                             LEFT OUTER JOIN "iaso_form_org_unit_types"
-                                  ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
-                             LEFT OUTER JOIN "iaso_orgunit"
-                                             ON ("iaso_orgunit"."org_unit_type_id" =
-                                                 "iaso_form_org_unit_types"."orgunittype_id")
-                             LEFT OUTER JOIN "iaso_instance"
-                                             ON ("iaso_orgunit"."id" =
-                                                 "iaso_instance"."org_unit_id" AND
-                                                 "iaso_form"."id" =
-                                                 "iaso_instance"."form_id")
-                    WHERE "iaso_form"."id" IN %s
-                      AND "iaso_orgunit"."validation_status" IN ('VALID', 'NEW')
-                    GROUP BY "iaso_orgunit"."path", "iaso_form"."id") AS ou_count
-              WHERE "iaso_orgunit"."path" @> ou_count."path"
-                -- don't count yourself
-                -- AND "iaso_orgunit"."path" != ou_count."path"
-              GROUP BY "iaso_orgunit"."id", ou_count."form_id", "ou_count"."form_name"
-              ORDER BY "descendants" DESC) AS count_per_root
-                -- THIS JOIN IS NEED so we have a form entry even for org unit which
-                -- have no descendant that need to be filled.
-                -- not sure of the performance impact, this might be faster to resolve in frontend
-        RIGHT JOIN iaso_form ON count_per_root.form_id = iaso_form.id
-        WHERE iaso_form.id IN %s
-        GROUP BY "iaso_orgunit"."id"
-        """
-"""QUERY To get completeness as embedded in a select
-take in parameters  the form_ids"""
-
-# noinspection SqlResolve
-COMPLETNESS_QUERY = """SELECT parent_id, id, name,
-       (SELECT 
-               JSON_OBJECT_AGG(
-                           'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
-                       'descendants', root_form."descendants",
-                       'descendants_ok', root_form."descendants_ok",
-                       'percent', root_form."percent",
-                       'name', "iaso_form"."name"
-                   )
-                   ) AS "form_stats"
-        FROM "iaso_orgunit" AS "roots_to_pivot"
-                 CROSS JOIN "iaso_form"
-                 LEFT JOIN (SELECT "root"."id"                                  AS "org_unit_id",
-                                   COUNT(ou_count)                              AS "descendants",
-                                   SUM(ou_count."instances_count")              AS "total_instance",
-                                   COUNT(NULLIF(ou_count."instances_count", 0)) AS "descendants_ok",
-                                   (COUNT(NULLIF(ou_count."instances_count", 0))::float * 100 /
-                                    NULLIF(COUNT(ou_count), 0))                 AS "percent",
-                                   ou_count."form_id"
-                            FROM "iaso_orgunit" AS "root"
-                                     LEFT OUTER JOIN (SELECT "iaso_orgunit"."path",
-                                                             "iaso_form"."id"                         AS "form_id",
-                                                             COUNT("iaso_instance"."id") FILTER
-                                                                 (WHERE
-                                                                     ("iaso_instance"."file" IS NOT NULL AND NOT "iaso_instance"."file" = '') AND
-                                                                     NOT ("iaso_instance"."deleted")) AS "instances_count"
-                                                      FROM "iaso_form"
-                                                               JOIN "iaso_form_org_unit_types"
-                                                                    ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
-                                                               LEFT OUTER JOIN "iaso_orgunit"
-                                                                               ON ("iaso_orgunit"."org_unit_type_id" =
-                                                                                   "iaso_form_org_unit_types"."orgunittype_id")
-                                                               LEFT OUTER JOIN "iaso_instance"
-                                                                               ON ("iaso_orgunit"."id" =
-                                                                                   "iaso_instance"."org_unit_id" AND
-                                                                                   "iaso_form"."id" =
-                                                                                   "iaso_instance"."form_id")
-                                                      WHERE "iaso_form"."id" IN %(form_ids)s
-                                                        AND "iaso_orgunit"."validation_status" IN ('VALID', 'NEW')
-                                                      GROUP BY "iaso_orgunit"."path", "iaso_form"."id") ou_count
-                                                     ON "root"."path" @> ou_count."path"
-                            WHERE "root"."id" IN %(root_ids)s
-                            GROUP BY "root"."id", ou_count."form_id"
-                            ORDER BY "descendants" DESC) root_form ON ("iaso_form"."id" = root_form."form_id"
-            AND "roots_to_pivot"."id" = root_form."org_unit_id")
-        WHERE "iaso_form"."id" IN %(form_ids)s
-          AND "roots_to_pivot"."id" = iaso_orgunit.id
-        GROUP BY "roots_to_pivot"."id")
-FROM iaso_orgunit 
---where id=1
-ORDER BY id;"""
-"""QUERY To get completeness
-take in parameters root_ids for the base orgunit and form_ids"""
-
-
 class OrgUnitTypeSerializer(ModelSerializer):
     class Meta:
         model = OrgUnitType
@@ -400,20 +280,14 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
-        extra_params = tuple()
-        instance_args = ""
+        instance_qs = Instance.objects.all()  # .filter(form_id__in=(17, 22))
         if period:
-            instance_args = 'AND "iaso_instance"."period" = %s'
-            extra_params += (period,)
+            instance_qs = instance_qs.filter(period=period)
         if planning_id:
+            instance_qs = instance_qs.filter(planning_id=planning_id)
             # the current planning filter has limitation as it filter the submissiosn but not the org unit
             #  that need filing according to the planing. so the percentage are wrong.
-            instance_args = 'AND "iaso_instance"."planning_id" = %s'
-            extra_params += (planning_id,)
-        # extra_params += (form_ids, form_ids)
 
-        # form_qs = Form.objects.filter(id__in=form_ids)
-        instance_qs = Instance.objects.all()  # .filter(form_id__in=(17, 22))
         ou_with_stats = get_annotated_queryset(root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs)
         print(ou_with_stats.query.sql_with_params())
         ou_with_stats = ou_with_stats.order_by(*order)

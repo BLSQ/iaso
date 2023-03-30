@@ -187,35 +187,31 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={orgUnitTypes ?? []}
                     />
                 </Grid>
-                <DisplayIfUserHasPerm permission={'iaso.permissions.planning'}>
-                    <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            multi
-                            onChange={handleChange}
-                            keyValue="planningId"
-                            label={MESSAGES.planning}
-                            value={filters.planningId}
-                            loading={fetchingPlannings}
-                            options={availablePlannings ?? []}
-                        />
-                    </Grid>
-                </DisplayIfUserHasPerm>
-                <Grid container item md={6}>
-                    <Grid
-                        container
-                        item
-                        // xs={isLargeLayout ? 6 : 12}
-                        justifyContent="flex-end"
-                        xs={12}
-                        md={3}
+
+                <Grid container item>
+                    <DisplayIfUserHasPerm
+                        permission={'iaso.permissions.planning'}
                     >
-                        <Box mt={isLargeLayout ? 2 : 0}>
+                        <Grid item xs={12} md={3}>
+                            <InputComponent
+                                type="select"
+                                multi
+                                onChange={handleChange}
+                                keyValue="planningId"
+                                label={MESSAGES.planning}
+                                value={filters.planningId}
+                                loading={fetchingPlannings}
+                                options={availablePlannings ?? []}
+                            />
+                        </Grid>
+                    </DisplayIfUserHasPerm>
+                    <Grid container item justifyContent="flex-end" md={9}>
+                        <Grid item>
                             <FilterButton
                                 disabled={!filtersUpdated}
                                 onFilter={handleSearch}
                             />
-                        </Box>
+                        </Grid>
                     </Grid>
                 </Grid>
             </Grid>

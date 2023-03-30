@@ -328,10 +328,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/OPRTT Approval',
     },
-    budget_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/OPRTT Approval',
-    },
     ag_nopv_group_met_at: {
         id: 'iaso.polio.form.label.agNopvGroup',
         defaultMessage: 'AG/nOPV Group',

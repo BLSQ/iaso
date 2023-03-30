@@ -94,6 +94,8 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         enable_send_weekly_email: true,
         has_data_in_budget_tool: false,
         budget_current_state_key: '-',
+        detection_status: 'PENDING',
+        risk_assessment_status: 'TO_SUBMIT',
     };
 
     // Merge inplace default values with the one we get from the campaign.

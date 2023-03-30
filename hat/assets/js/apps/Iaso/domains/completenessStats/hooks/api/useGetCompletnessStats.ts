@@ -63,5 +63,8 @@ export const useGetCompletenessStats = (
     return useSnackQuery({
         queryKey: ['completenessStats', params],
         queryFn: () => getCompletenessStats(params),
+        options: {
+            retry: 0,
+        },
     });
 };

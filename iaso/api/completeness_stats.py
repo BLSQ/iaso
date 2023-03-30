@@ -7,15 +7,14 @@ for a given form in a given orgunit.
 This one is planned to become a "default" and be reused, not to be confused with the more specialized preexisting
 completeness API.
 """
-import typing
-from typing import Tuple, Optional
+from typing import Tuple, Optional, Any
+from typing import TypedDict, Mapping, List, Union
 
 import rest_framework.renderers
 import rest_framework_csv.renderers
 from django.core.paginator import Paginator
-
 from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F
-
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -26,7 +25,9 @@ from typing_extensions import Annotated
 
 from iaso.models import OrgUnit, Form, OrgUnitType, Instance
 from .common import HasPermission
+from ..models.microplanning import Planning
 from ..models.org_unit import OrgUnitQuerySet
+from ..periods import Period
 
 
 def formatted_percentage(part: int, total: int) -> str:
@@ -190,11 +191,98 @@ class OrgUnitTypeSerializer(ModelSerializer):
         fields = ["id", "name", "depth"]
 
 
-class FormStatAnnotation(typing.TypedDict):
-    form_stats: typing.Mapping[str, typing.Mapping]
+class FormStatAnnotation(TypedDict):
+    form_stats: Mapping[str, Mapping]
 
 
 OrgUnitWithFormStat = Annotated[OrgUnit, FormStatAnnotation]
+
+from rest_framework import serializers
+
+
+class Params(TypedDict):
+    org_unit_type: Optional[OrgUnitType]
+    parent_org_unit: Optional[OrgUnit]
+    forms: QuerySet[Form]
+    planning: Optional[Planning]
+    period: Optional[str]  # might migrate to Period in the future
+    order: List[str]
+
+
+class PrimaryKeysRelatedField(serializers.ManyRelatedField):
+    """Primary key separated by , like we do often in iaso"""
+
+    def get_value(self, dictionary: Mapping[Any, Any]) -> List[Any]:
+        if self.field_name not in dictionary:
+            return serializers.empty
+        else:
+            value = dictionary.get(self.field_name)
+            return value.split(",")
+
+
+# noinspection PyMethodMayBeStatic
+class ParamSerializer(serializers.Serializer):
+    """Serializer for the get params"""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        request = self.context.get("request")
+        # filter on what the user has access to
+        if request:
+            user = request.user
+            # we could filter but since it's an additional it probably just a waste
+            self.fields["org_unit_type_id"].queryset = OrgUnitType.objects.filter_for_user_and_app_id(user, None)
+            self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
+            # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
+            self.fields["form_id"].default = Form.objects.filter_for_user_and_app_id(user)
+            self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
+            self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
+
+    org_unit_type_id = serializers.PrimaryKeyRelatedField(
+        source="org_unit_type",
+        queryset=OrgUnitType.objects.none(),
+        required=False,
+        help_text="Group the submissions per this org unit type",
+        default=None,
+    )
+    parent_org_unit_id = serializers.PrimaryKeyRelatedField(
+        queryset=OrgUnit.objects.none(),
+        source="parent_org_unit",
+        required=False,
+        help_text="Use this as the root. If not present will take the root per users",
+    )
+    form_id = PrimaryKeysRelatedField(
+        required=False,
+        source="forms",
+        help_text="Filter on these form ids (list separated by ','",
+        child_relation=serializers.PrimaryKeyRelatedField(
+            queryset=Form.objects.none(),
+        ),
+    )
+    planning_id = serializers.PrimaryKeyRelatedField(
+        source="planning", queryset=Planning.objects.none(), required=False, help_text="Filter on this planning"
+    )
+    order = serializers.CharField(default="name")  # actually a list in validated data
+    period = serializers.CharField(required=False, help_text="Filter period in this instances")
+
+    def validate_order(self, order):
+        return order.split(",")
+
+    def validate_period(self, period_value):
+        try:
+            Period.from_string(period_value)
+        except ValueError:
+            raise serializers.ValidationError("Invalid period")
+        return period_value
+
+    def validate_form_id(self, forms: Union[List[Form], QuerySet[Form]]):
+        # reconvert this to a queryset
+        if isinstance(forms, list):
+            queryset = self.fields["form_id"].child_relation.queryset
+            return queryset.filter(id__in=[f.id for f in forms])
+        else:
+            return forms
 
 
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):
@@ -205,53 +293,52 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         rest_framework.renderers.BrowsableAPIRenderer,
         rest_framework_csv.renderers.PaginatedCSVRenderer,
     ]
+    serializer_class = ParamSerializer
 
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission("menupermissions.iaso_completeness_stats"),
     ]  # type: ignore
 
+    # @swagger_auto_schema(query_serializer=ParamSerializer())
     def list(self, request: Request, *args, **kwargs) -> Response:
-        order = request.GET.get("order", "name").split(",")
-        requested_org_unit_type_str = request.query_params.get("org_unit_type_id", None)
+        """Completeness of form submission"""
+        paramsSerializer = ParamSerializer(data=request.query_params, context={"request": request})
+        paramsSerializer.is_valid(raise_exception=True)
+        params: Params = paramsSerializer.validated_data
 
-        requested_forms_str = request.query_params.get("form_id", None)
-        requested_form_ids = requested_forms_str.split(",") if requested_forms_str is not None else []
-        period = request.query_params.get("period", None)
-        planning_id = request.query_params.get("planning_id", None)
+        order = params["order"]
+        form_qs = params["forms"]
+        print(form_qs)
+        period = params.get("period", None)
+        planning = params.get("planning", None)
 
-        if requested_org_unit_type_str is not None:
-            requested_org_unit_types = OrgUnitType.objects.filter(id__in=requested_org_unit_type_str.split(","))
-        else:
-            requested_org_unit_types = None
+        instance_qs = Instance.objects.all()
+        if period:
+            # In the future we would like to support multiple periods, but then we will have to count properly
+            # the requirements
+            instance_qs = instance_qs.filter(period=period)
+        if planning:
+            instance_qs = instance_qs.filter(planning_id=planning.id)
+            # the current planning filter has limitation as it filter the submissiosn but not the org unit
+            #  that need filing according to the planing. so the percentage are wrong.
 
-        requested_org_unit = _get_ou_from_request(request, "org_unit_id")
-        requested_parent_org_unit = _get_ou_from_request(request, "parent_org_unit_id")
+        requested_org_unit_types = None
 
         profile = request.user.iaso_profile  # type: ignore
 
-        # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
-        form_qs = Form.objects.filter_for_user_and_app_id(user=request.user)
-        if requested_form_ids:
-            form_qs = form_qs.filter(id__in=requested_form_ids)
-
-        account = profile.account
-        version = account.default_version
-
-        # Calculate the ou for which we want reporting `top_ous`
         org_units: OrgUnitQuerySet
-        org_units = OrgUnit.objects.filter(version=version).filter(
-            validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID)
-        )
-
-        # Filtering per org unit: we drop the rows that don't match the requested org_unit
-        if requested_org_unit:
-            org_units = org_units.hierarchy(requested_org_unit)
+        org_units = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))
+        # Calculate the ou for which we want reporting `top_ous`
+        parent_ou = params.get("parent_org_unit")
 
         # Filtering per parent org unit: we drop the rows that are not direct children of the requested parent org unit
-        if requested_parent_org_unit:
-            org_units = org_units.hierarchy(requested_parent_org_unit)
+        if parent_ou:
+            org_units = org_units.hierarchy(parent_ou)
         else:
+            account = profile.account
+            version_id = account.default_version_id
+            org_units = org_units.filter(version_id=version_id)
             # we want everything in the source, but we will filter for what the user has access too.
             if profile.org_units.all():
                 # do the intersection
@@ -259,37 +346,23 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 # take the whole hierarchy
                 org_units = org_units.hierarchy(roots)
 
-        # How we group them. If none we take the direct descendants
-        if not requested_org_unit_types:
-            if requested_parent_org_unit:
-                top_ous = org_units.filter(parent=requested_parent_org_unit)
+        # How we group them. If none we take the direct descendants or the roots
+        group_per_type = params["org_unit_type"]
+        if not group_per_type:
+            if parent_ou:
+                top_ous = org_units.filter(parent=parent_ou)
             elif profile.org_units.all():
                 top_ous = org_units.filter(id__in=profile.org_units.all())
             else:
                 top_ous = org_units.filter(parent=None)
         else:
-            # org_units = org_units.hierarchy(requested_org_unit)
             top_ous = org_units.filter(org_unit_type__in=requested_org_unit_types)
-
-        # Filtering by org unit type
-        # if requested_org_unit_types is not None:
-        #     This needs to be applied on the top_ous, not on the org_units (to act as a real filter, not something that changes the level of OUs in the table)
-        #     top_ous = top_ous.filter(org_unit_type__id__in=[o.id for o in requested_org_unit_types])
-
-        # form_ids = tuple(list(form_qs.values_list("id", flat=True)))
 
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
-        instance_qs = Instance.objects.all()  # .filter(form_id__in=(17, 22))
-        if period:
-            instance_qs = instance_qs.filter(period=period)
-        if planning_id:
-            instance_qs = instance_qs.filter(planning_id=planning_id)
-            # the current planning filter has limitation as it filter the submissiosn but not the org unit
-            #  that need filing according to the planing. so the percentage are wrong.
-
+        # Annotate the query with the form info
         ou_with_stats = get_annotated_queryset(root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs)
-        print(ou_with_stats.query.sql_with_params())
+        # Ordering
         ou_with_stats = ou_with_stats.order_by(*order)
 
         def to_dict(row_ou):
@@ -310,10 +383,10 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             page_offset = paginator.num_pages
         page = paginator.page(page_offset)
 
-        # If a particular parent is requested we calcule it's own stats
+        # If a particular parent is requested we calcule its own stats
         #  as it might be nice to display
-        if requested_parent_org_unit:
-            ou = requested_parent_org_unit
+        if parent_ou:
+            ou = parent_ou
             form_stats_qs = form_qs.annotate(
                 instance_count=Count(
                     expression=Subquery(
@@ -337,7 +410,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             }
         else:
             request_parent_forms_stats = {}
-
         object_list = [to_dict(ou) for ou in page.object_list]
         paginated_res = {
             "forms": [

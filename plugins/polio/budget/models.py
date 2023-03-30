@@ -166,6 +166,9 @@ class MailTemplate(models.Model):
                     "allowed": can_user_transition(transition, receiver, campaign),
                 }
             )
+        # buttons is never empty, so the text accompanying the buttons in the email would always show, even when no buttons are displayed
+        # So we check if there are allowed buttons
+        show_buttons = list(filter(lambda x:x.allowed), buttons)
         transition = workflow.get_transition_by_key(step.transition_key)
         if transition.key != "override":
             node = workflow.get_node_by_key(transition.to_node)
@@ -197,7 +200,7 @@ class MailTemplate(models.Model):
             {
                 "author": step.created_by,
                 "author_name": step.created_by.get_full_name() or step.created_by.username,
-                "buttons": buttons,
+                "buttons": buttons if show_buttons else None,
                 "node": node,
                 "team": step.created_by_team,
                 "step": step,

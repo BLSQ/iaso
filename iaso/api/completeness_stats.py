@@ -507,15 +507,15 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
 
 # noinspection SqlResolve
-pivot_query = """SELECT JSONB_OBJECT_AGG(
+PIVOT_QUERY = """SELECT JSONB_OBJECT_AGG(
                    'form_' || "iaso_form"."id", JSON_BUILD_OBJECT(
                 'descendants', COALESCE(count_per_root."descendants", 0),
                 'descendants_ok', COALESCE(count_per_root."descendants_ok", 0),
                 'percent', COALESCE(count_per_root."percent", 0),
                 'total_instances', COALESCE(count_per_root."total_instances", 0),
-            --                        'itself_target', COALESCE(count_per_root."itself_target", 0),
---                        'itself_has_instances', COALESCE(count_per_root."itself_has_instances", 0),
---                        'itself_instances_count', COALESCE(count_per_root."itself_instances_count", 0),
+                'itself_target', COALESCE(count_per_root."itself_target", 0),
+                'itself_has_instances', COALESCE(count_per_root."itself_has_instances", 0),
+                'itself_instances_count', COALESCE(count_per_root."itself_instances_count", 0),
                 'name', "iaso_form"."name"
             )
            )             AS "form_stats",
@@ -532,8 +532,7 @@ from django.db import models
 from django_cte.raw import raw_cte_sql
 
 # noinspection SqlResolve
-ou_count_query = """ 
-
+OU_COUNT_QUERY = """ 
 SELECT "iaso_orgunit"."path",
        "iaso_form"."id"                         AS "form_id",
        COUNT("iaso_instance"."id") FILTER
@@ -555,14 +554,24 @@ GROUP BY "iaso_orgunit"."path", "iaso_form"."id"
                   """
 
 # noinspection SqlResolve
-count_per_root_query = """
+COUNT_PER_ROOT_QUERY = """
 SELECT root.id,
-       form_id,
-       COUNT(ou_count.path)                         AS "descendants",
-       SUM(ou_count."instances_count")              AS "total_instances",
-       COUNT(NULLIF(ou_count."instances_count", 0)) AS "descendants_ok",
-       (COUNT(NULLIF(ou_count."instances_count", 0))::float * 100 /
-        NULLIF(COUNT(ou_count), 0))                 AS "percent"
+       "ou_count"."form_id" ,
+       COUNT(ou_count.path) FILTER (WHERE "root"."path" != ou_count."path")                         AS "descendants",
+       SUM(ou_count."instances_count")
+       FILTER (WHERE "root"."path" != ou_count."path")                                              AS "total_instances",
+       COUNT(NULLIF(ou_count."instances_count", 0))
+       FILTER (WHERE "root"."path" != ou_count."path")                                              AS "descendants_ok",
+       (COUNT(NULLIF(ou_count."instances_count", 0)) FILTER (WHERE "root"."path" != ou_count."path") ::float *
+        100 /
+        NULLIF(COUNT(ou_count) FILTER (WHERE "root"."path" != ou_count."path"),
+               0))                                                                                          AS "percent",
+
+       COUNT(NULLIF(ou_count."instances_count", 0))
+       FILTER (WHERE "root"."path" = ou_count."path")                                               AS "itself_has_instances",
+       SUM(ou_count."instances_count")
+       FILTER (WHERE "root"."path" = ou_count."path")                                               AS "itself_instances_count",
+       COUNT(ou_count) FILTER (WHERE "root"."path" = ou_count."path")                               AS "itself_target"
 FROM filtered_roots AS root
          LEFT OUTER JOIN ou_count ON "root"."path" @> ou_count."path"
 GROUP BY root.id, ou_count.form_id"""
@@ -582,7 +591,7 @@ def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Ins
     instances_cte = With(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")
 
     pivot_cte = raw_cte_sql(
-        sql=pivot_query,
+        sql=PIVOT_QUERY,
         params=[],
         refs={
             "form_stats": models.JSONField(),
@@ -591,7 +600,7 @@ def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Ins
     )
     pivot_with = With(pivot_cte, name="pivot")
     ou_count_cte = raw_cte_sql(
-        ou_count_query,
+        OU_COUNT_QUERY,
         [],
         {
             "path": models.CharField(),
@@ -601,7 +610,7 @@ def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Ins
     )
     ou_count_with = With(ou_count_cte, name="ou_count")
 
-    count_per_root_cte = raw_cte_sql(count_per_root_query, [], {})
+    count_per_root_cte = raw_cte_sql(COUNT_PER_ROOT_QUERY, [], {})
     count_per_root_with = With(count_per_root_cte, "count_per_root")
 
     annotated_query: QuerySet[OrgUnitWithFormStat] = (

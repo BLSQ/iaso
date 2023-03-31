@@ -2012,11 +2012,11 @@ const MESSAGES = defineMessages({
     },
     re_submitted_to_orpg_operations2: {
         id: 'iaso.polio.form.label.re_submitted_to_orpg_operations2',
-        defaultMessage: 'Resubmitted to ORPG Operations',
+        defaultMessage: 'Resubmitted to ORPG Operations (ORPG wider)',
     },
     submitted_to_orpg_operations2: {
         id: 'iaso.polio.form.label.submitted_to_orpg_operations2',
-        defaultMessage: 'Submitted to ORPG ops (2)',
+        defaultMessage: 'Submitted to ORPG Operations (ORPG wider)',
     },
     re_submitted_to_orpg: {
         id: 'iaso.polio.form.label.re_submitted_to_orpg_wider',
@@ -2036,7 +2036,7 @@ const MESSAGES = defineMessages({
     },
     submitted_to_orpg_operations1: {
         id: 'iaso.polio.form.label.submitted_to_orpg_operations1',
-        defaultMessage: 'Submitted to ORPG Ops (1)',
+        defaultMessage: 'Submitted to ORPG Ops',
     },
     re_submitted_to_rrt: {
         id: 'iaso.polio.form.label.re_submitted_to_rrt',

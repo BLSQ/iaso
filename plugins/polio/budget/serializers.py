@@ -316,7 +316,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
         for index, section in enumerate(r):
             mandatory_nodes = list(filter(lambda node: node.mandatory == True, workflow.categories[index].nodes))
             mandatory_nodes_passed = list(filter(lambda x: x.get("mandatory") == True, section["items"]))
-            uncancelled_mandatory_nodes_passed = uncancelled_mandatory_nodes_passed = list(
+            uncancelled_mandatory_nodes_passed = list(
                 filter(
                     lambda i: i.get("step_id", None) or i.get("skipped", False),
                     list(filter(lambda i: i.get("cancelled", False) != True, mandatory_nodes_passed)),

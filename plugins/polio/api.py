@@ -137,6 +137,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     exporter_serializer_class = ExportCampaignSerializer
     export_filename = "campaigns_list_{date}.csv"
+    use_field_order = False
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:

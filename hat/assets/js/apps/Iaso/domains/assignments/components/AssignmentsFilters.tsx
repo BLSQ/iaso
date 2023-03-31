@@ -1,5 +1,5 @@
 import { Grid, Button, Box } from '@material-ui/core';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import FiltersIcon from '@material-ui/icons/FilterList';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -35,6 +35,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
         useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params, withPagination: false });
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
         <Grid container spacing={2}>
             <Grid item xs={4} lg={3} xl={2}>
@@ -75,6 +76,8 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
                     type="search"
                     label={MESSAGES.searchOrgUnit}
                     onEnterPressed={handleSearch}
+                    onErrorChange={setTextSearchError}
+                    blockForbiddenChars
                 />
             </Grid>
             <Grid
@@ -87,7 +90,7 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
                 alignContent="center"
             >
                 <Button
-                    disabled={!filtersUpdated}
+                    disabled={textSearchError || !filtersUpdated}
                     variant="contained"
                     color="primary"
                     onClick={handleSearch}

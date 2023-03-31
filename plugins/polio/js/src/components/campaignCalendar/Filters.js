@@ -98,6 +98,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+    const [textSearchError, setTextSearchError] = useState(false);
 
     useEffect(() => {
         setFiltersUpdated(true);
@@ -128,6 +129,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                        blockForbiddenChars
+                        onErrorChange={setTextSearchError}
                     />
                     <InputComponent
                         loading={isFetchingGroupedGroups}
@@ -215,7 +218,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                 >
                     <Box mt={isLargeLayout ? 2 : 0}>
                         <Button
-                            disabled={!filtersUpdated}
+                            disabled={textSearchError || !filtersUpdated}
                             variant="contained"
                             color="primary"
                             onClick={() => handleSearch()}

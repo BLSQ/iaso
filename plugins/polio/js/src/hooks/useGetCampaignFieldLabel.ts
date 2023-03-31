@@ -2,6 +2,7 @@
 // @ts-ignore
 
 import { useSafeIntl } from 'bluesquare-components';
+import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
 
 import MESSAGES from '../constants/messages';
 

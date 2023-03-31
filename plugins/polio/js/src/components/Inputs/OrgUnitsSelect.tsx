@@ -14,9 +14,7 @@ type Props = {
     errors?: string[];
 };
 
-const getErrors = (touched, formErrors) => {
-    const { name } = formErrors;
-
+const getErrors = (touched, formErrors, name) => {
     return isTouched(touched) && formErrors?.[name] ? [formErrors[name]] : [];
 };
 
@@ -37,7 +35,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
         values,
     } = form;
     const initialOrgUnitId = values[name];
-    const errors = backendErrors ?? getErrors(touched, formErrors);
+    const errors = backendErrors ?? getErrors(touched, formErrors, name);
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
 
     return (

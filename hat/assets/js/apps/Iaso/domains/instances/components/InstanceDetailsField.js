@@ -17,6 +17,9 @@ const styles = theme => ({
         position: 'relative',
         top: 2,
     },
+    value: {
+        wordBreak: 'break-all',
+    },
 });
 
 const InstanceDetailsField = ({
@@ -54,6 +57,7 @@ const InstanceDetailsField = ({
                     variant="body1"
                     color="inherit"
                     title={valueTitle !== '' ? valueTitle : value}
+                    className={classes.value}
                 >
                     {renderValue && renderValue(value)}
                     {!renderValue && (value || textPlaceholder)}

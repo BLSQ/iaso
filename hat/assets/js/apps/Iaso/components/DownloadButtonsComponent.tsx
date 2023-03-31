@@ -21,12 +21,14 @@ type Props = {
     csvUrl?: string;
     xlsxUrl?: string;
     gpkgUrl?: string;
+    disabled?: boolean;
 };
 
 const DownloadButtonsComponent: FunctionComponent<Props> = ({
     csvUrl,
     xlsxUrl,
     gpkgUrl,
+    disabled = false,
 }) => {
     const classes = useDownloadButtonStyles();
     return (
@@ -37,6 +39,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
                 className={classes.button}
                 color="primary"
                 href={csvUrl}
+                disabled={disabled}
             >
                 <CsvSvg />
                 CSV
@@ -47,17 +50,19 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
                 className={classes.button}
                 color="primary"
                 href={xlsxUrl}
+                disabled={disabled}
             >
                 <ExcellSvg className={classes.icon} />
                 XLSX
             </Button>
-            {gpkgUrl !== null && (
+            {gpkgUrl && typeof gpkgUrl === 'string' && (
                 <Button
                     data-test="gpkg-export-button"
                     variant="contained"
                     className={classes.button}
                     color="primary"
                     href={gpkgUrl}
+                    disabled={disabled}
                 >
                     <PublicIcon className={classes.icon} />
                     GPKG

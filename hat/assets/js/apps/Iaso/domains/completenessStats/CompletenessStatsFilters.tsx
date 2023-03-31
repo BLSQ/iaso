@@ -40,7 +40,9 @@ const baseUrl = baseUrls.completenessStats;
 export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     params,
 }) => {
-    const { data: forms, isFetching: fetchingForms } = useGetFormsOptions();
+    const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
+        'period_type',
+    ]);
 
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });

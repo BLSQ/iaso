@@ -16,7 +16,7 @@ import classnames from 'classnames';
 import WidgetPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../../constants/messages';
 import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
-import { BudgetStep, Categories, NextTransition } from '../types';
+import { BudgetStep, Categories, Transition } from '../types';
 import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';
 import { BudgetTimeline } from './BudgetTimeline';
@@ -24,7 +24,7 @@ import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/
 import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
 type NextSteps = {
-    regular?: NextTransition[];
+    regular?: Transition[];
     toDisplay: Set<string>;
 };
 
@@ -174,7 +174,6 @@ export const BudgetDetailsInfos: FunctionComponent<Props> = ({
                                                             label: step.label,
                                                             // @ts-ignore
                                                             color: step.color,
-                                                            stepKey: step.key,
                                                             disabled:
                                                                 !step.allowed,
                                                         }}

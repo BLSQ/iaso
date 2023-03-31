@@ -7,7 +7,15 @@ import {
 export type Timeline = {
     categories: Categories;
 };
-
+export type Params = {
+    campaignId: string;
+    previousStep: string;
+    quickTransition?: string;
+    campaignName?: string;
+    page?: string;
+    order?: string;
+    pageSize?: string;
+};
 export type Item = {
     label: string;
     step_id?: number;
@@ -30,7 +38,7 @@ export type Categories = {
     items: Item[];
 }[];
 
-export type NextTransition = {
+export type Transition = {
     key: string;
     label: string;
     color: Nullable<'primary' | 'green' | 'red'>;
@@ -52,7 +60,7 @@ export type Budget = {
         label: string;
     };
     // -> optional: need to pass a param for the API to return it
-    next_transitions?: NextTransition[];
+    next_transitions?: Transition[];
     // -> optional: need to pass a param for the API to return it
     possible_states?: {
         key: string;

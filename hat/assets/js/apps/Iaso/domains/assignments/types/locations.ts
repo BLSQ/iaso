@@ -32,7 +32,6 @@ type Selection<T> = {
 export type Locations = {
     shapes: Selection<OrgUnitShape>;
     markers: Selection<OrgUnitMarker>;
-    all: Array<OrgUnitShape | OrgUnitMarker>;
 };
 
 export type AssignmentUnit = OrgUnitShape | OrgUnitMarker | OrgUnit;

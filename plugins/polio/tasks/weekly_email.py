@@ -29,7 +29,8 @@ def send_notification_email(campaign):
     domain = settings.DNS_DOMAIN
     from_email = settings.DEFAULT_FROM_EMAIL
 
-    if not (campaign.obr_name and campaign.virus and country and campaign.onset_at and campaign.deleted_at is None):
+    if not (campaign.obr_name and country and campaign.deleted_at is None):
+        print(f"Campaign {campaign} skipped because of missing fields")
         return False
     try:
         cug = CountryUsersGroup.objects.get(country=country)
@@ -56,7 +57,7 @@ def send_notification_email(campaign):
         first_round = None
     round1_days = (
         (first_round.started_at - campaign.onset_at).days
-        if first_round and first_round.started_at and campaign.cvdpv2_notified_at
+        if first_round and first_round.started_at and campaign.onset_at
         else ""
     )
     c = campaign

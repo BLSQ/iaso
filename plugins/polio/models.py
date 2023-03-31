@@ -366,7 +366,7 @@ class Campaign(SoftDeletableModel):
     verification_score = models.IntegerField(null=True, blank=True)
     # DEPRECATED -> Moved to round.
     doses_requested = models.IntegerField(null=True, blank=True)
-    # ENF OF Risk assessment field
+    # END OF Risk assessment field
     # Preparedness DEPRECATED -> Moved to round
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     # DEPRECATED -> Moved to round.
@@ -472,7 +472,6 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("Budget Approval"),
     )
     # budget form, DEPRECATED.
-    # FIXME Remove usage in weekly email
     budget_submitted_at = models.DateField(
         null=True,
         blank=True,

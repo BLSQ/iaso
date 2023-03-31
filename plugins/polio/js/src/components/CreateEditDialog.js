@@ -93,6 +93,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         is_test: false,
         enable_send_weekly_email: true,
         has_data_in_budget_tool: false,
+        budget_current_state_key: '-',
     };
 
     // Merge inplace default values with the one we get from the campaign.

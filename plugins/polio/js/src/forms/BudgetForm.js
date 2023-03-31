@@ -1,18 +1,13 @@
 /* eslint-disable camelcase */
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Grid, Typography, Box, Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
+import { DateInput, TextInput, PaymentField } from '../components/Inputs';
 import {
-    DateInput,
-    ResponsibleField,
-    BudgetStatusField,
-    TextInput,
-    PaymentField,
-} from '../components/Inputs';
-import {
+    BUDGET_STATES,
     BUDGET_REQUEST,
     RRT_REVIEW,
     ORPG_REVIEW,
@@ -44,6 +39,26 @@ const findErrorInFieldList = (keys, errors, touched) => {
             hasFormikFieldError(`${key}${WORKFLOW_SUFFIX}`, errors, touched),
         ),
     );
+};
+
+const findBudgetStateIndex = values => {
+    for (let i = BUDGET_STATES.length - 1; i >= 0; i -= 1) {
+        const key = `${BUDGET_STATES[i]}${WORKFLOW_SUFFIX}`;
+        if (values[key]) {
+            return i;
+        }
+    }
+    return -1;
+};
+
+const findNewBudgetState = (fieldIndex, values) => {
+    for (let i = fieldIndex - 1; i >= 0; i -= 1) {
+        const key = `${BUDGET_STATES[i]}${WORKFLOW_SUFFIX}`;
+        if (values[key]) {
+            return BUDGET_STATES[i];
+        }
+    }
+    return null;
 };
 
 export const budgetFormFields = rounds => {
@@ -87,9 +102,8 @@ export const budgetFormFields = rounds => {
 export const BudgetForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { touched, errors } = useFormikContext();
+    const { values, touched, errors, setFieldValue } = useFormikContext();
 
-    const { values } = useFormikContext();
     const { rounds = [], has_data_in_budget_tool: disableEdition } = values;
 
     const totalCostPerChild = useMemo(() => {
@@ -121,153 +135,180 @@ export const BudgetForm = () => {
         touched,
     );
 
+    const updateBudgetStatus = useCallback(
+        (fieldName, value) => {
+            const fieldKey = fieldName.replace(WORKFLOW_SUFFIX, '');
+            const computedBudgetStatusIndex = findBudgetStateIndex(values);
+            const fieldIndex = BUDGET_STATES.findIndex(
+                budgetState => budgetState === fieldKey,
+            );
+            if (fieldIndex > computedBudgetStatusIndex && value) {
+                setFieldValue('budget_status', fieldKey);
+                setFieldValue('budget_current_state_key', fieldKey);
+            } else if (!value && fieldIndex >= computedBudgetStatusIndex) {
+                const newBudgetState = findNewBudgetState(fieldIndex, values);
+                setFieldValue('budget_status', newBudgetState);
+                setFieldValue(
+                    'budget_current_state_key',
+                    newBudgetState ?? '-',
+                );
+            }
+        },
+        [setFieldValue, values],
+    );
+
     const title = disableEdition
         ? `${formatMessage(MESSAGES.budgetApproval)}: ${formatMessage(
               MESSAGES.editionDisabled,
           )}`
         : formatMessage(MESSAGES.budgetApproval);
 
+    const budgetStatusMessage = MESSAGES[values.budget_current_state_key]
+        ? formatMessage(MESSAGES[values.budget_current_state_key])
+        : values.budget_status ?? values.budget_current_state_key;
     return (
-        <>
-            <Grid container spacing={2}>
-                <Grid container direction="row" item spacing={2}>
-                    <Grid xs={12} md={6} item>
-                        <Box mb={2}>
-                            <Typography variant="button">{title}</Typography>
-                        </Box>
-                        <Box mb={2}>
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                        </Box>
-                    </Grid>
-                    <Grid xs={12} md={3} item>
-                        <Box mb={2}>
-                            <Typography variant="button">
-                                {formatMessage(MESSAGES.fundsRelease)}
-                            </Typography>
-                        </Box>
-                        <Box mb={2}>
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                        </Box>
-                    </Grid>
-                    <Grid xs={12} md={3} item>
-                        <Box mb={2}>
-                            <Typography variant="button">
-                                {formatMessage(MESSAGES.costPerChild)}
-                            </Typography>
-                        </Box>
-                        <Box mb={2}>
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                        </Box>
-                    </Grid>
-                </Grid>
-
-                <Grid item md={3}>
-                    <Box mb={2}>
-                        <Field
-                            name="budget_status"
-                            component={BudgetStatusField}
-                            disabled={disableEdition}
-                        />
+        <Grid container spacing={2} direction="row">
+            <Grid
+                container
+                item
+                xs={12}
+                md={4}
+                lg={6}
+                spacing={2}
+                direction="column"
+            >
+                <Grid item>
+                    <Box mb={2} ml={2} textAlign="center">
+                        <Typography variant="button">{title}</Typography>
                     </Box>
-                    <Box mt={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.budgetRequest)}
-                        preventCollapse={hasRequestFieldsError}
-                    >
-                        {BUDGET_REQUEST.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                        disabled={disableEdition}
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
-                    <Divider style={{ height: '1px', width: '100%' }} />
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.RRTReview)}
-                        preventCollapse={hasRRTReviewError}
-                    >
-                        {RRT_REVIEW.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                        disabled={disableEdition}
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
-                    <Box mb={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                </Grid>
-                <Grid item md={3}>
-                    <Box mb={2} style={{ visibility: 'hidden' }}>
-                        <Field
-                            name="budget_responsible"
-                            component={ResponsibleField}
-                            disabled
-                        />
-                    </Box>
-                    <Box mt={2}>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </Box>
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.ORPGReview)}
-                        preventCollapse={hasORPGReviewError}
-                    >
-                        {ORPG_REVIEW.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                        disabled={disableEdition}
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
                     <Box>
-                        <Divider style={{ height: '1px', width: '100%' }} />
+                        <Divider />
                     </Box>
-                    <ExpandableItem
-                        label={formatMessage(MESSAGES.approval)}
-                        preventCollapse={hasApprovalFieldsError}
-                    >
-                        {REVIEW_FOR_APPROVAL.map((node, index) => {
-                            return (
-                                <Box mt={index === 0 ? 2 : 0} key={node}>
-                                    <Field
-                                        label={formatMessage(MESSAGES[node])}
-                                        name={`${node}${WORKFLOW_SUFFIX}`}
-                                        component={DateInput}
-                                        fullWidth
-                                        disabled={disableEdition}
-                                    />
-                                </Box>
-                            );
-                        })}
-                    </ExpandableItem>
+                </Grid>
+                <Grid item>
+                    <Box mb={2} px={2} py={2}>
+                        <Typography variant="button">
+                            {`${formatMessage(
+                                MESSAGES.status,
+                            )}: ${budgetStatusMessage}`}
+                        </Typography>
+                    </Box>
+                    <Box>
+                        <Divider />
+                    </Box>
+                </Grid>
+                <Grid container direction="row" item>
+                    <Grid item xs={12} lg={6}>
+                        <ExpandableItem
+                            label={formatMessage(MESSAGES.budgetRequest)}
+                            preventCollapse={hasRequestFieldsError}
+                        >
+                            {BUDGET_REQUEST.map((node, index) => {
+                                return (
+                                    <Box mt={index === 0 ? 2 : 0} key={node}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES[node],
+                                            )}
+                                            name={`${node}${WORKFLOW_SUFFIX}`}
+                                            component={DateInput}
+                                            fullWidth
+                                            disabled={disableEdition}
+                                            onChange={updateBudgetStatus}
+                                        />
+                                    </Box>
+                                );
+                            })}
+                        </ExpandableItem>
+                        <Divider style={{ height: '1px', width: '100%' }} />
+                        <ExpandableItem
+                            label={formatMessage(MESSAGES.RRTReview)}
+                            preventCollapse={hasRRTReviewError}
+                        >
+                            {RRT_REVIEW.map((node, index) => {
+                                return (
+                                    <Box mt={index === 0 ? 2 : 0} key={node}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES[node],
+                                            )}
+                                            name={`${node}${WORKFLOW_SUFFIX}`}
+                                            component={DateInput}
+                                            fullWidth
+                                            disabled={disableEdition}
+                                            onChange={updateBudgetStatus}
+                                        />
+                                    </Box>
+                                );
+                            })}
+                        </ExpandableItem>
+                        <Box mb={2}>
+                            <Divider />
+                        </Box>
+                    </Grid>
+
+                    <Grid item xs={12} lg={6}>
+                        <ExpandableItem
+                            label={formatMessage(MESSAGES.ORPGReview)}
+                            preventCollapse={hasORPGReviewError}
+                        >
+                            {ORPG_REVIEW.map((node, index) => {
+                                return (
+                                    <Box mt={index === 0 ? 2 : 0} key={node}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES[node],
+                                            )}
+                                            name={`${node}${WORKFLOW_SUFFIX}`}
+                                            component={DateInput}
+                                            fullWidth
+                                            disabled={disableEdition}
+                                            onChange={updateBudgetStatus}
+                                        />
+                                    </Box>
+                                );
+                            })}
+                        </ExpandableItem>
+                        <Box>
+                            <Divider />
+                        </Box>
+                        <ExpandableItem
+                            label={formatMessage(MESSAGES.approval)}
+                            preventCollapse={hasApprovalFieldsError}
+                        >
+                            {REVIEW_FOR_APPROVAL.map((node, index) => {
+                                return (
+                                    <Box mt={index === 0 ? 2 : 0} key={node}>
+                                        <Field
+                                            label={formatMessage(
+                                                MESSAGES[node],
+                                            )}
+                                            name={`${node}${WORKFLOW_SUFFIX}`}
+                                            component={DateInput}
+                                            fullWidth
+                                            disabled={disableEdition}
+                                            onChange={updateBudgetStatus}
+                                        />
+                                    </Box>
+                                );
+                            })}
+                        </ExpandableItem>
+                        <Box mb={2}>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </Box>
+                    </Grid>
+                </Grid>
+            </Grid>
+            <Grid container item xs={12} md={4} lg={3}>
+                <Grid item xs={12}>
+                    <Box mb={2} textAlign="center">
+                        <Typography variant="button">
+                            {formatMessage(MESSAGES.fundsRelease)}
+                        </Typography>
+                    </Box>
                     <Box mb={2}>
                         <Divider style={{ height: '1px', width: '100%' }} />
                     </Box>
-                </Grid>
-                <Grid item md={3}>
                     <Box mb={2}>
                         <Field
                             name="payment_mode"
@@ -313,7 +354,17 @@ export const BudgetForm = () => {
                         className={classes.input}
                     />
                 </Grid>
-                <Grid xs={12} md={3} item>
+            </Grid>
+            <Grid container item xs={12} md={4} lg={3}>
+                <Grid item xs={12}>
+                    <Box mb={2} textAlign="center">
+                        <Typography variant="button">
+                            {formatMessage(MESSAGES.costPerChild)}
+                        </Typography>
+                    </Box>
+                    <Box mb={2}>
+                        <Divider style={{ height: '1px', width: '100%' }} />
+                    </Box>
                     {rounds.map((round, i) => {
                         const roundData = getRoundData(round);
                         return (
@@ -347,6 +398,6 @@ export const BudgetForm = () => {
                     </Typography>
                 </Grid>
             </Grid>
-        </>
+        </Grid>
     );
 };

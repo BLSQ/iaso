@@ -39,6 +39,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     exporter_serializer_class = ExportCampaignBudgetSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    use_field_order = True
 
     # Make this read only
     # FIXME : remove POST

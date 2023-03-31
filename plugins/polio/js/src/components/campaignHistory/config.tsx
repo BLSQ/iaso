@@ -182,56 +182,56 @@ export const config: Record<string, any> = [
     },
     // Budget
     {
-        key: 'budget_status',
+        key: 'budget_status_at_WFEDITABLE',
         getLogValue: log => upperCase(log.budget_status),
     },
     {
-        key: 'budget_current_state_label',
+        key: 'budget_current_state_label_at_WFEDITABLE',
     },
     // Budget request
     {
-        key: 'who_sent_budget',
+        key: 'who_sent_budget_at_WFEDITABLE',
         getLogValue: log => convertDate(log.who_sent_budget_at_WFEDITABLE),
     },
     {
-        key: 'unicef_sent_budget',
+        key: 'unicef_sent_budget_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.unicef_sent_budget_at_WFEDITABLE, 'L'),
     },
     {
-        key: 'gpei_consolidated_budgets',
+        key: 'gpei_consolidated_budgets_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.gpei_consolidated_budgets_at_WFEDITABLE, 'L'),
     },
     // RRT review
     {
-        key: 'submitted_to_rrt',
+        key: 'submitted_to_rrt_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.submitted_to_rrt_at_WFEDITABLE, 'L'),
     },
     {
-        key: 'feedback_sent_to_gpei',
+        key: 'feedback_sent_to_gpei_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.feedback_sent_to_gpei_at_WFEDITABLE, 'L'),
     },
     {
-        key: 're_submitted_to_rrt',
+        key: 're_submitted_to_rrt_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.re_submitted_to_rrt_at_WFEDITABLE, 'L'),
     },
     // ORPG review
     {
-        key: 'submitted_to_orpg_operations1',
+        key: 'submitted_to_orpg_operations1_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.submitted_to_orpg_operations1_at_WFEDITABLE, 'L'),
     },
     {
-        key: 'feedback_sent_to_rrt1',
+        key: 'feedback_sent_to_rrt1_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.feedback_sent_to_rrt1_at_WFEDITABLE, 'L'),
     },
     {
-        key: 're_submitted_to_orpg_operations1',
+        key: 're_submitted_to_orpg_operations2_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(
                 log.re_submitted_to_orpg_operations1_at_WFEDITABLE,
@@ -239,22 +239,22 @@ export const config: Record<string, any> = [
             ),
     },
     {
-        key: 'submitted_to_orpg_wider',
+        key: 'submitted_to_orpg_wider_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.submitted_to_orpg_wider_at_WFEDITABLE, 'L'),
     },
     {
-        key: 'submitted_to_orpg_operations2',
+        key: 'submitted_to_orpg_operations2_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.submitted_to_orpg_operations2_at_WFEDITABLE, 'L'),
     },
     {
-        key: 'feedback_sent_to_rrt2',
+        key: 'feedback_sent_to_rrt2_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.feedback_sent_to_rrt2_at_WFEDITABLE, 'L'),
     },
     {
-        key: 're_submitted_to_orpg_operations2',
+        key: 're_submitted_to_orpg_operations2_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(
                 log.re_submitted_to_orpg_operations2_at_WFEDITABLE,
@@ -263,12 +263,12 @@ export const config: Record<string, any> = [
     },
     // APPROVAL
     {
-        key: 'submitted_for_approval',
+        key: 'submitted_for_approval_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(log.submitted_for_approval_at_WFEDITABLE, 'L'),
     },
     {
-        key: 'feedback_sent_to_orpg_operations_unicef',
+        key: 'feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(
                 log.feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE,
@@ -276,7 +276,7 @@ export const config: Record<string, any> = [
             ),
     },
     {
-        key: 'feedback_sent_to_orpg_operations_who',
+        key: 'feedback_sent_to_orpg_operations_who_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(
                 log.feedback_sent_to_orpg_operations_who_at_WFEDITABLE,
@@ -284,19 +284,19 @@ export const config: Record<string, any> = [
             ),
     },
     {
-        key: 'approved_by_who',
+        key: 'approved_by_who_at_WFEDITABLE',
         getLogValue: log => convertDate(log.approved_by_who_at_WFEDITABLE),
     },
     {
-        key: 'approved_by_unicef',
-        getLogValue: log => convertDate(log.approved_by_unicefat_WFEDITABLE),
+        key: 'approved_by_unicef_at_WFEDITABLE',
+        getLogValue: log => convertDate(log.approved_by_unicef_at_WFEDITABLE),
     },
     {
-        key: 'approved',
+        key: 'approved_at_WFEDITABLE',
         getLogValue: log => convertDate(log.approved_at_WFEDITABLE),
     },
     {
-        key: 'approval_confirmed',
+        key: 'approval_confirmed_at_WFEDITABLE',
         getLogValue: log => convertDate(log.approval_confirmed_at_WFEDITABLE),
     },
     {

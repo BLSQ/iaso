@@ -99,42 +99,6 @@ export type CampaignStatus =
     | 'ROUND2START'
     | 'ROUND2DONE';
 
-export type BudgetStatus =
-    | 'all'
-    | 'validated'
-    | 'validation_ongoing'
-    | 'noBudgetSubmitted';
-
-export type BudgetEventType =
-    | 'submission'
-    | 'validation'
-    | 'comments'
-    | 'request'
-    | 'transmission'
-    | 'feedback'
-    | 'review';
-
-export type BudgetEvent = {
-    id: number;
-    campaign: string;
-    author: number;
-    type: BudgetEventType;
-    status: BudgetStatus;
-    created_at: string;
-    updated_at: string;
-    deleted_at: Nullable<string>;
-    // legacy. should be deleted backend side
-    cc_emails: null;
-    comment: Nullable<string>;
-    links: Nullable<string>;
-    is_finalized: boolean;
-    is_email_sent: boolean;
-    target_teams: number[];
-    files: any;
-    internal: boolean;
-    amount?: number;
-};
-
 export type CampaignLogDetail = {
     id: number;
     content_type: string;

@@ -565,6 +565,16 @@ class PageAdmin(admin.ModelAdmin):
 class EntityDuplicateAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
+    @admin_attr_decorator
+    def entity1_desc(self, obj):
+        return f"{obj.entity1.name} ({obj.entity1.id})"
+
+    @admin_attr_decorator
+    def entity2_desc(self, obj):
+        return f"{obj.entity2.name} ({obj.entity2.id})"
+
+    list_display = ("similarity_score", "entity1_desc", "entity2_desc", "created_at")
+
 
 class EntityDuplicateAnalyzeAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}

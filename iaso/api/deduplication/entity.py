@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Count, F, Q
 from django.http import JsonResponse
@@ -5,13 +6,13 @@ from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
 from drf_yasg.utils import no_body, swagger_auto_schema
-from rest_framework import mixins, serializers, status, viewsets, permissions
+from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
-
+import iaso.models.base as base
 from iaso.api.common import HasPermission, ModelViewSet
-from iaso.models import Form, Entity, EntityType, EntityDuplicate, EntityDuplicateAnalyze
+from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Task
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
 from .algos import POSSIBLE_ALGORITHMS, run_algo
@@ -101,6 +102,49 @@ class EntityDuplicateAnalyzeSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class UserNestedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+
+        fields = ["id", "username"]
+
+
+class EntityDuplicateAnalyzeDetailSerializer(serializers.ModelSerializer):
+
+    status = serializers.ChoiceField(source="task.status", choices=base.STATUS_TYPE_CHOICES)
+    started_at = serializers.DateTimeField(source="task.started_at")
+    created_by = UserNestedSerializer(source="task.launcher")
+    entity_type_id = serializers.SerializerMethodField()
+    fields = serializers.SerializerMethodField(method_name="get_the_fields")
+    parameters = serializers.SerializerMethodField()
+    created_at = serializers.DateTimeField(source="task.created_at")
+
+    def get_entity_type_id(self, obj):
+        return obj.metadata["entity_type_id"]
+
+    def get_parameters(self, obj):
+        return obj.metadata["parameters"]
+
+    def get_the_fields(self, obj):
+        return obj.metadata["fields"]
+
+    class Meta:
+        model = EntityDuplicateAnalyze
+        fields = [
+            "id",
+            "status",
+            "started_at",
+            "created_by",
+            "algorithm",
+            "entity_type_id",
+            "fields",
+            "parameters",
+            "finished_at",
+            "created_at",
+            "finished_at",
+        ]
+
+
 class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
     """Entity Duplicates API
     GET /api/entityduplicates/analyzes : Provides an API to retrieve the list of running and finished analyzes
@@ -128,6 +172,39 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
         GET /api/entityduplicates_analyzes/{id}
         Provides an API to retrieve the status of an analyze
 
+        ## Possible responses
+
+        ### 200 - OK
+
+        ```javascript
+        {
+            "id": Int,
+            "status": "queued", "running", "failed", "success", "canceled",
+            "started_at": DateTime?,
+            "created_by": {}, // simple user object
+            "algorithm": "namesim", "invert" //See [Algorithms]
+            "entity_type_id": String,
+            "fields": String[],
+            "parameters": {}, // dictionary
+            "finished_at": DateTime?,
+            "created_at": DateTime,
+            "updated_at": DateTime,
+        }
+        ```
+
+
+        ### 401 - Unauthorized
+
+        The user has not provided a correct authentication token
+
+        ### 403 - Forbidden
+
+        The user has provided a correct authentication token with insufficient rights
+
+        ### 404 - Not found
+
+        - When the provided `id` is not found
+
         """
         try:
             obj = EntityDuplicateAnalyze.objects.get(pk=pk)
@@ -135,7 +212,7 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
         except EntityDuplicateAnalyze.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = EntityDuplicateAnalyzeSerializer(obj)
+        serializer = EntityDuplicateAnalyzeDetailSerializer(obj)
         return Response(serializer.data)
 
     def partial_update(self, request, pk=None, *args, **kwargs):

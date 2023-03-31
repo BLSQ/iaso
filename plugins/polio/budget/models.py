@@ -145,6 +145,7 @@ class MailTemplate(models.Model):
         campaign_url = (
             f"{base_url}/dashboard/polio/budget/details/campaignName/{campaign.obr_name}/campaignId/{campaign.id}"
         )
+        self_auth_campaign_url = generate_auto_authentication_link(campaign_url, receiver)
 
         workflow = get_workflow()
         transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
@@ -205,7 +206,7 @@ class MailTemplate(models.Model):
                 "team": step.created_by_team,
                 "step": step,
                 "campaign": campaign,
-                "budget_url": campaign_url,
+                "budget_url": self_auth_campaign_url,
                 "site_url": base_url,
                 "site_name": site.name,
                 "comment": step.comment,

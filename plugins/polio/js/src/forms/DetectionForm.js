@@ -52,6 +52,9 @@ export const DetectionForm = () => {
         },
         [setFieldValue, values.onset_at, values.pv_notified_at],
     );
+    const statusMessage = MESSAGES[values.detection_status.toLowerCase()]
+        ? formatMessage(MESSAGES[values.detection_status.toLowerCase()])
+        : values.detection_status;
     return (
         <>
             <Grid container spacing={2}>
@@ -61,11 +64,7 @@ export const DetectionForm = () => {
                             <Typography variant="button">
                                 {`${formatMessage(
                                     MESSAGES.status,
-                                )}: ${formatMessage(
-                                    MESSAGES[
-                                        values.detection_status.toLowerCase()
-                                    ],
-                                )}`}
+                                )}: ${statusMessage}`}
                             </Typography>
                         </Box>
                         <Box>

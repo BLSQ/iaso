@@ -4,7 +4,7 @@ import moment from 'moment';
 import { upperCase } from 'lodash';
 import { Link } from 'react-router';
 import { Box } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import { GeoJsonMap } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/GeoJsonMapComponent';
 import MESSAGES from '../../constants/messages';
 import { useGetOrgUnitDetail } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetOrgUnitDetail';
@@ -20,7 +20,7 @@ const OrgUnitLink = ({ orgUnitId }): ReactElement<OrgUnitLinkProps> => {
     return <LinkToOrgUnit orgUnit={currentOrgUnit} />;
 };
 
-const convertBoolean = (value: boolean, formatMessage) => {
+const convertBoolean = (value: boolean, formatMessage: IntlFormatMessage) => {
     return value ? formatMessage(MESSAGES.yes) : formatMessage(MESSAGES.no);
 };
 

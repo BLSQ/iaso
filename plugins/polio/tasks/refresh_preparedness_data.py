@@ -19,8 +19,9 @@ def refresh_data(
     started_at = datetime.now()
     round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")
     round_qs = round_qs.filter(started_at__gte=now() - timedelta(days=180))
-    round_qs = round_qs.order_by("-started_at")
     round_qs = round_qs.exclude(campaign__isnull=True)
+    round_qs = round_qs.filter(campaign__deleted_at__isnull=True)
+    round_qs = round_qs.order_by("-started_at")
     if campaigns is not None:
         for campaign_name in campaigns:
             round_qs = round_qs.filter(campaign__obr_name__icontains=campaign_name)

@@ -137,6 +137,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'No submission found',
         id: 'iaso.entity.label.noSubmissionFound',
     },
+    submissionsForEntity: {
+        defaultMessage: 'Submissions for Beneficiary {entity}',
+        id: 'iaso.entity.label.submissionsForEntity',
+    },
 });
 
 export default MESSAGES;

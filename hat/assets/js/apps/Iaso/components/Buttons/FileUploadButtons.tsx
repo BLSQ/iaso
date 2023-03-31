@@ -1,8 +1,8 @@
 import { Button, Grid } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import { CsvSvg, useSafeIntl } from 'bluesquare-components';
-import { useDownloadButtonStyles } from '../../../../components/DownloadButtonsComponent';
-import MESSAGES from '../../messages';
+import MESSAGES from './messages';
+import { useDownloadButtonStyles } from '../DownloadButtonsComponent';
 
 type Props = {
     closeDialog: () => void;
@@ -10,13 +10,15 @@ type Props = {
     onConfirm: () => void;
     onCancel?: () => void;
     isLoading: boolean;
+    url: string;
 };
 
-export const BulkDialogButtons: FunctionComponent<Props> = ({
+export const FileUploadButtons: FunctionComponent<Props> = ({
     closeDialog,
     allowConfirm,
     onConfirm,
     isLoading,
+    url,
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     onCancel = () => {},
 }) => {
@@ -32,7 +34,7 @@ export const BulkDialogButtons: FunctionComponent<Props> = ({
                     data-test="csv-export-button"
                     className={buttonStyles.button}
                     color="primary"
-                    href="/api/bulkcreateuser/getsample/"
+                    href={url}
                     disabled={isLoading}
                     variant="outlined"
                 >

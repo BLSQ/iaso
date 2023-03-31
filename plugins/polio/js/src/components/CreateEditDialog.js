@@ -314,7 +314,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
 };
 
 CreateEditDialog.defaultProps = {
-    selectedCampaign: undefined,
     campaignId: undefined,
 };
 
@@ -322,7 +321,6 @@ CreateEditDialog.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     campaignId: PropTypes.string,
-    selectedCampaign: PropTypes.object,
 };
 
 // There's naming conflict with component in Iaso

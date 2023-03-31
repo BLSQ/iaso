@@ -40,6 +40,17 @@ type PaginatedCompletenessStats = Paginated<CompletenessStats> & {
     }[];
 };
 
+const getRowStyles = ({ original }) => {
+    if (original?.is_root) {
+        return {
+            style: {
+                backgroundColor: '#b1e5e5',
+            },
+        };
+    }
+    return {};
+};
+
 const RequestedOrgUnitStat = (props: {
     data: undefined | PaginatedCompletenessStats;
 }) => {
@@ -107,6 +118,8 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                         onTableParamsChange={p => {
                             dispatch(redirectTo(baseUrl, p));
                         }}
+                        rowProps={getRowStyles}
+                        // additionalHooks={[useOlivierLayout]}
                     />
                 </Box>
             </Box>

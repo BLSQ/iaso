@@ -364,7 +364,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # Ordering
         ou_with_stats = ou_with_stats.order_by(*order)
 
-        def to_dict(row_ou):
+        def to_dict(row_ou: OrgUnitWithFormStat):
             return {
                 "name": row_ou.name,
                 "id": row_ou.id,
@@ -386,6 +386,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         #  as it might be nice to display
         if parent_ou:
             ou = parent_ou
+
             form_stats_qs = form_qs.annotate(
                 instance_count=Count(
                     expression=Subquery(
@@ -407,6 +408,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 }
                 for form in form_stats_qs
             }
+
         else:
             request_parent_forms_stats = {}
         # fix a bug somewhere in django-cte and pagination that make the whole thing crash
@@ -415,6 +417,16 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             object_list = []
         else:
             object_list = [to_dict(ou) for ou in page.object_list]
+        if parent_ou:
+            # If a particular parent is requested we calcule its own stats
+            #  as it might be nice to display
+            ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
+            ou_qs = get_annotated_queryset(ou_qs, instance_qs, form_qs)
+
+            top_row_ou = to_dict(ou_qs.first())
+            top_row_ou["is_root"] = True
+            object_list.insert(0, top_row_ou)
+
         paginated_res = {
             "forms": [
                 {

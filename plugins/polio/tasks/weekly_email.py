@@ -79,6 +79,7 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 * Type de vaccin                    : {c.vaccines}
 * Population cible                  : {target_population} 
 * Statut de l'évaluation du risque  : {c.get_risk_assessment_status_display() or 'Pending'}
+* Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
 * Jours entre date de détection et de notification   : {onset_days}
 * Jours entre dates de notification et de passage 1 : {round1_days}
 * Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
@@ -100,6 +101,7 @@ Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis
 * Tipo de vacina: {c.vaccines}
 * População-alvo: {target_population}
 * Estado da avaliação de risco: {c.get_risk_assessment_status_display() or 'Pending'}
+* Data de envio do orçamento:   {c.submitted_to_rrt_at_WFEDITABLE}
 * Dias entre a data de detecção e a data de notificação: {onset_days}
 * Dias entre a data de notificação e as datas da primeira ronda: {round1_days}
 * Prep. nacional: {preparedness.get('national_score') if preparedness else ''}
@@ -122,6 +124,7 @@ If there are missing data or dates; visit {url} to update
 * Vaccine Type                   : {c.vaccines}
 * Target population              : {target_population} 
 * RA Status                      : {c.get_risk_assessment_status_display() or 'Pending'}
+* Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
 * OnSet to Notification (Days)   : {onset_days}
 * Round 1 to Notification (Days) : {round1_days}
 * Prep. national                 : {preparedness.get('national_score') if preparedness else ''}

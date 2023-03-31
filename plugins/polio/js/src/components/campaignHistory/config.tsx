@@ -110,6 +110,7 @@ export const config: Record<string, any> = [
     },
     {
         key: 'onset_at',
+        getLogValue: log => convertDate(log.onset_at),
     },
     {
         key: 'cvdpv2_notified_at',
@@ -614,11 +615,12 @@ export const config: Record<string, any> = [
             if (hasGeoJson) {
                 return <GeoJsonMap geoJson={log.geojson} />;
             }
-            return null;
+            return <FormattedMessage {...MESSAGES.noGeojson} />;
         },
     },
     {
         key: 'creation_email_send_at',
+        getLogValue: log => convertDate(log.creation_email_send_at),
     },
     // DEPRECATED FIELDS ?
     // {

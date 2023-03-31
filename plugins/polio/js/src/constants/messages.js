@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.geojson',
         defaultMessage: 'Geojson',
     },
+    noGeojson: {
+        id: 'iaso.label.hasNoGeometryAndGps',
+        defaultMessage: 'Without geographic data',
+    },
     selectOrgUnit: {
         id: 'iaso.polio.label.selectOrgUnit',
         defaultMessage: 'Select intial region',

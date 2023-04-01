@@ -39,10 +39,6 @@ type PaginatedCompletenessStats = Paginated<CompletenessStats> & {
         id: number;
         slug: string;
     }[];
-    request_parent_forms_stats: {
-        name: string;
-        itself_instances_count: number;
-    }[];
 };
 
 // Used to show the requested orgunit proemintantly.
@@ -55,24 +51,6 @@ const getRowStyles = ({ original }) => {
         };
     }
     return {};
-};
-
-const RequestedOrgUnitStat = (props: {
-    data: undefined | PaginatedCompletenessStats;
-}) => {
-    const data = props.data;
-    if (!data || !data.request_parent_forms_stats) {
-        return null;
-    }
-    return (
-        <div>
-            {Object.values(data.request_parent_forms_stats).map(form_stats => (
-                <li key={form_stats.name}>
-                    {form_stats.name}: {form_stats.itself_instances_count}
-                </li>
-            ))}
-        </div>
-    );
 };
 
 export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
@@ -106,9 +84,6 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                         <CsvButton csvUrl={csvUrl} />
                     </Grid>
                 </Grid>
-                {/*<Box>*/}
-                {/*    <RequestedOrgUnitStat data={completenessStats} />*/}
-                {/*</Box>*/}
                 <Box>
                     <TableWithDeepLink
                         marginTop={false}
@@ -125,7 +100,6 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                             dispatch(redirectTo(baseUrl, p));
                         }}
                         rowProps={getRowStyles}
-                        // additionalHooks={[useOlivierLayout]}
                     />
                 </Box>
             </Box>

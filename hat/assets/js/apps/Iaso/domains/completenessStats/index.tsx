@@ -45,6 +45,7 @@ type PaginatedCompletenessStats = Paginated<CompletenessStats> & {
     }[];
 };
 
+// Used to show the requested orgunit proemintantly.
 const getRowStyles = ({ original }) => {
     if (original?.is_root) {
         return {

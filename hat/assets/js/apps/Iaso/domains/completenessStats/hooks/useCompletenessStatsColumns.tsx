@@ -16,6 +16,7 @@ import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 import Typography from '@material-ui/core/Typography';
+import { ArrowUpward } from '@material-ui/icons';
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
@@ -320,19 +321,38 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
             Cell: settings => {
                 return (
                     <>
-                        <IconButtonComponent
-                            onClick={() => {
-                                dispatch(
-                                    redirectTo(baseUrl, {
-                                        ...redirectionParams,
-                                        parentId:
-                                            settings.row.original.org_unit?.id,
-                                    }),
-                                );
-                            }}
-                            tooltipMessage={MESSAGES.seeChildren}
-                            overrideIcon={AccountTreeIcon}
-                        />
+                        {!settings.row.original.is_root && (
+                            <IconButtonComponent
+                                onClick={() => {
+                                    dispatch(
+                                        redirectTo(baseUrl, {
+                                            ...redirectionParams,
+                                            parentId:
+                                                settings.row.original.org_unit
+                                                    ?.id,
+                                        }),
+                                    );
+                                }}
+                                tooltipMessage={MESSAGES.seeChildren}
+                                overrideIcon={AccountTreeIcon}
+                            />
+                        )}
+                        {settings.row.original.is_root && (
+                            <IconButtonComponent
+                                onClick={() => {
+                                    dispatch(
+                                        redirectTo(baseUrl, {
+                                            ...redirectionParams,
+                                            parentId:
+                                                settings.row.original
+                                                    .parent_org_unit?.id,
+                                        }),
+                                    );
+                                }}
+                                tooltipMessage={MESSAGES.seeChildren}
+                                overrideIcon={ArrowUpward}
+                            />
+                        )}
                     </>
                 );
             },

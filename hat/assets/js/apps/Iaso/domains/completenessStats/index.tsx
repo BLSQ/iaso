@@ -34,6 +34,11 @@ type Props = {
 };
 
 type PaginatedCompletenessStats = Paginated<CompletenessStats> & {
+    forms: {
+        name: string;
+        id: number;
+        slug: string;
+    }[];
     request_parent_forms_stats: {
         name: string;
         itself_instances_count: number;
@@ -100,9 +105,9 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                         <CsvButton csvUrl={csvUrl} />
                     </Grid>
                 </Grid>
-                <Box>
-                    <RequestedOrgUnitStat data={completenessStats} />
-                </Box>
+                {/*<Box>*/}
+                {/*    <RequestedOrgUnitStat data={completenessStats} />*/}
+                {/*</Box>*/}
                 <Box>
                     <TableWithDeepLink
                         marginTop={false}

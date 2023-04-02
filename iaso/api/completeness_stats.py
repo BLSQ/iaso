@@ -307,7 +307,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         paramsSerializer.is_valid(raise_exception=True)
         params: Params = paramsSerializer.validated_data
 
-        order = params["order"]
+        orders = params["order"]
         form_qs = params["forms"]
         period = params.get("period", None)
         planning = params.get("planning", None)
@@ -329,6 +329,17 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         org_units: OrgUnitQuerySet
         org_units = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))
         # Calculate the ou for which we want reporting `top_ous`
+        #  We only want ou to which user has access
+        #   if no params we return the top ou for the default source
+        #  if user asked for a parent ou we filter on this
+        #   if user asked for a org unit type we "group" by this otherwise take the top.
+
+        # so basically 4 case:
+        #  a. no params. Take the roots for the default source (or for the users)
+        #  b. parent ou but no org unit type: take the child of that parent
+        #  c. org unit type with parent: From the descendant of that parent, take orgunit of this type
+        #  d. org unit type with no parent: Idem but with orgunit type from a.
+
         parent_ou = params.get("parent_org_unit")
 
         # Filtering per parent org unit: we drop the rows that are not direct children of the requested parent org unit
@@ -357,12 +368,13 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         else:
             top_ous = org_units.filter(org_unit_type__in=requested_org_unit_types)
 
+        # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
         # Annotate the query with the form info
         ou_with_stats = get_annotated_queryset(root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs)
         # Ordering
-        ou_with_stats = ou_with_stats.order_by(*order)
+        ou_with_stats = ou_with_stats.order_by(*orders)
 
         def to_dict(row_ou: OrgUnitWithFormStat):
             return {
@@ -388,9 +400,10 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             object_list = []
         else:
             object_list = [to_dict(ou) for ou in page.object_list]
+
+        # If a particular parent is requested we calculate its own stats
+        #  and put it on the top of the list
         if parent_ou:
-            # If a particular parent is requested we calcule its own stats
-            #  and put it on the top of the list
             ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
             ou_qs = get_annotated_queryset(ou_qs, instance_qs, form_qs)
 

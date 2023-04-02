@@ -216,7 +216,7 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                         Own
                                     </InfoHeader>
                                 ),
-                                id: `form_stats[${form.slug}]`,
+                                id: `form_stats__${form.slug}__itself_has_instances`,
                                 accessor: `form_stats[${form.slug}]`,
                                 Cell: ({ value }: FormStatRow) => {
                                     return value.itself_target > 0 ? (
@@ -245,22 +245,21 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                         </div>
                                     );
                                 },
-                                sortable: false,
+                                sortable: true,
                             },
                             {
                                 Header: 'Descendants',
-                                id: `form_stats[${form.slug}].global_status`,
+                                // id: `form_stats[${form.slug}].global_status`,
+                                id: `form_stats__${form.slug}__percent`,
                                 accessor: `form_stats[${form.slug}]`,
                                 Cell: ({ value }: FormStatRow) => {
                                     return value.descendants > 0 ? (
                                         <>
-                                            {/* TODO if descendant = 0  display NA message*/}
                                             <LinearProgressWithLabel
                                                 value={value.percent}
                                             />
                                             {value.descendants_ok} /
                                             {value.descendants}
-                                            {/*{value.percent} %*/}
                                         </>
                                     ) : (
                                         <div
@@ -276,7 +275,7 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                         </div>
                                     );
                                 },
-                                sortable: false,
+                                sortable: true,
                             },
                             // {
                             //     Header: (

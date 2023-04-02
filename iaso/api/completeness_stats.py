@@ -14,7 +14,8 @@ import rest_framework.renderers
 import rest_framework_csv.renderers
 import rest_framework.fields
 from django.core.paginator import Paginator
-from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F
+from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F, OrderBy
+from django.db.models.expressions import RawSQL
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -374,7 +375,26 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # Annotate the query with the form info
         ou_with_stats = get_annotated_queryset(root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs)
         # Ordering
-        ou_with_stats = ou_with_stats.order_by(*orders)
+        # Transform the order parameter to handle the json properly
+        converted_orders = []
+        for order in orders:
+            if not (order.startswith("form_stats") or order.startswith("-form_stats")):
+                converted_orders.append(order)
+            else:
+                # Expect something like `form_stats__form_12__total_instances`
+                order_parts = order.split("__")
+                order_form_slug = order_parts[1]
+                order_form_field = order_parts[2]
+                descending = order.startswith("-")
+                # Need the cast otherwise it comparse as string and put "14" before "5"
+                order_exp = OrderBy(
+                    RawSQL("CAST(form_stats#>>%s as float)", [[order_form_slug, order_form_field]]),
+                    descending=descending,
+                    nulls_last=True,  # always put the nulls results last
+                )
+                converted_orders.append(order_exp)
+
+        ou_with_stats = ou_with_stats.order_by(*converted_orders)
 
         def to_dict(row_ou: OrgUnitWithFormStat):
             return {
@@ -434,7 +454,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     @action(methods=["GET"], detail=False)
     def types_for_version_ou(self, request):
-        "all the org unit type below this ou, or all"
+        "all the org unit type below this ou, or all in version"
         org_units = OrgUnit.objects.filter_for_user(request.user)
         org_unit_id = self.request.query_params.get("org_unit_id")
         version_id = self.request.query_params.get("version_id")

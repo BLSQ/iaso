@@ -1,16 +1,11 @@
 import React, { useMemo } from 'react';
 import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
     IconButton as IconButtonComponent,
-    InfoHeader,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { cloneDeep } from 'lodash';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import Tooltip from '@material-ui/core/Tooltip';
 import { Box, LinearProgress } from '@material-ui/core';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
@@ -110,89 +105,6 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
             //     sortable: false,
             //     Cell: settings => JSON.stringify(settings.value),
             // },
-            // {
-            //     Header: formatMessage(MESSAGES.form),
-            //     id: 'form__name',
-            //     accessor: 'form__name',
-            //     sortable: false,
-            //     Cell: settings => (
-            //         <span>{settings.row.original.form?.name ?? '--'}</span>
-            //     ),
-            // },
-            // {
-            //     Header: formatMessage(MESSAGES.formsFilledDirect),
-            //     id: 'forms_filled_direct',
-            //     accessor: 'forms_filled_direct',
-            //     sortable: false,
-            //     Cell: settings => (
-            //         <Box>
-            //             <Box
-            //                 style={{
-            //                     // marginTop: '2px', // The margin will align the icon in FF but misalign it in Chrome
-            //                     display: 'inline-flex',
-            //                     alignItems: 'center',
-            //                 }}
-            //             >
-            //                 {`${
-            //                     settings.row.original.forms_filled_direct ??
-            //                     '--'
-            //                 }/
-            //                 ${
-            //                     settings.row.original.forms_to_fill_direct ??
-            //                     '--'
-            //                 }`}
-            //             </Box>
-            //             {settings.row.original
-            //                 .has_multiple_direct_submissions && (
-            //                 <Tooltip
-            //                     title={formatMessage(
-            //                         MESSAGES.orgUnitHasMultipleSubmissions,
-            //                     )}
-            //                 >
-            //                     <Box
-            //                         style={{
-            //                             display: 'inline-flex',
-            //                             alignItems: 'center',
-            //                             verticalAlign: 'middle',
-            //                         }}
-            //                     >
-            //                         <AddCircleOutlineIcon
-            //                             style={{
-            //                                 fontSize: '16px',
-            //                                 marginLeft: '4px',
-            //                             }}
-            //                             color="action"
-            //                         />
-            //                     </Box>
-            //                 </Tooltip>
-            //             )}
-            //         </Box>
-            //     ),
-            // },
-            // {
-            //     Header: formatMessage(MESSAGES.completenessDirect),
-            //     id: 'completeness_ratio_direct',
-            //     accessor: 'completeness_ratio_direct',
-            //     sortable: false,
-            // },
-            // {
-            //     Header: formatMessage(MESSAGES.formsFilledWithDescendants),
-            //     id: 'forms_filled',
-            //     accessor: 'forms_filled',
-            //     sortable: false,
-            //     Cell: settings => (
-            //         <span>
-            //             {settings.row.original.forms_filled ?? '--'}/
-            //             {settings.row.original.forms_to_fill ?? '--'}
-            //         </span>
-            //     ),
-            // },
-            // {
-            //     Header: formatMessage(MESSAGES.completenessWithDescendants),
-            //     id: 'completeness_ratio',
-            //     accessor: 'completeness_ratio',
-            //     sortable: false,
-            // },
         ];
         // Add column and sub column per form
         // console.dir(completenessStats);
@@ -210,11 +122,14 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                         columns: [
                             {
                                 Header: (
-                                    <InfoHeader
-                                        message={'Submission on this org unit'}
+                                    <div
+                                        title={'Submission on this org unit'}
+                                        style={{
+                                            textDecoration: 'underline dotted',
+                                        }}
                                     >
                                         Own
-                                    </InfoHeader>
+                                    </div>
                                 ),
                                 id: `form_stats__${form.slug}__itself_has_instances`,
                                 accessor: `form_stats[${form.slug}]`,
@@ -223,7 +138,7 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                         <>
                                             {value.itself_has_instances ? (
                                                 <span
-                                                    title={`Total #submission ${value.itself_instances_count}`}
+                                                    title={`Total #submissions: ${value.itself_instances_count}`}
                                                 >
                                                     ✅
                                                 </span>
@@ -234,7 +149,7 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                     ) : (
                                         <div
                                             title={
-                                                "This level doesn't need to fill this form"
+                                                'No submission is expected on this level for this form'
                                             }
                                             style={{
                                                 textDecoration:
@@ -249,7 +164,6 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                             },
                             {
                                 Header: 'Descendants',
-                                // id: `form_stats[${form.slug}].global_status`,
                                 id: `form_stats__${form.slug}__percent`,
                                 accessor: `form_stats[${form.slug}]`,
                                 Cell: ({ value }: FormStatRow) => {

@@ -21,6 +21,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.formShort',
         defaultMessage: 'Form',
     },
+    group: {
+        defaultMessage: 'Group',
+        id: 'iaso.label.group',
+    },
     completenessWithDescendants: {
         id: 'iaso.completeness.titleWithDescendants',
         defaultMessage: 'Completeness (with descendants)',

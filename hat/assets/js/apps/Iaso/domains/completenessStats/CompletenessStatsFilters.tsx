@@ -30,6 +30,7 @@ import {
     useGetPlanningsOptions,
 } from '../plannings/hooks/requests/useGetPlannings';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
+import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 
 type Props = {
     params: UrlParams & any;
@@ -61,6 +62,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         setInitialParentId(params?.parentId);
         setInitialOrgUnitId(params?.orgUnitId);
     }, [params]);
+    const { data: groups, isFetching: isFetchingGroups } = useGetGroups({});
 
     // React to org unit type filtering, if the type is not available anymore
     // we remove it
@@ -190,7 +192,19 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
 
-                <Grid container item>
+                <Grid container spacing={2}>
+                    <Grid item xs={12} md={3}>
+                        <InputComponent
+                            type="select"
+                            disabled={isFetchingGroups}
+                            keyValue="groupId"
+                            onChange={handleChange}
+                            value={filters?.groupId}
+                            label={MESSAGES.group}
+                            options={groups}
+                            loading={isFetchingGroups}
+                        />
+                    </Grid>
                     <DisplayIfUserHasPerm
                         permission={'iaso.permissions.planning'}
                     >

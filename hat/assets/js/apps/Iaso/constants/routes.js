@@ -570,6 +570,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'planningId',
         },
+        {
+            isRequired: false,
+            key: 'groupId',
+        },
     ],
 };
 

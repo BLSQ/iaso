@@ -4,12 +4,14 @@ import { useSnackQuery } from '../../../../libs/apiHooks';
 import { UrlParams } from '../../../../types/table';
 import { CompletenessApiResponse } from '../../types';
 
+// Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
     ['orgUnitId', 'org_unit_id'],
     ['orgUnitTypeIds', 'org_unit_type_id'],
     ['formId', 'form_id'],
     ['parentId', 'parent_org_unit_id'],
     ['planningId', 'planning_id'],
+    ['groupId', 'org_unit_group_id'],
 ]);
 
 export type CompletenessGETParams = UrlParams & {
@@ -17,6 +19,7 @@ export type CompletenessGETParams = UrlParams & {
     formId?: string;
     orgUnitTypeIds?: string;
     period?: string;
+    groupId?: string;
 };
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
@@ -27,6 +30,7 @@ export const buildQueryString = (
         formId?: string;
         orgUnitTypeIds?: string;
         period?: string;
+        groupId?: string;
     },
 ) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

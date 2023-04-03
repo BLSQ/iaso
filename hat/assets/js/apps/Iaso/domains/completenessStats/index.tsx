@@ -16,8 +16,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
-import { Paginated, UrlParams } from '../../types/table';
-import { CompletenessStats } from './types';
+import { UrlParams } from '../../types/table';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 
 const baseUrl = baseUrls.completenessStats;
@@ -31,14 +30,6 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     params: UrlParams & CompletenessGETParams;
-};
-
-type PaginatedCompletenessStats = Paginated<CompletenessStats> & {
-    forms: {
-        name: string;
-        id: number;
-        slug: string;
-    }[];
 };
 
 // Used to show the requested orgunit proemintantly.

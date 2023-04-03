@@ -1,10 +1,11 @@
 import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
+import { DropdownOptionsWithOriginal } from '../../../../types/utils';
 
 export const useGetFormsOptions = (
     additionalFields?: string[],
-): UseQueryResult => {
+): UseQueryResult<DropdownOptionsWithOriginal<number>[]> => {
     const fields = ['name', 'id'];
     if (additionalFields) {
         fields.push(...additionalFields);

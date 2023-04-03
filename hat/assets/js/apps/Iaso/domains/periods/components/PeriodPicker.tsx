@@ -51,7 +51,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     periodType: string | object;
     title: string;
-    onChange: (_) => {};
+    onChange: (_) => any;
     activePeriodString?: string;
     hasError: boolean;
     errors?: string[];

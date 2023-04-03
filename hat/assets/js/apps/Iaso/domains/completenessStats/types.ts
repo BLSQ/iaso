@@ -12,4 +12,11 @@ export type CompletenessStats = {
     completeness_ratio: number;
 };
 
-export type CompletenessApiResponse = Paginated<CompletenessStats>;
+// Api addd some meta data
+export type CompletenessApiResponse = Paginated<CompletenessStats> & {
+    forms: {
+        name: string;
+        id: number;
+        slug: string;
+    }[];
+};

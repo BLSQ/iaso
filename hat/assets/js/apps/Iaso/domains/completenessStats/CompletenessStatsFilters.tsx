@@ -221,7 +221,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                             />
                         </Grid>
                     </DisplayIfUserHasPerm>
-                    <Grid container item justifyContent="flex-end" md={9}>
+                    <Grid container item justifyContent="flex-end" md={6}>
                         <Grid item>
                             <FilterButton
                                 disabled={!filtersUpdated}

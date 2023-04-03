@@ -32,7 +32,7 @@ type Props = {
     params: UrlParams & CompletenessGETParams;
 };
 
-// Used to show the requested orgunit proemintantly.
+// Used to show the requested orgunit prominently.
 const getRowStyles = ({ original }) => {
     if (original?.is_root) {
         return {
@@ -80,7 +80,7 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
                         marginTop={false}
                         data={completenessStats?.results ?? []}
                         pages={completenessStats?.pages ?? 1}
-                        defaultSorted={['created_at']}
+                        defaultSorted={['name']}
                         columns={columns}
                         // @ts-ignore
                         count={completenessStats?.count ?? 0}

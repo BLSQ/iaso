@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'See children',
         id: 'iaso.label.seeChildren',
     },
+    seeParent: {
+        defaultMessage: 'See parent',
+        id: 'iaso.label.seeParent',
+    },
     planning: {
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',

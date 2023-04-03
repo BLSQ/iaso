@@ -262,7 +262,7 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                                         }),
                                     );
                                 }}
-                                tooltipMessage={MESSAGES.seeChildren}
+                                tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
                             />
                         )}

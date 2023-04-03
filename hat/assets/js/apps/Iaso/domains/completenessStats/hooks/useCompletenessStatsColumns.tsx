@@ -88,9 +88,9 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
             },
             {
                 Header: formatMessage(MESSAGES.parent),
-                id: 'parent_org_unit__name',
-                accessor: 'parent_org_unit__name',
-                sortable: false,
+                id: 'parent__name',
+                accessor: 'parent__org_unit__name',
+                sortable: true,
                 Cell: settings => (
                     <span>
                         {settings.row.original.parent_org_unit?.name ?? '--'}

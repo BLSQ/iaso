@@ -454,7 +454,9 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     @action(methods=["GET"], detail=False)
     def types_for_version_ou(self, request):
-        "all the org unit type below this ou, or all in version"
+        """all the org unit type below this ou, or all in version.
+
+        Used in the type dropdown to provide reasonable choices"""
         org_units = OrgUnit.objects.filter_for_user(request.user)
         org_unit_id = self.request.query_params.get("org_unit_id")
         version_id = self.request.query_params.get("version_id")
@@ -549,9 +551,7 @@ def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Ins
     This is 10 times slower that the previous version but the only way I found to implement
     filter without it being a mess. 0.3s -> 3s on my benchmark"""
 
-    # root_qs = OrgUnit.objects.prefetch_related("org_unit_type").filter(parent_id=162489)
-    # form_qs = Form.objects.filter(id__in=(17, 12, 13))
-    # Name are reference by the other cte query so don't modify them
+    # Name are referenced by the other cte query so don't modify them
     ou_cte = With(root_qs, name="filtered_roots")
     form_cte = With(form_qs.only("id", "name"), name="filtered_forms")
     instances_cte = With(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")

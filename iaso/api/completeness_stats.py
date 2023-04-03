@@ -89,7 +89,7 @@ class Params(TypedDict):
     planning: Optional[Planning]
     period: Optional[str]  # might migrate to Period in the future
     order: List[str]
-    group: Optional[Group]
+    org_unit_group: Optional[Group]
 
 
 class PrimaryKeysRelatedField(serializers.ManyRelatedField):

@@ -195,8 +195,20 @@ class OrgUnitTypeSerializer(ModelSerializer):
         fields = ["id", "name", "depth"]
 
 
+class FormStatDict(TypedDict):
+    name: str  # name of the form. for debug
+    descendants: int  # number of descendant org unit that should fill this form
+    descendants_ok: int  # number of descendants org unit that have this form filled
+    percent: int  # descendants_ok / descendants
+    total_instances: int  # total submissions for this for on descendant and itself
+    itself_target: int  # does the orgunit need to fill the form
+    itself_has_instances: int  # does the orgunit have any submission for this form
+    itself_instances_count: int  # how many submission for this form are on this instance
+
+
 class FormStatAnnotation(TypedDict):
-    form_stats: Mapping[str, Mapping]
+    # Key is a slug for a form e.g `form_12`
+    form_stats: Mapping[str, FormStatDict]
 
 
 OrgUnitWithFormStat = Annotated[OrgUnit, FormStatAnnotation]

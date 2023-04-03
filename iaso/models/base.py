@@ -353,6 +353,11 @@ class DefaultGroupManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(domain=None)
 
+    def filter_for_user(self, user: User):
+        profile = user.iaso_profile
+        queryset = self.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        return queryset
+
 
 class DomainGroupManager(models.Manager):
     def get_queryset(self):

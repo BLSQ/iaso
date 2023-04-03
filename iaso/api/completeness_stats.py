@@ -27,7 +27,7 @@ from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer
 from typing_extensions import Annotated
 
-from iaso.models import OrgUnit, Form, OrgUnitType, Instance
+from iaso.models import OrgUnit, Form, OrgUnitType, Instance, Group
 from .common import HasPermission
 from ..models.microplanning import Planning
 from ..models.org_unit import OrgUnitQuerySet
@@ -211,6 +211,7 @@ class Params(TypedDict):
     planning: Optional[Planning]
     period: Optional[str]  # might migrate to Period in the future
     order: List[str]
+    group: Optional[Group]
 
 
 class PrimaryKeysRelatedField(serializers.ManyRelatedField):
@@ -237,6 +238,7 @@ class ParamSerializer(serializers.Serializer):
             user = request.user
             # we could filter but since it's an additional it probably just a waste
             self.fields["org_unit_type_id"].queryset = OrgUnitType.objects.filter_for_user_and_app_id(user, None)
+            self.fields["org_unit_group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
             # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
             self.fields["form_id"].default = Form.objects.filter_for_user_and_app_id(user)
@@ -269,6 +271,12 @@ class ParamSerializer(serializers.Serializer):
     )
     order = serializers.CharField(default="name")  # actually a list in validated data
     period = serializers.CharField(required=False, help_text="Filter period in this instances")
+    org_unit_group_id = serializers.PrimaryKeyRelatedField(
+        queryset=Group.objects.none(),
+        source="org_unit_group",
+        required=False,
+        help_text="Filter the orgunit used for count on this group",
+    )
 
     def validate_order(self, order):
         return order.split(",")
@@ -375,8 +383,13 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
+        orgunit_qs = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))
+        if params.get("org_unit_group"):
+            orgunit_qs = orgunit_qs.filter(groups__id=params["org_unit_group"].id)
         # Annotate the query with the form info
-        ou_with_stats = get_annotated_queryset(root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs)
+        ou_with_stats = get_annotated_queryset(
+            root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs, orgunit_qs=orgunit_qs
+        )
         # Ordering
         # Transform the order parameter to handle the json properly
         converted_orders = []
@@ -428,7 +441,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         #  and put it on the top of the list
         if parent_ou:
             ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
-            ou_qs = get_annotated_queryset(ou_qs, instance_qs, form_qs)
+            ou_qs = get_annotated_queryset(ou_qs, orgunit_qs, instance_qs, form_qs)
 
             top_row_ou = to_dict(ou_qs.first())
             top_row_ou["is_root"] = True
@@ -510,7 +523,7 @@ SELECT "iaso_orgunit"."path",
 FROM "filtered_forms" AS "iaso_form"
          JOIN "iaso_form_org_unit_types"
               ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
-         LEFT OUTER JOIN "iaso_orgunit"
+         LEFT OUTER JOIN "filtered_orgunit"  as "iaso_orgunit"
                          ON ("iaso_orgunit"."org_unit_type_id" =
                              "iaso_form_org_unit_types"."orgunittype_id")
          LEFT OUTER JOIN "filtered_instance" AS iaso_instance
@@ -545,16 +558,27 @@ FROM filtered_roots AS root
 GROUP BY root.id, ou_count.form_id"""
 
 
-def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Instance], form_qs: QuerySet[Form]):
-    """Annotate via CTE
+def get_annotated_queryset(
+    root_qs: QuerySet[OrgUnit], orgunit_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Instance], form_qs: QuerySet[Form]
+):
+    """Annotate the form stats via CTE. Add a form_stat annotation
 
     This is 10 times slower that the previous version but the only way I found to implement
-    filter without it being a mess. 0.3s -> 3s on my benchmark"""
+    filter without it being a mess. 0.3s -> 3s on my benchmark
+
+    :param root_qs: OrgUnits for which starts are calculated. This is the queryset that's annotated
+    :param orgunit_qs: OrgUnit on which we count the instances. to be used for filtering
+    :param form_qs: Form for which we count the instance. Each "column" in the json
+    :param instance_qs: Instance to count. to be used for filter. eg on a period
+
+
+    """
 
     # Name are referenced by the other cte query so don't modify them
     root_ou_cte = With(root_qs, name="filtered_roots")
     form_cte = With(form_qs.only("id", "name"), name="filtered_forms")
     instances_cte = With(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")
+    filter_ou_cte = With(orgunit_qs.only("id", "org_unit_type_id", "path"), name="filtered_orgunit")
 
     pivot_cte = raw_cte_sql(
         sql=PIVOT_QUERY,
@@ -587,6 +611,7 @@ def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Ins
         .with_cte(root_ou_cte)
         .with_cte(form_cte)
         .with_cte(instances_cte)
+        .with_cte(filter_ou_cte)
         .annotate(form_stats=pivot_with.col.form_stats)
     )
     return annotated_query

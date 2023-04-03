@@ -10,12 +10,15 @@ completeness API.
 from typing import Tuple, Optional, Any
 from typing import TypedDict, Mapping, List, Union
 
+import rest_framework.fields
 import rest_framework.renderers
 import rest_framework_csv.renderers
-import rest_framework.fields
 from django.core.paginator import Paginator
-from django.db.models import QuerySet, Count, Q, OuterRef, Subquery, Func, F, OrderBy
+from django.db import models
+from django.db.models import QuerySet, OrderBy
 from django.db.models.expressions import RawSQL
+from django_cte import With
+from django_cte.raw import raw_cte_sql
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
@@ -495,9 +498,6 @@ FROM filtered_roots
 GROUP BY filtered_roots.id
                """
 
-from django_cte import With
-from django.db import models
-from django_cte.raw import raw_cte_sql
 
 # noinspection SqlResolve
 OU_COUNT_QUERY = """ 
@@ -552,7 +552,7 @@ def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Ins
     filter without it being a mess. 0.3s -> 3s on my benchmark"""
 
     # Name are referenced by the other cte query so don't modify them
-    ou_cte = With(root_qs, name="filtered_roots")
+    root_ou_cte = With(root_qs, name="filtered_roots")
     form_cte = With(form_qs.only("id", "name"), name="filtered_forms")
     instances_cte = With(instance_qs.only("id", "org_unit_id", "form_id", "file", "deleted"), name="filtered_instance")
 
@@ -584,7 +584,7 @@ def get_annotated_queryset(root_qs: QuerySet[OrgUnit], instance_qs: QuerySet[Ins
         .with_cte(pivot_with)
         .with_cte(count_per_root_with)
         .with_cte(ou_count_with)
-        .with_cte(ou_cte)
+        .with_cte(root_ou_cte)
         .with_cte(form_cte)
         .with_cte(instances_cte)
         .annotate(form_stats=pivot_with.col.form_stats)

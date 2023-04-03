@@ -334,8 +334,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             # the current planning filter has limitation as it filter the submissiosn but not the org unit
             #  that need filing according to the planing. so the percentage are wrong.
 
-        requested_org_unit_types = None
-
         profile = request.user.iaso_profile  # type: ignore
 
         org_units: OrgUnitQuerySet
@@ -378,7 +376,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             else:
                 top_ous = org_units.filter(parent=None)
         else:
-            top_ous = org_units.filter(org_unit_type__in=requested_org_unit_types)
+            top_ous = org_units.filter(org_unit_type=group_per_type)
 
         # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")

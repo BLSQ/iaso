@@ -182,7 +182,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
-                        multi
                         onChange={handleChange}
                         keyValue="orgUnitTypeIds"
                         label={MESSAGES.orgUnitTypeGroupBy}

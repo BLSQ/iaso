@@ -69,6 +69,9 @@ export const useGetCompletenessStats = (
         queryFn: () => getCompletenessStats(params),
         options: {
             retry: 0,
+            // Allow navigation via the action button to feel smooth
+            //  otherwise it will blank the table then fill it.
+            keepPreviousData: true,
         },
     });
 };

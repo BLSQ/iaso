@@ -69,6 +69,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Planning',
         id: 'iaso.label.planning',
     },
+    period: {
+        defaultMessage: 'Period',
+        id: 'iaso.label.period',
+    },
+    periodPlaceHolder: {
+        defaultMessage: 'Please select a form with a period to filter',
+        id: 'iaso.label.periodPlaceHolder',
+    },
 });
 
 export default MESSAGES;

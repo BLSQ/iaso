@@ -6,7 +6,7 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useSkipEffectOnMount } from 'bluesquare-components';
+import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
 import uniq from 'lodash/uniq';
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
@@ -24,6 +24,7 @@ import PeriodPicker from '../periods/components/PeriodPicker';
 import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlannings';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
+import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 
 type Props = {
     params: UrlParams & any;
@@ -34,6 +35,7 @@ const baseUrl = baseUrls.completenessStats;
 export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     params,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
         'period_type',
     ]);
@@ -92,9 +94,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 .map(f => f.original.period_type)
                 .filter(periodType_ => Boolean(periodType_));
             const uniqPeriods = uniq(periods);
-            return uniqPeriods ? uniqPeriods[0] : null;
+            return uniqPeriods ? uniqPeriods[0] : PERIOD_TYPE_PLACEHOLDER;
         }
-        return null;
+        return PERIOD_TYPE_PLACEHOLDER;
     }, [filters, forms]);
 
     const handleParentChange = useCallback(
@@ -122,22 +124,16 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    {/* FIXME Connect to the rest */}
                     <PeriodPicker
-                        hasError={false}
-                        // hasError={periodError || startPeriodError}
-                        // activePeriodString={formState.startPeriod.value}
-                        // periodType={formState.periodType.value}
+                        message={
+                            periodType === PERIOD_TYPE_PLACEHOLDER
+                                ? formatMessage(MESSAGES.periodPlaceHolder)
+                                : undefined
+                        }
                         periodType={periodType}
-                        title="Period"
-                        // title={formatMessage(MESSAGES.startPeriod)}
-                        keyName="period"
+                        title={formatMessage(MESSAGES.period)}
                         onChange={v => handleChange('period', v)}
                         activePeriodString={filters?.period as string}
-                        // keyName="startPeriod"
-                        // onChange={startPeriod =>
-                        //     handleFormChange('startPeriod', startPeriod)
-                        // }
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>

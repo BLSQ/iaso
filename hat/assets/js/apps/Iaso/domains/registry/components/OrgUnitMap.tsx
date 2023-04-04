@@ -24,13 +24,13 @@ import CircleMarkerComponent from '../../../components/maps/markers/CircleMarker
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
-import tiles from '../../../constants/mapTiles';
+import TILES from '../../../constants/mapTiles';
 import {
     circleColorMarkerOptions,
     ZoomControl,
     getOrgUnitBounds,
     getOrgUnitsBounds,
-    defaultViewport,
+    DEFAULT_VIEWPORT,
     mergeBounds,
     Bounds,
     tryFitToBounds,
@@ -53,7 +53,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const map: any = useRef();
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
-    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const fitToBounds = useCallback(() => {
         const bounds: Bounds | undefined = mergeBounds(
             getOrgUnitBounds(orgUnit),
@@ -100,8 +100,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 maxZoom={currentTile.maxZoom}
                 ref={map}
                 style={{ height: '500px' }}
-                center={defaultViewport.center}
-                zoom={defaultViewport.zoom}
+                center={DEFAULT_VIEWPORT.center}
+                zoom={DEFAULT_VIEWPORT.zoom}
                 scrollWheelZoom={false}
                 zoomControl={false}
                 contextmenu

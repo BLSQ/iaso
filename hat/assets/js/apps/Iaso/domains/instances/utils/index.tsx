@@ -17,7 +17,7 @@ import instancesTableColumns from '../config';
 import MESSAGES from '../messages';
 import { VisibleColumn } from '../types/visibleColumns';
 import { Instance } from '../types/instance';
-import { Column, Setting } from '../../../types/table';
+import { Column, Setting, RenderCell } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 
 import {
@@ -157,10 +157,11 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
     }
     return <span>{formatValue(value)}</span>;
 };
+
 export const useGetInstancesColumns = (
     showDeleted = false,
     // eslint-disable-next-line no-unused-vars
-    getActionCell: (settings: any) => ReactElement = settings => (
+    getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
     ),
     // eslint-disable-next-line no-unused-vars

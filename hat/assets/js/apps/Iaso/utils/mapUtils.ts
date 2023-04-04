@@ -277,20 +277,20 @@ export const mergeBounds = (
     return bounds;
 };
 
+export const DEFAULT_VIEWPORT: DefaultViewPort = {
+    center: [1, 20],
+    zoom: 3.25,
+};
+export const BOUNDS_OPTIONS: BoundsOptions = {
+    padding: [50, 50],
+};
+
 export const tryFitToBounds = (bounds?: Bounds, map?: Map): void => {
     if (bounds) {
         try {
-            map?.leafletElement.fitBounds(bounds, boundsOptions);
+            map?.leafletElement.fitBounds(bounds, BOUNDS_OPTIONS);
         } catch (e) {
             console.warn(e);
         }
     }
-};
-
-export const defaultViewport: DefaultViewPort = {
-    center: [1, 20],
-    zoom: 3.25,
-};
-export const boundsOptions: BoundsOptions = {
-    padding: [50, 50],
 };

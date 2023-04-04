@@ -270,7 +270,6 @@ export const useCompletenessStatsColumns = (params: any, completenessStats) => {
                 );
             },
         });
-        console.log(columns);
         return columns;
     }, [dispatch, formatMessage, redirectionParams, completenessStats]);
 };

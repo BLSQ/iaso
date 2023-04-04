@@ -1,4 +1,4 @@
-import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
+import { Box, Grid } from '@material-ui/core';
 import React, {
     FunctionComponent,
     useCallback,
@@ -6,8 +6,10 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-// @ts-ignore
 import { useSkipEffectOnMount } from 'bluesquare-components';
+import uniq from 'lodash/uniq';
+import intersection from 'lodash/intersection';
+import isEqual from 'lodash/isEqual';
 import { FilterButton } from '../../components/FilterButton';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
@@ -19,16 +21,7 @@ import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
 import { useGetOrgUnitTypesOptions } from './hooks/api/useGetOrgUnitTypesOptions';
 import MESSAGES from './messages';
 import PeriodPicker from '../periods/components/PeriodPicker';
-import {
-    PERIOD_TYPE_MONTH,
-    PERIOD_TYPE_QUARTER,
-    PERIOD_TYPE_YEAR,
-} from '../periods/constants';
-import _ from 'lodash';
-import {
-    useGetPlannings,
-    useGetPlanningsOptions,
-} from '../plannings/hooks/requests/useGetPlannings';
+import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlannings';
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 
@@ -48,9 +41,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
 
-    const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.orgUnitId);
-    const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-
     const [initialParentId, setInitialParentId] = useState(params?.parentId);
     const { data: initialParent } = useGetOrgUnit(initialParentId);
 
@@ -60,7 +50,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         useGetPlanningsOptions();
     useSkipEffectOnMount(() => {
         setInitialParentId(params?.parentId);
-        setInitialOrgUnitId(params?.orgUnitId);
     }, [params]);
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({});
 
@@ -71,16 +60,18 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
             const out: string = filters.orgUnitTypeIds as string;
             const selectedOrgUnitIDs = out
                 .split(',')
-                .map(x => parseInt(x))
+                .map(x => parseInt(x, 10))
                 .sort();
-            const availableIds = orgUnitTypes.map(out => out.value);
+            const availableIds = orgUnitTypes.map(
+                orgUnitType => orgUnitType.value,
+            );
 
-            const filteredIds = _.intersection(
+            const filteredIds = intersection(
                 availableIds,
                 selectedOrgUnitIDs,
             ).sort();
 
-            if (!_.isEqual(filteredIds, selectedOrgUnitIDs)) {
+            if (!isEqual(filteredIds, selectedOrgUnitIDs)) {
                 handleChange('orgUnitTypeIds', filteredIds.join(','));
             }
         }
@@ -91,29 +82,21 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
             const formIdStr = filters.formId as string;
             const selectedFormIds = formIdStr
                 .split(',')
-                .map(x => parseInt(x))
+                .map(x => parseInt(x, 10))
                 .sort();
             const selectedForms = forms.filter(
-                f => selectedFormIds.indexOf(f.value) != -1,
+                f => selectedFormIds.indexOf(f.value) !== -1,
             );
 
             const periods = selectedForms
                 .map(f => f.original.period_type)
-                .filter(period_type => Boolean(period_type));
-            const uniqPeriods = _.uniq(periods);
+                .filter(periodType_ => Boolean(periodType_));
+            const uniqPeriods = uniq(periods);
             return uniqPeriods ? uniqPeriods[0] : null;
         }
         return null;
-    }, [filters]);
+    }, [filters, forms]);
 
-    const handleOrgUnitChange = useCallback(
-        orgUnit => {
-            const id = orgUnit ? [orgUnit.id] : undefined;
-            setInitialOrgUnitId(id);
-            handleChange('orgUnitId', id);
-        },
-        [orgUnitTypes, handleChange],
-    );
     const handleParentChange = useCallback(
         orgUnit => {
             const id = orgUnit ? [orgUnit.id] : undefined;
@@ -122,9 +105,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         },
         [handleChange],
     );
-
-    const theme = useTheme();
-    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
     return (
         <>
@@ -140,26 +120,18 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingForms}
                         options={forms ?? []}
                     />
-                    {/*<Box id="ou-tree-input">*/}
-                    {/*    <OrgUnitTreeviewModal*/}
-                    {/*        toggleOnLabelClick={false}*/}
-                    {/*        titleMessage={MESSAGES.orgUnit}*/}
-                    {/*        onConfirm={handleOrgUnitChange}*/}
-                    {/*        initialSelection={initialOrgUnit}*/}
-                    {/*    />*/}
-                    {/*</Box>*/}
                 </Grid>
                 <Grid item xs={12} md={3}>
-                    {/*FIXME Connect to the rest*/}
+                    {/* FIXME Connect to the rest */}
                     <PeriodPicker
                         hasError={false}
                         // hasError={periodError || startPeriodError}
                         // activePeriodString={formState.startPeriod.value}
                         // periodType={formState.periodType.value}
                         periodType={periodType}
-                        title={'Period'}
+                        title="Period"
                         // title={formatMessage(MESSAGES.startPeriod)}
-                        keyName={'period'}
+                        keyName="period"
                         onChange={v => handleChange('period', v)}
                         activePeriodString={filters?.period as string}
                         // keyName="startPeriod"
@@ -204,9 +176,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                             loading={isFetchingGroups}
                         />
                     </Grid>
-                    <DisplayIfUserHasPerm
-                        permission={'iaso.permissions.planning'}
-                    >
+                    <DisplayIfUserHasPerm permission="iaso.permissions.planning">
                         <Grid item xs={12} md={3}>
                             <InputComponent
                                 type="select"

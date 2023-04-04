@@ -1,7 +1,8 @@
+import { UseQueryResult } from 'react-query';
+import { memoize } from 'lodash';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { memoize } from 'lodash';
-import { UseQueryResult } from 'react-query';
+import { makeUrlWithParams } from '../../../../libs/utils';
 
 type DropDownOption = {
     value: number;
@@ -17,25 +18,22 @@ const apiToDropDown = data => {
     }));
 };
 
-export const useGetOrgUnitTypesOptions: (
-    number?,
-) => UseQueryResult<DropDownOption[]> = rootOrgUnitId => {
+export const useGetOrgUnitTypesOptions = (
+    rootOrgUnitId?: number,
+): UseQueryResult<DropDownOption[]> => {
     const params = {
         org_unit_id: rootOrgUnitId,
         version_id: ':default',
     };
-    const filteredParams = Object.entries(params).filter(
-        // eslint-disable-next-line no-unused-vars
-        ([_key, value]) => value !== undefined,
+
+    const url = makeUrlWithParams(
+        '/api/v2/completeness_stats/types_for_version_ou/',
+        params,
     );
-    const queryString = new URLSearchParams(filteredParams);
 
     return useSnackQuery({
         queryKey: ['orgUnitTypes', params],
-        queryFn: () =>
-            getRequest(
-                `/api/v2/completeness_stats/types_for_version_ou/?${queryString}`,
-            ),
+        queryFn: () => getRequest(url),
         options: {
             select: memoize(apiToDropDown),
             cacheTime: 60000,

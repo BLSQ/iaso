@@ -555,6 +555,7 @@ export const useFormValidator = () => {
     return yup.object().shape({
         epid: yup.string().nullable(),
         obr_name: yup.string().trim().required(),
+        initial_org_unit: yup.number().positive().integer().required(),
         grouped_campaigns: yup.array(yup.number()).nullable(),
         description: yup.string().nullable(),
         onset_at: yup.date().nullable(),

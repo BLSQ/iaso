@@ -13,7 +13,7 @@ import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/compo
 
 import MESSAGES from '../../constants/messages';
 
-import { config } from './config';
+import { useGetConfig } from './config';
 import { useGetMapLog } from './useGetMapLog';
 import { Head } from './Head';
 
@@ -33,6 +33,7 @@ export const CampaignLogDetail: FunctionComponent<Props> = ({ logId }) => {
     } = useGetCampaignLogDetail(initialLogDetail, logId);
 
     const { formatMessage } = useSafeIntl();
+    const config = useGetConfig();
     const getMapLog = useGetMapLog(config);
 
     if (isLoading)

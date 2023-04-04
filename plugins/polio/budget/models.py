@@ -145,6 +145,7 @@ class MailTemplate(models.Model):
         campaign_url = (
             f"{base_url}/dashboard/polio/budget/details/campaignName/{campaign.obr_name}/campaignId/{campaign.id}"
         )
+        self_auth_campaign_url = generate_auto_authentication_link(campaign_url, receiver)
 
         workflow = get_workflow()
         transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
@@ -166,6 +167,9 @@ class MailTemplate(models.Model):
                     "allowed": can_user_transition(transition, receiver, campaign),
                 }
             )
+        # buttons is never empty, so the text accompanying the buttons in the email would always show, even when no buttons are displayed
+        # So we check if there are allowed buttons
+        show_buttons = list(filter(lambda x: x["allowed"], buttons))
         transition = workflow.get_transition_by_key(step.transition_key)
         if transition.key != "override":
             node = workflow.get_node_by_key(transition.to_node)
@@ -197,12 +201,12 @@ class MailTemplate(models.Model):
             {
                 "author": step.created_by,
                 "author_name": step.created_by.get_full_name() or step.created_by.username,
-                "buttons": buttons,
+                "buttons": buttons if show_buttons else None,
                 "node": node,
                 "team": step.created_by_team,
                 "step": step,
                 "campaign": campaign,
-                "budget_url": campaign_url,
+                "budget_url": self_auth_campaign_url,
                 "site_url": base_url,
                 "site_name": site.name,
                 "comment": step.comment,

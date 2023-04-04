@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.geojson',
         defaultMessage: 'Geojson',
     },
+    noGeojson: {
+        id: 'iaso.label.hasNoGeometryAndGps',
+        defaultMessage: 'Without geographic data',
+    },
     selectOrgUnit: {
         id: 'iaso.polio.label.selectOrgUnit',
         defaultMessage: 'Select intial region',
@@ -326,11 +330,7 @@ const MESSAGES = defineMessages({
     },
     risk_assessment_rrt_oprtt_approval_at: {
         id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/OPRTT Approval',
-    },
-    budget_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/OPRTT Approval',
+        defaultMessage: 'RRT/ORPG-Approval',
     },
     ag_nopv_group_met_at: {
         id: 'iaso.polio.form.label.agNopvGroup',
@@ -2012,11 +2012,11 @@ const MESSAGES = defineMessages({
     },
     re_submitted_to_orpg_operations2: {
         id: 'iaso.polio.form.label.re_submitted_to_orpg_operations2',
-        defaultMessage: 'Resubmitted to ORPG Operations',
+        defaultMessage: 'Resubmitted to ORPG Operations (ORPG wider)',
     },
     submitted_to_orpg_operations2: {
         id: 'iaso.polio.form.label.submitted_to_orpg_operations2',
-        defaultMessage: 'Submitted to ORPG ops (2)',
+        defaultMessage: 'Submitted to ORPG Operations (ORPG wider)',
     },
     re_submitted_to_orpg: {
         id: 'iaso.polio.form.label.re_submitted_to_orpg_wider',
@@ -2036,7 +2036,7 @@ const MESSAGES = defineMessages({
     },
     submitted_to_orpg_operations1: {
         id: 'iaso.polio.form.label.submitted_to_orpg_operations1',
-        defaultMessage: 'Submitted to ORPG Ops (1)',
+        defaultMessage: 'Submitted to ORPG Ops',
     },
     re_submitted_to_rrt: {
         id: 'iaso.polio.form.label.re_submitted_to_rrt',

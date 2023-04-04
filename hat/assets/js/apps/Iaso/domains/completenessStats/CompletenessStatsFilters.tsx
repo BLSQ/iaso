@@ -94,7 +94,9 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 .map(f => f.original.period_type)
                 .filter(periodType_ => Boolean(periodType_));
             const uniqPeriods = uniq(periods);
-            return uniqPeriods ? uniqPeriods[0] : PERIOD_TYPE_PLACEHOLDER;
+            return uniqPeriods && uniqPeriods[0]
+                ? uniqPeriods[0]
+                : PERIOD_TYPE_PLACEHOLDER;
         }
         return PERIOD_TYPE_PLACEHOLDER;
     }, [filters, forms]);

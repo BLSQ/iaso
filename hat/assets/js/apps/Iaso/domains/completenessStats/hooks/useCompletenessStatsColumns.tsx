@@ -193,36 +193,6 @@ export const useCompletenessStatsColumns = (
                                 },
                                 sortable: true,
                             },
-                            // {
-                            //     Header: (
-                            //         <InfoHeader
-                            //             message={
-                            //                 'Number of org unit to fill for this form'
-                            //             }
-                            //         >
-                            //             Target
-                            //         </InfoHeader>
-                            //     ),
-                            //     id: `form_stats[${form.slug}].descendants`,
-                            //     accessor: `form_stats[${form.slug}].descendants`,
-                            //     Cell: ({ value }) => <>{value}</>,
-                            //     sortable: false,
-                            // },
-                            // {
-                            //     Header: (
-                            //         <InfoHeader
-                            //             message={
-                            //                 'Submissions filled on org unit bellow'
-                            //             }
-                            //         >
-                            //             Submissions
-                            //         </InfoHeader>
-                            //     ),
-                            //     id: `form_stats[${form.slug}].total_instances`,
-                            //     accessor: `form_stats[${form.slug}].total_instances`,
-                            //     Cell: ({ value }) => <>{value}</>,
-                            //     sortable: false,
-                            // },
                         ],
                     };
                 }),

@@ -124,6 +124,17 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         loading={fetchingForms}
                         options={forms ?? []}
                     />
+                    <PeriodPicker
+                        message={
+                            periodType === PERIOD_TYPE_PLACEHOLDER
+                                ? formatMessage(MESSAGES.periodPlaceHolder)
+                                : undefined
+                        }
+                        periodType={periodType}
+                        title={formatMessage(MESSAGES.period)}
+                        onChange={v => handleChange('period', v)}
+                        activePeriodString={filters?.period as string}
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={3}>
@@ -137,6 +148,18 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={groups}
                         loading={isFetchingGroups}
                     />
+                    <DisplayIfUserHasPerm permission="iaso.permissions.planning">
+                        <InputComponent
+                            type="select"
+                            multi
+                            onChange={handleChange}
+                            keyValue="planningId"
+                            label={MESSAGES.planning}
+                            value={filters.planningId}
+                            loading={fetchingPlannings}
+                            options={availablePlannings ?? []}
+                        />
+                    </DisplayIfUserHasPerm>
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input-parent">
@@ -160,46 +183,13 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={orgUnitTypes ?? []}
                     />
                 </Grid>
-
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={3}>
-                        <PeriodPicker
-                            message={
-                                periodType === PERIOD_TYPE_PLACEHOLDER
-                                    ? formatMessage(MESSAGES.periodPlaceHolder)
-                                    : undefined
-                            }
-                            periodType={periodType}
-                            title={formatMessage(MESSAGES.period)}
-                            onChange={v => handleChange('period', v)}
-                            activePeriodString={filters?.period as string}
-                        />
-                    </Grid>
-
-                    <DisplayIfUserHasPerm permission="iaso.permissions.planning">
-                        <Grid item xs={12} md={3}>
-                            <InputComponent
-                                type="select"
-                                multi
-                                onChange={handleChange}
-                                keyValue="planningId"
-                                label={MESSAGES.planning}
-                                value={filters.planningId}
-                                loading={fetchingPlannings}
-                                options={availablePlannings ?? []}
-                            />
-                        </Grid>
-                    </DisplayIfUserHasPerm>
-                    <Grid container item justifyContent="flex-end" md={6}>
-                        <Grid item>
-                            <FilterButton
-                                disabled={!filtersUpdated}
-                                onFilter={handleSearch}
-                            />
-                        </Grid>
-                    </Grid>
-                </Grid>
             </Grid>
+            <Box display="flex" justifyContent="flex-end" mb={1} mt={2}>
+                <FilterButton
+                    disabled={!filtersUpdated}
+                    onFilter={handleSearch}
+                />
+            </Box>
         </>
     );
 };

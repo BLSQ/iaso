@@ -5,12 +5,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.parentOu',
         defaultMessage: 'Parent Org unit',
     },
-    orgUnitType: {
-        id: 'iaso.forms.org_unit_type_id',
-        defaultMessage: 'Org unit type',
-    },
     orgUnitTypeGroupBy: {
-        id: 'iaso.completeness.org_unit_type_ids',
+        id: 'iaso.completeness.orgUnitTypeGroupBy',
         defaultMessage: 'Group by type',
     },
     orgUnit: {
@@ -24,30 +20,6 @@ const MESSAGES = defineMessages({
     group: {
         defaultMessage: 'Group',
         id: 'iaso.label.group',
-    },
-    completenessWithDescendants: {
-        id: 'iaso.completeness.titleWithDescendants',
-        defaultMessage: 'Completeness (with descendants)',
-    },
-    formsFilledWithDescendants: {
-        id: 'iaso.completeness.formsFilledWithDescendants',
-        defaultMessage: '# Forms filled (with descendants)',
-    },
-    orgUnitHasMultipleSubmissions: {
-        id: 'iaso.completeness.orgUnitHasMultipleSubmissions',
-        defaultMessage: 'This org unit has multiple direct submissions',
-    },
-    completenessDirect: {
-        id: 'iaso.completeness.titleDirect',
-        defaultMessage: 'Completeness (direct)',
-    },
-    formsFilledDirect: {
-        id: 'iaso.completeness.formsFilledDirect',
-        defaultMessage: '# Forms filled (direct)',
-    },
-    chooseParent: {
-        id: 'iaso.completeness.chooseParent',
-        defaultMessage: 'Select a form or a parent org unit to enable',
     },
     completenessStats: {
         defaultMessage: 'Completeness Stats',

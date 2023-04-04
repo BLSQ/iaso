@@ -125,17 +125,17 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={forms ?? []}
                     />
                 </Grid>
+
                 <Grid item xs={12} md={3}>
-                    <PeriodPicker
-                        message={
-                            periodType === PERIOD_TYPE_PLACEHOLDER
-                                ? formatMessage(MESSAGES.periodPlaceHolder)
-                                : undefined
-                        }
-                        periodType={periodType}
-                        title={formatMessage(MESSAGES.period)}
-                        onChange={v => handleChange('period', v)}
-                        activePeriodString={filters?.period as string}
+                    <InputComponent
+                        type="select"
+                        disabled={isFetchingGroups}
+                        keyValue="groupId"
+                        onChange={handleChange}
+                        value={filters?.groupId}
+                        label={MESSAGES.group}
+                        options={groups}
+                        loading={isFetchingGroups}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
@@ -163,17 +163,19 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={3}>
-                        <InputComponent
-                            type="select"
-                            disabled={isFetchingGroups}
-                            keyValue="groupId"
-                            onChange={handleChange}
-                            value={filters?.groupId}
-                            label={MESSAGES.group}
-                            options={groups}
-                            loading={isFetchingGroups}
+                        <PeriodPicker
+                            message={
+                                periodType === PERIOD_TYPE_PLACEHOLDER
+                                    ? formatMessage(MESSAGES.periodPlaceHolder)
+                                    : undefined
+                            }
+                            periodType={periodType}
+                            title={formatMessage(MESSAGES.period)}
+                            onChange={v => handleChange('period', v)}
+                            activePeriodString={filters?.period as string}
                         />
                     </Grid>
+
                     <DisplayIfUserHasPerm permission="iaso.permissions.planning">
                         <Grid item xs={12} md={3}>
                             <InputComponent

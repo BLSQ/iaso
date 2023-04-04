@@ -119,7 +119,7 @@ class ParamSerializer(serializers.Serializer):
             self.fields["org_unit_group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
             # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
-            self.fields["form_id"].default = Form.objects.filter_for_user_and_app_id(user)
+            self.fields["form_id"].default = Form.objects.filter_for_user_and_app_id(user)[:5]
             self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
 
@@ -262,10 +262,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         orgunit_qs = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))
         if params.get("org_unit_group"):
             orgunit_qs = orgunit_qs.filter(groups__id=params["org_unit_group"].id)
+        orgunit_qs = orgunit_qs.hierarchy(top_ous)
         # Annotate the query with the form info
         ou_with_stats = get_annotated_queryset(
             root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs, orgunit_qs=orgunit_qs
         )
+
         # Ordering
         # Transform the order parameter to handle the json properly
         converted_orders = []

@@ -112,12 +112,16 @@ export const useCompletenessStatsColumns = (
                             {
                                 Header: (
                                     <div
-                                        title="Submission on this org unit"
+                                        title={formatMessage(
+                                            MESSAGES.itselfColumnTitle,
+                                        )}
                                         style={{
                                             textDecoration: 'underline dotted',
                                         }}
                                     >
-                                        Own
+                                        {formatMessage(
+                                            MESSAGES.itselfColumnLabel,
+                                        )}
                                     </div>
                                 ),
                                 id: `form_stats__${form.slug}__itself_has_instances`,
@@ -129,7 +133,12 @@ export const useCompletenessStatsColumns = (
                                         <>
                                             {value.itself_has_instances ? (
                                                 <span
-                                                    title={`Total #submissions: ${value.itself_instances_count}`}
+                                                    title={formatMessage(
+                                                        MESSAGES.itselfSubmissionCount,
+                                                        {
+                                                            value: value.itself_instances_count,
+                                                        },
+                                                    )}
                                                 >
                                                     ✅
                                                 </span>
@@ -139,7 +148,9 @@ export const useCompletenessStatsColumns = (
                                         </>
                                     ) : (
                                         <div
-                                            title="No submission is expected on this level for this form"
+                                            title={formatMessage(
+                                                MESSAGES.itselfNoSubmissionExpected,
+                                            )}
                                             style={{
                                                 textDecoration:
                                                     'underline dotted',
@@ -152,7 +163,7 @@ export const useCompletenessStatsColumns = (
                                 sortable: true,
                             },
                             {
-                                Header: 'Descendants',
+                                Header: formatMessage(MESSAGES.descendants),
                                 id: `form_stats__${form.slug}__percent`,
                                 accessor: `form_stats[${form.slug}]`,
                                 Cell: ({
@@ -168,7 +179,9 @@ export const useCompletenessStatsColumns = (
                                         </>
                                     ) : (
                                         <div
-                                            title="No descendant OrgUnit require filling for that form. See Form config if this is unexpected"
+                                            title={formatMessage(
+                                                MESSAGES.descendantsNoSubmissionExpected,
+                                            )}
                                             style={{
                                                 textDecoration:
                                                     'underline dotted',

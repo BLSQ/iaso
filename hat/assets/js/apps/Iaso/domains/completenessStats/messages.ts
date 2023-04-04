@@ -77,6 +77,31 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Please select a form with a period to filter',
         id: 'iaso.label.periodPlaceHolder',
     },
+    itselfColumnTitle: {
+        defaultMessage: 'Submissions on this org unit',
+        id: 'iaso.completenessStats.itselfColumnTitle',
+    },
+    itselfColumnLabel: {
+        defaultMessage: 'Itself',
+        id: 'iaso.completenessStats.itselfColumnLabel',
+    },
+    itselfSubmissionCount: {
+        defaultMessage: 'Total submissions: {value}',
+        id: 'iaso.completenessStats.itselfSubmissionCount',
+    },
+    itselfNoSubmissionExpected: {
+        defaultMessage: 'No submission is expected on this level for this form',
+        id: 'iaso.completenessStats.itselfNoSubmissionExcepted',
+    },
+    descendants: {
+        defaultMessage: 'Descendants',
+        id: 'iaso.completenessStats.descendants',
+    },
+    descendantsNoSubmissionExpected: {
+        defaultMessage:
+            'No descendant OrgUnit is expected to fill that form. Check the Form config if this is unexpected',
+        id: 'iaso.completenessStats.descendantsNoSubmissionExpected',
+    },
 });
 
 export default MESSAGES;

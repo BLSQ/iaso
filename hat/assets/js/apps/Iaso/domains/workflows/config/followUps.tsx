@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { ReactNode } from 'react';
+import React, { ReactNode, Dispatch, SetStateAction } from 'react';
 import { useSafeIntl, QueryBuilderFields } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 
@@ -47,6 +47,7 @@ export const useGetFollowUpsColumns = (
     versionId: string,
     workflowVersion?: WorkflowVersionDetail,
     fields?: QueryBuilderFields,
+    setCurrentFields?: Dispatch<SetStateAction<QueryBuilderFields>>,
 ): FollowUpsColumns[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -112,6 +113,10 @@ export const useGetFollowUpsColumns = (
                                 followUp={followUp}
                                 fields={fields}
                                 versionId={versionId}
+                                setCurrentFields={newFields => {
+                                    console.log('new Fields', newFields);
+                                    setCurrentFields(newFields);
+                                }}
                             />
                         )}
                     </>

@@ -3,6 +3,8 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
+from typing import Any
+
 from django.contrib.auth.models import User, Permission
 
 from iaso.models import Account, Form, OrgUnitType, OrgUnit
@@ -11,6 +13,87 @@ from iaso.test import APITestCase
 
 def _slug(form):
     return f"form_{form.id}"
+
+
+# from https://stackoverflow.com/a/54649973 redsk
+def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: float) -> bool:
+    """
+    Compares two objects by recursively walking them through. Equality is as usual except for floats.
+    Floats are compared according to the two measures defined below.
+
+    :param o1: The first object.
+    :param o2: The second object.
+    :param max_abs_ratio_diff: The maximum allowed absolute value of the difference.
+    `abs(1 - (o1 / o2)` and vice-versa if o2 == 0.0. Ignored if < 0.
+    :param max_abs_diff: The maximum allowed absolute difference `abs(o1 - o2)`. Ignored if < 0.
+    :return: Whether the two objects are almost equal.
+    """
+    if type(o1) != type(o2):
+        return False
+
+    composite_type_passed = False
+
+    if hasattr(o1, "__slots__"):
+        if len(o1.__slots__) != len(o2.__slots__):
+            return False
+        if any(
+            not are_almost_equal(getattr(o1, s1), getattr(o2, s2), max_abs_ratio_diff, max_abs_diff)
+            for s1, s2 in zip(sorted(o1.__slots__), sorted(o2.__slots__))
+        ):
+            return False
+        else:
+            composite_type_passed = True
+
+    if hasattr(o1, "__dict__"):
+        if len(o1.__dict__) != len(o2.__dict__):
+            return False
+        if any(
+            not are_almost_equal(k1, k2, max_abs_ratio_diff, max_abs_diff)
+            or not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff)
+            for ((k1, v1), (k2, v2)) in zip(sorted(o1.__dict__.items()), sorted(o2.__dict__.items()))
+            if not k1.startswith("__")
+        ):  # avoid infinite loops
+            return False
+        else:
+            composite_type_passed = True
+
+    if isinstance(o1, dict):
+        if len(o1) != len(o2):
+            return False
+        if any(
+            not are_almost_equal(k1, k2, max_abs_ratio_diff, max_abs_diff)
+            or not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff)
+            for ((k1, v1), (k2, v2)) in zip(sorted(o1.items()), sorted(o2.items()))
+        ):
+            return False
+
+    elif any(issubclass(o1.__class__, c) for c in (list, tuple, set)):
+        if len(o1) != len(o2):
+            return False
+        if any(not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff) for v1, v2 in zip(o1, o2)):
+            return False
+
+    elif isinstance(o1, float):
+        if o1 == o2:
+            return True
+        else:
+            # FIXME we can probably replace this by math.isclose
+            if max_abs_ratio_diff > 0:  # if max_abs_ratio_diff < 0, max_abs_ratio_diff is ignored
+                if o2 != 0:
+                    if abs(1.0 - (o1 / o2)) > max_abs_ratio_diff:
+                        return False
+                else:  # if both == 0, we already returned True
+                    if abs(1.0 - (o2 / o1)) > max_abs_ratio_diff:
+                        return False
+            if 0 < max_abs_diff < abs(o1 - o2):  # if max_abs_diff < 0, max_abs_diff is ignored
+                return False
+            return True
+
+    else:
+        if not composite_type_passed:
+            return o1 == o2
+
+    return True
 
 
 class CompletenessStatsAPITestCase(APITestCase):
@@ -57,6 +140,16 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.as_abb_ou = OrgUnit.objects.get(pk=10)
         cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
         cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
+
+    def assertAlmostEqualRecursive(self, first, second, msg: Any) -> None:
+        "to use when float are the worst"
+        self.assertTrue(
+            are_almost_equal(
+                first,
+                second,
+            ),
+            msg=msg,
+        )
 
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
@@ -171,7 +264,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             "pages": 1,
             "limit": 10,
         }
-        self.assertDictEqual(
+        self.assertAlmostEqualRecursive(
             expected_result,
             j,
         )
@@ -390,7 +483,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "itself_instances_count": 0,
             }
         }
-        self.assertEqual(form_stats, expected_before)
+        self.assertAlmostEqualRecursive(form_stats, expected_before)
 
         # Then reject the orgunit and remake the query
         self.as_abb_ou.validation_status = OrgUnit.VALIDATION_REJECTED

@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.parentOu',
         defaultMessage: 'Parent Org unit',
     },
+    orgUnitType: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
     orgUnitTypeGroupBy: {
         id: 'iaso.completeness.orgUnitTypeGroupBy',
         defaultMessage: 'Group by type',

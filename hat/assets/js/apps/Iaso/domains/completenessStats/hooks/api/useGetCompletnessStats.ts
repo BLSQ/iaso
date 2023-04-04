@@ -14,7 +14,9 @@ const queryParamsMap = new Map([
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
 
-export const buildQueryString = (params: CompletenessRouterParams) => {
+export const buildQueryString = (
+    params: CompletenessRouterParams,
+): URLSearchParams => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { pageSize, orgUnitTypeIds, formId, ...urlParams } = params;
     const apiParams = { ...urlParams, limit: pageSize ?? 10 };

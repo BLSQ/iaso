@@ -1,12 +1,10 @@
 import { UseBaseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { UrlParams } from '../../../../types/table';
-import { CompletenessApiResponse } from '../../types';
+import { CompletenessApiResponse, CompletenessRouterParams } from '../../types';
 
 // Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
-    ['orgUnitId', 'org_unit_id'],
     ['orgUnitTypeIds', 'org_unit_type_id'],
     ['formId', 'form_id'],
     ['parentId', 'parent_org_unit_id'],
@@ -14,28 +12,11 @@ const queryParamsMap = new Map([
     ['groupId', 'org_unit_group_id'],
 ]);
 
-export type CompletenessGETParams = UrlParams & {
-    orgUnitId?: string;
-    formId?: string;
-    orgUnitTypeIds?: string;
-    period?: string;
-    groupId?: string;
-};
-
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
 
-export const buildQueryString = (
-    params: UrlParams & {
-        orgUnitId?: string;
-        formId?: string;
-        orgUnitTypeIds?: string;
-        period?: string;
-        groupId?: string;
-    },
-) => {
+export const buildQueryString = (params: CompletenessRouterParams) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pageSize, orgUnitId, orgUnitTypeIds, formId, ...urlParams } =
-        params;
+    const { pageSize, orgUnitTypeIds, formId, ...urlParams } = params;
     const apiParams = { ...urlParams, limit: pageSize ?? 10 };
     const queryParams = {};
     apiParamsKeys.forEach(apiParamKey => {
@@ -55,14 +36,14 @@ export const buildQueryString = (
 };
 
 const getCompletenessStats = async (
-    params: CompletenessGETParams,
+    params: CompletenessRouterParams,
 ): Promise<CompletenessApiResponse> => {
     const queryString = buildQueryString(params);
     return getRequest(`/api/v2/completeness_stats/?${queryString}`);
 };
 
 export const useGetCompletenessStats = (
-    params: CompletenessGETParams,
+    params: CompletenessRouterParams,
 ): UseBaseQueryResult<CompletenessApiResponse, unknown> => {
     return useSnackQuery({
         queryKey: ['completenessStats', params],

@@ -7,7 +7,7 @@ import { makeUrlWithParams } from '../../../../libs/utils';
 type DropDownOption = {
     value: number;
     label: string;
-    orignal: any;
+    original: any;
 };
 const apiToDropDown = data => {
     if (!data) return [];

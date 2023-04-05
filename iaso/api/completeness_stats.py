@@ -83,7 +83,7 @@ OrgUnitWithFormStat = Annotated[OrgUnit, FormStatAnnotation]
 
 
 class Params(TypedDict):
-    org_unit_type: Optional[OrgUnitType]
+    org_unit_types: Optional[List[OrgUnitType]]
     parent_org_unit: Optional[OrgUnit]
     forms: QuerySet[Form]
     planning: Optional[Planning]
@@ -116,7 +116,9 @@ class ParamSerializer(serializers.Serializer):
         if request:
             user = request.user
             # we could filter but since it's an additional it probably just a waste
-            self.fields["org_unit_type_id"].queryset = OrgUnitType.objects.filter_for_user_and_app_id(user, None)
+            self.fields["org_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
+                user, None
+            )
             self.fields["org_unit_group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
             # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
@@ -124,12 +126,11 @@ class ParamSerializer(serializers.Serializer):
             self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
 
-    org_unit_type_id = serializers.PrimaryKeyRelatedField(
-        source="org_unit_type",
-        queryset=OrgUnitType.objects.none(),
+    org_unit_type_ids = PrimaryKeysRelatedField(
+        child_relation=serializers.PrimaryKeyRelatedField(queryset=OrgUnitType.objects.none()),
+        source="org_unit_types",
         required=False,
         help_text="Group the submissions per this org unit type",
-        default=None,
     )
     parent_org_unit_id = serializers.PrimaryKeyRelatedField(
         queryset=OrgUnit.objects.none(),
@@ -246,8 +247,8 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 org_units = org_units.hierarchy(roots)
 
         # How we group them. If none we take the direct descendants or the roots
-        group_per_type = params["org_unit_type"]
-        if not group_per_type:
+        group_per_types = params.get("org_unit_types")
+        if not group_per_types:
             if parent_ou:
                 top_ous = org_units.filter(parent=parent_ou)
             elif profile.org_units.all():
@@ -255,7 +256,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             else:
                 top_ous = org_units.filter(parent=None)
         else:
-            top_ous = org_units.filter(org_unit_type=group_per_type)
+            top_ous = org_units.filter(org_unit_type__in=group_per_types)
 
         # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")

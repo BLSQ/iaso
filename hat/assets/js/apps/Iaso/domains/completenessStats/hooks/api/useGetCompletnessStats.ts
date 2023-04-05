@@ -5,7 +5,7 @@ import { CompletenessApiResponse, CompletenessRouterParams } from '../../types';
 
 // Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
-    ['orgUnitTypeIds', 'org_unit_type_id'],
+    ['orgUnitTypeIds', 'org_unit_type_ids'],
     ['formId', 'form_id'],
     ['parentId', 'parent_org_unit_id'],
     ['planningId', 'planning_id'],

@@ -77,7 +77,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 handleChange('orgUnitTypeIds', filteredIds.join(','));
             }
         }
-    }, [handleChange, orgUnitTypes]);
+    }, [handleChange, orgUnitTypes, filters.orgUnitTypeIds]);
 
     const periodType = useMemo(() => {
         if (filters.formId && forms) {
@@ -116,7 +116,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
-                        multi
                         onChange={handleChange}
                         keyValue="formId"
                         label={MESSAGES.form}
@@ -177,6 +176,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         type="select"
                         onChange={handleChange}
                         keyValue="orgUnitTypeIds"
+                        multi
                         label={MESSAGES.orgUnitTypeGroupBy}
                         value={filters.orgUnitTypeIds}
                         loading={fetchingTypes}

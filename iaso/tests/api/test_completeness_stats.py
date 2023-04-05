@@ -337,7 +337,7 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_filter_by_org_unit_type(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}")
+        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids={self.org_unit_type_hopital.id}")
         json = response.json()
         for result in json["results"]:
             self.assertEqual(result["org_unit_type"]["id"], self.org_unit_type_hopital.id)
@@ -361,9 +361,9 @@ class CompletenessStatsAPITestCase(APITestCase):
         # Then we ask to filter to only keep the hospitals: nothing at this level is a hospital => no results
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_id=100000")
+        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids=100000")
         j = self.assertJSONResponse(response, 400)
-        self.assertIn("org_unit_type_id", j)
+        self.assertIn("org_unit_type_ids", j)
 
     def test_filter_by_org_unit_type_with_results(self):
         # Opposite scenario compared to test_filter_by_org_unit_type_no_results()

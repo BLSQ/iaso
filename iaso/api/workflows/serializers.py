@@ -13,7 +13,6 @@ from iaso.models import (
 from iaso.models.workflow import WorkflowVersionsStatus
 
 CALCULATE_TYPE = "calculate"
-TEXT_TYPE = "text"
 
 
 class FormNestedSerializer(serializers.ModelSerializer):

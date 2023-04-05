@@ -144,10 +144,7 @@ class CompletenessStatsAPITestCase(APITestCase):
     def assertAlmostEqualRecursive(self, first, second, msg: Any = None) -> None:
         "to use when float are the worst"
         self.assertTrue(
-            are_almost_equal(
-                first,
-                second,
-            ),
+            are_almost_equal(first, second, 0.000001, 0.000001),
             msg=msg,
         )
 

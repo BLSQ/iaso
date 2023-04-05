@@ -32,7 +32,7 @@ type Props = {
     params: CompletenessRouterParams;
 };
 
-export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
+export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();

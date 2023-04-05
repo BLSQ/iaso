@@ -10,6 +10,7 @@
       "name": "Multi 2 polygon with one hole each",
       "id": "c",
       "path": "/c",
+      "level": 1,
       "geometry": {
         "type": "MultiPolygon",
         "coordinates": [
@@ -114,6 +115,7 @@
       "name": "Simple square",
       "id": "a",
       "path": "/a",
+      "level": 1,
       "organisationUnitGroups": [],
       "geometry": {
         "type": "Polygon",
@@ -127,6 +129,7 @@
       "name": "Simple square with a hole",
       "id": "b",
       "path": "/b",
+      "level": 1,
       "organisationUnitGroups": [],
       "geometry": {
         "type": "Polygon",
@@ -182,6 +185,7 @@
       "name": "Two polygon of area 1 each",
       "id": "d",
       "path": "/d",
+      "level": 1,
       "organisationUnitGroups": [],
       "geometry": {
         "type": "MultiPolygon",

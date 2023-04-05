@@ -21,7 +21,7 @@ class CommandTests(TestCase):
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
+            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level"
             "&pageSize=500&page=1&totalPages=True",
             json=self.fixture_json("orgunits"),
             status=200,
@@ -32,6 +32,13 @@ class CommandTests(TestCase):
             "https://play.dhis2.org/2.30/api/organisationUnitGroupSets.json"
             "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
             json=self.fixture_json("groupsets"),
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "https://play.dhis2.org/2.30/api/organisationUnitLevels.json"
+            "?fields=displayName&fields=id&fields=level&fields=name&pageSize=50&page=1&totalPages=True",
+            json=self.fixture_json("organisationUnitLevels"),
             status=200,
         )
 

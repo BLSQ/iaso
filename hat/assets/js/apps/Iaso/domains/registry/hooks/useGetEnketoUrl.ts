@@ -8,15 +8,17 @@ type Result = {
 };
 
 export const useGetEnketoUrl = (
-    location: string,
+    returnUrl: string,
     instance?: Instance,
 ): (() => void) => {
     const getEnketoUrl = () => {
-        getRequest(
-            `/api/enketo/edit/${instance?.uuid}?return_url=${location}`,
-        ).then((res: Result) => {
-            window.location.href = res.edit_url;
-        });
+        if (instance) {
+            getRequest(
+                `/api/enketo/edit/${instance.uuid}?return_url=${returnUrl}`,
+            ).then((res: Result) => {
+                window.location.href = res.edit_url;
+            });
+        }
     };
     return getEnketoUrl;
 };

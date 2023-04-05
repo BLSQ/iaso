@@ -38,6 +38,10 @@ import { baseUrls } from '../../../constants/urls';
 
 import { Selection } from '../../orgUnits/types/selection';
 
+import { userHasPermission } from '../../users/utils';
+
+import { useCurrentUser } from '../../../utils/usersUtils';
+
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
 const hasNoValue: (value: string) => boolean = value => !value || value === '';
@@ -167,6 +171,7 @@ export const useGetInstancesColumns = (
     // eslint-disable-next-line no-unused-vars
 ): ((visibleColumns: VisibleColumn[]) => Column[]) => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     const metasColumns = useMemo(
         () => [...instancesTableColumns(formatMessage)],
         [formatMessage],
@@ -221,14 +226,16 @@ export const useGetInstancesColumns = (
                     }
                 });
             tableColumns = tableColumns.concat(childrenArray);
-            tableColumns.push({
-                Header: formatMessage(MESSAGES.actions),
-                accessor: 'actions',
-                resizable: false,
-                sortable: false,
-                width: 150,
-                Cell: getActionCell,
-            });
+            if (userHasPermission('iaso_update_submission', currentUser)) {
+                tableColumns.push({
+                    Header: formatMessage(MESSAGES.actions),
+                    accessor: 'actions',
+                    resizable: false,
+                    sortable: false,
+                    width: 150,
+                    Cell: getActionCell,
+                });
+            }
             return tableColumns;
         },
         [formatMessage, getActionCell, metasColumns],

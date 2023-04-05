@@ -82,6 +82,7 @@ class HasInstancePermission(permissions.BasePermission):
         return request.user.is_authenticated and (
             request.user.has_perm("menupermissions.iaso_forms")
             or request.user.has_perm("menupermissions.iaso_submissions")
+            or request.user.has_perm("menupermissions.iaso_registry")
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):

@@ -16,6 +16,7 @@ import { getOtChipColors } from '../../constants/chipColors';
 
 import { useGetOrgUnit, useGetOrgUnitsChildren } from './hooks/useGetOrgUnit';
 import { useGetEnketoUrl } from './hooks/useGetEnketoUrl';
+import { useCurrentUser } from '../../utils/usersUtils';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { OrgUnitMap } from './components/OrgUnitMap';
@@ -25,6 +26,8 @@ import { Instances } from './components/Instances';
 
 import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
+
+import { userHasPermission } from '../users/utils';
 
 type Router = {
     goBack: () => void;
@@ -74,6 +77,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         window.location.href,
         orgUnit?.reference_instance,
     );
+    const currentUser = useCurrentUser();
     return (
         <>
             <TopBar
@@ -110,7 +114,12 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 id="form-contents"
                                 className={classes.paper}
                                 title={formatMessage(MESSAGES.submission)}
-                                IconButton={IconButton}
+                                IconButton={
+                                    userHasPermission(
+                                        'iaso_update_submission',
+                                        currentUser,
+                                    ) && IconButton
+                                }
                                 iconButtonProps={{
                                     onClick: () => getEnketoUrl(),
                                     overrideIcon: EnketoIcon,

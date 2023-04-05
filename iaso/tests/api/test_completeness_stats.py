@@ -141,7 +141,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
         cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
 
-    def assertAlmostEqualRecursive(self, first, second, msg: Any) -> None:
+    def assertAlmostEqualRecursive(self, first, second, msg: Any = None) -> None:
         "to use when float are the worst"
         self.assertTrue(
             are_almost_equal(

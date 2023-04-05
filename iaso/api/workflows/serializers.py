@@ -128,13 +128,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
             else:
                 r_type = q["type"]
 
-            if s_type == CALCULATE_TYPE:
-                if r_type != TEXT_TYPE and r_type != CALCULATE_TYPE:
-                    raise serializers.ValidationError(
-                        f"Question {_source} is a 'calculate' question and cannot only be mapped to 'string' or "
-                        f"'calculate' type, found : {r_type}"
-                    )
-            elif s_type != r_type:
+            if s_type != r_type and s_type != CALCULATE_TYPE and r_type != CALCULATE_TYPE:
                 raise serializers.ValidationError(f"Question {_source} and {_target} do not have the same type")
 
         return mapping

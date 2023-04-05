@@ -1,3 +1,23 @@
+"""Permissions list
+
+These permissions are used and not the django built in one on each model.
+They are used for API access but also to see which page a user has access
+in the frontend.
+
+To add a new permission:
+1. Add a constant to hold its label
+2. Add it to the CustomPermissionSupport.Meta.permissions tuple bellow
+3. Generate a migration via makemigrations (and run the mirgation locally)
+4. Add it in hat/assets/js/apps/Iaso/domains/users/messages.js
+5. add it to en.json and fr.json
+
+If you don't follow these steps you will break the frontend !
+
+The frontend is getting the list of existing permission from the
+`/api/permissions/` endpoint
+"""
+
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -33,14 +53,11 @@ ENTITY_DUPLICATES_READ = _("Read Entity duplicates")
 ENTITY_DUPLICATES_WRITE = _("Write Entity duplicates")
 
 
-# When adding a new permission, it also needs to be added in
-# hat/assets/js/apps/Iaso/domains/users/messages.js
-# so that it display properly in both lang
-#
-# Also, don't forget to generate a migration
-
-
 class CustomPermissionSupport(models.Model):
+    """Model used to hold our custom permission.
+
+    This is not a true model that generate a table hence the managed=False"""
+
     # Used in setup_account api
     DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
         "iaso_forms",

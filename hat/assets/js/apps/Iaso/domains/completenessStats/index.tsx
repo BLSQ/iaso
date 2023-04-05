@@ -1,7 +1,9 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid, makeStyles, useTheme } from '@material-ui/core';
+import Color from 'color';
+
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
@@ -30,18 +32,6 @@ type Props = {
     params: CompletenessRouterParams;
 };
 
-// Used to show the requested orgunit prominently.
-const getRowStyles = ({ original }) => {
-    if (original?.is_root) {
-        return {
-            style: {
-                backgroundColor: '#b1e5e5',
-            },
-        };
-    }
-    return {};
-};
-
 export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
@@ -52,6 +42,23 @@ export const CompletessStats: FunctionComponent<Props> = ({ params }) => {
     const csvUrl = useMemo(
         () => `/api/v2/completeness_stats.csv?${buildQueryString(params)}`,
         [params],
+    );
+    const theme = useTheme();
+    // Used to show the requested orgunit prominently.
+    const getRowStyles = useCallback(
+        ({ original }) => {
+            if (original?.is_root) {
+                return {
+                    style: {
+                        backgroundColor: Color(
+                            theme.palette.primary.main,
+                        ).lighten(0.9),
+                    },
+                };
+            }
+            return {};
+        },
+        [theme],
     );
 
     return (

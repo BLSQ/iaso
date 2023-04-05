@@ -31,6 +31,7 @@ WORKFLOWS = _("Workflows")
 REPORTS = _("Reports")
 ENTITY_DUPLICATES_READ = _("Read Entity duplicates")
 ENTITY_DUPLICATES_WRITE = _("Write Entity duplicates")
+USER_ROLES = _("Manage user roles")
 
 
 # When adding a new permission, it also needs to be added in
@@ -90,4 +91,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio_budget_admin", POLIO_BUDGET_ADMIN),
             ("iaso_entity_duplicates_read", ENTITY_DUPLICATES_READ),
             ("iaso_entity_duplicates_write", ENTITY_DUPLICATES_WRITE),
+            ("iaso_user_roles", USER_ROLES),
         )

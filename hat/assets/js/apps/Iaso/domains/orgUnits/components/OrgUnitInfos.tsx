@@ -53,6 +53,7 @@ const getParentOrgUnit = (orgUnit: OrgUnit): Partial<OrgUnit> =>
         source_id: orgUnit.parent.source_id,
         parent: orgUnit.parent.parent,
         parent_name: orgUnit.parent.parent_name,
+        validation_status: orgUnit.parent.validation_status,
     };
 
 type Props = {
@@ -255,17 +256,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     alignItems="center"
                 >
                     <Box mt={1}>
-                        <Button
-                            id="save-ou"
-                            disabled={isSaveDisabled}
-                            variant="contained"
-                            className={classes.marginLeft}
-                            color="primary"
-                            onClick={handleSave}
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-
                         {!isNewOrgunit && (
                             <Button
                                 className={classes.marginLeft}
@@ -276,6 +266,16 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                                 {formatMessage(MESSAGES.cancel)}
                             </Button>
                         )}
+                        <Button
+                            id="save-ou"
+                            disabled={isSaveDisabled}
+                            variant="contained"
+                            className={classes.marginLeft}
+                            color="primary"
+                            onClick={handleSave}
+                        >
+                            {formatMessage(MESSAGES.save)}
+                        </Button>
                     </Box>
                 </Grid>
             </Grid>

@@ -8,12 +8,14 @@ from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
 from django.db.models.query import QuerySet
+from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
+from django.http import FileResponse
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
@@ -28,10 +30,11 @@ from rest_framework import routers, filters, viewsets, serializers, permissions,
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
 from plugins.polio.serializers import (
     CountryUsersGroupSerializer,
+    ExportCampaignSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -92,7 +95,7 @@ class PolioOrgunitViewSet(ModelViewSet):
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 
-class CampaignViewSet(ModelViewSet):
+class CampaignViewSet(ModelViewSet, CSVExportMixin):
     """Main endpoint for campaign.
 
     GET (Anonymously too)
@@ -132,6 +135,9 @@ class CampaignViewSet(ModelViewSet):
     # in this case we use a restricted serializer with less field
     # notably not the url that we want to remain private.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    exporter_serializer_class = ExportCampaignSerializer
+    export_filename = "campaigns_list_{date}.csv"
+    use_field_order = False
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
@@ -666,6 +672,11 @@ class LineListImportViewSet(ModelViewSet):
 
     def get_queryset(self):
         return LineListImport.objects.all()
+
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=["get"], url_path="getsample")
+    def download_sample_csv(self, request):
+        return FileResponse(open("plugins/polio/fixtures/linelist_template.xls", "rb"))
 
 
 class PreparednessDashboardViewSet(viewsets.ViewSet):

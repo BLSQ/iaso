@@ -6,7 +6,6 @@ import {
 } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
-import { BudgetEventType } from '../../../constants/types';
 import { LinkWithAlias } from '../types';
 
 export const COMMENT_CHAR_LIMIT = 50;
@@ -54,25 +53,6 @@ export const useActionMessage = (
         message = `${formatMessage(MESSAGES.see)} ${linkMessage.toLowerCase()}`;
     }
     return message;
-};
-
-export const findAuthorTeam = (
-    author: number,
-    teams: any[],
-    eventType: BudgetEventType,
-): Optional<string> => {
-    if (eventType === 'validation') {
-        return teams.find(
-            team =>
-                team.name.toLowerCase().includes('approval') &&
-                team.users.includes(author),
-        )?.name;
-    }
-    return teams.find(
-        team =>
-            !team.name.toLowerCase().includes('approval') &&
-            team.users.includes(author),
-    )?.name;
 };
 
 export const shouldOpenModal = (

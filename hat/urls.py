@@ -1,4 +1,5 @@
 import django_sql_dashboard  # type: ignore
+from django.apps import apps
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin, auth
@@ -9,6 +10,7 @@ from drf_yasg.views import get_schema_view
 from rest_framework import permissions
 
 from iaso.views import health, page
+
 
 admin.site.site_header = "Administration de Iaso"
 admin.site.site_title = "Iaso"
@@ -77,8 +79,11 @@ urlpatterns = urlpatterns + [
 if settings.BEANSTALK_WORKER or settings.DEBUG or settings.IN_TESTS:
     urlpatterns.append(path("tasks/", include("beanstalk_worker.urls")))
 
-if settings.DATABASES.get("dashboard"):
+if apps.is_installed("django_sql_dashboard"):
+    from django_sql_dashboard_export.views import export_sql_results_for_dashboard
+
     urlpatterns.append(path("explore/", include(django_sql_dashboard.urls)))
+    urlpatterns.append(path("explore/<slug>/export/", export_sql_results_for_dashboard))
 
 urlpatterns.append(path("dashboard/", include("hat.dashboard.urls")))
 

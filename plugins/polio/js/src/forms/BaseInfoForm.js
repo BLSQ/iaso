@@ -126,6 +126,7 @@ export const BaseInfoForm = () => {
                             label={formatMessage(MESSAGES.selectOrgUnit)}
                             component={OrgUnitsLevels}
                             clearable={false}
+                            required
                         />
                     </Box>
                 </Grid>

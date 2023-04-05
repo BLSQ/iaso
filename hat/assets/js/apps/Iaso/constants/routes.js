@@ -39,6 +39,8 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
+import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
+import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
@@ -797,6 +799,98 @@ export const entityTypesPath = {
         })),
     ],
 };
+export const entityDuplicatesPath = {
+    baseUrl: baseUrls.entityDuplicates,
+    permissions: [
+        'iaso_entity_duplicates_read',
+        'iaso_entity_duplicates_write',
+    ],
+    component: props => <Duplicates {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'algorithm',
+        },
+        {
+            isRequired: false,
+            key: 'similarity',
+        },
+        {
+            isRequired: false,
+            key: 'entity_type',
+        },
+        {
+            isRequired: false,
+            key: 'org_unit',
+        },
+        {
+            isRequired: false,
+            key: 'start_date',
+        },
+        {
+            isRequired: false,
+            key: 'end_date',
+        },
+        {
+            isRequired: false,
+            key: 'submitter',
+        },
+        {
+            isRequired: false,
+            key: 'submitter_team',
+        },
+        {
+            isRequired: false,
+            key: 'ignored',
+        },
+        {
+            isRequired: false,
+            key: 'entity',
+        },
+        {
+            isRequired: false,
+            key: 'fields',
+        },
+        {
+            isRequired: false,
+            key: 'form',
+        },
+    ],
+};
+export const entityDuplicatesDetailsPath = {
+    baseUrl: baseUrls.entityDuplicateDetails,
+    permissions: [
+        'iaso_entity_duplicates_read',
+        'iaso_entity_duplicates_write',
+    ],
+    component: props => <DuplicateDetails {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        // ...paginationPathParams.map(p => ({
+        //     ...p,
+        //     isRequired: true,
+        // })),
+        {
+            isRequired: false,
+            key: 'entities',
+        },
+    ],
+};
 export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
@@ -1051,6 +1145,8 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
+    entityDuplicatesPath,
+    entityDuplicatesDetailsPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,

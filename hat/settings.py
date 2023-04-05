@@ -201,7 +201,7 @@ CORS_ALLOW_CREDENTIALS = False
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["./hat/templates"],
+        "DIRS": ["./hat/templates", "./django_sql_dashboard_export/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -252,7 +252,16 @@ see docs/SQL Dashboard feature.md
 
 [SQL Dashboard feature.md](docs%2FSQL%20Dashboard%20feature.md)
 """
-if os.environ.get("DB_READONLY_USERNAME"):
+
+if "test" in sys.argv and DEBUG:
+    # For when running unit test
+    DATABASES["dashboard"] = DATABASES["default"]
+
+    INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
+    # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
+    DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+elif os.environ.get("DB_READONLY_USERNAME"):
     DATABASES["dashboard"] = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": DB_NAME,
@@ -264,8 +273,10 @@ if os.environ.get("DB_READONLY_USERNAME"):
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
     # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
     DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+
 
 DATABASES["worker"] = DATABASES["default"].copy()
 DATABASE_ROUTERS = [
@@ -415,8 +426,18 @@ except Exception as e:
     VERSION = "undetected_version"
 
 if SENTRY_URL:
+    traces_sample_rate_str: str = os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")
+    try:
+        traces_sample_rate = float(traces_sample_rate_str)
+    except ValueError:
+        raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate_str}, should be float")
+
     sentry_sdk.init(
-        SENTRY_URL, traces_sample_rate=0.1, integrations=[DjangoIntegration()], send_default_pii=True, release=VERSION
+        SENTRY_URL,
+        traces_sample_rate=traces_sample_rate,
+        integrations=[DjangoIntegration()],
+        send_default_pii=True,
+        release=VERSION,
     )
 
 # Workers configuration

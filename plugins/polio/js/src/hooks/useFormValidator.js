@@ -555,6 +555,7 @@ export const useFormValidator = () => {
     return yup.object().shape({
         epid: yup.string().nullable(),
         obr_name: yup.string().trim().required(),
+        initial_org_unit: yup.number().positive().integer().required(),
         grouped_campaigns: yup.array(yup.number()).nullable(),
         description: yup.string().nullable(),
         onset_at: yup.date().nullable(),
@@ -587,6 +588,7 @@ export const useFormValidator = () => {
         submitted_to_orpg_wider_at_WFEDITABLE: yup.date().nullable(),
         submission_to_orpg_operations_2_at_WFEDITABLE: yup.date().nullable(),
         feedback_sent_to_rrt2_at_WFEDITABLE: yup.date().nullable(),
+        re_submitted_to_orpg_operations1_at_WFEDITABLE: yup.date().nullable(),
         re_submitted_to_orpg_operations2_at_WFEDITABLE: yup.date().nullable(),
         submitted_for_approval_at_WFEDITABLE: yup.date().nullable(),
         approved_by_who_at_WFEDITABLE: yup.date().nullable(),

@@ -31,6 +31,7 @@ const supportedOptionsTypes = [
     'start',
     'end',
     'today',
+    'calculate',
 ];
 
 export const SourceCell: FunctionComponent<Props> = ({

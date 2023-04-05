@@ -485,7 +485,6 @@ class CompletenessStatsAPITestCase(APITestCase):
         # Then reject the orgunit and remake the query
         self.as_abb_ou.validation_status = OrgUnit.VALIDATION_REJECTED
         self.as_abb_ou.save()
-        self.assertEqual(form_stats, expected_before)
 
         response = self.client.get(
             f"/api/v2/completeness_stats/",

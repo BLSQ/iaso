@@ -394,9 +394,9 @@ describe('Submissions', () => {
         };
         cy.wait('@getSubmissions').then(() => {
             // TODO: test new period type day
-            testPeriod(1, '201901', '202001');
-            testPeriod(2, '2019Q1', '2020Q1');
-            testPeriod(3, '2019', '2020');
+            testPeriod(1, '201401', '201501');
+            testPeriod(2, '2014Q1', '2015Q1');
+            testPeriod(3, '2014', '2015');
         });
     });
 
@@ -491,14 +491,14 @@ describe('Submissions', () => {
 });
 
 describe('Map Tab', () => {
-    it.skip('should display a map', () => { });
-    it.skip('should different location', () => { });
-    it.skip('should have working cluster', () => { });
+    it.skip('should display a map', () => {});
+    it.skip('should different location', () => {});
+    it.skip('should have working cluster', () => {});
 });
 
 describe('Files Tab', () => {
-    it.skip('should display a files list', () => { });
-    it.skip('should display a warning if no files', () => { });
-    it.skip('should have a working pagination', () => { });
-    it.skip('should split files types into tabs', () => { });
+    it.skip('should display a files list', () => {});
+    it.skip('should display a warning if no files', () => {});
+    it.skip('should have a working pagination', () => {});
+    it.skip('should split files types into tabs', () => {});
 });

@@ -95,11 +95,12 @@ class Params(TypedDict):
 class PrimaryKeysRelatedField(serializers.ManyRelatedField):
     """Primary key separated by , like we do often in iaso"""
 
-    def get_value(self, dictionary: Mapping[Any, Any]) -> Union[Any, List[Any]]:
+    def get_value(self, dictionary: Mapping[Any, str]) -> Union[Any, List[Any]]:
         if self.field_name not in dictionary:
             return rest_framework.fields.empty
         else:
-            value = dictionary.get(self.field_name)
+            value: str
+            value = dictionary[self.field_name]
             return value.split(",")
 
 
@@ -169,7 +170,7 @@ class ParamSerializer(serializers.Serializer):
     def validate_form_id(self, forms: Union[List[Form], QuerySet[Form]]):
         # reconvert this to a queryset
         if isinstance(forms, list):
-            queryset = self.fields["form_id"].child_relation.queryset
+            queryset = self.fields["form_id"].child_relation.queryset  # type: ignore
             return queryset.filter(id__in=[f.id for f in forms])
         else:
             return forms
@@ -187,7 +188,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_completeness_stats"),
+        HasPermission("menupermissions.iaso_completeness_stats"),  # type: ignore
     ]  # type: ignore
 
     # @swagger_auto_schema(query_serializer=ParamSerializer())
@@ -215,7 +216,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile  # type: ignore
 
         org_units: OrgUnitQuerySet
-        org_units = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))
+        org_units = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))  # type: ignore
         # Calculate the ou for which we want reporting `top_ous`
         #  We only want ou to which user has access
         #   if no params we return the top ou for the default source
@@ -259,9 +260,11 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
-        orgunit_qs = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))
-        if params.get("org_unit_group"):
-            orgunit_qs = orgunit_qs.filter(groups__id=params["org_unit_group"].id)
+        orgunit_qs: OrgUnitQuerySet
+        orgunit_qs = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))  # type: ignore
+        org_unit_group = params.get("org_unit_group")
+        if org_unit_group:
+            orgunit_qs = orgunit_qs.filter(groups__id=org_unit_group.id)
         orgunit_qs = orgunit_qs.hierarchy(top_ous)
         # Annotate the query with the form info
         ou_with_stats = get_annotated_queryset(
@@ -270,7 +273,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         # Ordering
         # Transform the order parameter to handle the json properly
-        converted_orders = []
+        converted_orders: List[Union[str, OrderBy]] = []
         for order in orders:
             if not (order.startswith("form_stats") or order.startswith("-form_stats")):
                 converted_orders.append(order)
@@ -296,7 +299,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "id": row_ou.id,
                 "org_unit": row_ou.as_dict_for_completeness_stats(),
                 "form_stats": row_ou.form_stats,
-                "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats(),
+                "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
                 "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats() if row_ou.parent else None,
             }
 
@@ -321,7 +324,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
             ou_qs = get_annotated_queryset(ou_qs, orgunit_qs, instance_qs, form_qs)
 
-            top_row_ou = to_dict(ou_qs.first())
+            top_row_ou = to_dict(ou_qs[0])
             top_row_ou["is_root"] = True
             object_list.insert(0, top_row_ou)
 

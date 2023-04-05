@@ -12,13 +12,13 @@ from django.db import transaction
 from django.db.models import Q, Count, QuerySet
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.timezone import now
-from django_stubs_ext import WithAnnotations
 from rest_framework import serializers, status
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
+from typing_extensions import Annotated
 
 import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
@@ -330,7 +330,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                def as_dict_formatter(instance: WithAnnotations[Instance]) -> Dict:
+                def as_dict_formatter(instance: Annotated[Instance]) -> Dict:
                     d = instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0

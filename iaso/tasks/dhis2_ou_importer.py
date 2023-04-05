@@ -326,7 +326,7 @@ def dhis2_ou_importer(
         logger.error(f"{error_count} import errors were ignored")
 
     # TODO: investigate type errors on next two lines
-    the_task.report_success(message=res_string)
+    the_task.report_success(message=res_string)  # type: ignore
     return the_task  # type: ignore
 
 

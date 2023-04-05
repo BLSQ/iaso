@@ -3,32 +3,6 @@ from lxml import etree  # type: ignore
 ENKETO_FORM_ID_SEPARATOR = "-"
 
 
-def inject_userid_and_version(xml_str, user_id, version_id):
-    root = etree.fromstring(xml_str)
-
-    root.set("version", str(version_id))
-
-    meta_tag = [c for c in root if c.tag == "meta"][0]
-
-    edit_user_id_tags = [c for c in meta_tag if c.tag == "editUserID"]
-    if len(edit_user_id_tags) > 0:
-        edit_user_id_tags[0].text = str(user_id)
-    else:
-        edit_user_id_tag = etree.Element("editUserID")
-        edit_user_id_tag.text = str(user_id)
-        meta_tag.append(edit_user_id_tag)
-
-    instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
-    return instance_xml.decode("utf-8")
-
-
-def inject_instance_id_in_instance(xml_str, instance_id):
-    root = etree.fromstring(xml_str)
-    root.set("iasoInstance", str(instance_id))
-    instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
-    return instance_xml.decode("utf-8")
-
-
 def inject_instance_id_in_form(xml_str, instance_id):
     root = etree.fromstring(xml_str)
     root.set("iasoInstance", str(instance_id))

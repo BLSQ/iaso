@@ -285,7 +285,7 @@
           let injectedCode = `&lt;script&gt;(
             ${hookGeo}
           )();&lt;\/script&gt;`;
-    
+
           let parser = new DOMParser();
           let xmlDoc;
           if (mimeType.useXMLparser === true) {
@@ -296,7 +296,7 @@
 
           if (xmlDoc.getElementsByTagName("parsererror").length === 0) { // if no errors were found while parsing...
             xmlDoc.documentElement.insertAdjacentHTML('afterbegin', injectedCode);
-    
+
             if (mimeType.useXMLparser === true) {
               args[0] = [new XMLSerializer().serializeToString(xmlDoc)];
             } else {

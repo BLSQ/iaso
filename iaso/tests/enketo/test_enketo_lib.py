@@ -1,7 +1,8 @@
 from django.test import TestCase
+from lxml import etree
 
 import iaso.models as m
-from iaso.enketo import inject_userid_and_version, to_xforms_xml
+from iaso.enketo import to_xforms_xml
 
 
 class EnketoLibTests(TestCase):
@@ -9,20 +10,38 @@ class EnketoLibTests(TestCase):
         self.maxDiff = None
 
     def test_inject_userid_create_tag_if_not_present(self):
-        xml = inject_userid_and_version(
-            '<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="quality_pca_2.31.8" version="1" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml"><meta><instanceID>uuid:demo</instanceID></meta></data>',
-            546,
-            2012010601,
+        root = etree.fromstring(
+            '<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="quality_pca_2.31.8" version="1" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml"><meta><instanceID>uuid:demo</instanceID></meta></data>'
         )
+        root.set("version", str(2012010601))
+        meta_tag = [c for c in root if c.tag == "meta"][0]
+        edit_user_id_tags = [c for c in meta_tag if c.tag == "editUserID"]
+        if len(edit_user_id_tags) > 0:
+            edit_user_id_tags[0].text = str(546)
+        else:
+            edit_user_id_tag = etree.Element("editUserID")
+            edit_user_id_tag.text = str(546)
+            meta_tag.append(edit_user_id_tag)
+        instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
+        xml = instance_xml.decode("utf-8")
         expectedInjected = '<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="2012010601"><meta><instanceID>uuid:demo</instanceID><editUserID>546</editUserID></meta></data>'
         self.assertEqual(xml, expectedInjected)
 
     def test_inject_userid_update_tag_text_if_present(self):
-        xml = inject_userid_and_version(
-            '<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="1"><meta><instanceID>uuid:demo</instanceID><editUserID>546</editUserID></meta></data>',
-            977,
-            2012010601,
+        root = etree.fromstring(
+            '<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="1"><meta><instanceID>uuid:demo</instanceID><editUserID>546</editUserID></meta></data>'
         )
+        root.set("version", str(2012010601))
+        meta_tag = [c for c in root if c.tag == "meta"][0]
+        edit_user_id_tags = [c for c in meta_tag if c.tag == "editUserID"]
+        if len(edit_user_id_tags) > 0:
+            edit_user_id_tags[0].text = str(977)
+        else:
+            edit_user_id_tag = etree.Element("editUserID")
+            edit_user_id_tag.text = str(977)
+            meta_tag.append(edit_user_id_tag)
+        instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
+        xml = instance_xml.decode("utf-8")
         expectedInjected = '<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="2012010601"><meta><instanceID>uuid:demo</instanceID><editUserID>977</editUserID></meta></data>'
         self.assertEqual(xml, expectedInjected)
 

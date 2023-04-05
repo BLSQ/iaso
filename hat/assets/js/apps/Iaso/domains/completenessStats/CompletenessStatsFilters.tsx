@@ -122,6 +122,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         value={filters.formId}
                         loading={fetchingForms}
                         options={forms ?? []}
+                        multi
                     />
                     <PeriodPicker
                         message={

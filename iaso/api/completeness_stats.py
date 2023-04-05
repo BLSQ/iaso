@@ -122,8 +122,8 @@ class ParamSerializer(serializers.Serializer):
             self.fields["org_unit_group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
             # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
-            self.fields["form_id"].default = Form.objects.filter_for_user_and_app_id(user)[:5]
-            self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user)
+            self.fields["form_id"].default = Form.objects.filter_for_user_and_app_id(user).distinct()[:5]
+            self.fields["form_id"].child_relation.queryset = Form.objects.filter_for_user_and_app_id(user).distinct()
             self.fields["planning_id"].queryset = Planning.objects.filter_for_user(user)
 
     org_unit_type_ids = PrimaryKeysRelatedField(
@@ -169,12 +169,10 @@ class ParamSerializer(serializers.Serializer):
         return period_value
 
     def validate_form_id(self, forms: Union[List[Form], QuerySet[Form]]):
-        # reconvert this to a queryset
-        if isinstance(forms, list):
-            queryset = self.fields["form_id"].child_relation.queryset  # type: ignore
-            return queryset.filter(id__in=[f.id for f in forms])
-        else:
-            return forms
+        # reconvert this to a queryset, if this is a List.
+        # resolve problem with duplicate Form if form is in multiple project
+        # This method seems faster than using a distinct()
+        return Form.objects.filter(id__in=[f.id for f in forms])
 
 
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):

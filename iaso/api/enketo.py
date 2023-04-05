@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup as Soup  # type: ignore
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
-import xml.etree.ElementTree as ElementTree
 from rest_framework import permissions
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
@@ -24,6 +23,7 @@ from iaso.enketo import (
     inject_instance_id_in_form,
     EnketoError,
 )
+from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
 from iaso.models import User
 
@@ -140,7 +140,7 @@ def enketo_public_create_url(request):
             {
                 "error": "Ambiguous request",
                 "message": _(
-                    "There are multiple submissions for this period and organizational unit, please log in the dashboard to fix."
+                    "There are multiple submissions for this period andorganizational unit, please log in the dashboard to fix."
                 ),
             },
             status=400,
@@ -209,31 +209,7 @@ def _build_url_for_edition(request, instance, user_id=None):
     # Construct a modified XML from the initial one, with some custom value we want Enketo to pass around
     # then send it as POST to enketo that will return an url for us
     instance_xml = instance.file.read()
-    xml_str = instance_xml.decode("utf-8")
-
-    # get the instanceID (uuid) from the //meta/instanceID
-    #  We have an uuid on instance. but it seems not always filled?
-    root = ElementTree.fromstring(xml_str)
-    instance_id_tag = root.find(".//meta/instanceID")
-    instance_uuid = instance_id_tag.text.replace("uuid:", "")
-
-    root.set("version", str(instance.form.latest_version.version_id))
-    root.set("iasoInstance", str(instance.id))
-
-    # inject the editUserID in the meta of the xml to allow attributing Modification to the user
-
-    # Get the existing editUserId tag, if it exists
-    edit_user_id = root.find(".//meta/editUserId")
-    # Set the value of the existing editUserId tag, or create a new one if it doesn't exist
-    if edit_user_id is not None:
-        edit_user_id.text = str(user_id)
-    else:
-        edit_user_id = ElementTree.Element("editUserId")
-        edit_user_id.text = str(user_id)
-        meta = root.find(".//meta")
-        meta.append(edit_user_id)
-
-    new_xml = ElementTree.tostring(root, encoding="UTF-8")
+    instance_uuid, new_xml = inject_xml_find_uuid(instance, instance_xml, user_id)
 
     edit_url = enketo_url_for_edition(
         public_url_for_enketo(request, "/api/enketo"),

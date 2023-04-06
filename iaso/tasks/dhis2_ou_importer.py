@@ -42,13 +42,14 @@ class DhisGeom(TypedDict):
 
 
 class DhisOrgunit(TypedDict):
-    id: str
-    name: str
-    parent: Optional[str]
-    coordinates: Optional[str]
+    id: str  # "Rp268JB6Ne4"
+    name: str  # "Adonkia CHP"
+    parent: Optional[str]  # "qtr8GGlm4gg"
+    coordinates: Optional[str]  # in old version
     geometry: Optional[DhisGeom]
     organisationUnitGroups: List[DhisGroup]
-    path: str
+    path: str  # e.g. "/ImspTQPwCqd/at6UHUQatSo/qtr8GGlm4gg/Rp268JB6Ne4"
+    level: int  # e.g 4
 
 
 def get_api(options_or_url, login=None, password=None):
@@ -64,7 +65,7 @@ def fetch_orgunits(api: Api) -> List[DhisOrgunit]:
     for page in api.get_paged(
         "organisationUnits",
         page_size=500,
-        params={"fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"},
+        params={"fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level"},
     ):
         orgunits.extend(page["organisationUnits"])
         logger.info(
@@ -86,22 +87,39 @@ def map_parent(row, org_unit, unit_dict):
         org_unit.parent = unit_dict[parent_id]
 
 
-def find_org_unit_type(groups, group_type_dict):
+def find_org_unit_type(
+    groups: List[DhisGroup],
+    group_type_dict,
+    level: int,
+    level_to_type: Dict[int, OrgUnitType],
+):
+    # Group matching startegy (to deprecate?) then by level
     for group in groups:
         if group["name"] in group_type_dict:
             return group_type_dict[group["name"]]
+    return level_to_type.get(level, None)
 
 
 def orgunit_from_row(
-    row: DhisOrgunit, source, version, unit_dict, group_dict, group_type_dict, validate, unknown_unit_type
-):
+    row: DhisOrgunit,
+    source,
+    version,
+    unit_dict,
+    group_dict,
+    group_type_dict,
+    validate,
+    unknown_unit_type: OrgUnitType,  # fall back org unit type
+    level_to_type: Dict[int, OrgUnitType],
+) -> OrgUnit:
     org_unit = OrgUnit()
     org_unit.name = row["name"].strip()
     org_unit.sub_source = source.name
     org_unit.version = version
     org_unit.source_ref = row["id"].strip()
     org_unit.validation_status = OrgUnit.VALIDATION_VALID if validate else OrgUnit.VALIDATION_NEW
-    org_unit.org_unit_type = find_org_unit_type(row["organisationUnitGroups"], group_type_dict)
+    org_unit.org_unit_type = find_org_unit_type(
+        row["organisationUnitGroups"], group_type_dict, row["level"], level_to_type
+    )
     if not org_unit.org_unit_type:
         org_unit.org_unit_type = unknown_unit_type
         if group_type_dict:
@@ -267,7 +285,6 @@ def dhis2_ou_importer(
     connection_config = get_api_config(url, login, password, source)
     api = get_api(connection_config)
 
-    # FIXME: the task parameter (of dhis2_ou_importer) is optional, but the code seems to assume it is not
     the_task.report_progress_and_stop_if_killed(progress_message="Fetching org units")  # type: ignore
 
     if source_version_number is None:
@@ -284,6 +301,7 @@ def dhis2_ou_importer(
         source.default_version = version
         source.save()
 
+    # if there is no default source version on account, set it as such
     # TODO: investigate: what happens if source.projects is None here?
     account = source.projects.first().account  # type: ignore
     # TODO: investigate: what happens if account is None here?
@@ -312,6 +330,30 @@ def dhis2_ou_importer(
     return the_task  # type: ignore
 
 
+class LeveLDict(TypedDict):
+    displayName: str
+    id: int
+    level: int
+    name: str
+
+
+def get_org_unit_levels(api: Api) -> List[LeveLDict]:
+    res = api.get_paged(
+        "organisationUnitLevels",
+        merge=True,
+        params=dict(
+            fields=[
+                "displayName",
+                "id",
+                "level",
+                "name",
+            ]
+        ),
+    )
+    levels = res.get("organisationUnitLevels", [])
+    return levels
+
+
 def import_orgunits_and_groups(
     api, source, version, validate, continue_on_error, group_type_dict, start, update_mode, task
 ):
@@ -325,7 +367,22 @@ def import_orgunits_and_groups(
 
     # Fallback type if we don't find a type
     unknown_unit_type, _created = OrgUnitType.objects.get_or_create(name=f"{source.name}-{'Unknown'}-{source.id:d}")
-    unknown_unit_type.projects.set(source.projects.all())
+    source_projects = source.projects.all()
+    unknown_unit_type.projects.set(source_projects)
+
+    # Create OrgUnit from levels
+    levels = get_org_unit_levels(api)
+    level_to_type: Dict = {}
+    for level in levels:
+        out = OrgUnitType.objects.filter(projects__in=source_projects, name=level["name"]).first()
+        if not out:
+            out = OrgUnitType.objects.create(
+                name=level["name"],
+                short_name=level["name"],
+                depth=level["level"],
+            )
+            out.projects.set(source_projects)
+        level_to_type[out.depth] = out
 
     group_dict = {}
     unit_dict = {ou.source_ref: ou for ou in version.orgunit_set.all()}
@@ -343,7 +400,15 @@ def import_orgunits_and_groups(
 
         try:
             org_unit = orgunit_from_row(
-                row, source, version, unit_dict, group_dict, group_type_dict, validate, unknown_unit_type
+                row,
+                source,
+                version,
+                unit_dict,
+                group_dict,
+                group_type_dict,
+                validate,
+                unknown_unit_type,
+                level_to_type,
             )
             unit_dict[org_unit.source_ref] = org_unit
             created_ou[org_unit.source_ref] = org_unit

@@ -16,6 +16,7 @@ geopy==1.21.0
 Shapely==1.7.0
 unidecode==1.2.0
 drf-yasg==1.20.0
+django-cte==1.2.1
 
 # web server and auth
 oauth2client==4.1.3

@@ -2,6 +2,7 @@ import operator
 import typing
 from functools import reduce
 
+import django_cte
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
@@ -65,7 +66,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
     def countries(self):
         return self.filter(category="COUNTRY")
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -150,7 +153,7 @@ class OrgUnitType(models.Model):
 
 
 # noinspection PyTypeChecker
-class OrgUnitQuerySet(models.QuerySet):
+class OrgUnitQuerySet(django_cte.CTEQuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream

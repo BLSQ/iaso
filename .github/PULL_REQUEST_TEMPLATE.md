@@ -7,7 +7,7 @@ Related JIRA tickets : IA-XXX, WC2-XXX, POLIO-XXX
 - [ ] Did I use eslint and black formatters
 - [ ] Is my code clear enough and well documented
 - [ ] Are my typescript files well typed
-- [ ] New translations have been added or updated if new string have been introduced in the frontend
+- [ ] New translations have been added or updated if new strings have been introduced in the frontend
 - [ ] My migrations file are included
 - [ ] Are there enough tests
 - [ ] Documentation has been included (for new feature)

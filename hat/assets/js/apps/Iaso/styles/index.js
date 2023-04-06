@@ -17,6 +17,7 @@ export const getOverriddenTheme = (theme, themeConfig) => {
             primary: {
                 contrastText: primaryContrastText,
                 dark: primaryColor.darken(0.2).hex(),
+                original: primaryColor,
                 light: primaryColor.lighten(0.2).hex(),
                 main: primaryColor.hex(),
                 background: primaryBackgroundColor.hex(),

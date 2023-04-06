@@ -32,6 +32,11 @@ const supportedOptionsTypes = [
     'end',
     'today',
     'calculate',
+    'select one',
+    'select multi',
+    'select one',
+    'select multi',
+    'calculate',
 ];
 
 export const SourceCell: FunctionComponent<Props> = ({

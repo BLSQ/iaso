@@ -11,14 +11,14 @@ class EnketoLibTests(TestCase):
 
     def test_inject_userid_create_tag_if_not_present(self):
         original_xml = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="quality_pca_2.31.8" version="1" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml"><meta><instanceID>uuid:demo</instanceID></meta></data>'
-        uuid, xml = inject_xml_find_uuid(123, 2012010601, original_xml, 546)
+        uuid, xml = inject_xml_find_uuid(original_xml, 123, 2012010601, 546)
         expectedInjected = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="2012010601" iasoInstance="123"><meta><instanceID>uuid:demo</instanceID><editUserID>546</editUserID></meta></data>'
         self.assertEqual(xml, expectedInjected)
         self.assertEqual(uuid, "demo")
 
     def test_inject_userid_update_tag_text_if_present(self):
         original_xml = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="1"><meta><instanceID>uuid:demo</instanceID><editUserID>546</editUserID></meta></data>'
-        uuid, xml = inject_xml_find_uuid(123, 2012010601, original_xml, 977)
+        uuid, xml = inject_xml_find_uuid(original_xml, 123, 2012010601, 977)
         expectedInjected = b'<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" id="quality_pca_2.31.8" version="2012010601" iasoInstance="123"><meta><instanceID>uuid:demo</instanceID><editUserID>977</editUserID></meta></data>'
         self.assertEqual(str(xml), str(expectedInjected))
         self.assertEqual(uuid, "demo")

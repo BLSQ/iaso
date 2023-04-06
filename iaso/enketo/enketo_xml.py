@@ -69,7 +69,10 @@ def to_xforms_xml(form, download_url, version, md5checksum, new_form_id=None):
 
 
 # we still use lxml.etree and not xml.etree because the latter seems to drop the namespace attribute by default
-def inject_xml_find_uuid(instance_id, version_id, instance_xml, user_id):
+def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id) -> tuple[str, bytes]:
+    """ "Inject the attribute in different place in the xml
+    Return the uuid found in the xml
+    """
     xml_str = instance_xml.decode("utf-8")
     #  Get the instanceID (uuid) from the //meta/instanceID
     #  We have an uuid on instance. but it seems not always filled?

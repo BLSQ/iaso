@@ -68,15 +68,17 @@ def to_xforms_xml(form, download_url, version, md5checksum, new_form_id=None):
     return xforms_xml.decode("utf-8")
 
 
-def inject_xml_find_uuid(instance, instance_xml, user_id):
+# we still use lxml.etree and not xml.etree because the latter seems to drop the namespace attribute by default
+def inject_xml_find_uuid(instance_id, version_id, instance_xml, user_id):
     xml_str = instance_xml.decode("utf-8")
     #  Get the instanceID (uuid) from the //meta/instanceID
     #  We have an uuid on instance. but it seems not always filled?
     root = etree.fromstring(xml_str)
     instance_id_tag = root.find(".//meta/instanceID")
     instance_uuid = instance_id_tag.text.replace("uuid:", "")
-    root.attrib["version"] = str(instance.form.latest_version.version_id)
-    root.attrib["iasoInstance"] = str(instance.id)
+
+    root.attrib["version"] = str(version_id)
+    root.attrib["iasoInstance"] = str(instance_id)
     # inject the editUserID in the meta of the xml to allow attributing Modification to the user
     edit_user_id_tag = root.find(".//meta/editUserID")
     if edit_user_id_tag is None:

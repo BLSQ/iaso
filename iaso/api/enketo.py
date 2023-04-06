@@ -209,7 +209,8 @@ def _build_url_for_edition(request, instance, user_id=None):
     # Construct a modified XML from the initial one, with some custom value we want Enketo to pass around
     # then send it as POST to enketo that will return an url for us
     instance_xml = instance.file.read()
-    instance_uuid, new_xml = inject_xml_find_uuid(instance, instance_xml, user_id)
+    version_id = instance.form.latest_version.version_id
+    instance_uuid, new_xml = inject_xml_find_uuid(instance.id, version_id, instance_xml, user_id)
 
     edit_url = enketo_url_for_edition(
         public_url_for_enketo(request, "/api/enketo"),

@@ -64,9 +64,9 @@ const useGetOptions = () => {
         useSafeIntl();
     const getOptions = (possibleFields: PossibleField[]): ChangesOption[] =>
         possibleFields.map(field => ({
-            label: `${formatLabel(field)} - ${formatMessage(MESSAGES.type)}: ${
-                field.type
-            }`,
+            label: `${formatLabel(field)} - ID: ${
+                field.fieldKey
+            } - ${formatMessage(MESSAGES.type)}: ${field.type}`,
             value: field.fieldKey,
             type: field.type,
         }));

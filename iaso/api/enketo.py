@@ -140,7 +140,7 @@ def enketo_public_create_url(request):
             {
                 "error": "Ambiguous request",
                 "message": _(
-                    "There are multiple submissions for this period andorganizational unit, please log in the dashboard to fix."
+                    "There are multiple submissions for this period and organizational unit, please log in the dashboard to fix."
                 ),
             },
             status=400,

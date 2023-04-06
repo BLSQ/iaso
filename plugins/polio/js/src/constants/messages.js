@@ -830,10 +830,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.childrenMarked',
         defaultMessage: 'Children with mark',
     },
-    dictrictName: {
-        id: 'iaso.polio.label.dictrictName',
-        defaultMessage: 'Name',
-    },
     passing: {
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',

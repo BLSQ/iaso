@@ -283,6 +283,9 @@ class FormVersion(models.Model):
 
 
 def update_possible_fields(sender, instance, **kwargs):
+    if not instance.form_descriptor and instance.xls_file:
+        json_survey = parsing.to_json_dict(instance)
+        instance.form_descriptor = json_survey
     questions = instance.questions_by_path()
     instance.possible_fields = _reformat_questions(questions)
 

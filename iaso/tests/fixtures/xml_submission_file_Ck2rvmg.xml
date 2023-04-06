@@ -1,0 +1,32 @@
+<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:odk="http://www.opendatakit.org/xforms" id="Nouv_verif_comm_FBPCI" version="2023021601" iasoInstance="822863">
+          <start>2023-04-03T10:51:59.531+00:00</start>
+          <end>2023-04-04T07:30:33.329-00:00</end>
+          <today>2023-04-03</today>
+          <deviceid>2</deviceid>
+          <subscriberid>subscriberid not found</subscriberid>
+          <imei>1</imei>
+          <simserial>simserial not found</simserial>
+          <Utilisateur>
+            <utilisateur>2</utilisateur>
+          </Utilisateur>
+          <identification>
+            <acv>1</acv>
+          </identification>
+          <nom-enqueteur>FAKE</nom-enqueteur>
+          <contact>0748644316</contact>
+          <geopoint/>
+          <verification_client>
+            <notes/>
+            <date-enquete>2023-02-14</date-enquete>
+            <reference>10</reference>
+            <id-client>BAD CHAR: ÏGA</id-client>
+          </verification_client>
+          <number_of_echantillon>1</number_of_echantillon>
+          <satisfaction_spec>
+            <total_satis_spec>11</total_satis_spec>
+            <aff_total_satis_spec/>
+          </satisfaction_spec>
+          <meta>
+            <instanceID>uuid:9f5efef7-045e-4660-b0ba-ac4d532ef4fb</instanceID>
+          <editUserID>1018</editUserID><deprecatedID>uuid:91d0a541-0a4d-4b11-91df-023d66371b61</deprecatedID></meta>
+        </data>

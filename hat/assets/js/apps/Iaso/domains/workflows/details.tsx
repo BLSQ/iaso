@@ -18,6 +18,8 @@ import {
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
+import uniqWith from 'lodash/uniqWith';
+import isEqual from 'lodash/isEqual';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -43,7 +45,8 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns } from './config/changes';
 import { useGetFollowUpsColumns, getConfigFields } from './config/followUps';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
+import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../forms/types/forms';
 
 type Router = {
     goBack: () => void;
@@ -114,9 +117,16 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         updateCurrentFollowUps(workflowVersion?.follow_ups);
     }, [workflowVersion?.follow_ups]);
 
-    const { possibleFields: targetPossibleFields } = useGetPossibleFields(
-        workflowVersion?.reference_form.id,
-    );
+    const { formVersions: targetPossibleFieldsByVersion } =
+        useGetPossibleFieldsByFormVersion(workflowVersion?.reference_form.id);
+    const targetPossibleFields: PossibleField[] = targetPossibleFieldsByVersion
+        ? uniqWith(
+              targetPossibleFieldsByVersion?.flatMap(
+                  formVersion => formVersion.possible_fields,
+              ),
+              isEqual,
+          )
+        : [];
     const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );

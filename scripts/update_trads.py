@@ -19,6 +19,7 @@ TODO: Add the check in CI
 
 import json
 import sys
+import typing
 from collections import OrderedDict, defaultdict
 import os
 
@@ -58,6 +59,7 @@ if __name__ == "__main__":
 
     # keep trace of what we set in previous traduction file. so we can detect properly
     # if a plugin reuse a translation from the main file
+    previous_trad: typing.DefaultDict[str, typing.Dict[str, str]]
     previous_trad = defaultdict(dict)
     for path in paths:
         trad_dir = path["translations_dir"]

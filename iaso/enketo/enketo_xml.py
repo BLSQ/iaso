@@ -1,3 +1,5 @@
+from typing import Tuple
+
 from lxml import etree  # type: ignore
 
 ENKETO_FORM_ID_SEPARATOR = "-"
@@ -69,7 +71,7 @@ def to_xforms_xml(form, download_url, version, md5checksum, new_form_id=None):
 
 
 # we still use lxml.etree and not xml.etree because the latter seems to drop the namespace attribute by default
-def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id) -> tuple[str, bytes]:
+def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id) -> Tuple[str, bytes]:
     """ "Inject the attribute in different place in the xml
     Return the uuid found in the xml
     """

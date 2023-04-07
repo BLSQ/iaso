@@ -8,11 +8,13 @@ import { ChangesModal } from './Modal';
 
 import { useDeleteWorkflowChange } from '../../hooks/requests/useDeleteWorkflowChange';
 import { PossibleField } from '../../../forms/types/forms';
+import { FormVersion } from '../../../forms/hooks/useGetPossibleFields';
 
 type Props = {
     change: Change;
     versionId: string;
-    targetPossibleFields: PossibleField[];
+    targetPossibleFields?: PossibleField[];
+    targetPossibleFieldsByVersion?: FormVersion[];
     referenceForm?: ReferenceForm;
     workflowVersion?: WorkflowVersionDetail;
 };
@@ -21,6 +23,7 @@ export const ChangesActionCell: FunctionComponent<Props> = ({
     change,
     versionId,
     targetPossibleFields,
+    targetPossibleFieldsByVersion,
     referenceForm,
     workflowVersion,
 }) => {
@@ -28,9 +31,11 @@ export const ChangesActionCell: FunctionComponent<Props> = ({
     return (
         <>
             <ChangesModal
+                iconProps={{}}
                 change={change}
                 versionId={versionId}
                 targetPossibleFields={targetPossibleFields}
+                targetPossibleFieldsByVersion={targetPossibleFieldsByVersion}
                 referenceForm={referenceForm}
                 changes={workflowVersion?.changes || []}
             />

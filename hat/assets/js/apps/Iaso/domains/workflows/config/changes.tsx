@@ -14,10 +14,12 @@ import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
 import { WorkflowVersionDetail, ChangesOption, Mapping } from '../types';
 import { PossibleField } from '../../forms/types/forms';
+import { FormVersion } from '../../forms/hooks/useGetPossibleFields';
 
 export const useGetChangesColumns = (
     versionId: string,
-    targetPossibleFields: PossibleField[],
+    targetPossibleFields?: PossibleField[],
+    targetPossibleFieldsByVersion?: FormVersion[],
     workflowVersion?: WorkflowVersionDetail,
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -75,6 +77,9 @@ export const useGetChangesColumns = (
                                 change={change}
                                 versionId={versionId}
                                 targetPossibleFields={targetPossibleFields}
+                                targetPossibleFieldsByVersion={
+                                    targetPossibleFieldsByVersion
+                                }
                                 referenceForm={workflowVersion?.reference_form}
                                 workflowVersion={workflowVersion}
                             />

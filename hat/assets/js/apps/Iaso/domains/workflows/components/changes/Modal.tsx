@@ -3,6 +3,7 @@ import React, {
     useState,
     useMemo,
     useCallback,
+    useEffect,
 } from 'react';
 
 import {
@@ -13,6 +14,8 @@ import {
     LoadingSpinner,
 } from 'bluesquare-components';
 import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
+import uniqWith from 'lodash/uniqWith';
+import isEqual from 'lodash/isEqual';
 
 import { Grid, Box, makeStyles } from '@material-ui/core';
 
@@ -28,14 +31,19 @@ import MESSAGES from '../../messages';
 
 import { Change, Mapping, ReferenceForm } from '../../types';
 import { PossibleField } from '../../../forms/types/forms';
-import { useGetPossibleFields } from '../../../forms/hooks/useGetPossibleFields';
+import {
+    FormVersion,
+    useGetPossibleFieldsByFormVersion,
+} from '../../../forms/hooks/useGetPossibleFields';
+import { DropdownOptions } from '../../../../types/utils';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     change?: Change;
     versionId: string;
-    targetPossibleFields: PossibleField[];
+    targetPossibleFields?: PossibleField[];
+    targetPossibleFieldsByVersion?: FormVersion[];
     referenceForm?: ReferenceForm;
     changes?: Change[];
 };
@@ -80,12 +88,21 @@ const Modal: FunctionComponent<Props> = ({
     versionId,
     change,
     targetPossibleFields,
+    targetPossibleFieldsByVersion,
     referenceForm,
     changes,
 }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const [form, setForm] = useState<number | undefined>(change?.form?.id);
+    const [targetVersion, setTargetVersion] = useState<string>('all');
+    const [selectedTargetPossibleFields, setSelectedTargetPossibleFields] =
+        useState<PossibleField[] | undefined>(targetPossibleFields);
+
+    const [sourceVersion, setSourceVersion] = useState<string>('all');
+    const [selectedSourcePossibleFields, setSelectedSourcePossibleFields] =
+        useState<PossibleField[] | undefined>();
+
     const [isTouched, setIsTouched] = useState<boolean>(false);
     const { mutate: saveChange } = useSaveWorkflowChange(
         closeDialog,
@@ -139,10 +156,18 @@ const Modal: FunctionComponent<Props> = ({
     );
 
     const {
-        possibleFields: sourcePossibleFields,
+        formVersions: sourcePossibleFieldsByVersion,
         isFetchingForm: isFetchingSourcePossibleFields,
-    } = useGetPossibleFields(form);
-
+    } = useGetPossibleFieldsByFormVersion(form);
+    const sourcePossibleFields: PossibleField[] = useMemo(() => {
+        if (!sourcePossibleFieldsByVersion) return [];
+        return uniqWith(
+            sourcePossibleFieldsByVersion.flatMap(
+                formVersion => formVersion.possible_fields,
+            ),
+            isEqual,
+        );
+    }, [sourcePossibleFieldsByVersion]);
     const isValidMapping: boolean =
         mappingArray.filter(mapping =>
             sourcePossibleFields.some(
@@ -156,6 +181,75 @@ const Modal: FunctionComponent<Props> = ({
         Boolean(form) &&
         mappingArray.length > 0 &&
         !mappingArray.find(mapping => !mapping.target || !mapping.source);
+
+    const sourceVersionsDropdownOptions: DropdownOptions<string>[] =
+        useMemo(() => {
+            const options =
+                sourcePossibleFieldsByVersion?.map(version => ({
+                    label: version.version_id,
+                    value: version.version_id,
+                })) || [];
+            options.unshift({
+                label: formatMessage(MESSAGES.allVersions),
+                value: 'all',
+            });
+            return options;
+        }, [formatMessage, sourcePossibleFieldsByVersion]);
+    const targetVersionsDropdownOptions: DropdownOptions<string>[] =
+        useMemo(() => {
+            const options =
+                targetPossibleFieldsByVersion?.map(version => ({
+                    label: version.version_id,
+                    value: version.version_id,
+                })) || [];
+            options.unshift({
+                label: formatMessage(MESSAGES.allVersions),
+                value: 'all',
+            });
+            return options;
+        }, [formatMessage, targetPossibleFieldsByVersion]);
+
+    const handleChangeTargetVersion = useCallback(
+        (_, value) => {
+            if (value !== 'all') {
+                setSelectedTargetPossibleFields(
+                    targetPossibleFieldsByVersion?.find(
+                        version => version.version_id === value,
+                    )?.possible_fields || [],
+                );
+            } else {
+                setSelectedTargetPossibleFields(targetPossibleFields);
+            }
+            setTargetVersion(value);
+        },
+        [targetPossibleFields, targetPossibleFieldsByVersion],
+    );
+    const handleChangeSourceVersion = useCallback(
+        (_, value) => {
+            if (value !== 'all') {
+                setSelectedSourcePossibleFields(
+                    sourcePossibleFieldsByVersion?.find(
+                        version => version.version_id === value,
+                    )?.possible_fields || [],
+                );
+            } else {
+                setSelectedSourcePossibleFields(sourcePossibleFields);
+            }
+            setSourceVersion(value);
+        },
+        [sourcePossibleFields, sourcePossibleFieldsByVersion],
+    );
+
+    useEffect(() => {
+        if (
+            (selectedSourcePossibleFields?.length === 0 ||
+                !selectedSourcePossibleFields) &&
+            sourcePossibleFields.length > 0
+        ) {
+            setSelectedSourcePossibleFields(sourcePossibleFields);
+        }
+    }, [selectedSourcePossibleFields, sourcePossibleFields]);
+    console.log('selectedSourcePossibleFields', selectedSourcePossibleFields);
     return (
         <ConfirmCancelModal
             allowConfirm={allowConfirm}
@@ -207,13 +301,45 @@ const Modal: FunctionComponent<Props> = ({
                             {referenceForm?.name}
                         </Box>
                     </Grid>
+
+                    <Grid item xs={12} container spacing={0}>
+                        <Grid item md={1} />
+                        <Grid item xs={12} md={4}>
+                            <InputComponent
+                                type="select"
+                                keyValue="sourceVersion"
+                                onChange={handleChangeSourceVersion}
+                                value={sourceVersion}
+                                label={MESSAGES.sourceVersion}
+                                options={sourceVersionsDropdownOptions}
+                                clearable={false}
+                            />
+                        </Grid>
+                        <Grid item md={1} />
+                        <Grid item xs={12} md={4}>
+                            <InputComponent
+                                type="select"
+                                keyValue="targetVersion"
+                                onChange={handleChangeTargetVersion}
+                                value={targetVersion}
+                                label={MESSAGES.targetVersion}
+                                options={targetVersionsDropdownOptions}
+                                clearable={false}
+                            />
+                        </Grid>
+                        <Grid item md={2} />
+                    </Grid>
                     <Grid item xs={12}>
                         <MappingTable
                             setIsTouched={setIsTouched}
                             mappingArray={mappingArray}
                             setMappingArray={setMappingArray}
-                            sourcePossibleFields={sourcePossibleFields}
-                            targetPossibleFields={targetPossibleFields}
+                            sourcePossibleFields={
+                                selectedSourcePossibleFields || []
+                            }
+                            targetPossibleFields={
+                                selectedTargetPossibleFields || []
+                            }
                             isFetchingSourcePossibleFields={
                                 isFetchingSourcePossibleFields
                             }

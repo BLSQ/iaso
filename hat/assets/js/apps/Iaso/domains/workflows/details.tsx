@@ -2,6 +2,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useState,
+    useMemo,
     useEffect,
 } from 'react';
 import {
@@ -119,14 +120,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
 
     const { formVersions: targetPossibleFieldsByVersion } =
         useGetPossibleFieldsByFormVersion(workflowVersion?.reference_form.id);
-    const targetPossibleFields: PossibleField[] = targetPossibleFieldsByVersion
-        ? uniqWith(
-              targetPossibleFieldsByVersion?.flatMap(
-                  formVersion => formVersion.possible_fields,
-              ),
-              isEqual,
-          )
-        : [];
+    const targetPossibleFields: PossibleField[] | undefined = useMemo(() => {
+        if (!targetPossibleFieldsByVersion) return undefined;
+        return uniqWith(
+            targetPossibleFieldsByVersion.flatMap(
+                formVersion => formVersion.possible_fields,
+            ),
+            isEqual,
+        );
+    }, [targetPossibleFieldsByVersion]);
     const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );
@@ -143,6 +145,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const changesColumns = useGetChangesColumns(
         versionId,
         targetPossibleFields,
+        targetPossibleFieldsByVersion,
         workflowVersion,
     );
     const followUpsColumns = useGetFollowUpsColumns(
@@ -308,7 +311,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             }
                             extraProps={{
                                 isLoading,
-                                targetPossibleFields,
+                                targetPossibleFieldsByVersion,
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (
@@ -316,8 +319,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}
-                                    targetPossibleFields={
-                                        targetPossibleFields || []
+                                    targetPossibleFields={targetPossibleFields}
+                                    targetPossibleFieldsByVersion={
+                                        targetPossibleFieldsByVersion
                                     }
                                     referenceForm={
                                         workflowVersion?.reference_form

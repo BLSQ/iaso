@@ -74,7 +74,7 @@ export const usePossibleFieldsDropdown = (
     }, [isFetchingForm, possibleFields]);
 };
 
-type FormVersion = {
+export type FormVersion = {
     version_id: string;
     possible_fields: PossibleField[];
 };

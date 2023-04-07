@@ -80,14 +80,14 @@ def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id) -> Tupl
     #  We have an uuid on instance. but it seems not always filled?
     root = etree.fromstring(xml_str)
     instance_id_tag = root.find(".//meta/instanceID")
-    instance_uuid = instance_id_tag.text.replace("uuid:", "")
+    instance_uuid = instance_id_tag.text.replace("uuid:", "")  # type: ignore
 
     root.attrib["version"] = str(version_id)
     root.attrib["iasoInstance"] = str(instance_id)
     # inject the editUserID in the meta of the xml to allow attributing Modification to the user
     edit_user_id_tag = root.find(".//meta/editUserID")
     if edit_user_id_tag is None:
-        edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")
+        edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")  # type: ignore
     edit_user_id_tag.text = str(user_id)
     new_xml = etree.tostring(root, encoding="UTF-8", pretty_print=False)
     return instance_uuid, new_xml

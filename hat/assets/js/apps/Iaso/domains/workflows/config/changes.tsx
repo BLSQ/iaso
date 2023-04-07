@@ -9,12 +9,21 @@ import { ChangesActionCell } from '../components/changes/ActionCell';
 import { TargetCell } from '../components/changes/TargetCell';
 import { SourceCell } from '../components/changes/SourceCell';
 import { MappingCell } from '../components/changes/MappingCell';
+import { HeadTargetCell } from '../components/changes/HeadTargetCell';
+import { HeadSourceCell } from '../components/changes/HeadSourceCell';
 
 import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
-import { WorkflowVersionDetail, ChangesOption, Mapping } from '../types';
+import {
+    WorkflowVersionDetail,
+    ChangesOption,
+    Mapping,
+    Change,
+    ReferenceForm,
+} from '../types';
 import { PossibleField } from '../../forms/types/forms';
 import { FormVersion } from '../../forms/hooks/useGetPossibleFields';
+import { DropdownOptions } from '../../../types/utils';
 
 export const useGetChangesColumns = (
     versionId: string,
@@ -107,6 +116,20 @@ type Params = {
     handleDelete: (index: number) => void;
     mappingArray: Mapping[];
     isFetchingSourcePossibleFields: boolean;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeForm: (_, value: string) => void;
+    changes?: Change[];
+    change?: Change;
+    form?: number;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeSourceVersion: (_, value: string) => void;
+    sourceVersion: string;
+    sourceVersionsDropdownOptions: DropdownOptions<string>[];
+    // eslint-disable-next-line no-unused-vars
+    handleChangeTargetVersion: (_, value: string) => void;
+    targetVersion: string;
+    targetVersionsDropdownOptions: DropdownOptions<string>[];
+    referenceForm?: ReferenceForm;
 };
 
 export const useGetChangesModalColumns = ({
@@ -116,12 +139,35 @@ export const useGetChangesModalColumns = ({
     handleDelete,
     mappingArray,
     isFetchingSourcePossibleFields,
+    handleChangeForm,
+    changes,
+    change,
+    form,
+    handleChangeSourceVersion,
+    sourceVersion,
+    sourceVersionsDropdownOptions,
+    handleChangeTargetVersion,
+    targetVersion,
+    targetVersionsDropdownOptions,
+    referenceForm,
 }: Params): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return [
         {
-            Header: formatMessage(MESSAGES.source),
+            Header: (
+                <HeadSourceCell
+                    handleChangeForm={handleChangeForm}
+                    changes={changes}
+                    change={change}
+                    form={form}
+                    handleChangeSourceVersion={handleChangeSourceVersion}
+                    sourceVersion={sourceVersion}
+                    sourceVersionsDropdownOptions={
+                        sourceVersionsDropdownOptions
+                    }
+                />
+            ),
             sortable: false,
             accessor: 'source',
             width: 400,
@@ -142,7 +188,16 @@ export const useGetChangesModalColumns = ({
             },
         },
         {
-            Header: formatMessage(MESSAGES.target),
+            Header: (
+                <HeadTargetCell
+                    handleChangeTargetVersion={handleChangeTargetVersion}
+                    targetVersion={targetVersion}
+                    targetVersionsDropdownOptions={
+                        targetVersionsDropdownOptions
+                    }
+                    referenceForm={referenceForm}
+                />
+            ),
             sortable: false,
             accessor: 'target',
             width: 400,

@@ -13,18 +13,14 @@ import {
     AddButton,
     LoadingSpinner,
 } from 'bluesquare-components';
-import ArrowRightAltIcon from '@material-ui/icons/ArrowRightAlt';
 import uniqWith from 'lodash/uniqWith';
 import isEqual from 'lodash/isEqual';
 
-import { Grid, Box, makeStyles } from '@material-ui/core';
-
-import InputComponent from '../../../../components/forms/InputComponent';
+import { Box, makeStyles } from '@material-ui/core';
 import { EditIconButton } from '../ModalButtons';
 import { MappingTable } from './MappingTable';
 import { Popper } from './InfoPopper';
 
-import { useGetForms } from '../../hooks/requests/useGetForms';
 import { useSaveWorkflowChange } from '../../hooks/requests/useSaveWorkflowChange';
 
 import MESSAGES from '../../messages';
@@ -59,19 +55,7 @@ const mapChange = (change?: Change): Mapping[] => {
     return mapArray;
 };
 
-const useStyles = makeStyles(theme => ({
-    referenceForm: {
-        height: '100%',
-        display: 'flex',
-        alignItems: 'center',
-        marginTop: 5,
-        marginLeft: theme.spacing(2),
-        '& span': {
-            fontWeight: 'bold',
-            paddingLeft: theme.spacing(4),
-            paddingRight: theme.spacing(1),
-        },
-    },
+const useStyles = makeStyles(() => ({
     popper: {
         position: 'absolute',
         right: 0,
@@ -109,8 +93,6 @@ const Modal: FunctionComponent<Props> = ({
         versionId,
     );
 
-    const { data: forms, isLoading: isLoadingForms } = useGetForms();
-
     const [mappingArray, setMappingArray] = useState<Mapping[]>(
         mapChange(change),
     );
@@ -138,21 +120,6 @@ const Modal: FunctionComponent<Props> = ({
             setForm(value);
         },
         [mappingArray],
-    );
-    const formsList = useMemo(
-        () =>
-            forms
-                // remove already selected forms
-                ?.filter(
-                    f =>
-                        !changes?.find(ch => ch.form.id === f.id) ||
-                        change?.form.id === f.id,
-                )
-                .map(f => ({
-                    label: f.name,
-                    value: f.id,
-                })) || [],
-        [change?.form.id, changes, forms],
     );
 
     const {
@@ -249,7 +216,6 @@ const Modal: FunctionComponent<Props> = ({
             setSelectedSourcePossibleFields(sourcePossibleFields);
         }
     }, [selectedSourcePossibleFields, sourcePossibleFields]);
-    console.log('selectedSourcePossibleFields', selectedSourcePossibleFields);
     return (
         <ConfirmCancelModal
             allowConfirm={allowConfirm}
@@ -277,76 +243,31 @@ const Modal: FunctionComponent<Props> = ({
 
             {isFetchingSourcePossibleFields && <LoadingSpinner absolute />}
             <Box position="relative" data-test="change-modal">
-                <Grid container spacing={2}>
-                    <Grid item xs={12} md={5}>
-                        <InputComponent
-                            type="select"
-                            keyValue="forms"
-                            onChange={handleChangeForm}
-                            value={form}
-                            label={MESSAGES.sourceForm}
-                            required
-                            options={formsList}
-                            loading={isLoadingForms}
-                            clearable={false}
-                        />
-                    </Grid>
-                    <Grid item xs={12} md={7}>
-                        <Box className={classes.referenceForm}>
-                            <ArrowRightAltIcon
-                                color="primary"
-                                fontSize="large"
-                            />
-                            <span>{formatMessage(MESSAGES.targetForm)}:</span>{' '}
-                            {referenceForm?.name}
-                        </Box>
-                    </Grid>
-
-                    <Grid item xs={12} container spacing={0}>
-                        <Grid item md={1} />
-                        <Grid item xs={12} md={4}>
-                            <InputComponent
-                                type="select"
-                                keyValue="sourceVersion"
-                                onChange={handleChangeSourceVersion}
-                                value={sourceVersion}
-                                label={MESSAGES.sourceVersion}
-                                options={sourceVersionsDropdownOptions}
-                                clearable={false}
-                            />
-                        </Grid>
-                        <Grid item md={1} />
-                        <Grid item xs={12} md={4}>
-                            <InputComponent
-                                type="select"
-                                keyValue="targetVersion"
-                                onChange={handleChangeTargetVersion}
-                                value={targetVersion}
-                                label={MESSAGES.targetVersion}
-                                options={targetVersionsDropdownOptions}
-                                clearable={false}
-                            />
-                        </Grid>
-                        <Grid item md={2} />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <MappingTable
-                            setIsTouched={setIsTouched}
-                            mappingArray={mappingArray}
-                            setMappingArray={setMappingArray}
-                            sourcePossibleFields={
-                                selectedSourcePossibleFields || []
-                            }
-                            targetPossibleFields={
-                                selectedTargetPossibleFields || []
-                            }
-                            isFetchingSourcePossibleFields={
-                                isFetchingSourcePossibleFields
-                            }
-                            form={form}
-                        />
-                    </Grid>
-                </Grid>
+                <MappingTable
+                    setIsTouched={setIsTouched}
+                    mappingArray={mappingArray}
+                    setMappingArray={setMappingArray}
+                    sourcePossibleFields={selectedSourcePossibleFields || []}
+                    targetPossibleFields={selectedTargetPossibleFields || []}
+                    isFetchingSourcePossibleFields={
+                        isFetchingSourcePossibleFields
+                    }
+                    handleChangeForm={handleChangeForm}
+                    changes={changes}
+                    change={change}
+                    form={form}
+                    handleChangeSourceVersion={handleChangeSourceVersion}
+                    sourceVersion={sourceVersion}
+                    sourceVersionsDropdownOptions={
+                        sourceVersionsDropdownOptions
+                    }
+                    handleChangeTargetVersion={handleChangeTargetVersion}
+                    targetVersion={targetVersion}
+                    targetVersionsDropdownOptions={
+                        targetVersionsDropdownOptions
+                    }
+                    referenceForm={referenceForm}
+                />
             </Box>
         </ConfirmCancelModal>
     );

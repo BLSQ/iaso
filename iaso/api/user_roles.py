@@ -1,7 +1,6 @@
-from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
-from django.contrib.auth.models import Group
+from django.contrib.auth.models import Group, Permission
 from django.forms.models import model_to_dict
 from rest_framework.response import Response
 
@@ -47,7 +46,14 @@ class UserRolesViewSet(viewsets.ViewSet):
         return Response(model_to_dict(userRole, fields=["id", "name"]))
 
     def partial_update(self, request, pk=None):
-        return None
+        userRole = get_object_or_404(self.get_queryset(), id=pk)
+        permissions = request.data.get("permissions", [])
+        userRole.permissions.clear()
+        for permission_codename in permissions:
+            permission = get_object_or_404(Permission, codename=permission_codename)
+            userRole.permissions.add(permission)
+        userRole.save()
+        return Response(model_to_dict(userRole, fields=["id", "name"]))
 
     def delete(self, request, pk=None):
         return None

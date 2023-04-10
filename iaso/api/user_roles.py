@@ -1,4 +1,5 @@
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
 from django.contrib.auth.models import Group
 from django.forms.models import model_to_dict
@@ -38,10 +39,12 @@ class UserRolesViewSet(viewsets.ViewSet):
         # orders = request.GET.get("order", "name").split(",")
         # search = request.GET.get("search", None)
         queryset = self.get_queryset()
-        return Response({"userroles": [model_to_dict(userrole, fields=["id", "name"]) for userrole in queryset]})
+        return Response({"userroles": [model_to_dict(userRole, fields=["id", "name"]) for userRole in queryset]})
 
     def retrieve(self, request, *args, **kwargs):
-        return None
+        pk = kwargs.get("pk")
+        userRole = get_object_or_404(self.get_queryset(), pk=pk)
+        return Response(model_to_dict(userRole, fields=["id", "name"]))
 
     def partial_update(self, request, pk=None):
         return None

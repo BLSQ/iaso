@@ -56,4 +56,6 @@ class UserRolesViewSet(viewsets.ViewSet):
         return Response(model_to_dict(userRole, fields=["id", "name"]))
 
     def delete(self, request, pk=None):
-        return None
+        userRole = get_object_or_404(self.get_queryset(), id=pk)
+        userRole.delete()
+        return Response(True)

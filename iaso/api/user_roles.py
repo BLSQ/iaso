@@ -1,4 +1,8 @@
+from django.http import HttpResponse
 from rest_framework import viewsets, permissions
+from django.contrib.auth.models import Group
+from django.forms.models import model_to_dict
+from rest_framework.response import Response
 
 
 class HasRolesPermission(permissions.BasePermission):
@@ -25,8 +29,16 @@ class UserRolesViewSet(viewsets.ViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
 
+    def get_queryset(self):
+        return Group.objects.all()
+
     def list(self, request):
-        return None
+        # limit = request.GET.get("limit", None)
+        # page_offset = request.GET.get("page", 1)
+        # orders = request.GET.get("order", "name").split(",")
+        # search = request.GET.get("search", None)
+        queryset = self.get_queryset()
+        return Response({"userroles": [model_to_dict(userrole, fields=["id", "name"]) for userrole in queryset]})
 
     def retrieve(self, request, *args, **kwargs):
         return None

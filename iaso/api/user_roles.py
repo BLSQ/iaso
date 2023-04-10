@@ -8,7 +8,7 @@ class HasRolesPermission(permissions.BasePermission):
         return True
 
 
-class RolesViewSet(viewsets.ViewSet):
+class UserRolesViewSet(viewsets.ViewSet):
     """Roles API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_user_roles" permission for write permission

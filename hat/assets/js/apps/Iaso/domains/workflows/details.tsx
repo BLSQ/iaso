@@ -45,7 +45,7 @@ import { AddChangeModal } from './components/changes/Modal';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns } from './config/changes';
-import { useGetFollowUpsColumns, getConfigFields } from './config/followUps';
+import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
 import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
 import { PossibleField } from '../forms/types/forms';
 
@@ -135,7 +135,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const fields = useGetQueryBuildersFields(
         formDescriptors,
         targetPossibleFields,
-        getConfigFields(),
+        iasoFields,
     );
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(

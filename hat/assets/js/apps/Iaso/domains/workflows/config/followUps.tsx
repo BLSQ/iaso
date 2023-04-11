@@ -218,10 +218,6 @@ export const iasoFields: Field[] = [
         },
     },
     {
-        type: 'calculate',
-        disabled: true,
-    },
-    {
         type: 'acknowledge',
         disabled: true,
     },

@@ -2,6 +2,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useState,
+    useMemo,
     useEffect,
 } from 'react';
 import {
@@ -18,6 +19,8 @@ import {
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
+import uniqWith from 'lodash/uniqWith';
+import isEqual from 'lodash/isEqual';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -43,7 +46,8 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns } from './config/changes';
 import { useGetFollowUpsColumns, getConfigFields } from './config/followUps';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
+import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../forms/types/forms';
 
 type Router = {
     goBack: () => void;
@@ -114,9 +118,17 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         updateCurrentFollowUps(workflowVersion?.follow_ups);
     }, [workflowVersion?.follow_ups]);
 
-    const { possibleFields: targetPossibleFields } = useGetPossibleFields(
-        workflowVersion?.reference_form.id,
-    );
+    const { formVersions: targetPossibleFieldsByVersion } =
+        useGetPossibleFieldsByFormVersion(workflowVersion?.reference_form.id);
+    const targetPossibleFields: PossibleField[] | undefined = useMemo(() => {
+        if (!targetPossibleFieldsByVersion) return undefined;
+        return uniqWith(
+            targetPossibleFieldsByVersion.flatMap(
+                formVersion => formVersion.possible_fields,
+            ),
+            isEqual,
+        );
+    }, [targetPossibleFieldsByVersion]);
     const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );
@@ -133,6 +145,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const changesColumns = useGetChangesColumns(
         versionId,
         targetPossibleFields,
+        targetPossibleFieldsByVersion,
         workflowVersion,
     );
     const followUpsColumns = useGetFollowUpsColumns(
@@ -298,7 +311,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             }
                             extraProps={{
                                 isLoading,
-                                targetPossibleFields,
+                                targetPossibleFieldsByVersion,
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (
@@ -306,8 +319,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 <AddChangeModal
                                     versionId={versionId}
                                     changes={workflowVersion?.changes || []}
-                                    targetPossibleFields={
-                                        targetPossibleFields || []
+                                    targetPossibleFields={targetPossibleFields}
+                                    targetPossibleFieldsByVersion={
+                                        targetPossibleFieldsByVersion
                                     }
                                     referenceForm={
                                         workflowVersion?.reference_form

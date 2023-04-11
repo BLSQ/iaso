@@ -7,6 +7,9 @@ from functools import reduce
 from logging import getLogger
 from urllib.request import urlopen
 
+from bs4 import BeautifulSoup as Soup
+from io import StringIO
+
 import django_cte
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
@@ -23,7 +26,7 @@ from django.utils.translation import ugettext_lazy as _
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models.data_source import SourceVersion, DataSource
 from iaso.models.org_unit import OrgUnit
-from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
+from iaso.utils import flat_parse_xml_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 from .. import periods
@@ -871,7 +874,10 @@ class Instance(models.Model):
             self.save()
 
     def xml_file_to_json(self, file: typing.TextIO) -> typing.Dict[str, typing.Any]:
-        soup = as_soup(file)
+
+        copy_io_utf8 = StringIO(file.read().decode("utf-8"))
+        soup = Soup(copy_io_utf8, "xml", from_encoding="utf-8")
+
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
             # TODO: investigate: can self.form be None here? What's the expected behavior?

@@ -78,10 +78,10 @@ export type FormVersion = {
     version_id: string;
     possible_fields: PossibleField[];
 };
-type FormVersions = {
+type FormVersionsApiResult = {
     form_versions: FormVersion[];
 };
-type FormVersionResult = {
+type FormVersionHookResult = {
     formVersions?: FormVersion[];
     isFetchingForm: boolean;
 };
@@ -90,7 +90,7 @@ const useGetFormVersion = (
     formId: number | undefined,
     enabled: boolean,
     fields?: string | undefined,
-): UseQueryResult<FormVersions, Error> => {
+): UseQueryResult<FormVersionsApiResult, Error> => {
     const queryKey: any[] = ['formVersions', formId];
     let url = `/api/formversions/?form_id=${formId}`;
     if (fields) {
@@ -108,8 +108,8 @@ const useGetFormVersion = (
 
 const useVersionPossibleFields = (
     isFetchingForm: boolean,
-    formVersions?: FormVersions,
-): FormVersionResult => {
+    formVersions?: FormVersionsApiResult,
+): FormVersionHookResult => {
     return useMemo(() => {
         const newFormVersions: FormVersion[] | undefined = cloneDeep(
             formVersions?.form_versions,
@@ -132,7 +132,7 @@ const useVersionPossibleFields = (
 
 export const useGetPossibleFieldsByFormVersion = (
     formId?: number,
-): FormVersionResult => {
+): FormVersionHookResult => {
     const { data: currentFormVersion, isFetching: isFetchingForm } =
         useGetFormVersion(
             formId,

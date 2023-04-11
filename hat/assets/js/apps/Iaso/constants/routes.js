@@ -36,7 +36,8 @@ import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
-
+import { Registry } from '../domains/registry/index.tsx';
+import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
@@ -415,6 +416,46 @@ export const orgUnitsDetailsPath = {
         ...paginationPathParamsWithPrefix('linksParams'),
         ...paginationPathParamsWithPrefix('formsParams'),
         ...paginationPathParamsWithPrefix('logsParams'),
+    ],
+};
+
+export const registryPath = {
+    baseUrl: baseUrls.registry,
+    permissions: ['iaso_registry'],
+    component: props => <Registry {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
+};
+export const registryDetailPath = {
+    baseUrl: baseUrls.registryDetail,
+    permissions: ['iaso_registry'],
+    component: props => <RegistryDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'orgUnitId',
+        },
+        {
+            isRequired: false,
+            key: 'formIds',
+        },
+        {
+            isRequired: false,
+            key: 'columns',
+        },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        ...paginationPathParams,
     ],
 };
 
@@ -1163,4 +1204,6 @@ export const routeConfigs = [
     storageDetailPath,
     workflowsPath,
     workflowsDetailPath,
+    registryPath,
+    registryDetailPath,
 ];

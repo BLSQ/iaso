@@ -1,8 +1,10 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions
 from django.contrib.auth.models import Group, Permission
-from django.forms.models import model_to_dict
+from django.db.models import Q
 from rest_framework.response import Response
+from iaso.models import UserRole
+from django.core.paginator import Paginator
 
 
 class HasRolesPermission(permissions.BasePermission):
@@ -30,30 +32,55 @@ class UserRolesViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
 
     def get_queryset(self):
-        return Group.objects.all()
+        return UserRole.objects.all()
 
     def list(self, request):
-        # limit = request.GET.get("limit", None)
-        # page_offset = request.GET.get("page", 1)
-        # orders = request.GET.get("order", "name").split(",")
-        # search = request.GET.get("search", None)
+        limit = request.GET.get("limit", None)
+        page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "group__name").split(",")
+        search = request.GET.get("search", None)
         queryset = self.get_queryset()
-        return Response({"userroles": [model_to_dict(userRole, fields=["id", "name"]) for userRole in queryset]})
+
+        if search:
+            print(search)
+            queryset = queryset.filter(Q(group__name__icontains=search)).distinct()
+
+        if limit:
+            queryset = queryset.order_by(*orders)
+            limit = int(limit)
+            page_offset = int(page_offset)
+            paginator = Paginator(queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+
+            res["user_roles"] = map(lambda x: x.as_dict(), page.object_list)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        else:
+            return Response({"user_roles": [userrole.as_short_dict() for userrole in queryset]})
 
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         userRole = get_object_or_404(self.get_queryset(), pk=pk)
-        return Response(model_to_dict(userRole, fields=["id", "name"]))
+        return Response(userRole.as_dict())
 
     def partial_update(self, request, pk=None):
         userRole = get_object_or_404(self.get_queryset(), id=pk)
+        group = userRole.group
         permissions = request.data.get("permissions", [])
-        userRole.permissions.clear()
+        group.permissions.clear()
         for permission_codename in permissions:
             permission = get_object_or_404(Permission, codename=permission_codename)
-            userRole.permissions.add(permission)
+            group.permissions.add(permission)
+        group.save()
         userRole.save()
-        return Response(model_to_dict(userRole, fields=["id", "name"]))
+        return Response(userRole.as_dict())
 
     def delete(self, request, pk=None):
         userRole = get_object_or_404(self.get_queryset(), id=pk)

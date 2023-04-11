@@ -8,6 +8,7 @@ from logging import getLogger
 from urllib.request import urlopen
 
 from django.contrib.auth.models import User
+from django.contrib import auth
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -1297,3 +1298,33 @@ class InstanceLock(models.Model):
 
     class Meta:
         ordering = ["-locked_at"]
+
+
+class UserRole(models.Model):
+    group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.group.name
+
+    def as_short_dict(self):
+        return {
+            "id": self.id,
+            "name": self.group.name,
+            "group_id": self.group.id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.group.name,
+            "group_id": self.group.id,
+            "permissions": list(
+                self.group.permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
+            ),
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }

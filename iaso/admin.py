@@ -76,6 +76,7 @@ from .models import (
     WorkflowFollowup,
     Report,
     ReportVersion,
+    UserRole,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .utils.gis import convert_2d_point_to_3d
@@ -331,17 +332,11 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
     def http_requests(self, instance):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
-        return (
-            format_html_join(
-                mark_safe("<br/><br/>"),
-                "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-                (
-                    (line.id, line.http_status, line.url, line.sent, line.received)
-                    for line in instance.export_logs.all()
-                ),
-            )
-            or mark_safe("<span>no logs available.</span>")
-        )
+        return format_html_join(
+            mark_safe("<br/><br/>"),
+            "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
+        ) or mark_safe("<span>no logs available.</span>")
 
 
 @admin_attr_decorator
@@ -601,3 +596,4 @@ admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
+admin.site.register(UserRole)

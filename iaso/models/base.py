@@ -7,7 +7,7 @@ from functools import reduce
 from logging import getLogger
 from urllib.request import urlopen
 
-from bs4 import BeautifulSoup as Soup # type: ignore
+from bs4 import BeautifulSoup as Soup  # type: ignore
 from io import StringIO
 
 import django_cte
@@ -874,7 +874,6 @@ class Instance(models.Model):
             self.save()
 
     def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
-
         copy_io_utf8 = StringIO(file.read().decode("utf-8"))
         soup = Soup(copy_io_utf8, "xml", from_encoding="utf-8")
 

@@ -276,6 +276,7 @@ export type Round = {
     forma_unusable_vials: Nullable<number>;
     forma_usable_vials: Nullable<number>;
     campaign: Nullable<string>; // uuid
+    percentage_covered_target_population: Nullable<number>;
 };
 
 export type Surge = {

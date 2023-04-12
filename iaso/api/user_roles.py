@@ -1,14 +1,15 @@
 from django.shortcuts import get_object_or_404
+from rest_framework.request import Request
 from rest_framework import viewsets, permissions
-from django.contrib.auth.models import Group, Permission
-from django.db.models import Q
+from django.contrib.auth.models import Permission
+from django.db.models import Q, QuerySet
 from rest_framework.response import Response
 from iaso.models import UserRole
 from django.core.paginator import Paginator
 
 
 class HasRolesPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
+    def has_permission(self, request: Request, view) -> bool:
         if not request.user.has_perm("menupermissions.iaso_user_roles"):
             return False
         return True
@@ -31,23 +32,22 @@ class UserRolesViewSet(viewsets.ViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet[UserRole]:
         return UserRole.objects.all()
 
-    def list(self, request):
-        limit = request.GET.get("limit", None)
+    def list(self, request: Request) -> Response:
+        limit_str = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "group__name").split(",")
         search = request.GET.get("search", None)
         queryset = self.get_queryset()
 
         if search:
-            print(search)
             queryset = queryset.filter(Q(group__name__icontains=search)).distinct()
 
-        if limit:
+        if limit_str:
             queryset = queryset.order_by(*orders)
-            limit = int(limit)
+            limit = int(limit_str)
             page_offset = int(page_offset)
             paginator = Paginator(queryset, limit)
             res = {"count": paginator.count}
@@ -65,12 +65,12 @@ class UserRolesViewSet(viewsets.ViewSet):
         else:
             return Response({"user_roles": [userrole.as_short_dict() for userrole in queryset]})
 
-    def retrieve(self, request, *args, **kwargs):
+    def retrieve(self, request: Request, *args, **kwargs) -> Response:
         pk = kwargs.get("pk")
         userRole = get_object_or_404(self.get_queryset(), pk=pk)
         return Response(userRole.as_dict())
 
-    def partial_update(self, request, pk=None):
+    def partial_update(self, request: Request, pk: int = None) -> Response:
         userRole = get_object_or_404(self.get_queryset(), id=pk)
         group = userRole.group
         permissions = request.data.get("permissions", [])
@@ -82,7 +82,7 @@ class UserRolesViewSet(viewsets.ViewSet):
         userRole.save()
         return Response(userRole.as_dict())
 
-    def delete(self, request, pk=None):
+    def delete(self, request: Request, pk: int = None) -> Response:
         userRole = get_object_or_404(self.get_queryset(), id=pk)
         userRole.delete()
         return Response(True)

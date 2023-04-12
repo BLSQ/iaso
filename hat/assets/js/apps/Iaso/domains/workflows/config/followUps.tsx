@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { ReactNode, Dispatch, SetStateAction } from 'react';
+import React, { ReactNode } from 'react';
 import { useSafeIntl, QueryBuilderFields } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 
@@ -92,12 +92,25 @@ export const iasoFields: Field[] = [
     {
         type: 'date',
         queryBuilder: {
-            type: 'date',
-            operators: ['equal', 'not_equal'],
-            preferWidgets: ['number'],
-            fieldSettings: {
-                dateFormat: getLocaleDateFormat('L'),
-            },
+            type: 'currentDate',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+        },
+    },
+    {
+        type: 'dateTime',
+        queryBuilder: {
+            type: 'currentDatetime',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
         },
     },
     {
@@ -117,24 +130,16 @@ export const iasoFields: Field[] = [
     },
     {
         type: 'time',
-        disabled: true,
         queryBuilder: {
             type: 'time',
-            operators: ['equal', 'not_equal'],
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
             fieldSettings: {
                 timeFormat: getLocaleDateFormat('LT'),
-            },
-        },
-    },
-    {
-        type: 'dateTime',
-        disabled: true,
-        queryBuilder: {
-            type: 'datetime',
-            operators: ['equal', 'not_equal'],
-            fieldSettings: {
-                timeFormat: getLocaleDateFormat('LT'),
-                dateFormat: getLocaleDateFormat('L'),
             },
         },
     },
@@ -239,7 +244,6 @@ export const useGetFollowUpsColumns = (
     versionId: string,
     workflowVersion?: WorkflowVersionDetail,
     fields?: QueryBuilderFields,
-    setCurrentFields?: Dispatch<SetStateAction<QueryBuilderFields>>,
 ): FollowUpsColumns[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -305,10 +309,6 @@ export const useGetFollowUpsColumns = (
                                 followUp={followUp}
                                 fields={fields}
                                 versionId={versionId}
-                                setCurrentFields={newFields => {
-                                    console.log('new Fields', newFields);
-                                    setCurrentFields(newFields);
-                                }}
                             />
                         )}
                     </>

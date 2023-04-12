@@ -56,6 +56,9 @@ export const parseJson = ({ value, parent, fields }: Props): JSONValue => {
     if (value && !value.var) {
         const fieldType = getFieldType(fields, parent);
         if (fieldType === 'date') {
+            if (value === 'current_date') {
+                return value;
+            }
             return moment(value as MomentInput).format(apiDateFormat);
         }
         if (fieldType === 'datetime') {

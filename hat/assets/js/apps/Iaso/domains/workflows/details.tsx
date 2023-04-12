@@ -7,7 +7,6 @@ import React, {
 } from 'react';
 import {
     useSafeIntl,
-    QueryBuilderFields,
     commonStyles,
     LoadingSpinner,
     // @ts-ignore
@@ -22,7 +21,6 @@ import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
-import isEqual from 'lodash/isEqual';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -80,7 +78,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const classes: Record<string, string> = useStyles();
     const [followUps, setFollowUps] = useState<FollowUps[]>([]);
-    const [currentFields, setCurrentFields] = useState<QueryBuilderFields>({});
 
     const { mutate: saveFollowUpOrder } = useBulkUpdateWorkflowFollowUp(() =>
         setIsFollowUpOrderChange(false),
@@ -140,14 +137,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         targetPossibleFields,
         iasoFields,
     );
-    useEffect(() => {
-        if (isEqual(currentFields, {}) && !isEqual(fields, currentFields)) {
-            setCurrentFields(fields);
-        }
-    }, [currentFields, fields]);
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
-        currentFields,
+        fields,
         queryBuilderListToReplace,
     );
     const changesColumns = useGetChangesColumns(
@@ -160,8 +152,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         getHumanReadableJsonLogic,
         versionId,
         workflowVersion,
-        currentFields,
-        setCurrentFields,
+        fields,
     );
     const handleSortChange = useCallback((items: any) => {
         setFollowUps(
@@ -273,7 +264,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                     </Button>
                                 </Box>
                                 <AddFollowUpsModal
-                                    fields={currentFields}
+                                    fields={fields}
                                     versionId={versionId}
                                     newOrder={
                                         followUps[followUps.length - 1]?.order +
@@ -282,7 +273,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                     iconProps={{
                                         dataTestId: 'create-follow-ups',
                                     }}
-                                    setCurrentFields={setCurrentFields}
                                 />
                             </Box>
                         )}

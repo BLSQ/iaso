@@ -3,8 +3,6 @@ import React, {
     useState,
     useMemo,
     useCallback,
-    Dispatch,
-    SetStateAction,
 } from 'react';
 
 import {
@@ -38,7 +36,6 @@ type Props = {
     fields?: QueryBuilderFields;
     versionId: string;
     newOrder?: number;
-    setCurrentFields?: Dispatch<SetStateAction<QueryBuilderFields>>;
 };
 type JsonLogicResult = {
     logic?: JSONValue;
@@ -53,7 +50,6 @@ const FollowUpsModal: FunctionComponent<Props> = ({
     fields,
     versionId,
     newOrder,
-    setCurrentFields = () => null,
 }) => {
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
@@ -149,7 +145,6 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                         logic={logic}
                         fields={fields}
                         onChange={handleChangeLogic}
-                        setCurrentFields={setCurrentFields}
                     />
                 )}
                 <Grid container spacing={2}>

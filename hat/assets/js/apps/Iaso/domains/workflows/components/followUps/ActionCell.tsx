@@ -1,4 +1,4 @@
-import React, { FunctionComponent, Dispatch, SetStateAction } from 'react';
+import React, { FunctionComponent } from 'react';
 
 import { QueryBuilderFields } from 'bluesquare-components';
 
@@ -14,14 +14,12 @@ type Props = {
     followUp: FollowUps;
     fields: QueryBuilderFields;
     versionId: string;
-    setCurrentFields?: Dispatch<SetStateAction<QueryBuilderFields>>;
 };
 
 export const FollowUpActionCell: FunctionComponent<Props> = ({
     followUp,
     fields,
     versionId,
-    setCurrentFields = () => null,
 }) => {
     const { mutate: deleteWorkflowFollowUp } = useDeleteWorkflowFollowUp();
     return (
@@ -31,7 +29,6 @@ export const FollowUpActionCell: FunctionComponent<Props> = ({
                 fields={fields}
                 versionId={versionId}
                 iconProps={{}}
-                setCurrentFields={setCurrentFields}
             />
             <DeleteDialog
                 keyName={`delete-workflow-follow-up-${followUp.id}`}

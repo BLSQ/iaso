@@ -24,13 +24,17 @@ type Props = {
 const supportedOptionsTypes = [
     'text',
     'note',
-    'select_one',
     'integer',
     'decimal',
     'date',
     'start',
     'end',
     'today',
+    'calculate',
+    'select_one',
+    'select one',
+    'select_multi',
+    'select multi',
     'calculate',
 ];
 

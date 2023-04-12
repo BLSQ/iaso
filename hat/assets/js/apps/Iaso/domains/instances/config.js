@@ -1,22 +1,7 @@
-import React from 'react';
 import orderBy from 'lodash/orderBy';
 
 import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
-import ActionTableColumnComponent from './components/ActionTableColumnComponent';
-
-export const actionTableColumn = (formatMessage = () => ({}), user) => {
-    return {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        width: 150,
-        Cell: settings => (
-            <ActionTableColumnComponent settings={settings} user={user} />
-        ),
-    };
-};
 
 const instancesTableColumns = (formatMessage = () => ({})) => {
     const columns = [];

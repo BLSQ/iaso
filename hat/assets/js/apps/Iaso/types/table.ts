@@ -48,3 +48,6 @@ type Row<T> = {
 export type Setting<T> = {
     row: Row<T>;
 };
+
+// eslint-disable-next-line no-unused-vars
+export type RenderCell = (settings: Record<string, any>) => ReactElement;

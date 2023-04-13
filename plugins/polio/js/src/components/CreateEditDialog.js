@@ -128,6 +128,15 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 key: 'baseInfo',
             },
             {
+                title: formatMessage(MESSAGES.rounds),
+                form: RoundsForm,
+                key: 'rounds',
+                hasTabError: compareArraysValues(
+                    roundFormFields(selectedCampaign?.rounds ?? []),
+                    formik.errors,
+                ),
+            },
+            {
                 title: formatMessage(MESSAGES.riskAssessment),
                 form: RiskAssessmentForm,
                 hasTabError: compareArraysValues(
@@ -165,15 +174,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     formik.errors,
                 ),
                 key: 'preparedness',
-            },
-            {
-                title: formatMessage(MESSAGES.rounds),
-                form: RoundsForm,
-                key: 'rounds',
-                hasTabError: compareArraysValues(
-                    roundFormFields(selectedCampaign?.rounds ?? []),
-                    formik.errors,
-                ),
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),

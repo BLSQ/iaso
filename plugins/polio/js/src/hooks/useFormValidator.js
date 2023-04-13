@@ -565,8 +565,6 @@ export const useFormValidator = () => {
         cvdpv_notified_at: yup.date().nullable(),
         cvdpv2_notified_at: yup.date().nullable(),
 
-        pv_notified_at: yup.date().nullable(),
-        pv2_notified_at: yup.date().nullable(),
         verification_score: yup.number().nullable().positive().integer(),
 
         detection_first_draft_submitted_at: yup.date().nullable(),

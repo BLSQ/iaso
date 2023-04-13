@@ -25,7 +25,6 @@ import {
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../hooks/useFormValidator';
 import { BaseInfoForm, baseInfoFormFields } from '../forms/BaseInfoForm';
-import { DetectionForm, detectionFormFields } from '../forms/DetectionForm';
 import {
     RiskAssessmentForm,
     riskAssessmentFormFields,
@@ -93,6 +92,9 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         is_test: false,
         enable_send_weekly_email: true,
         has_data_in_budget_tool: false,
+        budget_current_state_key: '-',
+        detection_status: 'PENDING',
+        risk_assessment_status: 'TO_SUBMIT',
     };
 
     // Merge inplace default values with the one we get from the campaign.
@@ -126,13 +128,13 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 key: 'baseInfo',
             },
             {
-                title: formatMessage(MESSAGES.detection),
-                form: DetectionForm,
+                title: formatMessage(MESSAGES.rounds),
+                form: RoundsForm,
+                key: 'rounds',
                 hasTabError: compareArraysValues(
-                    detectionFormFields,
+                    roundFormFields(selectedCampaign?.rounds ?? []),
                     formik.errors,
                 ),
-                key: 'detection',
             },
             {
                 title: formatMessage(MESSAGES.riskAssessment),
@@ -172,15 +174,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     formik.errors,
                 ),
                 key: 'preparedness',
-            },
-            {
-                title: formatMessage(MESSAGES.rounds),
-                form: RoundsForm,
-                key: 'rounds',
-                hasTabError: compareArraysValues(
-                    roundFormFields(selectedCampaign?.rounds ?? []),
-                    formik.errors,
-                ),
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),

@@ -584,9 +584,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         return _("Preparing")
 
     def get_has_data_in_budget_tool(self, campaign):
-        if campaign.budget_steps.all():
-            return True
-        return False
+        return campaign.budget_steps.count() > 0
 
     # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)

@@ -1,8 +1,8 @@
 - model: polio.workflowmodel
-  pk: 3
+  pk: 1
   fields:
-    created_at: 2023-03-16 13:04:30.223344+00:00
-    updated_at: 2023-03-16 13:04:30.223365+00:00
+    created_at: 2022-10-19 16:13:49.731224+00:00
+    updated_at: 2023-03-31 11:07:09.904661+00:00
     definition:
       nodes:
       - key: unicef_sent_budget
@@ -69,28 +69,28 @@
         mandatory: true
         category_key: orpg
       - key: submitted_to_orpg_operations2
-        label: Submitted to ORPG Operations
-        order: 36
+        label: Submitted to ORPG Operations (ORPG wider)
+        order: 37
         mandatory: true
         category_key: orpg
       - key: feedback_sent_to_rrt2
         label: Feedback sent to RRT
-        order: 37
+        order: 38
         mandatory: false
         category_key: orpg
       - key: feedback_transferred_to_gpei2
         label: Requested information from GPEI coordinator
-        order: 38
+        order: 39
         mandatory: false
         category_key: orpg
       - key: gpei_answer_received2
         label: Information received from GPEI coordinator
-        order: 39
+        order: 391
         mandatory: false
         category_key: orpg
       - key: re_submitted_to_orpg_operations2
-        label: Submitted to ORPG Operations
-        order: 391
+        label: Submitted to ORPG Operations (ORPG wider)
+        order: 392
         mandatory: false
         category_key: orpg
       - key: submitted_for_approval
@@ -160,7 +160,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 8
+        - - submitter_email
+          - - 8
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -174,7 +175,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 8
+        - - submitter_email
+          - - 8
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -188,7 +190,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 9
+        - - submitter_email
+          - - 9
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -202,7 +205,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 9
+        - - submitter_email
+          - - 9
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -216,7 +220,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 8
+        - - submitter_email
+          - - 8
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -230,7 +235,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 8
+        - - submitter_email
+          - - 8
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -244,7 +250,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 9
+        - - submitter_email
+          - - 9
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -258,7 +265,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 9
+        - - submitter_email
+          - - 9
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -271,7 +279,8 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -285,7 +294,8 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -298,7 +308,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 1
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -312,7 +323,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 1
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -325,7 +337,8 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -338,7 +351,8 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -351,7 +365,8 @@
         emails_to_send:
         - - base_email
           - - 7
-            - 1
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -364,7 +379,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 1
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -377,7 +393,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 1
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -391,7 +408,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 1
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -404,8 +422,9 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 2
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -418,8 +437,9 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 2
             - 7
+        - - submitter_email
+          - - 2
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -431,9 +451,10 @@
         from_node: feedback_sent_to_rrt1
         emails_to_send:
         - - base_email
-          - - 1
-            - 2
+          - - 2
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -445,9 +466,10 @@
         from_node: feedback_transferred_to_gpei1
         emails_to_send:
         - - base_email
-          - - 1
-            - 2
+          - - 2
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -461,7 +483,8 @@
         - - base_email
           - - 1
             - 2
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -475,7 +498,8 @@
         - - base_email
           - - 1
             - 2
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -487,37 +511,70 @@
         from_node: gpei_answer_received1
         emails_to_send:
         - - base_email
-          - - 1
-            - 2
+          - - 2
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 2
-      - key: submit_to_orpg_ops1_after_feedback
+        - 1
+      - key: re_submit_to_orpg_ops1_direct
+        color: primary
+        label: Submit to ORPG Operations
+        to_node: re_submitted_to_orpg_operations1
+        from_node: feedback_sent_to_rrt1
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: re_submit_to_orpg_ops1
         color: primary
         label: Submit to ORPG Operations
         to_node: re_submitted_to_orpg_operations1
         from_node: gpei_answer_received1
         emails_to_send:
         - - base_email
-          - - 1
-            - 2
+          - - 2
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 2
-      - key: repeat_submit_to_orpg_ops1_after_feedback
+        - 1
+      - key: repeat_re_submit_to_orpg_ops1
         color: primary
         label: Submit to ORPG Operations
         to_node: re_submitted_to_orpg_operations1
         from_node: re_submitted_to_orpg_operations1
         emails_to_send:
         - - base_email
-          - - 1
-            - 2
+          - - 2
             - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: re_send_feedback_to_rrt_1
+        color: primary
+        label: Send feedback to RRT
+        to_node: feedback_sent_to_rrt1
+        from_node: re_submitted_to_orpg_operations1
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -530,7 +587,8 @@
         emails_to_send:
         - - base_email
           - - 3
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -545,7 +603,8 @@
         emails_to_send:
         - - base_email
           - - 3
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -560,7 +619,8 @@
         emails_to_send:
         - - base_email
           - - 3
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -575,7 +635,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 3
+        - - submitter_email
+          - - 3
         required_fields:
         - amount
         displayed_fields: []
@@ -590,7 +651,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 3
+        - - submitter_email
+          - - 3
         required_fields:
         - amount
         displayed_fields: []
@@ -601,13 +663,12 @@
         label: Send feedback to RRT
         to_node: feedback_sent_to_rrt2
         from_node: submitted_to_orpg_operations2
-        help_text: ORPG Ops send feeback to RRT after having received feedback from
-          ORPG wider group
         emails_to_send:
         - - base_email
           - - 1
-            - 2
             - 7
+        - - submitter_email
+          - - 2
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -620,12 +681,27 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 2
             - 7
+        - - submitter_email
+          - - 2
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 2
+      - key: re_submit_to_orpg_ops2_direct
+        color: primary
+        label: Submit to ORPG Operations
+        to_node: re_submitted_to_orpg_operations2
+        from_node: feedback_sent_to_rrt2
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
       - key: transfer_feedback_to_gpei2
         color: primary
         label: Request information from GPEI coordinator
@@ -634,8 +710,9 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 1
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -648,8 +725,9 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 1
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -663,7 +741,8 @@
         - - base_email
           - - 2
             - 1
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -677,7 +756,8 @@
         - - base_email
           - - 2
             - 1
-            - 7
+        - - submitter_email
+          - - 7
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -689,9 +769,10 @@
         from_node: gpei_answer_received2
         emails_to_send:
         - - base_email
-          - - 1
-            - 2
+          - - 2
             - 7
+        - - submitter_email
+          - - 1
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -703,8 +784,9 @@
         from_node: gpei_answer_received2
         emails_to_send:
         - - base_email
+          - - 2
+        - - submitter_email
           - - 1
-            - 2
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -716,12 +798,28 @@
         from_node: re_submitted_to_orpg_operations2
         emails_to_send:
         - - base_email
+          - - 2
+        - - submitter_email
           - - 1
-            - 2
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
+      - key: re_send_feedback_to_rrt_2
+        color: primary
+        label: Send feedback to RRT
+        to_node: feedback_sent_to_rrt2
+        from_node: re_submitted_to_orpg_operations2
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 7
+        - - submitter_email
+          - - 2
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
       - key: submit_for_approval_after_feedback
         color: primary
         label: Submit for approval
@@ -732,7 +830,8 @@
         - - base_email
           - - 4
             - 5
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -748,7 +847,8 @@
         - - base_email
           - - 4
             - 5
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -764,7 +864,8 @@
         - - base_email
           - - 4
             - 5
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -779,7 +880,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -793,7 +895,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -807,7 +910,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -821,7 +925,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -835,7 +940,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -849,7 +955,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -864,7 +971,8 @@
         - - base_email
           - - 4
             - 5
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -880,14 +988,15 @@
         - - base_email
           - - 4
             - 5
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
         teams_ids_can_transition:
         - 2
       - key: who_approves_first
-        color: primary
+        color: green
         label: Approve (WHO)
         to_node: approved_by_who
         from_node: submitted_for_approval
@@ -895,13 +1004,14 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: repeat_who_approves_first
-        color: primary
+        color: green
         label: Approve (WHO)
         to_node: approved_by_who
         from_node: approved_by_who
@@ -909,7 +1019,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -922,7 +1033,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -936,7 +1048,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -951,14 +1064,15 @@
         - - base_email
           - - 4
             - 5
-            - 2
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
         teams_ids_can_transition:
         - 2
       - key: unicef_approves_first
-        color: primary
+        color: green
         label: Approve (UNICEF)
         to_node: approved_by_unicef
         from_node: submitted_for_approval
@@ -966,13 +1080,14 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
       - key: repeat_unicef_approves_first
-        color: primary
+        color: green
         label: Approve (UNICEF)
         to_node: approved_by_unicef
         from_node: approved_by_unicef
@@ -980,7 +1095,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -993,7 +1109,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -1006,7 +1123,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -1021,13 +1139,14 @@
         - - base_email
           - - 4
             - 5
-            - 2
+        - - submitter_email
+          - - 2
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 2
       - key: who_approves_second
-        color: primary
+        color: green
         label: Approve (WHO)
         to_node: approved
         from_node: approved_by_unicef
@@ -1035,13 +1154,14 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: repeat_who_approves_second
-        color: primary
+        color: green
         label: Approve (WHO)
         to_node: approved
         from_node: approved
@@ -1049,13 +1169,14 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 5
+        - - submitter_email
+          - - 5
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: unicef_approves_second
-        color: primary
+        color: green
         label: Approve (UNICEF)
         to_node: approved
         from_node: approved_by_who
@@ -1063,13 +1184,14 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
       - key: repeat_unicef_approves_second
-        color: primary
+        color: green
         label: Approve (UNICEF)
         to_node: approved
         from_node: approved
@@ -1077,7 +1199,8 @@
         emails_to_send:
         - - base_email
           - - 2
-            - 4
+        - - submitter_email
+          - - 4
         required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
@@ -1090,11 +1213,12 @@
         emails_to_send:
         - - base_email
           - - 1
-            - 2
             - 6
             - 7
             - 8
             - 9
+        - - submitter_email
+          - - 2
         required_fields:
         - amount
         displayed_fields: []
@@ -1123,10 +1247,21 @@
   pk: 1
   fields:
     slug: base_email
-    subject_template: 'Budget for campaign {{campaign.obr_name}} updated to {{node.label}}'
+    subject_template: Budget for campaign {{campaign.obr_name}} updated to {{node.label}}
     html_template: "{% extends \"base_budget_email.html\" %}\r\n{% block text %}\r\n{{
       block.super }} \r\n{% endblock %}"
     text_template: "{% extends \"base_budget_email.txt\" %}\r\n{% block text %}\r\n{{
       block.super }} \r\n{% endblock %}"
     created_at: 2022-11-14 16:16:41.233023+00:00
     updated_at: 2022-11-14 16:16:41.233054+00:00
+- model: polio.mailtemplate
+  pk: 2
+  fields:
+    slug: submitter_email
+    subject_template: Budget for campaign {{campaign.obr_name}} updated to {{node.label}}
+    html_template: "{% extends \"submitter_email.html\" %}\r\n{% block text %}\r\n{{
+      block.super }} \r\n{% endblock %}"
+    text_template: "{% extends \"submitter_email.txt\" %}\r\n{% block text %}\r\n{{
+      block.super }} \r\n{% endblock %}"
+    created_at: 2023-03-16 13:38:05.184099+00:00
+    updated_at: 2023-03-16 13:38:05.184112+00:00

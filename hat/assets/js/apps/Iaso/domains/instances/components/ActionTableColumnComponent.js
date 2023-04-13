@@ -1,10 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 /* eslint-disable react/prop-types */
 import React from 'react';
-import {
-    IconButton as IconButtonComponent,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import LinkIcon from '@material-ui/icons/Link';
 import LinkOffIcon from '@material-ui/icons/LinkOff';
 import LockIcon from '@material-ui/icons/Lock';
@@ -14,6 +11,7 @@ import { FormattedMessage } from 'react-intl';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -37,8 +35,8 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
     };
 };
 
-const ActionTableColumnComponent = ({ settings, user }) => {
-    const { formatMessage } = useSafeIntl();
+const ActionTableColumnComponent = ({ settings }) => {
+    const user = useCurrentUser();
     // eslint-disable-next-line no-unused-vars
     const [_formState, _setFieldValue, setFieldErrors] = useFormState(
         initialFormState(

@@ -7,6 +7,7 @@ from functools import reduce
 from logging import getLogger
 from urllib.request import urlopen
 
+import django_cte
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -352,6 +353,11 @@ class DefaultGroupManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(domain=None)
 
+    def filter_for_user(self, user: User):
+        profile = user.iaso_profile
+        queryset = self.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        return queryset
+
 
 class DomainGroupManager(models.Manager):
     def get_queryset(self):
@@ -498,7 +504,7 @@ class ExternalCredentials(models.Model):
         }
 
 
-class InstanceQuerySet(models.QuerySet):
+class InstanceQuerySet(django_cte.CTEQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.

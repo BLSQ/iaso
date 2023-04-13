@@ -232,6 +232,13 @@ class FormVersion(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     start_period = models.TextField(blank=True, null=True)
     end_period = models.TextField(blank=True, null=True)
+    possible_fields = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Questions present in this form version, as a flat list."
+        "Update on save. See equivalent on Form for all version",
+        editable=False,
+    )
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
@@ -273,6 +280,17 @@ class FormVersion(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
+
+
+def update_possible_fields(sender, instance, **kwargs):
+    if not instance.form_descriptor and instance.xls_file:
+        json_survey = parsing.to_json_dict(instance)
+        instance.form_descriptor = json_survey
+    questions = instance.questions_by_path()
+    instance.possible_fields = _reformat_questions(questions)
+
+
+models.signals.pre_save.connect(update_possible_fields, sender=FormVersion)
 
 
 class FormPredefinedFilter(models.Model):

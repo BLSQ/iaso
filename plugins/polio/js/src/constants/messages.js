@@ -9,6 +9,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.geojson',
         defaultMessage: 'Geojson',
     },
+    noGeojson: {
+        id: 'iaso.label.hasNoGeometryAndGps',
+        defaultMessage: 'Without geographic data',
+    },
     selectOrgUnit: {
         id: 'iaso.polio.label.selectOrgUnit',
         defaultMessage: 'Select intial region',
@@ -328,10 +332,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/ORPG-Approval',
     },
-    budget_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/OPRTT Approval',
-    },
     ag_nopv_group_met_at: {
         id: 'iaso.polio.form.label.agNopvGroup',
         defaultMessage: 'AG/nOPV Group',
@@ -347,6 +347,10 @@ const MESSAGES = defineMessages({
     target_population: {
         id: 'iaso.polio.form.label.targetpopulationRound',
         defaultMessage: 'Target population Round',
+    },
+    percentage_covered_target_population: {
+        id: 'iaso.polio.form.label.percentageCoveredTargetPopulationRound',
+        defaultMessage: 'Percentage covered target population Round',
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
@@ -830,10 +834,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.childrenMarked',
         defaultMessage: 'Children with mark',
     },
-    dictrictName: {
-        id: 'iaso.polio.label.dictrictName',
-        defaultMessage: 'Name',
-    },
     passing: {
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
@@ -1276,7 +1276,7 @@ const MESSAGES = defineMessages({
     },
     is_test: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign',
+        defaultMessage: 'Test campaigns/On hold status',
     },
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',
@@ -2008,11 +2008,11 @@ const MESSAGES = defineMessages({
     },
     re_submitted_to_orpg_operations2: {
         id: 'iaso.polio.form.label.re_submitted_to_orpg_operations2',
-        defaultMessage: 'Resubmitted to ORPG Operations',
+        defaultMessage: 'Resubmitted to ORPG Operations (ORPG wider)',
     },
     submitted_to_orpg_operations2: {
         id: 'iaso.polio.form.label.submitted_to_orpg_operations2',
-        defaultMessage: 'Submitted to ORPG ops (2)',
+        defaultMessage: 'Submitted to ORPG Operations (ORPG wider)',
     },
     re_submitted_to_orpg: {
         id: 'iaso.polio.form.label.re_submitted_to_orpg_wider',
@@ -2032,7 +2032,7 @@ const MESSAGES = defineMessages({
     },
     submitted_to_orpg_operations1: {
         id: 'iaso.polio.form.label.submitted_to_orpg_operations1',
-        defaultMessage: 'Submitted to ORPG Ops (1)',
+        defaultMessage: 'Submitted to ORPG Ops',
     },
     re_submitted_to_rrt: {
         id: 'iaso.polio.form.label.re_submitted_to_rrt',

@@ -229,7 +229,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'current_state__key',
+                key: 'budget_current_state_key__in',
             },
             {
                 isRequired: false,
@@ -241,7 +241,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'countries',
+                key: 'country__id__in',
             },
         ],
     },

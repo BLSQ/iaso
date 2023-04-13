@@ -137,6 +137,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     exporter_serializer_class = ExportCampaignSerializer
     export_filename = "campaigns_list_{date}.csv"
+    use_field_order = False
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
@@ -341,11 +342,11 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         if campain.separate_scopes_per_round:
             round_scope_vaccines = []
 
-            scopes = RoundScope.objects.filter(round=round)
+            scopes = round.scopes
             if scopes.count() < 1:
                 return ""
             # Loop on round scopes
-            for scope in scopes:
+            for scope in scopes.all():
                 round_scope_vaccines.append(scope.vaccine)
             return ", ".join(round_scope_vaccines)
         else:

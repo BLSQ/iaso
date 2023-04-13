@@ -9,6 +9,8 @@ export const baseUrls = {
     compareInstances: 'forms/compare',
     compareInstanceLogs: 'forms/compareInstanceLogs',
     orgUnits: 'orgunits/list',
+    registry: 'orgunits/registry',
+    registryDetail: 'orgunits/registry/details',
     groups: 'orgunits/groups',
     orgUnitTypes: 'orgunits/types',
     orgUnitDetails: 'orgunits/detail',

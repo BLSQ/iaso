@@ -193,6 +193,7 @@ class Round(models.Model):
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
     forma_date = models.DateField(null=True, blank=True)
     forma_comment = models.TextField(blank=True, null=True)
+    percentage_covered_target_population = models.IntegerField(null=True, blank=True)
     # End of vaccine management
 
     def get_item_by_key(self, key):
@@ -767,7 +768,6 @@ class CampaignGroup(SoftDeletableModel):
 
 # Deprecated
 class BudgetEvent(SoftDeletableModel):
-
     TYPES = (
         ("submission", "Budget Submission"),
         ("comments", "Comments"),

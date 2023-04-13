@@ -314,6 +314,8 @@
     "iaso.polio.label.parentAbsent": "Parent absent",
     "iaso.polio.label.passed": "Succès",
     "iaso.polio.label.paymentMode": "Mode de paiement",
+    "iaso.polio.label.paymentModeUnicef": "Mode de paiement UNICEF",
+    "iaso.polio.label.paymentModeWho": "Mode de paiement Who",
     "iaso.polio.label.pending": "En attente",
     "iaso.polio.label.playground": "À la plaine de jeux",
     "iaso.polio.label.poNumbers": "Numéro de PO",

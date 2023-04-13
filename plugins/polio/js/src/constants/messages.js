@@ -698,6 +698,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.paymentMode',
         defaultMessage: 'Payment Mode',
     },
+    payment_mode_unicef: {
+        id: 'iaso.polio.label.paymentModeUnicef',
+        defaultMessage: 'Payment Mode Unicef',
+    },
+    payment_mode_who: {
+        id: 'iaso.polio.label.paymentModeWho',
+        defaultMessage: 'Payment Mode Who',
+    },
     responsible: {
         id: 'iaso.polio.label.responsible',
         defaultMessage: 'Responsible',

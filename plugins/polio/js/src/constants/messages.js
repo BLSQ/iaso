@@ -1990,10 +1990,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.approved_by_who',
         defaultMessage: 'Approved by WHO',
     },
-    approved_by_who_at_WFEDITABLE: {
-        id: 'iaso.polio.form.label.approved_by_who_at_WFEDITABLE',
-        defaultMessage: 'Date of approval by WHO',
-    },
     feedback_sent_to_orpg_operations_who: {
         id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_who',
         defaultMessage: 'Feedback requested by WHO',

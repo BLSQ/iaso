@@ -25,7 +25,6 @@ import {
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../hooks/useFormValidator';
 import { BaseInfoForm, baseInfoFormFields } from '../forms/BaseInfoForm';
-import { DetectionForm, detectionFormFields } from '../forms/DetectionForm';
 import {
     RiskAssessmentForm,
     riskAssessmentFormFields,
@@ -127,15 +126,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                     formik.errors,
                 ),
                 key: 'baseInfo',
-            },
-            {
-                title: formatMessage(MESSAGES.detection),
-                form: DetectionForm,
-                hasTabError: compareArraysValues(
-                    detectionFormFields,
-                    formik.errors,
-                ),
-                key: 'detection',
             },
             {
                 title: formatMessage(MESSAGES.riskAssessment),

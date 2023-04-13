@@ -314,6 +314,7 @@ export const BudgetForm = () => {
                             name="payment_mode_who"
                             component={PaymentField}
                             responsible="WHO"
+                            form={values}
                             fullWidth
                         />
                     </Box>
@@ -323,6 +324,8 @@ export const BudgetForm = () => {
                             name="payment_mode_unicef"
                             component={PaymentField}
                             responsible="UNICEF"
+                            field=
+                            form={values}
                             fullWidth
                         />
                     </Box>

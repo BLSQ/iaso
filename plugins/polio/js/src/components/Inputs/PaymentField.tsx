@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState, useCallback } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { Select } from './Select';
 import MESSAGES from '../../constants/messages';
@@ -24,9 +24,27 @@ type Props = {
 
 export const PaymentField: FunctionComponent<Props> = ({
     responsible,
+    field,
+    form,
     ...props
 }) => {
     const { formatMessage } = useSafeIntl();
+    const { name } = field;
+    const {
+        setFieldValue,
+        touched,
+        errors: formErrors,
+        setFieldTouched,
+    } = form;
+
+    const onChange = useCallback(
+        value => {
+            setFieldTouched(name, true);
+            setFieldValue(name, value);
+        },
+        [name, setFieldTouched, setFieldValue],
+    );
+
     return (
         <Select
             label={
@@ -36,6 +54,7 @@ export const PaymentField: FunctionComponent<Props> = ({
             }
             options={PAYMENT}
             {...props}
+            onChange={onChange}
         />
     );
 };

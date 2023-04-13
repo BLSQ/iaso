@@ -311,8 +311,18 @@ export const BudgetForm = () => {
                     </Box>
                     <Box mb={2}>
                         <Field
-                            name="payment_mode"
+                            name="payment_mode_who"
                             component={PaymentField}
+                            responsible="WHO"
+                            fullWidth
+                        />
+                    </Box>
+
+                    <Box mb={2}>
+                        <Field
+                            name="payment_mode_unicef"
+                            component={PaymentField}
+                            responsible="UNICEF"
                             fullWidth
                         />
                     </Box>
@@ -346,7 +356,6 @@ export const BudgetForm = () => {
                         component={TextInput}
                         className={classes.input}
                     />
-
                     <Field
                         label={formatMessage(MESSAGES.noRegretFund)}
                         name="no_regret_fund_amount"

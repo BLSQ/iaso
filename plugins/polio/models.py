@@ -72,6 +72,7 @@ PREPAREDNESS_SYNC_STATUS = [
 PAYMENT = [
     ("DIRECT", _("Direct")),
     ("DFC", _("DFC")),
+    ("MOBILEMONEY", _("Mobile Money")),
 ]
 
 
@@ -453,7 +454,7 @@ class Campaign(SoftDeletableModel):
         null=True,
         blank=True,
     )
-    payment_mode = models.CharField(max_length=10, choices=PAYMENT, null=True, blank=True)
+    payment_mode = models.CharField(max_length=11, choices=PAYMENT, null=True, blank=True)
     # DEPRECATED. moved to Rounds
     round_one = models.OneToOneField(
         Round, on_delete=models.PROTECT, related_name="campaign_round_one", null=True, blank=True

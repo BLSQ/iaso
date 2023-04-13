@@ -280,14 +280,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.virusNotificationDate',
         defaultMessage: 'Virus notification date',
     },
-    pv2_notification_date: {
-        id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV notification date',
-    },
-    pv2_notified_at: {
-        id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV notification date',
-    },
     threelevelCall: {
         id: 'iaso.polio.form.label.threelevelCall',
         defaultMessage: '3 level call',
@@ -1873,10 +1865,6 @@ const MESSAGES = defineMessages({
     gpei_email: {
         id: 'iaso.polio.label.gpei_email',
         defaultMessage: 'Email GPEI',
-    },
-    pv_notified_at: {
-        id: 'iaso.polio.label.pv_notified_at',
-        defaultMessage: 'PV Notification date',
     },
     cvdpv_notified_at: {
         id: 'iaso.polio.label.cvdpv_notified_at',

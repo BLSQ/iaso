@@ -211,14 +211,11 @@ export const iasoFields: Field[] = [
         type: 'calculate',
         queryBuilder: {
             type: 'text',
-            excludeOperators: [
-                'proximity',
-                'ends_with',
-                'starts_with',
-                'like',
-                'not_like',
-                'is_empty',
-                'is_not_empty',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
             ],
         },
     },

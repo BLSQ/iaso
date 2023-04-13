@@ -194,11 +194,9 @@ export const RiskAssessmentForm = () => {
                             <Field
                                 key={round.number}
                                 label={`${formatMessage(
-                                    MESSAGES.dosesRequested,
-                                )} ${formatMessage(MESSAGES.round)} ${
-                                    round.number
-                                }`}
-                                name={`rounds[${i}].doses_requested`}
+                                    MESSAGES.target_population,
+                                )} ${round.number}`}
+                                name={`rounds[${i}].target_population`}
                                 component={TextInput}
                                 className={classes.input}
                             />
@@ -209,14 +207,16 @@ export const RiskAssessmentForm = () => {
                             <Field
                                 key={round.number}
                                 label={`${formatMessage(
-                                    MESSAGES.target_population,
-                                )} ${round.number}`}
-                                name={`rounds[${i}].target_population`}
+                                    MESSAGES.dosesRequested,
+                                )} ${formatMessage(MESSAGES.round)} ${round.number
+                                    }`}
+                                name={`rounds[${i}].doses_requested`}
                                 component={TextInput}
                                 className={classes.input}
                             />
                         );
                     })}
+
                 </Grid>
             </Grid>
         </>

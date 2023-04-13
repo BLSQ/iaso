@@ -990,6 +990,7 @@
     "iaso.workflows.editChange": "Edit change",
     "iaso.workflows.editFollowUp": "Edit follow up",
     "iaso.workflows.followUps": "Follow ups",
+    "iaso.workflows.latest": "latest",
     "iaso.workflows.mapping": "Mapping",
     "iaso.workflows.noCondition": "Always true",
     "iaso.workflows.order": "Order",

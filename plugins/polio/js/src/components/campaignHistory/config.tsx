@@ -231,7 +231,7 @@ export const config: Record<string, any> = [
             convertDate(log.feedback_sent_to_rrt1_at_WFEDITABLE, 'L'),
     },
     {
-        key: 're_submitted_to_orpg_operations2_at_WFEDITABLE',
+        key: 're_submitted_to_orpg_operations1_at_WFEDITABLE',
         getLogValue: log =>
             convertDate(
                 log.re_submitted_to_orpg_operations1_at_WFEDITABLE,
@@ -309,6 +309,14 @@ export const config: Record<string, any> = [
     {
         key: 'unicef_disbursed_to_co_at',
         getLogValue: log => convertDate(log.unicef_disbursed_to_co_at),
+    },
+    {
+        key: 'unicef_disbursed_to_moh_at',
+        getLogValue: log => convertDate(log.unicef_disbursed_to_moh_at),
+    },
+    {
+        key: 'who_disbursed_to_moh_at',
+        getLogValue: log => convertDate(log.who_disbursed_to_moh_at),
     },
     {
         key: 'district_count',

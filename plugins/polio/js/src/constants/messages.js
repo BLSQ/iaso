@@ -1272,7 +1272,7 @@ const MESSAGES = defineMessages({
     },
     is_test: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign',
+        defaultMessage: 'Test campaigns/On hold status',
     },
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',

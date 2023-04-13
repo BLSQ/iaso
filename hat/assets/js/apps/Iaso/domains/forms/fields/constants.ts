@@ -102,7 +102,6 @@ export const iasoFields: Field[] = [
     },
     {
         type: 'time',
-        disabled: true,
         queryBuilder: {
             type: 'time',
             operators: ['equal', 'not_equal'],
@@ -113,7 +112,6 @@ export const iasoFields: Field[] = [
     },
     {
         type: 'dateTime',
-        disabled: true,
         queryBuilder: {
             type: 'datetime',
             operators: ['equal', 'not_equal'],

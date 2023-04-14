@@ -4,16 +4,10 @@ import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import {
-    DateInput,
-    ResponsibleField,
-    TextInput,
-    NumberInput,
-} from '../components/Inputs';
+import { DateInput, TextInput, NumberInput } from '../components/Inputs';
 
 export const riskAssessmentFormFields = [
     'risk_assessment_status',
-    'risk_assessment_responsible',
     'verification_score',
     'investigation_at',
     'outbreak_declaration_date',
@@ -128,22 +122,6 @@ export const RiskAssessmentForm = () => {
                             <Divider style={{ width: '50%' }} />
                         </Box>
                     </Grid>
-                    <Grid xs={12} md={6} item>
-                        <Field
-                            name="risk_assessment_responsible"
-                            component={ResponsibleField}
-                        />
-                    </Grid>
-                    <Grid xs={12} md={6} item>
-                        <Field
-                            label={formatMessage(MESSAGES.verificationScore)}
-                            name="verification_score"
-                            component={NumberInput}
-                            className={classes.input}
-                            min={0}
-                            max={20}
-                        />
-                    </Grid>
                 </Grid>
                 <Grid item md={6}>
                     <Field
@@ -187,6 +165,16 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                         onChange={updateDGAuthorized}
                     />
+                    <Box mt={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.verificationScore)}
+                            name="verification_score"
+                            component={NumberInput}
+                            className={classes.input}
+                            min={0}
+                            max={20}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item md={6}>
                     {rounds.map((round, i) => {
@@ -221,15 +209,15 @@ export const RiskAssessmentForm = () => {
                                 key={round.number}
                                 label={`${formatMessage(
                                     MESSAGES.dosesRequested,
-                                )} ${formatMessage(MESSAGES.round)} ${round.number
-                                    }`}
+                                )} ${formatMessage(MESSAGES.round)} ${
+                                    round.number
+                                }`}
                                 name={`rounds[${i}].doses_requested`}
                                 component={TextInput}
                                 className={classes.input}
                             />
                         );
                     })}
-
                 </Grid>
             </Grid>
         </>

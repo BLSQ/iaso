@@ -286,10 +286,10 @@ class Campaign(SoftDeletableModel):
         blank=True,
     )
 
-    three_level_call_at = models.DateField(
+    outbreak_declaration_date = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("3 level call"),
+        verbose_name=_("Outbreak declaration date"),
     )
 
     # Deprecated

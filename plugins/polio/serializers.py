@@ -639,7 +639,6 @@ class CampaignSerializer(serializers.ModelSerializer):
             round = round_serializer.save()
 
             for scope in scopes:
-
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
@@ -864,7 +863,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "creation_email_send_at",
             # "group",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -904,6 +902,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_id",
             "is_preventive",
             "account",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields
 
@@ -940,7 +939,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "creation_email_send_at",
             # "group",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -982,6 +980,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_id",
             "is_preventive",
             "account",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields
 
@@ -1108,7 +1107,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             "country",
             "creation_email_send_at",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -1166,5 +1164,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             "district_count",
             "is_preventive",
             "enable_send_weekly_email",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields

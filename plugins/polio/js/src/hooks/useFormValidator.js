@@ -560,7 +560,7 @@ export const useFormValidator = () => {
         grouped_campaigns: yup.array(yup.number()).nullable(),
         description: yup.string().nullable(),
         onset_at: yup.date().nullable(),
-        three_level_call_at: yup.date().nullable(),
+        outbreak_declaration_date: yup.date().nullable(),
 
         cvdpv_notified_at: yup.date().nullable(),
         cvdpv2_notified_at: yup.date().nullable(),

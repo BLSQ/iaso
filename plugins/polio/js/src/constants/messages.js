@@ -280,13 +280,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.virusNotificationDate',
         defaultMessage: 'Virus notification date',
     },
-    threelevelCall: {
-        id: 'iaso.polio.form.label.threelevelCall',
-        defaultMessage: '3 level call',
-    },
-    three_level_call_at: {
-        id: 'iaso.polio.form.label.threelevelCall',
-        defaultMessage: '3 level call',
+    outbreakdeclarationdate: {
+        id: 'iaso.polio.form.label.outbreakdeclarationdate',
+        defaultMessage: 'Outbreak declaration date',
     },
     baseInfoFormTitle: {
         id: 'iaso.polio.form.title.baseInfoFormTitle',

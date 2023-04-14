@@ -141,8 +141,8 @@ export const useGetConfig = (): Record<string, any> => {
             getLogValue: log => convertDate(log.pv_notified_at),
         },
         {
-            key: 'three_level_call_at',
-            getLogValue: log => convertDate(log.three_level_call_at),
+            key: 'outbreak_declaration_date',
+            getLogValue: log => convertDate(log.outbreak_declaration_date),
         },
         // Detection
         {

@@ -16,7 +16,7 @@ export const riskAssessmentFormFields = [
     'risk_assessment_responsible',
     'verification_score',
     'investigation_at',
-    'three_level_call_at',
+    'outbreak_declaration_date',
     'risk_assessment_first_draft_submitted_at',
     'risk_assessment_rrt_oprtt_approval_at',
     'ag_nopv_group_met_at',
@@ -153,8 +153,8 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label={formatMessage(MESSAGES.threelevelCall)}
-                        name="three_level_call_at"
+                        label={formatMessage(MESSAGES.outbreakdeclarationdate)}
+                        name="outbreak_declaration_date"
                         component={DateInput}
                         fullWidth
                     />

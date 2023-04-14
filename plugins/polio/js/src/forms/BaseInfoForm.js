@@ -34,7 +34,7 @@ export const baseInfoFormFields = [
     'enable_send_weekly_email',
     'onset_at',
     'cvdpv2_notified_at',
-    'three_level_call_at',
+    'outbreak_declaration_date',
 ];
 
 export const BaseInfoForm = () => {
@@ -172,9 +172,9 @@ export const BaseInfoForm = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
-                            label={formatMessage(MESSAGES.threelevelCall)}
+                            label={formatMessage(MESSAGES.outbreakdeclarationdate)}
                             fullWidth
-                            name="three_level_call_at"
+                            name="outbreak_declaration_date"
                             component={DateInput}
                         />
                     </Grid>

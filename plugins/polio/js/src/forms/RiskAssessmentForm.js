@@ -152,7 +152,8 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                         onChange={updateRRTApproval}
                     />
-                    <Field
+                    {/* temporary hiding those fields but should not be removed as we will need them at a later stage */}
+                    {/* <Field
                         label={formatMessage(MESSAGES.ag_nopv_group_met_at)}
                         name="ag_nopv_group_met_at"
                         component={DateInput}
@@ -164,7 +165,7 @@ export const RiskAssessmentForm = () => {
                         component={DateInput}
                         fullWidth
                         onChange={updateDGAuthorized}
-                    />
+                    /> */}
                     <Box mt={2}>
                         <Field
                             label={formatMessage(MESSAGES.verificationScore)}

@@ -1878,6 +1878,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.creation_email_send_at',
         defaultMessage: 'Email creation date',
     },
+    risk_assessment_responsible: {
+        id: 'iaso.polio.label.risk_assessment_responsible',
+        defaultMessage: 'Risk assessment responsible',
+    },
     detection_rrt_oprtt_approval_at: {
         id: 'iaso.polio.label.detection_rrt_oprtt_approval_at',
         defaultMessage: 'Detection rrt oprtt oprtt',

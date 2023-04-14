@@ -351,6 +351,7 @@
     "iaso.polio.label.restoreWarning": "Etes-vous sûr(e) de vouloir restaurer cette campagne?",
     "iaso.polio.label.review": "Evaluation",
     "iaso.polio.label.reviewedByRrt": "Revu par RRT",
+    "iaso.polio.label.risk_assessment_responsible": "Responsable de l'évaluation du risque",
     "iaso.polio.label.risk_assessment_status": "Evaluation du risque",
     "iaso.polio.label.round": "Round",
     "iaso.polio.label.round.number": "Round number",

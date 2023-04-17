@@ -120,7 +120,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             <WidgetPaper
                                 id="form-contents"
                                 className={classes.paper}
-                                title={formatMessage(MESSAGES.submission)}
+                                title={orgUnit.reference_instance.form_name}
                                 IconButton={
                                     userHasPermission(
                                         'iaso_update_submission',

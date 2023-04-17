@@ -50,7 +50,7 @@ from plugins.polio.serializers import (
     ListCampaignSerializer,
     CalendarCampaignSerializer,
 )
-from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
+from plugins.polio.serializers import CampaignPreparednessSpreadsheetSerializer
 from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from .forma import (
     FormAStocksViewSetV2,
@@ -364,12 +364,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         serializer.save()
         return Response(serializer.data)
 
-    @action(methods=["POST"], detail=False, serializer_class=SurgePreviewSerializer)
-    def preview_surge(self, request, **kwargs):
-        serializer = SurgePreviewSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data)
-
     NEW_CAMPAIGN_MESSAGE = """Dear GPEI coordinator – {country_name}
 
 This is an automated email.
@@ -681,7 +675,6 @@ class LineListImportViewSet(ModelViewSet):
 
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
-
         r = []
         qs = Campaign.objects.all().prefetch_related("rounds")
         if request.query_params.get("campaign"):
@@ -734,7 +727,6 @@ class IMStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-
         requested_country = request.GET.get("country_id", None)
         no_cache = request.GET.get("no_cache", "false") == "true"
 

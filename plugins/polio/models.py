@@ -14,7 +14,7 @@ from gspread.utils import extract_id_from_url  # type: ignore
 from iaso.models import Group, OrgUnit
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
+from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences
@@ -629,29 +629,6 @@ class Preparedness(models.Model):
     national_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("National Score"))
     regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
     district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
-
-    payload = models.JSONField()
-
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    def __str__(self) -> str:
-        return f"{self.campaign} - {self.created_at}"
-
-
-# Deprecated
-class Surge(models.Model):
-    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    spreadsheet_url = models.URLField()
-    surge_country_name = models.CharField(max_length=250, null=True, default=True)
-    who_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment WHO"))
-    who_completed_recruitment = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Completed for WHO")
-    )
-    unicef_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment UNICEF"))
-    unicef_completed_recruitment = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Completed for UNICEF")
-    )
 
     payload = models.JSONField()
 

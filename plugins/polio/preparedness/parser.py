@@ -161,7 +161,6 @@ def get_national_level_preparedness(spread: CachedSpread):
 
 
 def get_regional_level_preparedness(spread: CachedSpread):
-
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -246,7 +245,6 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
 
 def get_regional_level_preparedness_v2(spread: CachedSpread):
-
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -393,31 +391,3 @@ def get_preparedness(spread: CachedSpread):
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data
-
-
-# Layout of surge spreadsheet, there is only one worksheet
-# one row per country and one indicator per column: e.g.
-# country name | Total surge approved - WHO | Total Surge Recruited -WHO
-# ALGERIA      | 5                          | 3
-# In surge spreadsheet. Which indicator is on which column
-SURGE_KEY_COL = {
-    "who_recruitment": 2,  # Total Surge Approved -WHO
-    "who_completed_recruitment": 3,  # Total Surge Recruited -WHO
-    "unicef_recruitment": 6,  # Total Surge Approved -UNICEF
-    "unicef_completed_recruitment": 7,  # Total Surge Recruited -UNICEF
-}
-
-
-def surge_indicator_for_country(cs: CachedSpread, country_name):
-    r = {"title": cs.title}
-
-    sheet = cs.worksheets()[0]
-    cell = sheet.find(country_name)
-    if not cell:
-        raise Exception("Country not found in spreadsheet")
-    row_num = cell[0]
-
-    for key, col_num in SURGE_KEY_COL.items():
-        value = sheet.get_rc(row_num, col_num)
-        r[key] = value
-    return r

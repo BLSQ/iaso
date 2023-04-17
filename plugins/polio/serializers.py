@@ -31,7 +31,6 @@ from .preparedness.calculator import get_preparedness_score
 from .preparedness.parser import (
     InvalidFormatError,
     get_preparedness,
-    surge_indicator_for_country,
 )
 from .preparedness.spreadsheet_manager import *
 from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
@@ -397,16 +396,6 @@ class RoundAnonymousSerializer(RoundSerializer):
         exclude = ["preparedness_spreadsheet_url"]
 
 
-class SurgeSerializer(serializers.Serializer):
-    created_at = serializers.DateTimeField()
-    # surge_country_name = serializers.CharField()
-    title = serializers.CharField()  # title of the Google spreadsheet
-    who_recruitment = serializers.IntegerField()
-    who_completed_recruitment = serializers.IntegerField()
-    unicef_recruitment = serializers.IntegerField()
-    unicef_completed_recruitment = serializers.IntegerField()
-
-
 def preparedness_from_url(spreadsheet_url, force_refresh=False):
     try:
         if force_refresh:
@@ -449,26 +438,6 @@ class PreparednessPreviewSerializer(serializers.Serializer):
     def validate(self, attrs):
         spreadsheet_url = attrs.get("google_sheet_url")
         return preparedness_from_url(spreadsheet_url, force_refresh=True)
-
-    def to_representation(self, instance):
-        return instance
-
-
-class SurgePreviewSerializer(serializers.Serializer):
-    def validate(self, attrs):
-        try:
-            ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
-            cs = ssi.cached_spreadsheet
-
-            response = surge_indicator_for_country(cs, surge_country_name)
-            response["created_at"] = ssi.created_at
-            return response
-        except InvalidFormatError as e:
-            raise serializers.ValidationError(e.args[0])
-        except APIError as e:
-            raise serializers.ValidationError(e.args[0].get("message"))
-        except Exception as e:
-            raise serializers.ValidationError(f"{type(e)}: {str(e)}")
 
     def to_representation(self, instance):
         return instance

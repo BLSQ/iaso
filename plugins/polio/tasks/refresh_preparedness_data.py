@@ -58,21 +58,6 @@ def refresh_data(
     upcoming_rounds = round_qs.filter(started_at__gte=now() - timedelta(days=1)).filter(campaign__isnull=False)
     warning_email.send_warning_email(upcoming_rounds)
 
-    # remove to old campaign
-    campaigns_with_surge = (
-        Campaign.objects.exclude(surge_spreadsheet_url__isnull=True)
-        .filter(rounds__started_at__gte=now() - timedelta(100))
-        .distinct()
-    )
-    surge_urls = [c.surge_spreadsheet_url for c in campaigns_with_surge]
-    surge_urls = set(surge_urls)
-    for url in surge_urls:
-        try:
-            logger.info(f"Importing surge file {url}")
-            SpreadSheetImport.create_for_url(url)
-        except Exception as e:
-            logger.exception(e)
-
     finished_at = datetime.now()
     the_duration = (finished_at - started_at).total_seconds()
     task.report_success(f"Finished in {the_duration} seconds")

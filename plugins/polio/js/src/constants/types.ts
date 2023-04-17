@@ -279,15 +279,6 @@ export type Round = {
     percentage_covered_target_population: Nullable<number>;
 };
 
-export type Surge = {
-    created_at: string;
-    title: string;
-    who_recruitment: number; // These appear to be dates as unix stamps
-    who_completed_recruitment: number; // These appear to be dates as unix stamps
-    unicef_recruitment: number; // These appear to be dates as unix stamps
-    unicef_completed_recruitment: number; // These appear to be dates as unix stamps
-};
-
 export type Campaign = {
     id: string;
     created_at: string;

@@ -3,7 +3,6 @@ import {
     postRequest,
     putRequest,
     patchRequest,
-    deleteRequest,
 } from 'Iaso/libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
@@ -59,40 +58,6 @@ export const fetchInstanceDetail = instanceId => dispatch => {
         .then(res => {
             dispatch(setInstancesFetching(false));
             return res;
-        });
-};
-
-export const softDeleteInstance = currentInstance => dispatch => {
-    dispatch(setInstancesFetching(true));
-    deleteRequest(`/api/instances/${currentInstance.id}`)
-        .then(() => {
-            dispatch(fetchInstanceDetail(currentInstance.id));
-        })
-        .catch(err =>
-            dispatch(
-                enqueueSnackbar(errorSnackBar('fetchInstanceError', null, err)),
-            ),
-        )
-        .then(() => {
-            dispatch(setInstancesFetching(false));
-        });
-};
-
-export const restoreInstance = currentInstance => dispatch => {
-    dispatch(setInstancesFetching(true));
-    patchRequest(`/api/instances/${currentInstance.id}/`, { deleted: false })
-        .then(() => {
-            dispatch(fetchInstanceDetail(currentInstance.id));
-        })
-        .catch(err =>
-            dispatch(
-                enqueueSnackbar(
-                    errorSnackBar('restoreInstanceError', null, err),
-                ),
-            ),
-        )
-        .then(() => {
-            dispatch(setInstancesFetching(false));
         });
 };
 

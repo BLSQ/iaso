@@ -169,6 +169,9 @@ class WorkflowFollowupSerializer(serializers.ModelSerializer):
         model = WorkflowFollowup
         fields = ["id", "order", "condition", "forms", "created_at", "updated_at"]
 
+    def get_queryset(self):
+        return super().get_queryset().order_by("order")
+
 
 class WorkflowFollowupModifySerializer(serializers.Serializer):
     id = serializers.IntegerField()
@@ -263,7 +266,13 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
     reference_form = FormNestedSerializer()
     entity_type = EntityTypeNestedSerializer(source="workflow.entity_type")
     changes = WorkflowChangeSerializer(many=True)
-    follow_ups = WorkflowFollowupSerializer(many=True)
+    # follow_ups = WorkflowFollowupSerializer(many=True)
+    follow_ups = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_follow_ups(obj):
+        sorted_obj = obj.follow_ups.all().order_by("order")
+        return WorkflowFollowupSerializer(sorted_obj, many=True).data
 
     class Meta:
         model = WorkflowVersion

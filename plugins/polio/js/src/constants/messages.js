@@ -661,10 +661,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.unicefCompletedRecruitement',
         defaultMessage: 'UNICEF Completed Recruitment',
     },
-    refreshRecruitmentData: {
-        id: 'iaso.polio.label.refreshRecruitmentData',
-        defaultMessage: 'Refresh Recruitment Data',
-    },
     paymentMode: {
         id: 'iaso.polio.label.paymentMode',
         defaultMessage: 'Payment Mode',

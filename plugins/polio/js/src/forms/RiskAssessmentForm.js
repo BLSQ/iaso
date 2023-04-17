@@ -24,24 +24,30 @@ export const RiskAssessmentForm = () => {
     const { rounds = [] } = values;
     const updateFirstDraftSubmission = useCallback(
         (fieldName, date) => {
-            if (
-                date &&
-                !values.risk_assessment_rrt_oprtt_approval_at &&
-                !values.dg_authorized_at
-            ) {
+            if (date && !values.risk_assessment_rrt_oprtt_approval_at) {
                 setFieldValue('risk_assessment_status', 'SUBMITTED');
             }
-            if (
-                !date &&
-                !values.risk_assessment_rrt_oprtt_approval_at &&
-                !values.dg_authorized_at
-            ) {
+            if (!date && !values.risk_assessment_rrt_oprtt_approval_at) {
                 setFieldValue('risk_assessment_status', 'TO_SUBMIT');
             }
+            // if (
+            //     date &&
+            //     !values.risk_assessment_rrt_oprtt_approval_at &&
+            //     !values.dg_authorized_at
+            // ) {
+            //     setFieldValue('risk_assessment_status', 'SUBMITTED');
+            // }
+            // if (
+            //     !date &&
+            //     !values.risk_assessment_rrt_oprtt_approval_at &&
+            //     !values.dg_authorized_at
+            // ) {
+            //     setFieldValue('risk_assessment_status', 'TO_SUBMIT');
+            // }
         },
         [
             setFieldValue,
-            values.dg_authorized_at,
+            // values.dg_authorized_at,
             values.risk_assessment_rrt_oprtt_approval_at,
         ],
     );

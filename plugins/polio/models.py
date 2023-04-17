@@ -372,8 +372,6 @@ class Campaign(SoftDeletableModel):
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     # DEPRECATED -> Moved to round.
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
-    # Surge recruitment. Not really used anymore
-    country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
     # Deprecated

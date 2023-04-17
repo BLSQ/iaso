@@ -169,10 +169,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             {
                 title: formatMessage(MESSAGES.preparedness),
                 form: PreparednessForm,
-                hasTabError: compareArraysValues(
-                    preparednessFormFields,
-                    formik.errors,
-                ),
                 key: 'preparedness',
             },
             {

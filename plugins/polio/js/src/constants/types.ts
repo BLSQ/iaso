@@ -346,7 +346,6 @@ export type Campaign = {
     doses_requested: Nullable<number>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: PreparednessSyncStatus;
-    country_name_in_surge_spreadsheet: Nullable<string>;
     budget_status: Nullable<BudgetStatusDeprecated>;
     budget_responsible: Nullable<ResponsibleLevel>;
     is_test: boolean;

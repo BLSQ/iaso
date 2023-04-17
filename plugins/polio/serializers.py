@@ -455,12 +455,8 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
 
 class SurgePreviewSerializer(serializers.Serializer):
-    country_name_in_surge_spreadsheet = serializers.CharField(max_length=200)
-
     def validate(self, attrs):
         try:
-            surge_country_name = attrs.get("country_name_in_surge_spreadsheet")
-
             ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
             cs = ssi.cached_spreadsheet
 
@@ -872,7 +868,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "dg_authorized_at",
             "verification_score",
             "doses_requested",
-            "country_name_in_surge_spreadsheet",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
@@ -949,7 +944,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "dg_authorized_at",
             "verification_score",
             "doses_requested",
-            "country_name_in_surge_spreadsheet",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
@@ -1116,7 +1110,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             "dg_authorized_at",
             "verification_score",
             "doses_requested",
-            "country_name_in_surge_spreadsheet",
             "budget_status",
             "is_test",
             "budget_current_state_key",

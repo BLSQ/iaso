@@ -645,14 +645,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshedAt',
         defaultMessage: 'Refreshed at',
     },
-    countryNameInSheet: {
-        id: 'iaso.polio.label.countryNameInSheet',
-        defaultMessage: 'Country Name in sheet',
-    },
-    country_name_in_surge_spreadsheet: {
-        id: 'iaso.polio.label.countryNameInSheet',
-        defaultMessage: 'Country Name in sheet',
-    },
     whoToRecruit: {
         id: 'iaso.polio.label.whoToRecruit',
         defaultMessage: 'WHO To Recruit',

@@ -276,6 +276,7 @@ export type Round = {
     forma_unusable_vials: Nullable<number>;
     forma_usable_vials: Nullable<number>;
     campaign: Nullable<string>; // uuid
+    percentage_covered_target_population: Nullable<number>;
 };
 
 export type Surge = {
@@ -324,7 +325,7 @@ export type Campaign = {
     separate_scopes_per_round: boolean;
     creation_email_sent_at: Nullable<string>; // date time
     onset_at: Nullable<string>; // date
-    three_level_call_at: Nullable<string>; // date
+    outbreak_declaration_date: Nullable<string>; // date
     cvdpv_notified_at: Nullable<string>; // date
     cvdpv2_notified_at: Nullable<string>; // date
     pv_notified_at: Nullable<string>; // date

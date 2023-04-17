@@ -544,6 +544,7 @@ const useRoundShape = () => {
         shipments: yup.array(shipment).nullable(),
         vaccines: yup.array(vaccine).nullable(),
         destructions: yup.array(destruction).nullable(),
+        percentage_covered_target_population: yup.number().nullable().min(0).integer(),
     });
 };
 
@@ -559,13 +560,11 @@ export const useFormValidator = () => {
         grouped_campaigns: yup.array(yup.number()).nullable(),
         description: yup.string().nullable(),
         onset_at: yup.date().nullable(),
-        three_level_call_at: yup.date().nullable(),
+        outbreak_declaration_date: yup.date().nullable(),
 
         cvdpv_notified_at: yup.date().nullable(),
         cvdpv2_notified_at: yup.date().nullable(),
 
-        pv_notified_at: yup.date().nullable(),
-        pv2_notified_at: yup.date().nullable(),
         verification_score: yup.number().nullable().positive().integer(),
 
         detection_first_draft_submitted_at: yup.date().nullable(),

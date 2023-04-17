@@ -280,21 +280,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.virusNotificationDate',
         defaultMessage: 'Virus notification date',
     },
-    pv2_notification_date: {
-        id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV notification date',
-    },
-    pv2_notified_at: {
-        id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV notification date',
-    },
-    threelevelCall: {
-        id: 'iaso.polio.form.label.threelevelCall',
-        defaultMessage: '3 level call',
-    },
-    three_level_call_at: {
-        id: 'iaso.polio.form.label.threelevelCall',
-        defaultMessage: '3 level call',
+    outbreakdeclarationdate: {
+        id: 'iaso.polio.form.label.outbreakdeclarationdate',
+        defaultMessage: 'Outbreak declaration date',
     },
     baseInfoFormTitle: {
         id: 'iaso.polio.form.title.baseInfoFormTitle',
@@ -347,6 +335,10 @@ const MESSAGES = defineMessages({
     target_population: {
         id: 'iaso.polio.form.label.targetpopulationRound',
         defaultMessage: 'Target population Round',
+    },
+    percentage_covered_target_population: {
+        id: 'iaso.polio.form.label.percentageCoveredTargetPopulationRound',
+        defaultMessage: 'Percentage covered target population Round',
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
@@ -1272,7 +1264,7 @@ const MESSAGES = defineMessages({
     },
     is_test: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign',
+        defaultMessage: 'Test campaigns/On hold status',
     },
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',
@@ -1870,10 +1862,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.gpei_email',
         defaultMessage: 'Email GPEI',
     },
-    pv_notified_at: {
-        id: 'iaso.polio.label.pv_notified_at',
-        defaultMessage: 'PV Notification date',
-    },
     cvdpv_notified_at: {
         id: 'iaso.polio.label.cvdpv_notified_at',
         defaultMessage: 'CVDPV Notification date',
@@ -1985,10 +1973,6 @@ const MESSAGES = defineMessages({
     approved_by_who: {
         id: 'iaso.polio.form.label.approved_by_who',
         defaultMessage: 'Approved by WHO',
-    },
-    approved_by_who_at_WFEDITABLE: {
-        id: 'iaso.polio.form.label.approved_by_who_at_WFEDITABLE',
-        defaultMessage: 'Date of approval by WHO',
     },
     feedback_sent_to_orpg_operations_who: {
         id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_who',

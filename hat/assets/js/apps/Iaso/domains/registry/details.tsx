@@ -92,7 +92,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         {orgUnit && (
                             <WidgetPaper
                                 className={classes.paper}
-                                title={orgUnit?.name ?? ''}
+                                title={orgUnit.name ?? ''}
+                                IconButton={IconButton}
+                                iconButtonProps={{
+                                    url: `${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`,
+                                    color: 'secondary',
+                                    icon: 'edit',
+                                    tooltipMessage: MESSAGES.editOrgUnit,
+                                }}
                             >
                                 <OrgUnitMap
                                     orgUnit={orgUnit}

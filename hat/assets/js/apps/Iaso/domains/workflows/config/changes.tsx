@@ -30,13 +30,14 @@ export const useGetChangesColumns = (
     targetPossibleFields?: PossibleField[],
     targetPossibleFieldsByVersion?: FormVersion[],
     workflowVersion?: WorkflowVersionDetail,
+    changes?: Change[],
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.form),
-            id: 'form_name',
+            id: 'form__name',
             accessor: 'form__name',
             Cell: settings => {
                 return (
@@ -51,7 +52,6 @@ export const useGetChangesColumns = (
             Header: formatMessage(MESSAGES.mapping),
             id: 'mapping',
             accessor: 'mapping',
-            sortable: false,
             Cell: settings => (
                 <MappingCell mapping={settings.row.original.mapping} />
             ),
@@ -76,9 +76,7 @@ export const useGetChangesColumns = (
             sortable: false,
             accessor: 'id',
             Cell: settings => {
-                const change = workflowVersion?.changes.find(
-                    ch => ch.id === settings.value,
-                );
+                const change = changes?.find(ch => ch.id === settings.value);
                 return (
                     <>
                         {workflowVersion && change && (
@@ -90,7 +88,7 @@ export const useGetChangesColumns = (
                                     targetPossibleFieldsByVersion
                                 }
                                 referenceForm={workflowVersion?.reference_form}
-                                workflowVersion={workflowVersion}
+                                changes={changes}
                             />
                         )}
                     </>

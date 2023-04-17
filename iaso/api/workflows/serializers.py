@@ -265,8 +265,6 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
     reference_form = FormNestedSerializer()
     entity_type = EntityTypeNestedSerializer(source="workflow.entity_type")
-    changes = WorkflowChangeSerializer(many=True)
-    # follow_ups = WorkflowFollowupSerializer(many=True)
     follow_ups = serializers.SerializerMethodField()
 
     @staticmethod
@@ -285,7 +283,6 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
             "reference_form",
             "created_at",
             "updated_at",
-            "changes",
             "follow_ups",
         ]
 

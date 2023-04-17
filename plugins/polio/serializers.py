@@ -455,12 +455,10 @@ class PreparednessPreviewSerializer(serializers.Serializer):
 
 
 class SurgePreviewSerializer(serializers.Serializer):
-    surge_spreadsheet_url = serializers.URLField()
     country_name_in_surge_spreadsheet = serializers.CharField(max_length=200)
 
     def validate(self, attrs):
         try:
-            spreadsheet_url = attrs.get("surge_spreadsheet_url")
             surge_country_name = attrs.get("country_name_in_surge_spreadsheet")
 
             ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
@@ -473,8 +471,6 @@ class SurgePreviewSerializer(serializers.Serializer):
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
-        except NoValidUrlKeyFound:
-            raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
         except Exception as e:
             raise serializers.ValidationError(f"{type(e)}: {str(e)}")
 
@@ -588,12 +584,6 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)
-
-    last_surge = SurgeSerializer(
-        required=False,
-        read_only=True,
-        allow_null=True,
-    )
 
     obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])
 
@@ -747,7 +737,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         # fields = "__all__"
         exclude = ["geojson"]
 
-        read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
+        read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
 
 
 class ListCampaignSerializer(CampaignSerializer):
@@ -1126,7 +1116,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             "dg_authorized_at",
             "verification_score",
             "doses_requested",
-            "surge_spreadsheet_url",
             "country_name_in_surge_spreadsheet",
             "budget_status",
             "is_test",

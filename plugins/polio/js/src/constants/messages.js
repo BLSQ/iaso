@@ -645,15 +645,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshedAt',
         defaultMessage: 'Refreshed at',
     },
-    recruitmentSurgeUrl: {
-        id: 'iaso.polio.label.recruitmentSurgeUrl',
-        defaultMessage: 'Recruitment Surge Google Sheet URL',
-    },
-    surge_spreadsheet_url: {
-        id: 'iaso.polio.label.recruitmentSurgeUrl',
-        defaultMessage: 'Recruitment Surge Google Sheet URL',
-    },
-
     countryNameInSheet: {
         id: 'iaso.polio.label.countryNameInSheet',
         defaultMessage: 'Country Name in sheet',

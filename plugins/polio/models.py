@@ -373,7 +373,6 @@ class Campaign(SoftDeletableModel):
     # DEPRECATED -> Moved to round.
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
     # Surge recruitment. Not really used anymore
-    surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
@@ -517,20 +516,6 @@ class Campaign(SoftDeletableModel):
                 .distinct()
             )
         return self.get_campaign_scope_districts()
-
-    def last_surge(self):
-        spreadsheet_url = self.surge_spreadsheet_url
-        ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
-        if not ssi:
-            return None
-        cs = ssi.cached_spreadsheet
-
-        surge_country_name = self.country_name_in_surge_spreadsheet
-        if not surge_country_name:
-            return None
-        response = surge_indicator_for_country(cs, surge_country_name)
-        response["created_at"] = ssi.created_at
-        return response
 
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:

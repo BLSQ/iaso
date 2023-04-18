@@ -145,7 +145,8 @@ const FollowUpsModal: FunctionComponent<Props> = ({
                         logic={logic}
                         fields={fields}
                         onChange={handleChangeLogic}
-                        currentDateString="current_time"
+                        currentDateString="current_date"
+                        currentDateTimeString="current_datetime"
                     />
                 )}
                 <Grid container spacing={2}>

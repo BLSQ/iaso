@@ -61,6 +61,7 @@ def send_notification_email(campaign):
         else ""
     )
     c = campaign
+    print(c)
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
     # format thousand
     target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
@@ -126,7 +127,8 @@ If there are missing data or dates; visit {url} to update
 * RA Status                      : {c.get_risk_assessment_status_display() or 'Pending'}
 * Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
 * OnSet to Notification (Days)   : {onset_days}
-* Round 1 to Notification (Days) : {round1_days}
+* Notification to Round 1 (Days) : {round1_days}
+* 
 * Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
 * Prep. regional                 : {preparedness.get('regional_score') if preparedness else ''}
 * Prep. district                 : {preparedness.get('district_score') if preparedness else ''}

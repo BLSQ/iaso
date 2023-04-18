@@ -661,6 +661,7 @@
     "iaso.orgUnits.dataSources": "Data Sources",
     "iaso.orgUnits.depth": "Level",
     "iaso.orgUnits.depthInfos": "Level of the type in the hierarchy: province (1)> zone (2)> aire (3)> village (4)",
+    "iaso.orgUnits.edit": "Edit org unit",
     "iaso.orgUnits.editGroups": "Edit groups",
     "iaso.orgUnits.editOrgUnitType": "Edit org unit type",
     "iaso.orgUnits.editValidation": "Edit validation",

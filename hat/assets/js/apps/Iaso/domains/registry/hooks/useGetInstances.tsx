@@ -21,6 +21,7 @@ export const useGetInstances = (
         order: params.order || getSort(defaultSorted),
         page: params.page || 1,
         showDeleted: false,
+        orgUnitParentId: params.orgUnitId,
     };
     const url = makeUrlWithParams('/api/instances/', apiParams);
     return useSnackQuery({

@@ -1,19 +1,20 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { useState, FunctionComponent } from 'react';
+
 import {
-    withStyles,
     Paper,
     Divider,
     Typography,
     Grid,
     Collapse,
     Box,
+    makeStyles,
 } from '@material-ui/core';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     root: {
+        // @ts-ignore
         backgroundColor: theme.palette.ligthGray.background,
         marginBottom: theme.spacing(4),
         '&:last-child': {
@@ -49,22 +50,34 @@ const styles = theme => ({
         marginLeft: 'auto',
         marginTop: theme.spacing(1),
     },
-});
+}));
 
-const WidgetPaper = ({
-    classes,
-    title,
-    children,
-    padded,
+type Props = {
+    title: string;
+    isExpanded?: boolean;
+    expandable?: boolean;
+    id?: string;
+    padded?: boolean;
+    IconButton?: FunctionComponent;
+    iconButtonProps?: Record<string, any>;
+    showHeader?: boolean;
+    className?: string;
+    elevation?: number;
+};
+export const WidgetPaper: FunctionComponent<Props> = ({
     IconButton,
     iconButtonProps,
-    expandable,
-    isExpanded,
-    id,
-    showHeader,
-    className,
+    title,
+    children,
+    id = '',
+    padded = false,
+    expandable = false,
+    showHeader = true,
+    isExpanded = true,
+    className = '',
     elevation = 1,
 }) => {
+    const classes: Record<string, string> = useStyles();
     const [open, setOpen] = useState(isExpanded);
     const handleClick = () => {
         if (expandable) {
@@ -127,7 +140,7 @@ const WidgetPaper = ({
 
             <Collapse in={open} timeout="auto" unmountOnExit>
                 <div
-                    className={padded ? classes.padded : null}
+                    className={padded ? classes.padded : undefined}
                     id={id ? `${id}-body` : undefined}
                 >
                     {children}
@@ -137,31 +150,4 @@ const WidgetPaper = ({
     );
 };
 
-WidgetPaper.defaultProps = {
-    padded: false,
-    IconButton: null,
-    iconButtonProps: {},
-    expandable: false,
-    isExpanded: true,
-    id: undefined,
-    showHeader: true,
-    className: '',
-    elevation: 1,
-};
-
-WidgetPaper.propTypes = {
-    classes: PropTypes.object.isRequired,
-    title: PropTypes.string.isRequired,
-    children: PropTypes.node.isRequired,
-    padded: PropTypes.bool,
-    IconButton: PropTypes.any,
-    iconButtonProps: PropTypes.object,
-    expandable: PropTypes.bool,
-    isExpanded: PropTypes.bool,
-    id: PropTypes.string,
-    showHeader: PropTypes.bool,
-    className: PropTypes.string,
-    elevation: PropTypes.number,
-};
-
-export default withStyles(styles)(WidgetPaper);
+export default WidgetPaper;

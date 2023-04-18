@@ -544,7 +544,12 @@ const useRoundShape = () => {
         shipments: yup.array(shipment).nullable(),
         vaccines: yup.array(vaccine).nullable(),
         destructions: yup.array(destruction).nullable(),
-        percentage_covered_target_population: yup.number().nullable().min(0).integer(),
+        percentage_covered_target_population: yup
+            .number()
+            .nullable()
+            .min(0)
+            .max(100)
+            .integer(),
     });
 };
 

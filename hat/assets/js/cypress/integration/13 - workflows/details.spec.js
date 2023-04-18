@@ -18,7 +18,7 @@ const mockPage = () => {
     }).as('getDetails');
     cy.intercept(
         'GET',
-        'api/formversions/?form_id=7&fields=version_id,possible_fields',
+        'api/formversions/?form_id=7&fields=version_id,possible_fields,created_at',
         {
             fixture: 'workflows/possible_fields.json',
         },
@@ -495,7 +495,7 @@ describe('Workflows details', () => {
             ]).then(() => {
                 cy.intercept(
                     'GET',
-                    'api/formversions/?form_id=1&fields=version_id,possible_fields',
+                    'api/formversions/?form_id=1&fields=version_id,possible_fields,created_at',
                     {
                         fixture: 'workflows/possible_fields.json',
                     },
@@ -567,7 +567,7 @@ describe('Workflows details', () => {
             ]).then(() => {
                 cy.intercept(
                     'GET',
-                    'api/formversions/?form_id=2&fields=version_id,possible_fields',
+                    'api/formversions/?form_id=2&fields=version_id,possible_fields,created_at',
                     {
                         fixture: 'workflows/possible_fields_source.json',
                     },
@@ -592,7 +592,7 @@ describe('Workflows details', () => {
 
                 cy.intercept(
                     'GET',
-                    'api/formversions/?form_id=4&fields=version_id,possible_fields',
+                    'api/formversions/?form_id=4&fields=version_id,possible_fields,created_at',
                     {
                         fixture: 'workflows/possible_fields_source.json',
                     },
@@ -730,7 +730,7 @@ describe('Workflows details', () => {
             ]).then(() => {
                 cy.intercept(
                     'GET',
-                    'api/formversions/?form_id=7&fields=version_id,possible_fields',
+                    'api/formversions/?form_id=7&fields=version_id,possible_fields,created_at',
                     {
                         fixture: 'workflows/possible_fields_source.json',
                     },

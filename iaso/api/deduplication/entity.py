@@ -31,7 +31,7 @@ class EntityDuplicateViewSet(viewsets.ViewSet):
     PATCH /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
     serializer_class = EntityDuplicateSerializer
 
     def list(self, request, *args, **kwargs):
@@ -155,7 +155,7 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
     serializer_class = EntityDuplicateAnalyzeSerializer
 
     def list(self, request, *args, **kwargs):
@@ -169,7 +169,7 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         """
-        GET /api/entityduplicates_analyzes/{id}
+        GET /api/entityduplicates_analyzes/{id}/
         Provides an API to retrieve the status of an analyze
 
         ## Possible responses
@@ -217,14 +217,14 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None, *args, **kwargs):
         """
-        PATCH /api/entityduplicates_analyzes/{id}
+        PATCH /api/entityduplicates_analyzes/{id}/
         Provides an API to change the status of an analyze
         """
         pass
 
     def destroy(self, request, pk=None, *args, **kwargs):
         """
-        DELETE /api/entityduplicates_analyzes/{id}
+        DELETE /api/entityduplicates_analyzes/{id}/
         Provides an API to delete the possible duplicates of an analyze
         """
         pass
@@ -234,16 +234,19 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
     )
     def create(self, request, *args, **kwargs):
         """
-        POST /api/entityduplicates/analyzes
+        POST /api/entityduplicates_analyzes/
         example body:
         {
             "algorithm": "namesim", "invert"
             "entity_type_id": String,
             "fields": String[],
-            "parameters": {},
+            "parameters": {}, #vary for each algorithm
         }
         Provides an API to launch a duplicate analyzes
         """
+
+        if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
 
         serializer = AnalyzePostBodySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

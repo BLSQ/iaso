@@ -17,9 +17,12 @@ def _build_query(params):
 
     print("params", params)
     the_fields = params.get("fields", [])
+    custom_params = params.get("parameters", {})
+    levenshtein_max_distance = custom_params.get("levenshtein_max_distance", LEVENSHTEIN_MAX_DISTANCE)
+    above_score_display = custom_params.get("above_score_display", ABOVE_SCORE_DISPLAY)
     n = len(the_fields)
     fields_comparison = " + ".join(
-        f"(1.0 - (levenshtein_less_equal(instance1.json->>'{field}', instance2.json->>'{field}', {LEVENSHTEIN_MAX_DISTANCE}) / {LEVENSHTEIN_MAX_DISTANCE}::float))"
+        f"(1.0 - (levenshtein_less_equal(instance1.json->>'{field}', instance2.json->>'{field}', {levenshtein_max_distance}) / {levenshtein_max_distance}::float))"
         for field in the_fields
     )
 
@@ -37,12 +40,18 @@ def _build_query(params):
         AND entity1.entity_type_id = {params.get("entity_type_id")}
         AND entity2.entity_type_id = {params.get("entity_type_id")}
         AND NOT EXISTS (SELECT id FROM iaso_entityduplicate WHERE iaso_entityduplicate.entity1_id = entity1.id AND iaso_entityduplicate.entity2_id = entity2.id)
-    ) AS subquery_high_score WHERE score > {ABOVE_SCORE_DISPLAY} ORDER BY score DESC
+    ) AS subquery_high_score WHERE score > {above_score_display} ORDER BY score DESC
     """
 
 
 @DeduplicationAlgorithm.register("inverse")
 class InverseAlgorithm(DeduplicationAlgorithm):
+    """
+    This algorithm has the following custom parameters:
+    levenshtein_max_distance: the maximum distance for the levenshtein algorithm (defaults to LEVENSHTEIN_MAX_DISTANCE)
+    above_score_display: the minimum score to display (defaults to ABOVE_SCORE_DISPLAY)
+    """
+
     def run(self, params, task=None) -> List[PotentialDuplicate]:
 
         count = 100

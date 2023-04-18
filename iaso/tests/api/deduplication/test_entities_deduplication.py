@@ -1,12 +1,55 @@
+from unittest import mock
 from uuid import uuid4
+from beanstalk_worker.services import TestTaskService
+
+from django.core.files import File
+from django.core.files.uploadedfile import UploadedFile
 
 from iaso import models as m
 from iaso.test import APITestCase
+
+from iaso.tests.api.workflows.base import var_dump
+from django.db import connection
+
+
+def create_instance_and_entity(cls, entity_name, instance_json, orgunit=None, entity_type=None):
+
+    if orgunit is None:
+        orgunit = cls.default_orgunit
+
+    if entity_type is None:
+        entity_type = cls.default_entity_type
+
+    tmp_inst = cls.create_form_instance(
+        form=cls.default_form,
+        period="202001",
+        org_unit=orgunit,
+        project=cls.default_project,
+        uuid=uuid4,
+    )
+
+    tmp_inst.json = instance_json
+    tmp_inst.save()
+
+    same_entity_2 = m.Entity.objects.create(
+        name=entity_name,
+        entity_type=entity_type,
+        attributes=tmp_inst,
+        account=cls.default_account,
+    )
+
+    setattr(cls, entity_name, same_entity_2)
+
+    print(entity_name, same_entity_2.id)
 
 
 class EntitiesDuplicationAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        # this needs to be run as a new DB is created every time
+        with connection.cursor() as cursor:
+            cursor.execute("CREATE EXTENSION fuzzystrmatch;")
+
         default_account = m.Account.objects.create(name="Default account")
 
         cls.default_account = default_account
@@ -22,11 +65,21 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         )
 
         cls.default_orgunit = m.OrgUnit.objects.create(
-            name="Default Org Unit", source_ref="default_test_orgunit_ref", version=default_sv
+            name="Default Org Unit",
+            source_ref="default_test_orgunit_ref",
+            version=default_sv,
+            org_unit_type=cls.default_orgunit_type,
+        )
+
+        cls.another_orgunit_type = m.OrgUnitType.objects.create(
+            name="Another Org Unit Type", short_name="another_ou_type"
         )
 
         cls.another_orgunit = m.OrgUnit.objects.create(
-            name="Another Org Unit", source_ref="another_test_orgunit_ref", version=default_sv
+            name="Another Org Unit",
+            source_ref="another_test_orgunit_ref",
+            version=default_sv,
+            org_unit_type=cls.another_orgunit_type,
         )
 
         cls.default_sv = default_sv
@@ -36,58 +89,212 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         )
 
         cls.user_without_ou = cls.create_user_with_profile(
-            username="user_without_ou", account=default_account, permissions=["iaso_submissions"]
+            username="user_without_ou", account=default_account, permissions=["iaso_entity_duplicates_read"]
         )
 
-        cls.default_form = m.Form.objects.create(name="Default Dorm", period_type=m.MONTH, single_per_period=True)
-
-        first_instance_1 = cls.create_form_instance(
-            form=cls.default_form,
-            period="202001",
-            org_unit=cls.default_orgunit,
-            project=cls.default_project,
-            uuid=uuid4,
+        cls.user_with_default_ou_ro = cls.create_user_with_profile(
+            username="user_with_default_ou_ro",
+            account=default_account,
+            permissions=["iaso_entity_duplicates_read"],
+            org_units=[cls.default_orgunit],
         )
 
-        first_instance_1.json = {"name": "first_instance", "last_name": "iaso"}
-        first_instance_1.save()
-
-        first_instance_2 = cls.create_form_instance(
-            form=cls.default_form,
-            period="202001",
-            org_unit=cls.default_orgunit,
-            project=cls.default_project,
-            uuid=uuid4,
+        cls.user_with_default_ou_rw = cls.create_user_with_profile(
+            username="user_with_default_ou_rw",
+            account=default_account,
+            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            org_units=[cls.default_orgunit],
         )
 
-        first_instance_2.json = {"name": "first_instance", "last_name": "iaso"}
-        first_instance_2.save()
-
-        first_instance_in_other_ou = cls.create_form_instance(
-            form=cls.default_form,
-            period="202001",
-            org_unit=cls.another_orgunit,
-            project=cls.default_project,
-            uuid=uuid4,
+        cls.user_with_other_ou_ro = cls.create_user_with_profile(
+            username="user_with_other_ou_ro",
+            account=default_account,
+            permissions=["iaso_entity_duplicates_read"],
+            org_units=[cls.another_orgunit],
         )
 
-        first_instance_in_other_ou.json = {"name": "first_instance", "last_name": "iaso"}
-
-        far_instance = cls.create_form_instance(
-            form=cls.default_form,
-            period="202001",
-            org_unit=cls.default_orgunit,
-            project=cls.default_project,
-            uuid=uuid4,
+        cls.user_with_other_ou_rw = cls.create_user_with_profile(
+            username="user_with_other_ou_rw",
+            account=default_account,
+            permissions=["iaso_entity_duplicates_read", "iaso_entity_duplicates_write"],
+            org_units=[cls.another_orgunit],
         )
 
-        far_instance.json = {"name": "Far. Inst.", "last_name": "Yeeeeeaaaahhhhhhhhhhh"}
-        far_instance.save()
+        cls.default_form = m.Form.objects.create(name="Default Form", period_type=m.MONTH, single_per_period=True)
 
-        cls.first_instance_1 = first_instance_1
-        cls.first_instance_2 = first_instance_2
-        cls.first_instance_in_other_ou = first_instance_in_other_ou
-        cls.far_instance = far_instance
+        default_form_file_mock = mock.MagicMock(spec=File)
+        default_form_file_mock.name = "test.xml"
+        with open("iaso/tests/fixtures/test_form_deduplication.xlsx", "rb") as xls_file:
+            cls.default_form.form_versions.create(
+                file=default_form_file_mock, xls_file=UploadedFile(xls_file), version_id="2020022401"
+            )
 
-    def test_it_works(self):
-        self.client.force_authenticate(user=self.user_without_ou)
+        cls.default_form.update_possible_fields()
+        cls.default_form.save()
+
+        cls.default_entity_type = m.EntityType.objects.create(
+            name="Default Entity Type", reference_form=cls.default_form
+        )
+
+        cls.another_entity_type = m.EntityType.objects.create(
+            name="Another Entity Type", reference_form=cls.default_form
+        )
+
+        create_instance_and_entity(cls, "same_entity_1", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20})
+        create_instance_and_entity(cls, "same_entity_2", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20})
+        create_instance_and_entity(cls, "close_entity", {"Prenom": "same_instancX", "Nom": "iasX", "Age": 20})
+        create_instance_and_entity(
+            cls, "far_entity", {"Prenom": "Far. Ent.", "Nom": "Yeeeeeaaaahhhhhhhhhhh", "Age": 99}
+        )
+        create_instance_and_entity(
+            cls,
+            "same_entity_in_other_ou",
+            {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            orgunit=cls.another_orgunit,
+        )
+        create_instance_and_entity(
+            cls,
+            "same_entity_other_entity_type",
+            {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            entity_type=cls.another_entity_type,
+        )
+
+    def test_analyze_user_without_orgunit(self):
+        self.client.force_authenticate(self.user_without_ou)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["name", "last_name"],
+                "algorithm": "inverse",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_analyze_with_wrong_algorithm_name(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["name", "last_name"],
+                "algorithm": "wrong",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_analyze_with_wrong_field_name(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["name", "wrong"],
+                "algorithm": "inverse",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 400)
+
+    def test_analyze_without_auth_should_fail(self):
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["name", "last_name"],
+                "algorithm": "inverse",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_analyzes_user_with_readonly_permissions(self):
+        self.client.force_authenticate(self.user_with_default_ou_ro)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["name", "last_name"],
+                "algorithm": "inverse",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_analyzes_happy_path(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "inverse",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        # var_dump(response)
+
+        self.assertEqual(response.status_code, 201)
+        assert "analyze_id" in response.data
+
+        analyze_id = response.data["analyze_id"]
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
+
+        var_dump(response_analyze)
+
+        self.assertEqual(response_analyze.status_code, 200)
+
+        response_data = response_analyze.data
+
+        self.assertEqual(response_data["status"], "SUCCESS")
+        self.assertEqual(response_data["entity_type_id"], str(self.default_entity_type.id))
+        self.assertEqual(response_data["fields"], ["Prenom", "Nom"])
+        self.assertEqual(response_data["algorithm"], "inverse")
+        self.assertEqual(response_data["parameters"], {})
+        self.assertEqual(response_data["created_by"]["id"], self.user_with_default_ou_rw.id)
+
+        response_duplicate = self.client.get(f"/api/entityduplicates/")
+
+        var_dump(response_duplicate.data)
+
+        self.assertEqual(response_duplicate.status_code, 200)
+        assert len(response_duplicate.data) == 6
+
+        datas = [
+            {"entity1": self.same_entity_2.id, "entity2": self.same_entity_1.id, "similarity_score": 100},
+            {"entity1": self.same_entity_in_other_ou.id, "entity2": self.same_entity_1.id, "similarity_score": 100},
+            {"entity1": self.same_entity_in_other_ou.id, "entity2": self.same_entity_2.id, "similarity_score": 100},
+            {"entity1": self.close_entity.id, "entity2": self.same_entity_1.id, "similarity_score": 67},
+            {"entity1": self.close_entity.id, "entity2": self.same_entity_2.id, "similarity_score": 67},
+            {"entity1": self.same_entity_in_other_ou.id, "entity2": self.close_entity.id, "similarity_score": 67},
+        ]
+        for idx, datas in enumerate(datas):
+            self.assertEqual(response_duplicate.data[idx]["validation_status"], "PENDING")
+            self.assertEqual(response_duplicate.data[idx]["type_of_relation"], "DUPLICATE")
+            self.assertEqual(response_duplicate.data[idx]["similarity_score"], datas["similarity_score"])
+            self.assertEqual(response_duplicate.data[idx]["entity1"], datas["entity1"])
+            self.assertEqual(response_duplicate.data[idx]["entity2"], datas["entity2"])
+            self.assertEqual(response_duplicate.data[idx]["analyzes"][0], analyze_id)

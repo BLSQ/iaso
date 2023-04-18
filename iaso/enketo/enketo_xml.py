@@ -1,32 +1,8 @@
+from typing import Tuple
+
 from lxml import etree  # type: ignore
 
 ENKETO_FORM_ID_SEPARATOR = "-"
-
-
-def inject_userid_and_version(xml_str, user_id, version_id):
-    root = etree.fromstring(xml_str)
-
-    root.set("version", str(version_id))
-
-    meta_tag = [c for c in root if c.tag == "meta"][0]
-
-    edit_user_id_tags = [c for c in meta_tag if c.tag == "editUserID"]
-    if len(edit_user_id_tags) > 0:
-        edit_user_id_tags[0].text = str(user_id)
-    else:
-        edit_user_id_tag = etree.Element("editUserID")
-        edit_user_id_tag.text = str(user_id)
-        meta_tag.append(edit_user_id_tag)
-
-    instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
-    return instance_xml.decode("utf-8")
-
-
-def inject_instance_id_in_instance(xml_str, instance_id):
-    root = etree.fromstring(xml_str)
-    root.set("iasoInstance", str(instance_id))
-    instance_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
-    return instance_xml.decode("utf-8")
 
 
 def inject_instance_id_in_form(xml_str, instance_id):
@@ -92,3 +68,26 @@ def to_xforms_xml(form, download_url, version, md5checksum, new_form_id=None):
 
     xforms_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
     return xforms_xml.decode("utf-8")
+
+
+# we still use lxml.etree and not xml.etree because the latter seems to drop the namespace attribute by default
+def inject_xml_find_uuid(instance_xml, instance_id, version_id, user_id) -> Tuple[str, bytes]:
+    """ "Inject the attribute in different place in the xml
+    Return the uuid found in the xml
+    """
+    xml_str = instance_xml.decode("utf-8")
+    #  Get the instanceID (uuid) from the //meta/instanceID
+    #  We have an uuid on instance. but it seems not always filled?
+    root = etree.fromstring(xml_str)
+    instance_id_tag = root.find(".//meta/instanceID")
+    instance_uuid = instance_id_tag.text.replace("uuid:", "")  # type: ignore
+
+    root.attrib["version"] = str(version_id)
+    root.attrib["iasoInstance"] = str(instance_id)
+    # inject the editUserID in the meta of the xml to allow attributing Modification to the user
+    edit_user_id_tag = root.find(".//meta/editUserID")
+    if edit_user_id_tag is None:
+        edit_user_id_tag = etree.SubElement(root.find(".//meta"), "editUserID")  # type: ignore
+    edit_user_id_tag.text = str(user_id)
+    new_xml = etree.tostring(root, encoding="UTF-8", pretty_print=False)
+    return instance_uuid, new_xml

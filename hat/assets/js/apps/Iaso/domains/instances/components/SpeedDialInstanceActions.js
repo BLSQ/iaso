@@ -11,7 +11,6 @@ import MESSAGES from '../messages';
 const useStyles = makeStyles(theme => ({
     speedDial: {
         position: 'absolute',
-        zIndex: 1000000,
         bottom: theme.spacing(2),
         right: theme.spacing(2),
     },

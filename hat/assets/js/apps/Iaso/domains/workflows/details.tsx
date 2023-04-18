@@ -106,10 +106,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     } = useGetWorkflowVersion(versionId);
     const {
         data: changes,
-    }: // isLoading: isLoadingChanges,
-    {
+    }: {
         data?: Change[];
-        isLoading: boolean;
     } = useGetWorkflowVersionChanges(params);
 
     const updateCurrentFollowUps = workflowVersionFollowUps => {

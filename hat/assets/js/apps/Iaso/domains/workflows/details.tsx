@@ -159,6 +159,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         targetPossibleFields,
         targetPossibleFieldsByVersion,
         workflowVersion,
+        changes,
     );
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
@@ -322,6 +323,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             extraProps={{
                                 isLoading,
                                 targetPossibleFieldsByVersion,
+                                changesColumns,
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (

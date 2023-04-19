@@ -79,7 +79,7 @@ export const useGetChangesColumns = (
                 const change = changes?.find(ch => ch.id === settings.value);
                 return (
                     <>
-                        {workflowVersion && change && (
+                        {change && (
                             <ChangesActionCell
                                 change={change}
                                 versionId={versionId}

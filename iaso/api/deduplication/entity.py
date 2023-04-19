@@ -301,11 +301,11 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
         """
         PATCH /api/entityduplicates_analyzes/{id}/
         Provides an API to change the status of an analyze
+        Send {"status": "QUEUED"} or {"status": "KILLED"} to change the status of the analyze
+        Only allowed transitions are "KILLED" -> "QUEUED" and "QUEUED", "RUNNING" -> "KILLED"
+        Needs iaso_entity_duplicates_write permission
         """
 
-        # It's actually changing the status of the Task linked to the analyze
-        # Only transitions allowed are "KILLED" -> "QUEUED" and "QUEUED", "RUNNING" -> "KILLED"
-        # Needs iaso_entity_duplicates_write permission
         if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):
             return Response(status=status.HTTP_403_FORBIDDEN)
 

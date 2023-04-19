@@ -8,6 +8,7 @@ from django.core.files.uploadedfile import UploadedFile
 from iaso import models as m
 from iaso.test import APITestCase
 
+import iaso.models.base as base
 from iaso.tests.api.workflows.base import var_dump
 from django.db import connection
 
@@ -297,7 +298,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             self.assertEqual(response_duplicate.data[idx]["similarity_score"], datas["similarity_score"])
             self.assertEqual(response_duplicate.data[idx]["entity1"], datas["entity1"])
             self.assertEqual(response_duplicate.data[idx]["entity2"], datas["entity2"])
-            self.assertEqual(response_duplicate.data[idx]["analyzes"][0], analyze_id)
+            self.assertEqual(response_duplicate.data[idx]["analyze"], analyze_id)
 
     def test_detail_of_duplicate(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
@@ -323,3 +324,52 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         resp = self.client.get(f"/api/entityduplicates/{duplicate.id}/detail/")
 
         var_dump(resp)
+
+    def test_partial_update_analyze(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "inverse",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        analyze_id = response.data["analyze_id"]
+
+        # we didnt run task_service = TestTaskService() task_service.run_all() so it should still be queued
+
+        response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": base.KILLED})
+        self.assertEqual(response.status_code, 200)
+
+        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        self.assertEqual(analyze.task.status, base.KILLED)
+
+        task_service = TestTaskService()
+        task_service.run_all()  # nothing should run
+
+        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        self.assertEqual(analyze.task.status, base.KILLED)
+
+        response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": base.QUEUED})
+        self.assertEqual(response.status_code, 200)
+
+        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        self.assertEqual(analyze.task.status, base.QUEUED)
+
+        task_service = TestTaskService()
+        task_service.run_all()  # Now it should run
+
+        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        self.assertEqual(analyze.task.status, base.SUCCESS)
+
+        # this should fail because we cant change status to QUEUED after it was run
+        response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": "QUEUED"})
+        self.assertEqual(response.status_code, 400)
+
+        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        self.assertEqual(analyze.task.status, base.SUCCESS)

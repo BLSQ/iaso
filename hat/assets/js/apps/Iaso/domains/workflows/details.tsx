@@ -16,11 +16,11 @@ import {
     SortableTable,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
 import uniqWith from 'lodash/uniqWith';
-import isEqual from 'lodash/isEqual';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 

@@ -81,6 +81,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'See',
         id: 'iaso.label.see',
     },
+    editOrgUnit: {
+        defaultMessage: 'Edit org unit',
+        id: 'iaso.orgUnits.edit',
+    },
 });
 
 export default MESSAGES;

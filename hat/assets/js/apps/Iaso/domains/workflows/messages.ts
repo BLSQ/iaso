@@ -231,6 +231,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.workflows.order',
         defaultMessage: 'Order',
     },
+    latest: {
+        id: 'iaso.workflows.latest',
+        defaultMessage: 'latest',
+    },
 });
 
 export default MESSAGES;

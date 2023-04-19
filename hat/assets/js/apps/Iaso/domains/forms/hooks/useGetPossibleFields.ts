@@ -77,6 +77,7 @@ export const usePossibleFieldsDropdown = (
 export type FormVersion = {
     version_id: string;
     possible_fields: PossibleField[];
+    created_at: number;
 };
 type FormVersionsApiResult = {
     form_versions: FormVersion[];
@@ -137,7 +138,7 @@ export const useGetPossibleFieldsByFormVersion = (
         useGetFormVersion(
             formId,
             Boolean(formId),
-            'version_id,possible_fields',
+            'version_id,possible_fields,created_at',
         );
     return useVersionPossibleFields(isFetchingForm, currentFormVersion);
 };

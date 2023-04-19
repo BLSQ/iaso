@@ -4,7 +4,7 @@ locally and how the connexion between the two works.
 This package contain utilities functions to interact with the ENKETO server. A part of the logic is in the API in `iaso/api/enketo.py`.
 See main README for more information.
 
-TODO: Document which Enketo version we support and have tested with.
+Iaso is compatible and tested with Enketo version 4 and 5.
 
 # Running Enketo in you dev environment
 See the Enketo directory section from the Main readme.md on how to launch Enketo in your docker compose environment. You shouldn't need any special configuration.

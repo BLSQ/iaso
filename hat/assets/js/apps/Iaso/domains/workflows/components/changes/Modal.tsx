@@ -5,7 +5,7 @@ import React, {
     useCallback,
     useEffect,
 } from 'react';
-
+import { orderBy } from 'lodash';
 import {
     useSafeIntl,
     ConfirmCancelModal,
@@ -149,11 +149,19 @@ const Modal: FunctionComponent<Props> = ({
         mappingArray.length > 0 &&
         !mappingArray.find(mapping => !mapping.target || !mapping.source);
 
-    const sourceVersionsDropdownOptions: DropdownOptions<string>[] =
-        useMemo(() => {
+    const getVersionDropdownOptions = useCallback(
+        (versions: FormVersion[]): DropdownOptions<string>[] => {
             const options =
-                sourcePossibleFieldsByVersion?.map(version => ({
-                    label: version.version_id,
+                orderBy(
+                    versions,
+                    [version => version.created_at],
+                    ['desc'],
+                ).map((version, index) => ({
+                    label: `${version.version_id}${
+                        index === 0
+                            ? ` (${formatMessage(MESSAGES.latest)})`
+                            : ''
+                    }`,
                     value: version.version_id,
                 })) || [];
             options.unshift({
@@ -161,20 +169,18 @@ const Modal: FunctionComponent<Props> = ({
                 value: 'all',
             });
             return options;
-        }, [formatMessage, sourcePossibleFieldsByVersion]);
-    const targetVersionsDropdownOptions: DropdownOptions<string>[] =
-        useMemo(() => {
-            const options =
-                targetPossibleFieldsByVersion?.map(version => ({
-                    label: version.version_id,
-                    value: version.version_id,
-                })) || [];
-            options.unshift({
-                label: formatMessage(MESSAGES.allVersions),
-                value: 'all',
-            });
-            return options;
-        }, [formatMessage, targetPossibleFieldsByVersion]);
+        },
+        [formatMessage],
+    );
+
+    const sourceVersionsDropdownOptions: DropdownOptions<string>[] = useMemo(
+        () => getVersionDropdownOptions(sourcePossibleFieldsByVersion || []),
+        [getVersionDropdownOptions, sourcePossibleFieldsByVersion],
+    );
+    const targetVersionsDropdownOptions: DropdownOptions<string>[] = useMemo(
+        () => getVersionDropdownOptions(targetPossibleFieldsByVersion || []),
+        [getVersionDropdownOptions, targetPossibleFieldsByVersion],
+    );
 
     const handleChangeTargetVersion = useCallback(
         (_, value) => {

@@ -92,12 +92,25 @@ export const iasoFields: Field[] = [
     {
         type: 'date',
         queryBuilder: {
-            type: 'date',
-            operators: ['equal', 'not_equal'],
-            preferWidgets: ['number'],
-            fieldSettings: {
-                dateFormat: getLocaleDateFormat('L'),
-            },
+            type: 'currentDate',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+        },
+    },
+    {
+        type: 'dateTime',
+        queryBuilder: {
+            type: 'currentDatetime',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
         },
     },
     {
@@ -117,24 +130,16 @@ export const iasoFields: Field[] = [
     },
     {
         type: 'time',
-        disabled: true,
         queryBuilder: {
             type: 'time',
-            operators: ['equal', 'not_equal'],
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
             fieldSettings: {
                 timeFormat: getLocaleDateFormat('LT'),
-            },
-        },
-    },
-    {
-        type: 'dateTime',
-        disabled: true,
-        queryBuilder: {
-            type: 'datetime',
-            operators: ['equal', 'not_equal'],
-            fieldSettings: {
-                timeFormat: getLocaleDateFormat('LT'),
-                dateFormat: getLocaleDateFormat('L'),
             },
         },
     },
@@ -206,14 +211,11 @@ export const iasoFields: Field[] = [
         type: 'calculate',
         queryBuilder: {
             type: 'text',
-            excludeOperators: [
-                'proximity',
-                'ends_with',
-                'starts_with',
-                'like',
-                'not_like',
-                'is_empty',
-                'is_not_empty',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
             ],
         },
     },

@@ -92,7 +92,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         {orgUnit && (
                             <WidgetPaper
                                 className={classes.paper}
-                                title={orgUnit?.name ?? ''}
+                                title={orgUnit.name ?? ''}
+                                IconButton={IconButton}
+                                iconButtonProps={{
+                                    url: `${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`,
+                                    color: 'secondary',
+                                    icon: 'edit',
+                                    tooltipMessage: MESSAGES.editOrgUnit,
+                                }}
                             >
                                 <OrgUnitMap
                                     orgUnit={orgUnit}
@@ -113,7 +120,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             <WidgetPaper
                                 id="form-contents"
                                 className={classes.paper}
-                                title={formatMessage(MESSAGES.submission)}
+                                title={orgUnit.reference_instance.form_name}
                                 IconButton={
                                     userHasPermission(
                                         'iaso_update_submission',

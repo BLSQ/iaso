@@ -11,23 +11,24 @@ class DataStoreSerializer(serializers.ModelSerializer):
 
     data = serializers.JSONField(source="content")
     key = serializers.CharField(source="slug")
-    
-    def validate_data(self,request_data):
+
+    def validate_data(self, request_data):
         if not request_data:
             raise serializers.ValidationError("data cannot be empty")
         return request_data
-    #TODO We should probably have stricter check on the format of the key/slug
-    def validate_key(self,request_key):
+
+    # TODO We should probably have stricter check on the format of the key/slug
+    def validate_key(self, request_key):
         if len(request_key) < 1:
             raise serializers.ValidationError("key should be at least 1 character long")
-        if ' ' in request_key:
+        if " " in request_key:
             raise serializers.ValidationError("no white space allowed in key")
         return request_key
-    
+
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
-        #Using objects.create will give values to created_at and updated_at, whereas instanciating the class will onlyfill out the values of the fields passed in args
-        data_store = JsonDataStore.objects.create(**validated_data,account=account)
+        # Using objects.create will give values to created_at and updated_at, whereas instanciating the class will onlyfill out the values of the fields passed in args
+        data_store = JsonDataStore.objects.create(**validated_data, account=account)
         return data_store
 
 
@@ -62,4 +63,3 @@ class DataStoreViewSet(ModelViewSet):
         account = user.iaso_profile.account
         queryset = JsonDataStore.objects.all()
         return queryset.filter(account=account)
-

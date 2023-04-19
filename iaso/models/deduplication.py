@@ -35,7 +35,9 @@ class EntityDuplicate(models.Model):
     similarity_score = models.SmallIntegerField(null=True)
     updated_at = models.DateTimeField(auto_now=True)
     metadata = models.JSONField(default=dict)
-    analyzes = models.ManyToManyField(EntityDuplicateAnalyze, related_name="duplicates")
+    analyze = models.ForeignKey(
+        EntityDuplicateAnalyze, related_name="duplicates", on_delete=models.CASCADE, default=None, null=True
+    )
 
     class Meta:
         unique_together = ("entity1", "entity2")

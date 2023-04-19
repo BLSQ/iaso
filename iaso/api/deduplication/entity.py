@@ -14,6 +14,7 @@ import iaso.models.base as base
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Task
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
+from iaso.api.workflows.serializers import find_question_by_name
 
 from .algos import POSSIBLE_ALGORITHMS, run_algo
 from .common import PotentialDuplicate
@@ -42,6 +43,87 @@ class EntityDuplicateViewSet(viewsets.ViewSet):
         queryset = EntityDuplicate.objects.all()
         serializer = EntityDuplicateSerializer(queryset, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="detail")
+    def detail_view(self, request, pk):
+        """
+        GET /api/entityduplicates/<pk>/detail
+        Provides an API to retrieve details about a potential duplicate
+        For all the 'fields' of the analyzis it will return
+        {
+        "field": {
+            "field": string, // The key of the field
+            label: string | { "English": string, "French":string } // either a string or an object with the translations
+            },
+        "entity1":{
+            "value":string | number| boolean, // I think the value types cover what we can expect
+            "id": int // The id of the entity
+            },
+        "entity2":{
+            "value":string |number|boolean,
+            "id": int
+            }
+        "final":{
+            "value"?:string |number|boolean, // No value if the entities mismatch
+            "id"?: int // The value of the entity it was taken from
+            }
+        }
+        So basically it returns an array of those objects
+        """
+        try:
+            duplicate = EntityDuplicate.objects.get(pk=pk)
+        except EntityDuplicate.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entity duplicate not found"})
+
+        # we need to create the expected answer from all the fields
+        # we need to get the fields from the analyze
+        analyze = duplicate.analyze
+        fields = analyze.metadata["fields"]
+        entity_type_id = analyze.metadata["entity_type_id"]
+
+        try:
+            et = EntityType.objects.get(pk=int(entity_type_id))
+        except EntityType.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entitytype not found"})
+
+        return_data = []
+
+        possible_fields = et.reference_form.possible_fields
+
+        e1_json = duplicate.entity1.attributes.json
+        e2_json = duplicate.entity2.attributes.json
+
+        for f in fields:
+
+            the_q = find_question_by_name(f, possible_fields)
+
+            e1_val = e1_json[the_q["name"]]
+            e2_val = e2_json[the_q["name"]]
+            e1_type = type(e1_val).__name__
+            e2_type = type(e2_val).__name__
+
+            return_data.append(
+                {
+                    "field": {
+                        "field": the_q["name"],
+                        "label": the_q["label"],
+                    },
+                    "entity1": {
+                        "value": e1_type,
+                        "id": duplicate.entity1.id,
+                    },
+                    "entity2": {
+                        "value": e2_type,
+                        "id": duplicate.entity2.id,
+                    },
+                    "final": {
+                        "value": e1_type,  # this needs to be fixed !
+                        "id": duplicate.entity1.id,  # this needs to be fixed !
+                    },
+                }
+            )
+
+        return JsonResponse(return_data, safe=False)
 
     def create(self, request, pk=None, *args, **kwargs):
         """
@@ -220,14 +302,54 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
         PATCH /api/entityduplicates_analyzes/{id}/
         Provides an API to change the status of an analyze
         """
-        pass
+
+        # It's actually changing the status of the Task linked to the analyze
+        # Only transitions allowed are "KILLED" -> "QUEUED" and "QUEUED", "RUNNING" -> "KILLED"
+        # Needs iaso_entity_duplicates_write permission
+        if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            eda = EntityDuplicateAnalyze.objects.get(pk=pk)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        if eda.task.status == base.KILLED and request.data["status"] == base.QUEUED:
+            eda.task.status = base.QUEUED
+            eda.task.save()
+            return Response(status=status.HTTP_200_OK)
+
+        elif eda.task.status in [base.QUEUED, base.RUNNING] and request.data["status"] == base.KILLED:
+            eda.task.status = base.KILLED
+            eda.task.save()
+            return Response(status=status.HTTP_200_OK)
+
+        else:
+            return Response(
+                status=status.HTTP_400_BAD_REQUEST,
+                data={
+                    "error": "Invalid status transition, only allowed are KILLED -> QUEUED and QUEUED, RUNNING -> KILLED"
+                },
+            )
 
     def destroy(self, request, pk=None, *args, **kwargs):
         """
         DELETE /api/entityduplicates_analyzes/{id}/
         Provides an API to delete the possible duplicates of an analyze
+        Needs iaso_entity_duplicates_write permission
         """
-        pass
+        if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        try:
+            obj = EntityDuplicateAnalyze.objects.get(pk=pk)
+
+        except EntityDuplicateAnalyze.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        obj.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @swagger_auto_schema(
         request_body=AnalyzePostBodySerializer,
@@ -243,6 +365,7 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
             "parameters": {}, #vary for each algorithm
         }
         Provides an API to launch a duplicate analyzes
+        Needs iaso_entity_duplicates_write permission
         """
 
         if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):

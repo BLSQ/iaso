@@ -15,11 +15,11 @@ def finalize_from_task(the_task: Task, potential_duplicates: List[PotentialDupli
         ed, _ = ed_model.objects.get_or_create(
             entity1_id=int(pot_dup["entity1_id"]),
             entity2_id=int(pot_dup["entity2_id"]),
+            analyze=eda,
             defaults={
                 "similarity_score": pot_dup["score"],
             },
         )
-        ed.analyzes.add(eda)
         ed.save()
 
     eda.finished_at = now()

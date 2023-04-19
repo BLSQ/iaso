@@ -263,7 +263,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
 
-        var_dump(response_analyze)
+        # var_dump(response_analyze)
 
         self.assertEqual(response_analyze.status_code, 200)
 
@@ -278,7 +278,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         response_duplicate = self.client.get(f"/api/entityduplicates/")
 
-        var_dump(response_duplicate.data)
+        # var_dump(response_duplicate.data)
 
         self.assertEqual(response_duplicate.status_code, 200)
         assert len(response_duplicate.data) == 6
@@ -298,3 +298,28 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             self.assertEqual(response_duplicate.data[idx]["entity1"], datas["entity1"])
             self.assertEqual(response_duplicate.data[idx]["entity2"], datas["entity2"])
             self.assertEqual(response_duplicate.data[idx]["analyzes"][0], analyze_id)
+
+    def test_detail_of_duplicate(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "inverse",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        # we need to have some duplicates in DB
+
+        duplicate = m.EntityDuplicate.objects.first()
+
+        resp = self.client.get(f"/api/entityduplicates/{duplicate.id}/detail/")
+
+        var_dump(resp)

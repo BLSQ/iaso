@@ -42,7 +42,7 @@ class DataStorePermission(permissions.BasePermission):
                 request.user and any(request.user.has_perm(perm) for perm in read_perms) or request.user.is_superuser
             )
             return can_get
-        elif request.method == "POST" or request.method == "PUT":
+        elif request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
             can_post = (
                 request.user and any(request.user.has_perm(perm) for perm in write_perms) or request.user.is_superuser
             )
@@ -53,7 +53,7 @@ class DataStorePermission(permissions.BasePermission):
 
 @swagger_auto_schema(tags=["datastore"])
 class DataStoreViewSet(ModelViewSet):
-    http_method_names = ["get", "post", "put"]
+    http_method_names = ["get", "post", "put", "delete"]
     permission_classes = [DataStorePermission]
     serializer_class = DataStoreSerializer
     lookup_field = "slug"

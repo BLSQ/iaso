@@ -68,11 +68,20 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit]);
 
-    const { data: childrenOrgUnits } = useGetOrgUnitsChildren(
+    const { data: listChildrenOrgUnits } = useGetOrgUnitsChildren(
         orgUnitId,
         subOrgUnitTypes,
     );
 
+    const mapChildrenOrgUnits = useMemo(
+        () =>
+            listChildrenOrgUnits?.filter(
+                orgUnitItem =>
+                    Boolean(orgUnitItem.geo_json) ||
+                    Boolean(orgUnitItem.latitude && orgUnitItem.longitude),
+            ),
+        [listChildrenOrgUnits],
+    );
     const getEnketoUrl = useGetEnketoUrl(
         window.location.href,
         orgUnit?.reference_instance,
@@ -104,7 +113,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 <OrgUnitMap
                                     orgUnit={orgUnit}
                                     subOrgUnitTypes={subOrgUnitTypes}
-                                    childrenOrgUnits={childrenOrgUnits || []}
+                                    childrenOrgUnits={mapChildrenOrgUnits || []}
                                 />
                             </WidgetPaper>
                         )}

@@ -30,7 +30,6 @@ export const useGetOrgUnitsChildren = (
 ): UseQueryResult<OrgUnit[], Error> => {
     const params: Record<string, any> = {
         validation_status: 'VALID',
-        withShapes: true,
         orgUnitParentId,
         onlyDirectChildren: true,
     };

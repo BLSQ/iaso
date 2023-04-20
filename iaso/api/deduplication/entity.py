@@ -97,9 +97,11 @@ class EntityDuplicateViewSet(viewsets.ViewSet):
 
             the_q = find_question_by_name(f, possible_fields)
 
+            # needs to handle the case where the field is not found
             e1_val = e1_json[the_q["name"]]
-            e2_val = e2_json[the_q["name"]]
             e1_type = type(e1_val).__name__
+
+            e2_val = e2_json[the_q["name"]]
             e2_type = type(e2_val).__name__
 
             return_data.append(

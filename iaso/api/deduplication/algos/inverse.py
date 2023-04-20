@@ -26,6 +26,8 @@ def _build_query(params):
         for field in the_fields
     )
 
+    # verifier que les champs sont pas du SQL injection
+
     return f"""
     SELECT * FROM (
         SELECT

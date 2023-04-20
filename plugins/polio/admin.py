@@ -120,6 +120,7 @@ class WorkflowAdmin(admin.ModelAdmin):
 
 
 class ConfigAdmin(admin.ModelAdmin):
+    raw_id_fields = ["users"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 

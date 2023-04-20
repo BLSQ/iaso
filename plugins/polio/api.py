@@ -30,9 +30,17 @@ from rest_framework import routers, filters, viewsets, serializers, permissions,
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.api.common import (
+    CSVExportMixin,
+    HasPermission,
+    ModelViewSet,
+    DeletionFilterBackend,
+    CONTENT_TYPE_XLSX,
+    CONTENT_TYPE_CSV,
+)
 from iaso.models import OrgUnit
 from plugins.polio.serializers import (
+    ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
 )
@@ -1628,6 +1636,17 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
+@swagger_auto_schema(tags=["polio-configs"])
+class ConfigViewSet(ModelViewSet):
+    http_method_names = ["get"]
+    permission_classes = [HasPermission("menupermissions.iaso_polio_configs")]
+    serializer_class = ConfigSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return Config.objects.filter(users=self.request.user)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -1646,3 +1665,4 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")

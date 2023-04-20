@@ -325,6 +325,12 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             nid_or_snid = "NID" if country_districts_count == round_districts_count else "sNID"
         else:
             nid_or_snid = ""
+
+        # percentage target population
+        percentage_covered_target_population = (
+            round.percentage_covered_target_population if round.percentage_covered_target_population is not None else ""
+        )
+
         # target population
         target_population = round.target_population if round.target_population is not None else ""
 
@@ -334,6 +340,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             "obr_name": obr_name,
             "vacine": vacine,
             "round_number": round_number,
+            "percentage_covered_target_population": percentage_covered_target_population,
             "target_population": target_population,
             "nid_or_snid": nid_or_snid,
         }
@@ -681,7 +688,6 @@ class LineListImportViewSet(ModelViewSet):
 
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
-
         r = []
         qs = Campaign.objects.all().prefetch_related("rounds")
         if request.query_params.get("campaign"):
@@ -734,7 +740,6 @@ class IMStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-
         requested_country = request.GET.get("country_id", None)
         no_cache = request.GET.get("no_cache", "false") == "true"
 

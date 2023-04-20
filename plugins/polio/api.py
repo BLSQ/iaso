@@ -1639,7 +1639,6 @@ class CampaignGroupViewSet(ModelViewSet):
 @swagger_auto_schema(tags=["polio-configs"])
 class ConfigViewSet(ModelViewSet):
     http_method_names = ["get"]
-    permission_classes = [HasPermission("menupermissions.iaso_polio_configs")]
     serializer_class = ConfigSerializer
     lookup_field = "slug"
 

@@ -11,7 +11,6 @@ import { getOrgUnitsTree, OrgUnitLabel } from '../../orgUnits/utils';
 
 import InstanceDetailsField from './InstanceDetailsField';
 
-import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
 
 const styles = theme => ({
@@ -25,7 +24,6 @@ const InstanceDetailsLocation = ({
     intl: { formatMessage },
     classes,
 }) => {
-    const fields = INSTANCE_METAS_FIELDS.filter(f => f.type === 'location');
     let orgUnitTree = [];
     if (currentInstance.org_unit) {
         orgUnitTree = getOrgUnitsTree(currentInstance.org_unit);
@@ -76,28 +74,52 @@ const InstanceDetailsLocation = ({
                             }
                         />
                     )}
-                {fields.map(f => {
-                    if (f.key !== 'org_unit') {
-                        return (
+                {!currentInstance.latitude &&
+                    !currentInstance.longitude &&
+                    currentInstance.org_unit.latitude &&
+                    currentInstance.org_unit.longitude && (
+                        <>
                             <InstanceDetailsField
-                                key={f.key}
-                                label={formatMessage(MESSAGES[f.key])}
-                                valueTitle={
-                                    f.title
-                                        ? f.title(currentInstance[f.key])
-                                        : null
-                                }
-                                value={
-                                    f.render
-                                        ? f.render(currentInstance[f.key])
-                                        : currentInstance[f.key]
-                                }
+                                label={formatMessage(MESSAGES.latitude)}
+                                value={currentInstance.org_unit.latitude}
                             />
-                        );
-                    }
+                            <InstanceDetailsField
+                                label={formatMessage(MESSAGES.longitude)}
+                                value={currentInstance.org_unit.longitude}
+                            />
+                        </>
+                    )}
 
-                    return null;
-                })}
+                {currentInstance.latitude && currentInstance.longitude && (
+                    <>
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.latitude)}
+                            value={currentInstance.latitude}
+                        />
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.longitude)}
+                            value={currentInstance.longitude}
+                        />
+                    </>
+                )}
+                {currentInstance.altitude === 0 &&
+                    currentInstance.org_unit &&
+                    currentInstance.org_unit.altitude && (
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.altitude)}
+                            value={currentInstance.org_unit.altitude}
+                        />
+                    )}
+                <InstanceDetailsField
+                    label={formatMessage(MESSAGES.altitude)}
+                    value={
+                        currentInstance.altitude > 0 && currentInstance.altitude
+                    }
+                />
+                <InstanceDetailsField
+                    label={formatMessage(MESSAGES.accuracy)}
+                    value={currentInstance.accuracy}
+                />
             </div>
             {currentInstance.latitude && currentInstance.longitude && (
                 <MarkerMap
@@ -105,6 +127,15 @@ const InstanceDetailsLocation = ({
                     longitude={currentInstance.longitude}
                 />
             )}
+            {!currentInstance.latitude &&
+                !currentInstance.longitude &&
+                currentInstance.org_unit.latitude &&
+                currentInstance.org_unit.longitude && (
+                    <MarkerMap
+                        latitude={currentInstance.org_unit.latitude}
+                        longitude={currentInstance.org_unitlongitude}
+                    />
+                )}
         </>
     );
 };

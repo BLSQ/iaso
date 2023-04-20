@@ -14,15 +14,15 @@ import { useGoBack } from '../../routing/useGoBack';
 import { baseUrls } from '../../constants/urls';
 import { getOtChipColors } from '../../constants/chipColors';
 
-import { useGetOrgUnit, useGetOrgUnitsChildren } from './hooks/useGetOrgUnit';
+import { useGetOrgUnit } from './hooks/useGetOrgUnit';
 import { useGetEnketoUrl } from './hooks/useGetEnketoUrl';
 import { useCurrentUser } from '../../utils/usersUtils';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
-import { OrgUnitMap } from './components/OrgUnitMap';
 import InstanceFileContent from '../instances/components/InstanceFileContent';
 import EnketoIcon from '../instances/components/EnketoIcon';
 import { Instances } from './components/Instances';
+import { OrgUnitPaper } from './components/OrgUnitPaper';
 
 import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
@@ -68,20 +68,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit]);
 
-    const { data: listChildrenOrgUnits } = useGetOrgUnitsChildren(
-        orgUnitId,
-        subOrgUnitTypes,
-    );
-
-    const mapChildrenOrgUnits = useMemo(
-        () =>
-            listChildrenOrgUnits?.filter(
-                orgUnitItem =>
-                    Boolean(orgUnitItem.geo_json) ||
-                    Boolean(orgUnitItem.latitude && orgUnitItem.longitude),
-            ),
-        [listChildrenOrgUnits],
-    );
     const getEnketoUrl = useGetEnketoUrl(
         window.location.href,
         orgUnit?.reference_instance,
@@ -99,23 +85,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={5}>
                         {orgUnit && (
-                            <WidgetPaper
-                                className={classes.paper}
-                                title={orgUnit.name ?? ''}
-                                IconButton={IconButton}
-                                iconButtonProps={{
-                                    url: `${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`,
-                                    color: 'secondary',
-                                    icon: 'edit',
-                                    tooltipMessage: MESSAGES.editOrgUnit,
-                                }}
-                            >
-                                <OrgUnitMap
-                                    orgUnit={orgUnit}
-                                    subOrgUnitTypes={subOrgUnitTypes}
-                                    childrenOrgUnits={mapChildrenOrgUnits || []}
-                                />
-                            </WidgetPaper>
+                            <OrgUnitPaper
+                                orgUnit={orgUnit}
+                                subOrgUnitTypes={subOrgUnitTypes}
+                                params={params}
+                            />
                         )}
                     </Grid>
                     {orgUnit?.reference_instance && (

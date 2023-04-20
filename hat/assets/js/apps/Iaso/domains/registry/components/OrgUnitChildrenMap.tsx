@@ -45,7 +45,7 @@ type Props = {
     childrenOrgUnits: OrgUnit[];
 };
 
-export const OrgUnitMap: FunctionComponent<Props> = ({
+export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
     childrenOrgUnits,

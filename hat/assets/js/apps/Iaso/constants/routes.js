@@ -455,6 +455,10 @@ export const registryDetailPath = {
             isRequired: false,
             key: 'tab',
         },
+        {
+            isRequired: false,
+            key: 'orgUnitListTab',
+        },
         ...paginationPathParams,
     ],
 };

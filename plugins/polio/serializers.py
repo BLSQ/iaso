@@ -1175,5 +1175,5 @@ class ConfigSerializer(serializers.ModelSerializer):
         model = Config
         fields = ["created_at", "updated_at", "key", "data"]
 
-    data = serializers.JSONField(source="content")
+    data = serializers.JSONField(source="content") # type: ignore
     key = serializers.CharField(source="slug")

@@ -313,6 +313,7 @@
     "iaso.instances.editLocationWithInstanceGps": "Push GPS from submission",
     "iaso.instances.forceExport": "Force Export",
     "iaso.instances.showDeleted": "Show only deleted",
+    "iaso.label.accuracy": "Accuracy",
     "iaso.label.actions": "Action(s)",
     "iaso.label.add": "Add",
     "iaso.label.address": "Address",

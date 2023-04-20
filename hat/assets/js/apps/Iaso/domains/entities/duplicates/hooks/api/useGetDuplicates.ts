@@ -13,6 +13,7 @@ import {
     DuplicateEntityForTable,
     DuplicatesList,
 } from '../../types';
+import { getRequest } from '../../../../../libs/Api';
 
 const apiUrl = '/api/entityduplicates';
 
@@ -30,6 +31,10 @@ const getDuplicates = async (queryString: string) => {
         limit: 20,
     });
 };
+// const getDuplicates = async (queryString: string) => {
+//     const url = `${apiUrl}/${queryString}`;
+//     return getRequest(apiUrl);
+// };
 
 const formatParams = (params: Record<string, any>) => {
     const copy = { ...params };

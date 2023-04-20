@@ -1,14 +1,8 @@
 /* eslint-disable camelcase */
-import {
-    Grid,
-    Tab,
-    Typography,
-    Box,
-} from '@material-ui/core';
+import { Tab, Box } from '@material-ui/core';
 import { useFormikContext } from 'formik';
 import React, { useState } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import moment from 'moment';
 import { TabContext, TabList, TabPanel } from '@material-ui/lab';
 
 import { useStyles } from '../styles/theme';
@@ -41,8 +35,9 @@ export const PreparednessForm = () => {
                         <Tab
                             className={classes.subTab}
                             key={round.number}
-                            label={`${formatMessage(MESSAGES.round)} ${round.number
-                                }`}
+                            label={`${formatMessage(MESSAGES.round)} ${
+                                round.number
+                            }`}
                             value={`${round.number}`}
                         />
                     ))}

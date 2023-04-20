@@ -389,6 +389,7 @@ class EntityAdmin(admin.ModelAdmin):
     list_filter = ("entity_type",)
     raw_id_fields = ("attributes",)
 
+
 @admin_attr_decorator
 class JsonDataStoreAdmin(admin.ModelAdmin):
     raw_id_fields = ["account"]

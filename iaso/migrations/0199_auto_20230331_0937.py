@@ -6,22 +6,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0198_entityduplicate_entityduplicateanalyze'),
+        ("iaso", "0198_entityduplicate_entityduplicateanalyze"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='entityduplicateanalyze',
-            name='log',
+            model_name="entityduplicateanalyze",
+            name="log",
         ),
         migrations.AddField(
-            model_name='entityduplicateanalyze',
-            name='finished_at',
+            model_name="entityduplicateanalyze",
+            name="finished_at",
             field=models.DateTimeField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='entityduplicateanalyze',
-            name='algorithm',
-            field=models.CharField(choices=[['inverse', 'inverse'], ['namesim', 'namesim']], default='inverse', max_length=20),
+            model_name="entityduplicateanalyze",
+            name="algorithm",
+            field=models.CharField(
+                choices=[["inverse", "inverse"], ["namesim", "namesim"]], default="inverse", max_length=20
+            ),
         ),
     ]

@@ -7,22 +7,33 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0199_auto_20230331_0937'),
+        ("iaso", "0199_auto_20230331_0937"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='entityduplicate',
-            name='analyzes',
+            model_name="entityduplicate",
+            name="analyzes",
         ),
         migrations.AddField(
-            model_name='entityduplicate',
-            name='analyze',
-            field=models.ForeignKey(default=None, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='duplicates', to='iaso.entityduplicateanalyze'),
+            model_name="entityduplicate",
+            name="analyze",
+            field=models.ForeignKey(
+                default=None,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="duplicates",
+                to="iaso.entityduplicateanalyze",
+            ),
         ),
         migrations.AlterField(
-            model_name='entityduplicateanalyze',
-            name='task',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='entity_duplicate_analyze', to='iaso.task'),
+            model_name="entityduplicateanalyze",
+            name="task",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="entity_duplicate_analyze",
+                to="iaso.task",
+            ),
         ),
     ]

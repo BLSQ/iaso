@@ -78,6 +78,7 @@ from .models import (
     ReportVersion,
 )
 from .models.microplanning import Team, Planning, Assignment
+from .models.data_store import JsonDataStore
 from .utils.gis import convert_2d_point_to_3d
 
 
@@ -388,6 +389,11 @@ class EntityAdmin(admin.ModelAdmin):
     list_filter = ("entity_type",)
     raw_id_fields = ("attributes",)
 
+@admin_attr_decorator
+class JsonDataStoreAdmin(admin.ModelAdmin):
+    raw_id_fields = ["account"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
 
 @admin_attr_decorator
 class EntityTypeAdmin(admin.ModelAdmin):
@@ -589,6 +595,7 @@ admin.site.register(DevicePosition)
 admin.site.register(Page, PageAdmin)
 admin.site.register(Task, TaskAdmin)
 admin.site.register(EntityType, EntityTypeAdmin)
+admin.site.register(JsonDataStore, JsonDataStoreAdmin)
 admin.site.register(Entity, EntityAdmin)
 admin.site.register(Team, TeamAdmin)
 admin.site.register(Planning, PlanningAdmin)

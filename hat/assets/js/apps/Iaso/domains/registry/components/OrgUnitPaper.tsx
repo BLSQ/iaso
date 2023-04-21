@@ -1,14 +1,23 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
 import { useDispatch } from 'react-redux';
-import { makeStyles, Tabs, Tab, Box } from '@material-ui/core';
+import {
+    makeStyles,
+    Tabs,
+    Tab,
+    Box,
+    Paper,
+    Grid,
+    Typography,
+    Divider,
+} from '@material-ui/core';
 import { commonStyles, IconButton, useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
+import AddIcon from '@material-ui/icons/Add';
 
 import MESSAGES from '../messages';
 
 import { baseUrls } from '../../../constants/urls';
 
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import { OrgUnitChildrenMap } from './OrgUnitChildrenMap';
 
 import { redirectToReplace } from '../../../routing/actions';
@@ -29,6 +38,29 @@ const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     paper: {
         width: '100%',
+        // @ts-ignore
+        backgroundColor: theme.palette.ligthGray.background,
+        marginBottom: theme.spacing(4),
+        '&:last-child': {
+            marginBottom: 0,
+        },
+    },
+    title: {
+        [theme.breakpoints.down('md')]: {
+            fontSize: '1.4rem',
+        },
+    },
+    paperTitle: {
+        padding: theme.spacing(2),
+        display: 'flex',
+    },
+    paperTitleButtonContainer: {
+        position: 'relative',
+    },
+    paperTitleButton: {
+        position: 'absolute',
+        right: -theme.spacing(1),
+        top: -theme.spacing(1),
     },
     hiddenOpacity: {
         position: 'absolute',
@@ -69,17 +101,42 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
         [dispatch, params],
     );
     return (
-        <WidgetPaper
-            className={classes.paper}
-            title={orgUnit.name ?? ''}
-            IconButton={IconButton}
-            iconButtonProps={{
-                url: `${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`,
-                color: 'secondary',
-                icon: 'edit',
-                tooltipMessage: MESSAGES.editOrgUnit,
-            }}
-        >
+        <Paper elevation={1} className={classes.paper}>
+            <Box className={classes.paperTitle}>
+                <Grid xs={8} item>
+                    <Typography
+                        color="primary"
+                        variant="h5"
+                        className={classes.title}
+                    >
+                        {orgUnit.name ?? ''}
+                    </Typography>
+                </Grid>
+                <Grid
+                    xs={4}
+                    item
+                    container
+                    justifyContent="flex-end"
+                    className={classes.paperTitleButtonContainer}
+                >
+                    <Box className={classes.paperTitleButton}>
+                        <IconButton
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
+                            color="secondary"
+                            overrideIcon={AddIcon}
+                            tooltipMessage={MESSAGES.addOrgUnitChildren}
+                        />
+                        <IconButton
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
+                            color="secondary"
+                            icon="edit"
+                            tooltipMessage={MESSAGES.editOrgUnit}
+                        />
+                    </Box>
+                </Grid>
+
+                <Divider />
+            </Box>
             <Tabs
                 value={tab}
                 classes={{
@@ -114,6 +171,6 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                     />
                 </Box>
             </Box>
-        </WidgetPaper>
+        </Paper>
     );
 };

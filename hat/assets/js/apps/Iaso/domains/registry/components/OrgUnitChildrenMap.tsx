@@ -14,7 +14,7 @@ import {
     ScaleControl,
     Tooltip,
 } from 'react-leaflet';
-import { useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { Box, useTheme } from '@material-ui/core';
 
 import { useGetOrgUnitsMapChildren } from '../hooks/useGetOrgUnit';
@@ -85,7 +85,12 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         }
         return options;
     }, [formatMessage, orgUnit, subOrgUnitTypes, theme.palette.secondary.main]);
-    if (isFetching) return null;
+    if (isFetching)
+        return (
+            <Box position="relative" height={500}>
+                <LoadingSpinner absolute />
+            </Box>
+        );
     return (
         <Box position="relative">
             <MapLegend

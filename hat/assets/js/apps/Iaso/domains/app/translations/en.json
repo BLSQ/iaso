@@ -773,6 +773,7 @@
     "iaso.queryBuilder.supportedTypeFields": "Supported type of fields",
     "iaso.queryBuilder.title": "Query builder",
     "iaso.queryBuilder.xlsQuestionsTypesLink": "Possible questions types",
+    "iaso.registry.addOrgUnitChildren": "Add children org unit",
     "iaso.registry.seeRegistry": "See registry",
     "iaso.registry.title": "Registry",
     "iaso.registry.withLocation": "With point",

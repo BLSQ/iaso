@@ -19,7 +19,7 @@ type Props = {
 
 export const LinkToOrgUnit: FunctionComponent<Props> = ({
     orgUnit,
-    useIcon,
+    useIcon = false,
 }) => {
     const user = useCurrentUser();
     if (userHasPermission('iaso_org_units', user) && orgUnit) {
@@ -36,8 +36,4 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
         return <Link to={url}>{orgUnit.name}</Link>;
     }
     return <>{orgUnit ? orgUnit.name : '-'}</>;
-};
-
-LinkToOrgUnit.defaultProps = {
-    useIcon: false,
 };

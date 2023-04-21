@@ -5,7 +5,7 @@ import {
     IconButton,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles } from '@material-ui/core';
+import { Box, Grid, makeStyles, Breadcrumbs } from '@material-ui/core';
 import { orderBy } from 'lodash';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -28,6 +28,8 @@ import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { userHasPermission } from '../users/utils';
+import { OrgUnit } from '../orgUnits/types/orgUnit';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 
 type Router = {
     goBack: () => void;
@@ -48,6 +50,15 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+const getBreadcrumbs = (orgUnit?: OrgUnit, list: any[] = []): any[] => {
+    if (!orgUnit) return list;
+    if (!orgUnit.parent) return list;
+    list.push({
+        orgUnit: orgUnit.parent,
+    });
+    return getBreadcrumbs(orgUnit.parent, list);
+};
+
 export const Details: FunctionComponent<Props> = ({ router }) => {
     const {
         params: { orgUnitId, accountId },
@@ -58,6 +69,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
+    const breadcrumbs = useMemo(() => {
+        return getBreadcrumbs(orgUnit).reverse();
+    }, [orgUnit]);
 
     const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
         const options =
@@ -89,6 +103,19 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 {isFetching && <LoadingSpinner />}
                 <Grid container spacing={2}>
                     <Grid item xs={12} md={5}>
+                        {orgUnit && (
+                            <Box mb={2}>
+                                <Breadcrumbs separator=">">
+                                    {breadcrumbs.map(breadcrumb => {
+                                        return (
+                                            <LinkToOrgUnit
+                                                orgUnit={breadcrumb.orgUnit}
+                                            />
+                                        );
+                                    })}
+                                </Breadcrumbs>
+                            </Box>
+                        )}
                         {orgUnit && (
                             <WidgetPaper
                                 className={classes.paper}

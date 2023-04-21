@@ -24,6 +24,7 @@ export type Instance = {
     latitude: number;
     longitude: number;
     altitude: number;
+    accuracy: number;
     files: Array<string>;
     status: string;
     export_statuses: Array<string>;

@@ -48,5 +48,5 @@ Note: To be able to create submissions, Enketo needs to be running. This can be 
 - In a python shell: `CREATE EXTENSION fuzzystrmatch`
 Note: To open a python shell in docker: `docker-compose exec iaso ./manage.py shell`
 - In a terminal, launch a task worker: `docker-compose run iaso manage tasks_worker`
-- Go to `/api/antityduplicates_analyze` to launch an algorithm analysis (e.g: inverse)
+- Go to `/api/entityduplicates_analyzes` to launch an algorithm analysis (e.g: inverse)
 - In Iaso web, go to Benefiaries > Duplicates to see if the algorithm matched the duplicates created in previous steps

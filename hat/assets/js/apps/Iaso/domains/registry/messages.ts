@@ -93,6 +93,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    withShape: {
+        defaultMessage: 'With territory',
+        id: 'iaso.registry.withShape',
+    },
+    withLocation: {
+        defaultMessage: 'With point',
+        id: 'iaso.registry.withLocation',
+    },
+    noGeographicalData: {
+        defaultMessage: 'Without geography',
+        id: 'iaso.label.noGeographicalData',
+    },
 });
 
 export default MESSAGES;

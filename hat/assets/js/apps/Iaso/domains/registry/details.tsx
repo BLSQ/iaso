@@ -43,7 +43,7 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
     },
     formContents: {
-        maxHeight: '500px',
+        maxHeight: '502px',
         overflow: 'auto',
     },
 }));
@@ -83,7 +83,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isFetching && <LoadingSpinner />}
                 <Grid container spacing={2}>
-                    <Grid item xs={12} md={5}>
+                    <Grid item xs={12} md={6}>
                         {orgUnit && (
                             <OrgUnitPaper
                                 orgUnit={orgUnit}
@@ -96,7 +96,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         <Grid
                             item
                             xs={12}
-                            md={7}
+                            md={6}
                             alignItems="flex-start"
                             container
                         >

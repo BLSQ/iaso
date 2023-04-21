@@ -460,6 +460,7 @@ export const registryDetailPath = {
             key: 'orgUnitListTab',
         },
         ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('orgUnitList'),
     ],
 };
 

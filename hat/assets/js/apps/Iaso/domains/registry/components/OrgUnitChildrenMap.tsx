@@ -17,6 +17,8 @@ import {
 import { useSafeIntl } from 'bluesquare-components';
 import { Box, useTheme } from '@material-ui/core';
 
+import { useGetOrgUnitsMapChildren } from '../hooks/useGetOrgUnit';
+
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import { MapLegend, Legend } from '../../../components/maps/MapLegend';
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
@@ -42,14 +44,16 @@ import { MapPopUp } from './MapPopUp';
 type Props = {
     orgUnit: OrgUnit;
     subOrgUnitTypes: OrgunitTypes;
-    childrenOrgUnits: OrgUnit[];
 };
 
 export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
-    childrenOrgUnits,
 }) => {
+    const { data: childrenOrgUnits, isFetching } = useGetOrgUnitsMapChildren(
+        `${orgUnit.id}`,
+        subOrgUnitTypes,
+    );
     const map: any = useRef();
     const { formatMessage } = useSafeIntl();
     const theme = useTheme();
@@ -57,15 +61,15 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const fitToBounds = useCallback(() => {
         const bounds: Bounds | undefined = mergeBounds(
             getOrgUnitBounds(orgUnit),
-            getOrgUnitsBounds(childrenOrgUnits),
+            getOrgUnitsBounds(childrenOrgUnits || []),
         );
         tryFitToBounds(bounds, map.current);
     }, [childrenOrgUnits, orgUnit]);
-
     useEffect(() => {
-        fitToBounds();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        if (!isFetching && childrenOrgUnits) {
+            fitToBounds();
+        }
+    }, [isFetching, fitToBounds, childrenOrgUnits]);
     const legendOptions: Legend[] = useMemo(() => {
         const options = subOrgUnitTypes.map(subOuType => ({
             value: `${subOuType.id}`,
@@ -81,7 +85,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         }
         return options;
     }, [formatMessage, orgUnit, subOrgUnitTypes, theme.palette.secondary.main]);
-
+    if (isFetching) return null;
     return (
         <Box position="relative">
             <MapLegend
@@ -99,7 +103,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 zoomSnap={0.25}
                 maxZoom={currentTile.maxZoom}
                 ref={map}
-                style={{ height: '500px' }}
+                style={{ height: '453px' }}
                 center={DEFAULT_VIEWPORT.center}
                 zoom={DEFAULT_VIEWPORT.zoom}
                 scrollWheelZoom={false}
@@ -148,7 +152,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                             style={{ zIndex: 400 + index }}
                         >
                             {childrenOrgUnits
-                                .filter(childrenOrgUnit =>
+                                ?.filter(childrenOrgUnit =>
                                     Boolean(childrenOrgUnit.geo_json),
                                 )
                                 .map(childrenOrgUnit => {
@@ -179,7 +183,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                             style={{ zIndex: 600 + index }}
                         >
                             {childrenOrgUnits
-                                .filter(childrenOrgUnit =>
+                                ?.filter(childrenOrgUnit =>
                                     Boolean(
                                         childrenOrgUnit.latitude &&
                                             childrenOrgUnit.longitude,

@@ -9,4 +9,7 @@ export type RegistryDetailParams = UrlParams & {
     columns?: string;
     tab?: string;
     orgUnitListTab?: OrgUnitListTab;
+    orgUnitListPageSize?: string;
+    orgUnitListOrder?: string;
+    orgUnitListPage?: string;
 };

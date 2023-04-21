@@ -45,7 +45,7 @@ Note: To be able to create submissions, Enketo needs to be running. This can be 
 ## 6. Setting up for deduplication
 
 - In steps 4 and 5, create at least 2 entities with overlapping data, e.g.: Same or very close names, age etc. The idea is to simulate that 2 Entities were created for the same real world person/object.
-- In a python shell: run `CREATE EXTENSION fuzzystrmatch`
+- In a python shell: `CREATE EXTENSION fuzzystrmatch`
 Note: To open a python shell in docker: `docker-compose exec iaso ./manage.py shell`
 - In a terminal, launch a task worker: `docker-compose run iaso manage tasks_worker`
 - Go to `/api/antityduplicates_analyze` to launch an algorithm analysis (e.g: inverse)

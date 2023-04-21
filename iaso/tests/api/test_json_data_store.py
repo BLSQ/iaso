@@ -2,6 +2,7 @@ import json
 from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from iaso.test import APITestCase
+from django.utils.text import slugify
 
 data_store_content1 = json.dumps({"hello": "world"})
 data_store_content2 = json.dumps({"wait": "what"})
@@ -119,9 +120,7 @@ class JsonDataStoreAPITestCase(APITestCase):
     def test_create_datastore(self):
         """POST /api/datastore/ creates correct data."""
         self.client.force_authenticate(self.authorized_user_write)
-        response = self.client.post(
-            api_url, {"data": {"post": "new datastore"}, "key": "new_store", "account": self.account1.pk}, format="json"
-        )
+        response = self.client.post(api_url, {"data": {"post": "new datastore"}, "key": "new_store"}, format="json")
         response_body = self.assertJSONResponse(response, 201)
         self.assertEqual(response_body["key"], "new_store")
         self.assertEqual(response_body["data"]["post"], "new datastore")
@@ -136,6 +135,20 @@ class JsonDataStoreAPITestCase(APITestCase):
         response_body = self.assertJSONResponse(response, 200)
         self.assertEqual(response_body["key"], new_slug)
         self.assertEqual(response_body["data"], json.loads(data_store_content2))
+
+    def test_update_slug(self):
+        """PUT /api/datastore/{slug} should allow to update the slug, but should prevent re-using a slug already in use for the account"""
+        self.client.force_authenticate(self.authorized_user_write)
+        new_slug = "new_slug"
+        response = self.client.put(
+            f"{api_url}{self.data_store1.slug}/", {"key": f"{new_slug}", "data": data_store_content2}
+        )
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.put(
+            f"{api_url}{new_slug}/", {"key": f"{self.data_store2.slug}", "data": data_store_content2}
+        )
+        self.assertJSONResponse(response, 400)
 
     def test_update_datastore_permissions(self):
         """PUT /api/datastore/{slug} should only be possible with the write permission"""
@@ -194,3 +207,25 @@ class JsonDataStoreAPITestCase(APITestCase):
         self.client.force_authenticate(self.authorized_user_write)
         response = self.client.delete(f"{api_url}{self.data_store2.slug}/")
         self.assertJSONResponse(response, 204)
+
+    def test_slug_sanitization_post(self):
+        """POST request should sanitize the 'key' valeu of the request which will be used as slug"""
+
+        ugly_slug = "<script>console.log('$Moua ha ha?!')</script>"
+        slugified = slugify(ugly_slug)
+        self.client.force_authenticate(self.authorized_user_write)
+        response = self.client.post(api_url, {"data": {"post": "new datastore"}, "key": ugly_slug}, format="json")
+        response_body = self.assertJSONResponse(response, 201)
+        self.assertEqual(response_body["key"], slugified)
+
+    def test_slug_sanitization_post(self):
+        """PUT request should sanitize the 'key' valeu of the request which will be used as slug"""
+
+        ugly_slug = "<script>console.log('$Moua ha ha?!')</script>"
+        slugified = slugify(ugly_slug)
+        self.client.force_authenticate(self.authorized_user_write)
+        response = self.client.put(
+            f"{api_url}{self.data_store1.slug}/", {"key": f"{ugly_slug}", "data": data_store_content2}
+        )
+        response_body = self.assertJSONResponse(response, 200)
+        self.assertEqual(response_body["key"], slugified)

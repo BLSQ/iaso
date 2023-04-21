@@ -217,7 +217,7 @@ export type Bounds = {
     _northEast: LatLng;
     _southWest: LatLng;
     // eslint-disable-next-line no-unused-vars
-    extend: (bounds: Bounds) => Bounds;
+    extend?: (bounds: Bounds) => Bounds;
 };
 type BoundsOptions = {
     padding: number[];

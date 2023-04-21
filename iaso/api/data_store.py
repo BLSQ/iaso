@@ -1,7 +1,9 @@
 from iaso.api.common import ModelViewSet
+from iaso.models.base import Account
 from iaso.models.data_store import JsonDataStore
 from rest_framework import serializers, permissions
 from drf_yasg.utils import swagger_auto_schema
+from django.utils.text import slugify
 
 
 class DataStoreSerializer(serializers.ModelSerializer):
@@ -17,13 +19,30 @@ class DataStoreSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("data cannot be empty")
         return request_data
 
-    # TODO We should probably have stricter check on the format of the key/slug
     def validate_key(self, request_key):
         if len(request_key) < 1:
             raise serializers.ValidationError("key should be at least 1 character long")
-        if " " in request_key:
-            raise serializers.ValidationError("no white space allowed in key")
-        return request_key
+
+        stores_for_account = list(
+            JsonDataStore.objects.filter(account=self.context["request"].user.iaso_profile.account)
+        )
+        method = self.context["request"].method
+        key_already_exists = request_key in [store.slug for store in stores_for_account]
+
+        # return a 400 when trying to create data with a key that already exists
+        if key_already_exists and method == "POST":
+            raise serializers.ValidationError(
+                f"a data store with the {request_key} key already exists for this account"
+            )
+
+        # return a 400 if you're changing an a datastore key to another key that already exists fro the account
+        if method == "PUT":
+            current_slug = self.instance.slug
+            if key_already_exists and current_slug != request_key:
+                raise serializers.ValidationError(
+                    f"a data store with the {request_key} key already exists for this account"
+                )
+        return slugify(request_key)
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
@@ -59,7 +78,4 @@ class DataStoreViewSet(ModelViewSet):
     lookup_field = "slug"
 
     def get_queryset(self):
-        user = self.request.user
-        account = user.iaso_profile.account
-        queryset = JsonDataStore.objects.all()
-        return queryset.filter(account=account)
+        return JsonDataStore.objects.filter(account=self.request.user.iaso_profile.account)

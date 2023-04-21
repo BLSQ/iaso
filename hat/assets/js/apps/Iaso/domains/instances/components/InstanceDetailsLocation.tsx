@@ -1,30 +1,35 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import { withStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core/styles';
 
-import { injectIntl } from 'bluesquare-components';
-import { MarkerMap } from '../../../components/maps/MarkerMapComponent.tsx';
+import { useSafeIntl } from 'bluesquare-components';
+import { MarkerMap } from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
 import OrgUnitSourceRefDisplay from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 
 import { getOrgUnitsTree, OrgUnitLabel } from '../../orgUnits/utils';
 
 import InstanceDetailsField from './InstanceDetailsField';
+import { Instance } from '../types/instance';
 
 import MESSAGES from '../messages';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     infosContainer: {
         padding: theme.spacing(2),
     },
-});
+}));
 
-const InstanceDetailsLocation = ({
+type Props = {
+    currentInstance: Instance;
+};
+
+const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
     currentInstance,
-    intl: { formatMessage },
-    classes,
 }) => {
-    let orgUnitTree = [];
+    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    let orgUnitTree: OrgUnit | any[] = [];
     if (currentInstance.org_unit) {
         orgUnitTree = getOrgUnitsTree(currentInstance.org_unit);
     }
@@ -90,7 +95,6 @@ const InstanceDetailsLocation = ({
                             />
                         </>
                     )}
-
                 {currentInstance.latitude && currentInstance.longitude && (
                     <>
                         <InstanceDetailsField
@@ -103,18 +107,23 @@ const InstanceDetailsLocation = ({
                         />
                     </>
                 )}
-
-                {currentInstance.org_unit &&
-                    currentInstance.org_unit.altitude > 0 && (
-                        <InstanceDetailsField
-                            label={formatMessage(MESSAGES.altitude)}
-                            value={currentInstance.org_unit.altitude}
-                        />
-                    )}
-                {currentInstance.altitude > 0 && (
+                {currentInstance.org_unit?.altitude === 0 ? (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.altitude)}
-                        value={currentInstance.altitude}
+                        value={
+                            currentInstance.altitude !== 0
+                                ? currentInstance.altitude
+                                : null
+                        }
+                    />
+                ) : (
+                    <InstanceDetailsField
+                        label={formatMessage(MESSAGES.altitude)}
+                        value={
+                            currentInstance.org_unit.altitude !== 0
+                                ? currentInstance.org_unit.altitude
+                                : null
+                        }
                     />
                 )}
 
@@ -123,6 +132,7 @@ const InstanceDetailsLocation = ({
                     value={currentInstance.accuracy}
                 />
             </div>
+
             {currentInstance.latitude && currentInstance.longitude && (
                 <MarkerMap
                     latitude={currentInstance.latitude}
@@ -135,16 +145,11 @@ const InstanceDetailsLocation = ({
                 currentInstance.org_unit.longitude && (
                     <MarkerMap
                         latitude={currentInstance.org_unit.latitude}
-                        longitude={currentInstance.org_unitlongitude}
+                        longitude={currentInstance.org_unit.longitude}
                     />
                 )}
         </>
     );
 };
 
-InstanceDetailsLocation.propTypes = {
-    classes: PropTypes.object.isRequired,
-    currentInstance: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
-};
-export default withStyles(styles)(injectIntl(InstanceDetailsLocation));
+export default InstanceDetailsLocation;

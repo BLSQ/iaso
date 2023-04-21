@@ -84,6 +84,9 @@ export const useGetDuplicates = ({
     });
 };
 
+// const getDuplicatesDetails = async (queryString: string) => {
+//     return getRequest('/api/entityduplicates/1/detail/');
+// };
 const getDuplicatesDetails = async (queryString: string) => {
     const url = `${apiUrl}/details/${queryString}`;
     const result = mockDuplicatesDetailsTableData();

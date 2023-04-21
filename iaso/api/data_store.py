@@ -11,7 +11,7 @@ class DataStoreSerializer(serializers.ModelSerializer):
         model = JsonDataStore
         fields = ["created_at", "updated_at", "key", "data"]
 
-    data = serializers.JSONField(source="content") # type: ignore
+    data = serializers.JSONField(source="content")  # type: ignore
     key = serializers.CharField(source="slug")
 
     def validate_data(self, request_data):

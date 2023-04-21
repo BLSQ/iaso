@@ -17,7 +17,7 @@ For each XLS form:
 - Click the Create Version button
 - Use an XLS form to create the version
 
-## 3. Create One or several `EntityType`s
+## 3. Create one or several `EntityType`s
 
 - From the menu, go to Beneficairies > Beneficiary types
 - Click create

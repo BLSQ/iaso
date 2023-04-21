@@ -76,6 +76,7 @@ const InstanceDetailsLocation = ({
                     )}
                 {!currentInstance.latitude &&
                     !currentInstance.longitude &&
+                    currentInstance.org_unit &&
                     currentInstance.org_unit.latitude &&
                     currentInstance.org_unit.longitude && (
                         <>
@@ -102,20 +103,21 @@ const InstanceDetailsLocation = ({
                         />
                     </>
                 )}
-                {currentInstance.altitude === 0 &&
-                    currentInstance.org_unit &&
-                    currentInstance.org_unit.altitude && (
+
+                {currentInstance.org_unit &&
+                    currentInstance.org_unit.altitude > 0 && (
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.altitude)}
                             value={currentInstance.org_unit.altitude}
                         />
                     )}
-                <InstanceDetailsField
-                    label={formatMessage(MESSAGES.altitude)}
-                    value={
-                        currentInstance.altitude > 0 && currentInstance.altitude
-                    }
-                />
+                {currentInstance.altitude > 0 && (
+                    <InstanceDetailsField
+                        label={formatMessage(MESSAGES.altitude)}
+                        value={currentInstance.altitude}
+                    />
+                )}
+
                 <InstanceDetailsField
                     label={formatMessage(MESSAGES.accuracy)}
                     value={currentInstance.accuracy}

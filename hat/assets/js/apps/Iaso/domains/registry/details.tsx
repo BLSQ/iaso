@@ -50,12 +50,10 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const getBreadcrumbs = (orgUnit?: OrgUnit, list: any[] = []): any[] => {
+const getBreadcrumbs = (orgUnit?: OrgUnit, list: OrgUnit[] = []): OrgUnit[] => {
     if (!orgUnit) return list;
     if (!orgUnit.parent) return list;
-    list.push({
-        orgUnit: orgUnit.parent,
-    });
+    list.push(orgUnit.parent);
     return getBreadcrumbs(orgUnit.parent, list);
 };
 
@@ -106,12 +104,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         {orgUnit && (
                             <Box mb={2}>
                                 <Breadcrumbs separator=">">
-                                    {breadcrumbs.map(breadcrumb => {
-                                        return (
-                                            <LinkToOrgUnit
-                                                orgUnit={breadcrumb.orgUnit}
-                                            />
-                                        );
+                                    {breadcrumbs.map(ou => {
+                                        return <LinkToOrgUnit orgUnit={ou} />;
                                     })}
                                 </Breadcrumbs>
                             </Box>

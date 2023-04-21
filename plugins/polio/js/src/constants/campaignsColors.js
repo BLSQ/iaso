@@ -3,7 +3,6 @@ import {
     purple,
     indigo,
     blue,
-    lightBlue,
     cyan,
     teal,
     lightGreen,
@@ -20,9 +19,8 @@ const colors = [
     teal[500],
     lightGreen[800],
     purple[800],
-    blue[500],
+    blue[800],
     amber[500],
-    lightBlue[500],
     lime[500],
     brown[500],
     grey[500],
@@ -30,7 +28,7 @@ const colors = [
     blueGrey[500],
     pink[500],
     indigo[500],
-    yellow[500],
+    yellow[800],
     deepOrange[700],
 ];
 

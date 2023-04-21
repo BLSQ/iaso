@@ -14,6 +14,7 @@ import {
     ScaleControl,
     Tooltip,
 } from 'react-leaflet';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { Box, useTheme } from '@material-ui/core';
 
 import { keyBy } from 'lodash';
@@ -88,8 +89,28 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             fitToBounds();
             setIsMapFit(true);
         }
-    }, [isFetching, fitToBounds, childrenOrgUnits, isMapFit]);
-    if (isFetching) return null;
+    }, [isFetching, fitToBounds, childrenOrgUnits]);
+    const legendOptions: Legend[] = useMemo(() => {
+        const options = subOrgUnitTypes.map(subOuType => ({
+            value: `${subOuType.id}`,
+            label: subOuType.name,
+            color: subOuType.color || '',
+        }));
+        if (orgUnit) {
+            options.unshift({
+                value: `${orgUnit.id}`,
+                label: formatMessage(MESSAGES.selectedOrgUnit),
+                color: theme.palette.secondary.main,
+            });
+        }
+        return options;
+    }, [formatMessage, orgUnit, subOrgUnitTypes, theme.palette.secondary.main]);
+    if (isFetching)
+        return (
+            <Box position="relative" height={500}>
+                <LoadingSpinner absolute />
+            </Box>
+        );
     return (
         <Box position="relative">
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />

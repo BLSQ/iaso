@@ -16,7 +16,7 @@ from iaso.api.common import (
     TimestampField,
     DateTimestampField,
 )
-from iaso.models import Project, OrgUnit, Form
+from iaso.models import Project, OrgUnit, Form, OrgUnitType
 from iaso.models.microplanning import Team, TeamType, Planning, Assignment
 from iaso.models.org_unit import OrgUnitQuerySet
 
@@ -566,9 +566,18 @@ class MobilePlanningSerializer(serializers.ModelSerializer):
     def get_assignments(self, planning: Planning):
         user = self.context["request"].user
         r = []
-        for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user):
+        planning_form_set = set(planning.forms.values_list("id", flat=True))
+        forms_per_ou_type = {}
+        for out in OrgUnitType.objects.filter(projects__account=user.iaso_profile.account):
+            out_set = set(out.form_set.values_list("id", flat=True))
+            intersection = out_set.intersection(planning_form_set)
+            forms_per_ou_type[
+                out.id
+            ] = intersection  # intersection of the two sets: the forms of the orgunit types and the forms of the planning
+
+        for a in planning.assignment_set.filter(deleted_at__isnull=True).filter(user=user).prefetch_related("org_unit"):
             # TODO: investigate type error on next line
-            r.append({"org_unit_id": a.org_unit.id, "form_ids": [f.id for f in planning.forms.all()]})  # type: ignore
+            r.append({"org_unit_id": a.org_unit_id, "form_ids": forms_per_ou_type[a.org_unit.org_unit_type_id]})  # type: ignore
         return r
 
 

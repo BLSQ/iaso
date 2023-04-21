@@ -2,7 +2,6 @@ import React, {
     FunctionComponent,
     useState,
     useRef,
-    useCallback,
     useEffect,
     useMemo,
 } from 'react';
@@ -14,7 +13,7 @@ import {
     ScaleControl,
     Tooltip,
 } from 'react-leaflet';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner } from 'bluesquare-components';
 import { Box, useTheme } from '@material-ui/core';
 
 import { keyBy } from 'lodash';
@@ -41,6 +40,7 @@ import {
     tryFitToBounds,
 } from '../../../utils/mapUtils';
 import { MapPopUp } from './MapPopUp';
+import { Optional } from '../../../types/utils';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -51,60 +51,51 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
 }) => {
+    const theme = useTheme();
+    const map: any = useRef();
+    const bounds = useRef<Optional<Bounds | undefined>>();
+
     const { data: childrenOrgUnits, isFetching } = useGetOrgUnitsMapChildren(
         `${orgUnit.id}`,
         subOrgUnitTypes,
     );
     const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
-    const [isMapFit, setIsMapFit] = useState<boolean>(false);
+    const [isMapFitted, setIsMapFitted] = useState<boolean>(false);
     const [legendOptions, setLegendOptions] = useState<Legend[]>(
         getlegendOptions(),
     );
+    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
+
     const optionsObject = useMemo(
         () => keyBy(legendOptions, 'value'),
         [legendOptions],
     );
-    const map: any = useRef();
-    const theme = useTheme();
-    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-    const fitToBounds = useCallback(() => {
-        let orgUnitBounds: Bounds | undefined;
-        if (optionsObject[`${orgUnit.id}`]?.active) {
-            orgUnitBounds = getOrgUnitBounds(orgUnit);
-        }
-        const childrenOrgUnitsActive =
+    const activeChildren: OrgUnit[] = useMemo(
+        () =>
             childrenOrgUnits?.filter(
                 children =>
                     optionsObject[`${children.org_unit_type_id}`]?.active,
-            ) || [];
-        console.log('childrenOrgUnitsActive', childrenOrgUnitsActive);
-        const bounds: Bounds | undefined = mergeBounds(
-            orgUnitBounds,
-            getOrgUnitsBounds(childrenOrgUnitsActive),
-        );
-        tryFitToBounds(bounds, map.current);
-    }, [childrenOrgUnits, optionsObject, orgUnit]);
+            ) || [],
+        [childrenOrgUnits, optionsObject],
+    );
+    const isOrgUnitActive: boolean =
+        optionsObject[`${orgUnit.id}`]?.active || false;
+
     useEffect(() => {
-        if (!isFetching && childrenOrgUnits && !isMapFit) {
-            fitToBounds();
-            setIsMapFit(true);
+        const newBounds: Bounds | undefined = mergeBounds(
+            isOrgUnitActive ? getOrgUnitBounds(orgUnit) : undefined,
+            getOrgUnitsBounds(activeChildren),
+        );
+        bounds.current = newBounds;
+    }, [activeChildren, isOrgUnitActive, orgUnit]);
+
+    useEffect(() => {
+        if (!isFetching && childrenOrgUnits && !isMapFitted) {
+            tryFitToBounds(bounds.current, map.current);
+            setIsMapFitted(true);
         }
-    }, [isFetching, fitToBounds, childrenOrgUnits]);
-    const legendOptions: Legend[] = useMemo(() => {
-        const options = subOrgUnitTypes.map(subOuType => ({
-            value: `${subOuType.id}`,
-            label: subOuType.name,
-            color: subOuType.color || '',
-        }));
-        if (orgUnit) {
-            options.unshift({
-                value: `${orgUnit.id}`,
-                label: formatMessage(MESSAGES.selectedOrgUnit),
-                color: theme.palette.secondary.main,
-            });
-        }
-        return options;
-    }, [formatMessage, orgUnit, subOrgUnitTypes, theme.palette.secondary.main]);
+    }, [isFetching, childrenOrgUnits, isMapFitted, bounds]);
+
     if (isFetching)
         return (
             <Box position="relative" height={500}>
@@ -129,14 +120,18 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 zoomControl={false}
                 contextmenu
             >
-                <ZoomControl fitToBounds={fitToBounds} />
+                <ZoomControl
+                    fitToBounds={() => {
+                        tryFitToBounds(bounds.current, map.current);
+                    }}
+                />
                 <ScaleControl imperial={false} />
                 <TileLayer
                     attribution={currentTile.attribution ?? ''}
                     url={currentTile.url}
                 />
 
-                {optionsObject[`${orgUnit.id}`]?.active && (
+                {isOrgUnitActive && (
                     <>
                         {orgUnit.geo_json && (
                             <Pane name="orgunit-shapes">
@@ -175,15 +170,14 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                             name={`children-shapes-orgunit-type-${subType.id}`}
                             style={{ zIndex: 400 + index }}
                         >
-                            {childrenOrgUnits
+                            {activeChildren
                                 ?.filter(childrenOrgUnit =>
                                     Boolean(childrenOrgUnit.geo_json),
                                 )
                                 .map(childrenOrgUnit => {
                                     if (
                                         childrenOrgUnit.org_unit_type_id ===
-                                            subType.id &&
-                                        optionsObject[`${subType.id}`]?.active
+                                        subType.id
                                     ) {
                                         return (
                                             <GeoJSON
@@ -207,7 +201,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                             name={`children-locations-orgunit-type-${subType.id}`}
                             style={{ zIndex: 600 + index }}
                         >
-                            {childrenOrgUnits
+                            {activeChildren
                                 ?.filter(childrenOrgUnit =>
                                     Boolean(
                                         childrenOrgUnit.latitude &&
@@ -217,8 +211,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                 .map(childrenOrgUnit => {
                                     if (
                                         childrenOrgUnit.org_unit_type_id ===
-                                            subType.id &&
-                                        optionsObject[`${subType.id}`]?.active
+                                        subType.id
                                     ) {
                                         const { latitude, longitude } =
                                             childrenOrgUnit;

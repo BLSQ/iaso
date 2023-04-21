@@ -22,9 +22,8 @@ const useStyles = makeStyles(theme => ({
     },
     option: {
         cursor: 'pointer',
-    },
-    activeOption: {
-        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
     },
     roundColor: {
         borderRadius: 20,

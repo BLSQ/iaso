@@ -218,7 +218,7 @@ class JsonDataStoreAPITestCase(APITestCase):
         response_body = self.assertJSONResponse(response, 201)
         self.assertEqual(response_body["key"], slugified)
 
-    def test_slug_sanitization_post(self):
+    def test_slug_sanitization_put(self):
         """PUT request should sanitize the 'key' valeu of the request which will be used as slug"""
 
         ugly_slug = "<script>console.log('$Moua ha ha?!')</script>"

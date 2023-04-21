@@ -41,3 +41,12 @@ Note: To be able to create submissions, Enketo needs to be running. This can be 
 - Associate one of the newly created submissions to the `Entity`. It should be a submission for the form defined as reference form for the `EntityType` of the `Entity` being created.
 - Save
 - Repeat as needed.
+
+## 6. Setting up for deduplication
+
+- In steps 4 and 5, create at least 2 entities with overlapping data, e.g.: Same or very close names, age etc. The idea is to simulate that 2 Entities were created for the same real world person/object.
+- In a python shell: run `CREATE EXTENSION fuzzystrmatch`
+Note: To open a python shell in docker: `docker-compose exec iaso ./manage.py shell`
+- In a terminal, launch a task worker: `docker-compose run iaso manage tasks_worker`
+- Go to `/api/antityduplicates_analyze` to launch an algorithm analysis (e.g: inverse)
+- In Iaso web, go to Benefiaries > Duplicates to see if the algorithm matched the duplicates created in previous steps

@@ -9,6 +9,7 @@ from unittest import mock
 from iaso import models as m
 from iaso.models import EntityType, Instance, Entity, FormVersion
 from iaso.test import APITestCase
+from iaso.tests.api.workflows.base import var_dump
 
 
 class EntityAPITestCase(APITestCase):
@@ -36,7 +37,10 @@ class EntityAPITestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Council", validation_status=m.OrgUnit.VALIDATION_VALID
+        )
+        cls.jedi_council_corruscant_unvalidated = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
 
@@ -575,7 +579,15 @@ class EntityAPITestCase(APITestCase):
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
         )
 
-        self.form_1.instances.set([instance])
+        instance_unvalidated_ou = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant_unvalidated,
+            form=self.form_1,
+            period="202002",
+            project=self.project,
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
+        )
+
+        self.form_1.instances.set([instance, instance_unvalidated_ou])
         self.form_1.save()
 
         entity = Entity.objects.create(
@@ -585,13 +597,14 @@ class EntityAPITestCase(APITestCase):
             account=self.yoda.iaso_profile.account,
         )
 
-        Entity.objects.create(
+        entity_unvalidated = Entity.objects.create(
             name="New Client",
             entity_type=entity_type,
+            arributes=instance_unvalidated_ou,
             account=self.yoda.iaso_profile.account,
         )
 
-        Entity.objects.create(
+        entity_no_attributes = Entity.objects.create(
             name="New Client_2",
             entity_type=entity_type,
             account=self.yop_solo.iaso_profile.account,
@@ -600,7 +613,12 @@ class EntityAPITestCase(APITestCase):
         instance.entity = entity
         instance.save()
 
+        instance_unvalidated_ou.entity = entity_unvalidated
+        instance_unvalidated_ou.save()
+
         response = self.client.get("/api/mobile/entities/")
+
+        var_dump(response.json())
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json().get("count"), 2)

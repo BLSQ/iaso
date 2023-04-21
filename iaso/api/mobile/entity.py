@@ -14,7 +14,7 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.api.query_params import LIMIT, PAGE
-from iaso.models import Entity, Instance, OrgUnit, FormVersion
+from iaso.models import Entity, Instance, OrgUnit, FormVersion, Project
 from iaso.utils.jsonlogic import jsonlogic_to_q
 
 
@@ -43,9 +43,18 @@ def filter_queryset_for_mobile_entity(queryset, request):
 
     p = Prefetch(
         "instances",
-        queryset=Instance.objects.filter(deleted=False).exclude(file=""),
+        queryset=Instance.objects.filter(deleted=False, org_unit__validation_status=OrgUnit.VALIDATION_VALID).exclude(
+            file=""
+        ),
         to_attr="non_deleted_instances",
     )
+
+    queryset = (
+        queryset.filter(attributes__isnull=False)
+        .filter(instances__isnull=False)
+        .filter(instances__org_unit__validation_status=OrgUnit.VALIDATION_VALID)
+    )
+
     queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
 
     return queryset
@@ -123,14 +132,34 @@ class MobileEntityViewSet(ModelViewSet):
         return MobileEntitySerializer
 
     def get_queryset(self):
-        profile = self.request.user.iaso_profile
+        user = self.request.user
+        app_id = self.request.query_params.get("app_id")
+
+        base_entities = Entity.objects.all()
+
+        if user and user.is_authenticated:
+            base_entities = base_entities.filter(account=self.request.user.iaso_profile.account)
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                if project.account is None and (not user or not user.is_authenticated):
+                    base_entities = self.none()
+
+                base_entities = base_entities.filter(account=project.account)
+
+            except Project.DoesNotExist:
+                if not user or not user.is_authenticated:
+                    base_entities = self.none()
 
         # This function alter the queryset by adding non_deleted_instances
-        queryset = filter_queryset_for_mobile_entity(Entity.objects.filter(account=profile.account), self.request)
+        queryset = filter_queryset_for_mobile_entity(base_entities, self.request)
 
         # we give all entities having an instance linked to the one of the org units allowed for the current user
-        orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-        if orgunits:
-            queryset = queryset.filter(instances__org_unit__in=orgunits)
+        if user and user.is_authenticated:
+            orgunits = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+            if orgunits and len(orgunits) > 0:
+                queryset = queryset.filter(instances__org_unit__in=orgunits)
 
         return queryset

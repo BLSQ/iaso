@@ -8,7 +8,7 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.api.mobile.entity import MobileEntitySerializer, LargeResultsSetPagination, filter_queryset_for_mobile_entity
-from iaso.models import Entity, EntityType
+from iaso.models import Entity, EntityType, Project
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):
@@ -75,18 +75,39 @@ class MobileEntityTypesViewSet(ModelViewSet):
         return MobileEntityTypeSerializer
 
     def get_queryset(self):
-
         queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
 
         return queryset
 
     @action(detail=False, methods=["get"], url_path=r"(?P<type_pk>\d+)/entities")
     def get_entities_by_types(self, *args, **kwargs):
-        profile = self.request.user.iaso_profile
+        user = self.request.user
+        app_id = self.request.query_params.get("app_id")
+
+        base_entities = Entity.objects.all()
+
+        if user and user.is_authenticated:
+            base_entities = base_entities.filter(account=self.request.user.iaso_profile.account)
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                if project.account is None and (not user or not user.is_authenticated):
+                    base_entities = self.none()
+
+                base_entities = base_entities.filter(account=project.account)
+
+            except Project.DoesNotExist:
+                if not user or not user.is_authenticated:
+                    base_entities = self.none()
+
         type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
-        queryset = filter_queryset_for_mobile_entity(
-            Entity.objects.filter(account=profile.account, entity_type__pk=type_pk), self.request
-        )
+
+        base_entities = base_entities.filter(entity_type__pk=type_pk)
+
+        queryset = filter_queryset_for_mobile_entity(base_entities, self.request)
+
         page = self.paginate_queryset(queryset)
         serializer = MobileEntitySerializer(page, many=True)
         return self.get_paginated_response(serializer.data)

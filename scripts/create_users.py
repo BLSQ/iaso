@@ -136,6 +136,7 @@ for child in children:
                     parent=g,
                     org_unit_type=point_of_interest_type,
                     version=account.default_version,
+                    validation_status=OrgUnit.VALIDATION_VALID
                     defaults={"location": get_location(g, child)},
                 )
 
@@ -156,39 +157,39 @@ for child in children:
                 )
 
 # for deleting the wrong assignments created
-for child in children:
+# for child in children:
 
-    grand_children = OrgUnit.objects.filter(parent=child, org_unit_type=aire_de_sante)
+#     grand_children = OrgUnit.objects.filter(parent=child, org_unit_type=aire_de_sante)
 
-    # for all the areas in the zone "child"
-    for g in grand_children.all():
+#     # for all the areas in the zone "child"
+#     for g in grand_children.all():
 
-        print(f"OrgUnit {g.name}")
+#         print(f"OrgUnit {g.name}")
 
-        # create 30 (ask claire) POI per area (you will probably need to set a point to the poi in the center of the area)
+#         # create 30 (ask claire) POI per area (you will probably need to set a point to the poi in the center of the area)
 
-        try:
-            corresp_profile = profiles.get(org_units=g, account=account)
-        except:
-            corresp_profile = None
+#         try:
+#             corresp_profile = profiles.get(org_units=g, account=account)
+#         except:
+#             corresp_profile = None
 
-        try:
-            corresp_team = Team.objects.get(name=child.name)
-        except:
-            corresp_team = None
+#         try:
+#             corresp_team = Team.objects.get(name=child.name)
+#         except:
+#             corresp_team = None
 
-        if corresp_profile is None or corresp_team is None:
-            print(f"!! Didnt find a profile or a team for {g.name}")
-            print(f"Profile {corresp_profile}")
-            print(f"Team {corresp_team}")
-        else:
+#         if corresp_profile is None or corresp_team is None:
+#             print(f"!! Didnt find a profile or a team for {g.name}")
+#             print(f"Profile {corresp_profile}")
+#             print(f"Team {corresp_team}")
+#         else:
 
-            assignment_orig = Assignment.objects.get(
-                planning=the_planning, org_unit=g, user=corresp_profile.user, team=corresp_team
-            )
+#             assignment_orig = Assignment.objects.get(
+#                 planning=the_planning, org_unit=g, user=corresp_profile.user, team=corresp_team
+#             )
 
-            print(f"Found assignment {assignment_orig}")
+#             print(f"Found assignment {assignment_orig}")
 
-            res = assignment_orig.delete()
+#             res = assignment_orig.delete()
 
-            print(f"Deleted assignment {res}")
+#             print(f"Deleted assignment {res}")

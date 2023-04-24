@@ -169,9 +169,6 @@ class WorkflowFollowupSerializer(serializers.ModelSerializer):
         model = WorkflowFollowup
         fields = ["id", "order", "condition", "forms", "created_at", "updated_at"]
 
-    def get_queryset(self):
-        return super().get_queryset().order_by("order")
-
 
 class WorkflowFollowupModifySerializer(serializers.Serializer):
     id = serializers.IntegerField()

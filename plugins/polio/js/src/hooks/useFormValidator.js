@@ -553,6 +553,7 @@ const useRoundShape = () => {
             .number()
             .nullable()
             .min(0)
+            .max(100)
             .integer()
             .typeError(formatMessage(MESSAGES.positiveRangeInteger)),
         doses_requested: yup

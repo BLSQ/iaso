@@ -5,7 +5,7 @@ import {
     IconButton,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Grid, makeStyles, Breadcrumbs } from '@material-ui/core';
+import { Box, Grid, makeStyles } from '@material-ui/core';
 import { orderBy } from 'lodash';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -28,8 +28,10 @@ import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { userHasPermission } from '../users/utils';
-import { OrgUnit } from '../orgUnits/types/orgUnit';
-import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+import {
+    OrgUnitBreadcrumbs,
+    useOrgUnitBreadCrumbs,
+} from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 
 type Router = {
     goBack: () => void;
@@ -50,16 +52,6 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const getBreadcrumbs = (orgUnit?: OrgUnit, list: OrgUnit[] = []): OrgUnit[] => {
-    if (!orgUnit) return list;
-    if (!orgUnit.parent) {
-        list.push(orgUnit);
-        return list;
-    }
-    list.push(orgUnit.parent);
-    return getBreadcrumbs(orgUnit.parent, list);
-};
-
 export const Details: FunctionComponent<Props> = ({ router }) => {
     const {
         params: { orgUnitId, accountId },
@@ -70,9 +62,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
-    const breadcrumbs = useMemo(() => {
-        return getBreadcrumbs(orgUnit).reverse();
-    }, [orgUnit]);
+    const breadcrumbs = useOrgUnitBreadCrumbs(orgUnit);
 
     const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
         const options =
@@ -106,16 +96,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     <Grid item xs={12} md={5}>
                         {orgUnit && (
                             <Box mb={2}>
-                                <Breadcrumbs separator=">">
-                                    {breadcrumbs.map(ou => {
-                                        return (
-                                            <LinkToOrgUnit
-                                                orgUnit={ou}
-                                                key={ou.id}
-                                            />
-                                        );
-                                    })}
-                                </Breadcrumbs>
+                                <OrgUnitBreadcrumbs breadcrumbs={breadcrumbs} />
                             </Box>
                         )}
                         {orgUnit && (

@@ -124,7 +124,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                             url={`${baseUrls.orgUnitDetails}/orgUnitId/0/levels/${orgUnit.id}`}
                             color="secondary"
                             overrideIcon={AddIcon}
-                            tooltipMessage={MESSAGES.addOrgUnitChildren}
+                            tooltipMessage={MESSAGES.addOrgUnitChild}
                         />
                         <IconButton
                             url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}

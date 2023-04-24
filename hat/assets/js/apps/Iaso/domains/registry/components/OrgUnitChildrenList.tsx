@@ -7,7 +7,6 @@ import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
 import { RegistryDetailParams } from '../types';
 
@@ -16,7 +15,6 @@ import { useGetOrgUnitsListColumns } from '../config';
 
 type Props = {
     orgUnit: OrgUnit;
-    subOrgUnitTypes: OrgunitTypes;
     params: RegistryDetailParams;
 };
 export const defaultSorted = [{ id: 'name', desc: true }];
@@ -50,13 +48,11 @@ const useStyles = makeStyles(theme => ({
 
 export const OrgUnitChildrenList: FunctionComponent<Props> = ({
     orgUnit,
-    subOrgUnitTypes,
     params,
 }) => {
     const dispatch = useDispatch();
     const { data, isFetching } = useGetOrgUnitsListChildren(
         `${orgUnit.id}`,
-        subOrgUnitTypes,
         params,
     );
 

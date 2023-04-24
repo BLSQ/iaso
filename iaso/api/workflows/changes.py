@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
-from iaso.api.common import HasPermission
+from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowChange
 
 version_id_param = openapi.Parameter(
@@ -19,8 +19,10 @@ version_id_param = openapi.Parameter(
 )
 
 
-class WorkflowChangeViewSet(viewsets.ViewSet):
+class WorkflowChangeViewSet(ModelViewSet):
     """Workflow Changes API
+
+    GET /api/mappingversions/?version_id=16order=-id
 
     POST /api/workflowchanges/?version_id=16
     content {"form":36,"mapping":{"string_widget":"string_widget"}}
@@ -37,11 +39,21 @@ class WorkflowChangeViewSet(viewsets.ViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
     serializer_class = ser.WorkflowChangeSerializer
+    http_method_names = ["get", "post", "delete", "put"]
 
     @swagger_auto_schema(
         manual_parameters=[version_id_param],
         request_body=ser.WorkflowChangeCreateSerializer,
     )
+    def get_queryset(self):
+        orders = self.request.query_params.get("order", "updated_at").split(",")
+        queryset = WorkflowChange.objects
+        version_id = self.request.query_params.get("version_id")
+        if version_id:
+            queryset = queryset.filter(workflow_version__id=version_id)
+        queryset = queryset.order_by(*orders)
+        return queryset
+
     def create(self, request, *args, **kwargs):
         version_id = request.query_params.get("version_id", kwargs.get("version_id", None))
 

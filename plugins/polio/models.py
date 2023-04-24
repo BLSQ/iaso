@@ -683,6 +683,7 @@ class Config(models.Model):
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    users = models.ManyToManyField(User, related_name="polioconfigs", blank=True)
 
     def __str__(self):
         return self.slug

@@ -1,20 +1,15 @@
 import json
 
 from django.core.exceptions import ValidationError
-from django.db.models import Prefetch
+from django.db.models import Prefetch, Q
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
-from rest_framework import serializers
+from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
 
-from iaso.api.common import (
-    ModelViewSet,
-    DeletionFilterBackend,
-    TimestampField,
-)
+from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField
 from iaso.api.query_params import LIMIT, PAGE
-from iaso.models import Entity, Instance, OrgUnit, FormVersion, Project
+from iaso.models import Entity, FormVersion, Instance, OrgUnit, Project
 from iaso.utils.jsonlogic import jsonlogic_to_q
 
 

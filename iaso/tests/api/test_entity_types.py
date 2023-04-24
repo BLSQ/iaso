@@ -25,7 +25,10 @@ class EntityTypeAPITestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Council", validation_status=m.OrgUnit.VALIDATION_VALID
+        )
+        cls.jedi_council_corruscan_unvalidated = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
 
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
@@ -44,6 +47,10 @@ class EntityTypeAPITestCase(APITestCase):
         )
         cls.create_form_instance(
             form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+        )
+
+        cls.instance_with_unvalidated_ou = cls.create_form_instance(
+            form=cls.form_1, period="202004", org_unit=cls.jedi_council_corruscan_unvalidated, project=cls.project
         )
 
         cls.form_2 = m.Form.objects.create(
@@ -225,6 +232,44 @@ class EntityTypeAPITestCase(APITestCase):
         }
         instance.save()
 
+        instance2 = self.instance_with_unvalidated_ou
+        instance2.file = file
+        instance2.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29739"
+        instance2.json = {
+            "muac": "13",
+            "oedema": "0",
+            "y_prog": "prog_otp",
+            "_version": "2022090601",
+            "ref_to_sc": "The child will be referred to SC!",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03d",
+            "child_color": "muac_green",
+            "confirm_otp": "",
+            "g_admi_type": "mam",
+            "color_answer": "Green ðŸŸ¢",
+            "color_output": "",
+            "counsuelling_type": "therap_foods",
+        }
+        instance2.save()
+
+        instance3 = Instance.objects.create(period=202001, form=self.form_1, org_unit=self.jedi_council_corruscant)
+        instance3.file = file
+        instance3.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29733"
+        instance3.json = {
+            "muac": "13",
+            "oedema": "0",
+            "y_prog": "prog_otp",
+            "_version": "2022090601",
+            "ref_to_sc": "The child will be referred to SC!",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03d",
+            "child_color": "muac_green",
+            "confirm_otp": "",
+            "g_admi_type": "mam",
+            "color_answer": "Green ðŸŸ¢",
+            "color_output": "",
+            "counsuelling_type": "therap_foods",
+        }
+        instance3.save()
+
         FormVersion.objects.create(version_id="2022090601", form_id=instance.form.id)
 
         entity_type = EntityType.objects.create(
@@ -242,14 +287,29 @@ class EntityTypeAPITestCase(APITestCase):
             attributes=instance,
         )
 
-        Entity.objects.create(
+        entity_with_data2 = Entity.objects.create(
+            name="New Client",
+            account=self.yoda.iaso_profile.account,
+            entity_type=entity_type,
+            attributes=instance2,
+        )
+
+        entity_with_data3 = Entity.objects.create(
             name="New Client",
             account=self.yoda.iaso_profile.account,
             entity_type=second_entity_type,
+            attributes=instance3,
         )
 
         instance.entity = entity_with_data
         instance.save()
+
+        # Shouldn't appear in the list as the refered OU is not validated.
+        instance2.entity = entity_with_data2
+        instance2.save()
+
+        instance3.entity = entity_with_data3
+        instance3.save()
 
         entity_type.refresh_from_db()
         second_entity_type.refresh_from_db()
@@ -276,6 +336,7 @@ class EntityTypeAPITestCase(APITestCase):
         )
 
         instance = Instance.objects.create(period=202001, form=self.form_1)
+        instance.org_unit = self.jedi_council_corruscant
         instance.file = File(open("iaso/tests/fixtures/test_entity_data.xml", "rb"))
         instance.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29730"
         instance.json = {
@@ -297,7 +358,9 @@ class EntityTypeAPITestCase(APITestCase):
         )
         instance.save()
 
+        # this one shouldn't appear as it is linked to a unvalidated org unit.
         instance2 = Instance.objects.create(period=202001, form=self.form_1)
+        instance2.org_unit = self.jedi_council_corruscant
         instance2.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
         instance2.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29731"
         instance2.json = {

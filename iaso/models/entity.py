@@ -18,7 +18,12 @@ from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
 
 from iaso.models import Instance, Form, Account
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    SoftDeletableModel,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+)
 
 
 # TODO: Remove blank=True, null=True on FK once the models are sets and validated
@@ -57,6 +62,10 @@ class EntityType(models.Model):
         }
 
 
+class EntityQuerySet(models.QuerySet):
+    pass
+
+
 class Entity(SoftDeletableModel):
     """An entity represents a physical object or person with a known Entity Type
 
@@ -74,6 +83,12 @@ class Entity(SoftDeletableModel):
         Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes", blank=True, null=True
     )
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
+
+    objects = DefaultSoftDeletableManager.from_queryset(EntityQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(EntityQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(EntityQuerySet)()
 
     class Meta:
         verbose_name_plural = "Entities"

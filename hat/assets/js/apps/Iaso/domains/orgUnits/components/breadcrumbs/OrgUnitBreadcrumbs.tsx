@@ -50,12 +50,14 @@ type Props = {
     separator?: string;
     orgUnit: OrgUnit;
     showOnlyParents?: boolean;
+    showRegistry?: boolean;
 };
 
 export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
     separator = '>',
     orgUnit,
     showOnlyParents,
+    showRegistry = false,
 }) => {
     const { link } = useStyles();
     const breadcrumbs = useOrgUnitBreadCrumbs({ orgUnit, showOnlyParents });
@@ -63,7 +65,12 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
         <Breadcrumbs separator={separator}>
             {breadcrumbs.map(ou => {
                 return (
-                    <LinkToOrgUnit orgUnit={ou} key={ou.id} className={link} />
+                    <LinkToOrgUnit
+                        orgUnit={ou}
+                        key={ou.id}
+                        className={link}
+                        toRegistry={showRegistry}
+                    />
                 );
             })}
         </Breadcrumbs>

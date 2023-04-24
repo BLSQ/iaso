@@ -86,7 +86,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 <Grid container spacing={2}>
                     {orgUnit && (
                         <Grid item xs={12}>
-                            <OrgUnitBreadcrumbs orgUnit={orgUnit} />
+                            <OrgUnitBreadcrumbs
+                                orgUnit={orgUnit}
+                                showRegistry
+                                showOnlyParents
+                            />
                         </Grid>
                     )}
                     <Grid item xs={12} md={6}>

@@ -52,8 +52,8 @@ class DataStoreSerializer(serializers.ModelSerializer):
 
 class DataStorePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        read_perm = ("menupermissions.iaso_datastore_read",)
-        write_perm = ("menupermissions.iaso_datastore_write",)
+        read_perm = "menupermissions.iaso_datastore_read"
+        write_perm = "menupermissions.iaso_datastore_write"
 
         if request.method == "GET":
             can_get = (

@@ -48,10 +48,12 @@ export const useGetOrgUnitsListChildren = (
         limit: params.orgUnitListPageSize || '10',
         order,
         page: params.orgUnitListPage || '1',
-        orgUnitTypeId: orgUnitTypes
-            .map(orgunitType => orgunitType.id)
-            .join(','),
     };
+    if (orgUnitTypes?.length > 0) {
+        apiParams.orgUnitTypeId = orgUnitTypes
+            .map(orgunitType => orgunitType.id)
+            .join(',');
+    }
 
     const url = makeUrlWithParams('/api/orgunits/', apiParams);
     return useSnackQuery({
@@ -59,6 +61,16 @@ export const useGetOrgUnitsListChildren = (
         queryFn: () => getRequest(url),
         options: {
             keepPreviousData: true,
+            select: data => {
+                if (!data) return undefined;
+                const orgunits: OrgUnit[] = data.orgunits.filter(
+                    orgUnit => `${orgUnitParentId}` !== `${orgUnit.id}`,
+                );
+                return {
+                    ...data,
+                    orgunits,
+                };
+            },
         },
     });
 };

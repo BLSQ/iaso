@@ -16,33 +16,6 @@
             },
             "created_at": "2023-01-31T11:04:21.105977Z",
             "updated_at": "2023-01-31T11:04:21.105993Z",
-            "changes": [
-                {
-                    "id": 1,
-                    "form": {
-                        "id": 2,
-                        "name": "FORM_2"
-                    },
-                    "mapping": {
-                        "first_name": "firstName",
-                        "last_name": "LastName"
-                    },
-                    "created_at": "2023-01-31T11:04:21.120249Z",
-                    "updated_at": "2023-01-31T11:04:21.120270Z"
-                },
-                {
-                    "id": 2,
-                    "form": {
-                        "id": 3,
-                        "name": "FORM_3"
-                    },
-                    "mapping": {
-                        "last_name": "name"
-                    },
-                    "created_at": "2023-01-31T11:04:21.127004Z",
-                    "updated_at": "2023-01-31T11:04:21.127041Z"
-                }
-            ],
             "follow_ups": [
                 {
                     "id": 1,
@@ -117,33 +90,6 @@
             },
             "created_at": "2023-01-31T11:04:21.105977Z",
             "updated_at": "2023-01-31T11:04:21.105993Z",
-            "changes": [
-                {
-                    "id": 1,
-                    "form": {
-                        "id": 2,
-                        "name": "FORM_2"
-                    },
-                    "mapping": {
-                        "first_name": "firstName",
-                        "last_name": "LastName"
-                    },
-                    "created_at": "2023-01-31T11:04:21.120249Z",
-                    "updated_at": "2023-01-31T11:04:21.120270Z"
-                },
-                {
-                    "id": 2,
-                    "form": {
-                        "id": 3,
-                        "name": "FORM_3"
-                    },
-                    "mapping": {
-                        "last_name": "name"
-                    },
-                    "created_at": "2023-01-31T11:04:21.127004Z",
-                    "updated_at": "2023-01-31T11:04:21.127041Z"
-                }
-            ],
             "follow_ups": [
                 {
                     "id": 1,
@@ -218,33 +164,6 @@
             },
             "created_at": "2023-01-31T11:04:21.105977Z",
             "updated_at": "2023-01-31T11:04:21.105993Z",
-            "changes": [
-                {
-                    "id": 1,
-                    "form": {
-                        "id": 2,
-                        "name": "FORM_2"
-                    },
-                    "mapping": {
-                        "first_name": "firstName",
-                        "last_name": "LastName"
-                    },
-                    "created_at": "2023-01-31T11:04:21.120249Z",
-                    "updated_at": "2023-01-31T11:04:21.120270Z"
-                },
-                {
-                    "id": 2,
-                    "form": {
-                        "id": 3,
-                        "name": "FORM_3"
-                    },
-                    "mapping": {
-                        "last_name": "name"
-                    },
-                    "created_at": "2023-01-31T11:04:21.127004Z",
-                    "updated_at": "2023-01-31T11:04:21.127041Z"
-                }
-            ],
             "follow_ups": [
                 {
                     "id": 1,

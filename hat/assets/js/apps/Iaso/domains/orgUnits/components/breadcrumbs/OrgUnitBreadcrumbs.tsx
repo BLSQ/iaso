@@ -3,34 +3,54 @@ import { Breadcrumbs } from '@material-ui/core';
 import { OrgUnit } from '../../types/orgUnit';
 import { LinkToOrgUnit } from '../LinkToOrgUnit';
 
-export const getBreadcrumbs = (
-    orgUnit?: OrgUnit,
-    list: OrgUnit[] = [],
-): OrgUnit[] => {
+type BreadCrumbsArgs = {
+    orgUnit?: OrgUnit;
+    list?: OrgUnit[];
+    showOnlyParents?: boolean;
+};
+
+export const getBreadcrumbs = ({
+    orgUnit,
+    list = [],
+    showOnlyParents = false,
+}: BreadCrumbsArgs): OrgUnit[] => {
     if (!orgUnit) return list;
-    if (!orgUnit.parent) {
+    if (list.length === 0 && !showOnlyParents) {
         list.push(orgUnit);
+    }
+    if (!orgUnit.parent) {
         return list;
     }
     list.push(orgUnit.parent);
-    return getBreadcrumbs(orgUnit.parent, list);
+    return getBreadcrumbs({ orgUnit: orgUnit.parent, list, showOnlyParents });
 };
 
-export const useOrgUnitBreadCrumbs = (orgUnit?: OrgUnit): OrgUnit[] => {
+type UseOrgUnitBreadCrumbsArgs = {
+    orgUnit?: OrgUnit;
+    showOnlyParents?: boolean;
+};
+
+export const useOrgUnitBreadCrumbs = ({
+    orgUnit,
+    showOnlyParents,
+}: UseOrgUnitBreadCrumbsArgs): OrgUnit[] => {
     return useMemo(() => {
-        return getBreadcrumbs(orgUnit).reverse();
-    }, [orgUnit]);
+        return getBreadcrumbs({ orgUnit, showOnlyParents }).reverse();
+    }, [orgUnit, showOnlyParents]);
 };
 
 type Props = {
     separator?: string;
-    breadcrumbs: OrgUnit[];
+    orgUnit: OrgUnit;
+    showOnlyParents?: boolean;
 };
 
 export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
     separator = '>',
-    breadcrumbs,
+    orgUnit,
+    showOnlyParents,
 }) => {
+    const breadcrumbs = useOrgUnitBreadCrumbs({ orgUnit, showOnlyParents });
     return (
         <Breadcrumbs separator={separator}>
             {breadcrumbs.map(ou => {

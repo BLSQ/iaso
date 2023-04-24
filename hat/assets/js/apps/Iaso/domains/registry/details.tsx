@@ -28,10 +28,7 @@ import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { userHasPermission } from '../users/utils';
-import {
-    OrgUnitBreadcrumbs,
-    useOrgUnitBreadCrumbs,
-} from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
+import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 
 type Router = {
     goBack: () => void;
@@ -62,7 +59,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
-    const breadcrumbs = useOrgUnitBreadCrumbs(orgUnit);
 
     const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
         const options =
@@ -96,7 +92,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     <Grid item xs={12} md={5}>
                         {orgUnit && (
                             <Box mb={2}>
-                                <OrgUnitBreadcrumbs breadcrumbs={breadcrumbs} />
+                                <OrgUnitBreadcrumbs orgUnit={orgUnit} />
                             </Box>
                         )}
                         {orgUnit && (

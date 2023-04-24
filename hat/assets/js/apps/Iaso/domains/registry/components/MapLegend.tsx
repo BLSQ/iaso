@@ -5,7 +5,6 @@ import React, {
     useCallback,
 } from 'react';
 import { Paper, makeStyles, Box } from '@material-ui/core';
-import { cloneDeep } from 'lodash';
 import CheckIcon from '@material-ui/icons/Check';
 
 import { Legend } from '../hooks/useGetLegendOptions';
@@ -54,8 +53,8 @@ export const MapLegend: FunctionComponent<Props> = ({
     const classes = useStyles();
     const handleClick = useCallback(
         (optionIndex: number): void => {
-            const newOptions = cloneDeep(options);
-            if (newOptions && newOptions[optionIndex]) {
+            const newOptions = [...(options || [])];
+            if (newOptions?.[optionIndex]) {
                 newOptions[optionIndex].active =
                     !newOptions[optionIndex].active;
                 setOptions(newOptions);

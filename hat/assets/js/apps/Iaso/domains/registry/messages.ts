@@ -85,6 +85,26 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit org unit',
         id: 'iaso.orgUnits.edit',
     },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    withShape: {
+        defaultMessage: 'With territory',
+        id: 'iaso.registry.withShape',
+    },
+    withLocation: {
+        defaultMessage: 'With point',
+        id: 'iaso.registry.withLocation',
+    },
+    noGeographicalData: {
+        defaultMessage: 'Without geography',
+        id: 'iaso.label.noGeographicalData',
+    },
 });
 
 export default MESSAGES;

@@ -776,6 +776,8 @@
     "iaso.queryBuilder.xlsQuestionsTypesLink": "Possible questions types",
     "iaso.registry.seeRegistry": "See registry",
     "iaso.registry.title": "Registry",
+    "iaso.registry.withLocation": "With point",
+    "iaso.registry.withShape": "With territory",
     "iaso.restricted_submissions_by_orgunits": "You're only allowed to see submissions for the following orgunits:",
     "iaso.runs.dialog.deleteRunText": "All created links will be deleted.",
     "iaso.runs.dialog.deleteRunTitle": "Are you sure you want to delete this run?",

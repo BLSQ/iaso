@@ -764,6 +764,8 @@
     "iaso.queryBuilder.xlsQuestionsTypesLink": "Types des questions possible",
     "iaso.registry.seeRegistry": "Voir le registre",
     "iaso.registry.title": "Registre",
+    "iaso.registry.withLocation": "Avec point",
+    "iaso.registry.withShape": "Avec territoire",
     "iaso.restricted_submissions_by_orgunits": "Vous êtes autorisé(e) à voir uniquement les unités d'organisation suivantes:",
     "iaso.runs.dialog.deleteRunText": "Toutes les correspondances créées seront effacées",
     "iaso.runs.dialog.deleteRunTitle": "Etes-vous certain de vouloir effacer cet exécution d'algorithme ?",

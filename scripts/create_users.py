@@ -409,10 +409,6 @@ point_of_interest_type = OrgUnitType.objects.get(projects__account=account, shor
 print("Point Of Interest Type: " + point_of_interest_type.short_name)
 
 
-zone_de_sante_test = OrgUnit.objects.get(id=1856611)
-print("Aire De Santé Test: " + zone_de_sante_test.name)
-
-
 def get_location(grand_child, child):
     val = None
     if grand_child.geom and grand_child.geom.centroid:
@@ -457,7 +453,7 @@ for child in children:
             print(f"Team {corresp_team}")
         else:
 
-            for i in range(30, 60):
+            for i in range(30, 100):
                 # create 30 more POI per area
 
                 print("Location : " + str(get_location(g, child)))

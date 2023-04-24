@@ -106,7 +106,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.noGeographicalData',
     },
     addOrgUnitChildren: {
-        defaultMessage: 'Add children org unit',
+        defaultMessage: 'Add children new org unit',
         id: 'iaso.registry.addOrgUnitChildren',
     },
 });

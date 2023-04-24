@@ -16,16 +16,23 @@ type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
     useIcon?: boolean;
     className?: string;
+    toRegistry: boolean;
 };
 
 export const LinkToOrgUnit: FunctionComponent<Props> = ({
     orgUnit,
     useIcon = false,
     className = '',
+    toRegistry = false,
 }) => {
     const user = useCurrentUser();
-    if (userHasPermission('iaso_org_units', user) && orgUnit) {
-        const url = `/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`;
+    const hasPermission = toRegistry
+        ? userHasPermission('iaso_registry', user)
+        : userHasPermission('iaso_org_units', user);
+    if (hasPermission && orgUnit) {
+        const url = toRegistry
+            ? `/${baseUrls.registryDetail}/orgUnitId/${orgUnit.id}`
+            : `/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`;
         if (useIcon) {
             return (
                 <IconButtonComponent

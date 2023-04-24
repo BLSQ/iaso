@@ -1000,6 +1000,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "accuracy": self.accuracy,
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,

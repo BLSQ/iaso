@@ -28,6 +28,7 @@ import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { userHasPermission } from '../users/utils';
+import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
 
 type Router = {
     goBack: () => void;
@@ -88,6 +89,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isFetching && <LoadingSpinner />}
                 <Grid container spacing={2}>
+                    {orgUnit && (
+                        <Grid item xs={12}>
+                            <OrgUnitBreadcrumbs orgUnit={orgUnit} />
+                        </Grid>
+                    )}
                     <Grid item xs={12} md={5}>
                         {orgUnit && (
                             <WidgetPaper

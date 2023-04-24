@@ -15,11 +15,13 @@ import MESSAGES from '../../assignments/messages';
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
     useIcon?: boolean;
+    className?: string;
 };
 
 export const LinkToOrgUnit: FunctionComponent<Props> = ({
     orgUnit,
     useIcon = false,
+    className = '',
 }) => {
     const user = useCurrentUser();
     if (userHasPermission('iaso_org_units', user) && orgUnit) {
@@ -33,7 +35,11 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
                 />
             );
         }
-        return <Link to={url}>{orgUnit.name}</Link>;
+        return (
+            <Link className={className} to={url}>
+                {orgUnit.name}
+            </Link>
+        );
     }
     return <>{orgUnit ? orgUnit.name : '-'}</>;
 };

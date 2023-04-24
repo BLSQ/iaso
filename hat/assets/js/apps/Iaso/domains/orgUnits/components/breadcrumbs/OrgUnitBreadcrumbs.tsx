@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useMemo } from 'react';
-import { Breadcrumbs } from '@material-ui/core';
+import { Breadcrumbs, makeStyles } from '@material-ui/core';
 import { OrgUnit } from '../../types/orgUnit';
 import { LinkToOrgUnit } from '../LinkToOrgUnit';
 
@@ -39,6 +39,13 @@ export const useOrgUnitBreadCrumbs = ({
     }, [orgUnit, showOnlyParents]);
 };
 
+const useStyles = makeStyles(theme => {
+    return {
+        // @ts-ignore
+        link: { color: theme.palette.mediumGray.main },
+    };
+});
+
 type Props = {
     separator?: string;
     orgUnit: OrgUnit;
@@ -50,11 +57,14 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
     orgUnit,
     showOnlyParents,
 }) => {
+    const { link } = useStyles();
     const breadcrumbs = useOrgUnitBreadCrumbs({ orgUnit, showOnlyParents });
     return (
         <Breadcrumbs separator={separator}>
             {breadcrumbs.map(ou => {
-                return <LinkToOrgUnit orgUnit={ou} key={ou.id} />;
+                return (
+                    <LinkToOrgUnit orgUnit={ou} key={ou.id} className={link} />
+                );
             })}
         </Breadcrumbs>
     );

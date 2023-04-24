@@ -48,6 +48,9 @@ export const useGetOrgUnitsListChildren = (
         limit: params.orgUnitListPageSize || '10',
         order,
         page: params.orgUnitListPage || '1',
+        orgUnitTypeId: orgUnitTypes
+            .map(orgunitType => orgunitType.id)
+            .join(','),
     };
 
     const url = makeUrlWithParams('/api/orgunits/', apiParams);

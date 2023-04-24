@@ -23,11 +23,10 @@ class DataStoreSerializer(serializers.ModelSerializer):
         if len(request_key) < 1:
             raise serializers.ValidationError("key should be at least 1 character long")
 
-        stores_for_account = list(
-            JsonDataStore.objects.filter(account=self.context["request"].user.iaso_profile.account)
-        )
         method = self.context["request"].method
-        key_already_exists = request_key in [store.slug for store in stores_for_account]
+        key_already_exists = JsonDataStore.objects.filter(
+            account=self.context["request"].user.iaso_profile.account, slug=request_key
+        ).exists()
 
         # return a 400 when trying to create data with a key that already exists
         if key_already_exists and method == "POST":
@@ -53,17 +52,23 @@ class DataStoreSerializer(serializers.ModelSerializer):
 
 class DataStorePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        read_perms = ("menupermissions.iaso_datastore_read",)
-        write_perms = ("menupermissions.iaso_datastore_write",)
+        read_perm = ("menupermissions.iaso_datastore_read",)
+        write_perm = ("menupermissions.iaso_datastore_write",)
 
         if request.method == "GET":
             can_get = (
-                request.user and any(request.user.has_perm(perm) for perm in read_perms) or request.user.is_superuser
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(read_perm)
+                or request.user.is_superuser
             )
             return can_get
         elif request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
             can_post = (
-                request.user and any(request.user.has_perm(perm) for perm in write_perms) or request.user.is_superuser
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(write_perm)
+                or request.user.is_superuser
             )
             return can_post
         else:

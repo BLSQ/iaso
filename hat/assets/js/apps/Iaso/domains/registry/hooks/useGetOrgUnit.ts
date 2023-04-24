@@ -28,6 +28,7 @@ type ResultList = Pagination & {
 
 export const useGetOrgUnitsListChildren = (
     orgUnitParentId: string,
+    orgUnitTypes: OrgunitTypes,
     params: RegistryDetailParams,
 ): UseQueryResult<ResultList, Error> => {
     let order = '-name';
@@ -47,6 +48,9 @@ export const useGetOrgUnitsListChildren = (
         limit: params.orgUnitListPageSize || '10',
         order,
         page: params.orgUnitListPage || '1',
+        orgUnitTypeId: orgUnitTypes
+            .map(orgunitType => orgunitType.id)
+            .join(','),
     };
 
     const url = makeUrlWithParams('/api/orgunits/', apiParams);
@@ -55,16 +59,6 @@ export const useGetOrgUnitsListChildren = (
         queryFn: () => getRequest(url),
         options: {
             keepPreviousData: true,
-            select: data => {
-                if (!data) return undefined;
-                const orgunits: OrgUnit[] = data.orgunits.filter(
-                    orgUnit => `${orgUnitParentId}` !== orgUnit.id,
-                );
-                return {
-                    ...data,
-                    orgunits,
-                };
-            },
         },
     });
 };

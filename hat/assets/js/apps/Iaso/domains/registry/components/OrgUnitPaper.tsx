@@ -107,7 +107,11 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         tab !== 'list' && classes.hiddenOpacity,
                     )}
                 >
-                    <OrgUnitChildrenList orgUnit={orgUnit} params={params} />
+                    <OrgUnitChildrenList
+                        orgUnit={orgUnit}
+                        subOrgUnitTypes={subOrgUnitTypes}
+                        params={params}
+                    />
                 </Box>
             </Box>
         </WidgetPaper>

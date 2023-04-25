@@ -632,11 +632,13 @@ def get_location(grand_child):
 the_location = get_location(the_province)
 print("Location: " + str(the_location))
 
-the_planning = Planning.objects.get(id=50)  # Digitalisation canevas papier
+the_planning = Planning.objects.get(id=51)  # Digitalisation canevas papier
 print("Planning: " + the_planning.name)
 
 profiles = Profile.objects.filter(account=account)
 print("Profiles count : " + str(len(profiles)))
+
+j = 0
 
 for username in usernames:
     user = User.objects.get(username=username)
@@ -652,16 +654,16 @@ for username in usernames:
 
     for i in range(0, 50):
 
-        # ou, created = OrgUnit.objects.get_or_create(
-        #     name=f"superv_{i:02d}",  # format avec 0 devant
-        #     parent=the_province,
-        #     org_unit_type=point_of_interest_type,
-        #     version=account.default_version,
-        #     validation_status=OrgUnit.VALIDATION_VALID,
-        #     defaults={"location": the_location},
-        # )
+        ou, created = OrgUnit.objects.get_or_create(
+            name=f"superv_{j:02d}",  # format avec 0 devant
+            parent=the_province,
+            org_unit_type=point_of_interest_type,
+            version=account.default_version,
+            validation_status=OrgUnit.VALIDATION_VALID,
+            defaults={"location": the_location},
+        )
 
-        # print("Created? " + str(created))
+        print("Created? " + str(created))
 
         print(
             f"Created superv_{i:02d} with parent {the_province.name} type {point_of_interest_type.short_name} location {the_location}"
@@ -669,8 +671,10 @@ for username in usernames:
 
         # create assignments in the existing plannong of each POIs  to people in the current area
 
-        # correct_assignment = Assignment.objects.get_or_create(
-        #     planning=the_planning, org_unit=ou, user=user
-        # )
+        correct_assignment, createda = Assignment.objects.get_or_create(planning=the_planning, org_unit=ou, user=user)
 
-        print(f"Created assignment for {user.username} for OU superv_{i:02d}")
+        print("Created? " + str(createda))
+
+        print(f"Created assignment for {user.username} for OU superv_{j:02d}")
+
+        j += 1

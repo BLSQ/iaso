@@ -1,14 +1,12 @@
+from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
-from rest_framework import serializers
+from rest_framework import filters, serializers
 from rest_framework.decorators import action
 
-from iaso.api.common import (
-    ModelViewSet,
-    TimestampField,
-)
-from iaso.api.mobile.entity import MobileEntitySerializer, LargeResultsSetPagination, filter_queryset_for_mobile_entity
-from iaso.models import Entity, EntityType, Project
+from iaso.api.common import ModelViewSet, TimestampField
+from iaso.api.mobile.entity import LargeResultsSetPagination, MobileEntitySerializer
+from iaso.models import Entity, EntityType
+from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):
@@ -84,29 +82,21 @@ class MobileEntityTypesViewSet(ModelViewSet):
         user = self.request.user
         app_id = self.request.query_params.get("app_id")
 
-        base_entities = Entity.objects.all()
+        queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
 
-        if user and user.is_authenticated:
-            base_entities = base_entities.filter(account=self.request.user.iaso_profile.account)
+        if queryset:
+            type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
 
-        if app_id is not None:
+            queryset = queryset.filter(entity_type__pk=type_pk)
+
             try:
-                project = Project.objects.get_for_user_and_app_id(user, app_id)
-
-                if project.account is None and (not user or not user.is_authenticated):
-                    base_entities = self.none()
-
-                base_entities = base_entities.filter(account=project.account)
-
-            except Project.DoesNotExist:
-                if not user or not user.is_authenticated:
-                    base_entities = self.none()
-
-        type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
-
-        base_entities = base_entities.filter(entity_type__pk=type_pk)
-
-        queryset = filter_queryset_for_mobile_entity(base_entities, self.request)
+                queryset = queryset.filter_for_mobile_entity(
+                    self.request.query_params.get("limit_date"), self.request.query_params.get("json_content")
+                )
+            except InvalidLimitDateError as e:
+                raise Http404(e)
+            except InvalidJsonContentError as e:
+                raise Http404(e)
 
         page = self.paginate_queryset(queryset)
         serializer = MobileEntitySerializer(page, many=True)

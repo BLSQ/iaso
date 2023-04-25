@@ -6,6 +6,7 @@ from django.core.files import File
 from iaso import models as m
 from iaso.models import EntityType, Instance, Entity, FormVersion
 from iaso.test import APITestCase
+from iaso.tests.api.workflows.base import var_dump
 
 
 class EntityTypeAPITestCase(APITestCase):
@@ -315,6 +316,9 @@ class EntityTypeAPITestCase(APITestCase):
         second_entity_type.refresh_from_db()
 
         response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
+
+        var_dump(response.json())
+
         self.assertEqual(response.json()["count"], 1)
 
         response_entity_instance = response.json()["results"][0]["instances"]

@@ -10,6 +10,7 @@ from iaso import models as m
 from iaso.models import EntityType, Instance, Entity, FormVersion
 from iaso.test import APITestCase
 from iaso.tests.api.workflows.base import var_dump
+from django.core.files import File
 
 
 class EntityAPITestCase(APITestCase):
@@ -555,7 +556,10 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("id"), str(entity.uuid))
 
-    def test_entity_mobile_user_no_org_unit(self):
+    def test_access_via_appid(self):
+        pass
+
+    def test_entity_mobile_user(self):
         self.client.force_authenticate(self.user_without_ou)
 
         self.form_1.form_id = "A_FORM_ID"
@@ -578,16 +582,80 @@ class EntityAPITestCase(APITestCase):
             project=self.project,
             uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
         )
+        instance.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
+        instance.json = {
+            "name": "Prince of Euphor",
+            "father_name": "Professor Procyon",
+            "age_type": 0,
+            "birth_date": "1978-07-03",
+            "gender": "male",
+            "hc": "hc_C",
+            "_version": "A_FORM_ID",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03e",
+        }
+        instance.save()
+
+        instance2 = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            project=self.project,
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g6",
+        )
+        instance2.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
+        instance2.json = {
+            "name": "Prince of Euphor",
+            "father_name": "Professor Procyon",
+            "age_type": 0,
+            "birth_date": "1978-07-03",
+            "gender": "male",
+            "hc": "hc_C",
+            "_version": "A_FORM_ID",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03e",
+        }
+        instance2.save()
 
         instance_unvalidated_ou = Instance.objects.create(
             org_unit=self.jedi_council_corruscant_unvalidated,
             form=self.form_1,
             period="202002",
             project=self.project,
-            uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g4",
         )
+        instance_unvalidated_ou.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
+        instance_unvalidated_ou.json = {
+            "name": "Prince of Euphor",
+            "father_name": "Professor Procyon",
+            "age_type": 0,
+            "birth_date": "1978-07-03",
+            "gender": "male",
+            "hc": "hc_C",
+            "_version": "A_FORM_ID",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03e",
+        }
+        instance_unvalidated_ou.save()
 
-        self.form_1.instances.set([instance, instance_unvalidated_ou])
+        instance_entity_no_attributes = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            project=self.project,
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g5",
+        )
+        instance_entity_no_attributes.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
+        instance_entity_no_attributes.json = {
+            "name": "Prince of Euphor",
+            "father_name": "Professor Procyon",
+            "age_type": 0,
+            "birth_date": "1978-07-03",
+            "gender": "male",
+            "hc": "hc_C",
+            "_version": "A_FORM_ID",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03e",
+        }
+        instance_entity_no_attributes.save()
+
+        self.form_1.instances.set([instance, instance_unvalidated_ou, instance_entity_no_attributes])
         self.form_1.save()
 
         entity = Entity.objects.create(
@@ -600,7 +668,7 @@ class EntityAPITestCase(APITestCase):
         entity_unvalidated = Entity.objects.create(
             name="New Client",
             entity_type=entity_type,
-            arributes=instance_unvalidated_ou,
+            attributes=instance_unvalidated_ou,
             account=self.yoda.iaso_profile.account,
         )
 
@@ -610,15 +678,24 @@ class EntityAPITestCase(APITestCase):
             account=self.yop_solo.iaso_profile.account,
         )
 
-        instance.entity = entity
-        instance.save()
+        instance2.entity = entity
+        instance2.save()
 
+        # shouldn't appear
         instance_unvalidated_ou.entity = entity_unvalidated
         instance_unvalidated_ou.save()
 
+        # shouldn't appear
+        instance_entity_no_attributes.entity = entity_no_attributes
+        instance_entity_no_attributes.save()
+
         response = self.client.get("/api/mobile/entities/")
 
-        var_dump(response.json())
+        response_json = response.json()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json().get("count"), 2)
+        self.assertEqual(response_json.get("count"), 2)
+        self.assertEqual(response_json.get("results")[0].get("entity_type_id"), "6")
+        self.assertEqual(len(response_json.get("results")[0].get("instances")), 1)
+        self.assertEqual(response_json.get("results")[1].get("entity_type_id"), "6")
+        self.assertEqual(len(response_json.get("results")[1].get("instances")), 0)

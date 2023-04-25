@@ -654,7 +654,8 @@ where group_id = polio_roundscope.group_id""",
         campaigns = campaigns.only("geojson")
         features = []
         for c in campaigns:
-            features.extend(c.geojson)
+            if c.geojson:
+                features.extend(c.geojson)
 
         res = {"type": "FeatureCollection", "features": features}
 

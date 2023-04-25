@@ -11,7 +11,7 @@ import { withRouter } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import DatesRange from 'Iaso/components/filters/DatesRange';
-
+import { useGetGroups } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns.ts';
@@ -42,6 +42,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
+    const [orgUnitgroups, setOrgUnitgroups] = useState(params.orgUnitgroups);
     const [campaignType, setCampaignType] = useState(params.campaignType);
     const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);
@@ -86,6 +87,8 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
         useGetGroupedCampaigns();
+    const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
+        useGetGroups({});
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({
@@ -185,6 +188,19 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                             value: c.id,
                         }))}
                         label={MESSAGES.country}
+                    />
+                    <InputComponent
+                        loading={isFetchingGroupedOrgUnits}
+                        keyValue="orgUnitGroups"
+                        multi
+                        clearable
+                        onChange={(key, value) => {
+                            setOrgUnitgroups(value);
+                        }}
+                        value={orgUnitgroups}
+                        type="select"
+                        options={groupedOrgUnits}
+                        label={MESSAGES.group}
                     />
                 </Grid>
                 {!disableDates && (

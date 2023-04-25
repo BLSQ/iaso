@@ -10,6 +10,7 @@ import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useGetCountries } from '../../hooks/useGetCountries';
+import { useGetGroups } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 
 type Props = {
     params: UrlParams & {
@@ -18,6 +19,7 @@ type Props = {
         roundStartTo: string;
         roundStartFrom: string;
         country__id__in: any;
+        orgUnitGroups: any;
         campaign: string;
         // eslint-disable-next-line camelcase
         budget_current_state_key__in: string;
@@ -38,6 +40,8 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     const { data, isFetching: isFetchingCountries } = useGetCountries();
+    const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
+        useGetGroups({});
     const countriesList = (data && data.orgUnits) || [];
     return (
         <Box mb={4}>
@@ -52,6 +56,17 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         onEnterPressed={handleSearch}
                         onErrorChange={setTextSearchError}
                         blockForbiddenChars
+                    />
+                    <InputComponent
+                        loading={isFetchingGroupedOrgUnits}
+                        keyValue="orgUnitGroups"
+                        multi
+                        clearable
+                        onChange={handleChange}
+                        value={filters.orgUnitGroups}
+                        type="select"
+                        options={groupedOrgUnits}
+                        label={MESSAGES.group}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>

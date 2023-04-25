@@ -1,3 +1,9 @@
+# eb ssh
+# sudo su -
+# export $(cat /opt/elasticbeanstalk/deployment/env | xargs)
+# source /var/app/venv/*/bin/activate
+# python3 /var/app/current/manage.py shell
+
 from iaso.models import *
 from iaso.models.microplanning import *
 from django.contrib.auth.models import User
@@ -483,66 +489,66 @@ from django.contrib.gis.geos import Point
 #                 print(f"Created assignment for {corresp_profile.user.username} for POI_{i:02d}")
 
 
-account = Account.objects.get(id=22)
-print("Account: " + account.name)
+# account = Account.objects.get(id=22)
+# print("Account: " + account.name)
 
 
-profiles = Profile.objects.filter(account=account)
-print("Profiles count : " + str(len(profiles)))
+# profiles = Profile.objects.filter(account=account)
+# print("Profiles count : " + str(len(profiles)))
 
-# Zone_Sante_Base_Id = 1074168  # ll Fungurume Zone de Santé
-Zone_Sante_Base_Id = 1074597  # ll Lualaba Zone de Santé
-zs_base = OrgUnit.objects.get(id=Zone_Sante_Base_Id)
+# # Zone_Sante_Base_Id = 1074168  # ll Fungurume Zone de Santé
+# Zone_Sante_Base_Id = 1074597  # ll Lualaba Zone de Santé
+# zs_base = OrgUnit.objects.get(id=Zone_Sante_Base_Id)
 
-print("Zone de Santé Base: " + zs_base.name)
+# print("Zone de Santé Base: " + zs_base.name)
 
-centre_de_sante_type = OrgUnitType.objects.get(projects__account=account, short_name="FoSa")
-print("Centre De Santé Type: " + centre_de_sante_type.short_name)
+# centre_de_sante_type = OrgUnitType.objects.get(projects__account=account, short_name="FoSa")
+# print("Centre De Santé Type: " + centre_de_sante_type.short_name)
 
-aire_de_sante_type = OrgUnitType.objects.get(projects__account=account, short_name="AS")
-print("Aire De Santé Type: " + aire_de_sante_type.short_name)
+# aire_de_sante_type = OrgUnitType.objects.get(projects__account=account, short_name="AS")
+# print("Aire De Santé Type: " + aire_de_sante_type.short_name)
 
 
-the_planning = Planning.objects.get(id=50)  # Digitalisation canevas papier
+# the_planning = Planning.objects.get(id=50)  # Digitalisation canevas papier
 
-print("Planning: " + the_planning.name)
+# print("Planning: " + the_planning.name)
 
-aire_de_santes = OrgUnit.objects.filter(parent=zs_base, org_unit_type=aire_de_sante_type)
+# aire_de_santes = OrgUnit.objects.filter(parent=zs_base, org_unit_type=aire_de_sante_type)
 
-print("Aire de Santé count: " + str(aire_de_santes.count()))
+# print("Aire de Santé count: " + str(aire_de_santes.count()))
 
-for air_sa in aire_de_santes.all():
+# for air_sa in aire_de_santes.all():
 
-    try:
-        corresp_profile = profiles.get(org_units=air_sa, account=account)
-    except:
-        corresp_profile = None
+#     try:
+#         corresp_profile = profiles.get(org_units=air_sa, account=account)
+#     except:
+#         corresp_profile = None
 
-    try:
-        corresp_team = Team.objects.get(name=zs_base.name)
-    except:
-        corresp_team = None
+#     try:
+#         corresp_team = Team.objects.get(name=zs_base.name)
+#     except:
+#         corresp_team = None
 
-    if corresp_profile is None or corresp_team is None:
-        print(f"!! Didnt find a profile or a team for {air_sa.name}")
-        print(f"Profile {corresp_profile}")
-        print(f"Team {corresp_team}")
-    else:
+#     if corresp_profile is None or corresp_team is None:
+#         print(f"!! Didnt find a profile or a team for {air_sa.name}")
+#         print(f"Profile {corresp_profile}")
+#         print(f"Team {corresp_team}")
+#     else:
 
-        correct_assignment = Assignment.objects.get_or_create(
-            planning=the_planning, org_unit=air_sa, user=corresp_profile.user
-        )
+#         correct_assignment = Assignment.objects.get_or_create(
+#             planning=the_planning, org_unit=air_sa, user=corresp_profile.user
+#         )
 
-        print(f"Created assignment for {corresp_profile.user.username} for {air_sa.name}")
+#         print(f"Created assignment for {corresp_profile.user.username} for {air_sa.name}")
 
-        centre_de_santes = OrgUnit.objects.filter(parent=air_sa, org_unit_type=centre_de_sante_type)
-        for centre_sa in centre_de_santes.all():
+#         centre_de_santes = OrgUnit.objects.filter(parent=air_sa, org_unit_type=centre_de_sante_type)
+#         for centre_sa in centre_de_santes.all():
 
-            correct_assignment = Assignment.objects.get_or_create(
-                planning=the_planning, org_unit=centre_sa, user=corresp_profile.user
-            )
+#             correct_assignment = Assignment.objects.get_or_create(
+#                 planning=the_planning, org_unit=centre_sa, user=corresp_profile.user
+#             )
 
-            print(f">> Created assignment for {corresp_profile.user.username} for {centre_sa.name}")
+#             print(f">> Created assignment for {corresp_profile.user.username} for {centre_sa.name}")
 
 
 # for deleting the wrong assignments created
@@ -582,3 +588,89 @@ for air_sa in aire_de_santes.all():
 #             res = assignment_orig.delete()
 
 #             print(f"Deleted assignment {res}")
+
+
+# Demande 25/04/2023
+
+usernames = [
+    "Bruno_Mwenya",
+    "Frddy_Kangomba",
+    "Ivan_Mulunda",
+    "Robert_Ndondji",
+    "Leon_Luambwa_canevas",
+    "Guelord_Kabangu_canevas",
+    "bernice_canevas",
+    "Yves_Kasongo_canevas",
+    "clairecanevas",
+    "jonathan_canevas",
+]
+
+province_id = 1074010
+the_province = OrgUnit.objects.get(id=province_id)
+print("Province: " + the_province.name)
+
+account = Account.objects.get(id=22)
+print("Account: " + account.name)
+
+point_of_interest_type = OrgUnitType.objects.get(projects__account=account, short_name="POI")
+print("Point Of Interest Type: " + point_of_interest_type.short_name)
+
+
+def get_location(grand_child):
+    val = None
+    if grand_child.geom and grand_child.geom.centroid:
+        val = grand_child.geom.centroid
+    elif grand_child.location:
+        val = grand_child.location
+
+    if val is not None:
+        return Point(val.x, val.y, 0)
+    else:
+        return None
+
+
+the_location = get_location(the_province)
+print("Location: " + str(the_location))
+
+the_planning = Planning.objects.get(id=50)  # Digitalisation canevas papier
+print("Planning: " + the_planning.name)
+
+profiles = Profile.objects.filter(account=account)
+print("Profiles count : " + str(len(profiles)))
+
+for username in usernames:
+    user = User.objects.get(username=username)
+    print(f"User {user.username}")
+
+    corresp_profile = user.iaso_profile
+    print(f"Profile {corresp_profile}")
+
+    user_ous = corresp_profile.org_units.all()
+
+    print("User Org Units")
+    print(user_ous)
+
+    for i in range(0, 50):
+
+        # ou, created = OrgUnit.objects.get_or_create(
+        #     name=f"superv_{i:02d}",  # format avec 0 devant
+        #     parent=the_province,
+        #     org_unit_type=point_of_interest_type,
+        #     version=account.default_version,
+        #     validation_status=OrgUnit.VALIDATION_VALID,
+        #     defaults={"location": the_location},
+        # )
+
+        # print("Created? " + str(created))
+
+        print(
+            f"Created superv_{i:02d} with parent {the_province.name} type {point_of_interest_type.short_name} location {the_location}"
+        )
+
+        # create assignments in the existing plannong of each POIs  to people in the current area
+
+        # correct_assignment = Assignment.objects.get_or_create(
+        #     planning=the_planning, org_unit=ou, user=user
+        # )
+
+        print(f"Created assignment for {user.username} for OU superv_{i:02d}")

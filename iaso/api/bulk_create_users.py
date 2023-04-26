@@ -191,6 +191,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         }
                                     )
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
+                    dhis2_id = row[csv_indexes.index("dhis2_id")]
+                    if dhis2_id:
+                        profile.dhis2_id=dhis2_id
                     try:
                         user_permissions = row[csv_indexes.index("permissions")].split(",")
                         for perm in user_permissions:

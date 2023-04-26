@@ -3,10 +3,12 @@ import {
     commonStyles,
     IconButton,
     LoadingSpinner,
+    useSafeIntl,
 } from 'bluesquare-components';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, makeStyles, Paper, Typography } from '@material-ui/core';
 import moment from 'moment';
 import { useDispatch } from 'react-redux';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
@@ -43,6 +45,21 @@ const useStyles = makeStyles(theme => ({
         maxHeight: '485px',
         overflow: 'auto',
     },
+    emptyPaper: {
+        height: '636px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyPaperTypo: {
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyPaperIcon: {
+        display: 'inline-block',
+        marginRight: theme.spacing(1),
+    },
 }));
 
 export const OrgUnitInstances: FunctionComponent<Props> = ({
@@ -51,6 +68,7 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
+    const { formatMessage } = useSafeIntl();
 
     // selected instance should be:
     // submission id from params  OR reference instance OR first submission of the possible ones OR undefined
@@ -91,7 +109,18 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
     return (
         <Box position="relative" width="100%" minHeight={300}>
             {isFetchingCurrentInstance && <LoadingSpinner absolute />}
-            {instances?.length > 0 && (
+            {instances && instances?.length === 0 && (
+                <Paper className={classes.emptyPaper}>
+                    <Typography
+                        component="p"
+                        className={classes.emptyPaperTypo}
+                    >
+                        <ErrorOutlineIcon className={classes.emptyPaperIcon} />
+                        {formatMessage(MESSAGES.noInstance)}
+                    </Typography>
+                </Paper>
+            )}
+            {instances && instances?.length > 0 && (
                 <Box
                     width="100%"
                     display="flex"
@@ -120,7 +149,10 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
                     id="form-contents"
                     className={classes.paper}
                     elevation={1}
-                    title={currentInstance.form_name}
+                    title={`${currentInstance.form_name}${
+                        currentInstance.id === orgUnit.reference_instance?.id &&
+                        ` (${formatMessage(MESSAGES.referenceInstance)})`
+                    }`}
                     IconButton={
                         userHasPermission(
                             'iaso_update_submission',

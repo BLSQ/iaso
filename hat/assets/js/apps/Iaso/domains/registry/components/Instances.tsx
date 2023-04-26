@@ -5,7 +5,6 @@ import React, {
     useCallback,
 } from 'react';
 import { Box, Tabs, Tab, Grid } from '@material-ui/core';
-import { useSkipEffectOnMount } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
 import InputComponent from '../../../components/forms/InputComponent';
@@ -40,7 +39,17 @@ export const Instances: FunctionComponent<Props> = ({
 }) => {
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
-    const [currentType, setCurrentType] = useState<OrgunitType | undefined>();
+    const currentType: OrgunitType | undefined = useMemo(() => {
+        if (subOrgUnitTypes.length > 0) {
+            if (tab) {
+                const existingType: OrgunitType | undefined =
+                    subOrgUnitTypes.find(subType => `${subType.id}` === tab);
+                return existingType || subOrgUnitTypes[0];
+            }
+            return subOrgUnitTypes[0];
+        }
+        return undefined;
+    }, [subOrgUnitTypes, tab]);
 
     const dispatch = useDispatch();
 
@@ -63,7 +72,6 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleChangeTab = useCallback(
         (newType: OrgunitType) => {
-            setCurrentType(newType);
             dispatch(
                 redirectToReplace(baseUrls.registryDetail, {
                     ...params,
@@ -74,17 +82,6 @@ export const Instances: FunctionComponent<Props> = ({
         [dispatch, params],
     );
 
-    useSkipEffectOnMount(() => {
-        if (subOrgUnitTypes?.length > 0 && !currentType) {
-            if (tab) {
-                setCurrentType(
-                    subOrgUnitTypes.find(subType => `${subType.id}` === tab),
-                );
-            } else {
-                setCurrentType(subOrgUnitTypes[0]);
-            }
-        }
-    }, [subOrgUnitTypes]);
     const currentForm: Form | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);

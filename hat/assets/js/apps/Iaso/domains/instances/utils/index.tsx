@@ -163,7 +163,6 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
 };
 
 export const useGetInstancesColumns = (
-    showDeleted = false,
     // eslint-disable-next-line no-unused-vars
     getActionCell: RenderCell = settings => (
         <ActionTableColumnComponent settings={settings} />
@@ -176,10 +175,6 @@ export const useGetInstancesColumns = (
         () => [...instancesTableColumns(formatMessage)],
         [formatMessage],
     );
-    if (showDeleted) {
-        metasColumns.shift();
-    }
-
     const getInstancesColumns = useCallback(
         (visibleColumns: VisibleColumn[]) => {
             let tableColumns: Column[] = [];

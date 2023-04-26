@@ -71,6 +71,10 @@ const campaignsFilters = [
         isRequired: false,
         key: 'show_test',
     },
+    {
+        isRequired: false,
+        key: 'orgUnitGroups',
+    },
 ];
 
 const routes = [

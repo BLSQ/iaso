@@ -62,6 +62,7 @@ const Calendar = ({ params }) => {
             search: params.search,
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,
+            orgUnitGroups: params.orgUnitGroups,
             fieldset: 'calendar',
         };
     }, [
@@ -69,6 +70,7 @@ const Calendar = ({ params }) => {
         params.campaignGroups,
         params.campaignType,
         params.countries,
+        params.orgUnitGroups,
         params.search,
     ]);
 
@@ -128,6 +130,7 @@ const Calendar = ({ params }) => {
         countries: params.countries,
         campaignType: params.campaignType,
         campaignGroups: params.campaignGroups,
+        orgUnitGroups: params.orgUnitGroups,
         search: params.search,
         order: params.order,
     };
@@ -176,7 +179,11 @@ const Calendar = ({ params }) => {
                 >
                     {!isPdf && (
                         <Box mb={4}>
-                            <Filters disableDates disableOnlyDeleted />
+                            <Filters
+                                disableDates
+                                disableOnlyDeleted
+                                isCalendar
+                            />
                         </Box>
                     )}
 

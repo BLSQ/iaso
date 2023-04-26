@@ -137,6 +137,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         "cvdpv2_notified_at": ["gte", "lte", "range"],
         "created_at": ["gte", "lte", "range"],
         "rounds__started_at": ["gte", "lte", "range"],
+        "initial_org_unit__groups__id": ["in", "exact"],
     }
 
     # We allow anonymous read access for the embeddable calendar map view
@@ -173,6 +174,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         campaign_type = self.request.query_params.get("campaign_type")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
+        org_unit_groups = self.request.query_params.get("org_unit_groups")
+
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
@@ -185,6 +188,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+        if org_unit_groups:
+            campaigns = campaigns.filter(initial_org_unit__groups__in=org_unit_groups.split(","))
 
         return campaigns.distinct()
 

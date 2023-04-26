@@ -109,6 +109,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Add new child org unit',
         id: 'iaso.registry.addOrgUnitChild',
     },
+    noInstance: {
+        defaultMessage: 'No submission found for this org unit',
+        id: 'iaso.registry.noInstance',
+    },
+    referenceInstance: {
+        defaultMessage: 'reference submission',
+        id: 'iaso.registry.referenceInstance',
+    },
 });
 
 export default MESSAGES;

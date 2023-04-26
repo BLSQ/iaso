@@ -12,4 +12,5 @@ export type RegistryDetailParams = UrlParams & {
     orgUnitListPageSize?: string;
     orgUnitListOrder?: string;
     orgUnitListPage?: string;
+    submissionId?: string;
 };

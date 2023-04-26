@@ -391,6 +391,7 @@ class Campaign(SoftDeletableModel):
 
     # Budget tab
     # These fields can be either filled manually or via the budget workflow when a step is done.
+    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
     who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
     unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
     gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)

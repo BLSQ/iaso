@@ -2,8 +2,9 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import permissions
 
-from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField
+from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
 from iaso.api.query_params import LIMIT, PAGE
 from iaso.models import Entity, FormVersion, Instance, OrgUnit
 from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError
@@ -82,6 +83,7 @@ class MobileEntityViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     pagination_class = LargeResultsSetPagination
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]
     lookup_field = "uuid"
 
     def get_serializer_class(self):

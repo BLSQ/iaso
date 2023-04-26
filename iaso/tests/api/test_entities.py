@@ -7,10 +7,11 @@ import uuid
 from unittest import mock
 
 from iaso import models as m
-from iaso.models import EntityType, Instance, Entity, FormVersion
+from iaso.models import EntityType, Instance, Entity, FormVersion, Project
 from iaso.test import APITestCase
 from iaso.tests.api.workflows.base import var_dump
 from django.core.files import File
+from django.contrib.auth.models import AnonymousUser
 
 
 class EntityAPITestCase(APITestCase):
@@ -28,12 +29,14 @@ class EntityAPITestCase(APITestCase):
         star_wars.save()
         cls.sw_version = sw_version
 
+        cls.anon = AnonymousUser()
+
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
 
         cls.yop_solo = cls.create_user_with_profile(
-            username="yop solo", account=space_balls, permissions=["iaso_submissions"]
+            username="yop solo", account=space_balls, permissions=["iaso_entities"]
         )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
@@ -43,10 +46,10 @@ class EntityAPITestCase(APITestCase):
         )
         cls.jedi_council_corruscant_unvalidated = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_entities"])
 
         cls.user_without_ou = cls.create_user_with_profile(
-            username="user_without_ou", account=star_wars, permissions=["iaso_submissions"]
+            username="user_without_ou", account=star_wars, permissions=["iaso_entities"]
         )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
@@ -556,11 +559,8 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(data.get("id"), str(entity.uuid))
 
-    def test_access_via_appid(self):
-        pass
-
     def test_entity_mobile_user(self):
-        self.client.force_authenticate(self.user_without_ou)
+        self.client.force_authenticate(self.yoda)
 
         self.form_1.form_id = "A_FORM_ID"
 
@@ -699,3 +699,43 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(len(response_json.get("results")[0].get("instances")), 1)
         self.assertEqual(response_json.get("results")[1].get("entity_type_id"), "6")
         self.assertEqual(len(response_json.get("results")[1].get("instances")), 0)
+
+    def test_access_via_appid_mobile(self):
+        self.client.force_authenticate(self.yoda)
+
+        app_id = "APP_ID"
+
+        project = Project.objects.create(name="Project 1", app_id=app_id, account=self.star_wars)
+        project.account = self.star_wars
+        project.save()
+
+        # we should return only the entities whose instaces/attributes are linked to this project.
+
+        instance_app_id = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            project=project,
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
+        )
+        instance_app_id.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
+        instance_app_id.json = {
+            "name": "Prince of Euphor",
+            "father_name": "Professor Procyon",
+            "age_type": 0,
+            "birth_date": "1978-07-03",
+            "gender": "male",
+            "hc": "hc_C",
+            "_version": "A_FORM_ID",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03e",
+        }
+        instance_app_id.save()
+
+        self.form_1.instances.add(instance_app_id)
+        self.form_1.save()
+
+        response = self.client.get(f"/api/mobile/entities/?app_id={app_id}")
+
+        response_json = response.json()
+
+        var_dump(response_json)

@@ -118,7 +118,9 @@ class EntityQuerySet(models.QuerySet):
                 if project.account is None and (not user or not user.is_authenticated):
                     return self.none()
 
-                self = self.filter(account=project.account)
+                self = self.filter(account=project.account, instances__project=project, attributes__project=project)
+                # entity.attributes.project = project
+                # entity.instances.project = project
 
             except Project.DoesNotExist:
                 if not user or not user.is_authenticated:

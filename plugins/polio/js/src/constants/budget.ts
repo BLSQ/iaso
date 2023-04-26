@@ -1,4 +1,5 @@
 export const BUDGET_STATES = [
+    'ra_completed',
     'who_sent_budget',
     'unicef_sent_budget',
     'gpei_consolidated_budgets',
@@ -21,6 +22,7 @@ export const BUDGET_STATES = [
 ];
 
 export const BUDGET_REQUEST = [
+    'ra_completed',
     'who_sent_budget',
     'unicef_sent_budget',
     'gpei_consolidated_budgets',

@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
-import React, { useCallback, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Grid, Typography, Box, Divider } from '@material-ui/core';
-import { Field, useFormikContext } from 'formik';
+import { Field, FormikErrors, FormikTouched, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
@@ -13,27 +13,41 @@ import {
     ORPG_REVIEW,
     REVIEW_FOR_APPROVAL,
     WORKFLOW_SUFFIX,
-} from '../constants/budget.ts';
-import { ExpandableItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem.tsx';
+} from '../constants/budget';
+import { ExpandableItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem';
 import { hasFormikFieldError } from '../../../../../hat/assets/js/apps/Iaso/utils/forms';
+import { Round } from '../constants/types';
 
-const defaultToZero = value => (value === '' ? 0 : value);
-const getRoundData = round => {
-    const cost = parseInt(defaultToZero(round.cost ?? 0), 10);
-    const population = parseInt(
-        defaultToZero(round.target_population ?? 0),
-        10,
-    );
+const defaultToZero = (value?: string | number | null): number => {
+    const toParse = value ? '0' : `${value}`;
+    return parseInt(toParse, 10);
+};
+
+type DataForBudget = {
+    cost: number;
+    population: number;
+    calculateRound: boolean;
+    costRoundPerChild: string;
+};
+const getRoundData = (round: Round): DataForBudget => {
+    const cost = defaultToZero(round.cost);
+    const population = defaultToZero(round.target_population);
     const calculateRound = cost > 0 && population > 0;
     return {
         cost,
         population,
         calculateRound: cost > 0 && population > 0,
-        costRoundPerChild: calculateRound ? (cost / population).toFixed(2) : 0,
+        costRoundPerChild: calculateRound
+            ? (cost / population).toFixed(2)
+            : '0',
     };
 };
 
-const findErrorInFieldList = (keys, errors, touched) => {
+const findErrorInFieldList = (
+    keys: string[],
+    errors: FormikErrors<any>,
+    touched: FormikTouched<any>,
+): boolean => {
     return Boolean(
         keys.find(key =>
             hasFormikFieldError(`${key}${WORKFLOW_SUFFIX}`, errors, touched),
@@ -41,7 +55,7 @@ const findErrorInFieldList = (keys, errors, touched) => {
     );
 };
 
-const findBudgetStateIndex = values => {
+const findBudgetStateIndex = (values: Record<string, any>): number => {
     for (let i = BUDGET_STATES.length - 1; i >= 0; i -= 1) {
         const key = `${BUDGET_STATES[i]}${WORKFLOW_SUFFIX}`;
         if (values[key]) {
@@ -51,7 +65,10 @@ const findBudgetStateIndex = values => {
     return -1;
 };
 
-const findNewBudgetState = (fieldIndex, values) => {
+const findNewBudgetState = (
+    fieldIndex: number,
+    values: Record<string, any>,
+): string | null => {
     for (let i = fieldIndex - 1; i >= 0; i -= 1) {
         const key = `${BUDGET_STATES[i]}${WORKFLOW_SUFFIX}`;
         if (values[key]) {
@@ -61,11 +78,11 @@ const findNewBudgetState = (fieldIndex, values) => {
     return null;
 };
 
-export const budgetFormFields = rounds => {
+export const budgetFormFields = (rounds: Round[]): string[] => {
     return [
         'budget_status_at_WFEDITABLE',
-        // 'budget_responsible_at_WFEDITABLE',
         'rounds_at_WFEDITABLE',
+        'ra_completed_at_WFEDITABLE',
         'who_sent_budget_at_WFEDITABLE',
         'unicef_sent_budget_at_WFEDITABLE',
         'gpei_consolidated_budgets_at_WFEDITABLE',
@@ -99,14 +116,14 @@ export const budgetFormFields = rounds => {
     ];
 };
 
-export const BudgetForm = () => {
-    const classes = useStyles();
+export const BudgetForm: FunctionComponent = () => {
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
-    const { values, touched, errors, setFieldValue } = useFormikContext();
+    const { values, touched, errors, setFieldValue } = useFormikContext<any>();
 
     const { rounds = [], has_data_in_budget_tool: disableEdition } = values;
 
-    const totalCostPerChild = useMemo(() => {
+    const totalCostPerChild: string = useMemo(() => {
         let totalCost = 0;
         let totalPopulation = 0;
         rounds.forEach(r => {
@@ -118,25 +135,30 @@ export const BudgetForm = () => {
         });
         return totalPopulation ? (totalCost / totalPopulation).toFixed(2) : '-';
     }, [rounds]);
-    const hasRequestFieldsError = findErrorInFieldList(
+
+    const hasRequestFieldsError: boolean = findErrorInFieldList(
         BUDGET_REQUEST,
         errors,
         touched,
     );
-    const hasRRTReviewError = findErrorInFieldList(RRT_REVIEW, errors, touched);
-    const hasORPGReviewError = findErrorInFieldList(
+    const hasRRTReviewError: boolean = findErrorInFieldList(
+        RRT_REVIEW,
+        errors,
+        touched,
+    );
+    const hasORPGReviewError: boolean = findErrorInFieldList(
         ORPG_REVIEW,
         errors,
         touched,
     );
-    const hasApprovalFieldsError = findErrorInFieldList(
+    const hasApprovalFieldsError: boolean = findErrorInFieldList(
         REVIEW_FOR_APPROVAL,
         errors,
         touched,
     );
 
     const updateBudgetStatus = useCallback(
-        (fieldName, value) => {
+        (fieldName: string, value: any) => {
             const fieldKey = fieldName.replace(WORKFLOW_SUFFIX, '');
             const computedBudgetStatusIndex = findBudgetStateIndex(values);
             const fieldIndex = BUDGET_STATES.findIndex(
@@ -157,15 +179,18 @@ export const BudgetForm = () => {
         [setFieldValue, values],
     );
 
-    const title = disableEdition
+    const title: string = disableEdition
         ? `${formatMessage(MESSAGES.budgetApproval)}: ${formatMessage(
               MESSAGES.editionDisabled,
           )}`
         : formatMessage(MESSAGES.budgetApproval);
 
-    const budgetStatusMessage = MESSAGES[values.budget_current_state_key]
+    const budgetStatusMessage: string = MESSAGES[
+        values.budget_current_state_key
+    ]
         ? formatMessage(MESSAGES[values.budget_current_state_key])
         : values.budget_status ?? values.budget_current_state_key;
+
     return (
         <Grid container spacing={2} direction="row">
             <Grid

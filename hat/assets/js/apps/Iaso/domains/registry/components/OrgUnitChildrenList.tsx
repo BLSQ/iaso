@@ -24,7 +24,7 @@ const useStyles = makeStyles(theme => ({
     root: {
         position: 'relative',
         '& .MuiTableContainer-root': {
-            maxHeight: 374, // to fit with map height
+            maxHeight: 444, // to fit with map height
             overflow: 'auto',
             // @ts-ignore
             borderTop: `1px solid ${theme.palette.ligthGray.border}`,

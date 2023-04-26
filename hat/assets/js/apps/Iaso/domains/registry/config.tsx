@@ -1,18 +1,19 @@
 import React, { ReactElement } from 'react';
-import { IconButton, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { Tooltip, Box } from '@material-ui/core';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import MapIcon from '@material-ui/icons/Map';
 
-import { baseUrls } from '../../constants/urls';
 import { IntlFormatMessage } from '../../types/intl';
 
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';
 import { OrgUnit } from '../orgUnits/types/orgUnit';
 import { Column } from '../../types/table';
+
+import { LinkToRegistry } from './components/LinkToRegistry';
 
 import MESSAGES from './messages';
 import ShapeSvg from '../../components/svg/ShapeSvgComponent';
@@ -124,7 +125,7 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
                             arrow
                             title={formatMessage(MESSAGES.withShape)}
                         >
-                            <Box>
+                            <Box mt="6px">
                                 <ShapeSvg fontSize="small" color="primary" />
                             </Box>
                         </Tooltip>
@@ -136,7 +137,7 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
                             arrow
                             title={formatMessage(MESSAGES.withLocation)}
                         >
-                            <Box>
+                            <Box mt="6px">
                                 <LocationOnIcon
                                     fontSize="small"
                                     color="primary"
@@ -150,7 +151,7 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
                         arrow
                         title={formatMessage(MESSAGES.noGeographicalData)}
                     >
-                        <Box>
+                        <Box mt="6px">
                             <LocationDisabledIcon
                                 fontSize="small"
                                 color="error"
@@ -170,12 +171,10 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
             sortable: false,
             width: 50,
             Cell: settings => (
-                <IconButton
-                    icon="remove-red-eye"
-                    url={`${baseUrls.registryDetail}/orgunitId/${settings.row.original.id}`}
-                    tooltipMessage={MESSAGES.see}
-                    iconSize="small"
-                    color="primary"
+                <LinkToRegistry
+                    orgUnit={settings.row.original}
+                    replace
+                    useIcon
                 />
             ),
         },

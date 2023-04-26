@@ -2,6 +2,7 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { Breadcrumbs, makeStyles } from '@material-ui/core';
 import { OrgUnit } from '../../types/orgUnit';
 import { LinkToOrgUnit } from '../LinkToOrgUnit';
+import { LinkToRegistry } from '../../../registry/components/LinkToRegistry';
 
 type BreadCrumbsArgs = {
     orgUnit?: OrgUnit;
@@ -63,16 +64,23 @@ export const OrgUnitBreadcrumbs: FunctionComponent<Props> = ({
     const breadcrumbs = useOrgUnitBreadCrumbs({ orgUnit, showOnlyParents });
     return (
         <Breadcrumbs separator={separator}>
-            {breadcrumbs.map(ou => {
-                return (
+            {breadcrumbs.map(ou =>
+                showRegistry ? (
+                    <LinkToRegistry
+                        orgUnit={ou}
+                        key={ou.id}
+                        className={link}
+                        replace
+                    />
+                ) : (
                     <LinkToOrgUnit
                         orgUnit={ou}
                         key={ou.id}
                         className={link}
-                        toRegistry={showRegistry}
+                        replace
                     />
-                );
-            })}
+                ),
+            )}
         </Breadcrumbs>
     );
 };

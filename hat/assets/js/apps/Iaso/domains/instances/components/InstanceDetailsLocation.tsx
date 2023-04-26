@@ -107,30 +107,28 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         />
                     </>
                 )}
-                {currentInstance.org_unit?.altitude === 0 ? (
+                {currentInstance.org_unit?.altitude !== 0 &&
+                    currentInstance.altitude === 0 && (
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.altitude)}
+                            value={currentInstance.org_unit?.altitude}
+                        />
+                    )}
+
+                {currentInstance.altitude !== 0 &&
+                    currentInstance.org_unit?.altitude === 0 && (
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.altitude)}
+                            value={currentInstance.org_unit?.altitude}
+                        />
+                    )}
+
+                {currentInstance.accuracy && (
                     <InstanceDetailsField
-                        label={formatMessage(MESSAGES.altitude)}
-                        value={
-                            currentInstance.altitude !== 0
-                                ? currentInstance.altitude
-                                : null
-                        }
-                    />
-                ) : (
-                    <InstanceDetailsField
-                        label={formatMessage(MESSAGES.altitude)}
-                        value={
-                            currentInstance.org_unit.altitude !== 0
-                                ? currentInstance.org_unit.altitude
-                                : null
-                        }
+                        label={formatMessage(MESSAGES.accuracy)}
+                        value={currentInstance.accuracy}
                     />
                 )}
-
-                <InstanceDetailsField
-                    label={formatMessage(MESSAGES.accuracy)}
-                    value={currentInstance.accuracy}
-                />
             </div>
 
             {currentInstance.latitude && currentInstance.longitude && (

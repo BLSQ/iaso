@@ -1,4 +1,4 @@
-from django.http import Http400
+from django.http import HttpResponseBadRequest
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
@@ -17,9 +17,9 @@ def filter_for_mobile_entity(queryset, request):
                 request.query_params.get("limit_date"), request.query_params.get("json_content")
             )
         except InvalidLimitDateError as e:
-            raise Http400(e)
+            raise HttpResponseBadRequest(e)
         except InvalidJsonContentError as e:
-            raise Http400(e)
+            raise HttpResponseBadRequest(e)
 
     return queryset
 

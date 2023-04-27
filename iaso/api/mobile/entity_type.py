@@ -1,4 +1,4 @@
-from django.http import Http400
+from django.http import HttpResponseBadRequest
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
@@ -84,10 +84,10 @@ class MobileEntityTypesViewSet(ModelViewSet):
         type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
 
         if not app_id:
-            raise Http400("app_id is required")
+            raise HttpResponseBadRequest("app_id is required")
 
         if not type_pk:
-            raise Http400("type_pk is required")
+            raise HttpResponseBadRequest("type_pk is required")
 
         queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
 

@@ -17,24 +17,24 @@ import { getRequest } from '../../../../../libs/Api';
 
 const apiUrl = '/api/entityduplicates';
 
-const getDuplicates = async (queryString: string) => {
-    const url = `${apiUrl}/${queryString}`;
-    console.log('GET', url);
-    waitFor(1000);
-    if (!queryString.includes('limit')) {
-        return mockDuplicatesDetailsResponse();
-    }
-    return mockDuplicatesTableResponse({
-        count: 5,
-        has_next: true,
-        has_previous: false,
-        limit: 20,
-    });
-};
 // const getDuplicates = async (queryString: string) => {
 //     const url = `${apiUrl}/${queryString}`;
-//     return getRequest(apiUrl);
+//     console.log('GET', url);
+//     waitFor(1000);
+//     if (!queryString.includes('limit')) {
+//         return mockDuplicatesDetailsResponse();
+//     }
+//     return mockDuplicatesTableResponse({
+//         count: 5,
+//         has_next: true,
+//         has_previous: false,
+//         limit: 20,
+//     });
 // };
+const getDuplicates = async (queryString: string) => {
+    const url = `${apiUrl}/?${queryString}`;
+    return getRequest(url);
+};
 
 const formatParams = (params: Record<string, any>) => {
     const copy = { ...params };

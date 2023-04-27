@@ -11,7 +11,7 @@ from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
 import iaso.models.base as base
-from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.common import HasPermission, ModelViewSet, Paginator
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Task
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 from iaso.api.workflows.serializers import find_question_by_name
@@ -31,9 +31,23 @@ class EntityDuplicateViewSet(viewsets.ViewSet):
     GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
     PATCH /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
     """
-
+    # filter_backends = [
+    # filters.OrderingFilter,
+    # DjangoFilterBackend,
+    # ]   
+    
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
     serializer_class = EntityDuplicateSerializer
+    results_key = "results"
+    
+    def get_queryset(self):
+        return EntityDuplicate.objects.all();
+    
+    
+    # Copied from common.py
+    def pagination_class(self):
+        return Paginator(self.results_key)
+
 
     def list(self, request, *args, **kwargs):
         """
@@ -41,6 +55,14 @@ class EntityDuplicateViewSet(viewsets.ViewSet):
         Provides an API to retrieve potentially duplicated entities.
         """
         queryset = EntityDuplicate.objects.all()
+        # TO DO restore when filters are set up
+        # queryset = self.filter_queryset(queryset)
+
+        paginator = self.pagination_class()
+        page = paginator.paginate_queryset(queryset, request)
+        if page is not None:
+            serializer = self.serializer_class(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = EntityDuplicateSerializer(queryset, many=True)
         return Response(serializer.data)
 

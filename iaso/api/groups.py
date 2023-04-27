@@ -105,6 +105,10 @@ class GroupsViewSet(ModelViewSet):
             if default_version == "true":
                 queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
 
+        to_display = self.request.GET.get("toDisplay", None)
+        if to_display:
+            queryset = queryset.filter(to_display=to_display)
+
         search = self.request.query_params.get("search", None)
         if search:
             queryset = queryset.filter(name__icontains=search)

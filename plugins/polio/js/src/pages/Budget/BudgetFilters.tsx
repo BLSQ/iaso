@@ -41,7 +41,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroups({});
+        useGetGroups({ displayed: 'True' });
     const countriesList = (data && data.orgUnits) || [];
     return (
         <Box mb={4}>

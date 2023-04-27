@@ -1,17 +1,14 @@
-# TODO: check: shouldn't this file be under the "api" subdirectory?
-# TODO: it would be cleaner if tests for the get operations would create the objects they need directly in the database,
-#  rather than making POST calls
-
 import time
 import uuid
 from unittest import mock
 
+from django.contrib.auth.models import AnonymousUser
+from django.core.files import File
+
 from iaso import models as m
-from iaso.models import EntityType, Instance, Entity, FormVersion, Project
+from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.test import APITestCase
 from iaso.tests.api.workflows.base import var_dump
-from django.core.files import File
-from django.contrib.auth.models import AnonymousUser
 
 
 class EntityAPITestCase(APITestCase):
@@ -695,9 +692,9 @@ class EntityAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json.get("count"), 2)
-        self.assertEqual(response_json.get("results")[0].get("entity_type_id"), "6")
+        self.assertEqual(response_json.get("results")[0].get("entity_type_id"), str(entity_type.id))
         self.assertEqual(len(response_json.get("results")[0].get("instances")), 1)
-        self.assertEqual(response_json.get("results")[1].get("entity_type_id"), "6")
+        self.assertEqual(response_json.get("results")[1].get("entity_type_id"), str(entity_type.id))
         self.assertEqual(len(response_json.get("results")[1].get("instances")), 0)
 
     def test_access_via_appid_mobile(self):
@@ -726,10 +723,27 @@ class EntityAPITestCase(APITestCase):
             "birth_date": "1978-07-03",
             "gender": "male",
             "hc": "hc_C",
-            "_version": "A_FORM_ID",
+            "_version": "2022090602",
             "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03e",
         }
         instance_app_id.save()
+
+        entity_type, created = EntityType.objects.get_or_create(
+            name="Type 1",
+            reference_form=self.form_1,
+        )
+
+        entity_app_id = Entity.objects.create(
+            name="New Client",
+            entity_type=entity_type,
+            attributes=instance_app_id,
+            account=self.yoda.iaso_profile.account,
+        )
+
+        instance_app_id.entity = entity_app_id
+        instance_app_id.save()
+
+        FormVersion.objects.create(version_id="2022090602", form_id=instance_app_id.form.id)
 
         self.form_1.instances.add(instance_app_id)
         self.form_1.save()
@@ -739,3 +753,11 @@ class EntityAPITestCase(APITestCase):
         response_json = response.json()
 
         var_dump(response_json)
+
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["entity_type_id"], str(entity_type.id))
+
+        response_entity_instance = response_json["results"][0]["instances"]
+
+        self.assertEqual(response_entity_instance[0]["id"], instance_app_id.uuid)
+        self.assertEqual(response_entity_instance[0]["json"], instance_app_id.json)

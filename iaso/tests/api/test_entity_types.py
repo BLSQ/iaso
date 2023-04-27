@@ -4,25 +4,26 @@ from unittest import mock
 from django.core.files import File
 
 from iaso import models as m
-from iaso.models import EntityType, Instance, Entity, FormVersion
+from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.test import APITestCase
-from iaso.tests.api.workflows.base import var_dump
 
 
 class EntityTypeAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        star_wars = m.Account.objects.create(name="Star Wars")
+        cls.star_wars = m.Account.objects.create(name="Star Wars")
         cls.the_gang = m.Account.objects.create(name="The Gang")
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
         cls.sw_source = sw_source
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        star_wars.default_version = sw_version
-        star_wars.save()
+        cls.star_wars.default_version = sw_version
+        cls.star_wars.save()
         cls.sw_version = sw_version
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_submissions"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=cls.star_wars, permissions=["iaso_submissions"]
+        )
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
@@ -32,7 +33,7 @@ class EntityTypeAPITestCase(APITestCase):
         cls.jedi_council_corruscan_unvalidated = m.OrgUnit.objects.create(name="Coruscant Jedi Council")
 
         cls.project = m.Project.objects.create(
-            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
+            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=cls.star_wars
         )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
@@ -273,11 +274,11 @@ class EntityTypeAPITestCase(APITestCase):
 
         FormVersion.objects.create(version_id="2022090601", form_id=instance.form.id)
 
-        entity_type = EntityType.objects.create(
+        entity_type, created = EntityType.objects.get_or_create(
             name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
         )
 
-        second_entity_type = EntityType.objects.create(
+        second_entity_type, created = EntityType.objects.get_or_create(
             name="children under 5", reference_form=self.form_1, account=self.yoda.iaso_profile.account
         )
 
@@ -317,9 +318,7 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
 
-        var_dump(response.json())
-
-        self.assertEqual(response.json()["count"], 1)
+        self.assertEqual(response.json()["count"], 2)
 
         response_entity_instance = response.json()["results"][0]["instances"]
 
@@ -330,6 +329,64 @@ class EntityTypeAPITestCase(APITestCase):
         response = self.client.get(f"/api/mobile/entitytypes/{second_entity_type.pk}/entities/")
 
         self.assertEqual(response.json()["count"], 1)
+
+    def test_get_entities_by_entity_type_respect_app_id(self):
+        self.client.force_authenticate(self.yoda)
+
+        entity_type, created = EntityType.objects.get_or_create(
+            name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account
+        )
+
+        app_id = "APP_ID"
+
+        project = Project.objects.create(name="Project 1", app_id=app_id, account=self.star_wars)
+
+        instance_app_id = Instance.objects.create(
+            org_unit=self.jedi_council_corruscant,
+            form=self.form_1,
+            period="202002",
+            project=project,
+            uuid="9335359a-9f80-422d-997a-68ae7e39d9g3",
+        )
+        instance_app_id.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
+        instance_app_id.json = {
+            "name": "Prince of Euphor",
+            "father_name": "Professor Procyon",
+            "age_type": 0,
+            "birth_date": "1978-07-03",
+            "gender": "male",
+            "hc": "hc_C",
+            "_version": "2022090602",
+            "instanceID": "uuid:4901dff4-30af-49e2-afd1-42970bb8f03e",
+        }
+        instance_app_id.save()
+
+        FormVersion.objects.create(version_id="2022090602", form_id=instance_app_id.form.id)
+
+        self.form_1.instances.add(instance_app_id)
+        self.form_1.save()
+
+        entity_with_data = Entity.objects.create(
+            name="New Client",
+            account=self.yoda.iaso_profile.account,
+            entity_type=entity_type,
+            attributes=instance_app_id,
+        )
+
+        instance_app_id.entity = entity_with_data
+        instance_app_id.save()
+
+        response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={app_id}")
+
+        response_json = response.json()
+
+        self.assertEqual(response_json["count"], 1)
+        self.assertEqual(response_json["results"][0]["entity_type_id"], str(entity_type.id))
+
+        response_entity_instance = response_json["results"][0]["instances"]
+
+        self.assertEqual(response_entity_instance[0]["id"], instance_app_id.uuid)
+        self.assertEqual(response_entity_instance[0]["json"], instance_app_id.json)
 
     def test_get_entities_by_entity_type_filtered_by_json_content(self):
         self.client.force_authenticate(self.yoda)

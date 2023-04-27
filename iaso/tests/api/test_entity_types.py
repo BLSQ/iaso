@@ -6,6 +6,7 @@ from django.core.files import File
 from iaso import models as m
 from iaso.models import Entity, EntityType, FormVersion, Instance, Project
 from iaso.test import APITestCase
+from iaso.tests.api.workflows.base import var_dump
 
 
 class EntityTypeAPITestCase(APITestCase):
@@ -318,15 +319,21 @@ class EntityTypeAPITestCase(APITestCase):
 
         response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
 
+        var_dump(response.json())
+
         self.assertEqual(response.json()["count"], 2)
 
         response_entity_instance = response.json()["results"][0]["instances"]
+
+        var_dump(response_entity_instance)
 
         self.assertEqual(response_entity_instance[0]["id"], instance.uuid)
         self.assertEqual(response_entity_instance[0]["json"]["muac"], "13")
         self.assertEqual(response_entity_instance[0]["json"], instance.json)
 
         response = self.client.get(f"/api/mobile/entitytypes/{second_entity_type.pk}/entities/")
+
+        var_dump(response)
 
         self.assertEqual(response.json()["count"], 1)
 

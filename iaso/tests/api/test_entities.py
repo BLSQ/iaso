@@ -690,6 +690,8 @@ class EntityAPITestCase(APITestCase):
 
         response_json = response.json()
 
+        var_dump(response_json)
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response_json.get("count"), 2)
         self.assertEqual(response_json.get("results")[0].get("entity_type_id"), str(entity_type.id))

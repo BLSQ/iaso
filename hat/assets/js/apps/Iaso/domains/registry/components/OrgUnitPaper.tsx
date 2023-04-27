@@ -26,12 +26,15 @@ import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgUnitChildrenList } from './OrgUnitChildrenList';
 
 import { RegistryDetailParams, OrgUnitListTab } from '../types';
+import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
 type Props = {
     orgUnit: OrgUnit;
     subOrgUnitTypes: OrgunitTypes;
     params: RegistryDetailParams;
+    orgUnitChildren?: OrgUnitListChildren;
+    isFetchingChildren: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -81,6 +84,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
     params,
+    orgUnitChildren,
+    isFetchingChildren,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState<OrgUnitListTab>(
@@ -165,9 +170,9 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                     )}
                 >
                     <OrgUnitChildrenList
-                        orgUnit={orgUnit}
-                        subOrgUnitTypes={subOrgUnitTypes}
                         params={params}
+                        orgUnitChildren={orgUnitChildren}
+                        isFetchingChildren={isFetchingChildren}
                     />
                 </Box>
             </Box>

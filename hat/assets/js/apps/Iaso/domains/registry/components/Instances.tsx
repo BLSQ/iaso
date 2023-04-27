@@ -96,7 +96,7 @@ export const Instances: FunctionComponent<Props> = ({
                         {subOrgUnitTypes.map(subType => (
                             <Tab
                                 value={subType}
-                                label={subType.name}
+                                label={`${subType.name} (${subType.count})`}
                                 key={subType.id}
                             />
                         ))}

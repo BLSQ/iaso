@@ -13,7 +13,10 @@ import { useGoBack } from '../../routing/useGoBack';
 import { baseUrls } from '../../constants/urls';
 import { getOtChipColors } from '../../constants/chipColors';
 
-import { useGetOrgUnit } from './hooks/useGetOrgUnit';
+import {
+    useGetOrgUnit,
+    useGetOrgUnitListChildren,
+} from './hooks/useGetOrgUnit';
 
 import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
@@ -46,15 +49,24 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
-
+    const { data: orgUnitChildren, isFetching: isFetchingChildren } =
+        useGetOrgUnitListChildren(
+            orgUnitId,
+            params,
+            orgUnit?.org_unit_type?.sub_unit_types,
+        );
     const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
         const options =
             orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
                 ...subType,
                 color: getOtChipColors(index) as string,
+                count: (orgUnitChildren?.orgunits || []).filter(
+                    subOrgUnit => subOrgUnit.org_unit_type_id === subType.id,
+                ).length,
             })) || [];
         return orderBy(options, [f => f.depth], ['asc']);
-    }, [orgUnit]);
+    }, [orgUnit, orgUnitChildren]);
+
     return (
         <>
             <TopBar
@@ -81,6 +93,8 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 orgUnit={orgUnit}
                                 subOrgUnitTypes={subOrgUnitTypes}
                                 params={params}
+                                orgUnitChildren={orgUnitChildren}
+                                isFetchingChildren={isFetchingChildren}
                             />
                         </Grid>
                         <Grid

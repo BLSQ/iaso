@@ -34,7 +34,16 @@ class SourceVersionSerializerForGroup(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ["id", "name", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "name",
+            "source_ref",
+            "source_version",
+            "org_unit_count",
+            "created_at",
+            "updated_at",
+            "to_display",
+        ]
         read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
         ref_name = "iaso_group_serializer"
 

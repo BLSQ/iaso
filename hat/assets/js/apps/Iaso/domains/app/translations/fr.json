@@ -234,6 +234,7 @@
     "iaso.groups.create": "Créer un groupe",
     "iaso.groups.dialog.delete": "Etes-cous certain de vouloir effacer ce groupe?",
     "iaso.groups.dialog.deleteText": "Cette opération est définitive.",
+    "iaso.groups.groupToBeDisplayed": "Groupe à afficher",
     "iaso.groups.sourceVersion": "Version de la source",
     "iaso.groups.update": "Mettre le groupe à jour",
     "iaso.hospital": "Hôpital",

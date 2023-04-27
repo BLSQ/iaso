@@ -237,6 +237,7 @@
     "iaso.groups.create": "Create group",
     "iaso.groups.dialog.delete": "Are you sure you want to delete this group?",
     "iaso.groups.dialog.deleteText": "This operation cannot be undone.",
+    "iaso.groups.groupToBeDisplayed": "Group to be displayed",
     "iaso.groups.sourceVersion": "Source version",
     "iaso.groups.update": "Update group",
     "iaso.hospital": "Hospital",

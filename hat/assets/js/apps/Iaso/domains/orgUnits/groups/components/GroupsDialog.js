@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import get from 'lodash/get';
 import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
-
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 
@@ -16,6 +15,7 @@ const initialGroup = currentGroup => {
             value: get(currentGroup, 'source_ref', ''),
             errors: [],
         },
+        to_display: { value: get(currentGroup, 'to_display'), errors: [] },
     };
 };
 
@@ -52,7 +52,9 @@ const GroupDialog = ({
             id: initialData?.id,
             name: group.name.value,
             source_ref: group.source_ref.value,
+            to_display: group.to_display.value,
         };
+
         saveGroup(currentGroup)
             .then(() => {
                 closeDialog();
@@ -107,6 +109,14 @@ const GroupDialog = ({
                         errors={group.source_ref.errors}
                         type="text"
                         label={MESSAGES.sourceRef}
+                    />
+                    <InputComponent
+                        keyValue="to_display"
+                        value={group.to_display.value}
+                        onChange={(key, value) => setFieldValue(key, value)}
+                        type="checkbox"
+                        errors={group.to_display.errors}
+                        label={MESSAGES.groupToBeDisplayed}
                     />
                 </Grid>
             </Grid>

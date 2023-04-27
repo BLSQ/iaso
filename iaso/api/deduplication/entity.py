@@ -31,23 +31,22 @@ class EntityDuplicateViewSet(viewsets.ViewSet):
     GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
     PATCH /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
     """
+
     # filter_backends = [
     # filters.OrderingFilter,
     # DjangoFilterBackend,
-    # ]   
-    
+    # ]
+
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
     serializer_class = EntityDuplicateSerializer
     results_key = "results"
-    
+
     def get_queryset(self):
-        return EntityDuplicate.objects.all();
-    
-    
+        return EntityDuplicate.objects.all()
+
     # Copied from common.py
     def pagination_class(self):
         return Paginator(self.results_key)
-
 
     def list(self, request, *args, **kwargs):
         """

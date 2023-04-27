@@ -100,7 +100,6 @@ class Form(SoftDeletableModel):
 
     summable_fields = ArrayField(models.CharField(max_length=255), blank=True, null=True)
     averageable_fields = ArrayField(models.CharField(max_length=255), blank=True, null=True)
-    should_compute_sums_averages = models.BooleanField(default=False)
 
     objects = DefaultSoftDeletableManager.from_queryset(FormQuerySet)()
 

@@ -1,8 +1,9 @@
-from django.http import HttpResponseBadRequest
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import permissions
+from rest_framework.exceptions import ParseError
+
 
 from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
 from iaso.api.query_params import LIMIT, PAGE
@@ -17,9 +18,9 @@ def filter_for_mobile_entity(queryset, request):
                 request.query_params.get("limit_date"), request.query_params.get("json_content")
             )
         except InvalidLimitDateError as e:
-            raise HttpResponseBadRequest(e)
+            raise ParseError(e.message)
         except InvalidJsonContentError as e:
-            raise HttpResponseBadRequest(e)
+            raise ParseError(e.message)
 
     return queryset
 

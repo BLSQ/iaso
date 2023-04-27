@@ -1,12 +1,11 @@
-from django.http import HttpResponseBadRequest
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
+from rest_framework.exceptions import ParseError
 
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.api.mobile.entity import LargeResultsSetPagination, MobileEntitySerializer, filter_for_mobile_entity
 from iaso.models import Entity, EntityType
-from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):
@@ -84,10 +83,10 @@ class MobileEntityTypesViewSet(ModelViewSet):
         type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
 
         if not app_id:
-            raise HttpResponseBadRequest("app_id is required")
+            raise ParseError("app_id is required")
 
         if not type_pk:
-            raise HttpResponseBadRequest("type_pk is required")
+            raise ParseError("type_pk is required")
 
         queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
 

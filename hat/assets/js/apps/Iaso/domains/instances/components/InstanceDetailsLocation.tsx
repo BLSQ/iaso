@@ -107,21 +107,18 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         />
                     </>
                 )}
-                {currentInstance.org_unit?.altitude !== 0 &&
-                    currentInstance.altitude === 0 && (
-                        <InstanceDetailsField
-                            label={formatMessage(MESSAGES.altitude)}
-                            value={currentInstance.org_unit?.altitude}
-                        />
-                    )}
-
-                {currentInstance.altitude !== 0 &&
-                    currentInstance.org_unit?.altitude === 0 && (
-                        <InstanceDetailsField
-                            label={formatMessage(MESSAGES.altitude)}
-                            value={currentInstance.org_unit?.altitude}
-                        />
-                    )}
+                {currentInstance.altitude !== null &&
+                currentInstance.altitude !== 0 ? (
+                    <InstanceDetailsField
+                        label={formatMessage(MESSAGES.altitude)}
+                        value={currentInstance.altitude}
+                    />
+                ) : (
+                    <InstanceDetailsField
+                        label={formatMessage(MESSAGES.altitude)}
+                        value={currentInstance.org_unit?.altitude}
+                    />
+                )}
 
                 {currentInstance.accuracy && (
                     <InstanceDetailsField

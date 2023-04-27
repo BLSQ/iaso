@@ -11,20 +11,49 @@ import { makeUrlWithParams } from '../../../libs/utils';
 import { RegistryDetailParams } from '../types';
 import { defaultSorted } from '../config';
 
+type ApiParams = {
+    orgUnitTypeId?: number;
+    form_ids?: string;
+    limit: string;
+    order: string;
+    page: string;
+    showDeleted: false;
+    orgUnitParentId: string;
+};
+
+type InstanceApi = {
+    url: string;
+    apiParams: ApiParams;
+};
+
+export const useGetInstanceApi = (
+    params: RegistryDetailParams,
+    orgUnitTypeId?: number,
+): InstanceApi => {
+    const apiParams: ApiParams = {
+        orgUnitTypeId,
+        form_ids: params.formIds,
+        limit: params.pageSize || '20',
+        order: params.order || getSort(defaultSorted),
+        page: params.page || '1',
+        showDeleted: false,
+        orgUnitParentId: params.orgUnitId,
+    };
+    const url = makeUrlWithParams(
+        '/api/instances/',
+        apiParams as Record<string, any>,
+    );
+    return {
+        apiParams,
+        url,
+    };
+};
+
 export const useGetInstances = (
     params: RegistryDetailParams,
     orgUnitTypeId?: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
-    const apiParams: Record<string, any> = {
-        orgUnitTypeId,
-        form_ids: params.formIds,
-        limit: params.pageSize || 20,
-        order: params.order || getSort(defaultSorted),
-        page: params.page || 1,
-        showDeleted: false,
-        orgUnitParentId: params.orgUnitId,
-    };
-    const url = makeUrlWithParams('/api/instances/', apiParams);
+    const { apiParams, url } = useGetInstanceApi(params, orgUnitTypeId);
     return useSnackQuery({
         queryKey: ['registry-instances', apiParams],
         queryFn: () => getRequest(url),

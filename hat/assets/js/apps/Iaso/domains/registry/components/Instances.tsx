@@ -7,6 +7,7 @@ import React, {
 import { Box, Tabs, Tab, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
@@ -20,7 +21,7 @@ import { Column } from '../../../types/table';
 import { Form } from '../../forms/types/forms';
 
 import { useGetForms } from '../hooks/useGetForms';
-import { useGetInstances } from '../hooks/useGetInstances';
+import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
@@ -54,6 +55,8 @@ export const Instances: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
 
     const { data: formsList, isFetching: isFetchingForms } = useGetForms();
+
+    const { url: apiUrl } = useGetInstanceApi(params, currentType?.id);
     const { data, isFetching: isFetchingList } = useGetInstances(
         params,
         currentType?.id,
@@ -146,6 +149,20 @@ export const Instances: FunctionComponent<Props> = ({
                                         )}
                                     />
                                 )}
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    width="100%"
+                                    mt={2}
+                                >
+                                    <DownloadButtonsComponent
+                                        csvUrl={`${apiUrl}&csv=true`}
+                                        xlsxUrl={`${apiUrl}&xlsx=true`}
+                                        disabled={
+                                            isFetchingList || data?.count === 0
+                                        }
+                                    />
+                                </Box>
                             </Grid>
                         </Grid>
                         <TableWithDeepLink

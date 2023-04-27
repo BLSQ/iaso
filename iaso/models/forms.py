@@ -98,6 +98,10 @@ class Form(SoftDeletableModel):
     uuid = models.UUIDField(default=uuid4, unique=True)
     label_keys = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
+    summable_fields = ArrayField(models.CharField(max_length=255), blank=True, null=True)
+    averageable_fields = ArrayField(models.CharField(max_length=255), blank=True, null=True)
+    should_compute_sums_averages = models.BooleanField(default=False)
+
     objects = DefaultSoftDeletableManager.from_queryset(FormQuerySet)()
 
     objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(FormQuerySet)()

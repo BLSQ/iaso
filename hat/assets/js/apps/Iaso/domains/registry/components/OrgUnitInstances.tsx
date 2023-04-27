@@ -150,8 +150,9 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
                     className={classes.paper}
                     elevation={1}
                     title={`${currentInstance.form_name}${
-                        currentInstance.id === orgUnit.reference_instance?.id &&
-                        ` (${formatMessage(MESSAGES.referenceInstance)})`
+                        currentInstance.id === orgUnit.reference_instance?.id
+                            ? ` (${formatMessage(MESSAGES.referenceInstance)})`
+                            : ''
                     }`}
                     IconButton={
                         userHasPermission(

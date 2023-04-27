@@ -148,11 +148,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                     style={() => ({
                                         color: theme.palette.secondary.main,
                                     })}
-                                >
-                                    <Tooltip permanent={showTooltip}>
-                                        {orgUnit.name}
-                                    </Tooltip>
-                                </GeoJSON>
+                                />
                             </Pane>
                         )}
                         {orgUnit.latitude && orgUnit.longitude && (
@@ -161,11 +157,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                     latitude: orgUnit.latitude,
                                     longitude: orgUnit.longitude,
                                 }}
-                                TooltipComponent={() => (
-                                    <Tooltip permanent={showTooltip}>
-                                        {orgUnit.name}
-                                    </Tooltip>
-                                )}
                                 markerProps={() => ({
                                     ...circleColorMarkerOptions(
                                         theme.palette.secondary.main,

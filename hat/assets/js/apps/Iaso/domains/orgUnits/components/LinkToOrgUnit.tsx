@@ -2,7 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core';
 import classNames from 'classnames';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    useKeyPressListener,
+} from 'bluesquare-components';
 
 import { Link } from 'react-router';
 import { userHasPermission } from '../../users/utils';
@@ -19,6 +22,8 @@ type Props = {
     useIcon?: boolean;
     className?: string;
     replace?: boolean;
+    iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
 };
 
 const useStyles = makeStyles(() => ({
@@ -32,14 +37,19 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
     useIcon = false,
     className = '',
     replace = false,
+    iconSize = 'medium',
+    size = 'medium',
 }) => {
     const user = useCurrentUser();
+    const targetBlankEnabled = useKeyPressListener('Meta');
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     if (userHasPermission('iaso_org_units', user) && orgUnit) {
         const url = `/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`;
         const handleClick = () => {
-            if (replace) {
+            if (targetBlankEnabled) {
+                window.open(`/dashboard${url}`, '_blank');
+            } else if (replace) {
                 dispatch(redirectToReplace(url));
             } else {
                 dispatch(redirectTo(url));
@@ -51,6 +61,8 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
                     onClick={handleClick}
                     icon="remove-red-eye"
                     tooltipMessage={MESSAGES.details}
+                    iconSize={iconSize}
+                    size={size}
                 />
             );
         }
@@ -63,5 +75,6 @@ export const LinkToOrgUnit: FunctionComponent<Props> = ({
             </Link>
         );
     }
+    if (useIcon) return null;
     return <>{orgUnit ? orgUnit.name : '-'}</>;
 };

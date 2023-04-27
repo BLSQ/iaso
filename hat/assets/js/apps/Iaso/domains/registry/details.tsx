@@ -55,7 +55,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             })) || [];
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit]);
-
     return (
         <>
             <TopBar
@@ -66,7 +65,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             <Box className={`${classes.containerFullHeightNoTabPadded}`}>
                 {isFetching && <LoadingSpinner />}
 
-                {orgUnit && (
+                {!isFetching && orgUnit && (
                     <Grid container spacing={2}>
                         {orgUnit && (
                             <Grid item xs={12}>

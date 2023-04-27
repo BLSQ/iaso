@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core';
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    useKeyPressListener,
+} from 'bluesquare-components';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import { Link } from 'react-router';
 import classNames from 'classnames';
@@ -19,6 +22,8 @@ type Props = {
     useIcon?: boolean;
     className?: string;
     replace?: boolean;
+    iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
 };
 
 const useStyles = makeStyles(() => ({
@@ -26,19 +31,26 @@ const useStyles = makeStyles(() => ({
         cursor: 'pointer',
     },
 }));
+
 export const LinkToRegistry: FunctionComponent<Props> = ({
     orgUnit,
     useIcon = false,
     className = '',
     replace = false,
+    iconSize = 'medium',
+    size = 'medium',
 }) => {
     const user = useCurrentUser();
+
+    const targetBlankEnabled = useKeyPressListener('Meta');
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     if (userHasPermission('iaso_registry', user) && orgUnit) {
         const url = `/${baseUrls.registryDetail}/orgUnitId/${orgUnit?.id}`;
         const handleClick = () => {
-            if (replace) {
+            if (targetBlankEnabled) {
+                window.open(`/dashboard${url}`, '_blank');
+            } else if (replace) {
                 dispatch(redirectToReplace(url));
             } else {
                 dispatch(redirectTo(url));
@@ -50,6 +62,8 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
                     onClick={handleClick}
                     overrideIcon={MenuBookIcon}
                     tooltipMessage={MESSAGES.seeRegistry}
+                    iconSize={iconSize}
+                    size={size}
                 />
             );
         }
@@ -62,5 +76,6 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
             </Link>
         );
     }
+    if (useIcon) return null;
     return <>{orgUnit ? orgUnit.name : '-'}</>;
 };

@@ -109,7 +109,7 @@ class MobileEntityViewSet(ModelViewSet):
         app_id = self.request.query_params.get("app_id")
 
         if not app_id:
-            raise Http400("app_id is required")
+            raise ParseError("app_id is required")
 
         queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
 

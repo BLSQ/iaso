@@ -19,6 +19,7 @@ const getBudgets = (params: any) => {
     if (!params.order) {
         filteredParams.push(['order', '-cvdpv2_notified_at']);
     }
+
     const queryString = new URLSearchParams(
         Object.fromEntries(filteredParams) as Record<string, any>,
     ).toString();
@@ -33,6 +34,7 @@ export const useGetBudgets = (options: any): any => {
         search: options.search,
         budget_current_state_key__in: options.budget_current_state_key__in,
         country__id__in: options.country__id__in,
+        orgUnitGroups: options.orgUnitGroups,
         fields: 'id,obr_name,country_name,current_state,cvdpv2_notified_at,possible_states,budget_last_updated_at',
     };
 
@@ -53,6 +55,7 @@ export const useBudgetParams = params => {
             roundStartTo: getApiParamDateString(params.roundStartTo),
             budget_current_state_key__in: params.budget_current_state_key__in,
             country__id__in: params?.country__id__in,
+            orgUnitGroups: params?.orgUnitGroups,
         };
     }, [
         params?.order,
@@ -63,6 +66,7 @@ export const useBudgetParams = params => {
         params.roundStartTo,
         params.budget_current_state_key__in,
         params?.country__id__in,
+        params?.orgUnitGroups,
     ]);
 };
 

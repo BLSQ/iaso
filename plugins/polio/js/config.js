@@ -247,6 +247,10 @@ const routes = [
                 isRequired: false,
                 key: 'country__id__in',
             },
+            {
+                isRequired: false,
+                key: 'orgUnitGroups',
+            },
         ],
     },
     {

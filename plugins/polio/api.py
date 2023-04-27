@@ -137,7 +137,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         "cvdpv2_notified_at": ["gte", "lte", "range"],
         "created_at": ["gte", "lte", "range"],
         "rounds__started_at": ["gte", "lte", "range"],
-        "initial_org_unit__groups__id": ["in", "exact"],
     }
 
     # We allow anonymous read access for the embeddable calendar map view
@@ -266,6 +265,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
         search = params.get("search")
+        org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
+
         rounds = Round.objects.filter(started_at__year=year)
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
@@ -279,6 +280,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
+        if org_unit_groups:
+            rounds = rounds.filter(campaign__initial_org_unit__groups__in=org_unit_groups.split(","))
 
         return self.loop_on_rounds(self, rounds)
 

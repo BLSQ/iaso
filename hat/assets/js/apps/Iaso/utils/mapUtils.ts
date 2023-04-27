@@ -3,6 +3,7 @@
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
+import isNumber from 'lodash/isNumber';
 import { injectIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import { MapControl, withLeaflet } from 'react-leaflet';
@@ -237,8 +238,7 @@ export const getOrgUnitBounds = (orgUnit: OrgUnit): Bounds | undefined => {
     const locations: { latitude: number; longitude: number }[] = [];
     if (orgUnit.geo_json) {
         bounds = L.geoJSON(orgUnit.geo_json).getBounds();
-    }
-    if (orgUnit.latitude && orgUnit.longitude) {
+    } else if (isNumber(orgUnit.latitude) && isNumber(orgUnit.longitude)) {
         locations.push(L.latLng(orgUnit.latitude, orgUnit.longitude));
         const locationsBounds: Bounds | undefined = L.latLngBounds(locations);
         bounds = locationsBounds;

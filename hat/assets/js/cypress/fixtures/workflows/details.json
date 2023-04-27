@@ -13,33 +13,6 @@
     },
     "created_at": "2023-02-15T15:03:35.247236Z",
     "updated_at": "2023-02-15T15:03:35.247252Z",
-    "changes": [
-        {
-            "id": 1,
-            "form": {
-                "id": 2,
-                "name": "FORM_2"
-            },
-            "mapping": {
-                "firstName": "first_name",
-                "LastName": "last_name"
-            },
-            "created_at": "2023-01-31T11:04:21.120249Z",
-            "updated_at": "2023-01-31T11:04:21.120270Z"
-        },
-        {
-            "id": 2,
-            "form": {
-                "id": 3,
-                "name": "FORM_3"
-            },
-            "mapping": {
-                "name": "last_name"
-            },
-            "created_at": "2023-01-31T11:04:21.127004Z",
-            "updated_at": "2023-01-31T11:04:21.127041Z"
-        }
-    ],
     "follow_ups": [
         {
             "id": 1,

@@ -1,4 +1,4 @@
-from django.http import Http404
+from django.http import Http400
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
@@ -8,6 +8,20 @@ from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField,
 from iaso.api.query_params import LIMIT, PAGE
 from iaso.models import Entity, FormVersion, Instance, OrgUnit
 from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError
+
+
+def filter_for_mobile_entity(queryset, request):
+    if queryset:
+        try:
+            queryset = queryset.filter_for_mobile_entity(
+                request.query_params.get("limit_date"), request.query_params.get("json_content")
+            )
+        except InvalidLimitDateError as e:
+            raise Http400(e)
+        except InvalidJsonContentError as e:
+            raise Http400(e)
+
+    return queryset
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -93,22 +107,19 @@ class MobileEntityViewSet(ModelViewSet):
         user = self.request.user
         app_id = self.request.query_params.get("app_id")
 
+        if not app_id:
+            raise Http400("app_id is required")
+
         queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
 
-        if queryset:
-            try:
-                queryset = queryset.filter_for_mobile_entity(
-                    self.request.query_params.get("limit_date"), self.request.query_params.get("json_content")
-                )
-            except InvalidLimitDateError as e:
-                raise Http404(e)
-            except InvalidJsonContentError as e:
-                raise Http404(e)
+        filter_for_mobile_entity(queryset, self.request)
 
         # we give all entities having an instance linked to the one of the org units allowed for the current user
         if queryset and user and user.is_authenticated:
             orgunits = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             if orgunits and len(orgunits) > 0:
                 queryset = queryset.filter(instances__org_unit__in=orgunits)
+            else:
+                queryset = queryset.none()
 
         return queryset

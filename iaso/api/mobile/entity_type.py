@@ -1,10 +1,10 @@
-from django.http import Http404
+from django.http import Http400
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
 
 from iaso.api.common import ModelViewSet, TimestampField
-from iaso.api.mobile.entity import LargeResultsSetPagination, MobileEntitySerializer
+from iaso.api.mobile.entity import LargeResultsSetPagination, MobileEntitySerializer, filter_for_mobile_entity
 from iaso.models import Entity, EntityType
 from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError
 
@@ -81,22 +81,20 @@ class MobileEntityTypesViewSet(ModelViewSet):
     def get_entities_by_types(self, *args, **kwargs):
         user = self.request.user
         app_id = self.request.query_params.get("app_id")
+        type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
+
+        if not app_id:
+            raise Http400("app_id is required")
+
+        if not type_pk:
+            raise Http400("type_pk is required")
 
         queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
 
         if queryset:
-            type_pk = self.request.parser_context.get("kwargs").get("type_pk", None)
-
             queryset = queryset.filter(entity_type__pk=type_pk)
 
-            try:
-                queryset = queryset.filter_for_mobile_entity(
-                    self.request.query_params.get("limit_date"), self.request.query_params.get("json_content")
-                )
-            except InvalidLimitDateError as e:
-                raise Http404(e)
-            except InvalidJsonContentError as e:
-                raise Http404(e)
+        filter_for_mobile_entity(queryset, self.request)
 
         page = self.paginate_queryset(queryset)
         serializer = MobileEntitySerializer(page, many=True)

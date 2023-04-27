@@ -16,6 +16,7 @@ from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
 from iaso.models import Group
 from .models import (
+    Config,
     Round,
     LineListImport,
     VIRUSES,
@@ -1167,3 +1168,12 @@ class ExportCampaignSerializer(CampaignSerializer):
             "outbreak_declaration_date",
         ]
         read_only_fields = fields
+
+
+class ConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Config
+        fields = ["created_at", "updated_at", "key", "data"]
+
+    data = serializers.JSONField(source="content")  # type: ignore
+    key = serializers.CharField(source="slug")

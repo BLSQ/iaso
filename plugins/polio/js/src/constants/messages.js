@@ -215,6 +215,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
     },
+    positiveRangeInteger: {
+        id: 'iaso.polio.form.validator.error.positiveRangeInteger',
+        defaultMessage: 'Please use a positive integer between 0 and 100',
+    },
     positiveNumber: {
         id: 'iaso.polio.form.validator.error.positiveNumber',
         defaultMessage: 'Please use a positive number',

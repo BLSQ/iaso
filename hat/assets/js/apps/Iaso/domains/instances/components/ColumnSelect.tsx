@@ -109,10 +109,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         order: params.order,
         defaultOrder,
     });
-    const getInstancesColumns = useGetInstancesColumns(
-        params.showDeleted === 'true',
-        getActionCell,
-    );
+    const getInstancesColumns = useGetInstancesColumns(getActionCell);
     const handleChangeVisibleColmuns = cols => {
         const columns = cols.filter(c => c.active);
         const newParams: Params = {

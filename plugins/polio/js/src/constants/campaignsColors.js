@@ -3,7 +3,6 @@ import {
     purple,
     indigo,
     blue,
-    lightBlue,
     cyan,
     teal,
     lightGreen,
@@ -17,21 +16,20 @@ import {
 } from '@material-ui/core/colors';
 
 const colors = [
-    teal[500],
+    teal[800],
     lightGreen[800],
     purple[800],
-    blue[500],
-    amber[500],
-    lightBlue[500],
-    lime[500],
-    brown[500],
-    grey[500],
-    cyan[500],
-    blueGrey[500],
-    pink[500],
-    indigo[500],
-    yellow[500],
-    deepOrange[700],
+    blue[800],
+    amber[800],
+    lime[800],
+    brown[800],
+    grey[800],
+    cyan[800],
+    blueGrey[800],
+    pink[800],
+    indigo[800],
+    yellow[800],
+    deepOrange[800],
 ];
 
 const getCampaignColor = (i, reverse = false) => {

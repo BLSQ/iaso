@@ -542,6 +542,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.accuracy',
         defaultMessage: 'Accuracy',
     },
+    created_by: {
+        id: 'iaso.label.created_by',
+        defaultMessage: 'Created  by',
+    },
 });
 
 export default MESSAGES;

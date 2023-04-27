@@ -121,6 +121,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Show names',
         id: 'iaso.registry.showNames',
     },
+    source: {
+        defaultMessage: 'Source',
+        id: 'iaso.forms.source',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
 });
 
 export default MESSAGES;

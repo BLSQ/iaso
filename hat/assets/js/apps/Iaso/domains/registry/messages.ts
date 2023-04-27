@@ -133,6 +133,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Actions',
         id: 'iaso.label.actions',
     },
+    deleteTitle: {
+        id: 'iaso.instance.deleteTitle',
+        defaultMessage: 'Are you sure you want to delete this submission?',
+    },
+    deleteText: {
+        id: 'iaso.instance.deleteText',
+        defaultMessage: 'Undelete is possible on submission detail page',
+    },
 });
 
 export default MESSAGES;

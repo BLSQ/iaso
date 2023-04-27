@@ -245,6 +245,8 @@
     "iaso.instance.delete": "Delete instance(s)",
     "iaso.instance.deleteCount": "Delete {count} instance(s)",
     "iaso.instance.deleteInstanceWarning": "This operation can still be undone",
+    "iaso.instance.deleteText": "Undelete is possible on submission detail page",
+    "iaso.instance.deleteTitle": "Are you sure you want to delete this submission?",
     "iaso.instance.device": "IMEI device",
     "iaso.instance.dialog.editGpsFromInstanceTitle": "Are you sure you want to push GPS from submission to the org unit. ?",
     "iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle": "Are you sure you want to unlink this reference submission from the orgUnit ?",

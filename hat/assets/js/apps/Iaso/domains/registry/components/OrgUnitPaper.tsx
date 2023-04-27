@@ -107,7 +107,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     );
     return (
         <Paper elevation={1} className={classes.paper}>
-            <Box className={classes.paperTitle}>
+            <Grid container className={classes.paperTitle}>
                 <Grid xs={8} item>
                     <Typography
                         color="primary"
@@ -134,14 +134,13 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                         <IconButton
                             url={`${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`}
                             color="secondary"
-                            icon="edit"
+                            icon="remove-red-eye"
                             tooltipMessage={MESSAGES.editOrgUnit}
                         />
                     </Box>
                 </Grid>
-
-                <Divider />
-            </Box>
+            </Grid>
+            <Divider />
             <Tabs
                 value={tab}
                 classes={{

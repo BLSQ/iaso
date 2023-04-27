@@ -129,6 +129,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.close',
         defaultMessage: 'Close',
     },
+    actions: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
 });
 
 export default MESSAGES;

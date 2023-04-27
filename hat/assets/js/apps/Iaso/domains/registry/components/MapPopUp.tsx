@@ -49,12 +49,14 @@ export const MapPopUp: FunctionComponent<Props> = ({ orgUnit }) => {
             <Card className={classes.popupCard}>
                 <Box display="flex" justifyContent="flex-end" px={1} py="4px">
                     <Box mr="auto">
-                        <LinkToOrgUnit
-                            orgUnit={orgUnit}
-                            useIcon
-                            iconSize="small"
-                            size="small"
-                        />
+                        <Box display="inline-block" mr={1}>
+                            <LinkToOrgUnit
+                                orgUnit={orgUnit}
+                                useIcon
+                                iconSize="small"
+                                size="small"
+                            />
+                        </Box>
                         <LinkToRegistry
                             orgUnit={orgUnit}
                             replace

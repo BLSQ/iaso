@@ -3,7 +3,6 @@ import { useSafeIntl } from 'bluesquare-components';
 import { Tooltip, Box } from '@material-ui/core';
 import LocationOnIcon from '@material-ui/icons/LocationOn';
 import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import MapIcon from '@material-ui/icons/Map';
 
 import { IntlFormatMessage } from '../../types/intl';
@@ -17,6 +16,7 @@ import { LinkToRegistry } from './components/LinkToRegistry';
 
 import MESSAGES from './messages';
 import ShapeSvg from '../../components/svg/ShapeSvgComponent';
+import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
 
@@ -162,20 +162,28 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
             },
         },
         {
-            Header: (
-                <Box position="relative" top={4} left={2}>
-                    <AccountTreeIcon fontSize="small" color="inherit" />
-                </Box>
-            ),
+            Header: formatMessage(MESSAGES.actions),
             id: 'see',
             sortable: false,
             width: 50,
             Cell: settings => (
-                <LinkToRegistry
-                    orgUnit={settings.row.original}
-                    replace
-                    useIcon
-                />
+                <>
+                    <Box display="inline-block" mr={1}>
+                        <LinkToOrgUnit
+                            orgUnit={settings.row.original}
+                            useIcon
+                            size="small"
+                            iconSize="small"
+                        />
+                    </Box>
+                    <LinkToRegistry
+                        orgUnit={settings.row.original}
+                        replace
+                        useIcon
+                        size="small"
+                        iconSize="small"
+                    />
+                </>
             ),
         },
     ];

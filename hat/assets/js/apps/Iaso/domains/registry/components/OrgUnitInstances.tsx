@@ -5,7 +5,14 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, makeStyles, Paper, Typography } from '@material-ui/core';
+import {
+    Box,
+    makeStyles,
+    Paper,
+    Typography,
+    Grid,
+    Divider,
+} from '@material-ui/core';
 import moment from 'moment';
 import { useDispatch } from 'react-redux';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
@@ -18,7 +25,6 @@ import { useGetEnketoUrl } from '../hooks/useGetEnketoUrl';
 import { useCurrentUser } from '../../../utils/usersUtils';
 
 import InputComponent from '../../../components/forms/InputComponent';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 
@@ -30,6 +36,7 @@ import {
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { RegistryDetailParams } from '../types';
+import { LinkToInstance } from '../../instances/components/LinkToInstance';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -59,6 +66,18 @@ const useStyles = makeStyles(theme => ({
     emptyPaperIcon: {
         display: 'inline-block',
         marginRight: theme.spacing(1),
+    },
+    paperTitle: {
+        padding: theme.spacing(2),
+        display: 'flex',
+    },
+    paperTitleButtonContainer: {
+        position: 'relative',
+    },
+    paperTitleButton: {
+        position: 'absolute',
+        right: -theme.spacing(1),
+        top: -theme.spacing(1),
     },
 }));
 
@@ -145,35 +164,59 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
                 </Box>
             )}
             {currentInstance && (
-                <WidgetPaper
-                    id="form-contents"
-                    className={classes.paper}
-                    elevation={1}
-                    title={`${currentInstance.form_name}${
-                        currentInstance.id === orgUnit.reference_instance?.id
-                            ? ` (${formatMessage(MESSAGES.referenceInstance)})`
-                            : ''
-                    }`}
-                    IconButton={
-                        userHasPermission(
-                            'iaso_update_submission',
-                            currentUser,
-                        ) && IconButton
-                    }
-                    iconButtonProps={{
-                        onClick: () => getEnketoUrl(),
-                        overrideIcon: EnketoIcon,
-                        color: 'secondary',
-                        tooltipMessage: MESSAGES.editOnEnketo,
-                    }}
-                >
+                <Paper elevation={1} className={classes.paper}>
+                    <Grid container className={classes.paperTitle}>
+                        <Grid xs={8} item>
+                            <Typography
+                                color="primary"
+                                variant="h5"
+                                className={classes.title}
+                            >
+                                {`${currentInstance.form_name}${
+                                    currentInstance.id ===
+                                    orgUnit.reference_instance?.id
+                                        ? ` (${formatMessage(
+                                              MESSAGES.referenceInstance,
+                                          )})`
+                                        : ''
+                                }`}
+                            </Typography>
+                        </Grid>
+                        <Grid
+                            xs={4}
+                            item
+                            container
+                            justifyContent="flex-end"
+                            className={classes.paperTitleButtonContainer}
+                        >
+                            <Box className={classes.paperTitleButton}>
+                                {userHasPermission(
+                                    'iaso_update_submission',
+                                    currentUser,
+                                ) && (
+                                    <IconButton
+                                        onClick={() => getEnketoUrl()}
+                                        overrideIcon={EnketoIcon}
+                                        color="secondary"
+                                        tooltipMessage={MESSAGES.editOnEnketo}
+                                    />
+                                )}
+                                <LinkToInstance
+                                    instanceId={`${currentInstance.id}`}
+                                    useIcon
+                                    color="secondary"
+                                />
+                            </Box>
+                        </Grid>
+                    </Grid>
+                    <Divider />
                     <Box className={classes.formContents}>
                         <InstanceFileContent
                             instance={currentInstance}
                             showQuestionKey={false}
                         />
                     </Box>
-                </WidgetPaper>
+                </Paper>
             )}
         </Box>
     );

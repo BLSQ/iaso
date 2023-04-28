@@ -29,9 +29,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.groups.sourceVersion',
         defaultMessage: 'Source version',
     },
-    groupToBeDisplayed: {
-        defaultMessage: 'Group to be displayed',
-        id: 'iaso.groups.groupToBeDisplayed',
+    blockOfCountries: {
+        defaultMessage: 'Block of countries',
+        id: 'iaso.groups.blockOfCountries',
     },
     sourceRef: {
         defaultMessage: 'Source ref',

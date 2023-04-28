@@ -41,7 +41,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroups({ displayed: 'True' });
+        useGetGroups({ blockOfCountries: 'True' });
     const countriesList = (data && data.orgUnits) || [];
     return (
         <Box mb={4}>
@@ -58,6 +58,17 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         blockForbiddenChars
                     />
                     <InputComponent
+                        type="select"
+                        multi={false}
+                        keyValue="budget_current_state_key__in"
+                        onChange={handleChange}
+                        value={filters.budget_current_state_key__in}
+                        options={statesList}
+                        label={MESSAGES.status}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <InputComponent
                         loading={isFetchingGroupedOrgUnits}
                         keyValue="orgUnitGroups"
                         multi
@@ -66,18 +77,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         value={filters.orgUnitGroups}
                         type="select"
                         options={groupedOrgUnits}
-                        label={MESSAGES.group}
-                    />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                    <InputComponent
-                        type="select"
-                        multi={false}
-                        keyValue="budget_current_state_key__in"
-                        onChange={handleChange}
-                        value={filters.budget_current_state_key__in}
-                        options={statesList}
-                        label={MESSAGES.status}
+                        label={MESSAGES.countryBlock}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>

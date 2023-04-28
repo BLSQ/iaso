@@ -11,29 +11,29 @@ import { staleTime } from '../../config';
 type Props = {
     dataSourceId?: number;
     sourceVersionId?: number;
-    displayed?: string;
+    blockOfCountries?: string;
 };
 
 const makeGroupsQueryParams = ({
     dataSourceId,
     sourceVersionId,
-    displayed,
+    blockOfCountries,
 }) => {
     if (sourceVersionId) return `?version=${sourceVersionId}`;
     if (dataSourceId) return `?dataSource=${dataSourceId}`;
-    if (displayed) return `?toDisplay=${displayed}`;
+    if (blockOfCountries) return `?blockOfCountries=${blockOfCountries}`;
     return '';
 };
 
 export const useGetGroups = ({
     dataSourceId,
     sourceVersionId,
-    displayed,
+    blockOfCountries,
 }: Props): UseQueryResult<DropdownOptions<string>[], Error> => {
     const groupsQueryParams = makeGroupsQueryParams({
         dataSourceId,
         sourceVersionId,
-        displayed,
+        blockOfCountries,
     });
 
     return useSnackQuery({

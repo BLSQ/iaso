@@ -15,7 +15,10 @@ const initialGroup = currentGroup => {
             value: get(currentGroup, 'source_ref', ''),
             errors: [],
         },
-        to_display: { value: get(currentGroup, 'to_display'), errors: [] },
+        block_of_countries: {
+            value: get(currentGroup, 'block_of_countries'),
+            errors: [],
+        },
     };
 };
 
@@ -52,7 +55,7 @@ const GroupDialog = ({
             id: initialData?.id,
             name: group.name.value,
             source_ref: group.source_ref.value,
-            to_display: group.to_display.value,
+            block_of_countries: group.block_of_countries.value,
         };
 
         saveGroup(currentGroup)
@@ -111,12 +114,12 @@ const GroupDialog = ({
                         label={MESSAGES.sourceRef}
                     />
                     <InputComponent
-                        keyValue="to_display"
-                        value={group.to_display.value}
+                        keyValue="block_of_countries"
+                        value={group.block_of_countries.value}
                         onChange={(key, value) => setFieldValue(key, value)}
                         type="checkbox"
-                        errors={group.to_display.errors}
-                        label={MESSAGES.groupToBeDisplayed}
+                        errors={group.block_of_countries.errors}
+                        label={MESSAGES.blockOfCountries}
                     />
                 </Grid>
             </Grid>

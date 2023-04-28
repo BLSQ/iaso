@@ -97,7 +97,7 @@ const Filters = ({
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
         useGetGroupedCampaigns();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroups({ displayed: 'True' });
+        useGetGroups({ blockOfCountries: 'True' });
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({
@@ -125,28 +125,26 @@ const Filters = ({
         orgUnitGroups,
     ]);
 
-    const OrgUnitGroupsInput = () => {
-        return (
-            <InputComponent
-                loading={isFetchingGroupedOrgUnits}
-                keyValue="orgUnitGroups"
-                multi
-                clearable
-                onChange={(key, value) => {
-                    setOrgUnitGroups(value);
-                }}
-                value={orgUnitGroups}
-                type="select"
-                options={groupedOrgUnits}
-                label={MESSAGES.group}
-            />
-        );
-    };
-
     useEffect(() => {
         setFiltersUpdated(false);
     }, []);
-
+    const GroupedCampaignsInput = () => {
+        return (
+            <InputComponent
+                loading={isFetchingGroupedGroups}
+                keyValue="campaignGroups"
+                clearable
+                multi
+                onChange={(_key, value) => {
+                    setCampaignGroups(value);
+                }}
+                value={campaignGroups}
+                type="select"
+                options={groupedCampaignsOptions}
+                label={MESSAGES.groupedCampaigns}
+            />
+        );
+    };
     return (
         <>
             <Grid container spacing={2}>
@@ -164,19 +162,19 @@ const Filters = ({
                         onErrorChange={setTextSearchError}
                     />
                     <InputComponent
-                        loading={isFetchingGroupedGroups}
-                        keyValue="campaignGroups"
-                        clearable
+                        loading={isFetchingGroupedOrgUnits}
+                        keyValue="orgUnitGroups"
                         multi
-                        onChange={(_key, value) => {
-                            setCampaignGroups(value);
+                        clearable
+                        onChange={(key, value) => {
+                            setOrgUnitGroups(value);
                         }}
-                        value={campaignGroups}
+                        value={orgUnitGroups}
                         type="select"
-                        options={groupedCampaignsOptions}
-                        label={MESSAGES.groupedCampaigns}
+                        options={groupedOrgUnits}
+                        label={MESSAGES.countryBlock}
                     />
-                    {!isCalendar && <OrgUnitGroupsInput />}
+                    {!isCalendar && <GroupedCampaignsInput />}
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -221,10 +219,9 @@ const Filters = ({
                 </Grid>
                 {isCalendar && (
                     <Grid item xs={12} md={3}>
-                        <OrgUnitGroupsInput />
+                        <GroupedCampaignsInput />
                     </Grid>
                 )}
-
                 {!disableDates && (
                     <Grid item xs={12} md={3}>
                         <DatesRange

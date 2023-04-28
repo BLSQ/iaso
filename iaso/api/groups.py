@@ -42,7 +42,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "org_unit_count",
             "created_at",
             "updated_at",
-            "to_display",
+            "block_of_countries",
         ]
         read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
         ref_name = "iaso_group_serializer"
@@ -105,9 +105,9 @@ class GroupsViewSet(ModelViewSet):
             if default_version == "true":
                 queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
 
-        to_display = self.request.GET.get("toDisplay", None)
-        if to_display:
-            queryset = queryset.filter(to_display=to_display)
+        block_of_countries = self.request.GET.get("blockOfCountries", None)
+        if block_of_countries:
+            queryset = queryset.filter(block_of_countries=block_of_countries)
 
         search = self.request.query_params.get("search", None)
         if search:

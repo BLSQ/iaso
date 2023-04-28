@@ -21,8 +21,8 @@ import {
 import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
 import { OrgUnitInstances } from './components/OrgUnitInstances';
+import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
-import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
@@ -55,14 +55,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             params,
             orgUnit?.org_unit_type?.sub_unit_types,
         );
-    const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
+    const subOrgUnitTypes: OrgunitTypeRegistry[] = useMemo(() => {
         const options =
             orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
                 ...subType,
                 color: getOtChipColors(index) as string,
-                count: (orgUnitChildren?.orgunits || []).filter(
+                orgUnits: (orgUnitChildren?.orgunits || []).filter(
                     subOrgUnit => subOrgUnit.org_unit_type_id === subType.id,
-                ).length,
+                ),
             })) || [];
         return orderBy(options, [f => f.depth], ['asc']);
     }, [orgUnit, orgUnitChildren]);

@@ -14,7 +14,8 @@ import {
     Tooltip,
 } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
-import { Box, useTheme } from '@material-ui/core';
+import { Box, useTheme, makeStyles } from '@material-ui/core';
+import classNames from 'classnames';
 
 import { keyBy } from 'lodash';
 
@@ -28,6 +29,7 @@ import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { Legend, useGetlegendOptions } from '../hooks/useGetLegendOptions';
 
 import { MapToggleTooltips } from './MapToggleTooltips';
+import { MapToggleFullscreen } from './MapToggleFullscreen';
 
 import TILES from '../../../constants/mapTiles';
 import {
@@ -50,15 +52,36 @@ type Props = {
     isFetchingChildren: boolean;
 };
 
+const useStyles = makeStyles(() => ({
+    mapContainer: {
+        position: 'relative',
+        '& .leaflet-control-zoom': {
+            borderBottom: 'none',
+            borderBottomLeftRadius: 0,
+            borderBottomRightRadius: 0,
+        },
+    },
+    fullScreen: {
+        position: 'fixed',
+        top: '64px',
+        left: '0',
+        width: '100vw',
+        height: 'calc(100vh - 64px)',
+        zIndex: 10000,
+    },
+}));
+
 export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
     orgUnitChildren,
     isFetchingChildren,
 }) => {
+    const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const map: any = useRef();
     const bounds = useRef<Optional<Bounds | undefined>>();
+    const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(false);
 
     const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
     const [isMapFitted, setIsMapFitted] = useState<boolean>(false);
@@ -98,14 +121,28 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         }
     }, [isFetchingChildren, orgUnitChildren, isMapFitted, bounds]);
 
+    useEffect(() => {
+        map?.current?.leafletElement?.invalidateSize();
+    }, [isMapFullScreen]);
+
     if (isFetchingChildren)
         return (
             <Box position="relative" height={500}>
                 <LoadingSpinner absolute />
             </Box>
         );
+
     return (
-        <Box position="relative">
+        <Box
+            className={classNames(
+                classes.mapContainer,
+                isMapFullScreen && classes.fullScreen,
+            )}
+        >
+            <MapToggleFullscreen
+                isMapFullScreen={isMapFullScreen}
+                setIsMapFullScreen={setIsMapFullScreen}
+            />
             <MapToggleTooltips
                 showTooltip={showTooltip}
                 setShowTooltip={setShowTooltip}
@@ -119,7 +156,10 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 zoomSnap={0.25}
                 maxZoom={currentTile.maxZoom}
                 ref={map}
-                style={{ height: '524px' }}
+                style={{
+                    height: isMapFullScreen ? '100vh' : '542px',
+                    width: isMapFullScreen ? '100vw' : '100%',
+                }}
                 center={DEFAULT_VIEWPORT.center}
                 zoom={DEFAULT_VIEWPORT.zoom}
                 scrollWheelZoom={false}

@@ -62,6 +62,8 @@ def send_notification_email(campaign):
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
 
     next_round_date = next_round.started_at if next_round else None
+    next_round_number = next_round.number if next_round else None
+    next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url if next_round else None
     next_round_days_left = (next_round.started_at - now().date()).days if next_round and next_round.started_at else ""
     # format thousand
     target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
@@ -76,12 +78,12 @@ Statut hebdomadaire: Il reste {next_round_days_left} jours avant le début de la
 Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles dans la plateforme. Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
 
 * Date de notification              : {c.cvdpv2_notified_at}
-* Date du prochain round (Round {next_round.number})          : {next_round_date if campaign.rounds else None}
+* Date du prochain round (Round {next_round_number})          : {next_round_date if campaign.rounds else None}
 * Type de vaccin                    : {c.vaccines}
 * Population cible                  : {target_population} 
 * RA Date de l'approbation RRT/ORPG  : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
-* Lien vers la preperadness google sheet du Round {next_round.number if next_round else None} : {next_round.preparedness_spreadsheet_url if next_round else None}
+* Lien vers la preperadness google sheet du Round {next_round_number} : {next_round_preparedness_spreadsheet_url}
 * Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
 * Prep. régional                 : {preparedness.get('regional_score') if preparedness else ''}
 * Prep. district                 : {preparedness.get('district_score') if preparedness else ''}
@@ -97,12 +99,12 @@ Estado semanal: passaram-se {next_round_days_left} dias desde a data de notifica
 Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
 
 * Data de notificação: {c.cvdpv2_notified_at}
-* Proxima ronda (Round {next_round.number}) data: {next_round_date if campaign.rounds else None}
+* Proxima ronda (Round {next_round_number}) data: {next_round_date if campaign.rounds else None}
 * Tipo de vacina: {c.vaccines}
 * População-alvo: {target_population}
 * RA Data de aprovação RRT/ORPG: {c.risk_assessment_rrt_oprtt_approval_at}
 * Data de envio do orçamento:   {c.submitted_to_rrt_at_WFEDITABLE}
-* Link to {next_round.number if next_round else None}  preparedness Google sheet: {next_round.preparedness_spreadsheet_url if next_round else None}
+* Link to {next_round_number}  preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
 * Prep. nacional: {preparedness.get('national_score') if preparedness else ''}
 * Prep. regional: {preparedness.get('regional_score') if preparedness else ''}
 * Prep. distrital: {preparedness.get('district_score') if preparedness else ''}
@@ -119,12 +121,12 @@ Below is the summary of the campaign {c.obr_name}. For more details, visit https
 If there are missing data or dates; visit {url} to update
 
 * Notification date              : {c.cvdpv2_notified_at}
-* Next round (Round {next_round.number}) date: {next_round_date if campaign.rounds else None}
+* Next round (Round {next_round_number}) date: {next_round_date if campaign.rounds else None}
 * Vaccine Type                   : {c.vaccines}
 * Target population              : {target_population} 
 * RA RRT/ORPG approval date      : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
-* Link to Round {next_round.number if next_round else None} preparedness Google sheet: {next_round.preparedness_spreadsheet_url if next_round else None}
+* Link to Round {next_round_number if next_round else None} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
 * Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
 * Prep. regional                 : {preparedness.get('regional_score') if preparedness else ''}
 * Prep. district                 : {preparedness.get('district_score') if preparedness else ''}

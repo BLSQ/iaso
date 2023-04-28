@@ -131,7 +131,7 @@ If there are missing data or dates; visit {url} to update
 * Next round (Round {next_round.number}) date: {next_round_date if campaign.rounds else None}
 * Vaccine Type                   : {c.vaccines}
 * Target population              : {target_population} 
-* RA RRT/ORPG approval date      : {c.get_risk_assessment_status_display() or 'Pending'}
+* RA RRT/ORPG approval date      : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
 * Link to Round {next_round.number if next_round else None} preparedness Google sheet: {next_round.preparedness_spreadsheet_url if next_round else None}
 * Prep. national                 : {preparedness.get('national_score') if preparedness else ''}

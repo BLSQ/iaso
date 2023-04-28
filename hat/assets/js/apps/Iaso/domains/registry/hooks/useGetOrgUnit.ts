@@ -22,15 +22,15 @@ export const useGetOrgUnit = (
     });
 };
 
-type ResultList = Pagination & {
+export type OrgUnitListChildren = Pagination & {
     orgunits: OrgUnit[];
 };
 
-export const useGetOrgUnitsListChildren = (
+export const useGetOrgUnitListChildren = (
     orgUnitParentId: string,
-    orgUnitTypes: OrgunitTypes,
     params: RegistryDetailParams,
-): UseQueryResult<ResultList, Error> => {
+    orgUnitTypes?: OrgunitTypes,
+): UseQueryResult<OrgUnitListChildren, Error> => {
     let order = '-name';
     if (params.orgUnitListOrder) {
         if (params.orgUnitListOrder === 'location') {
@@ -49,7 +49,7 @@ export const useGetOrgUnitsListChildren = (
         order,
         page: params.orgUnitListPage || '1',
     };
-    if (orgUnitTypes?.length > 0) {
+    if (orgUnitTypes && orgUnitTypes.length > 0) {
         apiParams.orgUnitTypeId = orgUnitTypes
             .map(orgunitType => orgunitType.id)
             .join(',');
@@ -61,6 +61,7 @@ export const useGetOrgUnitsListChildren = (
         queryFn: () => getRequest(url),
         options: {
             keepPreviousData: true,
+            enabled: Boolean(orgUnitParentId),
             select: data => {
                 if (!data) return undefined;
                 const orgunits: OrgUnit[] = data.orgunits.filter(

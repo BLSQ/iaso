@@ -6,18 +6,14 @@ import { useDispatch } from 'react-redux';
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
-
 import { RegistryDetailParams } from '../types';
-
-import { useGetOrgUnitsListChildren } from '../hooks/useGetOrgUnit';
 import { useGetOrgUnitsListColumns } from '../config';
+import { OrgUnitListChildren } from '../hooks/useGetOrgUnit';
 
 type Props = {
-    orgUnit: OrgUnit;
-    subOrgUnitTypes: OrgunitTypes;
     params: RegistryDetailParams;
+    orgUnitChildren?: OrgUnitListChildren;
+    isFetchingChildren: boolean;
 };
 export const defaultSorted = [{ id: 'name', desc: true }];
 const useStyles = makeStyles(theme => ({
@@ -49,16 +45,11 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const OrgUnitChildrenList: FunctionComponent<Props> = ({
-    orgUnit,
-    subOrgUnitTypes,
     params,
+    orgUnitChildren,
+    isFetchingChildren,
 }) => {
     const dispatch = useDispatch();
-    const { data, isFetching } = useGetOrgUnitsListChildren(
-        `${orgUnit.id}`,
-        subOrgUnitTypes,
-        params,
-    );
 
     const classes: Record<string, string> = useStyles();
     const columns = useGetOrgUnitsListColumns();
@@ -67,15 +58,15 @@ export const OrgUnitChildrenList: FunctionComponent<Props> = ({
             <Table
                 marginTop={false}
                 marginBottom={false}
-                data={data?.orgunits || []}
-                pages={data?.pages || 0}
+                data={orgUnitChildren?.orgunits || []}
+                pages={orgUnitChildren?.pages || 0}
                 defaultSorted={defaultSorted}
                 paramsPrefix="orgUnitList"
                 columns={columns}
-                count={data?.count || 0}
+                count={orgUnitChildren?.count || 0}
                 baseUrl={baseUrls.registryDetail}
                 params={params}
-                extraProps={{ loading: isFetching }}
+                extraProps={{ loading: isFetchingChildren }}
                 elevation={0}
                 onTableParamsChange={p => {
                     dispatch(redirectToReplace(baseUrls.registryDetail, p));

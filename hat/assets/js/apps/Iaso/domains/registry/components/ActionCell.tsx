@@ -5,6 +5,8 @@ import MESSAGES from '../messages';
 
 import EnketoIcon from '../../instances/components/EnketoIcon';
 
+import { LinkToInstance } from '../../instances/components/LinkToInstance';
+
 import { useGetEnketoUrl } from '../hooks/useGetEnketoUrl';
 
 type Props = {
@@ -24,6 +26,7 @@ export const ActionCell: FunctionComponent<Props> = ({ settings }) => {
                 overrideIcon={EnketoIcon}
                 tooltipMessage={MESSAGES.editOnEnketo}
             />
+            <LinkToInstance instanceId={settings.row.original.id} useIcon />
         </section>
     );
 };

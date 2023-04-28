@@ -1,25 +1,20 @@
 import React, { FunctionComponent, useRef } from 'react';
 import { Popup } from 'react-leaflet';
-import { Link } from 'react-router';
 
-import {
-    Card,
-    CardContent,
-    Button,
-    Grid,
-    Box,
-    makeStyles,
-} from '@material-ui/core';
+import { Card, CardContent, Box, makeStyles, Divider } from '@material-ui/core';
 
 import {
     useSafeIntl,
     commonStyles,
     mapPopupStyles,
+    IconButton,
 } from 'bluesquare-components';
-import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { LinkToRegistry } from './LinkToRegistry';
+import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
+import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -28,14 +23,19 @@ type Props = {
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...mapPopupStyles(theme),
-    actionBox: {
-        padding: theme.spacing(1, 0, 0, 0),
+    popupCardContent: {
+        ...mapPopupStyles(theme).popupCardContent,
+        margin: theme.spacing(2),
     },
-    linkButton: {
-        color: 'inherit',
-        textDecoration: 'none',
-        display: 'flex',
-        '&:hover': { textDecoration: 'none' },
+    popup: {
+        ...mapPopupStyles(theme).popup,
+        '& .leaflet-popup-content': {
+            ...mapPopupStyles(theme).popup['& .leaflet-popup-content'],
+            width: '300px !important',
+        },
+        '& a.leaflet-popup-close-button': {
+            display: 'none',
+        },
     },
 }));
 
@@ -47,31 +47,48 @@ export const MapPopUp: FunctionComponent<Props> = ({ orgUnit }) => {
     return (
         <Popup className={classes.popup} ref={popup}>
             <Card className={classes.popupCard}>
-                <CardContent className={classes.popupCardContent}>
-                    {orgUnit.name}
-                    <Box className={classes.actionBox}>
-                        <Grid
-                            container
-                            spacing={0}
-                            justifyContent="flex-end"
-                            alignItems="center"
-                        >
-                            <Link
-                                target="_blank"
-                                to={`${baseUrls.registryDetail}/orgunitId/${orgUnit.id}`}
-                                className={classes.linkButton}
-                            >
-                                <Button
-                                    className={classes.marginLeft}
-                                    variant="outlined"
-                                    color="primary"
-                                    size="small"
-                                >
-                                    {formatMessage(MESSAGES.see)}
-                                </Button>
-                            </Link>
-                        </Grid>
+                <Box display="flex" justifyContent="flex-end" px={1} py="4px">
+                    <Box mr="auto">
+                        <Box display="inline-block" mr={1}>
+                            <LinkToOrgUnit
+                                orgUnit={orgUnit}
+                                useIcon
+                                iconSize="small"
+                                size="small"
+                            />
+                        </Box>
+                        <LinkToRegistry
+                            orgUnit={orgUnit}
+                            replace
+                            useIcon
+                            iconSize="small"
+                            size="small"
+                        />
                     </Box>
+                    <IconButton
+                        onClick={() =>
+                            popup.current.leafletElement.options.leaflet.map.closePopup()
+                        }
+                        icon="clear"
+                        tooltipMessage={MESSAGES.close}
+                        iconSize="small"
+                        size="small"
+                    />
+                </Box>
+                <Divider />
+                <CardContent className={classes.popupCardContent}>
+                    <PopupItemComponent
+                        label={formatMessage(MESSAGES.name)}
+                        value={orgUnit.name}
+                    />
+                    <PopupItemComponent
+                        label={formatMessage(MESSAGES.type)}
+                        value={orgUnit.org_unit_type_name}
+                    />
+                    <PopupItemComponent
+                        label={formatMessage(MESSAGES.source)}
+                        value={orgUnit.source}
+                    />
                 </CardContent>
             </Card>
         </Popup>

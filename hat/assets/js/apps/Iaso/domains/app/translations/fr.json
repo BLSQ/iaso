@@ -766,6 +766,7 @@
     "iaso.registry.noInstance": "Aucune soumission trouvée pour cette unité d'org.",
     "iaso.registry.referenceInstance": "soumission de référence",
     "iaso.registry.seeRegistry": "Voir le registre",
+    "iaso.registry.showNames": "Voir les noms",
     "iaso.registry.title": "Registre",
     "iaso.registry.withLocation": "Avec point",
     "iaso.registry.withShape": "Avec territoire",

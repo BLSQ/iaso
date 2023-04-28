@@ -31,6 +31,7 @@ export type OrgunitType = {
     reference_form: any;
     projects: Project[];
     color?: string;
+    count?: number;
 };
 
 export type OrgunitTypes = OrgunitType[];

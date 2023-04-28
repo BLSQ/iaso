@@ -28,6 +28,8 @@ import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 
 import { Legend, useGetlegendOptions } from '../hooks/useGetLegendOptions';
 
+import { MapToggleTooltips } from './MapToggleTooltips';
+
 import TILES from '../../../constants/mapTiles';
 import {
     circleColorMarkerOptions,
@@ -65,6 +67,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         getlegendOptions(),
     );
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
+    const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
     const optionsObject = useMemo(
         () => keyBy(legendOptions, 'value'),
@@ -104,6 +107,10 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         );
     return (
         <Box position="relative">
+            <MapToggleTooltips
+                showTooltip={showTooltip}
+                setShowTooltip={setShowTooltip}
+            />
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
             <TilesSwitch
                 currentTile={currentTile}
@@ -141,9 +148,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                     style={() => ({
                                         color: theme.palette.secondary.main,
                                     })}
-                                >
-                                    <Tooltip>{orgUnit.name}</Tooltip>
-                                </GeoJSON>
+                                />
                             </Pane>
                         )}
                         {orgUnit.latitude && orgUnit.longitude && (
@@ -152,9 +157,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                     latitude: orgUnit.latitude,
                                     longitude: orgUnit.longitude,
                                 }}
-                                TooltipComponent={() => (
-                                    <Tooltip>{orgUnit.name}</Tooltip>
-                                )}
                                 markerProps={() => ({
                                     ...circleColorMarkerOptions(
                                         theme.palette.secondary.main,
@@ -190,6 +192,11 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                 <MapPopUp
                                                     orgUnit={childrenOrgUnit}
                                                 />
+                                                <Tooltip
+                                                    permanent={showTooltip}
+                                                >
+                                                    {childrenOrgUnit.name}
+                                                </Tooltip>
                                             </GeoJSON>
                                         );
                                     }
@@ -222,6 +229,13 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                     orgUnit: childrenOrgUnit,
                                                 })}
                                                 key={childrenOrgUnit.id}
+                                                TooltipComponent={() => (
+                                                    <Tooltip
+                                                        permanent={showTooltip}
+                                                    >
+                                                        {childrenOrgUnit.name}
+                                                    </Tooltip>
+                                                )}
                                                 markerProps={() => ({
                                                     ...circleColorMarkerOptions(
                                                         subType.color || '',

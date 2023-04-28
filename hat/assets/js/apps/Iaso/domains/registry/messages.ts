@@ -117,6 +117,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'reference submission',
         id: 'iaso.registry.referenceInstance',
     },
+    showNames: {
+        defaultMessage: 'Show names',
+        id: 'iaso.registry.showNames',
+    },
+    source: {
+        defaultMessage: 'Source',
+        id: 'iaso.forms.source',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+    actions: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
 });
 
 export default MESSAGES;

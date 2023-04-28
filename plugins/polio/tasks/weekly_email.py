@@ -61,15 +61,12 @@ def send_notification_email(campaign):
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
 
-    next_round_date = next_round.started_at
+    next_round_date = next_round.started_at if next_round else None
     next_round_days_left = (next_round.started_at - now().date()).days if next_round and next_round.started_at else ""
     # format thousand
     target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
 
     preparedness = get_last_preparedness(campaign)
-
-    print(next_round)
-    print(next_round.started_at)
 
     # French
     if lang == "fr":
@@ -162,8 +159,8 @@ def send_email(task=None):
             progress_message=f"Campaign {campaign.pk} started",
         )
 
-        latest_round_end = campaign.rounds.order_by("ended_at").last()
-        if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at < now().date():
+        latest_round_start = campaign.rounds.order_by("started_at").last()
+        if latest_round_start and latest_round_start.started_at and latest_round_start.started_at < now().date():
             print(f"Campaign {campaign} is finished, skipping")
             continue
         logger.info(f"Email for {campaign.obr_name}")

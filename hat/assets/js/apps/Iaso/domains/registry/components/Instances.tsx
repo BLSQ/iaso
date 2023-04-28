@@ -12,13 +12,16 @@ import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
 import { ActionCell } from './ActionCell';
+import { MissingInstanceDialog } from './MissingInstanceDialog';
 
 import { redirectToReplace } from '../../../routing/actions';
 
-import { OrgunitTypes, OrgunitType } from '../../orgUnits/types/orgunitTypes';
+import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
+import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 import { RegistryDetailParams } from '../types';
 import { Column } from '../../../types/table';
 import { Form } from '../../forms/types/forms';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
@@ -26,10 +29,12 @@ import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
+import { userHasPermission } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 type Props = {
     isLoading: boolean;
-    subOrgUnitTypes: OrgunitTypes;
+    subOrgUnitTypes: OrgunitTypeRegistry[];
     params: RegistryDetailParams;
 };
 
@@ -38,12 +43,14 @@ export const Instances: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     params,
 }) => {
+    const currentUser = useCurrentUser();
+    const dispatch = useDispatch();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
-    const currentType: OrgunitType | undefined = useMemo(() => {
+    const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
         if (subOrgUnitTypes.length > 0) {
             if (tab) {
-                const existingType: OrgunitType | undefined =
+                const existingType: OrgunitTypeRegistry | undefined =
                     subOrgUnitTypes.find(subType => `${subType.id}` === tab);
                 return existingType || subOrgUnitTypes[0];
             }
@@ -52,14 +59,24 @@ export const Instances: FunctionComponent<Props> = ({
         return undefined;
     }, [subOrgUnitTypes, tab]);
 
-    const dispatch = useDispatch();
-
     const { data: formsList, isFetching: isFetchingForms } = useGetForms();
 
     const { url: apiUrl } = useGetInstanceApi(params, currentType?.id);
     const { data, isFetching: isFetchingList } = useGetInstances(
         params,
         currentType?.id,
+    );
+    const OrgUnitsWithoutCurrentForm: OrgUnit[] = useMemo(
+        () =>
+            (data &&
+                currentType?.orgUnits.filter(
+                    orgUnit =>
+                        !data.instances.find(
+                            instance => instance.org_unit.id === orgUnit.id,
+                        ),
+                )) ||
+            [],
+        [currentType?.orgUnits, data],
     );
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
@@ -99,7 +116,7 @@ export const Instances: FunctionComponent<Props> = ({
                         {subOrgUnitTypes.map(subType => (
                             <Tab
                                 value={subType}
-                                label={`${subType.name} (${subType.count})`}
+                                label={`${subType.name} (${subType.orgUnits.length})`}
                                 key={subType.id}
                             />
                         ))}
@@ -162,6 +179,35 @@ export const Instances: FunctionComponent<Props> = ({
                                             isFetchingList || data?.count === 0
                                         }
                                     />
+                                </Box>
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    width="100%"
+                                    mt={2}
+                                >
+                                    {OrgUnitsWithoutCurrentForm.length > 0 &&
+                                        userHasPermission(
+                                            'iaso_update_submission',
+                                            currentUser,
+                                        ) && (
+                                            <MissingInstanceDialog
+                                                formId={formIds}
+                                                missingOrgUnits={
+                                                    OrgUnitsWithoutCurrentForm
+                                                }
+                                                params={params}
+                                                iconProps={{
+                                                    missingOrgUnits:
+                                                        OrgUnitsWithoutCurrentForm,
+                                                    params,
+                                                }}
+                                                defaultOpen={
+                                                    params.missingSubmissionVisible ===
+                                                    'true'
+                                                }
+                                            />
+                                        )}
                                 </Box>
                             </Grid>
                         </Grid>

@@ -16,13 +16,14 @@ import { getOtChipColors } from '../../constants/chipColors';
 import {
     useGetOrgUnit,
     useGetOrgUnitListChildren,
+    useGetOrgUnitsMapChildren,
 } from './hooks/useGetOrgUnit';
 
 import { Instances } from './components/Instances';
 import { OrgUnitPaper } from './components/OrgUnitPaper';
 import { OrgUnitInstances } from './components/OrgUnitInstances';
+import { OrgunitTypeRegistry } from './types/orgunitTypes';
 
-import { OrgunitTypes } from '../orgUnits/types/orgunitTypes';
 import { RegistryDetailParams } from './types';
 
 import { OrgUnitBreadcrumbs } from '../orgUnits/components/breadcrumbs/OrgUnitBreadcrumbs';
@@ -49,23 +50,28 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const goBack = useGoBack(router, baseUrls.registry, { accountId });
 
     const { data: orgUnit, isFetching } = useGetOrgUnit(orgUnitId);
-    const { data: orgUnitChildren, isFetching: isFetchingChildren } =
+    const { data: orgUnitListChildren, isFetching: isFetchingListChildren } =
         useGetOrgUnitListChildren(
             orgUnitId,
             params,
             orgUnit?.org_unit_type?.sub_unit_types,
         );
-    const subOrgUnitTypes: OrgunitTypes = useMemo(() => {
+    const { data: orgUnitMapChildren, isFetching: isFetchingMapChildren } =
+        useGetOrgUnitsMapChildren(
+            orgUnitId,
+            orgUnit?.org_unit_type?.sub_unit_types,
+        );
+    const subOrgUnitTypes: OrgunitTypeRegistry[] = useMemo(() => {
         const options =
             orgUnit?.org_unit_type?.sub_unit_types.map((subType, index) => ({
                 ...subType,
                 color: getOtChipColors(index) as string,
-                count: (orgUnitChildren?.orgunits || []).filter(
+                orgUnits: (orgUnitMapChildren || []).filter(
                     subOrgUnit => subOrgUnit.org_unit_type_id === subType.id,
-                ).length,
+                ),
             })) || [];
         return orderBy(options, [f => f.depth], ['asc']);
-    }, [orgUnit, orgUnitChildren]);
+    }, [orgUnit, orgUnitMapChildren]);
 
     return (
         <>
@@ -93,8 +99,10 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 orgUnit={orgUnit}
                                 subOrgUnitTypes={subOrgUnitTypes}
                                 params={params}
-                                orgUnitChildren={orgUnitChildren}
-                                isFetchingChildren={isFetchingChildren}
+                                orgUnitListChildren={orgUnitListChildren}
+                                isFetchingListChildren={isFetchingListChildren}
+                                orgUnitMapChildren={orgUnitMapChildren}
+                                isFetchingMapChildren={isFetchingMapChildren}
                             />
                         </Grid>
                         <Grid

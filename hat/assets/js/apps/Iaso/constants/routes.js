@@ -463,6 +463,10 @@ export const registryDetailPath = {
             isRequired: false,
             key: 'submissionId',
         },
+        {
+            isRequired: false,
+            key: 'missingSubmissionVisible',
+        },
         ...paginationPathParams,
         ...paginationPathParamsWithPrefix('orgUnitList'),
     ],

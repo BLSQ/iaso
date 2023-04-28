@@ -27,6 +27,7 @@ export const ActionCell: FunctionComponent<Props> = ({ settings }) => {
         useDeleteInstance('registry-instances');
     return (
         <section>
+            <LinkToInstance instanceId={settings.row.original.id} useIcon />
             {userHasPermission('iaso_update_submission', user) && (
                 <>
                     <IconButtonComponent
@@ -45,7 +46,6 @@ export const ActionCell: FunctionComponent<Props> = ({ settings }) => {
                     />
                 </>
             )}
-            <LinkToInstance instanceId={settings.row.original.id} useIcon />
         </section>
     );
 };

@@ -592,28 +592,134 @@ from django.contrib.gis.geos import Point
 
 # Demande 25/04/2023
 
-usernames = [
-    "Bruno_Mwenya",
-    "Frddy_Kangomba",
-    "Ivan_Mulunda",
-    "Robert_Ndondji",
-    "Leon_Luambwa_canevas",
-    "Guelord_Kabangu_canevas",
-    "bernice_canevas",
-    "Yves_Kasongo_canevas",
-    "clairecanevas",
-    "jonathan_canevas",
-]
+# usernames = [
+#     "Bruno_Mwenya",
+#     "Frddy_Kangomba",
+#     "Ivan_Mulunda",
+#     "Robert_Ndondji",
+#     "Leon_Luambwa_canevas",
+#     "Guelord_Kabangu_canevas",
+#     "bernice_canevas",
+#     "Yves_Kasongo_canevas",
+#     "clairecanevas",
+#     "jonathan_canevas",
+# ]
 
-province_id = 1074010
-the_province = OrgUnit.objects.get(id=province_id)
-print("Province: " + the_province.name)
+# province_id = 1074010
+# the_province = OrgUnit.objects.get(id=province_id)
+# print("Province: " + the_province.name)
+
+# account = Account.objects.get(id=22)
+# print("Account: " + account.name)
+
+# point_of_interest_type = OrgUnitType.objects.get(projects__account=account, short_name="POI")
+# print("Point Of Interest Type: " + point_of_interest_type.short_name)
+
+
+# def get_location(grand_child):
+#     val = None
+#     if grand_child.geom and grand_child.geom.centroid:
+#         val = grand_child.geom.centroid
+#     elif grand_child.location:
+#         val = grand_child.location
+
+#     if val is not None:
+#         return Point(val.x, val.y, 0)
+#     else:
+#         return None
+
+
+# the_location = get_location(the_province)
+# print("Location: " + str(the_location))
+
+# the_planning = Planning.objects.get(id=51)  # Digitalisation canevas papier
+# print("Planning: " + the_planning.name)
+
+# profiles = Profile.objects.filter(account=account)
+# print("Profiles count : " + str(len(profiles)))
+
+# j = 0
+
+# for username in usernames:
+#     user = User.objects.get(username=username)
+#     print(f"User {user.username}")
+
+#     corresp_profile = user.iaso_profile
+#     print(f"Profile {corresp_profile}")
+
+#     user_ous = corresp_profile.org_units.all()
+
+#     print("User Org Units")
+#     print(user_ous)
+
+#     for i in range(0, 50):
+
+#         ou, created = OrgUnit.objects.get_or_create(
+#             name=f"superv_{j:02d}",  # format avec 0 devant
+#             parent=the_province,
+#             org_unit_type=point_of_interest_type,
+#             version=account.default_version,
+#             validation_status=OrgUnit.VALIDATION_VALID,
+#             defaults={"location": the_location},
+#         )
+
+#         print("Created? " + str(created))
+
+#         print(
+#             f"Created superv_{i:02d} with parent {the_province.name} type {point_of_interest_type.short_name} location {the_location}"
+#         )
+
+#         # create assignments in the existing plannong of each POIs  to people in the current area
+
+#         correct_assignment, createda = Assignment.objects.get_or_create(planning=the_planning, org_unit=ou, user=user)
+
+#         print("Created? " + str(createda))
+
+#         print(f"Created assignment for {user.username} for OU superv_{j:02d}")
+
+#         j += 1
+
+
+# Demande 28/04/2023
 
 account = Account.objects.get(id=22)
-print("Account: " + account.name)
+print(f"Account: {account.name}")
+
+the_team = Team.objects.get(name="ECZS Lualaba")
+print(f"Team {the_team} with {the_team.users.count()} users")
+
+profiles = Profile.objects.filter(account=account, user__teams=the_team)
+print("Found # of profiles " + str(len(profiles)))
+
+province_ou = OrgUnit.objects.get(id=1074010)  # ll Province Lualaba
+print(f"Province {province_ou}")
+
+zone_de_sante_type = OrgUnitType.objects.get(projects__account=account, short_name="ZS")
+print(f"Zone de sante type {zone_de_sante_type}")
 
 point_of_interest_type = OrgUnitType.objects.get(projects__account=account, short_name="POI")
-print("Point Of Interest Type: " + point_of_interest_type.short_name)
+print(f"Point of interest type {point_of_interest_type}")
+
+zone_de_santes = OrgUnit.objects.filter(parent=province_ou, org_unit_type=zone_de_sante_type)
+print(f"Found # Zone de santes {len(zone_de_santes.all())}")
+
+the_planning = Planning.objects.get(id=51)  # Supervision
+print("Planning: " + the_planning.name)
+
+
+# for zs_ou in zone_de_santes.all():
+#     try:
+#         corresp_profile = profiles.get(
+#             org_units=zs_ou,
+#         )
+#     except:
+#         corresp_profile = None
+
+#     if corresp_profile is None:
+#         print(f"!! Didnt find a profile or a team for {zs_ou.name}")
+#         print(f"Profile {corresp_profile}")
+#     else:
+#         print(f"Found profile {str(corresp_profile)}")
 
 
 def get_location(grand_child):
@@ -629,52 +735,131 @@ def get_location(grand_child):
         return None
 
 
-the_location = get_location(the_province)
-print("Location: " + str(the_location))
+total_cnt = 0
 
-the_planning = Planning.objects.get(id=51)  # Digitalisation canevas papier
-print("Planning: " + the_planning.name)
+for user in the_team.users.all():
 
-profiles = Profile.objects.filter(account=account)
-print("Profiles count : " + str(len(profiles)))
-
-j = 0
-
-for username in usernames:
-    user = User.objects.get(username=username)
     print(f"User {user.username}")
 
     corresp_profile = user.iaso_profile
     print(f"Profile {corresp_profile}")
 
-    user_ous = corresp_profile.org_units.all()
+    if corresp_profile.org_units.count() != 1:
+        print(f"!! User {user.username} has not the good amount of  org units")
+    else:
+        user_ou = corresp_profile.org_units.first()
+        print(f"User Org Unit : {user_ou.name}")
 
-    print("User Org Units")
-    print(user_ous)
+        user_ou_location = get_location(user_ou)
+        print(f"User Org Unit Location : {user_ou_location}")
 
-    for i in range(0, 50):
+        for i in range(0, 30):
 
-        ou, created = OrgUnit.objects.get_or_create(
-            name=f"superv_{j:02d}",  # format avec 0 devant
-            parent=the_province,
-            org_unit_type=point_of_interest_type,
-            version=account.default_version,
-            validation_status=OrgUnit.VALIDATION_VALID,
-            defaults={"location": the_location},
-        )
+            ou, created = OrgUnit.objects.get_or_create(
+                name=f"Superv_{total_cnt:02d}",  # format avec 0 devant
+                parent=user_ou,
+                org_unit_type=point_of_interest_type,
+                version=account.default_version,
+                validation_status=OrgUnit.VALIDATION_VALID,
+                defaults={"location": user_ou_location},
+            )
 
-        print("Created? " + str(created))
+            print("Created? " + str(created))
 
-        print(
-            f"Created superv_{i:02d} with parent {the_province.name} type {point_of_interest_type.short_name} location {the_location}"
-        )
+            print(
+                f"Created Superv_{i:02d} with parent {user_ou.name} type {point_of_interest_type.short_name} location {user_ou_location}"
+            )
 
-        # create assignments in the existing plannong of each POIs  to people in the current area
+            # create assignments in the existing plannong of each POIs  to people in the current area
 
-        correct_assignment, createda = Assignment.objects.get_or_create(planning=the_planning, org_unit=ou, user=user)
+            correct_assignment = Assignment.objects.get_or_create(planning=the_planning, org_unit=ou, user=user)
 
-        print("Created? " + str(createda))
+            print(f"Created assignment for {user.username} for Superv_{total_cnt:02d}")
 
-        print(f"Created assignment for {user.username} for OU superv_{j:02d}")
+            total_cnt += 1
 
-        j += 1
+print("Total count " + str(total_cnt))
+
+
+for user in the_team.users.all():
+
+    print(f"User {user.username}")
+
+    corresp_profile = user.iaso_profile
+    print(f"Profile {corresp_profile}")
+
+    if corresp_profile.org_units.count() != 1:
+        print(f"!! User {user.username} has not the good amount of  org units")
+    else:
+        user_ou = corresp_profile.org_units.first()
+        print(f"User Org Unit : {user_ou.name}")
+
+        user_ou_location = get_location(user_ou)
+        print(f"User Org Unit Location : {user_ou_location}")
+
+        for i in range(0, 30):
+
+            try:
+                ou = OrgUnit.objects.get(
+                    name=f"Superv_{i:02d}",  # format avec 0 devant
+                    parent=user_ou,
+                    org_unit_type=point_of_interest_type,
+                    version=account.default_version,
+                    validation_status=OrgUnit.VALIDATION_VALID,
+                )
+
+                print(f"Will delete OU {ou.name}")
+                print(f"OU created at {ou.created_at}")
+
+                # ou.delete()
+
+                # create assignments in the existing plannong of each POIs  to people in the current area
+
+                correct_assignment = Assignment.objects.get(
+                    planning=the_planning, org_unit=ou, user=user, deleted_at=None
+                )
+
+                print(f"Will delete ASSIGNMENT {correct_assignment.id}")
+
+                # correct_assignment.delete()
+
+            except:
+                pass
+
+print("Total count " + str(total_cnt))
+
+
+total_cnt = 0
+
+for user in the_team.users.all():
+
+    print(f"User {user.username}")
+
+    corresp_profile = user.iaso_profile
+    print(f"Profile {corresp_profile}")
+
+    if corresp_profile.org_units.count() != 1:
+        print(f"!! User {user.username} has not the good amount of  org units")
+    else:
+        user_ou = corresp_profile.org_units.first()
+        print(f"User Org Unit : {user_ou.name}")
+
+        for i in range(0, 30):
+
+            ou = OrgUnit.objects.get(
+                name=f"Superv_{total_cnt:03d}",  # format avec 0 devant
+                parent=user_ou,
+                org_unit_type=point_of_interest_type,
+                version=account.default_version,
+                validation_status=OrgUnit.VALIDATION_VALID,
+            )
+
+            print(f"Found OU : {ou}")
+
+            correct_assignment = Assignment.objects.get(planning=the_planning, org_unit=ou, user=user)
+
+            print(f"Found ASSIGNMENT : {correct_assignment}")
+
+            total_cnt += 1
+
+print("Total count " + str(total_cnt))

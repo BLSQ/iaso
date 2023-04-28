@@ -62,13 +62,8 @@ def send_notification_email(campaign):
     # next round
     next_round =  campaign.rounds.filter(started_at__gte=now().date()).order_by("started_at").first()
     next_round_date = next_round.started_at
-    next_round_days = (
-        (next_round.started_at - campaign.onset_at).days
-        if next_round and next_round.started_at and campaign.onset_at
-        else ""
-    )
     next_round_days_left = (
-        ((next_round.started_at) - (now().date())).days
+        (next_round.started_at - now().date()).days
         if next_round and next_round.started_at
         else ""
     )

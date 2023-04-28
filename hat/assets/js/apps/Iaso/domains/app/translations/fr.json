@@ -242,6 +242,8 @@
     "iaso.instance.delete": "Effacer une(des) soumission(s)",
     "iaso.instance.deleteCount": "Effacer {count} soumission(s)",
     "iaso.instance.deleteInstanceWarning": "Cette opération peut toujours être annulée.",
+    "iaso.instance.deleteText": "Restaurer la soumission est possible sur la page detail",
+    "iaso.instance.deleteTitle": "Êtes-vous certain de vouloir effacer cette soumission?",
     "iaso.instance.device": "IMEI appareil",
     "iaso.instance.dialog.editGpsFromInstanceTitle": "Voulez-vous vraiment pousser les GPS de la soumission à l'unité organisation ?",
     "iaso.instance.dialog.linkOffOrgUnitToInstanceReferenceTitle": "Êtes-vous sûr de vouloir dissocier cette soumission de référence de l'orgUnit ?",

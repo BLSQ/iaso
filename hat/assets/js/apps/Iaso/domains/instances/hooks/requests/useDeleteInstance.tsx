@@ -5,10 +5,12 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 const deleteInstance = async (instanceId: string): Promise<any> => {
     return deleteRequest(`/api/instances/${instanceId}/`);
 };
-export const useDeleteInstance = (): UseMutationResult =>
+export const useDeleteInstance = (
+    invalidateQueryKey = 'instance',
+): UseMutationResult =>
     useSnackMutation({
         mutationFn: deleteInstance,
-        invalidateQueryKey: 'instance',
+        invalidateQueryKey,
     });
 
 const restoreInstance = async (instanceId: string): Promise<any> =>

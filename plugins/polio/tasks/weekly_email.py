@@ -61,10 +61,13 @@ def send_notification_email(campaign):
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
 
-    next_round_date = next_round.started_at if next_round else None
-    next_round_number = next_round.number if next_round else None
-    next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url if next_round else None
-    next_round_days_left = (next_round.started_at - now().date()).days if next_round and next_round.started_at else ""
+    if next_round:
+        next_round_date = next_round.started_at if next_round else ""
+        next_round_number = next_round.number if next_round else ""
+        next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url if next_round else ""
+        next_round_days_left = (
+            (next_round.started_at - now().date()).days if next_round and next_round.started_at else ""
+        )
     # format thousand
     target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
 

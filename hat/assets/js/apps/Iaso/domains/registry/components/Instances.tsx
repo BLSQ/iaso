@@ -29,6 +29,8 @@ import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
+import { userHasPermission } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 type Props = {
     isLoading: boolean;
@@ -41,6 +43,8 @@ export const Instances: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     params,
 }) => {
+    const currentUser = useCurrentUser();
+    const dispatch = useDispatch();
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
     const currentType: OrgunitTypeRegistry | undefined = useMemo(() => {
@@ -54,8 +58,6 @@ export const Instances: FunctionComponent<Props> = ({
         }
         return undefined;
     }, [subOrgUnitTypes, tab]);
-
-    const dispatch = useDispatch();
 
     const { data: formsList, isFetching: isFetchingForms } = useGetForms();
 
@@ -184,23 +186,28 @@ export const Instances: FunctionComponent<Props> = ({
                                     width="100%"
                                     mt={2}
                                 >
-                                    {OrgUnitsWithoutCurrentForm.length > 0 && (
-                                        <MissingInstanceDialog
-                                            missingOrgUnits={
-                                                OrgUnitsWithoutCurrentForm
-                                            }
-                                            params={params}
-                                            iconProps={{
-                                                missingOrgUnits:
-                                                    OrgUnitsWithoutCurrentForm,
-                                                params,
-                                            }}
-                                            defaultOpen={
-                                                params.missingSubmissionVisible ===
-                                                'true'
-                                            }
-                                        />
-                                    )}
+                                    {OrgUnitsWithoutCurrentForm.length > 0 &&
+                                        userHasPermission(
+                                            'iaso_update_submission',
+                                            currentUser,
+                                        ) && (
+                                            <MissingInstanceDialog
+                                                formId={formIds}
+                                                missingOrgUnits={
+                                                    OrgUnitsWithoutCurrentForm
+                                                }
+                                                params={params}
+                                                iconProps={{
+                                                    missingOrgUnits:
+                                                        OrgUnitsWithoutCurrentForm,
+                                                    params,
+                                                }}
+                                                defaultOpen={
+                                                    params.missingSubmissionVisible ===
+                                                    'true'
+                                                }
+                                            />
+                                        )}
                                 </Box>
                             </Grid>
                         </Grid>

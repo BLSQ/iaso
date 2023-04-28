@@ -149,6 +149,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.registry.missingSubmissionCount',
         defaultMessage: '{count} org unit(s) without submission for this form',
     },
+    createOnEnketo: {
+        id: 'iaso.registry.createOnEnketo',
+        defaultMessage: 'Create on Enketo',
+    },
+    add: {
+        id: 'iaso.label.add',
+        defaultMessage: 'Add',
+    },
 });
 
 export default MESSAGES;

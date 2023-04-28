@@ -53,20 +53,23 @@ def send_notification_email(campaign):
     # )
     try:
         first_round = campaign.rounds.earliest("number")
+        next_round = campaign.rounds.filter(started_at__gte=now().date()).order_by("started_at").first()
     except Round.DoesNotExist:
         first_round = None
+        next_round = None
 
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
 
-    # next round
-    next_round = campaign.rounds.filter(started_at__gte=now().date()).order_by("started_at").first()
     next_round_date = next_round.started_at
     next_round_days_left = (next_round.started_at - now().date()).days if next_round and next_round.started_at else ""
     # format thousand
     target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
 
     preparedness = get_last_preparedness(campaign)
+
+    print(next_round)
+    print(next_round.started_at)
 
     # French
     if lang == "fr":
@@ -93,7 +96,7 @@ Ceci est un message automatique.
     elif lang == "pt":
         email_text = f"""Prezado(a) coordenador(a) da GPEI – {country.name},
 
-Estado semanal: passaram-se {next_round_days} dias desde a data de notificação da campanha.
+Estado semanal: passaram-se {next_round_days_left} dias desde a data de notificação da campanha.
 Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
 
 * Data de notificação: {c.cvdpv2_notified_at}
@@ -114,7 +117,7 @@ Esta é uma mensagem automática.
     else:
         email_text = f"""Dear GPEI coordinator – {country.name},
 
-Weekly status update: Today is day {next_round_days} to Round {next_round.number} start date.
+Weekly status update: Today is day {next_round_days_left} to Round {next_round.number} start date.
 Below is the summary of the campaign {c.obr_name}. For more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
 If there are missing data or dates; visit {url} to update
 

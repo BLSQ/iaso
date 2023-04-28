@@ -29,13 +29,20 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
+
+import { useGetWorkflowVersionChanges } from './hooks/requests/useGetWorkflowVersionChanges';
 import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 
 import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
-import { WorkflowVersionDetail, WorkflowParams, FollowUps } from './types';
+import {
+    WorkflowVersionDetail,
+    WorkflowParams,
+    FollowUps,
+    Change,
+} from './types';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { FollowUpsTable } from './components/followUps/Table';
@@ -97,6 +104,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data?: WorkflowVersionDetail;
         isLoading: boolean;
     } = useGetWorkflowVersion(versionId);
+    const {
+        data: changes,
+    }: {
+        data?: Change[];
+    } = useGetWorkflowVersionChanges(params);
 
     const updateCurrentFollowUps = workflowVersionFollowUps => {
         if (workflowVersionFollowUps) {
@@ -147,6 +159,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         targetPossibleFields,
         targetPossibleFieldsByVersion,
         workflowVersion,
+        changes,
     );
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
@@ -284,9 +297,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         title={formatMessage(MESSAGES.changes)}
                     >
                         <Box className={classes.count}>
-                            {`${formatThousand(
-                                workflowVersion?.changes.length ?? 0,
-                            )} `}
+                            {`${formatThousand(changes?.length ?? 0)} `}
                             {formatMessage(MESSAGES.results)}
                         </Box>
                         <TableWithDeepLink
@@ -295,11 +306,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             elevation={0}
                             showPagination={false}
                             baseUrl={baseUrls.workflowDetail}
-                            data={workflowVersion?.changes ?? []}
+                            data={changes ?? []}
                             pages={1}
                             defaultSorted={[{ id: 'updated_at', desc: false }]}
                             columns={changesColumns}
-                            count={workflowVersion?.changes.length}
+                            count={changes?.length}
                             params={params}
                             onTableParamsChange={p =>
                                 dispatch(
@@ -312,13 +323,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             extraProps={{
                                 isLoading,
                                 targetPossibleFieldsByVersion,
+                                changesColumns,
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
                                 <AddChangeModal
                                     versionId={versionId}
-                                    changes={workflowVersion?.changes || []}
+                                    changes={changes || []}
                                     targetPossibleFields={targetPossibleFields}
                                     targetPossibleFieldsByVersion={
                                         targetPossibleFieldsByVersion

@@ -7,6 +7,7 @@ import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
 import { LinkToForm } from '../forms/components/LinkToForm.tsx';
+import getDisplayName from '../../utils/usersUtils.ts';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -72,6 +73,19 @@ export const INSTANCE_METAS_FIELDS = [
         render: value => displayDateFromTimestamp(value),
         tableOrder: 5,
         type: 'info',
+    },
+    {
+        key: 'created_by',
+        accessor: 'created_by__username',
+        active: false,
+        tableOrder: 6,
+        type: 'info',
+        Cell: settings => {
+            const data = settings.row.original;
+            return (
+                <>{data.created_by ? getDisplayName(data.created_by) : '--'}</>
+            );
+        },
     },
     {
         key: 'device_id',

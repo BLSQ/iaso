@@ -4,6 +4,7 @@ from typing import Union, List
 from django.conf.urls import url
 from django.contrib import auth
 from django.urls import path, include, URLPattern, URLResolver
+from iaso.api.data_store import DataStoreViewSet
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
@@ -140,6 +141,8 @@ router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowcha
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
+
+router.register(r"datastore", DataStoreViewSet, basename="datastore")
 
 router.registry.extend(plugins_router.registry)
 

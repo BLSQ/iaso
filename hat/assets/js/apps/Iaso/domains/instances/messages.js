@@ -534,6 +534,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.disableColumnSelectionMessage',
         defaultMessage: 'Apply search to be able to select visible columns',
     },
+    created_by: {
+        id: 'iaso.label.created_by',
+        defaultMessage: 'Created  by',
+    },
 });
 
 export default MESSAGES;

@@ -5,9 +5,9 @@ import React, {
     useCallback,
 } from 'react';
 import { Box, Tabs, Tab, Grid } from '@material-ui/core';
-import { useSkipEffectOnMount } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { ColumnSelect } from '../../instances/components/ColumnSelect';
@@ -21,7 +21,7 @@ import { Column } from '../../../types/table';
 import { Form } from '../../forms/types/forms';
 
 import { useGetForms } from '../hooks/useGetForms';
-import { useGetInstances } from '../hooks/useGetInstances';
+import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
@@ -40,11 +40,23 @@ export const Instances: FunctionComponent<Props> = ({
 }) => {
     const [tableColumns, setTableColumns] = useState<Column[]>([]);
     const { formIds, tab } = params;
-    const [currentType, setCurrentType] = useState<OrgunitType | undefined>();
+    const currentType: OrgunitType | undefined = useMemo(() => {
+        if (subOrgUnitTypes.length > 0) {
+            if (tab) {
+                const existingType: OrgunitType | undefined =
+                    subOrgUnitTypes.find(subType => `${subType.id}` === tab);
+                return existingType || subOrgUnitTypes[0];
+            }
+            return subOrgUnitTypes[0];
+        }
+        return undefined;
+    }, [subOrgUnitTypes, tab]);
 
     const dispatch = useDispatch();
 
     const { data: formsList, isFetching: isFetchingForms } = useGetForms();
+
+    const { url: apiUrl } = useGetInstanceApi(params, currentType?.id);
     const { data, isFetching: isFetchingList } = useGetInstances(
         params,
         currentType?.id,
@@ -63,7 +75,6 @@ export const Instances: FunctionComponent<Props> = ({
 
     const handleChangeTab = useCallback(
         (newType: OrgunitType) => {
-            setCurrentType(newType);
             dispatch(
                 redirectToReplace(baseUrls.registryDetail, {
                     ...params,
@@ -74,17 +85,6 @@ export const Instances: FunctionComponent<Props> = ({
         [dispatch, params],
     );
 
-    useSkipEffectOnMount(() => {
-        if (subOrgUnitTypes?.length > 0 && !currentType) {
-            if (tab) {
-                setCurrentType(
-                    subOrgUnitTypes.find(subType => `${subType.id}` === tab),
-                );
-            } else {
-                setCurrentType(subOrgUnitTypes[0]);
-            }
-        }
-    }, [subOrgUnitTypes]);
     const currentForm: Form | undefined = useMemo(() => {
         return formsList?.find(f => `${f.value}` === formIds)?.original;
     }, [formIds, formsList]);
@@ -99,7 +99,7 @@ export const Instances: FunctionComponent<Props> = ({
                         {subOrgUnitTypes.map(subType => (
                             <Tab
                                 value={subType}
-                                label={subType.name}
+                                label={`${subType.name} (${subType.count})`}
                                 key={subType.id}
                             />
                         ))}
@@ -149,6 +149,20 @@ export const Instances: FunctionComponent<Props> = ({
                                         )}
                                     />
                                 )}
+                                <Box
+                                    display="flex"
+                                    justifyContent="flex-end"
+                                    width="100%"
+                                    mt={2}
+                                >
+                                    <DownloadButtonsComponent
+                                        csvUrl={`${apiUrl}&csv=true`}
+                                        xlsxUrl={`${apiUrl}&xlsx=true`}
+                                        disabled={
+                                            isFetchingList || data?.count === 0
+                                        }
+                                    />
+                                </Box>
                             </Grid>
                         </Grid>
                         <TableWithDeepLink

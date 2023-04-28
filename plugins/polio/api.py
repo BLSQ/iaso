@@ -30,9 +30,17 @@ from rest_framework import routers, filters, viewsets, serializers, permissions,
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.api.common import (
+    CSVExportMixin,
+    HasPermission,
+    ModelViewSet,
+    DeletionFilterBackend,
+    CONTENT_TYPE_XLSX,
+    CONTENT_TYPE_CSV,
+)
 from iaso.models import OrgUnit
 from plugins.polio.serializers import (
+    ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
 )
@@ -325,6 +333,12 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             nid_or_snid = "NID" if country_districts_count == round_districts_count else "sNID"
         else:
             nid_or_snid = ""
+
+        # percentage target population
+        percentage_covered_target_population = (
+            round.percentage_covered_target_population if round.percentage_covered_target_population is not None else ""
+        )
+
         # target population
         target_population = round.target_population if round.target_population is not None else ""
 
@@ -334,6 +348,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             "obr_name": obr_name,
             "vacine": vacine,
             "round_number": round_number,
+            "percentage_covered_target_population": percentage_covered_target_population,
             "target_population": target_population,
             "nid_or_snid": nid_or_snid,
         }
@@ -633,7 +648,8 @@ where group_id = polio_roundscope.group_id""",
         campaigns = campaigns.only("geojson")
         features = []
         for c in campaigns:
-            features.extend(c.geojson)
+            if c.geojson:
+                features.extend(c.geojson)
 
         res = {"type": "FeatureCollection", "features": features}
 
@@ -1620,6 +1636,16 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
+@swagger_auto_schema(tags=["polio-configs"])
+class ConfigViewSet(ModelViewSet):
+    http_method_names = ["get"]
+    serializer_class = ConfigSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return Config.objects.filter(users=self.request.user)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -1638,3 +1664,4 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")

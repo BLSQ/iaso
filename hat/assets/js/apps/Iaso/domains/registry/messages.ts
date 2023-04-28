@@ -85,6 +85,62 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit org unit',
         id: 'iaso.orgUnits.edit',
     },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    withShape: {
+        defaultMessage: 'With territory',
+        id: 'iaso.registry.withShape',
+    },
+    withLocation: {
+        defaultMessage: 'With point',
+        id: 'iaso.registry.withLocation',
+    },
+    noGeographicalData: {
+        defaultMessage: 'Without geography',
+        id: 'iaso.label.noGeographicalData',
+    },
+    addOrgUnitChild: {
+        defaultMessage: 'Add new child org unit',
+        id: 'iaso.registry.addOrgUnitChild',
+    },
+    noInstance: {
+        defaultMessage: 'No submission found for this org unit',
+        id: 'iaso.registry.noInstance',
+    },
+    referenceInstance: {
+        defaultMessage: 'reference submission',
+        id: 'iaso.registry.referenceInstance',
+    },
+    showNames: {
+        defaultMessage: 'Show names',
+        id: 'iaso.registry.showNames',
+    },
+    source: {
+        defaultMessage: 'Source',
+        id: 'iaso.forms.source',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+    actions: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
+    deleteTitle: {
+        id: 'iaso.instance.deleteTitle',
+        defaultMessage: 'Are you sure you want to delete this submission?',
+    },
+    deleteText: {
+        id: 'iaso.instance.deleteText',
+        defaultMessage: 'Undelete is possible on submission detail page',
+    },
 });
 
 export default MESSAGES;

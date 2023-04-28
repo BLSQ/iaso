@@ -31,10 +31,7 @@ import {
 } from '../forms/RiskAssessmentForm';
 import { ScopeForm, scopeFormFields } from '../forms/ScopeForm.tsx';
 import { BudgetForm, budgetFormFields } from '../forms/BudgetForm';
-import {
-    PreparednessForm,
-    preparednessFormFields,
-} from '../forms/PreparednessForm';
+import { PreparednessForm } from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
 import { RoundsForm, roundFormFields } from '../forms/RoundsForm';
 import {

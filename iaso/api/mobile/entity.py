@@ -47,6 +47,8 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_form_version_id(obj: Instance):
+        if obj.json is None:
+            return None
         return FormVersion.objects.get(version_id=obj.json.get("_version"), form_id=obj.form.id).id  # type: ignore
 
 
@@ -72,7 +74,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_instances(entity: Entity):
-        return MobileEntityAttributesSerializer(entity.non_deleted_instances, many=True).data  # type: ignore
+        return MobileEntityAttributesSerializer(entity.instances.filter(deleted=False), many=True).data  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

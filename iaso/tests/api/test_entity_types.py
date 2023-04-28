@@ -207,7 +207,7 @@ class EntityTypeAPITestCase(APITestCase):
         # different account
         EntityType.objects.create(name="beneficiary", reference_form=self.form_1, account=self.the_gang)
 
-        response = self.client.get("/api/mobile/entitytypes/")
+        response = self.client.get(f"/api/mobile/entitytypes/?app_id={self.project.app_id}")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["count"], 1)
@@ -317,7 +317,7 @@ class EntityTypeAPITestCase(APITestCase):
         entity_type.refresh_from_db()
         second_entity_type.refresh_from_db()
 
-        response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/")
+        response = self.client.get(f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}")
 
         var_dump(response.json())
 
@@ -331,7 +331,9 @@ class EntityTypeAPITestCase(APITestCase):
         self.assertEqual(response_entity_instance[0]["json"]["muac"], "13")
         self.assertEqual(response_entity_instance[0]["json"], instance.json)
 
-        response = self.client.get(f"/api/mobile/entitytypes/{second_entity_type.pk}/entities/")
+        response = self.client.get(
+            f"/api/mobile/entitytypes/{second_entity_type.pk}/entities/?app_id={self.project.app_id}"
+        )
 
         var_dump(response)
 
@@ -454,7 +456,8 @@ class EntityTypeAPITestCase(APITestCase):
 
         json_content = json.dumps({"in": ["prince", {"var": "name"}]})
         response = self.client.get(
-            f"/api/mobile/entitytypes/{entity_type.pk}/entities/", {"json_content": json_content}
+            f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}",
+            {"json_content": json_content},
         )
         self.assertEqual(response.json()["count"], 1)
 
@@ -469,7 +472,7 @@ class EntityTypeAPITestCase(APITestCase):
         EntityType.objects.create(name="restricted", reference_form=self.form_1, account=self.the_gang)
         EntityType.objects.create(name="allowed", reference_form=self.form_1, account=self.yoda.iaso_profile.account)
 
-        response = self.client.get("/api/mobile/entitytypes/")
+        response = self.client.get(f"/api/mobile/entitytypes/?app_id={self.project.app_id}")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["count"], 1)

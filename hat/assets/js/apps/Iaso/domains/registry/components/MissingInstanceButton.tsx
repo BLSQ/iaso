@@ -1,13 +1,18 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
+import { useDispatch } from 'react-redux';
 import { useSafeIntl } from 'bluesquare-components';
 import { Button, Tooltip, makeStyles } from '@material-ui/core';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { RegistryDetailParams } from '../types';
 
 import MESSAGES from '../messages';
+import { baseUrls } from '../../../constants/urls';
+import { redirectToReplace } from '../../../routing/actions';
 
 type Props = {
+    params: RegistryDetailParams;
     missingOrgUnits: OrgUnit[];
     onClick: () => void;
 };
@@ -35,9 +40,20 @@ const useStyles = makeStyles(theme => ({
 export const MissingInstanceButton: FunctionComponent<Props> = ({
     missingOrgUnits,
     onClick,
+    params,
 }) => {
+    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const handleClick = useCallback(() => {
+        dispatch(
+            redirectToReplace(baseUrls.registryDetail, {
+                ...params,
+                missingSubmissionVisible: true,
+            }),
+        );
+        onClick();
+    }, [dispatch, onClick, params]);
     return (
         <Tooltip
             arrow
@@ -46,7 +62,7 @@ export const MissingInstanceButton: FunctionComponent<Props> = ({
             })}
         >
             <Button
-                onClick={onClick}
+                onClick={handleClick}
                 variant="contained"
                 className={classes.button}
             >

@@ -17,7 +17,6 @@ import { LoadingSpinner } from 'bluesquare-components';
 import { Box, useTheme } from '@material-ui/core';
 
 import { keyBy } from 'lodash';
-import { useGetOrgUnitsMapChildren } from '../hooks/useGetOrgUnit';
 
 import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
 import { MapLegend } from './MapLegend';
@@ -47,20 +46,20 @@ import { Optional } from '../../../types/utils';
 type Props = {
     orgUnit: OrgUnit;
     subOrgUnitTypes: OrgunitTypes;
+    orgUnitChildren?: OrgUnit[];
+    isFetchingChildren: boolean;
 };
 
 export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
+    orgUnitChildren,
+    isFetchingChildren,
 }) => {
     const theme = useTheme();
     const map: any = useRef();
     const bounds = useRef<Optional<Bounds | undefined>>();
 
-    const { data: childrenOrgUnits, isFetching } = useGetOrgUnitsMapChildren(
-        `${orgUnit.id}`,
-        subOrgUnitTypes,
-    );
     const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
     const [isMapFitted, setIsMapFitted] = useState<boolean>(false);
     const [legendOptions, setLegendOptions] = useState<Legend[]>(
@@ -75,11 +74,11 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     );
     const activeChildren: OrgUnit[] = useMemo(
         () =>
-            childrenOrgUnits?.filter(
+            orgUnitChildren?.filter(
                 children =>
                     optionsObject[`${children.org_unit_type_id}`]?.active,
             ) || [],
-        [childrenOrgUnits, optionsObject],
+        [orgUnitChildren, optionsObject],
     );
     const isOrgUnitActive: boolean =
         optionsObject[`${orgUnit.id}`]?.active || false;
@@ -93,13 +92,13 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     }, [activeChildren, isOrgUnitActive, orgUnit]);
 
     useEffect(() => {
-        if (!isFetching && childrenOrgUnits && !isMapFitted) {
+        if (!isFetchingChildren && orgUnitChildren && !isMapFitted) {
             tryFitToBounds(bounds.current, map.current);
             setIsMapFitted(true);
         }
-    }, [isFetching, childrenOrgUnits, isMapFitted, bounds]);
+    }, [isFetchingChildren, orgUnitChildren, isMapFitted, bounds]);
 
-    if (isFetching)
+    if (isFetchingChildren)
         return (
             <Box position="relative" height={500}>
                 <LoadingSpinner absolute />

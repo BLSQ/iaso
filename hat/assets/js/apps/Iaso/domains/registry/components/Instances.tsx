@@ -189,10 +189,16 @@ export const Instances: FunctionComponent<Props> = ({
                                             missingOrgUnits={
                                                 OrgUnitsWithoutCurrentForm
                                             }
+                                            params={params}
                                             iconProps={{
                                                 missingOrgUnits:
                                                     OrgUnitsWithoutCurrentForm,
+                                                params,
                                             }}
+                                            defaultOpen={
+                                                params.missingSubmissionVisible ===
+                                                'true'
+                                            }
                                         />
                                     )}
                                 </Box>

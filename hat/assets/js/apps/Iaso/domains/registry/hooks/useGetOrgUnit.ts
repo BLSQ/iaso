@@ -61,7 +61,7 @@ export const useGetOrgUnitListChildren = (
         queryFn: () => getRequest(url),
         options: {
             keepPreviousData: true,
-            enabled: Boolean(orgUnitParentId),
+            enabled: Boolean(orgUnitParentId && orgUnitTypes),
             select: data => {
                 if (!data) return undefined;
                 const orgunits: OrgUnit[] = data.orgunits.filter(
@@ -81,7 +81,7 @@ type Result = {
 };
 export const useGetOrgUnitsMapChildren = (
     orgUnitParentId: string,
-    orgUnitTypes: OrgunitTypes,
+    orgUnitTypes?: OrgunitTypes,
 ): UseQueryResult<OrgUnit[], Error> => {
     const params: Record<string, any> = {
         validation_status: 'VALID',
@@ -89,22 +89,18 @@ export const useGetOrgUnitsMapChildren = (
         withShapes: true,
         onlyDirectChildren: true,
     };
-
+    if (orgUnitTypes && orgUnitTypes.length > 0) {
+        params.orgUnitTypeId = orgUnitTypes
+            .map(orgunitType => orgunitType.id)
+            .join(',');
+    }
     const url = makeUrlWithParams('/api/orgunits/', params);
     return useSnackQuery({
         queryKey: ['orgUnits', params],
         queryFn: () => getRequest(url),
         options: {
-            select: (data: Result): OrgUnit[] => {
-                if (!data) return [];
-                const { orgUnits } = data;
-                // adding this because backend can send children that are not sub org unit types of the parent org unit type
-                return orgUnits?.filter(child =>
-                    orgUnitTypes.some(
-                        subType => subType.id === child.org_unit_type_id,
-                    ),
-                );
-            },
+            enabled: Boolean(orgUnitParentId && orgUnitTypes),
+            select: (data: Result): OrgUnit[] => data?.orgUnits || [],
         },
     });
 };

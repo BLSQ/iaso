@@ -198,4 +198,4 @@ class OrgUnitTreeSearchSerializer(TimestampSerializerMixin, serializers.ModelSer
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "validation_status", "has_children"]
+        fields = ["id", "name", "validation_status", "has_children", "org_unit_type_id"]

@@ -95,7 +95,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
             if project.account is None and (not user or not user.is_authenticated):
                 raise AuthenticationFailed(f"Project Account is None or User not Authentified for app_id {app_id}")
 
-            queryset = queryset.filter(account=project.account, instances__project=project, attributes__project=project)
+            queryset = queryset.filter(account=project.account)
 
         except Project.DoesNotExist:
             if not user or not user.is_authenticated:

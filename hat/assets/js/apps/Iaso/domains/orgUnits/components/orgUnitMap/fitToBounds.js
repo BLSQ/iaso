@@ -36,7 +36,7 @@ const fitToBounds = ({
             }
             bounds = otherBounds.extend(bounds);
             map.fitBounds(bounds, {
-                maxZoom: 10,
+                maxZoom: currentTile.maxZoom,
                 padding,
                 animate: false,
             });

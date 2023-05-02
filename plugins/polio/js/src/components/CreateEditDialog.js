@@ -112,6 +112,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         validationSchema: schema,
         onSubmit: handleSubmit,
     });
+    const { touched } = formik;
 
     const handleClose = () => {
         formik.resetForm();
@@ -217,8 +218,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
-                if (reason === 'backdropClick') {
+                if (reason === 'backdropClick' && !isEqual(touched, {})) {
                     setIsBackdropOpen(true);
+                } else if (reason === 'backdropClick' && isEqual(touched, {})) {
+                    handleClose();
                 }
             }}
             scroll="body"

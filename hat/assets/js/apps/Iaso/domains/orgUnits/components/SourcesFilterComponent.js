@@ -13,7 +13,6 @@ import { getSourcesWithoutCurrentSource } from '../utils';
 import MESSAGES from '../../forms/messages';
 
 const SourcesFilterComponent = ({
-    fitToBounds,
     sourcesSelected,
     setSourcesSelected,
     currentSources,
@@ -52,7 +51,6 @@ const SourcesFilterComponent = ({
             setIsLoading(false);
             setSourcesSelected(fullSources || []);
         }
-        fitToBounds();
     };
     return (
         <Box m={4}>
@@ -87,7 +85,6 @@ SourcesFilterComponent.defaultProps = {
 };
 
 SourcesFilterComponent.propTypes = {
-    fitToBounds: PropTypes.func.isRequired,
     sourcesSelected: PropTypes.array.isRequired,
     setSourcesSelected: PropTypes.func.isRequired,
     currentSources: PropTypes.array.isRequired,

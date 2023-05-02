@@ -41,16 +41,7 @@ def send_notification_email(campaign):
     emails = [user.email for user in users if user.email]
     if not emails:
         return False
-    # day_number = (
-    #     (now().date() - campaign.cvdpv2_notified_at).days
-    #     if campaign.cvdpv2_notified_at
-    #     else "{Error: No cVDPV notification available. Enter a notification date in order to have the days count.}"
-    # )
-    # onset_days = (
-    #     (campaign.cvdpv2_notified_at - campaign.onset_at).days
-    #     if campaign.onset_at and campaign.cvdpv2_notified_at
-    #     else "{Error: No cVDPV notification or campaign on set available. Enter a date in order to have the days count.}"
-    # )
+
     try:
         first_round = campaign.rounds.earliest("number")
         next_round = campaign.rounds.filter(started_at__gte=now().date()).order_by("started_at").first()
@@ -80,7 +71,7 @@ def send_notification_email(campaign):
     if lang == "fr":
         email_text = f"""Cher·ère coordinateur.rice de la GPEI – {country.name},
 
-Statut hebdomadaire: Il reste {next_round_days_left} jours avant le début de la campagne. 
+Statut hebdomadaire: Il reste {next_round_days_left} jours avant le début du prochain round. 
 Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles dans la plateforme. Pour plus de détails, cliquez ici: https://afro-rrt-who.hub.arcgis.com/pages/country-summary. S'il manque des données ou s'il y a des mises à jour à effectuer, cliquez ici {url} pour mettre à jour.
 
 * Date de notification              : {c.cvdpv2_notified_at}
@@ -89,7 +80,7 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 * Population cible                  : {target_population} 
 * RA Date de l'approbation RRT/ORPG  : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
-* Lien vers la preperadness google sheet du Round {next_round_number} : {next_round_preparedness_spreadsheet_url}
+* Lien vers la preparedness google sheet du Round {next_round_number} : {next_round_preparedness_spreadsheet_url}
 * Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
 * Prep. régional                 : {preparedness.get('regional_score') if preparedness else ''}
 * Prep. district                 : {preparedness.get('district_score') if preparedness else ''}
@@ -101,7 +92,7 @@ Ceci est un message automatique.
     elif lang == "pt":
         email_text = f"""Prezado(a) coordenador(a) da GPEI – {country.name},
 
-Estado semanal: passaram-se {next_round_days_left} dias desde a data de notificação da campanha.
+Estado semanal: Faltam {next_round_days_left} dias para o início da próxima ronda.
 Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis na plataforma. Para mais detalhes, clique em: https://afro-rrt-who.hub.arcgis.com/pages/country-summary . Se faltarem dados ou houverem atualizações a serem feitas, por favor clique em {url} para atualizar.
 
 * Data de notificação: {c.cvdpv2_notified_at}
@@ -109,8 +100,8 @@ Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis
 * Tipo de vacina: {c.vaccines}
 * População-alvo: {target_population}
 * RA Data de aprovação RRT/ORPG: {c.risk_assessment_rrt_oprtt_approval_at}
-* Data de envio do orçamento:   {c.submitted_to_rrt_at_WFEDITABLE}
-* Link to {next_round_number}  preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
+* Data de envio do orçamento:  {c.submitted_to_rrt_at_WFEDITABLE}
+* Link to {next_round_number} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
 * Prep. nacional: {preparedness.get('national_score') if preparedness else ''}
 * Prep. regional: {preparedness.get('regional_score') if preparedness else ''}
 * Prep. distrital: {preparedness.get('district_score') if preparedness else ''}
@@ -122,7 +113,7 @@ Esta é uma mensagem automática.
     else:
         email_text = f"""Dear GPEI coordinator – {country.name},
 
-Weekly status update: Today is day {next_round_days_left} to Round {next_round.number} start date.
+Weekly status update: Today is day {next_round_days_left} to Round {next_round_number} start date.
 Below is the summary of the campaign {c.obr_name}. For more details, visit https://afro-rrt-who.hub.arcgis.com/pages/country-summary
 If there are missing data or dates; visit {url} to update
 

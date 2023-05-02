@@ -13,4 +13,7 @@ export type RegistryDetailParams = UrlParams & {
     orgUnitListOrder?: string;
     orgUnitListPage?: string;
     submissionId?: string;
+    missingSubmissionVisible?: 'true';
+    showTooltip?: 'true';
+    isFullScreen?: 'true';
 };

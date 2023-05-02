@@ -50,6 +50,7 @@ def enketo_create_url(request):
     form_id = request.data.get("form_id")
     period = request.data.get("period", None)
     org_unit_id = request.data.get("org_unit_id")
+    return_url = request.data.get("return_url", None)
 
     uuid = str(uuid4())
     form = get_object_or_404(Form, id=form_id)
@@ -67,10 +68,12 @@ def enketo_create_url(request):
     i.save()
 
     try:
+        if not return_url:
+            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id)
         edit_url = enketo_url_for_creation(
             server_url=public_url_for_enketo(request, "/api/enketo"),
             uuid=uuid,
-            return_url=request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id),
+            return_url=return_url,
         )
 
         return JsonResponse({"edit_url": edit_url}, status=201)

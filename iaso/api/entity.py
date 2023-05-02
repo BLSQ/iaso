@@ -141,7 +141,7 @@ class EntityViewSet(ModelViewSet):
     results_key = "entities"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
 
     def get_serializer_class(self):
         return EntitySerializer

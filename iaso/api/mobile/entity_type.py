@@ -1,7 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, AuthenticationFailed, NotFound
 
 from iaso.api.common import ModelViewSet, TimestampField
 from iaso.api.mobile.entity import (
@@ -10,7 +10,11 @@ from iaso.api.mobile.entity import (
     filter_for_mobile_entity,
     get_queryset_for_user_and_app_id,
 )
-from iaso.models import Entity, EntityType
+from iaso.models import Entity, EntityType, Project
+from iaso.models.entity import (
+    ProjectNotFoundAndUserNotAuthError,
+    ProjectWithoutAccountAndUserNotAuthError,
+)
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):
@@ -77,7 +81,25 @@ class MobileEntityTypesViewSet(ModelViewSet):
         return MobileEntityTypeSerializer
 
     def get_queryset(self):
-        queryset = EntityType.objects.filter(account=self.request.user.iaso_profile.account)
+        app_id = self.request.query_params.get("app_id")
+        user = self.request.user
+
+        queryset = EntityType.objects.filter(account=user.iaso_profile.account)
+
+        if not app_id:
+            raise ParseError("app_id is required")
+
+        try:
+            project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+            if project.account is None and (not user or not user.is_authenticated):
+                raise AuthenticationFailed(f"Project Account is None or User not Authentified for app_id {app_id}")
+
+            queryset = queryset.filter(account=project.account, instances__project=project, attributes__project=project)
+
+        except Project.DoesNotExist:
+            if not user or not user.is_authenticated:
+                raise NotFound(f"Project Not Found and User not Authentified for app_id {app_id}")
 
         return queryset
 

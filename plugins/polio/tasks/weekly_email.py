@@ -60,7 +60,10 @@ def send_notification_email(campaign):
 
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
-
+    next_round_date = ""
+    next_round_number = ""
+    next_round_preparedness_spreadsheet_url = ""
+    next_round_days_left = ""
     if next_round:
         next_round_date = next_round.started_at if next_round else ""
         next_round_number = next_round.number if next_round else ""

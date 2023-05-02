@@ -116,7 +116,8 @@ class MobileEntityViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     pagination_class = LargeResultsSetPagination
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
+
     lookup_field = "uuid"
 
     def get_serializer_class(self):

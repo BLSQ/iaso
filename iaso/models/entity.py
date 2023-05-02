@@ -75,6 +75,14 @@ class InvalidJsonContentError(ValidationError):
     pass
 
 
+class ProjectNotFoundAndUserNotAuthError(ValidationError):
+    pass
+
+
+class ProjectWithoutAccountAndUserNotAuthError(ValidationError):
+    pass
+
+
 class EntityQuerySet(models.QuerySet):
     def filter_for_mobile_entity(self, limit_date=None, json_content=None):
         if limit_date:
@@ -116,13 +124,17 @@ class EntityQuerySet(models.QuerySet):
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
 
                 if project.account is None and (not user or not user.is_authenticated):
-                    return self.none()
+                    raise ProjectWithoutAccountAndUserNotAuthError(
+                        f"Project Account is None or User not Authentified for app_id {app_id}"
+                    )  # Should be a 401
 
                 self = self.filter(account=project.account, instances__project=project, attributes__project=project)
 
             except Project.DoesNotExist:
                 if not user or not user.is_authenticated:
-                    return self.none()
+                    raise ProjectNotFoundAndUserNotAuthError(
+                        f"Project Not Found and User not Authentified for app_id {app_id}"
+                    )  # Should be a 404
 
         return self
 

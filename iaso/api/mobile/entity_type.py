@@ -4,7 +4,12 @@ from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
 
 from iaso.api.common import ModelViewSet, TimestampField
-from iaso.api.mobile.entity import LargeResultsSetPagination, MobileEntitySerializer, filter_for_mobile_entity
+from iaso.api.mobile.entity import (
+    LargeResultsSetPagination,
+    MobileEntitySerializer,
+    filter_for_mobile_entity,
+    get_queryset_for_user_and_app_id,
+)
 from iaso.models import Entity, EntityType
 
 
@@ -88,12 +93,12 @@ class MobileEntityTypesViewSet(ModelViewSet):
         if not type_pk:
             raise ParseError("type_pk is required")
 
-        queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
+        queryset = get_queryset_for_user_and_app_id(user, app_id)
 
         if queryset:
             queryset = queryset.filter(entity_type__pk=type_pk)
 
-        filter_for_mobile_entity(queryset, self.request)
+        queryset = filter_for_mobile_entity(queryset, self.request)
 
         page = self.paginate_queryset(queryset)
         serializer = MobileEntitySerializer(page, many=True)

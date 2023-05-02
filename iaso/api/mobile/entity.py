@@ -2,13 +2,18 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import permissions
-from rest_framework.exceptions import ParseError
+from rest_framework.exceptions import ParseError, AuthenticationFailed, NotFound
 
 
 from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
 from iaso.api.query_params import LIMIT, PAGE
 from iaso.models import Entity, FormVersion, Instance, OrgUnit
-from iaso.models.entity import InvalidJsonContentError, InvalidLimitDateError
+from iaso.models.entity import (
+    InvalidJsonContentError,
+    InvalidLimitDateError,
+    ProjectNotFoundAndUserNotAuthError,
+    ProjectWithoutAccountAndUserNotAuthError,
+)
 
 
 def filter_for_mobile_entity(queryset, request):
@@ -21,6 +26,17 @@ def filter_for_mobile_entity(queryset, request):
             raise ParseError(e.message)
         except InvalidJsonContentError as e:
             raise ParseError(e.message)
+
+    return queryset
+
+
+def get_queryset_for_user_and_app_id(user, app_id):
+    try:
+        queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
+    except ProjectNotFoundAndUserNotAuthError as e:
+        raise NotFound(e.message)
+    except ProjectWithoutAccountAndUserNotAuthError as e:
+        raise AuthenticationFailed(e.message)
 
     return queryset
 
@@ -113,16 +129,14 @@ class MobileEntityViewSet(ModelViewSet):
         if not app_id:
             raise ParseError("app_id is required")
 
-        queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
+        queryset = get_queryset_for_user_and_app_id(user, app_id)
 
-        filter_for_mobile_entity(queryset, self.request)
+        queryset = filter_for_mobile_entity(queryset, self.request)
 
         # we give all entities having an instance linked to the one of the org units allowed for the current user
         if queryset and user and user.is_authenticated:
             orgunits = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
             if orgunits and len(orgunits) > 0:
                 queryset = queryset.filter(instances__org_unit__in=orgunits)
-            else:
-                queryset = queryset.none()
 
         return queryset

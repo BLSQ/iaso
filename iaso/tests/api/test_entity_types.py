@@ -254,7 +254,9 @@ class EntityTypeAPITestCase(APITestCase):
         }
         instance2.save()
 
-        instance3 = Instance.objects.create(period=202001, form=self.form_1, org_unit=self.jedi_council_corruscant)
+        instance3 = Instance.objects.create(
+            period=202001, form=self.form_1, org_unit=self.jedi_council_corruscant, project=self.project
+        )
         instance3.file = file
         instance3.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29733"
         instance3.json = {
@@ -405,7 +407,7 @@ class EntityTypeAPITestCase(APITestCase):
             name="Heroes", reference_form=self.form_1, account=self.yoda.iaso_profile.account
         )
 
-        instance = Instance.objects.create(period=202001, form=self.form_1)
+        instance = Instance.objects.create(period=202001, form=self.form_1, project=self.project)
         instance.org_unit = self.jedi_council_corruscant
         instance.file = File(open("iaso/tests/fixtures/test_entity_data.xml", "rb"))
         instance.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29730"
@@ -429,12 +431,12 @@ class EntityTypeAPITestCase(APITestCase):
         instance.save()
 
         # this one shouldn't appear as it is linked to a unvalidated org unit.
-        instance2 = Instance.objects.create(period=202001, form=self.form_1)
+        instance2 = Instance.objects.create(period=202001, form=self.form_1, project=self.project)
         instance2.org_unit = self.jedi_council_corruscant
         instance2.file = File(open("iaso/tests/fixtures/test_entity_data2.xml", "rb"))
         instance2.uuid = "2b05d9ab-2ak9-4080-ab4d-03661fb29731"
         instance2.json = {
-            "name": "Prince of Euphor",
+            "name": "robert of Euphor",
             "father_name": "Professor Procyon",
             "age_type": 0,
             "birth_date": "1978-07-03",
@@ -454,10 +456,11 @@ class EntityTypeAPITestCase(APITestCase):
 
         entity_type.refresh_from_db()
 
-        json_content = json.dumps({"in": ["prince", {"var": "name"}]})
+        json_content = json.dumps({"in": ["robert", {"var": "name"}]})
         response = self.client.get(
-            f"/api/mobile/entitytypes/{entity_type.pk}/entities/?app_id={self.project.app_id}",
-            {"json_content": json_content},
+            f"/api/mobile/entitytypes/{entity_type.pk}/entities/",
+            {"json_content": json_content, "app_id": self.project.app_id},
+            format="json",
         )
         self.assertEqual(response.json()["count"], 1)
 

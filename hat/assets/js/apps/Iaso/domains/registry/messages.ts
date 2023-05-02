@@ -141,6 +141,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.deleteText',
         defaultMessage: 'Undelete is possible on submission detail page',
     },
+    missingSubmission: {
+        id: 'iaso.registry.missingSubmission',
+        defaultMessage: 'Missing submissions',
+    },
+    missingSubmissionCount: {
+        id: 'iaso.registry.missingSubmissionCount',
+        defaultMessage: '{count} org unit(s) without submission for this form',
+    },
+    createOnEnketo: {
+        id: 'iaso.registry.createOnEnketo',
+        defaultMessage: 'Create on Enketo',
+    },
+    add: {
+        id: 'iaso.label.add',
+        defaultMessage: 'Add',
+    },
 });
 
 export default MESSAGES;

@@ -1,7 +1,6 @@
 import { useDispatch } from 'react-redux';
-import { getRequest } from '../../../libs/Api';
 
-import { Instance } from '../../instances/types/instance';
+import { postRequest } from '../../../libs/Api';
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../../constants/snackBars';
 
@@ -10,16 +9,19 @@ type Result = {
     edit_url: string;
 };
 
-export const useGetEnketoUrl = (
+export const useGetCreateInstance = (
     returnUrl: string,
-    instance?: Instance,
-): (() => void) => {
+    formId?: string,
+    // eslint-disable-next-line no-unused-vars
+): ((orgUnitId: number) => void) => {
     const dispatch = useDispatch();
-    const getEnketoUrl = () => {
-        if (instance) {
-            getRequest(
-                `/api/enketo/edit/${instance.uuid}?return_url=${returnUrl}`,
-            )
+    const createInstance = (orgUnitId: number) => {
+        if (formId) {
+            postRequest('/api/enketo/create/', {
+                org_unit_id: orgUnitId,
+                form_id: formId,
+                return_url: returnUrl,
+            })
                 .then((res: Result) => {
                     window.location.href = res.edit_url;
                 })
@@ -32,5 +34,5 @@ export const useGetEnketoUrl = (
                 });
         }
     };
-    return getEnketoUrl;
+    return createInstance;
 };

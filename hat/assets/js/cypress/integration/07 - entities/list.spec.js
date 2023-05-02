@@ -88,7 +88,7 @@ describe('Entities', () => {
 
         cy.intercept(
             'GET',
-            '/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
             {
                 fixture: 'orgunits/list.json',
             },

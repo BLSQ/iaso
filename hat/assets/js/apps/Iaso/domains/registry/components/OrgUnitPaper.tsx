@@ -33,8 +33,10 @@ type Props = {
     orgUnit: OrgUnit;
     subOrgUnitTypes: OrgunitTypes;
     params: RegistryDetailParams;
-    orgUnitChildren?: OrgUnitListChildren;
-    isFetchingChildren: boolean;
+    orgUnitListChildren?: OrgUnitListChildren;
+    isFetchingListChildren: boolean;
+    orgUnitMapChildren?: OrgUnit[];
+    isFetchingMapChildren: boolean;
 };
 
 const useStyles = makeStyles(theme => ({
@@ -84,8 +86,10 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
     orgUnit,
     subOrgUnitTypes,
     params,
-    orgUnitChildren,
-    isFetchingChildren,
+    orgUnitListChildren,
+    isFetchingListChildren,
+    orgUnitMapChildren,
+    isFetchingMapChildren,
 }) => {
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState<OrgUnitListTab>(
@@ -161,6 +165,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                     <OrgUnitChildrenMap
                         orgUnit={orgUnit}
                         subOrgUnitTypes={subOrgUnitTypes}
+                        orgUnitChildren={orgUnitMapChildren}
+                        isFetchingChildren={isFetchingMapChildren}
                     />
                 </Box>
                 <Box
@@ -170,8 +176,8 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                 >
                     <OrgUnitChildrenList
                         params={params}
-                        orgUnitChildren={orgUnitChildren}
-                        isFetchingChildren={isFetchingChildren}
+                        orgUnitChildren={orgUnitListChildren}
+                        isFetchingChildren={isFetchingListChildren}
                     />
                 </Box>
             </Box>

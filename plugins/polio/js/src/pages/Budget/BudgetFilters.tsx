@@ -10,6 +10,7 @@ import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useGetCountries } from '../../hooks/useGetCountries';
+import { useGetGroups } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 
 type Props = {
     params: UrlParams & {
@@ -18,6 +19,7 @@ type Props = {
         roundStartTo: string;
         roundStartFrom: string;
         country__id__in: any;
+        orgUnitGroups: any;
         campaign: string;
         // eslint-disable-next-line camelcase
         budget_current_state_key__in: string;
@@ -38,6 +40,8 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     const theme = useTheme();
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     const { data, isFetching: isFetchingCountries } = useGetCountries();
+    const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
+        useGetGroups({ blockOfCountries: 'True' });
     const countriesList = (data && data.orgUnits) || [];
     return (
         <Box mb={4}>
@@ -53,8 +57,6 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         onErrorChange={setTextSearchError}
                         blockForbiddenChars
                     />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         type="select"
                         multi={false}
@@ -63,6 +65,19 @@ export const BudgetFilters: FunctionComponent<Props> = ({
                         value={filters.budget_current_state_key__in}
                         options={statesList}
                         label={MESSAGES.status}
+                    />
+                </Grid>
+                <Grid item xs={12} sm={6} md={3}>
+                    <InputComponent
+                        loading={isFetchingGroupedOrgUnits}
+                        keyValue="orgUnitGroups"
+                        multi
+                        clearable
+                        onChange={handleChange}
+                        value={filters.orgUnitGroups}
+                        type="select"
+                        options={groupedOrgUnits}
+                        label={MESSAGES.countryBlock}
                     />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>

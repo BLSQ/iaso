@@ -11,7 +11,7 @@ import { withRouter } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import DatesRange from 'Iaso/components/filters/DatesRange';
-
+import { useGetGroups } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns.ts';
@@ -37,11 +37,18 @@ const campaignTypeOptions = (formatMessage, showTest = false) => {
     return options;
 };
 
-const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
+const Filters = ({
+    router,
+    disableDates,
+    disableOnlyDeleted,
+    isCalendar,
+    showTest,
+}) => {
     const { formatMessage } = useSafeIntl();
     const { params } = router;
     const [filtersUpdated, setFiltersUpdated] = useState(false);
     const [countries, setCountries] = useState(params.countries);
+    const [orgUnitGroups, setOrgUnitGroups] = useState(params.orgUnitGroups);
     const [campaignType, setCampaignType] = useState(params.campaignType);
     const [campaignGroups, setCampaignGroups] = useState(params.campaignGroups);
     const [search, setSearch] = useState(params.search);
@@ -54,6 +61,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
     const [roundStartTo, set1StartTo] = useState(
         dateApiToDateRangePicker(params.roundStartTo),
     );
+
     const dispatch = useDispatch();
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
@@ -67,6 +75,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                 campaignType,
                 showOnlyDeleted: showOnlyDeleted || undefined,
                 campaignGroups,
+                orgUnitGroups,
             };
             const url = genUrl(router, urlParams);
             dispatch(replace(url));
@@ -78,14 +87,17 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
         roundStartFrom,
         roundStartTo,
         campaignType,
-        campaignGroups,
         showOnlyDeleted,
+        campaignGroups,
+        orgUnitGroups,
         router,
         dispatch,
     ]);
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
         useGetGroupedCampaigns();
+    const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
+        useGetGroups({ blockOfCountries: 'True' });
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({
@@ -110,12 +122,29 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
         showOnlyDeleted,
         campaignType,
         campaignGroups,
+        orgUnitGroups,
     ]);
 
     useEffect(() => {
         setFiltersUpdated(false);
     }, []);
-
+    const GroupedCampaignsInput = () => {
+        return (
+            <InputComponent
+                loading={isFetchingGroupedGroups}
+                keyValue="campaignGroups"
+                clearable
+                multi
+                onChange={(_key, value) => {
+                    setCampaignGroups(value);
+                }}
+                value={campaignGroups}
+                type="select"
+                options={groupedCampaignsOptions}
+                label={MESSAGES.groupedCampaigns}
+            />
+        );
+    };
     return (
         <>
             <Grid container spacing={2}>
@@ -133,29 +162,19 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                         onErrorChange={setTextSearchError}
                     />
                     <InputComponent
-                        loading={isFetchingGroupedGroups}
-                        keyValue="campaignGroups"
-                        clearable
+                        loading={isFetchingGroupedOrgUnits}
+                        keyValue="orgUnitGroups"
                         multi
-                        onChange={(_key, value) => {
-                            setCampaignGroups(value);
+                        clearable
+                        onChange={(key, value) => {
+                            setOrgUnitGroups(value);
                         }}
-                        value={campaignGroups}
+                        value={orgUnitGroups}
                         type="select"
-                        options={groupedCampaignsOptions}
-                        label={MESSAGES.groupedCampaigns}
+                        options={groupedOrgUnits}
+                        label={MESSAGES.countryBlock}
                     />
-                    {!disableOnlyDeleted && (
-                        <InputComponent
-                            keyValue="showOnlyDeleted"
-                            onChange={(key, value) => {
-                                setShowOnlyDeleted(value);
-                            }}
-                            value={showOnlyDeleted}
-                            type="checkbox"
-                            label={MESSAGES.showOnlyDeleted}
-                        />
-                    )}
+                    {!isCalendar && <GroupedCampaignsInput />}
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -186,7 +205,23 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                         }))}
                         label={MESSAGES.country}
                     />
+                    {!disableOnlyDeleted && (
+                        <InputComponent
+                            keyValue="showOnlyDeleted"
+                            onChange={(key, value) => {
+                                setShowOnlyDeleted(value);
+                            }}
+                            value={showOnlyDeleted}
+                            type="checkbox"
+                            label={MESSAGES.showOnlyDeleted}
+                        />
+                    )}
                 </Grid>
+                {isCalendar && (
+                    <Grid item xs={12} md={3}>
+                        <GroupedCampaignsInput />
+                    </Grid>
+                )}
                 {!disableDates && (
                     <Grid item xs={12} md={3}>
                         <DatesRange
@@ -213,7 +248,7 @@ const Filters = ({ router, disableDates, disableOnlyDeleted, showTest }) => {
                     container
                     item
                     xs={12}
-                    md={!disableDates ? 3 : 6}
+                    md={!disableDates || isCalendar ? 3 : 6}
                     justifyContent="flex-end"
                 >
                     <Box mt={isLargeLayout ? 2 : 0}>
@@ -239,6 +274,7 @@ Filters.defaultProps = {
     baseUrl: '',
     disableDates: false,
     disableOnlyDeleted: false,
+    isCalendar: false,
     showTest: false,
 };
 
@@ -247,6 +283,7 @@ Filters.propTypes = {
     router: PropTypes.object.isRequired,
     disableDates: PropTypes.bool,
     disableOnlyDeleted: PropTypes.bool,
+    isCalendar: PropTypes.bool,
     showTest: PropTypes.bool,
 };
 

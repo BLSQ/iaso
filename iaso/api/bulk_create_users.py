@@ -191,6 +191,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         }
                                     )
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
+                    # Using try except for dhis2_id in case users are being created with an older version of the template
+                    try:
+                        dhis2_id = row[csv_indexes.index("dhis2_id")]
+                    except ValueError:
+                        dhis2_id = None
+                    if dhis2_id:
+                        profile.dhis2_id = dhis2_id
                     try:
                         user_permissions = row[csv_indexes.index("permissions")].split(",")
                         for perm in user_permissions:

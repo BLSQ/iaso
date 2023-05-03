@@ -21,6 +21,7 @@ type Options = {
     showOnlyDeleted?: boolean;
     campaignType?: CampaignType;
     campaignGroups?: number[];
+    orgUnitGroups?: number[];
     show_test?: boolean;
     enabled?: boolean;
     last_budget_event__status?: string;
@@ -38,6 +39,7 @@ type GetCampaignsParams = {
     deletion_status?: string;
     campaign_type?: CampaignType;
     campaign_groups?: number[];
+    org_unit_groups?: number[];
     show_test?: boolean;
     // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
     enabled?: boolean;
@@ -73,6 +75,7 @@ const useGetCampaignsOptions = (
             deletion_status: options.showOnlyDeleted ? 'deleted' : undefined,
             campaign_type: options.campaignType ?? 'all',
             campaign_groups: options.campaignGroups,
+            org_unit_groups: options.orgUnitGroups,
             show_test: options.show_test ?? false,
             // Ugly fix to prevent the full list of campaigns showing when waiting for the value of countries
             enabled: options.enabled ?? true,
@@ -88,6 +91,7 @@ const useGetCampaignsOptions = (
             options.fieldset,
             options.last_budget_event__status,
             options.order,
+            options.orgUnitGroups,
             options.page,
             options.pageSize,
             options.roundStartFrom,
@@ -155,6 +159,7 @@ export const useCampaignParams = (params: Options): Options => {
             show_test: showTest,
             last_budget_event__status: params.last_budget_event__status,
             fieldset: 'list',
+            orgUnitGroups: params.orgUnitGroups,
         };
     }, [params]);
 };

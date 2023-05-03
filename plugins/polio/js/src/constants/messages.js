@@ -1230,6 +1230,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Grouped campaigns',
         id: 'iaso.polio.label.groupedCampaigns',
     },
+    countryBlock: {
+        defaultMessage: 'Country block',
+        id: 'iaso.polio.label.countryBlock',
+    },
     updated_at: {
         id: 'iaso.forms.updated_at',
         defaultMessage: 'Updated',

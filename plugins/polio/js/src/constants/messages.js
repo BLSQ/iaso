@@ -2050,6 +2050,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.approval_confirmed',
         defaultMessage: 'Approval confirmed',
     },
+    ra_completed: {
+        id: 'iaso.polio.form.label.ra_completed',
+        defaultMessage: 'Risk Assessment completed',
+    },
     fundsRelease: {
         id: 'iaso.polio.form.label.fundsRelease',
         defaultMessage: 'Funds release',

@@ -1,27 +1,15 @@
 import L from 'leaflet';
-import { mapOrgUnitByLocation } from '../../../../utils/mapUtils';
 
 const fitToBounds = ({
     padding,
     currentTile,
     orgUnit,
-    orgUnitTypesSelected,
-    sourcesSelected,
-    formsSelected,
-    editLocationEnabled,
     locationGroup,
     catchmentGroup,
     map,
     ancestorWithGeoJson,
 }) => {
     if (map) {
-        const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(
-            orgUnitTypesSelected || [],
-        );
-        const mappedSourcesSelected = mapOrgUnitByLocation(
-            sourcesSelected || [],
-        );
-
         const groups = [];
         const locations = [];
         let shapesBounds;
@@ -29,40 +17,7 @@ const fitToBounds = ({
             const tempBounds = L.geoJSON(ancestorWithGeoJson.geo_json);
             shapesBounds = tempBounds.getBounds();
         }
-        mappedOrgUnitTypesSelected.forEach(ot => {
-            ot.orgUnits.locations.forEach(o => {
-                locations.push(L.latLng(o.latitude, o.longitude));
-            });
-            ot.orgUnits.shapes.forEach(o => {
-                const tempBounds = L.geoJSON(o.geo_json);
-                if (shapesBounds) {
-                    shapesBounds = shapesBounds.extend(tempBounds.getBounds());
-                } else {
-                    shapesBounds = tempBounds.getBounds();
-                }
-            });
-        });
 
-        mappedSourcesSelected.forEach(s => {
-            s.orgUnits.locations.forEach(o => {
-                locations.push(L.latLng(o.latitude, o.longitude));
-            });
-            s.orgUnits.shapes.forEach(o => {
-                const tempBounds = L.geoJSON(o.geo_json);
-                if (shapesBounds) {
-                    shapesBounds = shapesBounds.extend(tempBounds.getBounds());
-                } else {
-                    shapesBounds = tempBounds.getBounds();
-                }
-            });
-        });
-        if (!editLocationEnabled && formsSelected) {
-            formsSelected.forEach(f => {
-                f.instances.forEach(i => {
-                    locations.push(L.latLng(i.latitude, i.longitude));
-                });
-            });
-        }
         const locationsBounds = L.latLngBounds(locations);
         const otherBounds = locationsBounds.extend(shapesBounds);
         if (orgUnit.geo_json) {
@@ -81,7 +36,7 @@ const fitToBounds = ({
             }
             bounds = otherBounds.extend(bounds);
             map.fitBounds(bounds, {
-                maxZoom: 10,
+                maxZoom: currentTile.maxZoom,
                 padding,
                 animate: false,
             });

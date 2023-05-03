@@ -467,6 +467,14 @@ export const registryDetailPath = {
             isRequired: false,
             key: 'missingSubmissionVisible',
         },
+        {
+            isRequired: false,
+            key: 'showTooltip',
+        },
+        {
+            isRequired: false,
+            key: 'isFullScreen',
+        },
         ...paginationPathParams,
         ...paginationPathParamsWithPrefix('orgUnitList'),
     ],

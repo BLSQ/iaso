@@ -4,7 +4,9 @@ import React, {
     useRef,
     useEffect,
     useMemo,
+    useCallback,
 } from 'react';
+import { useDispatch } from 'react-redux';
 import {
     Map,
     TileLayer,
@@ -44,12 +46,16 @@ import {
 } from '../../../utils/mapUtils';
 import { MapPopUp } from './MapPopUp';
 import { Optional } from '../../../types/utils';
+import { RegistryDetailParams } from '../types';
+import { redirectToReplace } from '../../../routing/actions';
+import { baseUrls } from '../../../constants/urls';
 
 type Props = {
     orgUnit: OrgUnit;
     subOrgUnitTypes: OrgunitTypes;
     orgUnitChildren?: OrgUnit[];
     isFetchingChildren: boolean;
+    params: RegistryDetailParams;
 };
 
 const useStyles = makeStyles(() => ({
@@ -76,20 +82,27 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     subOrgUnitTypes,
     orgUnitChildren,
     isFetchingChildren,
+    params,
 }) => {
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
     const map: any = useRef();
+    const dispatch = useDispatch();
+
     const bounds = useRef<Optional<Bounds | undefined>>();
-    const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(false);
+    const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
+        params.isFullScreen === 'true',
+    );
+    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
+    const [showTooltip, setShowTooltip] = useState<boolean>(
+        params.showTooltip === 'true',
+    );
 
     const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
     const [isMapFitted, setIsMapFitted] = useState<boolean>(false);
     const [legendOptions, setLegendOptions] = useState<Legend[]>(
         getlegendOptions(),
     );
-    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-    const [showTooltip, setShowTooltip] = useState<boolean>(false);
 
     const optionsObject = useMemo(
         () => keyBy(legendOptions, 'value'),
@@ -125,6 +138,31 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         map?.current?.leafletElement?.invalidateSize();
     }, [isMapFullScreen]);
 
+    const handleToggleTooltip = useCallback(
+        (isVisible: boolean) => {
+            setShowTooltip(isVisible);
+            dispatch(
+                redirectToReplace(baseUrls.registryDetail, {
+                    ...params,
+                    showTooltip: isVisible,
+                }),
+            );
+        },
+        [dispatch, params],
+    );
+    const handleToggleFullScreen = useCallback(
+        (isFull: boolean) => {
+            setIsMapFullScreen(isFull);
+            dispatch(
+                redirectToReplace(baseUrls.registryDetail, {
+                    ...params,
+                    isFullScreen: isFull,
+                }),
+            );
+        },
+        [dispatch, params],
+    );
+
     if (isFetchingChildren)
         return (
             <Box position="relative" height={500}>
@@ -141,11 +179,11 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
         >
             <MapToggleFullscreen
                 isMapFullScreen={isMapFullScreen}
-                setIsMapFullScreen={setIsMapFullScreen}
+                setIsMapFullScreen={handleToggleFullScreen}
             />
             <MapToggleTooltips
                 showTooltip={showTooltip}
-                setShowTooltip={setShowTooltip}
+                setShowTooltip={handleToggleTooltip}
             />
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
             <TilesSwitch

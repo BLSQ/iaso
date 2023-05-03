@@ -99,6 +99,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const didLocationInitialize = useRef(false);
     const didCatchmentInitialize = useRef(false);
     const [isCreatingMarker, setIsCreatingMarker] = useState<boolean>(false);
+    const [isMapFitted, setIsMapFitted] = useState<boolean>(false);
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const [state, setStateField, _, setState] = useFormState(
         initialState(currentUser),
@@ -109,7 +110,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         fetchInstanceDetail,
         fetchSubOrgUnitDetail,
     } = useRedux();
-
+    // console.log('state', state);
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
         if (ancestor) {
@@ -145,10 +146,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
             padding,
             currentTile,
             orgUnit: currentOrgUnit,
-            orgUnitTypesSelected: state.orgUnitTypesSelected.value,
-            sourcesSelected,
-            formsSelected: state.formsSelected.value,
-            editLocationEnabled: state.location.value.edit,
             locationGroup: state.locationGroup.value,
             catchmentGroup: state.catchmentGroup.value,
             map: map.current.leafletElement,
@@ -157,13 +154,9 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     }, [
         currentTile,
         currentOrgUnit,
-        state.orgUnitTypesSelected.value,
-        state.formsSelected.value,
-        state.location.value.edit,
         state.locationGroup.value,
         state.catchmentGroup.value,
         state.ancestorWithGeoJson.value,
-        sourcesSelected,
     ]);
 
     const toggleEditShape = useCallback(
@@ -371,12 +364,20 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         }
     });
 
-    useSkipEffectOnMount(() => {
-        fitToBounds();
+    useEffect(() => {
+        if (
+            ((currentOrgUnit && !currentOrgUnit.parent) ||
+                (currentOrgUnit.parent && state.ancestorWithGeoJson.value)) &&
+            !isMapFitted
+        ) {
+            fitToBounds();
+            setIsMapFitted(true);
+        }
     }, [
-        sourcesSelected,
-        state.orgUnitTypesSelected.value,
-        state.formsSelected.value,
+        currentOrgUnit,
+        state.ancestorWithGeoJson.value,
+        fitToBounds,
+        isMapFitted,
     ]);
 
     useSkipEffectOnMount(() => {
@@ -425,14 +426,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             loadingSelectedSources={loadingSelectedSources}
                             currentOrgUnit={currentOrgUnit}
                             currentSources={sources}
-                            fitToBounds={fitToBounds}
                             sourcesSelected={sourcesSelected}
                             setSourcesSelected={setSourcesSelected}
                         />
                         <OrgUnitTypeFilterComponent
                             currentOrgUnit={currentOrgUnit}
                             orgUnitTypes={orgUnitTypes}
-                            fitToBounds={fitToBounds}
                             orgUnitTypesSelected={
                                 state.orgUnitTypesSelected.value
                             }

@@ -52,6 +52,7 @@ import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
 import { compareArraysValues } from '../utils/compareArraysValues.ts';
 import { PolioDialogTabs } from './MainDialog/PolioDialogTabs.tsx';
+import { BackdropClickModal } from '../../../../../hat/assets/js/apps/Iaso/components/dialogs/BackdropClickModal/BackdropClickModal.tsx';
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
@@ -63,7 +64,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         selectedCampaign?.id,
         isOpen,
     );
-
+    const [isBackdropOpen, setIsBackdropOpen] = useState(false);
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
 
@@ -111,6 +112,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         validationSchema: schema,
         onSubmit: handleSubmit,
     });
+    const { touched } = formik;
 
     const handleClose = () => {
         formik.resetForm();
@@ -216,7 +218,9 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
-                if (reason === 'backdropClick') {
+                if (reason === 'backdropClick' && !isEqual(touched, {})) {
+                    setIsBackdropOpen(true);
+                } else if (reason === 'backdropClick' && isEqual(touched, {})) {
                     handleClose();
                 }
             }}
@@ -224,6 +228,11 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             className={classes.mainModal}
         >
             {isFetching && <LoadingSpinner absolute />}
+            <BackdropClickModal
+                open={isBackdropOpen}
+                closeDialog={() => setIsBackdropOpen(false)}
+                onConfirm={() => handleClose()}
+            />
 
             <Grid container>
                 <Grid item xs={12} md={6}>

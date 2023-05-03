@@ -145,9 +145,44 @@ class InstancesSumMeansAPITestCase(APITestCase):
             json={"Prenom": "Ou Child 1", "Nom": "Some Name"},
         )
 
-        cls.average_age = 20 + 30 + 40 + 50 / 4
-        cls.sum_children = 0 + 4 + 2 + 1
-        cls.average_height = 170 + 180 + 190 + 155 / 4
+        cls.ou_child_1_instance_partial_data_age = cls.create_form_instance(
+            form=cls.default_form,
+            period="202304",
+            org_unit=cls.ou_child_1,
+            project=cls.default_project,
+            uuid=uuid4,
+            json={"Prenom": "Ou Child 1", "Nom": "Some Name", "Age": 60},
+        )
+
+        cls.ou_child_1_instance_partial_data_children_count = cls.create_form_instance(
+            form=cls.default_form,
+            period="202304",
+            org_unit=cls.ou_child_1,
+            project=cls.default_project,
+            uuid=uuid4,
+            json={"Prenom": "Ou Child 1", "Nom": "Some Name", "Children Count": 8},
+        )
+
+        cls.ou_child_1_instance_partial_data_height = cls.create_form_instance(
+            form=cls.default_form,
+            period="202304",
+            org_unit=cls.ou_child_1,
+            project=cls.default_project,
+            uuid=uuid4,
+            json={"Prenom": "Ou Child 1", "Nom": "Some Name", "Height": 170},
+        )
+
+        cls.average_age = (20 + 30 + 40 + 50 + 60) / 4
+        cls.sum_children = 0 + 4 + 2 + 1 + 8
+        cls.average_height = (170 + 180 + 190 + 155 + 170) / 4
+
+        cls.results = {
+            "Sum": {"Children Count": {"total": 8, "with_data": 5, "result": cls.sum_children}},
+            "Avg": {
+                "Age": {"total": 8, "with_data": 5, "result": cls.average_age},
+                "Height": {"total": 8, "with_data": 5, "result": cls.average_height},
+            },
+        }
 
         def test_anon_user_doesnt_work(self):
             self.client.force_authenticate(user=self.anon_user)

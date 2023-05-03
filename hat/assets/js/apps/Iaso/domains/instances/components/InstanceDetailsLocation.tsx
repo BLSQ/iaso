@@ -41,11 +41,12 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
         accuracy,
     } = currentInstance;
 
-    const hasOrgunitCoordinatesDetails = orgUnit.latitude && orgUnit.longitude;
-    const hasFormCoordinatesDetails = latitude && longitude;
-    const hasOrgunitAltitude =
+    const hasCoordinatesFromOrgUnit = orgUnit.latitude && orgUnit.longitude;
+    const hasCoordinatesFromForm = latitude && longitude;
+    const hasAltitudeFromOrgUnit =
         orgUnit.altitude !== null && orgUnit.altitude !== 0;
-    const hasFormAltitude = altitude !== null && altitude !== 0;
+    const hasAltitudeFromForm =
+        !altitude || (altitude !== null && altitude !== 0);
     const hasAccuracy = accuracy;
 
     return (
@@ -93,8 +94,8 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                     />
                 )}
                 {orgUnit &&
-                    hasOrgunitCoordinatesDetails &&
-                    !hasFormCoordinatesDetails && (
+                    hasCoordinatesFromOrgUnit &&
+                    !hasCoordinatesFromForm && (
                         <>
                             <InstanceDetailsField
                                 label={formatMessage(MESSAGES.latitude)}
@@ -110,8 +111,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                             />
                         </>
                     )}
-
-                {hasFormCoordinatesDetails && (
+                {hasCoordinatesFromForm && (
                     <>
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.latitude)}
@@ -123,17 +123,15 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         />
                     </>
                 )}
-
-                {hasFormAltitude && (
+                {hasAltitudeFromForm && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.altitude)}
                         value={currentInstance.altitude}
                     />
                 )}
-
-                {!hasFormAltitude &&
-                    hasOrgunitAltitude &&
-                    !hasFormCoordinatesDetails && (
+                {!hasAltitudeFromForm &&
+                    hasAltitudeFromOrgUnit &&
+                    !hasCoordinatesFromForm && (
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.altitude)}
                             value={`${orgUnit.altitude} ${formatMessage(
@@ -141,7 +139,6 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                             )}`}
                         />
                     )}
-
                 {hasAccuracy && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.accuracy)}
@@ -150,14 +147,14 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 )}
             </div>
 
-            {hasFormCoordinatesDetails && (
+            {hasCoordinatesFromForm && (
                 <MarkerMap
                     latitude={currentInstance.latitude}
                     longitude={currentInstance.longitude}
                 />
             )}
 
-            {!hasFormCoordinatesDetails &&
+            {!hasCoordinatesFromForm &&
                 orgUnit.latitude &&
                 orgUnit.longitude && (
                     <MarkerMap

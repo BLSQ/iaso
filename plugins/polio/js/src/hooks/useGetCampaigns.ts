@@ -156,10 +156,10 @@ export const useCampaignParams = (params: Options): Options => {
             showOnlyDeleted: params.showOnlyDeleted,
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,
-            orgUnitGroups: params.orgUnitGroups,
             show_test: showTest,
             last_budget_event__status: params.last_budget_event__status,
             fieldset: 'list',
+            orgUnitGroups: params.orgUnitGroups,
         };
     }, [params]);
 };

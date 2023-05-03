@@ -234,6 +234,7 @@
     "iaso.formversions.periodError": "Period is not valid",
     "iaso.formversions.update": "Update version {version_id}",
     "iaso.group.dialog.deleteText": "This operation cannot be undone.",
+    "iaso.groups.blockOfCountries": "Block of countries",
     "iaso.groups.create": "Create group",
     "iaso.groups.dialog.delete": "Are you sure you want to delete this group?",
     "iaso.groups.dialog.deleteText": "This operation cannot be undone.",

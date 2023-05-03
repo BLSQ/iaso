@@ -42,16 +42,27 @@ class InstancesAPITestCase(APITestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="Coruscant Jedi Council",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
+            validation_status="VALID",
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
-            name="ou_top_1", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="ou_top_1",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
         )
         cls.ou_top_2 = m.OrgUnit.objects.create(
-            name="ou_top_2", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_1, version=sw_version
+            name="ou_top_2",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_1,
+            version=sw_version,
         )
         cls.ou_top_3 = m.OrgUnit.objects.create(
-            name="ou_top_3", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_2, version=sw_version
+            name="ou_top_3",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_2,
+            version=sw_version,
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council", source_ref="jedi_council_endor_ref"
@@ -431,6 +442,21 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 4)
+
+    def test_instance_filter_by_org_unit_status(self):
+        """GET /instances/?org_unit_status={status}"""
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=VALID")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 6)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=REJECTED")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 0)
 
     def test_instance_list_by_form_id_ok_soft_deleted(self):
         """GET /instances/?form_id=form_id"""

@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { getSort } from 'bluesquare-components';
@@ -19,6 +20,7 @@ type ApiParams = {
     page: string;
     showDeleted: false;
     orgUnitParentId: string;
+    org_unit_status?: 'VALID' | 'NEW' | 'REJECTED';
 };
 
 type InstanceApi = {
@@ -29,6 +31,7 @@ type InstanceApi = {
 export const useGetInstanceApi = (
     params: RegistryDetailParams,
     orgUnitTypeId?: number,
+    orgUnitStatus?: 'VALID' | 'NEW' | 'REJECTED',
 ): InstanceApi => {
     const apiParams: ApiParams = {
         orgUnitTypeId,
@@ -38,6 +41,7 @@ export const useGetInstanceApi = (
         page: params.page || '1',
         showDeleted: false,
         orgUnitParentId: params.orgUnitId,
+        org_unit_status: orgUnitStatus,
     };
     const url = makeUrlWithParams(
         '/api/instances/',
@@ -53,7 +57,11 @@ export const useGetInstances = (
     params: RegistryDetailParams,
     orgUnitTypeId?: number,
 ): UseQueryResult<PaginatedInstances, Error> => {
-    const { apiParams, url } = useGetInstanceApi(params, orgUnitTypeId);
+    const { apiParams, url } = useGetInstanceApi(
+        params,
+        orgUnitTypeId,
+        'VALID',
+    );
     return useSnackQuery({
         queryKey: ['registry-instances', apiParams],
         queryFn: () => getRequest(url),

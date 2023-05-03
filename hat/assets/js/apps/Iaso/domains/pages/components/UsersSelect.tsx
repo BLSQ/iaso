@@ -16,25 +16,23 @@ type Props = {
     field?: FieldInputProps<number[]>;
     form?: FormikProps<FormValues>;
     label?: string;
+    isNewPage?: boolean;
 };
 
 export const UsersSelect: FunctionComponent<Props> = ({
     field,
     form,
     label = '',
+    isNewPage = false,
     ...props
 } = {}) => {
     const currentUser = useCurrentUser();
     const value = useMemo(() => {
-        if (field?.value) {
-            const arrayValue = field.value;
-            if (!arrayValue.includes(currentUser.user_id)) {
-                arrayValue.push(currentUser.user_id);
-            }
-            return arrayValue.join(',');
+        if (isNewPage && (!field?.value || field?.value?.length === 0)) {
+            return [currentUser.user_id];
         }
-        return [currentUser.user_id];
-    }, [currentUser.user_id, field?.value]);
+        return field?.value;
+    }, [currentUser.user_id, field?.value, isNewPage]);
     const { data, isFetching: isFetchingProfiles } = useGetProfiles();
     const profilesList = useMemo(() => {
         if (!data) return [];
@@ -49,13 +47,10 @@ export const UsersSelect: FunctionComponent<Props> = ({
                 ? newValue.split(',').map(val => parseInt(val, 10))
                 : undefined;
             if (field && form) {
-                // Disable delete of current user chip
-                if (fieldValue?.includes(currentUser.user_id)) {
-                    form.setFieldValue(field.name, fieldValue);
-                }
+                form.setFieldValue(field.name, fieldValue);
             }
         },
-        [currentUser.user_id, field, form],
+        [field, form],
     );
     return (
         <Select

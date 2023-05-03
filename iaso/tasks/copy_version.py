@@ -1,9 +1,9 @@
-from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, ERRORED
-from beanstalk_worker import task_decorator
-from django.utils.translation import gettext as _
-
 import logging
 
+from django.utils.translation import gettext as _
+
+from beanstalk_worker import task_decorator
+from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, ERRORED
 
 logger = logging.getLogger(__name__)
 

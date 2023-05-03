@@ -9,26 +9,38 @@ from rest_framework import filters
 
 from iaso.models import OrgUnitType, OrgUnit
 from plugins.polio.models import URLCache
+from logging import getLogger
+
+logger = getLogger(__name__)
 
 
-def get_url_content(url, login, password, minutes=60):
-    """Get an URL and save the result in prod"""
+def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
+    """Get a URL and save the result in prod
+
+    minutes: ttl for cache
+    prefer_cache: use the cache even if expired
+    """
     cached_response, created = URLCache.objects.get_or_create(url=url)
     delta = now() - cached_response.updated_at
-    try:
-        if created or delta > timedelta(minutes=minutes) or not cached_response.content:
-            response = requests.get(url, auth=(login, password))
-            response.raise_for_status()
-            cached_response.content = response.text
-            cached_response.save()
-            j = response.json()
 
-        else:
-            j = json.loads(cached_response.content)
-        return j
-    except HTTPError:
-        # Return false in case the WHO server returns an error.
-        return False
+    has_cache = bool(not created and cached_response.content)
+    use_cache = delta < timedelta(minutes=minutes) or prefer_cache
+    if not (has_cache and use_cache):
+        logger.info(f"fetching from {url}")
+        response = requests.get(url, auth=(login, password))
+        try:
+            response.raise_for_status()
+        except HTTPError:
+            # Return false in case the WHO server returns an error.
+            return False
+        cached_response.content = response.text
+        logger.info(f"fetched {len(response.content)} bytes")
+        cached_response.save()
+        j = response.json()
+    else:
+        logger.info(f"using cache for {url}")
+        j = json.loads(cached_response.content)
+    return j
 
 
 class CustomFilterBackend(filters.BaseFilterBackend):

@@ -1,7 +1,7 @@
-from rest_framework import serializers, exceptions
+from rest_framework import serializers
 
-from ..common import TimestampField
 from iaso.models import Project, FeatureFlag
+from ..common import TimestampField
 
 
 class FeatureFlagSerializer(serializers.Serializer):

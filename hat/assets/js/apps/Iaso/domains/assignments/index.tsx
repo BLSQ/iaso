@@ -8,15 +8,13 @@ import { Box, makeStyles, Tabs, Tab, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     LoadingSpinner,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
-import { redirectTo } from '../../routing/actions';
+import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -88,8 +86,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         orgunitTypes,
         childrenOrgunits,
         orgUnits,
+        orgUnitsList,
         sidebarData,
         isFetchingOrgUnits,
+        isFetchingOrgUnitsList,
         isLoadingPlanning,
         isSaving,
         isFetchingOrgunitTypes,
@@ -103,6 +103,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         parentSelected,
         baseOrgunitType,
         order: params.order || 'name',
+        search: params.search,
         selectedItem,
     });
 
@@ -186,6 +187,42 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTeamId, teams]);
+
+    useEffect(() => {
+        if (params.order) {
+            const redirect = (to: string): void => {
+                const tempParams = {
+                    ...params,
+                    order: `${params.order?.startsWith('-') ? '-' : ''}${to}`,
+                };
+                dispatch(redirectToReplace(baseUrl, tempParams));
+            };
+            if (
+                params.order?.includes('assignment__team__name') &&
+                currentTeam?.type === 'TEAM_OF_USERS'
+            ) {
+                redirect('assignment__user__username');
+            }
+            if (
+                params.order?.includes('assignment__user__username') &&
+                currentTeam?.type === 'TEAM_OF_TEAMS'
+            ) {
+                redirect('assignment__team__name');
+            }
+        }
+    }, [params, currentTeam?.type, dispatch]);
+
+    useSkipEffectOnMount(() => {
+        // Change order if baseOrgunitType or team changed and current order is on a parent column that will probably disappear
+        if (params.order?.includes('parent__name')) {
+            dispatch(
+                redirectToReplace(baseUrl, {
+                    ...params,
+                    order: 'name',
+                }),
+            );
+        }
+    }, [params.baseOrgunitType, params.team]);
 
     useEffect(() => {
         if (planning && currentTeam) {
@@ -299,14 +336,14 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                             params={params}
                                             teams={teams || []}
                                             profiles={profiles}
-                                            orgUnits={orgUnits?.all || []}
+                                            currentTeam={currentTeam}
+                                            orgUnits={orgUnitsList || []}
                                             handleSaveAssignment={
                                                 handleSaveAssignment
                                             }
                                             isFetchingOrgUnits={
                                                 isLoadingAssignments ||
-                                                isFetchingOrgUnits ||
-                                                !orgUnits
+                                                isFetchingOrgUnitsList
                                             }
                                             selectedItem={selectedItem}
                                         />

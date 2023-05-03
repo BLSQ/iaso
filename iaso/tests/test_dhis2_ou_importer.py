@@ -1,17 +1,15 @@
-from io import StringIO
-from typing import Union
-
-from django.core import management
-from os import environ
-import responses  # type: ignore
 import json
+from io import StringIO
+from os import environ
 
-from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS, Project
-from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
-from iaso.test import TestCase
+import responses  # type: ignore
+from django.core import management
 
 from hat.audit.models import Modification
 from iaso import models as m
+from iaso.models import OrgUnit, Group, GroupSet, Task, Account, DataSource, SUCCESS, Project
+from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
+from iaso.test import TestCase
 
 
 class DHIS2TestMixin:
@@ -28,7 +26,7 @@ class DHIS2TestMixin:
         responses.add(
             responses.GET,
             "https://play.dhis2.org/2.30/api/organisationUnits.json"
-            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
+            "?fields=id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level"
             "&pageSize=500&page=1&totalPages=True",
             json=orgunit_response_content,
             status=200,
@@ -45,6 +43,13 @@ class DHIS2TestMixin:
             "https://play.dhis2.org/2.30/api/organisationUnitGroupSets.json"
             "?paging=false&fields=id,name,organisationUnitGroups[id,name]",
             json=groupsets_response_content,
+            status=200,
+        )
+        responses.add(
+            responses.GET,
+            "https://play.dhis2.org/2.30/api/organisationUnitLevels.json"
+            "?fields=displayName&fields=id&fields=level&fields=name&pageSize=50&page=1&totalPages=True",
+            json=self.fixture_json("organisationUnitLevels"),
             status=200,
         )
 
@@ -80,6 +85,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         # https://play.dhis2.org/2.30/api/organisationUnits.json?
         # fields=id%2Cname%2Cpath%2Ccoordinates%2Cgeometry%2Cparent%2CorganisationUnitGroups%5Bid%2Cname%5D
         # &filter=id:in:[ImspTQPwCqd,kJq2mPyFEHo,KXSqt7jv6DU,LOpWauwwghf]
+        # if it 404 replace 2.30 with the latest dhis2 versions
         self.setup_responses(orgunit_fixture_name="orgunits", groupsets_fixture_name="groupsets")
         self.old_counts = self.counts()
 
@@ -101,7 +107,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
-                m.OrgUnitType: 1,
+                m.OrgUnitType: 5,
                 m.Group: 18,
                 m.GroupSet: 4,
             }
@@ -182,7 +188,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
-                m.OrgUnitType: 1,
+                m.OrgUnitType: 5,
                 m.Group: 2,  # there is 2 group on OrgUnit C
             }
         )
@@ -250,7 +256,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
-                m.OrgUnitType: 1,
+                m.OrgUnitType: 5,
                 m.Group: 18,
                 m.GroupSet: 4,
             }
@@ -341,7 +347,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 2,
-                m.OrgUnitType: 1,
+                m.OrgUnitType: 5,
                 m.Group: 1,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
             }
         )
@@ -394,7 +400,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
-                m.OrgUnitType: 1,
+                m.OrgUnitType: 5,
                 m.Group: 3,  # there are 2 groups on OrgUnit C
             }
         )
@@ -461,7 +467,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 0,
-                m.OrgUnitType: 1,
+                m.OrgUnitType: 5,
                 m.Group: 0,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
             }
         )

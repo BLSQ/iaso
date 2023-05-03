@@ -120,7 +120,7 @@ data
 
 
 
-\static/
+/static
 
 # lint error checking output
 lintErrors.html
@@ -163,3 +163,18 @@ mockImData.json
 docker-compose.dev.yml
 entrypoint.dev.sh
 requirements_m1.txt
+requirements_3_8.txt
+
+.python-version
+hat/settings_local.py
+runpycharmdev.sh
+
+venv
+
+
+#mkdocs
+/bin/**/*
+/include/**/*
+/lib/**/*
+pyvenv.cfg
+originals

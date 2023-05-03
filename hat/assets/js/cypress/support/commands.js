@@ -49,7 +49,7 @@ Cypress.Commands.add(
 /**
  * @param {string} username - by default then env username specified
  * @param {string} password - by default then env password specified
- * This Login way of working is not stable an needs to be improved
+ * This Login way of working is not stable and needs to be improved
  */
 Cypress.Commands.add(
     'loginByCSRF',
@@ -165,7 +165,6 @@ Cypress.Commands.add('fillSingleSelect', (id, selectedOption = 1) => {
  */
 Cypress.Commands.add('fillArrayInputField', (id, newValues = []) => {
     cy.get(`#array-input-field-list-${id}`).as('arrayInputFieldList');
-    cy.get('@arrayInputFieldList').find(`#${id}-0`).parent().next().click();
     cy.get('@arrayInputFieldList')
         .find('li')
         .last()

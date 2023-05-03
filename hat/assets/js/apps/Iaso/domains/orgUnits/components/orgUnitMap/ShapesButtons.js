@@ -2,7 +2,7 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Button, Box, makeStyles } from '@material-ui/core';
 
-import Edit from '@material-ui/icons/Edit';
+import Edit from '@material-ui/icons/Settings';
 import DeleteIcon from '@material-ui/icons/Delete';
 
 import PropTypes from 'prop-types';
@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const EditOrgUnitOptionComponent = ({
+const ShapesButtons = ({
     disabled,
     editEnabled,
     deleteEnabled,
@@ -94,12 +94,12 @@ const EditOrgUnitOptionComponent = ({
     );
 };
 
-EditOrgUnitOptionComponent.defaultProps = {
+ShapesButtons.defaultProps = {
     editDisabledMessage: '',
     color: 'primary',
 };
 
-EditOrgUnitOptionComponent.propTypes = {
+ShapesButtons.propTypes = {
     disabled: PropTypes.bool.isRequired,
     editEnabled: PropTypes.bool.isRequired,
     addEnabled: PropTypes.bool.isRequired,
@@ -114,4 +114,4 @@ EditOrgUnitOptionComponent.propTypes = {
     color: PropTypes.string,
 };
 
-export default EditOrgUnitOptionComponent;
+export default ShapesButtons;

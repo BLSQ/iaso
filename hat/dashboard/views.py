@@ -1,10 +1,11 @@
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
-from django.views.decorators.http import require_http_methods
-from django.shortcuts import render
-from django.http.request import HttpRequest
 from django.http import HttpResponse
-from django.conf import settings
+from django.http.request import HttpRequest
+from django.shortcuts import render
+from django.views.decorators.http import require_http_methods
+
 from hat.__version__ import VERSION
 
 

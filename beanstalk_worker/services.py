@@ -2,22 +2,22 @@ import decimal
 import importlib
 import json
 from datetime import datetime
-from iaso.models.base import Task, RUNNING, QUEUED, KILLED
+from logging import getLogger
+
 import boto3
 import dateparser
 from django.conf import settings
 from django.db import connection
 from django.utils import timezone
 
-from logging import getLogger
-
+from iaso.models.base import Task, RUNNING, QUEUED, KILLED
 
 logger = getLogger(__name__)
 
 # Worker connection
 # The problem we had before was that, if a task launched a transaction, the progress on the transaction was not visible from the outside:
 #  we have background tasks, executed in a worker, for database heavy operation that modify or create a lot of records
-#  we execute some of them in a transaction, via transaction.atomic) so we can rollback the changes in case of error (and also speed up stuff a bit)
+#  we execute some of them in a transaction, via transaction.atomic) so we can roll back the changes in case of error (and also speed up stuff a bit)
 #  at the same time we have a Task object in DB, on which we record the task progress (status and percentage of completion) during the execution of the task, so we can present it to the users
 #  when a task is run in a transaction, the progress cannot be seen from the web, since the transaction is not commited yet
 #
@@ -49,7 +49,7 @@ def json_load(obj):
 
 class _TaskServiceBase:
     def get_queryset(self):
-        # This allow overriding in test. Since all test are run in transactions, the newly created task were not visible
+        # This allows overriding in test. Since all test are run in transactions, the newly created task were not visible
         # from the worker.
         return Task.objects.using("worker")
 

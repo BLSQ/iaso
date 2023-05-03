@@ -1,6 +1,5 @@
-from iaso.test import TestCase
-
 import iaso.periods as periods
+from iaso.test import TestCase
 
 
 class PeriodsModelTestCase(TestCase):

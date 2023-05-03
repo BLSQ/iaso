@@ -1,16 +1,19 @@
+import csv
 import io
 
+import pandas as pd
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.password_validation import validate_password
+from django.core import validators
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
+from rest_framework import serializers, permissions
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from rest_framework import serializers, permissions
-from django.core import validators
-import csv
-import pandas as pd
+from drf_yasg.utils import swagger_auto_schema, no_body
+from rest_framework.decorators import action
+from django.http import FileResponse
 
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit
 
@@ -37,6 +40,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     username,password,email,first_name,last_name,orgunit,profile_language,permissions
 
     simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr,"iaso_submissions, iaso_forms"
+
+    Email is not mandatory, but you must keep the email column.
 
     You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
 
@@ -77,6 +82,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @transaction.atomic
     def create(self, request, *args, **kwargs):
+        user_created_count = 0
         if request.FILES:
             user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
             try:
@@ -95,15 +101,18 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             for row in reader:
                 org_units_list = []
                 if i > 0:
-                    try:
-                        validators.validate_email(row[csv_indexes.index("email")])
-                    except ValidationError:
-                        raise serializers.ValidationError(
-                            {
-                                "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
-                                "again.".format(i)
-                            }
-                        )
+                    email_address = True if row[csv_indexes.index("email")] else None
+                    if email_address:
+                        try:
+                            validators.validate_email(row[csv_indexes.index("email")])
+                        except ValidationError:
+                            raise serializers.ValidationError(
+                                {
+                                    "error": "Operation aborted. Invalid Email at row : {0}. Fix the error and try "
+                                    "again.".format(i)
+                                }
+                            )
+
                     try:
                         try:
                             user = User.objects.create(
@@ -182,6 +191,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         }
                                     )
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
+                    # Using try except for dhis2_id in case users are being created with an older version of the template
+                    try:
+                        dhis2_id = row[csv_indexes.index("dhis2_id")]
+                    except ValueError:
+                        dhis2_id = None
+                    if dhis2_id:
+                        profile.dhis2_id = dhis2_id
                     try:
                         user_permissions = row[csv_indexes.index("permissions")].split(",")
                         for perm in user_permissions:
@@ -214,9 +230,14 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)
                     profile.save()
+                    user_created_count += 1
                 else:
                     csv_indexes = row
                 i += 1
-        csv_files = BulkCreateUserCsvFile.objects.none()
-        serializer = BulkCreateUserSerializer(csv_files, many=True)
-        return Response(serializer.data)
+        response = {"Accounts created": user_created_count}
+        return Response(response)
+
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=["get"], url_path="getsample")
+    def download_sample_csv(self, request):
+        return FileResponse(open("iaso/api/fixtures/sample_bulk_user_creation.csv", "rb"))

@@ -7,6 +7,10 @@ from functools import reduce
 from logging import getLogger
 from urllib.request import urlopen
 
+from bs4 import BeautifulSoup as Soup  # type: ignore
+from io import StringIO
+
+import django_cte
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -20,13 +24,12 @@ from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
 from hat.audit.models import log_modification, INSTANCE_API
-from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
-from iaso.models.org_unit import OrgUnit
 from iaso.models.data_source import SourceVersion, DataSource
+from iaso.models.org_unit import OrgUnit
+from iaso.utils import flat_parse_xml_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
 from .. import periods
-
 from ..utils.jsonlogic import jsonlogic_to_q
 
 logger = getLogger(__name__)
@@ -99,7 +102,6 @@ class Account(models.Model):
     name = models.TextField(unique=True, validators=[MinLengthValidator(1)])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    users = models.ManyToManyField(User, blank=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
 
@@ -354,6 +356,11 @@ class DefaultGroupManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(domain=None)
 
+    def filter_for_user(self, user: User):
+        profile = user.iaso_profile
+        queryset = self.filter(source_version__data_source__projects__in=profile.account.project_set.all())
+        return queryset
+
 
 class DomainGroupManager(models.Manager):
     def get_queryset(self):
@@ -500,7 +507,7 @@ class ExternalCredentials(models.Model):
         }
 
 
-class InstanceQuerySet(models.QuerySet):
+class InstanceQuerySet(django_cte.CTEQuerySet):
     def with_lock_info(self, user):
         """
         Annotate the QuerySet with the lock info for the given user.
@@ -812,6 +819,9 @@ class Instance(models.Model):
     device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
     entity = models.ForeignKey("Entity", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances")
+    planning = models.ForeignKey(
+        "Planning", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances"
+    )
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -863,8 +873,10 @@ class Instance(models.Model):
             self.correlation_id = identifier + random_number + suffix
             self.save()
 
-    def xml_file_to_json(self, file: typing.TextIO) -> typing.Dict[str, typing.Any]:
-        soup = as_soup(file)
+    def xml_file_to_json(self, file: typing.IO) -> typing.Dict[str, typing.Any]:
+        copy_io_utf8 = StringIO(file.read().decode("utf-8"))
+        soup = Soup(copy_io_utf8, "xml", from_encoding="utf-8")
+
         form_version_id = extract_form_version_id(soup)
         if form_version_id:
             # TODO: investigate: can self.form be None here? What's the expected behavior?
@@ -936,7 +948,7 @@ class Instance(models.Model):
 
             DataValueExporter().export_instances(export_request)
             self.refresh_from_db()
-        except NothingToExportError as error:
+        except NothingToExportError:
             print("Export failed for instance", self)
 
     def __str__(self):

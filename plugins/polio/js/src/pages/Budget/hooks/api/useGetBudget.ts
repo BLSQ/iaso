@@ -32,6 +32,7 @@ export const useGetBudgets = (options: any): any => {
         order: options.order,
         search: options.search,
         budget_current_state_key__in: options.budget_current_state_key__in,
+        country__id__in: options.country__id__in,
         fields: 'id,obr_name,country_name,current_state,cvdpv2_notified_at,possible_states,budget_last_updated_at',
     };
 
@@ -50,16 +51,18 @@ export const useBudgetParams = params => {
             search: params.search,
             roundStartFrom: getApiParamDateString(params.roundStartFrom),
             roundStartTo: getApiParamDateString(params.roundStartTo),
-            budget_current_state_key__in: params.current_state__key,
+            budget_current_state_key__in: params.budget_current_state_key__in,
+            country__id__in: params?.country__id__in,
         };
     }, [
-        params.current_state__key,
         params?.order,
-        params?.page,
         params?.pageSize,
+        params?.page,
+        params.search,
         params.roundStartFrom,
         params.roundStartTo,
-        params.search,
+        params.budget_current_state_key__in,
+        params?.country__id__in,
     ]);
 };
 

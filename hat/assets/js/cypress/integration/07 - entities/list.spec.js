@@ -1,23 +1,22 @@
 /// <reference types="cypress" />
-
+import { testTablerender } from '../../support/testTableRender';
+import { testPagination } from '../../support/testPagination';
+import page2 from '../../fixtures/entities/list-page-2.json';
 import listFixture from '../../fixtures/entities/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
-const search = 'mario';
 const baseUrl = `${siteBaseUrl}/dashboard/entities/list`;
 
 let interceptFlag = false;
-const emptyFixture = 'entities/empty.json';
-let table;
-let row;
 const defaultQuery = {
     limit: '20',
-    order: 'name',
+    order_columns: 'last_saved_instance',
     page: '1',
 };
-const goToPage = (
+const mockPage = (
     fakeUser = superUser,
     formQuery,
     fixture = 'entities/list.json',
@@ -26,12 +25,18 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/entitytype', {
+    cy.intercept('GET', '/api/entitytypes', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
+    cy.intercept('GET', '/api/microplanning/teams/*', {
+        fixture: 'teams/list.json',
+    });
+    cy.intercept('GET', '/api/profiles', {
+        fixture: 'profiles/list-not-paginated.json',
+    });
     const options = {
         method: 'GET',
-        pathname: '/api/entity',
+        pathname: '/api/entities',
     };
     const query = {
         ...defaultQuery,
@@ -43,57 +48,146 @@ const goToPage = (
             res.send({ fixture });
         });
     }).as('getEntities');
-    cy.visit(baseUrl);
 };
 
-const openDialogForEntityIndex = index => {
-    table = cy.get('table');
-    row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').last();
-    const editButton = actionCol.find('button').eq(1);
-    editButton.click();
-    cy.get('#entity-dialog').should('be.visible');
-};
-describe.skip('Entities', () => {
+describe('Entities', () => {
+    it('Filter button action should deep link search and call api with same params', () => {
+        mockPage();
+        cy.visit(baseUrl);
+        cy.get('[data-test="search-button"]')
+            .invoke('attr', 'disabled')
+            .should('equal', 'disabled');
+        interceptFlag = false;
+        cy.intercept(
+            {
+                method: 'GET',
+                pathname: '/api/entities/',
+                query: {
+                    ...defaultQuery,
+                    search,
+                    entityTypeIds: '1,2',
+                    dateFrom: '10-03-2022',
+                    dateTo: '20-03-2022',
+                    created_by_team_id: '25',
+                    created_by_id: '2',
+                    orgUnitId: '2',
+                },
+            },
+            req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: listFixture,
+                });
+            },
+        ).as('getEntities');
+
+        cy.intercept('GET', '/api/profiles', {
+            fixture: 'profiles/list-not-paginated.json',
+        }).as('getProfiles');
+
+        cy.intercept(
+            'GET',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
+            {
+                fixture: 'orgunits/list.json',
+            },
+        );
+        cy.intercept('GET', '/api/orgunits/3', {
+            fixture: 'orgunits/details.json',
+        });
+        cy.get('#search-search').type(search);
+        cy.fillMultiSelect('#entityTypeIds', [0, 1], false);
+        cy.get('[data-test="start-date"] input').type('10032022');
+        cy.get('[data-test="end-date"] input').type('20032022');
+        cy.fillSingleSelect('#submitterTeamId', 0);
+
+        cy.wait('@getProfiles').then(() => {
+            cy.fillSingleSelect('#submitterId', 0);
+            cy.fillTreeView('#ou-tree-input', 2, false);
+
+            cy.get('[data-test="search-button"]').click();
+            cy.url().should(
+                'contain',
+                `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/entityTypeIds/1,2`,
+            );
+
+            cy.wait('@getEntities').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+            });
+        });
+    });
+
+    it('submitter team and submitter filters should be linked', () => {
+        mockPage();
+        cy.visit(baseUrl);
+        cy.testInputValue('#submitterTeamId', '');
+        cy.testInputValue('#submitterId', '');
+        cy.fillSingleSelect('#submitterId', 0);
+        cy.testInputValue('#submitterId', 'oneFistPunch (Bruce Lee) ');
+        cy.intercept('GET', '/api/profiles', {
+            fixture: 'profiles/list-not-paginated.json',
+        }).as('getProfiles');
+        cy.fillSingleSelect('#submitterTeamId', 0);
+        cy.wait('@getProfiles').then(() => {
+            cy.testInputValue('#submitterId', '');
+        });
+    });
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {
-            goToPage();
+            mockPage();
+            cy.visit(baseUrl);
 
             cy.wait('@getEntities').then(() => {
                 cy.url().should(
                     'eq',
-                    `${baseUrl}/accountId/1/order/name/pageSize/20/page/1`,
+                    `${baseUrl}/accountId/1/order/last_saved_instance/pageSize/20/page/1`,
                 );
             });
         });
         it('should not be accessible if user does not have permission', () => {
-            goToPage({
+            mockPage({
                 ...superUser,
                 permissions: [],
                 is_superuser: false,
             });
+            cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
+        });
+        it('click on a row button should open entity detail page', () => {
+            mockPage();
+            cy.visit(baseUrl);
+
+            cy.wait('@getEntities').then(() => {
+                cy.get('table tbody tr')
+                    .eq(1)
+                    .find('td')
+                    .last()
+                    .as('actionCell');
+                cy.get('@actionCell')
+                    .find('a')
+                    .should(
+                        'have.attr',
+                        'href',
+                        '/dashboard/entities/details/entityId/2',
+                    );
+            });
         });
     });
 
     describe('Search field', () => {
         beforeEach(() => {
-            goToPage();
+            mockPage();
+            cy.visit(baseUrl);
         });
-        it('should enabled search button', () => {
-            cy.wait('@getEntities').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
-        });
+        testSearchField(search, searchWithForbiddenChars);
     });
 
     describe('Search button', () => {
         beforeEach(() => {
-            goToPage();
+            mockPage();
+            cy.visit(baseUrl);
         });
         it('should be disabled', () => {
             cy.wait('@getEntities').then(() => {
@@ -110,17 +204,17 @@ describe.skip('Entities', () => {
                     .should('equal', undefined);
             });
         });
-        // skipping until we figure how to articulate entities and beneficiaries
-        it.skip('action should deep link search', () => {
+
+        it('action should deep link search', () => {
             cy.wait('@getEntities').then(() => {
                 cy.wait('@getEntitiesTypes').then(() => {
                     cy.get('#search-search').type(search);
-                    cy.fillSingleSelect('#entityTypes', 0);
+                    cy.fillSingleSelect('#entityTypeIds', 0);
 
                     cy.get('[data-test="search-button"]').click();
                     cy.url().should(
                         'contain',
-                        `${baseUrl}/accountId/1/search/${search}/entityTypes/1`,
+                        `${baseUrl}/accountId/1/search/${search}/entityTypeIds/1`,
                     );
                 });
             });
@@ -128,218 +222,37 @@ describe.skip('Entities', () => {
     });
 
     describe('Table', () => {
-        it('should render results', () => {
-            goToPage();
-            cy.wait('@getEntities').then(() => {
-                table = cy.get('table');
-                table.should('have.length', 1);
-                const rows = table.find('tbody').find('tr');
-                rows.should('have.length', listFixture.entities.length);
-                rows.eq(0).find('td').should('have.length', 5);
-            });
-        });
-
-        it('should display correct amount of buttons on action column', () => {
-            goToPage();
-            cy.wait('@getEntities').then(() => {
-                table = cy.get('table');
-                row = table.find('tbody').find('tr').eq(1);
-                const actionCol = row.find('td').last();
-                actionCol.find('button').should('have.length', 3);
-            });
-        });
-    });
-
-    describe('Dialog', () => {
-        it.skip('should display empty entity infos', () => {
-            // this will be tested when creation will be enabled
-            goToPage();
-            cy.wait('@getEntities').then(() => {
-                cy.get('[data-test="add-entity-button"]').click();
-                cy.get('#entity-dialog').should('be.visible');
-
-                cy.testInputValue('#input-text-name', '');
-                cy.testInputValue('#entity_type', '');
-            });
-        });
-        it('should display correct entity infos', () => {
-            goToPage();
-            cy.wait('@getEntities').then(() => {
-                const entityIndex = 0;
-                openDialogForEntityIndex(entityIndex);
-
-                cy.testInputValue(
-                    '#input-text-name',
-                    listFixture.entities[entityIndex].name,
-                );
-                cy.testInputValue(
-                    '#entity_type',
-                    listFixture.entities[entityIndex].entity_type_name,
-                );
-            });
-        });
-
-        it('should call api list and api save', () => {
-            goToPage();
-            cy.wait('@getEntities').then(() => {
-                const entityIndex = 0;
-                openDialogForEntityIndex(entityIndex);
-                const name = 'superman';
-                cy.get('#input-text-name').clear().type(name);
-                cy.testInputValue('#input-text-name', name);
-                interceptFlag = false;
-                cy.intercept(
-                    {
-                        method: 'PATCH',
-                        pathname: `/api/entity/${listFixture.entities[entityIndex].id}/`,
-                    },
-                    req => {
-                        interceptFlag = true;
-                        req.reply({
-                            statusCode: 200,
-                            body: listFixture.entities[entityIndex],
-                        });
-                    },
-                ).as('saveEntity');
-
-                let interceptFlagEntities = false;
-                cy.intercept(
-                    {
-                        method: 'GET',
-                        pathname: '/api/entity',
-                        query: defaultQuery,
-                    },
-                    req => {
-                        interceptFlagEntities = true;
-                        req.reply({
-                            statusCode: 200,
-                            body: listFixture.entities[entityIndex],
-                        });
-                    },
-                ).as('getEntitiesAfterSave');
-                cy.get('.MuiDialogActions-root').find('button').last().click();
-                cy.wait('@saveEntity').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
-                cy.wait('@getEntitiesAfterSave').then(() => {
-                    cy.wrap(interceptFlagEntities).should('eq', true);
-                });
-            });
-        });
-    });
-
-    describe('Delete a row', () => {
         beforeEach(() => {
-            goToPage();
-            const entityIndex = 0;
-            table = cy.get('table');
-            row = table.find('tbody').find('tr').eq(entityIndex);
-            const actionCol = row.find('td').last();
-            const deleteButton = actionCol.find('button').last();
-            deleteButton.click();
-            cy.get('#delete-dialog-entity').as('deleteDialog');
+            mockPage();
+            cy.intercept(
+                {
+                    pathname: '/api/entities/',
+                    query: {
+                        page: '2',
+                        limit: '20',
+                        order_columns: 'last_saved_instance',
+                    },
+                },
+                page2,
+            );
         });
-        it('should open delete dialog', () => {
-            cy.wait('@getEntities').then(() => {
-                cy.get('@deleteDialog').should('be.visible');
-            });
+        testTablerender({
+            baseUrl,
+            rows: 20,
+            columns: 5,
+            apiKey: 'entities',
         });
-        it('should delete entity on confirm', () => {
-            cy.wait('@getEntities').then(() => {
-                interceptFlag = false;
-                const entityIndex = 0;
-                cy.intercept(
-                    {
-                        method: 'DELETE',
-                        pathname: `/api/entity/${listFixture.entities[entityIndex].id}/`,
-                    },
-                    req => {
-                        interceptFlag = true;
-                        req.reply({
-                            statusCode: 200,
-                        });
-                    },
-                ).as('deleteEntity');
-                let interceptFlagEntities = false;
-                cy.intercept(
-                    {
-                        method: 'GET',
-                        pathname: '/api/entity',
-                        query: defaultQuery,
-                    },
-                    req => {
-                        interceptFlagEntities = true;
-                        req.reply({
-                            statusCode: 200,
-                            body: listFixture.entities[entityIndex],
-                        });
-                    },
-                ).as('getEntitiesAfterDelete');
-                cy.get('@deleteDialog')
-                    .parent()
-                    .parent()
-                    .find('button')
-                    .last()
-                    .click();
-                cy.wait('@deleteEntity').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
-                cy.wait('@getEntitiesAfterDelete').then(() => {
-                    cy.wrap(interceptFlagEntities).should('eq', true);
-                });
-            });
-        });
-        it('should close delete dialog on cancel', () => {
-            cy.wait('@getEntities').then(() => {
-                cy.get('@deleteDialog')
-                    .parent()
-                    .parent()
-                    .find('button')
-                    .first()
-                    .click();
-                cy.get('#delete-dialog-entity').should('not.exist');
-            });
-        });
-    });
-
-    describe('Api', () => {
-        it('should be called with base params', () => {
-            goToPage(superUser, {}, emptyFixture);
-            cy.wait('@getEntities').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
-            });
-        });
-        // Skipping because of interference of WFP beneficiaries. Should be sorted out before fixing/re-activating the test
-        it.skip('should be called with search params', () => {
-            goToPage(superUser, {}, emptyFixture);
-            cy.wait('@getEntities').then(() => {
-                interceptFlag = false;
-                cy.intercept(
-                    {
-                        method: 'GET',
-                        pathname: '/api/entity',
-                        query: {
-                            limit: '20',
-                            order: 'name',
-                            page: '1',
-                            search,
-                            entity_types__ids: '2',
-                        },
-                    },
-                    req => {
-                        req.continue(res => {
-                            interceptFlag = true;
-                            res.send({ fixture: emptyFixture });
-                        });
-                    },
-                ).as('getEntitySearch');
-                cy.get('#search-search').type(search);
-                cy.fillSingleSelect('#entityTypes', 1);
-                cy.get('[data-test="search-button"]').click();
-                cy.wait('@getEntitySearch').then(() => {
-                    cy.wrap(interceptFlag).should('eq', true);
-                });
-            });
+        testPagination({
+            baseUrl,
+            apiPath: '/api/entities/**',
+            apiKey: 'result',
+            withSearch: false,
+            fixture: listFixture,
+            query: {
+                page: '1',
+                limit: '20',
+                order_columns: 'last_saved_instance',
+            },
         });
     });
 });

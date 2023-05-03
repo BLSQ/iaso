@@ -1,9 +1,9 @@
 """This module provides various utils and helpers for IASO"""
 
+from datetime import datetime
 from typing import Dict, Any, TextIO, List, Optional, Iterable
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
-from datetime import datetime
 from django.utils.text import slugify
 
 

@@ -1,10 +1,11 @@
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 import typing
 
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 from django.db import connection
 
 from hat.audit.models import Modification
 from iaso import models as m
+from iaso.models import OrgUnitType, OrgUnit
 from iaso.test import APITestCase
 
 
@@ -20,7 +21,7 @@ class OrgUnitAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         cls.sw_version_1 = sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
 
@@ -537,7 +538,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.version, self.star_wars.default_version)
 
     def test_create_org_unit_fail_on_parent_not_found(self):
-        # returning a 404 is strange but it was the current behaviour
+        # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
@@ -553,7 +554,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNoCreation()
 
     def test_create_org_unit_fail_on_group_not_found(self):
-        # returning a 404 is strange but it was the current behaviour
+        # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
@@ -665,7 +666,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.reference_instance, None)
 
     def test_edit_org_unit_retrieve_put(self):
-        """Retrieve a orgunit data and then resend back mostly unmodified and ensure that nothing burn
+        """Retrieve an orgunit data and then resend back mostly unmodified and ensure that nothing burn
 
         Note that a lot of the field we send will end up being unused"""
         old_ou = self.jedi_council_corruscant
@@ -692,7 +693,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
     def test_edit_org_unit_link_to_reference_instance(self):
-        """Retrieve a orgunit data and modify the reference_instance_id"""
+        """Retrieve an orgunit data and modify the reference_instance_id"""
         old_ou = self.jedi_council_corruscant
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
@@ -713,7 +714,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
 
     def test_edit_org_unit_not_link_to_reference_instance(self):
-        """Retrieve a orgunit data and modify the reference_instance_id with a no reference form"""
+        """Retrieve an orgunit data and modify the reference_instance_id with a no reference form"""
         old_ou = self.jedi_council_corruscant
         old_modification_date = old_ou.updated_at
         self.client.force_authenticate(self.yoda)
@@ -752,7 +753,7 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
             data=data,
         )
-        jr = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertGreater(ou.updated_at, old_modification_date)
@@ -806,7 +807,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNotEqual(ou.updated_at, old_modification_date)
 
     def test_edit_with_apply_directly_instance_gps_into_org_unit(self):
-        """Retrieve a orgunit data and push instance_gps_to_org_unit"""
+        """Retrieve an orgunit data and push instance_gps_to_org_unit"""
         org_unit = self.jedi_council_corruscant
         org_unit.latitude = 8.32842671
         org_unit.longitude = -11.681191
@@ -834,3 +835,140 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.as_dict()["latitude"], form_latitude)
         self.assertEqual(ou.as_dict()["longitude"], form_longitude)
         self.assertEqual(ou.as_dict()["altitude"], form_altitude)
+
+    def test_create_org_unit_from_different_level_from_mobile(self):
+
+        self.client.force_authenticate(self.yoda)
+
+        ou_type = OrgUnitType.objects.create(name="Test_type")
+        org_unit_parent = OrgUnit.objects.create(name="A_new_OU")
+
+        count_of_orgunits = OrgUnit.objects.all().count()
+
+        data = [
+            {
+                "id": "26668d58-7604-40bb-b783-71c2a2b3e6d1",
+                "name": "A",
+                "time": 1675099612000,
+                "accuracy": 1.5,
+                "altitude": 115.0,
+                "latitude": 50.82521833333333,
+                "longitude": 4.353595,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099611.938,
+                "updated_at": 1675099611.938,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "5738b6b9-88f7-49ee-a211-632030f68f46",
+                "name": "Bluesquare",
+                "time": 1674833629688,
+                "accuracy": 15.67,
+                "altitude": 127.80000305175781,
+                "latitude": 50.8369448,
+                "longitude": 4.3999539,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1674833640.146,
+                "updated_at": 1674833640.146,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "76097602-92ed-45dd-a15a-a81c3fa44461",
+                "name": "Saint+Luc",
+                "time": 1675099739000,
+                "accuracy": 2.2,
+                "altitude": 113.6,
+                "latitude": 50.825905,
+                "longitude": 4.351918333333333,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099740.112,
+                "updated_at": 1675099740.112,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "8818ed97-f238-4a9c-be90-19621af7edd5",
+                "name": "Martin's place",
+                "time": 1675099856000,
+                "accuracy": 2.1,
+                "altitude": 111.6,
+                "latitude": 50.826703333333334,
+                "longitude": 4.350505,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099855.568,
+                "updated_at": 1675099855.568,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "8c646641-499d-4d65-aafb-5c98ef997e45",
+                "name": "Delicelte",
+                "time": 1675079431779,
+                "accuracy": 11.483,
+                "altitude": 110.5999984741211,
+                "latitude": 50.8376697,
+                "longitude": 4.3963584,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079445.755,
+                "updated_at": 1675079445.755,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "98524cec-fc7d-4fcf-8353-b000786e765f",
+                "name": "Crayon",
+                "time": 1675099637000,
+                "accuracy": 2.6,
+                "altitude": 115.5,
+                "latitude": 50.82513166666666,
+                "longitude": 4.353408333333333,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099637.062,
+                "updated_at": 1675099637.062,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "b579bba1-622c-4001-90bb-62f85a4ffbd1",
+                "name": "mevan",
+                "time": 1675079921000,
+                "accuracy": 2.1,
+                "altitude": 115.30000000000001,
+                "latitude": 50.8376,
+                "longitude": 4.396518333333333,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079920.602,
+                "updated_at": 1675079920.602,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "b779e108-8f2a-48af-aa9e-7f1642cfe5bc",
+                "name": "Pizza Mniam Mniam",
+                "time": 1675079730000,
+                "accuracy": 1.5,
+                "altitude": 115.5,
+                "latitude": 50.837444999999995,
+                "longitude": 4.396443333333334,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079729.65,
+                "updated_at": 1675079729.65,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "name": "Some_New_STUF",
+                "time": 1675099587000,
+                "accuracy": 1.9,
+                "altitude": 113.3,
+                "latitude": 50.82527666666667,
+                "longitude": 4.35383,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675099586.754,
+                "updated_at": 1675099586.755,
+                "org_unit_type_id": ou_type.pk,
+            },
+        ]
+
+        response = self.client.post(
+            "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=data, format="json"
+        )
+        orgunits = OrgUnit.objects.all().count()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(orgunits, count_of_orgunits + 9)

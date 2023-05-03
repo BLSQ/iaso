@@ -2,14 +2,13 @@ import logging
 
 import dhis2
 import requests
+from rest_framework import serializers, permissions
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from .common import ModelViewSet, HasPermission
 from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
-from rest_framework import serializers, permissions
-from rest_framework.generics import get_object_or_404
-
+from .common import ModelViewSet
 from ..tasks.dhis2_ou_importer import get_api
 
 
@@ -163,7 +162,7 @@ class TestCredentialSerializer(serializers.Serializer):
                 print(err)
                 raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
             raise serializers.ValidationError({"dhis2_password": [err.description]})
-        except requests.exceptions.ConnectionError as err:
+        except requests.exceptions.ConnectionError:
             raise serializers.ValidationError({"dhis2_url": ["Could not connect to server"]})
         except Exception as err:
             logging.exception(err)

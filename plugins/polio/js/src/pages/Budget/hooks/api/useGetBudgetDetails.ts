@@ -13,13 +13,14 @@ import { Paginated } from '../../../../../../../../hat/assets/js/apps/Iaso/types
 import { BudgetStep } from '../../types';
 
 const getBudgetDetails = (params: any) => {
-    const { pageSize, ...otherParams } = params;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { accountId, pageSize, ...otherParams } = params;
     const urlParams = {
         ...otherParams,
         limit: pageSize ?? 10,
     };
     const filteredParams = Object.entries(urlParams).filter(
-        // eslint-disable-next-line no-unused-vars
+        // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
         ([_key, value]) => value !== undefined,
     );
     const queryString = new URLSearchParams(

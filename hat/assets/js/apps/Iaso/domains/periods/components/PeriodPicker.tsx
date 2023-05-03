@@ -1,20 +1,20 @@
 import React, {
-    useState,
-    useEffect,
-    useCallback,
     FunctionComponent,
+    useCallback,
+    useEffect,
+    useState,
 } from 'react';
 import {
+    Box,
+    FormHelperText,
+    FormLabel,
     Grid,
     makeStyles,
-    Box,
-    Typography,
-    FormHelperText,
 } from '@material-ui/core';
-import { useTheme } from '@material-ui/core/styles';
 
 // @ts-ignore
-import { DatePicker, useSafeIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, DatePicker, useSafeIntl } from 'bluesquare-components';
+import Typography from '@material-ui/core/Typography';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import { getYears } from '../../../utils';
@@ -26,12 +26,13 @@ import {
 import { Period, PeriodObject } from '../models';
 
 import {
+    MONTHS,
     PERIOD_TYPE_DAY,
+    PERIOD_TYPE_PLACEHOLDER,
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_SIX_MONTH,
     PERIOD_TYPE_YEAR,
-    MONTHS,
     QUARTERS,
     QUARTERS_RANGE,
     SEMESTERS,
@@ -43,19 +44,42 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     title: {
+        color: 'rgba(0, 0, 0, 0.4)', // taken from inputlabel
+        paddingLeft: 3,
+        paddingRight: 3,
         fontSize: 17,
-        marginBottom: 3,
+    },
+    legend: {
+        color: 'rgba(0, 0, 0, 0.4)', // taken from inputlabel
+        paddingTop: 10,
+        paddingLeft: 3,
+        paddingRight: 3,
+        fontSize: 13,
+    },
+    inputBorder: {
+        borderRadius: 5,
+        // @ts-ignore
+        borderColor: theme.palette.border.main,
+        '&:hover': {
+            // @ts-ignore
+            borderColor: theme.palette.border.hover,
+        },
+    },
+    borderError: {
+        borderRadius: 5,
+        borderColor: theme.palette.error.main,
     },
 }));
 
 type Props = {
-    periodType: string | object;
+    periodType: string | Record<string, string>;
     title: string;
-    onChange: (_) => {};
-    activePeriodString: string;
-    hasError: boolean;
+    onChange: (_) => any;
+    activePeriodString?: string;
+    hasError?: boolean;
     errors?: string[];
-    keyName: string;
+    keyName?: string;
+    message?: string;
 };
 
 const PeriodPicker: FunctionComponent<Props> = ({
@@ -63,12 +87,12 @@ const PeriodPicker: FunctionComponent<Props> = ({
     title,
     onChange,
     activePeriodString,
-    hasError,
-    keyName,
+    hasError = false,
+    keyName = 'period',
     errors,
+    message,
 }) => {
     const classes = useStyles();
-    const theme = useTheme();
     const { formatMessage } = useSafeIntl();
     const [currentPeriod, setCurrentPeriod] =
         useState<Partial<PeriodObject> | null>(
@@ -140,9 +164,9 @@ const PeriodPicker: FunctionComponent<Props> = ({
             p={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
             mb={2}
             border={currentPeriodType === PERIOD_TYPE_DAY ? 0 : 1}
-            borderRadius={5}
-            borderColor={
-                displayError ? theme.palette.error.main : 'rgba(0,0,0,0.23)'
+            className={
+                /* @ts-ignore */
+                displayError ? classes.inputBorderError : classes.inputBorder
             }
         >
             {currentPeriodType === PERIOD_TYPE_DAY && (
@@ -155,31 +179,49 @@ const PeriodPicker: FunctionComponent<Props> = ({
                     onChange={handleChangeDay}
                 />
             )}
+
             {currentPeriodType !== PERIOD_TYPE_DAY && (
                 <>
-                    {/*@ts-ignore*/}
-                    <Typography variant="h6" className={classes.title}>
+                    {/* @ts-ignore */}
+                    <FormLabel component="legend" className={classes.title}>
                         {title}
-                    </Typography>
+                    </FormLabel>
+
                     <Grid container spacing={2}>
-                        <Grid
-                            item
-                            sm={currentPeriodType === PERIOD_TYPE_YEAR ? 12 : 6}
-                        >
-                            <InputComponent
-                                keyValue="year"
-                                onChange={handleChange}
-                                clearable
-                                value={currentPeriod && currentPeriod.year}
-                                type="select"
-                                options={getYears(15, 10, true).map(y => ({
-                                    label: y.toString(),
-                                    value: y.toString(),
-                                }))}
-                                label={MESSAGES.year}
-                            />
-                        </Grid>
-                        {currentPeriodType !== PERIOD_TYPE_YEAR && (
+                        {currentPeriodType !== PERIOD_TYPE_PLACEHOLDER && (
+                            <Grid
+                                item
+                                sm={
+                                    currentPeriodType === PERIOD_TYPE_YEAR
+                                        ? 12
+                                        : 6
+                                }
+                            >
+                                <InputComponent
+                                    keyValue="year"
+                                    onChange={handleChange}
+                                    clearable
+                                    value={currentPeriod && currentPeriod.year}
+                                    type="select"
+                                    options={getYears(20, 10, true).map(y => ({
+                                        label: y.toString(),
+                                        value: y.toString(),
+                                    }))}
+                                    label={MESSAGES.year}
+                                />
+                            </Grid>
+                        )}
+                        {currentPeriodType === PERIOD_TYPE_PLACEHOLDER && (
+                            <Grid item>
+                                <Typography className={classes.legend}>
+                                    {message}
+                                </Typography>
+                            </Grid>
+                        )}
+
+                        {(currentPeriodType === PERIOD_TYPE_MONTH ||
+                            currentPeriodType === PERIOD_TYPE_QUARTER ||
+                            currentPeriodType === PERIOD_TYPE_SIX_MONTH) && (
                             <Grid item sm={6}>
                                 {currentPeriodType === PERIOD_TYPE_MONTH && (
                                     <InputComponent
@@ -269,12 +311,6 @@ const PeriodPicker: FunctionComponent<Props> = ({
             <FormHelperText error={displayError}>{errors}</FormHelperText>
         </Box>
     );
-};
-
-PeriodPicker.defaultProps = {
-    activePeriodString: undefined,
-    periodType: undefined,
-    hasError: false,
 };
 
 export default PeriodPicker;

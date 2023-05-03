@@ -56,7 +56,7 @@ const getDataSourceVersions = async () => {
 };
 
 // Func to compare version to  order them
-// string.localeCompare allow us to have case insensitive sorting and to take accents into account
+// string.localeCompare allow us to have case-insensitive sorting and to take accents into account
 const compareVersions = (a, b) => {
     const comparison = a.data_source_name.localeCompare(
         b.data_source_name,
@@ -137,7 +137,7 @@ export const csvPreview = async data => {
         method: 'GET',
         headers: { 'Sec-fetch-Dest': 'document', 'Content-Type': 'text/csv' },
     };
-    // using iasoFetch so I can convert response to text i.o. json
+    // using iasoFetch, so I can convert response to text i.o. json
     return iasoFetch(url, requestSettings)
         .then(result => result.text())
         .catch(error => {
@@ -161,7 +161,7 @@ export const updateDefaultDataSource = ([accountId, defaultVersionId]) =>
 
 /**
  * Save DataSource on server
- * If the data source is marked as default this necessitate a separate request to
+ * If the data source is marked as default this necessitates a separate request to
  * save and then we refetch the user since it's updated
  * Mark errors in form.
  * @param {func} setFieldErrors
@@ -315,6 +315,22 @@ export const useCopyDataSourceVersion = () => {
         MESSAGES.copyVersionSuccessMessage,
         'dataSources',
     );
+};
+const saveSourceVersion = newSourceVersion => {
+    const url = '/api/sourceversions/';
+    return postRequest(url, {
+        description: newSourceVersion.description,
+        data_source_id: newSourceVersion.dataSourceId,
+    });
+};
+
+export const useCreateSourceVersion = () => {
+    return useSnackMutation({
+        mutationFn: saveSourceVersion,
+        snackErrorMsg: MESSAGES.newEmptyVersionError,
+        snackSuccessMessage: MESSAGES.newEmptyVersionSavedSuccess,
+        invalidateQueryKey: 'dataSourceVersions',
+    });
 };
 
 const updateSourceVersion = async ({

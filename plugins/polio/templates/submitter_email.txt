@@ -1,0 +1,11 @@
+{% block content %} {% block text %}
+Thank you for your submission.
+The NEW status of the POLIO campaign {{ campaign.obr_name }} has been updated to:{{ node.label }}
+{% endblock %}
+
+For additional information, please, consult the campaign page : {{ budget_url|safe }}
+
+{% endblock content %}
+
+============
+This is an automated email from {{ site_name }} - {{ site_url }}

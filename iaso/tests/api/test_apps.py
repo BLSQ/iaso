@@ -1,7 +1,7 @@
 import typing
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class AppsAPITestCase(APITestCase):

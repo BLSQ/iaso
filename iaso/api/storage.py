@@ -16,7 +16,6 @@ from hat.api.export_utils import generate_xlsx, iter_items, Echo, timestamp_to_u
 from iaso.api.entity import EntitySerializer
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
-
 from .common import (
     TimestampField,
     HasPermission,
@@ -256,7 +255,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         """
         Endpoint used to list/search devices on the web interface
 
-        GET /api/storage/
+        GET /api/storages/
         """
         limit_str = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -303,7 +302,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         """
         Endpoint used to blacklist a single device from the web interface
 
-        POST /api/storage/blacklisted/
+        POST /api/storages/blacklisted/
         """
 
         # 1. Get data from request/environment
@@ -349,7 +348,8 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
     def create(self, request):
         """
-        POST /api/mobile/storage/logs
+        POST /api/mobile/storage/logs [Deprecated] will be removed in the future
+        POST /api/mobile/storages/logs
 
         This will also create a new StorageDevice if the storage_id / storage_type / account combination is not found
         """
@@ -590,7 +590,8 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request):
         """
-        GET /api/mobile/storage/blacklisted
+        GET /api/mobile/storages/blacklisted
+        GET /api/mobile/storage/blacklisted [Deprecated] will be removed in the future
 
         Returns a list of blacklisted devices
         """

@@ -18,6 +18,8 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
+import MenuBookIcon from '@material-ui/icons/MenuBook';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import BeneficiarySvg from '../components/svg/Beneficiary';
@@ -96,6 +98,12 @@ const menuItems = defaultSourceId => [
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
+                label: MESSAGES.registry,
+                permissions: paths.registryPath.permissions,
+                key: 'registry',
+                icon: props => <MenuBookIcon {...props} />,
+            },
+            {
                 label: MESSAGES.groups,
                 permissions: paths.groupsPath.permissions,
                 key: 'groups',
@@ -159,6 +167,12 @@ const menuItems = defaultSourceId => [
                 permissions: paths.entityTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
+            },
+            {
+                label: MESSAGES.entityDuplicatesTitle,
+                permissions: paths.entityDuplicatesPath.permissions,
+                key: 'duplicates',
+                icon: props => <FileCopyIcon {...props} />,
             },
         ],
     },

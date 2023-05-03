@@ -1,8 +1,11 @@
 import json
+import logging
+from collections import namedtuple
+
 import responses
 from django.core.files.uploadedfile import UploadedFile
-from collections import namedtuple
 from django.test import TestCase
+
 from iaso.models import (
     User,
     Instance,
@@ -24,7 +27,6 @@ from iaso.models import (
     ERRORED,
     EXPORTED,
 )
-import logging
 
 logger = logging.getLogger(__name__)
 import os
@@ -82,7 +84,7 @@ class DataValueExporterTests(TestCase):
         instance.project = self.project
         instance.save()
         # force to past creation date
-        # looks the the first save don't take it
+        # looks the first save don't take it
         instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.save()
         return instance
@@ -340,9 +342,6 @@ class DataValueExporterTests(TestCase):
 
         responses.add(responses.POST, "https://dhis2.com/api/completeDataSetRegistrations", json={}, status=200)
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
-
         DataValueExporter().export_instances(export_request)
         self.expect_logs(EXPORTED)
 
@@ -434,6 +433,44 @@ class DataValueExporterTests(TestCase):
 
         self.assertEquals(
             "ERROR while processing page 1/1 : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
+            context.exception.message,
+        )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_aggregate_export_handle_dhis2_errors_238_and_higher(self):
+        instance = self.build_instance(self.form)
+
+        with self.assertRaises(InstanceExportError) as context:
+            mapping_version = MappingVersion(
+                name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
+            )
+            mapping_version.save()
+
+            # dhis2 2.38 now return a bad request (vs 200 previously)
+            # the payload is wrapped in "response" field
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                json=load_dhis2_fixture("datavalues-error-bad-type.json"),
+                status=409,
+            )
+
+            export_request = ExportRequestBuilder().build_export_request(
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
+            )
+            DataValueExporter().export_instances(export_request)
+
+        self.expect_logs(ERRORED)
+
+        self.assertEquals(
+            "ERROR while processing page 1/1 : Value must match data element's `nymNRxmnj4z` type constraints: Data value is not an integer",
             context.exception.message,
         )
         instance.refresh_from_db()

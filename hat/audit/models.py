@@ -1,12 +1,11 @@
+import json
 import uuid
 
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.fields import GenericForeignKey
 from django.contrib.contenttypes.models import ContentType
-
-from django.db import models
-from django.contrib.auth.models import User
 from django.core import serializers
-import json
+from django.db import models
 
 PROFILE_API = "profile_api"
 PASSWORD_API = "password_api"
@@ -33,7 +32,7 @@ def dict_compare(d1, d2):
 
 class IasoJsonEncoder(json.JSONEncoder):
     """This Encoder is needed for object that use UUID as their primary id
-    e.g Campaign"""
+    e.g. Campaign"""
 
     def default(self, o):
         if isinstance(o, uuid.UUID):

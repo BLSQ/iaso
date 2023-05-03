@@ -1,5 +1,5 @@
 import { Box, Grid } from '@material-ui/core';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
@@ -15,6 +15,7 @@ const baseUrl = baseUrls.teams;
 export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
         <>
             <Grid container spacing={0}>
@@ -26,6 +27,8 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                        blockForbiddenChars
                     />
                 </Grid>
 
@@ -40,7 +43,7 @@ export const TeamFilters: FunctionComponent<Props> = ({ params }) => {
                 >
                     <Box mt={2} mb={2}>
                         <FilterButton
-                            disabled={!filtersUpdated}
+                            disabled={textSearchError || !filtersUpdated}
                             onFilter={handleSearch}
                         />
                     </Box>

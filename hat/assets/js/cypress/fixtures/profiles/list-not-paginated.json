@@ -1,0 +1,31 @@
+{
+    "profiles": [
+        {
+            "id": 2,
+            "first_name": "Bruce",
+            "user_name": "oneFistPunch",
+            "last_name": "Lee",
+            "email": "",
+            "language": "en",
+            "user_id": 5
+        },
+        {
+            "id": 69,
+            "first_name": "Mario",
+            "user_name": "peachLover",
+            "last_name": "Bros",
+            "email": "",
+            "language": "en",
+            "user_id": 69
+        },
+        {
+            "id": 999,
+            "first_name": "Luigi",
+            "user_name": "SpaghettiEater",
+            "last_name": "Bros",
+            "email": "",
+            "language": "en",
+            "user_id": 69
+        }
+    ]
+}

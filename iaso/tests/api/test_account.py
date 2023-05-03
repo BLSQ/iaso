@@ -1,8 +1,8 @@
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
-class ProjectsAPITestCase(APITestCase):
+class AccountAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.ghi = ghi = m.Account.objects.create(name="Global Health Initiative")
@@ -17,8 +17,14 @@ class ProjectsAPITestCase(APITestCase):
         ghi_datasource.projects.set([ghi_project])
         cls.ghi_version = m.SourceVersion.objects.create(data_source=ghi_datasource, number=1)
 
+        wha_project = m.Project.objects.create(name="wha_project", account=wha)
+        wha_second_project = m.Project.objects.create(name="wha_second_project", account=wha)
+        wha_datasource = m.DataSource.objects.create(name="wha datasource")
+        wha_datasource.projects.set([wha_project])
+        cls.wha_version = m.SourceVersion.objects.create(data_source=wha_datasource, number=1)
+
     def test_account_list_without_auth(self):
-        """GET /projects/ without auth should result in a 403 (before the method not authorized?"""
+        """GET /projects/ without auth should result in a 403 (before the method not authorized?)"""
         self.client.force_authenticate(self.jim)
 
         response = self.client.get("/api/accounts/")
@@ -99,3 +105,10 @@ class ProjectsAPITestCase(APITestCase):
         old_version = self.ghi.default_version
         self.ghi.refresh_from_db()
         self.assertEqual(self.ghi.default_version, old_version)
+
+    def test_cant_assign_source_version_from_different_account(self):
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.put(f"/api/accounts/{self.ghi.pk}/", {"default_version": self.wha_version.pk})
+        j = self.assertJSONResponse(response, 400)
+        self.assertEqual(j, {"Error": "Account not allowed to access this default_source"})

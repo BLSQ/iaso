@@ -10,7 +10,10 @@ import {
 } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
-import { Column } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
+import {
+    Column,
+    Paginated,
+} from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import {
     DateCell,
@@ -21,9 +24,10 @@ import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/uti
 import { convertObjectToString } from '../../../utils';
 import { formatThousand } from '../../../../../../../hat/assets/js/apps/Iaso/utils';
 import { formatComment } from '../cards/utils';
-import { BudgetStep } from '../types';
+import { BudgetStep, Transition, Params } from '../types';
 import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { DeleteRestoreButton } from '../BudgetDetails/DeleteRestoreButton';
+
+import { StepActionCell } from '../BudgetDetails/StepActionCell';
 
 const baseUrl = BUDGET_DETAILS;
 
@@ -37,8 +41,8 @@ export const styles = theme => {
 };
 
 // @ts-ignore
-const useStyles = makeStyles(styles);
-const getStyle = classes => isHidden => {
+export const useStyles = makeStyles(styles);
+export const getStyle = classes => isHidden => {
     // const isHidden = Boolean(settings.row.original.deleted_at);
     return isHidden ? classes.hiddenRow : '';
 };
@@ -95,7 +99,11 @@ export const useBudgetColumns = (): Column[] => {
     }, [formatMessage]);
 };
 
-export const useBudgetDetailsColumns = (): Column[] => {
+export const useBudgetDetailsColumns = (
+    params: Params,
+    repeatTransitions: Transition[],
+    budgetDetails?: Paginated<BudgetStep>,
+): Column[] => {
     const classes = useStyles();
     const getRowColor = getStyle(classes);
     const { formatMessage } = useSafeIntl();
@@ -173,7 +181,7 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 },
             },
             {
-                Header: formatMessage(MESSAGES.created_at),
+                Header: formatMessage(MESSAGES.date),
                 id: 'created_at',
                 accessor: 'created_at',
                 sortable: false,
@@ -239,32 +247,39 @@ export const useBudgetDetailsColumns = (): Column[] => {
                 id: 'id',
                 accessor: 'id',
                 sortable: false,
-                Cell: settings => {
-                    const isStepDeleted = Boolean(
-                        settings.row.original.deleted_at,
-                    );
-                    return (
-                        <DeleteRestoreButton
-                            stepId={settings.row.original.id}
-                            className={getRowColor(isStepDeleted)}
-                            isStepDeleted={isStepDeleted}
-                        />
-                    );
-                },
+                Cell: settings => (
+                    <StepActionCell
+                        budgetStep={settings.row.original}
+                        params={params}
+                        budgetDetails={budgetDetails}
+                        repeatTransitions={repeatTransitions}
+                    />
+                ),
             },
         ];
         return defaultColumns;
-    }, [formatMessage, getRowColor, classes.paragraph]);
+    }, [
+        formatMessage,
+        getRowColor,
+        classes.paragraph,
+        params,
+        budgetDetails,
+        repeatTransitions,
+    ]);
 };
 
-type Params = {
+type TablePorps = {
     events: Optional<BudgetStep[]>;
-    params: Record<string, any>;
+    params: Params;
+    budgetDetails: Paginated<BudgetStep> | undefined;
+    repeatTransitions: Transition[];
 };
 
 export const useTableState = ({
     params,
-}: Params): { resetPageToOne: unknown; columns: Column[] } => {
+    budgetDetails,
+    repeatTransitions,
+}: TablePorps): { resetPageToOne: unknown; columns: Column[] } => {
     const { campaignName, campaignId } = params;
     const [resetPageToOne, setResetPageToOne] = useState('');
 
@@ -277,7 +292,11 @@ export const useTableState = ({
         setResetPageToOne(convertObjectToString(newParams));
     }, [params.pageSize, campaignId, campaignName]);
 
-    const columns = useBudgetDetailsColumns();
+    const columns = useBudgetDetailsColumns(
+        params,
+        repeatTransitions,
+        budgetDetails,
+    );
 
     return useMemo(() => {
         return {

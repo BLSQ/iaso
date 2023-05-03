@@ -4,7 +4,7 @@ import { getRequest } from '../../../../libs/Api';
 import { Planning } from '../../types/planning';
 
 const getPlanning = (planningId: string): Promise<Planning> => {
-    return getRequest(`/api/microplanning/planning/${planningId}`);
+    return getRequest(`/api/microplanning/plannings/${planningId}`);
 };
 export const useGetPlanning = (
     planningId: string | undefined,

@@ -1,19 +1,19 @@
-from datetime import timedelta
 import typing
+from copy import copy
+from datetime import timedelta
+
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
-from rest_framework import serializers, permissions, status
-from rest_framework.request import Request
+from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
-from copy import copy
+from rest_framework.request import Request
 
-from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
-from iaso.utils import timestamp_to_datetime
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import log_modification, FORM_API
+from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilter
+from iaso.utils import timestamp_to_datetime
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .projects import ProjectSerializer
 
 
@@ -30,6 +30,15 @@ class HasFormPermission(permissions.BasePermission):
         return obj in Form.objects_include_deleted.filter_for_user_and_app_id(
             request.user, request.query_params.get("app_id")
         )
+
+
+class FormPredefinedFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormPredefinedFilter
+        fields = ["id", "name", "short_name", "json_logic", "created_at", "updated_at"]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
 
 class FormSerializer(DynamicFieldsModelSerializer):
@@ -82,6 +91,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "derived",
             "possible_fields",
             "label_keys",
+            "predefined_filters",
         ]
         read_only_fields = [
             "id",
@@ -107,6 +117,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
+    predefined_filters = FormPredefinedFilterSerializer(many=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     deleted_at = TimestampField(allow_null=True, required=False)

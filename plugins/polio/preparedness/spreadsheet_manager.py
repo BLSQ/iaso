@@ -7,30 +7,31 @@ and we adapt the value for the particular campaign we are generating to.
 We copy the Regional worksheet for each region in the Campaign scope, then add a column for each district.
 """
 import copy
+from logging import getLogger
 from typing import Optional
 
 import gspread  # type: ignore
+from django.contrib.sites.shortcuts import get_current_site
 from django.utils.translation import gettext_lazy as _
 from gspread.utils import rowcol_to_a1, Dimension, a1_range_to_grid_range  # type: ignore
 from rest_framework import exceptions
 
+from hat.__version__ import VERSION
 from iaso.models import OrgUnit
 from plugins.polio.models import CountryUsersGroup, Campaign
 from plugins.polio.preparedness.client import get_client, get_google_config
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 
 # you need to create a polio.Config object with this key in the DB
 PREPAREDNESS_TEMPLATE_CONFIG_KEY = "preparedness_template_id"
-TEMPLATE_VERSION = "v3.1"
+TEMPLATE_VERSION = "v3.3"
 
 
 def create_spreadsheet(title: str, lang: str):
     client = get_client()
     config = get_google_config(PREPAREDNESS_TEMPLATE_CONFIG_KEY)
-    if lang not in ("EN", "FR"):
+    if lang not in ("EN", "FR", "PT"):
         # We allow it for future dev but display an error to avoid carelessly adding new language
         logger.error("Unsupported lang for preparedness template")
     if TEMPLATE_VERSION not in config:
@@ -44,7 +45,7 @@ def create_spreadsheet(title: str, lang: str):
 
     spreadsheet = client.copy(template, title)
     logger.info(f"Created spreadsheet {spreadsheet.url}")
-    spreadsheet.share(None, perm_type="anyone", role="writer")
+    spreadsheet.share(None, perm_type="anyone", role="writer", with_link=True)
     return spreadsheet
 
 
@@ -101,16 +102,16 @@ def update_regional_worksheet(sheet: gspread.Worksheet, region_name: str, region
     num_district = len(district_names)
     district_name_range = f"{rowcol_to_a1(7, 6)}:{rowcol_to_a1(7, 6 + num_district)}"
     updates = [{"range": "c4", "values": [[region_name]]}, {"range": district_name_range, "values": [district_names]}]
-    # Make the column for district
+    # Make a columns for each district
     # General
-    duplicate_cells(sheet, "E6:E54", num_district)
+    duplicate_cells(sheet, "E6:E70", num_district)
     # Summary
-    duplicate_cells(sheet, "C64:C72", num_district)
+    duplicate_cells(sheet, "C73:C79", num_district)
 
     sheet.batch_update(updates, value_input_option="USER_ENTERED")
 
 
-# Google Sheet don't automatically copy the protected ranges when duplicating a sheet so we do it by hand
+# Google Sheet don't automatically copy the protected ranges when duplicating a sheet, so we do it by hand
 def copy_protected_range_to_sheet(template_protected_ranges, new_sheet):
     new_sheet_id = new_sheet.id
     new_protected_ranges = []
@@ -157,6 +158,16 @@ def generate_spreadsheet_for_campaign(campaign: Campaign, round_number: Optional
         logger.exception(e)
         logger.error(f"Could not find template language for {campaign}")
     spreadsheet = create_spreadsheet(campaign.obr_name, lang)
+
+    # set some meta data for debugging
+    domain = get_current_site(None).domain
+    spreadsheet.sheet1.batch_update(
+        [
+            {"range": "A28", "values": [[domain]]},
+            {"range": "B28", "values": [[VERSION]]},
+            {"range": "B29", "values": [[TEMPLATE_VERSION]]},
+        ]
+    )
     update_national_worksheet(
         spreadsheet.worksheet("National"),
         vaccines=campaign.vaccines,

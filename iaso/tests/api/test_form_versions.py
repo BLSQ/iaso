@@ -1,10 +1,10 @@
-import typing
 import tempfile
-
-from django.core.files.uploadedfile import UploadedFile
-from django.core.files import File
-from django.test import override_settings
+import typing
 from unittest import mock
+
+from django.core.files import File
+from django.core.files.uploadedfile import UploadedFile
+from django.test import override_settings
 
 from iaso import models as m
 from iaso.test import APITestCase

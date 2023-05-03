@@ -29,6 +29,7 @@ const useStyles = makeStyles(theme => ({
 
 const Filters = ({ baseUrl, params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
+    const [textSearchError, setTextSearchError] = useState(false);
     const classes = useStyles();
     const [ouParent, setOuParent] = useState(stringToBoolean(params.ouParent));
     const [ouChildren, setOuChildren] = useState(
@@ -102,6 +103,8 @@ const Filters = ({ baseUrl, params }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                        blockForbiddenChars
                     />
                     <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
                         <OrgUnitTreeviewModal
@@ -171,7 +174,7 @@ const Filters = ({ baseUrl, params }) => {
                     <Box mt={2}>
                         <Button
                             data-test="search-button"
-                            disabled={!filtersUpdated}
+                            disabled={textSearchError || !filtersUpdated}
                             variant="contained"
                             className={classes.button}
                             color="primary"

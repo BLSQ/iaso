@@ -1,9 +1,9 @@
 import json
+from pprint import pprint
 
 import dhis2.exceptions
 from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
-from pprint import pprint
 
 from iaso.models import generate_id_for_dhis_2
 from .comparisons import as_field_types

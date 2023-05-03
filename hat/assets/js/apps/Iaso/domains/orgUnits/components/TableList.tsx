@@ -5,16 +5,14 @@ import React, {
     useCallback,
 } from 'react';
 import { Box } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
+import EditIcon from '@material-ui/icons/Settings';
 import { UseMutateAsyncFunction } from 'react-query';
 import {
-    // @ts-ignore
     useSafeIntl,
     // @ts-ignore
     selectionInitialState,
     // @ts-ignore
     setTableSelection,
-    // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 

@@ -76,7 +76,7 @@ const Filters: FunctionComponent<Props> = ({
     };
     const campaignObj = campaigns.find(c => c.obr_name === campaign);
     const campaignLink = campaignObj
-        ? `/dashboard/polio/list/campaignId/${campaignObj.id}/`
+        ? `/dashboard/polio/list/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
 
     return (

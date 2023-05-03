@@ -7,7 +7,7 @@ import {
 
 import { AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
-import { DropdownTeamsOptions } from '../types/team';
+import { DropdownTeamsOptions, Team } from '../types/team';
 import { Column } from '../../../types/table';
 
 import { getOrgUnitAssignation } from '../utils';
@@ -23,6 +23,7 @@ type Props = {
     assignments: AssignmentsApi;
     teams: DropdownTeamsOptions[] | undefined;
     profiles: Profile[] | undefined;
+    currentTeam?: Team;
 };
 
 const getParentCount = (orgUnit: AssignmentUnit, count = 0): number => {
@@ -38,9 +39,9 @@ export const useColumns = ({
     assignments,
     teams,
     profiles,
+    currentTeam,
 }: Props): Column[] => {
     const { formatMessage } = useSafeIntl();
-
     const firstOrgunit: AssignmentUnit = orgUnits[0];
     const parentCount: number = firstOrgunit ? getParentCount(firstOrgunit) : 0;
     return useMemo(() => {
@@ -79,8 +80,10 @@ export const useColumns = ({
             });
         const assignationColumn: Column = {
             Header: formatMessage(MESSAGES.assignment),
-            id: 'assignment',
-            sortable: false,
+            id:
+                currentTeam?.type === 'TEAM_OF_TEAMS'
+                    ? 'assignment__team__name'
+                    : 'assignment__user__username',
             Cell: settings => {
                 return (
                     <UsersTeamsCell
@@ -97,5 +100,12 @@ export const useColumns = ({
         };
         columns.push(assignationColumn);
         return columns;
-    }, [assignments, formatMessage, profiles, teams, parentCount]);
+    }, [
+        formatMessage,
+        parentCount,
+        currentTeam?.type,
+        assignments,
+        teams,
+        profiles,
+    ]);
 };

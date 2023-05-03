@@ -1,17 +1,16 @@
 import tempfile
 
+from django.utils.timezone import now
+
 from beanstalk_worker import task_decorator
 from iaso.gpkg.import_gpkg import import_gpkg_file2
 from iaso.models import Task
 from iaso.models.import_gpkg import ImportGPKG
 
-from django.utils.timezone import now
-
 
 @task_decorator(task_name="import_gpkg_task")
 def import_gpkg_task(import_gpkg_id: int, task: Task):
     """Background Task to bulk update org units."""
-    start = now()
     task.report_progress_and_stop_if_killed(progress_message="Importing")
 
     user = task.launcher

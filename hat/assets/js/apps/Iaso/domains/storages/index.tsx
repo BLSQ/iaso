@@ -44,6 +44,13 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={apiParams} />
+                <Box display="flex" justifyContent="flex-end" mt={2}>
+                    <DownloadButtonsComponent
+                        csvUrl={`${apiUrl}&csv=true`}
+                        xlsxUrl={`${apiUrl}&xlsx=true`}
+                        disabled={isFetching}
+                    />
+                </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
@@ -56,11 +63,6 @@ export const Storages: FunctionComponent<Props> = ({ params }) => {
                         dispatch(redirectToReplace(baseUrl, p))
                     }
                     extraProps={{ loading: isFetching }}
-                />
-
-                <DownloadButtonsComponent
-                    csvUrl={`${apiUrl}&csv=true`}
-                    xlsxUrl={`${apiUrl}&xlsx=true`}
                 />
             </Box>
         </>

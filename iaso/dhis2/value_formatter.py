@@ -46,7 +46,6 @@ def translate_optionset(data_element, raw_value):
 
 
 def format_value(data_element, raw_value, orgunit_resolver):
-    data_element_type = None
     if "valueType" in data_element:
         data_element_type = data_element["valueType"]
     else:
@@ -69,7 +68,7 @@ def format_value(data_element, raw_value, orgunit_resolver):
                 return float(translated_value)
             else:
                 return int(translated_value)
-        except Exception as e:
+        except Exception:
             import traceback
 
             raise Exception("Bad value for float '" + str(raw_value) + "'", data_element)

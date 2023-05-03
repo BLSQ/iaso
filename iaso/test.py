@@ -1,12 +1,12 @@
 import typing
 from unittest import mock
 
-from django.contrib.contenttypes.models import ContentType
-from django.core.files import File
-from django.test import TestCase as BaseTestCase
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.core.files import File
 from django.http import StreamingHttpResponse, HttpResponse
+from django.test import TestCase as BaseTestCase
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
 from hat.menupermissions.models import CustomPermissionSupport

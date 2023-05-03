@@ -1,163 +1,44 @@
-- model: iaso.team
-  pk: 1
-  fields:
-    deleted_at: null
-    name: RRT
-    description: ''
-    project: 1
-    parent: null
-    path: '1'
-    type: TEAM_OF_USERS
-    created_at: 2022-10-27 14:03:45.778294+00:00
-    updated_at: 2022-10-27 14:03:45.778322+00:00
-    created_by:
-    - polio
-    manager:
-    - polio
-    users:
-    - - polio
-- model: iaso.team
-  pk: 2
-  fields:
-    deleted_at: null
-    name: ORPG Operations
-    description: ''
-    project: 1
-    parent: null
-    path: '2'
-    type: TEAM_OF_USERS
-    created_at: 2022-10-27 14:03:45.778294+00:00
-    updated_at: 2022-10-27 14:03:45.778322+00:00
-    created_by:
-    - polio
-    manager:
-    - polio
-    users:
-    - - polio
-- model: iaso.team
-  pk: 3
-  fields:
-    name: ORPG wider group
-    description: ''
-    project: 1
-    parent: null
-    path: '3'
-    type: TEAM_OF_USERS
-    created_at: 2022-10-27 14:03:45.778294+00:00
-    updated_at: 2022-10-27 14:03:45.778322+00:00
-    created_by:
-    - polio
-    manager:
-    - polio
-    users:
-    - - polio
-- model: iaso.team
-  pk: 4
-  fields:
-    name: UNICEF
-    description: ''
-    project: 1
-    parent: null
-    path: '4'
-    type: TEAM_OF_USERS
-    created_at: 2022-10-27 14:03:45.778294+00:00
-    updated_at: 2022-10-27 14:03:45.778322+00:00
-    created_by:
-    - polio
-    manager:
-    - polio
-    users:
-    - - polio
-- model: iaso.team
-  pk: 5
-  fields:
-    name: WHO
-    description: ''
-    project: 1
-    parent: null
-    path: '5'
-    type: TEAM_OF_USERS
-    created_at: 2022-10-27 14:03:45.778294+00:00
-    updated_at: 2022-10-27 14:03:45.778322+00:00
-    created_by:
-    - polio
-    manager:
-    - polio
-    users:
-    - - polio
-- model: iaso.team
-  pk: 6
-  fields:
-    name: MoH
-    description: ''
-    project: 1
-    parent: null
-    path: '6'
-    type: TEAM_OF_USERS
-    created_at: 2022-10-27 14:03:45.778294+00:00
-    updated_at: 2022-10-27 14:03:45.778322+00:00
-    created_by:
-    - polio
-    manager:
-    - polio
-    users:
-    - - polio
-- model: iaso.team
-  pk: 7
-  fields:
-    name: GPEI Coordinator
-    description: ''
-    project: 1
-    parent: null
-    path: '7'
-    type: TEAM_OF_USERS
-    created_at: 2022-10-27 14:03:45.778294+00:00
-    updated_at: 2022-10-27 14:03:45.778322+00:00
-    created_by:
-    - polio
-    manager:
-    - polio
-    users:
-    - - polio
 - model: polio.workflowmodel
   pk: 1
   fields:
     created_at: 2022-10-19 16:13:49.731224+00:00
-    updated_at: 2022-10-27 14:22:22.273287+00:00
+    updated_at: 2023-03-31 11:07:09.904661+00:00
     definition:
       nodes:
-      - key: budget_requested
-        label: Budget requested
+      - key: unicef_sent_budget
+        label: UNICEF CO sent budget
         order: 10
         mandatory: true
         category_key: country
-      - key: unicef_sent_budget
-        label: UNICEF sent budget
+      - key: who_sent_budget
+        label: WHO CO sent budget
+        order: 10
+        mandatory: true
+        category_key: country
+      - key: gpei_consolidated_budgets
+        label: Consolidation by GPEI coordinator
         order: 11
         mandatory: true
         category_key: country
-      - key: who_sent_budget
-        label: WHO sent budget
-        order: 12
-        mandatory: true
-        category_key: country
-      - key: gpei_consolidation
-        label: GPEI consolidation
-        order: 13
-        mandatory: true
-        category_key: country
-        mark_nodes_as_completed: [who_sent_budget, unicef_sent_budget]
+        mark_nodes_as_completed:
+        - who_sent_budget
+        - unicef_sent_budget
       - key: submitted_to_rrt
         label: Submitted to RRT
         order: 21
         mandatory: true
         category_key: rrt
       - key: feedback_sent_to_gpei
-        label: Feedback sent to GPEI
+        label: Feedback sent to GPEI coordinator
         order: 22
         mandatory: false
         category_key: rrt
-      - key: submission_to_orpg_operations_1
+      - key: re_submitted_to_rrt
+        label: Submitted to RRT
+        order: 23
+        mandatory: false
+        category_key: rrt
+      - key: submitted_to_orpg_operations1
         label: Submitted to ORPG Operations
         order: 31
         mandatory: true
@@ -167,214 +48,240 @@
         order: 32
         mandatory: false
         category_key: orpg
-      - key: submitted_to_orpg
-        label: Submitted to ORPG
+      - key: feedback_transferred_to_gpei1
+        label: Requested information from GPEI coordinator
         order: 33
+        mandatory: false
+        category_key: orpg
+      - key: gpei_answer_received1
+        label: Information received from GPEI coordinator
+        order: 34
+        mandatory: false
+        category_key: orpg
+      - key: re_submitted_to_orpg_operations1
+        label: Submitted to ORPG Operations
+        order: 35
+        mandatory: false
+        category_key: orpg
+      - key: submitted_to_orpg_wider
+        label: Submitted to ORPG wider group
+        order: 36
+        mandatory: true
+        category_key: orpg
+      - key: submitted_to_orpg_operations2
+        label: Submitted to ORPG Operations (ORPG wider)
+        order: 37
         mandatory: true
         category_key: orpg
       - key: feedback_sent_to_rrt2
         label: Feedback sent to RRT
-        order: 34
+        order: 38
         mandatory: false
         category_key: orpg
-      - key: submission_to_ orpg_operations_2
-        label: Submitted to ORPG Operations
-        order: 35
-        mandatory: true
+      - key: feedback_transferred_to_gpei2
+        label: Requested information from GPEI coordinator
+        order: 39
+        mandatory: false
         category_key: orpg
-      - key: feedback_sent_to_rrt3
-        label: Feedback sent to RRT
-        order: 36
+      - key: gpei_answer_received2
+        label: Information received from GPEI coordinator
+        order: 391
+        mandatory: false
+        category_key: orpg
+      - key: re_submitted_to_orpg_operations2
+        label: Submitted to ORPG Operations (ORPG wider)
+        order: 392
+        mandatory: false
         category_key: orpg
       - key: submitted_for_approval
         label: Submitted for approval
         order: 40
         mandatory: true
-        category_key: wh o_unicef
+        category_key: approval
       - key: feedback_sent_to_orpg_operations_who
         label: Feedback sent to ORPG Operations (WHO)
         order: 41
-        category_key: who_unicef
+        mandatory: false
+        category_key: approval
       - key: feedback_sent_to_orpg_operations_unicef
         label: Feedback sent to ORPG Operations (UNICEF)
         order: 42
-        category_key: who_unicef
-      - key: approved_by_unicef
-        label: Submitted for approval
+        mandatory: false
+        category_key: approval
+      - key: approved_by_who_unicef_feedback
+        label: Approved by WHO, feedback sent to ORPG Ops by UNICEF
         order: 43
-        mandatory: true
-        category_key: who_unicef
-      - key: approved_by_who
-        label: Submitted for approval
+        mandatory: false
+        category_key: approval
+      - key: approved_by_unicef_who_feedback
+        label: Approved by UNICEF, feedback sent to ORPG Ops by WHO
         order: 44
+        mandatory: false
+        category_key: approval
+      - key: approved_by_unicef
+        label: Approved by Unicef
+        order: 45
         mandatory: true
-        category_key: who_unicef
+        category_key: approval
+      - key: approved_by_who
+        label: Approved by WHO
+        order: 46
+        mandatory: true
+        category_key: approval
       - key: approved
         label: Approved
-        order: 50
+        order: 47
         mandatory: true
-        category_key: release
+        category_key: approval
+        mark_nodes_as_completed:
+        - approved_by_who
+        - approved_by_unicef
+      - key: approval_confirmed
+        label: Approval confirmed
+        order: 48
+        mandatory: true
+        category_key: approval
       categories:
       - key: country
-        label: " MoH, GPEI, UNICEF \n& WHO COs"
+        label: "MoH, GPEI coordinator, UNICEF \n& WHO COs"
       - key: rrt
-        label: ' RRT finances'
+        label: RRT finances
       - key: orpg
         label: ORPG
-      - key: who_unicef
-        label: WHO/UNICEF
-      - key: release
-        label: Funding release
+      - key: approval
+        label: Approval
       transitions:
-      - key: request_budget
-        color: primary
-        label: Request budget
-        to_node: budget_requested
-        from_node: "-"
-        emails_to_send:
-        - - base_email
-          - - 4
-            - 5
-        required_fields: []
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 6
-      - key: repeat_request_budget
-        color: primary
-        label: Request budget
-        to_node: budget_requested
-        from_node: budget_requested
-        help_text: Resend budget request with corrections
-        emails_to_send:
-        - - base_email
-          - - 4
-            - 5
-        required_fields: []
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 6
       - key: unicef_send_to_gpei_first
         color: primary
-        label: Send to GPEI
+        label: Send to GPEI coordinator (UNICEF)
         to_node: unicef_sent_budget
-        from_node: budget_requested
+        from_node: '-'
         help_text: UNICEF sent budget for consolidation, WHO didn't
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 8
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 4
+        - 8
       - key: repeat_unicef_send_to_gpei_first
         color: primary
-        label: Send to GPEI
+        label: Send to GPEI coordinator (UNICEF)
         to_node: unicef_sent_budget
         from_node: unicef_sent_budget
         help_text: UNICEF sent budget for consolidation, WHO didn't, with corrections
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 8
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 4
+        - 8
       - key: who_send_to_gpei_first
         color: primary
-        label: Send to GPEI
+        label: Send to GPEI coordinator (WHO)
         to_node: who_sent_budget
-        from_node: budget_requested
+        from_node: '-'
         help_text: WHO sent budget for consolidation, UNICEF didn't
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 9
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 5
+        - 9
       - key: repeat_who_send_to_gpei_first
         color: primary
-        label: Send to GPEI
+        label: Send to GPEI coordinator (WHO)
         to_node: who_sent_budget
         from_node: who_sent_budget
         help_text: WHO sent budget for consolidation, UNICEF didn't, with corrections
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 9
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 5
+        - 9
       - key: unicef_send_to_gpei_after_who
         color: primary
-        label: Send to GPEI
-        to_node: gpei_consolidation
+        label: Send to GPEI coordinator (UNICEF)
+        to_node: gpei_consolidated_budgets
         from_node: who_sent_budget
-        help_text: UNICEF sends budget after WHO to GPEI
+        help_text: UNICEF sends budget after WHO to GPEI coordinator
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 8
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 4
+        - 8
       - key: repeat_unicef_send_to_gpei_after_who
         color: primary
-        label: Send to GPEI
-        to_node: gpei_consolidation
-        from_node: gpei_consolidation
-        help_text: UNICEF sends budget after WHO to GPEI, with corrections
+        label: Send to GPEI coordinator (UNICEF)
+        to_node: gpei_consolidated_budgets
+        from_node: gpei_consolidated_budgets
+        help_text: UNICEF sends budget after WHO to GPEI coordinator, with corrections
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 8
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 4
+        - 8
       - key: who_send_to_gpei_after_unicef
         color: primary
-        label: Send to GPEI
-        to_node: gpei_consolidation
+        label: Send to GPEI coordinator (WHO)
+        to_node: gpei_consolidated_budgets
         from_node: unicef_sent_budget
-        help_text: WHO sends budget after UNICEF to GPEI
+        help_text: WHO sends budget after UNICEF to GPEI coordinator
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 9
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 5
+        - 9
       - key: repeat_who_send_to_gpei_after_unicef
         color: primary
-        label: Send to GPEI
-        to_node: gpei_consolidation
-        from_node: gpei_consolidation
-        help_text: WHO sends budget after UNICEF to GPEI, with corrections
+        label: Send to GPEI coordinator (WHO)
+        to_node: gpei_consolidated_budgets
+        from_node: gpei_consolidated_budgets
+        help_text: WHO sends budget after UNICEF to GPEI coordinator, with corrections
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 9
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
-        - 5
+        - 9
       - key: submit_to_rrt
         color: primary
         label: Submit to RRT
         to_node: submitted_to_rrt
-        from_node: gpei_consolidation
+        from_node: gpei_consolidated_budgets
         emails_to_send:
         - - base_email
           - - 1
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 7
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 7
@@ -387,64 +294,123 @@
         emails_to_send:
         - - base_email
           - - 1
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 7
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 7
       - key: send_feedback_to_gpei
         color: primary
-        label: Send feedback to GPEI
-        to_node: gpei_consolidation
+        label: Send feedback to GPEI coordinator
+        to_node: feedback_sent_to_gpei
         from_node: submitted_to_rrt
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - comment
-        - attachments
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
       - key: repeat_send_feedback_to_gpei
         color: primary
-        label: Send feedback to GPEI
-        to_node: gpei_consolidation
-        from_node: gpei_consolidation
-        help_text: Resend feedback to GPEI with corrections
+        label: Send feedback to GPEI coordinator
+        to_node: feedback_sent_to_gpei
+        from_node: feedback_sent_to_gpei
+        help_text: Resend feedback to GPEI coordinator with corrections
         emails_to_send:
         - - base_email
           - - 7
-        required_fields:
-        - comment
-        - attachments
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: re_submit_to_rrt
+        color: primary
+        label: Submit to RRT
+        to_node: re_submitted_to_rrt
+        from_node: feedback_sent_to_gpei
+        emails_to_send:
+        - - base_email
+          - - 1
+        - - submitter_email
+          - - 7
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 7
+      - key: repeat_re_submit_to_rrt
+        color: primary
+        label: Submit to RRT
+        to_node: re_submitted_to_rrt
+        from_node: re_submitted_to_rrt
+        emails_to_send:
+        - - base_email
+          - - 1
+        - - submitter_email
+          - - 7
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 7
+      - key: re_send_feedback_to_gpei
+        color: primary
+        label: Send feedback to GPEI coordinator
+        to_node: feedback_sent_to_gpei
+        from_node: re_submitted_to_rrt
+        emails_to_send:
+        - - base_email
+          - - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: submit_to_orpg_ops1_after_feedback
+        color: primary
+        label: Submit to ORPG Operations
+        to_node: submitted_to_orpg_operations1
+        from_node: re_submitted_to_rrt
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
       - key: submit_to_orpg_ops
         color: primary
         label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_1
+        to_node: submitted_to_orpg_operations1
         from_node: submitted_to_rrt
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
       - key: repeat_submit_to_orpg_ops
         color: primary
         label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_1
-        from_node: submission_to_orpg_operations_1
+        to_node: submitted_to_orpg_operations1
+        from_node: submitted_to_orpg_operations1
         help_text: Resubmit to ORPG Ops with corrections
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
@@ -452,13 +418,14 @@
         color: primary
         label: Send feedback to RRT
         to_node: feedback_sent_to_rrt1
-        from_node: submission_to_orpg_operations_1
+        from_node: submitted_to_orpg_operations1
         emails_to_send:
         - - base_email
           - - 1
-        required_fields:
-        - comment
-        - attachments
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 2
@@ -467,145 +434,210 @@
         label: Send feedback to RRT
         to_node: feedback_sent_to_rrt1
         from_node: feedback_sent_to_rrt1
-        help_text: Resend feedback to RRT with corrections
         emails_to_send:
         - - base_email
           - - 1
-        required_fields:
-        - comment
-        - attachments
+            - 7
+        - - submitter_email
+          - - 2
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 2
-      - key: resubmit_to_orpg_ops_1
+      - key: transfer_feedback_to_gpei1
         color: primary
-        label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_1
+        label: Request information from GPEI coordinator
+        to_node: feedback_transferred_to_gpei1
         from_node: feedback_sent_to_rrt1
-        help_text: Submit to ORPG Ops after their feedback
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
-      - key: repeat_resubmit_to_orpg_ops_1
+      - key: repeat_transfer_feedback_to_gpei1
+        color: primary
+        label: Request information from GPEI coordinator
+        to_node: feedback_transferred_to_gpei1
+        from_node: feedback_transferred_to_gpei1
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: gpei_answer_rrt_orpg1
+        color: primary
+        label: Reply to RRT
+        to_node: gpei_answer_received1
+        from_node: feedback_transferred_to_gpei1
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 2
+        - - submitter_email
+          - - 7
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 7
+      - key: repeat_gpei_answer_rrt_orpg1
+        color: primary
+        label: Reply to RRT
+        to_node: gpei_answer_received1
+        from_node: gpei_answer_received1
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 2
+        - - submitter_email
+          - - 7
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 7
+      - key: re_transfer_feedback_to_gpei1
+        color: primary
+        label: Request information from GPEI coordinator
+        to_node: feedback_transferred_to_gpei1
+        from_node: gpei_answer_received1
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: re_submit_to_orpg_ops1_direct
         color: primary
         label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_1
-        from_node: submission_to_orpg_operations_1
-        help_text: Resubmit to ORPG Ops after their feedback, with corrections
+        to_node: re_submitted_to_orpg_operations1
+        from_node: feedback_sent_to_rrt1
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
-      - key: submit_to_orpg
+      - key: re_submit_to_orpg_ops1
         color: primary
-        label: Submit to ORPG
-        to_node: submitted_to_orpg
-        from_node: submission_to_orpg_operations_1
+        label: Submit to ORPG Operations
+        to_node: re_submitted_to_orpg_operations1
+        from_node: gpei_answer_received1
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: repeat_re_submit_to_orpg_ops1
+        color: primary
+        label: Submit to ORPG Operations
+        to_node: re_submitted_to_orpg_operations1
+        from_node: re_submitted_to_orpg_operations1
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: re_send_feedback_to_rrt_1
+        color: primary
+        label: Send feedback to RRT
+        to_node: feedback_sent_to_rrt1
+        from_node: re_submitted_to_orpg_operations1
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
+      - key: submit_to_orpg_wider_after_feedback
+        color: primary
+        label: Submit to ORPG wider group
+        to_node: submitted_to_orpg_wider
+        from_node: re_submitted_to_orpg_operations1
+        emails_to_send:
+        - - base_email
+          - - 3
+        - - submitter_email
+          - - 2
+        required_fields:
+        - amount
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
+      - key: submit_to_orpg_wider
+        color: primary
+        label: Submit to ORPG wider group
+        to_node: submitted_to_orpg_wider
+        from_node: submitted_to_orpg_operations1
         help_text: Submit to ORPG wider group
         emails_to_send:
         - - base_email
           - - 3
+        - - submitter_email
+          - - 2
         required_fields:
-        - attachments
         - amount
         displayed_fields: []
         teams_ids_can_transition:
         - 2
-      - key: repeat_submit_to_orpg
+      - key: repeat_submit_to_orpg_wider
         color: primary
-        label: Submit to ORPG Wider group
-        to_node: submitted_to_orpg
-        from_node: submitted_to_orpg
+        label: Submit to ORPG wider group
+        to_node: submitted_to_orpg_wider
+        from_node: submitted_to_orpg_wider
         help_text: Resubmit to ORPG wider group, with corrections
         emails_to_send:
         - - base_email
           - - 3
+        - - submitter_email
+          - - 2
         required_fields:
-        - attachments
         - amount
         displayed_fields: []
         teams_ids_can_transition:
         - 2
-      - key: send_feedback_to_rrt_2
-        color: primary
-        label: Send feedback to RRT
-        to_node: feedback_sent_to_rrt2
-        from_node: submitted_to_orpg
-        help_text: feedback from ORPG wider group to RRT
-        emails_to_send:
-        - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 3
-      - key: repeat_send_feedback_to_rrt_2
-        color: primary
-        label: Send feedback to RRT
-        to_node: feedback_sent_to_rrt2
-        from_node: feedback_sent_to_rrt2
-        help_text: feedback from ORPG wider group to RRT, with corrections
-        emails_to_send:
-        - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 3
-      - key: resubmit_to_orpg
-        color: primary
-        label: Submit to ORPG wider group
-        to_node: submitted_to_orpg
-        from_node: feedback_sent_to_rrt2
-        help_text: RRT resubmit to ORPG wider group after feedback
-        emails_to_send:
-        - - base_email
-          - - 3
-        required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 1
-      - key: repeat_resubmit_to_orpg
-        color: primary
-        label: Submit to ORPG wider group
-        to_node: submitted_to_orpg
-        from_node: submitted_to_orpg
-        help_text: RRT resubmit to ORPG wider group after feedback with corrections
-        emails_to_send:
-        - - base_email
-          - - 3
-        required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 1
       - key: submit_to_orpg_ops_2
         color: primary
         label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_2
-        from_node: submitted_to_orpg
+        to_node: submitted_to_orpg_operations2
+        from_node: submitted_to_orpg_wider
         help_text: ORPG wider group to ORPG ops
         emails_to_send:
         - - base_email
           - - 2
+        - - submitter_email
+          - - 3
         required_fields:
-        - attachments
         - amount
         displayed_fields: []
         teams_ids_can_transition:
@@ -613,92 +645,211 @@
       - key: repeat_submit_to_orpg_ops_2
         color: primary
         label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_2
-        from_node: submission_to_orpg_operations_2
+        to_node: submitted_to_orpg_operations2
+        from_node: submitted_to_orpg_operations2
         help_text: ORPG wider group to ORPG ops,with corrections
         emails_to_send:
         - - base_email
           - - 2
+        - - submitter_email
+          - - 3
         required_fields:
-        - attachments
         - amount
         displayed_fields: []
         teams_ids_can_transition:
         - 3
-      - key: send_feedback_to_rrt_3
+      - key: send_feedback_to_rrt_2
         color: primary
         label: Send feedback to RRT
-        to_node: feedback_sent_to_rrt3
-        from_node: submission_to_orpg_operations_2
-        help_text: ORPG Ops send feeback to RRT after having received feedback from
-          ORPG wider group
+        to_node: feedback_sent_to_rrt2
+        from_node: submitted_to_orpg_operations2
         emails_to_send:
         - - base_email
           - - 1
-        required_fields:
-        - attachments
-        - amount
+            - 7
+        - - submitter_email
+          - - 2
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 2
-      - key: repeat_send_feedback_to_rrt_3
+      - key: repeat_send_feedback_to_rrt_2
         color: primary
         label: Send feedback to RRT
-        to_node: feedback_sent_to_rrt3
-        from_node: feedback_sent_to_rrt3
-        help_text: ORPG Ops send feeback to RRT after having received feedback from
-          ORPG wider group, corrections
+        to_node: feedback_sent_to_rrt2
+        from_node: feedback_sent_to_rrt2
         emails_to_send:
         - - base_email
           - - 1
-        required_fields:
-        - attachments
-        - amount
+            - 7
+        - - submitter_email
+          - - 2
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 2
-      - key: resubmit_to_orpg_ops_2
+      - key: re_submit_to_orpg_ops2_direct
         color: primary
         label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_2
-        from_node: feedback_sent_to_rrt3
-        help_text: RRT resubmit to ORPG Ops after having received feedback
+        to_node: re_submitted_to_orpg_operations2
+        from_node: feedback_sent_to_rrt2
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
-      - key: repeat_resubmit_to_orpg_ops_2
+      - key: transfer_feedback_to_gpei2
         color: primary
-        label: Submit to ORPG Operations
-        to_node: submission_to_orpg_operations_2
-        from_node: submission_to_orpg_operations_2
-        help_text: RRT resubmit to ORPG Ops after having received feedback, corrections
+        label: Request information from GPEI coordinator
+        to_node: feedback_transferred_to_gpei2
+        from_node: feedback_sent_to_rrt2
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 1
-      - key: submit_for_approval
+      - key: repeat_transfer_feedback_to_gpei2
+        color: primary
+        label: Request information from GPEI coordinator
+        to_node: feedback_transferred_to_gpei2
+        from_node: feedback_transferred_to_gpei2
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: gpei_answer_rrt_orpg2
+        color: primary
+        label: Reply to RRT
+        to_node: gpei_answer_received2
+        from_node: feedback_transferred_to_gpei2
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 1
+        - - submitter_email
+          - - 7
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 7
+      - key: repeat_gpei_answer_rrt_orpg2
+        color: primary
+        label: Reply to RRT
+        to_node: gpei_answer_received2
+        from_node: gpei_answer_received2
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 1
+        - - submitter_email
+          - - 7
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 7
+      - key: re_transfer_feedback_to_gpei2
+        color: primary
+        label: Request information from GPEI coordinator
+        to_node: feedback_transferred_to_gpei2
+        from_node: gpei_answer_received2
+        emails_to_send:
+        - - base_email
+          - - 2
+            - 7
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: re_submit_to_orpg_ops2
+        color: primary
+        label: Submit to ORPG Operations
+        to_node: re_submitted_to_orpg_operations2
+        from_node: gpei_answer_received2
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: repeat_re_submit_to_orpg_ops2
+        color: primary
+        label: Submit to ORPG Operations
+        to_node: re_submitted_to_orpg_operations2
+        from_node: re_submitted_to_orpg_operations2
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 1
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 1
+      - key: re_send_feedback_to_rrt_2
+        color: primary
+        label: Send feedback to RRT
+        to_node: feedback_sent_to_rrt2
+        from_node: re_submitted_to_orpg_operations2
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 7
+        - - submitter_email
+          - - 2
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
+      - key: submit_for_approval_after_feedback
         color: primary
         label: Submit for approval
         to_node: submitted_for_approval
-        from_node: submission_to_orpg_operations_2
+        from_node: re_submitted_to_orpg_operations2
         help_text: ORPG Ops send to WHO and UNICEF for approval
         emails_to_send:
         - - base_email
           - - 4
             - 5
+        - - submitter_email
+          - - 2
         required_fields:
-        - attachments
+        - amount
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
+      - key: submit_for_approval
+        color: primary
+        label: Submit for approval
+        to_node: submitted_for_approval
+        from_node: submitted_to_orpg_operations2
+        help_text: ORPG Ops send to WHO and UNICEF for approval
+        emails_to_send:
+        - - base_email
+          - - 4
+            - 5
+        - - submitter_email
+          - - 2
+        required_fields:
         - amount
         displayed_fields: []
         teams_ids_can_transition:
@@ -713,129 +864,100 @@
         - - base_email
           - - 4
             - 5
+        - - submitter_email
+          - - 2
         required_fields:
-        - attachments
         - amount
         displayed_fields: []
         teams_ids_can_transition:
         - 2
       - key: send_feedback_to_orpg_ops_who
         color: primary
-        label: Send feedback to ORPG Operations
+        label: Send feedback to ORPG Operations (WHO)
         to_node: feedback_sent_to_orpg_operations_who
         from_node: submitted_for_approval
         help_text: WHO sends feedback to ORPG Ops
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
+        - - submitter_email
+          - - 5
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: repeat_send_feedback_to_orpg_ops_who
         color: primary
-        label: Send feedback to ORPG Operations
+        label: Send feedback to ORPG Operations (WHO)
         to_node: feedback_sent_to_orpg_operations_who
         from_node: feedback_sent_to_orpg_operations_who
         help_text: WHO sends feedback to ORPG Ops, with corrections
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
+        - - submitter_email
+          - - 5
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: send_feedback_to_orpg_ops_unicef
         color: primary
-        label: Send feedback to ORPG Operations
+        label: Send feedback to ORPG Operations (UNICEF)
         to_node: feedback_sent_to_orpg_operations_unicef
         from_node: submitted_for_approval
         help_text: UNICEF sends feedback to ORPG Ops
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
+        - - submitter_email
+          - - 4
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
       - key: repeat_send_feedback_to_orpg_ops_unicef
         color: primary
-        label: Send feedback to ORPG Operations
+        label: Send feedback to ORPG Operations (UNICEF)
         to_node: feedback_sent_to_orpg_operations_unicef
         from_node: feedback_sent_to_orpg_operations_unicef
         help_text: UNICEF sends feedback to ORPG Ops,with corrections
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
+        - - submitter_email
+          - - 4
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
       - key: who_sends_feedback_after_unicef
         color: primary
-        label: Send feedback to ORPG Operations
+        label: Send feedback to ORPG Operations (WHO)
         to_node: feedback_sent_to_orpg_operations_who
         from_node: feedback_sent_to_orpg_operations_unicef
         help_text: WHO sends feedback to ORPG Ops after UNICEF did
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 5
-      - key: repeat_who_sends_feedback_after_unicef
-        color: primary
-        label: Send feedback to ORPG Operations
-        to_node: feedback_sent_to_orpg_operations_who
-        from_node: feedback_sent_to_orpg_operations_who
-        help_text: WHO sends feedback to ORPG Ops after UNICEF did, with corrections
-        emails_to_send:
-        - - base_email
-          - - 2
-        required_fields:
-        - attachments
-        - amount
+        - - submitter_email
+          - - 5
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: unicef_sends_feedback_after_who
         color: primary
-        label: Send feedback to ORPG Operations
+        label: Send feedback to ORPG Operations (UNICEF)
         to_node: feedback_sent_to_orpg_operations_unicef
         from_node: feedback_sent_to_orpg_operations_who
         help_text: UNICEF sends feedback to ORPG Ops after WHO did
         emails_to_send:
         - - base_email
           - - 2
-        required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 4
-      - key: repeat_unicef_sends_feedback_after_who
-        color: primary
-        label: Send feedback to ORPG Operations
-        to_node: feedback_sent_to_orpg_operations_unicef
-        from_node: feedback_sent_to_orpg_opfeedback_sent_to_orpg_operations_uniceferations_who
-        help_text: UNICEF sends feedback to ORPG Ops after WHO did, with corrections
-        emails_to_send:
-        - - base_email
-          - - 2
-        required_fields:
-        - attachments
-        - amount
+        - - submitter_email
+          - - 4
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
@@ -849,24 +971,9 @@
         - - base_email
           - - 4
             - 5
+        - - submitter_email
+          - - 2
         required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 2
-      - key: repeat_resubmit_for_approval_unicef
-        color: primary
-        label: Submit for approval
-        to_node: submitted_for_approval
-        from_node: submitted_for_approval
-        help_text: Submit for approval when last feedback was from UNICEF, with corrections
-        emails_to_send:
-        - - base_email
-          - - 4
-            - 5
-        required_fields:
-        - attachments
         - amount
         displayed_fields: []
         teams_ids_can_transition:
@@ -881,156 +988,280 @@
         - - base_email
           - - 4
             - 5
+        - - submitter_email
+          - - 2
         required_fields:
-        - attachments
-        - amount
-        displayed_fields: []
-        teams_ids_can_transition:
-        - 2
-      - key: repeat_resubmit_for_approval_who
-        color: primary
-        label: Submit for approval
-        to_node: submitted_for_approval
-        from_node: submitted_for_approval
-        help_text: Submit for approval when last feedback was from WHO, with corrections
-        emails_to_send:
-        - - base_email
-          - - 4
-            - 5
-        required_fields:
-        - attachments
         - amount
         displayed_fields: []
         teams_ids_can_transition:
         - 2
       - key: who_approves_first
-        color: primary
-        label: Approve
+        color: green
+        label: Approve (WHO)
         to_node: approved_by_who
         from_node: submitted_for_approval
         help_text: WHO approves when UNICEF didn't approve yet
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 5
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: repeat_who_approves_first
-        color: primary
-        label: Approve
+        color: green
+        label: Approve (WHO)
         to_node: approved_by_who
         from_node: approved_by_who
         help_text: WHO approves when UNICEF didn't approve yet, with corrections
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 5
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
-      - key: unicef_approves_first
+      - key: unicef_send_feedback_after_who_approved
         color: primary
-        label: Approve
+        label: Send feedback to ORPG Ops (UNICEF)
+        to_node: approved_by_who_unicef_feedback
+        from_node: approved_by_who
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 4
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 4
+      - key: repeat_unicef_send_feedback_after_who_approved
+        color: primary
+        label: Send feedback to ORPG Ops (UNICEF)
+        to_node: approved_by_who_unicef_feedback
+        from_node: approved_by_who_unicef_feedback
+        help_text: UNICEF approves when WHO didn't approve yet
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 4
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 4
+      - key: resubmit_for_approval_unicef_only
+        color: primary
+        label: Submit for approval
+        to_node: approved_by_who
+        from_node: approved_by_who_unicef_feedback
+        help_text: UNICEF approves when WHO didn't approve yet
+        emails_to_send:
+        - - base_email
+          - - 4
+            - 5
+        - - submitter_email
+          - - 2
+        required_fields:
+        - amount
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
+      - key: unicef_approves_first
+        color: green
+        label: Approve (UNICEF)
         to_node: approved_by_unicef
         from_node: submitted_for_approval
         help_text: UNICEF approves when WHO didn't approve yet
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 4
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
       - key: repeat_unicef_approves_first
-        color: primary
-        label: Approve
+        color: green
+        label: Approve (UNICEF)
         to_node: approved_by_unicef
         from_node: approved_by_unicef
         help_text: UNICEF approves when WHO didn't approve yet, with corrections
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 4
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
-      - key: who_approves_second
+      - key: who_send_feedback_after_unicef_approved
         color: primary
-        label: Approve
+        label: Send feedback to ORPG Ops (WHO)
+        to_node: approved_by_unicef_who_feedback
+        from_node: approved_by_unicef
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 5
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 5
+      - key: repeat_who_send_feedback_after_unicef_approved
+        color: primary
+        label: Send feedback to ORPG Ops (WHO)
+        to_node: approved_by_unicef_who_feedback
+        from_node: approved_by_unicef_who_feedback
+        emails_to_send:
+        - - base_email
+          - - 2
+        - - submitter_email
+          - - 5
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 5
+      - key: resubmit_for_approval_who_only
+        color: primary
+        label: Submit for approval
+        to_node: approved_by_unicef
+        from_node: approved_by_unicef_who_feedback
+        help_text: UNICEF approves when WHO didn't approve yet
+        emails_to_send:
+        - - base_email
+          - - 4
+            - 5
+        - - submitter_email
+          - - 2
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
+      - key: who_approves_second
+        color: green
+        label: Approve (WHO)
         to_node: approved
         from_node: approved_by_unicef
         help_text: WHO approves after UNICEF did
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 5
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: repeat_who_approves_second
-        color: primary
-        label: Approve
+        color: green
+        label: Approve (WHO)
         to_node: approved
         from_node: approved
         help_text: WHO approves after UNICEF did, with corrections
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 5
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 5
       - key: unicef_approves_second
-        color: primary
-        label: Approve
+        color: green
+        label: Approve (UNICEF)
         to_node: approved
         from_node: approved_by_who
         help_text: UNICEF approves after WHO did
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 4
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
       - key: repeat_unicef_approves_second
-        color: primary
-        label: Approve
+        color: green
+        label: Approve (UNICEF)
         to_node: approved
         from_node: approved
         help_text: UNICEF approves after WHO did, with corrections
         emails_to_send:
         - - base_email
-          - - 1
-        required_fields:
-        - attachments
-        - amount
+          - - 2
+        - - submitter_email
+          - - 4
+        required_fields: []
         displayed_fields: []
         teams_ids_can_transition:
         - 4
+      - key: confirm_approval
+        color: primary
+        label: Confirm approval
+        to_node: approval_confirmed
+        from_node: approved
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 6
+            - 7
+            - 8
+            - 9
+        - - submitter_email
+          - - 2
+        required_fields:
+        - amount
+        displayed_fields: []
+        teams_ids_can_transition:
+        - 2
+      - key: override
+        color: red
+        label: Override
+        to_node: any
+        from_node: any
+        emails_to_send:
+        - - base_email
+          - - 1
+            - 2
+            - 3
+            - 4
+            - 5
+            - 6
+            - 7
+            - 8
+            - 9
+        required_fields: []
+        displayed_fields: []
+        teams_ids_can_transition: []
 - model: polio.mailtemplate
   pk: 1
   fields:
     slug: base_email
-    subject_template: 'Budget for campaign {{campaign.obr_name}} updated to {{node.label}}'
+    subject_template: Budget for campaign {{campaign.obr_name}} updated to {{node.label}}
     html_template: "{% extends \"base_budget_email.html\" %}\r\n{% block text %}\r\n{{
       block.super }} \r\n{% endblock %}"
     text_template: "{% extends \"base_budget_email.txt\" %}\r\n{% block text %}\r\n{{
       block.super }} \r\n{% endblock %}"
     created_at: 2022-11-14 16:16:41.233023+00:00
     updated_at: 2022-11-14 16:16:41.233054+00:00
+- model: polio.mailtemplate
+  pk: 2
+  fields:
+    slug: submitter_email
+    subject_template: Budget for campaign {{campaign.obr_name}} updated to {{node.label}}
+    html_template: "{% extends \"submitter_email.html\" %}\r\n{% block text %}\r\n{{
+      block.super }} \r\n{% endblock %}"
+    text_template: "{% extends \"submitter_email.txt\" %}\r\n{% block text %}\r\n{{
+      block.super }} \r\n{% endblock %}"
+    created_at: 2023-03-16 13:38:05.184099+00:00
+    updated_at: 2023-03-16 13:38:05.184112+00:00

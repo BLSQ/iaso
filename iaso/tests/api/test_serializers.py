@@ -1,14 +1,13 @@
+import datetime
 from collections import OrderedDict
+from unittest import mock
 
+import pytz
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
 from iaso import models as m
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer
 from iaso.test import APITestCase
-
-import pytz
-from unittest import mock
-import datetime
 
 
 class OrgUnitAPITestCase(APITestCase):
@@ -27,7 +26,7 @@ class OrgUnitAPITestCase(APITestCase):
             sw_source.projects.add(cls.project)
             cls.sw_source = sw_source
             sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-            sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+            sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
             star_wars.default_version = sw_version_1
             star_wars.save()
             cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")

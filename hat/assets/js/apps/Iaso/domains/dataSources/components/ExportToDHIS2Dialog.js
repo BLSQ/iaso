@@ -27,7 +27,7 @@ import {
     dataSourceVersionsAsOptions,
     versionsAsOptionsWithSourceName,
 } from '../utils';
-import { useSnackMutation } from '../../../libs/apiHooks';
+import { useSnackMutation } from '../../../libs/apiHooks.ts';
 
 const style = theme => ({
     noCreds: {

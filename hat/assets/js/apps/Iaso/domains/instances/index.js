@@ -5,9 +5,7 @@ import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import {
-    AddButton as AddButtonComponent,
     commonStyles,
-    makeFullModal,
     selectionInitialState,
     setTableSelection,
     useSafeIntl,
@@ -28,13 +26,13 @@ import {
     getFilters,
     getSelectionActions,
     getExportUrl,
-} from './utils';
+} from './utils/index.tsx';
 
-import { InstancesTopBar as TopBar } from './components/InstancesTopBar';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import InstancesMap from './components/InstancesMapComponent';
+import { InstancesTopBar as TopBar } from './components/TopBar.tsx';
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent.tsx';
+import { InstancesMap } from './components/InstancesMap/InstancesMap.tsx';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
-import { CreateReAssignDialogComponent } from './components/CreateReAssignDialogComponent.tsx';
+import { CreateReAssignDialog } from './components/CreateReAssignDialogComponent.tsx';
 
 import { baseUrls } from '../../constants/urls';
 
@@ -66,7 +64,7 @@ const Instances = ({ params }) => {
     const [tableColumns, setTableColumns] = useState([]);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
-    const formIds = params.formIds?.split(',');
+    const [formIds, setFormIds] = useState(params.formIds?.split(','));
     const formId = formIds?.length === 1 ? formIds[0] : undefined;
 
     const { possibleFields, isLoading: isLoadingPossibleFields } =
@@ -145,83 +143,68 @@ const Instances = ({ params }) => {
         },
         [dispatch],
     );
-    const CreateReAssignDialog = useMemo(
-        () => makeFullModal(CreateReAssignDialogComponent, AddButtonComponent),
-        [],
-    );
-
+    const isSingleFormSearch = params.formIds?.split(',').length === 1;
     return (
         <section className={classes.relativeContainer}>
             <TopBar
                 formName={formName}
                 tab={tab}
                 handleChangeTab={newTab => handleChangeTab(newTab)}
-                params={params}
-                periodType={periodType}
-                setTableColumns={newCols => setTableColumns(newCols)}
-                baseUrl={baseUrl}
-                labelKeys={labelKeys}
-                possibleFields={possibleFields}
-                formDetails={formDetails}
-                tableColumns={tableColumns}
+                formIds={formIds}
             />
-
             <Box className={classes.containerFullHeightPadded}>
                 <InstancesFiltersComponent
                     params={params}
                     onSearch={onSearch}
                     possibleFields={possibleFields}
+                    setFormIds={setFormIds}
+                    periodType={periodType}
+                    setTableColumns={setTableColumns}
+                    baseUrl={baseUrl}
+                    labelKeys={labelKeys}
+                    formDetails={formDetails}
+                    tableColumns={tableColumns}
+                    tab={tab}
                 />
-                {tab === 'list' && (
-                    <Grid
-                        container
-                        spacing={0}
-                        alignItems="center"
-                        className={classes.marginTop}
-                    >
+                {tab === 'list' && isSingleFormSearch && (
+                    <Grid container spacing={0} alignItems="center">
                         <Grid xs={12} item className={classes.textAlignRight}>
-                            {formIds?.length === 1 && (
-                                <div className={classes.paddingBottomBig}>
-                                    <CreateReAssignDialog
-                                        titleMessage={
-                                            MESSAGES.instanceCreationDialogTitle
-                                        }
-                                        confirmMessage={
-                                            MESSAGES.instanceCreateAction
-                                        }
-                                        formType={{
-                                            periodType,
-                                            id: params.formIds,
-                                        }}
-                                        orgUnitTypes={orgUnitTypes}
-                                        onCreateOrReAssign={(
-                                            currentForm,
-                                            payload,
-                                        ) =>
-                                            dispatch(
-                                                createInstance(
-                                                    currentForm,
-                                                    payload,
-                                                ),
-                                            )
-                                        }
-                                    />
-                                    <Box
-                                        mb={2}
-                                        mt={2}
-                                        display="flex"
-                                        justifyContent="flex-end"
-                                    >
-                                        <DownloadButtonsComponent
-                                            csvUrl={getExportUrl(params, 'csv')}
-                                            xlsxUrl={getExportUrl(
-                                                params,
-                                                'xlsx',
-                                            )}
-                                        />
-                                    </Box>
-                                </div>
-                            )}
+                            <Box
+                                display="flex"
+                                justifyContent="flex-end"
+                                mb={2}
+                            >
+                                <CreateReAssignDialog
+                                    titleMessage={
+                                        MESSAGES.instanceCreationDialogTitle
+                                    }
+                                    confirmMessage={
+                                        MESSAGES.instanceCreateAction
+                                    }
+                                    formType={{
+                                        periodType,
+                                        id: params.formIds,
+                                    }}
+                                    orgUnitTypes={orgUnitTypes}
+                                    onCreateOrReAssign={(
+                                        currentForm,
+                                        payload,
+                                    ) =>
+                                        dispatch(
+                                            createInstance(
+                                                currentForm,
+                                                payload,
+                                            ),
+                                        )
+                                    }
+                                />
+                            </Box>
+                            <Box display="flex" justifyContent="flex-end">
+                                <DownloadButtonsComponent
+                                    csvUrl={getExportUrl(params, 'csv')}
+                                    xlsxUrl={getExportUrl(params, 'xlsx')}
+                                />
+                            </Box>
                         </Grid>
                     </Grid>
                 )}

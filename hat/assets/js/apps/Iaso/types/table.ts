@@ -2,15 +2,17 @@
 import { ReactElement } from 'react';
 
 export type Column = {
-    Header: string;
+    Header: string | ReactElement;
     id?: string;
     accessor?: string;
     sortable?: boolean;
     resizable?: boolean;
     width?: number;
     // eslint-disable-next-line no-unused-vars
-    Cell?: (s: any) => ReactElement;
+    Cell?: (s: any) => ReactElement | string;
     align?: string;
+    class?: string;
+    columns?: Column[];
 };
 export type Pagination = {
     pages: number;
@@ -38,3 +40,14 @@ export type ApiParams = {
     page: string;
     search?: string;
 };
+
+type Row<T> = {
+    original: T;
+};
+
+export type Setting<T> = {
+    row: Row<T>;
+};
+
+// eslint-disable-next-line no-unused-vars
+export type RenderCell = (settings: Record<string, any>) => ReactElement;

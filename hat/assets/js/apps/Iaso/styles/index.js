@@ -17,6 +17,7 @@ export const getOverriddenTheme = (theme, themeConfig) => {
             primary: {
                 contrastText: primaryContrastText,
                 dark: primaryColor.darken(0.2).hex(),
+                original: primaryColor,
                 light: primaryColor.lighten(0.2).hex(),
                 main: primaryColor.hex(),
                 background: primaryBackgroundColor.hex(),
@@ -48,6 +49,14 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                     },
                     sup: {
                         verticalAlign: 'top',
+                    },
+                    a: {
+                        color: theme.palette.info.dark,
+                        textDecoration: 'none',
+                        '&:hover': { textDecoration: 'underline' },
+                    },
+                    '& #notistack-snackbar': {
+                        maxWidth: 400,
                     },
                 },
             },

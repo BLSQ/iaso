@@ -2,8 +2,8 @@ from django.core.paginator import Paginator
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .common import HasPermission
 from iaso.models import Mapping
+from .common import HasPermission
 
 
 class MappingsViewSet(viewsets.ViewSet):

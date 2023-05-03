@@ -7,8 +7,8 @@ import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useFormState } from 'Iaso/hooks/form';
 import { usePutCountryMutation } from './requests';
 import MESSAGES from '../../constants/messages';
-import { useGetTeamsDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams';
-import { TeamType } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants';
+import { useGetTeamsDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams.ts';
+import { TeamType } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants.ts';
 
 const makeDropDownListItem = user => {
     const userName =
@@ -70,7 +70,7 @@ export const CountryNotificationsConfigModal = ({
         setConfig('users', users);
         setConfig('language', language);
         setConfig('teams', teams);
-    }, [language, users, setConfig]);
+    }, [setConfig, users, language, teams]);
 
     const reset = useCallback(() => {
         syncStateWithProps();
@@ -156,9 +156,11 @@ CountryNotificationsConfigModal.propTypes = {
     allUsers: arrayOf(object),
     allLanguages: arrayOf(object).isRequired,
     countryName: string.isRequired,
+    teams: arrayOf(object),
 };
 
 CountryNotificationsConfigModal.defaultProps = {
     allUsers: [],
     language: '',
+    teams: [],
 };

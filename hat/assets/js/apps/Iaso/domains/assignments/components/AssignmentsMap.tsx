@@ -105,6 +105,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
 }) => {
     const mapContainer: any = useRef();
     const map: any = useRef();
+    const [fitted, setFitted] = useState<boolean>(false);
     const [selectedLocation, setSelectedLocation] = useState<
         OrgUnitShape | OrgUnitMarker | undefined
     >(undefined);
@@ -179,13 +180,13 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         });
     };
 
+    const isLoading = isFetchingLocations || isFetchingParentLocations;
     useEffect(() => {
-        if (!isFetchingLocations && !isFetchingParentLocations && locations) {
+        if (!isLoading && locations && !fitted) {
+            setFitted(true);
             fitToBounds(locations, parentLocations);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isFetchingLocations, locations, isFetchingParentLocations]);
-    const isLoading = isFetchingLocations || isFetchingParentLocations;
+    }, [isLoading, locations, parentLocations]);
     return (
         <section ref={mapContainer}>
             <Box position="relative">

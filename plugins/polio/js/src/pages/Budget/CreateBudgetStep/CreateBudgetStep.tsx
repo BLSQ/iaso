@@ -30,7 +30,7 @@ import {
     useTranslatedErrors,
 } from '../../../../../../../hat/assets/js/apps/Iaso/libs/validation';
 import { useSaveBudgetStep } from '../hooks/api/useSaveBudgetStep';
-import { AddStepButton } from './AddStepButton';
+import { AddStepButton, RepeatStepIcon } from './AddStepButton';
 import { BudgetStep, StepForm } from '../types';
 import { UserHasTeamWarning } from './UserHasTeamWarning';
 import { AddMultipleLinks } from '../MultipleLinks/AddMultipleLinks';
@@ -173,6 +173,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         messages: MESSAGES,
         formatMessage,
     });
+
     const attachmentErrors = useMemo(() => {
         const anyFieldTouched = Object.values(touched).find(value => value);
         const attachmentsErrors = [errors.attachments] ?? [];
@@ -201,9 +202,12 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         touched.links,
         values,
     ]);
-    const allowConfirm = !quickTransition
-        ? isValid && !isEqual(values, initialValues)
-        : isValid;
+
+    const allowConfirm =
+        quickTransition || requiredFields.length === 0
+            ? isValid
+            : isValid && !isEqual(values, initialValues);
+
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -345,5 +349,9 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
 };
 
 const modalWithButton = makeFullModal(CreateBudgetStep, AddStepButton);
+const modalWithIcon = makeFullModal(CreateBudgetStep, RepeatStepIcon);
 
-export { modalWithButton as CreateBudgetStep };
+export {
+    modalWithButton as CreateBudgetStep,
+    modalWithIcon as CreateBudgetStepIcon,
+};

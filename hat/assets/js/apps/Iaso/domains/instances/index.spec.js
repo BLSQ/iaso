@@ -22,7 +22,7 @@ const requests = [
         },
     },
     {
-        url: '/api/devicesownership/',
+        url: '/api/devicesownerships/',
         body: {
             devicesownership: [],
         },

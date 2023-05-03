@@ -1,7 +1,7 @@
-import typing
-from .common import ModelViewSet, TimestampField
-from iaso.models import FeatureFlag
 from rest_framework import serializers, permissions
+
+from iaso.models import FeatureFlag
+from .common import ModelViewSet, TimestampField
 
 
 class FeatureFlagsSerializer(serializers.ModelSerializer):

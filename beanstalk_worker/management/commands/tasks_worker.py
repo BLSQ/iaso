@@ -1,7 +1,9 @@
+from logging import getLogger
+
 from django.core.management.base import BaseCommand
 from django.db import connections
+
 from beanstalk_worker import task_service
-from logging import getLogger
 
 LISTEN_TIMEOUT = 30
 

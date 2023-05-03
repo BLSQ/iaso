@@ -1,14 +1,13 @@
 import typing
 
+from django.db.models import BooleanField
+from django.db.models import Value, Count, TextField
+from django.db.models.expressions import Case, When
+from django.db.models.functions import Concat
 from rest_framework import serializers, parsers, permissions, exceptions
 from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion
-from django.db.models.functions import Concat
-from django.db.models import Value, Count, TextField
-from django.db.models import BooleanField
-from django.db.models.expressions import Case, When
-
 from iaso.odk import parsing
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
@@ -48,6 +47,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "start_period",
             "end_period",
             "mapping_versions",
+            "possible_fields",
         ]
         read_only_fields = [
             "id",
@@ -59,6 +59,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
             "descriptor",
+            "possible_fields",
         ]
 
     form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())

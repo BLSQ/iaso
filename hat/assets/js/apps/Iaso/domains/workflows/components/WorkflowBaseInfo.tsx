@@ -8,18 +8,17 @@ import {
     Box,
 } from '@material-ui/core';
 import React, { FunctionComponent, ReactNode } from 'react';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
-import { WorkflowVersionDetail } from '../types/workflows';
+import { WorkflowVersionDetail } from '../types';
 
 import { StatusCell } from './StatusCell';
 import { DetailsForm } from './DetailsForm';
 import { LinkToForm } from '../../forms/components/LinkToForm';
 
-import { PublishVersionModal } from './PublishVersionModal';
+import { PublishVersionModal } from './versions/PublishVersionModal';
 
 const useStyles = makeStyles(theme => ({
     leftCell: {
@@ -53,21 +52,10 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <>
-            {workflowVersion?.status === 'DRAFT' && (
-                <>
-                    <DetailsForm workflowVersion={workflowVersion} />
-                    <Divider />
-                </>
-            )}
-            <Table size="small">
+            <DetailsForm workflowVersion={workflowVersion} />
+            <Divider />
+            <Table size="small" data-test="workflow-base-info">
                 <TableBody>
-                    {workflowVersion?.status &&
-                        workflowVersion?.status !== 'DRAFT' && (
-                            <Row
-                                label={formatMessage(MESSAGES.name)}
-                                value={workflowVersion?.name}
-                            />
-                        )}
                     <Row
                         label={formatMessage(MESSAGES.type)}
                         value={workflowVersion?.entity_type.name}
@@ -110,6 +98,9 @@ export const WorkflowBaseInfo: FunctionComponent<Props> = ({
                         <PublishVersionModal
                             workflowVersion={workflowVersion}
                             invalidateQueryKey="workflowVersion"
+                            iconProps={{
+                                dataTestId: 'publish-workflow-button',
+                            }}
                         />
                     </Box>
                 </>

@@ -1,7 +1,7 @@
 from rest_framework import permissions, serializers
 
-from ..common import ModelViewSet, TimestampField, UserSerializer
 from iaso.models import Task
+from ..common import ModelViewSet, TimestampField, UserSerializer, HasPermission
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -46,7 +46,7 @@ class TaskSourceViewSet(ModelViewSet):
     PATCH /api/tasks/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_data_tasks")]  # type: ignore
     serializer_class = TaskSerializer
     results_key = "tasks"
     queryset = Task.objects.all()

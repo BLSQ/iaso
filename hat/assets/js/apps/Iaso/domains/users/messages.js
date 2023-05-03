@@ -196,6 +196,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_dhis2_link',
         defaultMessage: 'Link with DHIS2',
     },
+    iaso_workflows: {
+        id: 'iaso.permissions.iaso_workflows',
+        defaultMessage: 'Workflows',
+    },
+    iaso_entity_duplicates_read: {
+        id: 'iaso.permissions.iaso_entity_duplicates_read',
+        defaultMessage: 'See entity duplicates',
+    },
+    iaso_entity_duplicates_write: {
+        id: 'iaso.permissions.iaso_entity_duplicates_write',
+        defaultMessage: 'Edit entity duplicates',
+    },
+    iaso_registry: {
+        id: 'iaso.permissions.iaso_registry',
+        defaultMessage: 'Registry',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',
@@ -232,6 +248,59 @@ const MESSAGES = defineMessages({
     ouParentCheckbox: {
         defaultMessage: 'Users with access to parent org unit',
         id: 'iaso.users.ouParentCheckbox',
+    },
+    logout: {
+        defaultMessage: 'Logout',
+        id: 'iaso.logout',
+    },
+    wrongAccount: {
+        defaultMessage:
+            'You are connected to the wrong account, would you like to log out and connect with the correct account to see this link?',
+        id: 'iaso.label.wrongAccount',
+    },
+    wrongAccountTitle: {
+        defaultMessage: 'Wrong account',
+        id: 'iaso.label.wrongAccountTitle',
+    },
+    createUsersFromFile: {
+        id: 'iaso.user.label.createUsersFromFile',
+        defaultMessage: 'Create users from file',
+    },
+    createFromFile: {
+        id: 'iaso.user.label.createFromFile',
+        defaultMessage: 'Create from file',
+    },
+    downloadTemplate: {
+        id: 'iaso.user.label.downloadTemplate',
+        defaultMessage: 'Download template',
+    },
+    selectCsvFile: {
+        id: 'iaso.user.label.selectCsvFile',
+        defaultMessage: 'Select CSV file',
+    },
+    uploadError: {
+        id: 'iaso.user.label.uploadError',
+        defaultMessage: 'Error uploading file',
+    },
+    uploadSuccess: {
+        id: 'iaso.user.label.uploadSuccess',
+        defaultMessage: 'Users created from CSV',
+    },
+    backendIsBusy: {
+        id: 'iaso.user.label.backendIsBusy',
+        defaultMessage: 'The server is already processing another request',
+    },
+    confirm: {
+        id: 'iaso.mappings.confirm',
+        defaultMessage: 'Confirm',
+    },
+    fieldRequired: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
     },
 });
 

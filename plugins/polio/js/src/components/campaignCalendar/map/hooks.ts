@@ -1,5 +1,6 @@
-import moment, { Moment } from 'moment';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+// @ts-ignore
+import moment, { Moment } from 'moment';
 import { useQueries, Query as RQQuery } from 'react-query';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
@@ -18,6 +19,7 @@ import {
     Query,
     ShapeForCalendarMap,
 } from '../types';
+import { MergedShapes } from '../../../constants/types';
 
 type RoundSelection = {
     campaigns: MappedCampaign[];
@@ -49,8 +51,6 @@ export const useRoundSelection = (
         }
     }, [campaigns, currentDate, selection]);
 
-    // console.log('updatedCampaigns', updatedCampaigns, selection, rounds);
-
     return {
         campaigns: updatedCampaigns,
         roundsDict: rounds,
@@ -81,13 +81,19 @@ type UseMergedShapesResult = {
     isLoadingMergedShapes: boolean;
 };
 
+type UseGetMergedShapesResult = {
+    data: MergedShapes;
+    isFetching: boolean;
+};
+
 export const useMergedShapes = ({
     campaigns,
     roundsDict,
     selection,
 }: UseMergedShapesArgs): UseMergedShapesResult => {
     const { data: mergedShapes, isFetching: isLoadingMergedShapes } =
-        useGetMergedCampaignShapes().query;
+        useGetMergedCampaignShapes() as UseGetMergedShapesResult;
+
     const firstAndLastRounds = useMemo(() => {
         return findFirstAndLastRounds(campaigns);
     }, [campaigns]);

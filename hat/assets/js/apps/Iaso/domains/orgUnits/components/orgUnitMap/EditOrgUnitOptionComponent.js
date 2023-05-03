@@ -28,10 +28,11 @@ const EditOrgUnitOptionComponent = ({
     toggleAddShape,
     toggleDeleteShape,
     onChangeLocation,
-    addMarker,
+    toggleAddMarker,
     addShape,
     canEditLocation,
     canEditCatchment,
+    isCreatingMarker,
 }) => {
     const classes = useStyles();
     const hasMarker =
@@ -64,8 +65,17 @@ const EditOrgUnitOptionComponent = ({
                     <MarkerInputs
                         orgUnit={orgUnit}
                         onChangeLocation={onChangeLocation}
-                        addMarker={addMarker}
+                        toggleAddMarker={toggleAddMarker}
                         hasMarker={hasMarker}
+                        actionBusy={
+                            locationState.edit ||
+                            locationState.add ||
+                            locationState.delete ||
+                            catchmentState.edit ||
+                            catchmentState.add ||
+                            catchmentState.delete
+                        }
+                        isCreatingMarker={isCreatingMarker}
                     />
                     {!hasMarker && (
                         <>
@@ -81,7 +91,8 @@ const EditOrgUnitOptionComponent = ({
                                     disabled={
                                         catchmentState.edit ||
                                         catchmentState.delete ||
-                                        catchmentState.add
+                                        catchmentState.add ||
+                                        isCreatingMarker
                                     }
                                     editEnabled={locationState.edit}
                                     deleteEnabled={locationState.delete}
@@ -115,7 +126,8 @@ const EditOrgUnitOptionComponent = ({
                             disabled={
                                 locationState.edit ||
                                 locationState.delete ||
-                                locationState.add
+                                locationState.add ||
+                                isCreatingMarker
                             }
                             editEnabled={catchmentState.edit}
                             deleteEnabled={catchmentState.delete}
@@ -141,11 +153,12 @@ EditOrgUnitOptionComponent.propTypes = {
     toggleEditShape: PropTypes.func.isRequired,
     toggleAddShape: PropTypes.func.isRequired,
     toggleDeleteShape: PropTypes.func.isRequired,
-    addMarker: PropTypes.func.isRequired,
+    toggleAddMarker: PropTypes.func.isRequired,
     addShape: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
     canEditLocation: PropTypes.bool.isRequired,
     canEditCatchment: PropTypes.bool.isRequired,
+    isCreatingMarker: PropTypes.bool.isRequired,
 };
 
 export default EditOrgUnitOptionComponent;

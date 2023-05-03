@@ -1,0 +1,358 @@
+{
+    "count": 12,
+    "workflow_versions": [
+        {
+            "version_id": 12,
+            "status": "DRAFT",
+            "name": "workflow_versions_12",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "follow_ups": [
+                {
+                    "id": 1,
+                    "order": 1,
+                    "condition": {
+                        "and": [
+                            {
+                                "==": [
+                                    {
+                                        "var": "last_name"
+                                    },
+                                    "last_name_value"
+                                ]
+                            }
+                        ]
+                    },
+                    "forms": [
+                        {
+                            "id": 2,
+                            "name": "FORM_2"
+                        }
+                    ],
+                    "created_at": "2023-02-01T09:25:14.392639Z",
+                    "updated_at": "2023-02-01T09:25:14.450216Z"
+                },
+                {
+                    "id": 2,
+                    "order": 0,
+                    "condition": {
+                        "and": [
+                            {
+                                "==": [
+                                    {
+                                        "var": "gender"
+                                    },
+                                    "male"
+                                ]
+                            },
+                            {
+                                "==": [
+                                    {
+                                        "var": "entity_group"
+                                    },
+                                    "A"
+                                ]
+                            }
+                        ]
+                    },
+                    "forms": [
+                        {
+                            "id": 3,
+                            "name": "FORM_3"
+                        }
+                    ],
+                    "created_at": "2023-01-31T11:04:21.140994Z",
+                    "updated_at": "2023-02-13T10:39:56.507265Z"
+                }
+            ]
+        },
+        {
+            "version_id": 11,
+            "status": "PUBLISHED",
+            "name": "workflow_versions_11",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "follow_ups": [
+                {
+                    "id": 1,
+                    "order": 1,
+                    "condition": {
+                        "and": [
+                            {
+                                "==": [
+                                    {
+                                        "var": "last_name"
+                                    },
+                                    "last_name_value"
+                                ]
+                            }
+                        ]
+                    },
+                    "forms": [
+                        {
+                            "id": 2,
+                            "name": "FORM_2"
+                        }
+                    ],
+                    "created_at": "2023-02-01T09:25:14.392639Z",
+                    "updated_at": "2023-02-01T09:25:14.450216Z"
+                },
+                {
+                    "id": 2,
+                    "order": 0,
+                    "condition": {
+                        "and": [
+                            {
+                                "==": [
+                                    {
+                                        "var": "gender"
+                                    },
+                                    "male"
+                                ]
+                            },
+                            {
+                                "==": [
+                                    {
+                                        "var": "entity_group"
+                                    },
+                                    "A"
+                                ]
+                            }
+                        ]
+                    },
+                    "forms": [
+                        {
+                            "id": 3,
+                            "name": "FORM_3"
+                        }
+                    ],
+                    "created_at": "2023-01-31T11:04:21.140994Z",
+                    "updated_at": "2023-02-13T10:39:56.507265Z"
+                }
+            ]
+        },
+        {
+            "version_id": 10,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_10",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "follow_ups": [
+                {
+                    "id": 1,
+                    "order": 1,
+                    "condition": {
+                        "and": [
+                            {
+                                "==": [
+                                    {
+                                        "var": "last_name"
+                                    },
+                                    "last_name_value"
+                                ]
+                            }
+                        ]
+                    },
+                    "forms": [
+                        {
+                            "id": 2,
+                            "name": "FORM_2"
+                        }
+                    ],
+                    "created_at": "2023-02-01T09:25:14.392639Z",
+                    "updated_at": "2023-02-01T09:25:14.450216Z"
+                },
+                {
+                    "id": 2,
+                    "order": 0,
+                    "condition": {
+                        "and": [
+                            {
+                                "==": [
+                                    {
+                                        "var": "gender"
+                                    },
+                                    "male"
+                                ]
+                            },
+                            {
+                                "==": [
+                                    {
+                                        "var": "entity_group"
+                                    },
+                                    "A"
+                                ]
+                            }
+                        ]
+                    },
+                    "forms": [
+                        {
+                            "id": 3,
+                            "name": "FORM_3"
+                        }
+                    ],
+                    "created_at": "2023-01-31T11:04:21.140994Z",
+                    "updated_at": "2023-02-13T10:39:56.507265Z"
+                }
+            ]
+        },
+        {
+            "version_id": 9,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_9",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        },
+        {
+            "version_id": 8,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_8",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        },
+        {
+            "version_id": 7,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_7",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        },
+        {
+            "version_id": 6,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_6",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        },
+        {
+            "version_id": 5,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_5",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        },
+        {
+            "version_id": 4,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_4",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        },
+        {
+            "version_id": 3,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_3",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        }
+    ],
+    "has_next": true,
+    "has_previous": false,
+    "page": 1,
+    "pages": 2,
+    "limit": 10
+}

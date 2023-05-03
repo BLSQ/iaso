@@ -62,17 +62,16 @@ jobs:
       - name: upgrade npm
         run: |
           npm install --global npm@8.5
-      - name: Set up Python 3.6
+      - name: Set up Python 3.8
         uses: actions/setup-python@v1
         with:
-          python-version: 3.6
+          python-version: 3.8
 
       - name: Setup beanstalk
         # the specification of botocore is due to a deployment problem with 1.21 to remove later
         run: |
            cp .elasticbeanstalk/config.github.yml .elasticbeanstalk/config.yml
-           pip install boto3==1.17.110  awsebcli  botocore==1.20.110
-
+           pip install awsebcli==3.20.5 botocore==1.29.81 boto3==1.26.81
       - name: Environment info
         run: |
           node --version

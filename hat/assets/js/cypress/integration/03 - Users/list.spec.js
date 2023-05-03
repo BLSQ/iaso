@@ -2,10 +2,10 @@
 
 import listFixture from '../../fixtures/profiles/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
-const search = 'mario';
 const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
 
 let interceptFlag = false;
@@ -84,16 +84,8 @@ describe('Users', () => {
         beforeEach(() => {
             goToPage();
         });
-        it('should enabled search button', () => {
-            cy.wait('@getUsers').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
-        });
+        testSearchField(search, searchWithForbiddenChars);
     });
-
     describe('Search button', () => {
         beforeEach(() => {
             goToPage();

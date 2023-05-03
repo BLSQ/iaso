@@ -34,14 +34,22 @@ Base file to be reused in the MailTemplate for the budget workflow engine
   <tr>
     <td align="left" style="padding:5px;">
       {% block campaign %}
-        The status of polio campaign {{ campaign.obr_name }} has been updated.
+        {% if override %}
+            The status of polio campaign {{ campaign.obr_name }} has been overriden.
+        {% else %}
+            The status of polio campaign {{ campaign.obr_name }} has been updated.
+        {% endif %}
       {% endblock %}
     </td>
   </tr>
   <tr>
     <td align="left" style="padding:5px;">
       {% block author %}
-        Updated by: {{ author_name }} from <strong>{{ team }}</strong>.
+        {% if override %}
+            Overridden by: {{ author_name }} from <strong>{{ team }}</strong>.
+        {% else %}
+            Updated by: {{ author_name }} from <strong>{{ team }}</strong>.
+        {% endif %}
       {% endblock %}
     </td>
   </tr>
@@ -82,7 +90,7 @@ Base file to be reused in the MailTemplate for the budget workflow engine
     <tr>
       <td align="left" style="padding:5px;">
         <br />
-        {{ skipped_attachments }} file(s) has(have) not been attached to this message due to their size. Please use the link(s)
+        {{ skipped_attachments }} file(s) has(have) not been attached because total file size exceeds 5MB. Please use the link(s)
         above to view them.
     </tr>
   {% endif %}

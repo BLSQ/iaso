@@ -169,7 +169,7 @@ describe('history tab', () => {
             rows: linkedLogsPaginated.list.length,
             columns: 4,
             apiPath:
-                'logs/?&objectId=1&contentType=iaso.orgunit&limit=10&order=-created_at',
+                'logs/?&objectId=2&contentType=iaso.orgunit&limit=10&order=-created_at',
             apiKey: 'logs',
             withVisit: false,
             selector: '[data-test="logs-tab"] table',
@@ -186,7 +186,7 @@ describe('history tab', () => {
             baseUrl,
             apiPath: `/api/logs/**`,
             query: {
-                objectId: '1',
+                objectId: '2',
                 contentType: 'iaso.orgunit',
                 limit: '10',
                 order: '-created_at',

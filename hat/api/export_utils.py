@@ -4,10 +4,11 @@ from datetime import datetime
 
 import xlsxwriter  # type: ignore
 from django.conf import settings
+from django.db.models import QuerySet
 from django.utils import timezone
 from xlsxwriter.utility import xl_rowcol_to_cell  # type: ignore
+
 from hat.common.utils import queryset_iterator
-from django.db.models import QuerySet
 
 
 def write_sheet(wb, sheet_name, col_descs, queryset, get_row, sub_columns=None):

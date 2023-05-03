@@ -60,7 +60,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                         options={stepsList}
                         multi={false}
                         value={filters.transition_key}
-                        label={MESSAGES.step}
+                        label={MESSAGES.filter}
                     />
                     <InputComponent
                         type="checkbox"

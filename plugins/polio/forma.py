@@ -1,31 +1,31 @@
+import operator
 from collections import defaultdict
-from datetime import timedelta
-from functools import lru_cache
-from typing import Dict, Callable, Any
+from datetime import timedelta, date
+from functools import lru_cache, reduce
+from logging import getLogger
+from typing import Dict, Callable, Any, Optional
 from uuid import UUID
 
 import pandas as pd
-from django.db.models import Max, Min
+from django.core.cache import cache
+from django.db.models import Max, Min, Q
 from django.http import HttpResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from pandas import DataFrame
 from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from iaso.api.common import CONTENT_TYPE_CSV
-from iaso.models import *
+from iaso.models import OrgUnit
 from plugins.polio.helpers import get_url_content
 from plugins.polio.models import Campaign
 from plugins.polio.models import Config
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
-from django.core.cache import cache
-
-from logging import getLogger
 
 logger = getLogger(__name__)
 
 
-def forma_find_campaign_on_day(campaigns, day, country):
+def forma_find_campaign_on_day(campaigns, day):
     """Guess campaign from formA submission
 
     FormA Submission are still considered on time 28 days after the round end at the campaign level
@@ -48,7 +48,7 @@ def forma_find_campaign_on_day(campaigns, day, country):
 def find_orgunit_in_cache(cache_dict, name, parent_name=None):
     if not name or pd.isna(name):
         return None
-    name = name.lower()
+    name = name.lower().strip()
     parent_name = parent_name.lower() if (parent_name and not pd.isna(parent_name)) else ""
     matched_orgunits = cache_dict[name]
 
@@ -63,7 +63,7 @@ def find_orgunit_in_cache(cache_dict, name, parent_name=None):
             aliases = [alias.lower() for alias in f.parent.aliases]
             if parent_name in aliases:
                 return f
-    # if can't match on parent, use the first since we put them before the aliases
+    # if no match found on parent, use the first since we put them before the aliases
     return matched_orgunits[0]
 
 
@@ -98,12 +98,14 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     facilities = (
         OrgUnit.objects.filter(parent__in=districts)
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     regions = (
         OrgUnit.objects.filter(parents_q(districts))
@@ -111,6 +113,7 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     countries = (
         OrgUnit.objects.filter(parents_q(districts))
@@ -118,6 +121,7 @@ def make_find_orgunit_for_campaign(cs):
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")
+        .prefetch_related("org_unit_type")
     )
     logger.info(
         f"Creating cache for {cs}: Facilities, {facilities.count()}; regions, {regions.count()}, countries, {countries.count()}"
@@ -143,16 +147,14 @@ def make_find_orgunit_for_campaign(cs):
 def find_campaign_orgunits(campaign_find_func, campaign, *args):
     if pd.isna(campaign):
         return
-    if not campaign.get_all_districts().count() > 0:
-        # print(f"skipping {cs}, no scope")
-        return
-
     if not campaign_find_func.get(campaign.pk):
+        if not campaign.get_all_districts().count() > 0:
+            campaign_find_func[campaign.pk] = lambda *x: None
         campaign_find_func[campaign.pk] = make_find_orgunit_for_campaign(campaign)
     return campaign_find_func[campaign.pk](*args)
 
 
-def handle_country(forms, country, campaign_qs) -> DataFrame:
+def handle_country(forms, country: OrgUnit, campaign_qs) -> DataFrame:
     """For each submission try to match the Zone with a campaign and a matching orgunit in scope"""
 
     # Cache for orgunits per campaign
@@ -169,16 +171,18 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     df["today"] = pd.to_datetime(df["today"])
     if "District" not in df.columns:
         df["District"] = None
+    if "Region" not in df.columns:
+        df["Region"] = None
     if "facility" not in df.columns:
         df["facility"] = None
 
     df["country_config_id"] = country.id
     df["country_config_name"] = country.name
     df["country_config"] = country
-    print("Matching country", country)
+    logger.info(f"Matching country  {country} DF: {df.shape}")
 
     forma_find_campaign_on_day_cached = lru_cache(maxsize=None)(forma_find_campaign_on_day)
-    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"], country), axis=1)
+    df["campaign"] = df.apply(lambda r: forma_find_campaign_on_day_cached(campaign_qs, r["today"]), axis=1)
     df["campaign_id"] = df["campaign"].apply(lambda c: str(c.id) if c else None)
     df["campaign_obr_name"] = df["campaign"].apply(lambda c: c.obr_name if c else None)
 
@@ -213,17 +217,18 @@ def handle_country(forms, country, campaign_qs) -> DataFrame:
     )
     df["report_org_unit_id"] = df.apply(lambda r: r["report_org_unit"].id if r["report_org_unit"] else None, axis=1)
     df["report_org_unit_name"] = df.apply(lambda r: r["report_org_unit"].name if r["report_org_unit"] else None, axis=1)
-    # Not removing duplicate here, we do it in PowerBi so we can debug probleme there
+    # Not removing duplicate here, we do it in PowerBi so we can debug problems there
     # df = df.sort_values("endtime").drop_duplicates(['Region', 'District', 'facility', 'roundNumber', 'Admin_LvL_Rpt'])
     return df
 
 
-def get_content_for_config(config):
+def get_content_for_config(config, prefer_cache):
     return get_url_content(
-        url=config["url"] + "?date_created__month__lte=24",
+        url=config["url"],
         login=config["login"],
         password=config["password"],
         minutes=config.get("minutes", 120),
+        prefer_cache=prefer_cache,
     )
 
 
@@ -238,10 +243,20 @@ def fetch_and_match_forma_data(country_id=None):
         if country_id is not None and config.get("country_id", None) != cid:
             continue
         try:
-            submissions = get_content_for_config(config)
             country = OrgUnit.objects.get(id=config["country_id"])
-            compaigns_of_country = campaign_qs.filter(country_id=config["country_id"])
-            df = handle_country(submissions, country, compaigns_of_country)
+
+            campaigns_of_country = campaign_qs.filter(country_id=config["country_id"]).annotate(
+                last_start_date=Max("rounds__started_at"),
+                start_date=Min("rounds__started_at"),
+                end_date=Max("rounds__ended_at"),
+            )
+            # If all the country's campaigns has been over for more than 2 months, don't fetch submission from remote server
+            # use cache. (FormA is after campaign so the delay is longer)
+            last_campaign_date_agg = campaigns_of_country.aggregate(last_date=Max("end_date"))
+            last_campaign_date: Optional[date] = last_campaign_date_agg["last_date"]
+            prefer_cache = last_campaign_date and last_campaign_date + timedelta(days=60) < (date.today())
+            submissions = get_content_for_config(config, prefer_cache)
+            df = handle_country(submissions, country, campaigns_of_country)
             dfs.append(df)
         except Exception:
             logger.exception(f"Error handling forma data for country {config.get('country', conf)}")
@@ -259,9 +274,13 @@ def get_forma_scope_df(campaigns):
             if districts.count() == 0:
                 logger.info(f"skipping {campaign}, no scope")
                 continue
-            facilities = OrgUnit.objects.filter(parent__in=districts)
-            regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
-            countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)
+            facilities = OrgUnit.objects.filter(parent__in=districts).filter(validation_status="VALID")
+            regions = (
+                OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2).filter(validation_status="VALID")
+            )
+            countries = (
+                OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1).filter(validation_status="VALID")
+            )
 
             for ous in [districts, facilities, regions, countries]:
                 scope_df = DataFrame.from_records(
@@ -294,7 +313,6 @@ def get_forma_scope_df(campaigns):
                 scope_df["campaign_id"] = str(campaign.id)
                 scope_df["campaign_obr_name"] = str(campaign.obr_name)
                 scope_df["round_number"] = str(round.number)
-                print(campaign, scope_df.shape)
                 scope_dfs.append(scope_df)
 
     all_scopes = pd.concat(scope_dfs)

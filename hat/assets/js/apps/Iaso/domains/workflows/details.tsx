@@ -2,25 +2,25 @@ import React, {
     FunctionComponent,
     useCallback,
     useState,
+    useMemo,
     useEffect,
 } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     LoadingSpinner,
     // @ts-ignore
     formatThousand,
     // @ts-ignore
+    Column,
     SortableTable,
-    // @ts-ignore
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
+import uniqWith from 'lodash/uniqWith';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -29,28 +29,32 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
-import {
-    useGetQueryBuildersFields,
-    useGetQueryBuilderListToReplace,
-} from './hooks/queryBuilder';
 
-import { useGetFormDescriptor } from './hooks/requests/useGetFormDescriptor';
+import { useGetWorkflowVersionChanges } from './hooks/requests/useGetWorkflowVersionChanges';
+import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
+import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
+
+import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
 import {
     WorkflowVersionDetail,
     WorkflowParams,
     FollowUps,
-} from './types/workflows';
+    Change,
+} from './types';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
-import { FollowUpsTable } from './components/FollowUpsTable';
-import { AddFollowUpsModal } from './components/FollowUpsModal';
+import { FollowUpsTable } from './components/followUps/Table';
+import { AddFollowUpsModal } from './components/followUps/Modal';
+import { AddChangeModal } from './components/changes/Modal';
 
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { useGetChangesColumns, useGetFollowUpsColumns } from './config';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
+import { useGetChangesColumns } from './config/changes';
+import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
+import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../forms/types/forms';
 
 type Router = {
     goBack: () => void;
@@ -63,9 +67,18 @@ type Props = {
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     titleRow: { fontWeight: 'bold' },
-    fullWidth: { width: '100%' },
     infoPaper: { width: '100%', position: 'relative' },
     infoPaperBox: { minHeight: '100px' },
+    count: {
+        height: theme.spacing(8),
+        display: 'flex',
+        justifyContent: 'flex-end',
+        position: 'absolute',
+        alignItems: 'center',
+        paddingRight: theme.spacing(2),
+        top: 0,
+        right: 0,
+    },
 }));
 
 export const Details: FunctionComponent<Props> = ({ router }) => {
@@ -91,11 +104,16 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data?: WorkflowVersionDetail;
         isLoading: boolean;
     } = useGetWorkflowVersion(versionId);
+    const {
+        data: changes,
+    }: {
+        data?: Change[];
+    } = useGetWorkflowVersionChanges(params);
 
-    useEffect(() => {
-        if (workflowVersion?.follow_ups) {
+    const updateCurrentFollowUps = workflowVersionFollowUps => {
+        if (workflowVersionFollowUps) {
             const newFollowUps = orderBy(
-                workflowVersion.follow_ups,
+                workflowVersionFollowUps,
                 [f => f.order],
                 ['asc'],
             );
@@ -106,21 +124,43 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                 })),
             );
         }
+    };
+
+    useEffect(() => {
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
     }, [workflowVersion?.follow_ups]);
-    const { possibleFields } = useGetPossibleFields(
-        workflowVersion?.reference_form.id,
-    );
+
+    const { formVersions: targetPossibleFieldsByVersion } =
+        useGetPossibleFieldsByFormVersion(workflowVersion?.reference_form.id);
+    const targetPossibleFields: PossibleField[] | undefined = useMemo(() => {
+        if (!targetPossibleFieldsByVersion) return undefined;
+        return uniqWith(
+            targetPossibleFieldsByVersion.flatMap(
+                formVersion => formVersion.possible_fields,
+            ),
+            isEqual,
+        );
+    }, [targetPossibleFieldsByVersion]);
     const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );
-    const fields = useGetQueryBuildersFields(formDescriptors, possibleFields);
-
+    const fields = useGetQueryBuildersFields(
+        formDescriptors,
+        targetPossibleFields,
+        iasoFields,
+    );
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
         fields,
         queryBuilderListToReplace,
     );
-    const changesColumns = useGetChangesColumns();
+    const changesColumns = useGetChangesColumns(
+        versionId,
+        targetPossibleFields,
+        targetPossibleFieldsByVersion,
+        workflowVersion,
+        changes,
+    );
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
         versionId,
@@ -134,6 +174,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         setIsFollowUpOrderChange(true);
     }, []);
 
+    const handleResetFollowUpsOrder = useCallback(() => {
+        updateCurrentFollowUps(workflowVersion?.follow_ups);
+        setIsFollowUpOrderChange(false);
+    }, [workflowVersion?.follow_ups]);
+
     const handleSaveFollowUpsOrder = useCallback(() => {
         saveFollowUpOrder(
             followUps.map(fu => ({
@@ -142,6 +187,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
             })),
         );
     }, [followUps, saveFollowUpOrder]);
+
     return (
         <>
             <TopBar
@@ -171,11 +217,17 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         </WidgetPaper>
                     </Grid>
                 </Grid>
-                <Box mt={2}>
+                <Box mt={2} data-test="follow-ups">
                     <WidgetPaper
-                        className={classes.fullWidth}
+                        className={classes.infoPaper}
                         title={formatMessage(MESSAGES.followUps)}
                     >
+                        <Box className={classes.count}>
+                            {`${formatThousand(
+                                workflowVersion?.follow_ups.length ?? 0,
+                            )} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                         <>
                             {workflowVersion && (
                                 <>
@@ -183,7 +235,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         <SortableTable
                                             items={followUps}
                                             onChange={handleSortChange}
-                                            columns={followUpsColumns}
+                                            columns={
+                                                followUpsColumns as Column[]
+                                            }
                                         />
                                     )}
                                     {workflowVersion.status !== 'DRAFT' && (
@@ -203,6 +257,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                     <Button
                                         color="primary"
                                         disabled={!isFollowUpOrderChange}
+                                        data-test="reset-follow-up-order"
+                                        onClick={handleResetFollowUpsOrder}
+                                        variant="contained"
+                                    >
+                                        {formatMessage(MESSAGES.resetOrder)}
+                                    </Button>
+                                </Box>
+
+                                <Box display="inline-block" mr={2}>
+                                    <Button
+                                        color="primary"
+                                        disabled={!isFollowUpOrderChange}
                                         data-test="save-follow-up-order"
                                         onClick={handleSaveFollowUpsOrder}
                                         variant="contained"
@@ -217,27 +283,34 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                         followUps[followUps.length - 1]?.order +
                                         1
                                     }
+                                    iconProps={{
+                                        dataTestId: 'create-follow-ups',
+                                    }}
                                 />
                             </Box>
                         )}
                     </WidgetPaper>
                 </Box>
-                <Box mt={2}>
+                <Box mt={2} data-test="changes">
                     <WidgetPaper
-                        className={classes.fullWidth}
+                        className={classes.infoPaper}
                         title={formatMessage(MESSAGES.changes)}
                     >
+                        <Box className={classes.count}>
+                            {`${formatThousand(changes?.length ?? 0)} `}
+                            {formatMessage(MESSAGES.results)}
+                        </Box>
                         <TableWithDeepLink
                             marginTop={false}
                             countOnTop={false}
                             elevation={0}
                             showPagination={false}
                             baseUrl={baseUrls.workflowDetail}
-                            data={workflowVersion?.changes ?? []}
+                            data={changes ?? []}
                             pages={1}
                             defaultSorted={[{ id: 'updated_at', desc: false }]}
                             columns={changesColumns}
-                            count={workflowVersion?.changes.length}
+                            count={changes?.length}
                             params={params}
                             onTableParamsChange={p =>
                                 dispatch(
@@ -249,20 +322,28 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             }
                             extraProps={{
                                 isLoading,
+                                targetPossibleFieldsByVersion,
+                                changesColumns,
                             }}
                         />
-                        <Box
-                            display="flex"
-                            justifyContent="flex-end"
-                            pr={2}
-                            pb={2}
-                            mt={-2}
-                        >
-                            {`${formatThousand(
-                                workflowVersion?.changes.length ?? 0,
-                            )} `}
-                            {formatMessage(MESSAGES.results)}
-                        </Box>
+                        {workflowVersion?.status === 'DRAFT' && (
+                            <Box m={2} textAlign="right">
+                                <AddChangeModal
+                                    versionId={versionId}
+                                    changes={changes || []}
+                                    targetPossibleFields={targetPossibleFields}
+                                    targetPossibleFieldsByVersion={
+                                        targetPossibleFieldsByVersion
+                                    }
+                                    referenceForm={
+                                        workflowVersion?.reference_form
+                                    }
+                                    iconProps={{
+                                        dataTestId: 'create-change',
+                                    }}
+                                />
+                            </Box>
+                        )}
                     </WidgetPaper>
                 </Box>
             </Box>

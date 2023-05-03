@@ -157,6 +157,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Storages',
         id: 'iaso.label.storages',
     },
+    registry: {
+        defaultMessage: 'Registry',
+        id: 'iaso.registry.title',
+    },
+    entityDuplicatesTitle: {
+        defaultMessage: 'Duplicates',
+        id: 'iaso.label.duplicates',
+    },
 });
 
 export default MESSAGES;

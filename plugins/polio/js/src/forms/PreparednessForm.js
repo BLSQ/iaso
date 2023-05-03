@@ -22,6 +22,11 @@ import MESSAGES from '../constants/messages';
 
 import { PreparednessConfig } from './PreparednessConfig';
 
+export const preparednessFormFields = [
+    'surge_spreadsheet_url',
+    'country_name_in_surge_spreadsheet',
+];
+
 export const PreparednessForm = () => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -50,7 +55,11 @@ export const PreparednessForm = () => {
             },
         );
     };
-    const [currentTab, setCurrentTab] = useState('1');
+    const defaultRoundNumber = Number.isInteger(sortedRounds[0]?.number)
+        ? `${sortedRounds[0]?.number}`
+        : '1';
+
+    const [currentTab, setCurrentTab] = useState(defaultRoundNumber);
 
     const handleChangeTab = (event, newValue) => {
         setCurrentTab(newValue);

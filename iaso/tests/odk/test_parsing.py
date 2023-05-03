@@ -1,7 +1,9 @@
+import json
+from unittest.mock import patch
+
 from django.test import SimpleTestCase
 from django.utils.dateparse import parse_datetime
-from unittest.mock import patch
-import json
+
 from iaso.odk import parse_xls_form, Survey, ParsingError, to_questions_by_name
 
 

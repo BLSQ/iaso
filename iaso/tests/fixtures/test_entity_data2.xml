@@ -1,0 +1,20 @@
+<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" id="wfp_reg_ok" version="2022081601" iasoInstance="18">
+          <start>2022-09-20T16:50:40.889+02:00</start>
+          <end>2022-09-20T16:51:17.352+02:00</end>
+          <register>
+            <name>Prince of Euphor</name>
+            <father_name>Professor Procyon</father_name>
+            <age_type>0</age_type>
+            
+            <birth_date>1978-07-03</birth_date>
+            <child_details>
+              <gender>male</gender>
+              <caretaker_name/>
+              <caretaker_rs/>
+              <hc>hc_C</hc>
+            </child_details>
+          </register>
+          <meta>
+            <instanceID>uuid:4901dff4-30af-49e2-afd1-42970bb8f03e</instanceID>
+          </meta>
+        </data>

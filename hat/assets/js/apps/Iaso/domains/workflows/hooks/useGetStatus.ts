@@ -1,4 +1,3 @@
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import { IntlFormatMessage } from '../../../types/intl';
 

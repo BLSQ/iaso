@@ -1,0 +1,218 @@
+- model: iaso.team
+  pk: 1
+  fields:
+    deleted_at: null
+    name: RRT
+    description: ''
+    project: 1
+    parent: null
+    path: '1'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 2
+  fields:
+    deleted_at: null
+    name: ORPG Operations
+    description: ''
+    project: 1
+    parent: null
+    path: '2'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 3
+  fields:
+    name: ORPG wider group
+    description: ''
+    project: 1
+    parent: null
+    path: '3'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 4
+  fields:
+    name: UNICEF
+    description: ''
+    project: 1
+    parent: null
+    path: '4'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 5
+  fields:
+    name: WHO
+    description: ''
+    project: 1
+    parent: null
+    path: '5'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 6
+  fields:
+    name: MoH
+    description: ''
+    project: 1
+    parent: null
+    path: '6'
+    type: TEAM_OF_TEAMS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+- model: iaso.team
+  pk: 7
+  fields:
+    name: GPEI Coordinator
+    description: ''
+    project: 1
+    parent: null
+    path: '7'
+    type: TEAM_OF_TEAMS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 8
+  fields:
+    name: UNICEF CO
+    description: ''
+    project: 1
+    parent: null
+    path: '8'
+    type: TEAM_OF_TEAMS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+- model: iaso.team
+  pk: 9
+  fields:
+    name: WHO Co
+    description: ''
+    project: 1
+    parent: null
+    path: '9'
+    type: TEAM_OF_TEAMS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+
+- model: iaso.team
+  pk: 10
+  fields:
+    name: UNICEF CO users
+    description: ''
+    project: 1
+    parent: 8
+    path: '8.10'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 11
+  fields:
+    name: GPEI users
+    description: ''
+    project: 1
+    parent: 7
+    path: '7.11'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 12
+  fields:
+    name: MoH users
+    description: ''
+    project: 1
+    parent: 6
+    path: '6.12'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio
+- model: iaso.team
+  pk: 13
+  fields:
+    name: WHO CO users
+    description: ''
+    project: 1
+    parent: 9
+    path: '9.13'
+    type: TEAM_OF_USERS
+    created_at: 2022-10-27 14:03:45.778294+00:00
+    updated_at: 2022-10-27 14:03:45.778322+00:00
+    created_by:
+    - polio
+    manager:
+    - polio
+    users:
+    - - polio

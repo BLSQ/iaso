@@ -1,7 +1,8 @@
 from django.contrib.gis.geos import Point
 from rest_framework import permissions, serializers
-from .common import ModelViewSet, TimestampField, safe_api_import
+
 from iaso.models import Device, DevicePosition, Project, DeviceOwnership
+from .common import ModelViewSet, TimestampField, safe_api_import
 
 
 class DevicePositionSerializer(serializers.Serializer):
@@ -55,8 +56,10 @@ class DevicesPositionViewSet(ModelViewSet):
 
     This API is open to anonymous users on write (if the project allows it).
 
-    GET /api/devicesposition/
-    POST /api/devicesposition/
+    GET /api/devicespositions/
+    GET /api/devicesposition/ [Deprecated] will be removed in the future
+    POST /api/devicespositions/
+    POST /api/devicesposition/ [Deprecated] will be removed in the future
     """
 
     permission_classes = [permissions.AllowAny]

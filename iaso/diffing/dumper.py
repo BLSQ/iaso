@@ -1,9 +1,9 @@
+import csv
 import json
 
 from django.contrib.gis.geos import GEOSGeometry
 
 from iaso.management.commands.command_logger import CommandLogger
-import csv
 
 
 def color(status):
@@ -32,7 +32,7 @@ class Dumper:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def dump_stats(self, diffs, fields):
+    def dump_stats(self, diffs):
         stats_ou = {}
 
         for diff in diffs:
@@ -60,7 +60,7 @@ class Dumper:
         self.iaso_logger.info(json.dumps(stats, indent=4))
         return stats
 
-    def dump_as_json(self, diffs, fields):
+    def dump_as_json(self, diffs):
         self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
     def dump_as_csv(self, diffs, fields, csv_file, number_of_parents=5):

@@ -1,12 +1,13 @@
+from operator import itemgetter
+
 from django.conf import settings
-from rest_framework import viewsets, permissions
-from rest_framework.response import Response
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
-from hat.menupermissions.models import CustomPermissionSupport
 from django.utils.translation import gettext as _
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
 
-from operator import itemgetter
+from hat.menupermissions.models import CustomPermissionSupport
 
 
 class PermissionsViewSet(viewsets.ViewSet):
@@ -28,17 +29,15 @@ class PermissionsViewSet(viewsets.ViewSet):
         else:
             perms = request.user.user_permissions
 
-        perms = perms.filter(content_type=content_type).filter(codename__startswith="iaso_").order_by("id")
-        #  in future filter this on a feature flags so we can disable it by account
+        perms = (
+            perms.filter(content_type=content_type)
+            .filter(codename__startswith="iaso_")
+            .exclude(codename__contains="datastore")
+            .order_by("id")
+        )
+        #  in future filter this on a feature flags, so we can disable it by account
         if "polio" not in settings.PLUGINS:
             perms = perms.exclude(codename__startswith="iaso_polio")
-
-        # TODO Remove once this is in prod
-        perms = (
-            perms.exclude(codename__startswith="iaso_planning")
-            # .exclude(codename__startswith="iaso_teams")
-            .exclude(codename__startswith="iaso_assignments")
-        )
 
         result = []
         for permission in perms:

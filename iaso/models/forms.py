@@ -1,20 +1,19 @@
 import pathlib
 import typing
+from uuid import uuid4
 
 from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.postgres.fields import ArrayField, CITextField
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.utils.html import strip_tags
 from django.utils.translation import ugettext_lazy as _
-from django.contrib.postgres.fields import ArrayField, CITextField
 
 from .project import Project
+from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
 from ..utils import slugify_underscore
-from .. import periods
-from uuid import uuid4
-
 from ..utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
     SoftDeletableModel,
@@ -233,6 +232,13 @@ class FormVersion(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     start_period = models.TextField(blank=True, null=True)
     end_period = models.TextField(blank=True, null=True)
+    possible_fields = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Questions present in this form version, as a flat list."
+        "Update on save. See equivalent on Form for all version",
+        editable=False,
+    )
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
@@ -274,3 +280,29 @@ class FormVersion(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
+
+
+def update_possible_fields(sender, instance, **kwargs):
+    if not instance.form_descriptor and instance.xls_file:
+        json_survey = parsing.to_json_dict(instance)
+        instance.form_descriptor = json_survey
+    questions = instance.questions_by_path()
+    instance.possible_fields = _reformat_questions(questions)
+
+
+models.signals.pre_save.connect(update_possible_fields, sender=FormVersion)
+
+
+class FormPredefinedFilter(models.Model):
+    """A Predefined filter allows to add quick filters in the UI to surface some instance which needs attention.
+
+    The predefined filters rely on the form's possible fields.
+    The json_logic must return a boolean.
+    """
+
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="predefined_filters")
+    name = models.TextField(null=False, blank=False)
+    short_name = models.CharField(null=False, blank=False, max_length=25)
+    json_logic = models.JSONField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

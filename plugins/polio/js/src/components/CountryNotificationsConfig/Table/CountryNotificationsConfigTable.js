@@ -21,6 +21,7 @@ const makeUserNameToDisplay = user => {
 const allLanguages = [
     { value: 'EN', label: 'EN' },
     { value: 'FR', label: 'FR' },
+    { value: 'PT', label: 'PT' },
 ];
 
 const CountryNotificationsConfigTable = ({ params }) => {

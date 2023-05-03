@@ -1,10 +1,7 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     useSkipEffectOnMount,
-    // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
 import {
@@ -13,6 +10,7 @@ import {
     useTheme,
     Collapse,
     makeStyles,
+    Grid,
 } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 import { Pagination } from '@material-ui/lab';
@@ -21,52 +19,61 @@ import { Pagination } from '@material-ui/lab';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 
-import { useStyles } from '../../styles/theme';
-import { BUDGET } from '../../constants/routes';
-import MESSAGES from '../../constants/messages';
-import { useBudgetColumns } from './hooks/config';
-
-import { convertObjectToString } from '../../utils';
-
 import { BudgetFilters } from './BudgetFilters';
 import { BudgetCard } from './cards/BudgetCard';
-
+import { useBudgetColumns } from './hooks/config';
+import { CsvButton } from '../../../../../../hat/assets/js/apps/Iaso/components/Buttons/CsvButton';
 import {
     useBudgetParams,
     useGetBudgets,
     useGetWorkflowStatesForDropdown,
 } from './hooks/api/useGetBudget';
 import { Budget } from './types';
-
 import { handleTableDeepLink } from '../../../../../../hat/assets/js/apps/Iaso/utils/table';
+import { useStyles } from '../../styles/theme';
+import { BUDGET } from '../../constants/routes';
+import MESSAGES from '../../constants/messages';
 
 type Props = {
     router: any;
 };
-const style = () => {
-    return {
-        pagination: {
-            '&.MuiPagination-root > .MuiPagination-ul': {
-                justifyContent: 'center',
-            },
-        },
-    };
+
+const getCsvParams = (apiParams: Record<string, any>): string => {
+    const {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        pageSize,
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        page,
+        ...paramsForCsv
+    } = apiParams;
+    const filteredParams: Record<string, any> = Object.fromEntries(
+        Object.entries(paramsForCsv).filter(
+            // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+            ([_key, value]) => value !== undefined,
+        ),
+    );
+    return new URLSearchParams(filteredParams).toString();
 };
 
-const usePaginationStyles = makeStyles(style);
+const usePaginationStyles = makeStyles({
+    pagination: {
+        '&.MuiPagination-root > .MuiPagination-ul': {
+            justifyContent: 'center',
+        },
+    },
+    alignRight: { textAlign: 'right' },
+});
 
 export const BudgetList: FunctionComponent<Props> = ({ router }) => {
     const { params } = router;
     const { formatMessage } = useSafeIntl();
     const paginationStyle = usePaginationStyles();
     const classes = useStyles();
-    const [resetPageToOne, setResetPageToOne] = useState<string>('');
     const [expand, setExpand] = useState<boolean>(false);
 
     const apiParams = useBudgetParams(params);
+    const csvParams = getCsvParams(apiParams);
 
-    // const { data: campaigns, isFetching: isFetchingCampaigns } =
-    //     useGetCampaigns(apiParams).query;
     const { data: budgets, isFetching } = useGetBudgets(apiParams);
     const columns = useBudgetColumns();
     const theme = useTheme();
@@ -78,7 +85,6 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
         };
         delete newParams.page;
         delete newParams.order;
-        setResetPageToOne(convertObjectToString(newParams));
     }, [apiParams.pageSize, apiParams.search]);
 
     const onCardPaginationChange = useCallback(
@@ -118,6 +124,13 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             buttonSize="small"
                             statesList={possibleStates}
                         />
+                        <Grid container justifyContent="flex-end">
+                            <Box mb={4}>
+                                <CsvButton
+                                    csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                                />
+                            </Box>
+                        </Grid>
                     </Collapse>
                 )}
 
@@ -127,6 +140,11 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             params={params}
                             statesList={possibleStates}
                         />
+                        <Box mb={2} className={paginationStyle.alignRight}>
+                            <CsvButton
+                                csvUrl={`/api/polio/budget/export_csv/?${csvParams}`}
+                            />
+                        </Box>
 
                         <TableWithDeepLink
                             data={budgets?.results ?? []}
@@ -138,8 +156,8 @@ export const BudgetList: FunctionComponent<Props> = ({ router }) => {
                             marginTop={false}
                             extraProps={{
                                 loading: isFetching,
+                                apiParams,
                             }}
-                            resetPageToOne={resetPageToOne}
                         />
                     </>
                 )}

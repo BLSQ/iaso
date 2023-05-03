@@ -17,7 +17,7 @@ import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';
-import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
+import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap.tsx';
 import {
     mapCampaigns,
     filterCampaigns,
@@ -28,7 +28,7 @@ import {
     dateFormat,
     defaultOrder,
 } from '../components/campaignCalendar/constants';
-import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { useGetCampaigns } from '../hooks/useGetCampaigns.ts';
 // @ts-ignore
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
@@ -76,7 +76,7 @@ const Calendar = ({ params }) => {
         data: campaigns = [],
         isLoading,
         isFetching,
-    } = useGetCampaigns(queryOptions).query;
+    } = useGetCampaigns(queryOptions);
 
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)

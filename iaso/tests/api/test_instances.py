@@ -1,21 +1,21 @@
 import datetime
 import json
 import typing
+from unittest import mock
 from uuid import uuid4
 
 import pytz
 from django.contrib.gis.geos import Point
 from django.core.files import File
-from unittest import mock
-
 from django.utils import timezone
 from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso import models as m
-from iaso.models import OrgUnit, Instance, InstanceLock
-from iaso.test import APITestCase
 from hat.audit.models import Modification
+from iaso import models as m
+from iaso.models import InstanceLock
+from iaso.models.microplanning import Planning, Team
+from iaso.test import APITestCase
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
@@ -42,16 +42,27 @@ class InstancesAPITestCase(APITestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="Coruscant Jedi Council",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
+            validation_status="VALID",
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
-            name="ou_top_1", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="ou_top_1",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
         )
         cls.ou_top_2 = m.OrgUnit.objects.create(
-            name="ou_top_2", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_1, version=sw_version
+            name="ou_top_2",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_1,
+            version=sw_version,
         )
         cls.ou_top_3 = m.OrgUnit.objects.create(
-            name="ou_top_3", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_2, version=sw_version
+            name="ou_top_3",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_2,
+            version=sw_version,
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council", source_ref="jedi_council_endor_ref"
@@ -151,7 +162,7 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
         self.assertJSONResponse(response, 403)
 
-    def test_instance_create_anonymous(self):
+    def test_instance_create_planning(self):
         """POST /api/instances/ happy path (anonymous)"""
 
         instance_uuid = str(uuid4())
@@ -197,6 +208,57 @@ class InstancesAPITestCase(APITestCase):
         # )
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
+
+    def test_instance_create_anonymous_planning(self):
+        """POST /api/instances/ happy path (anonymous)"""
+        team = Team.objects.create(project=self.project, manager=self.yoda)
+        planning = Planning.objects.create(org_unit=self.jedi_council_corruscant, project=self.project, team=team)
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "planningId": planning.id,
+                "name": "1",
+            }
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        last_instance = m.Instance.objects.last()
+        self.assertEqual(instance_uuid, last_instance.uuid)
+        self.assertEquals("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
+        self.assertEqual("202002", last_instance.period)
+        self.assertIsInstance(last_instance.location, Point)
+        self.assertEqual(10, last_instance.accuracy)
+        self.assertEqual(4.4, last_instance.location.x)
+        self.assertEqual(50.2, last_instance.location.y)
+        self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
+        # TODO: the assertion below will fail because our API does not store properly the updated_at property
+        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
+        # self.assertEqual(
+        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
+        # )
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertEqual(last_instance.project, self.project)
+        self.assertEqual(last_instance.planning, planning)
 
     def test_instance_create_anonymous_microsecond(self):
         """POST /api/instances/ happy path (anonymous)
@@ -380,6 +442,21 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 4)
+
+    def test_instance_filter_by_org_unit_status(self):
+        """GET /instances/?org_unit_status={status}"""
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=VALID")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 6)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=REJECTED")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 0)
 
     def test_instance_list_by_form_id_ok_soft_deleted(self):
         """GET /instances/?form_id=form_id"""
@@ -655,7 +732,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(True, dup.deleted)
         self.assertEqual(1, Modification.objects.count())
         # check status is ready again
-        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        self.client.get(f"/api/instances/", {"form_id": form.id})
 
         response = self.client.get(f"/api/instances/", {"form_id": form.id})
         res = self.assertJSONResponse(response, 200)
@@ -954,7 +1031,7 @@ class InstancesAPITestCase(APITestCase):
             ],
         )
         response = self.client.get(f"/api/instances/stats_sum/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def test_stats_dup_deleted(self):
@@ -1005,7 +1082,7 @@ class InstancesAPITestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/instances/stats_sum/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)
@@ -1148,12 +1225,12 @@ class InstancesAPITestCase(APITestCase):
             format="json",
         )
         if can_user_modify:
-            j = self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, 200)
         else:
-            j = self.assertJSONResponse(response, 403)
+            self.assertJSONResponse(response, 403)
 
     def test_instance_create_entity(self):
-        """POST /api/instances/ with an entity that don't exist in db, it create it"""
+        """POST /api/instances/ with an entity that don't exist in db, it creates it"""
 
         instance_uuid = str(uuid4())
         entity_uuid = str(uuid4())
@@ -1198,7 +1275,7 @@ class InstancesAPITestCase(APITestCase):
         entity_uuid = str(uuid4())
         entity_type = m.EntityType.objects.create(account=self.star_wars)
 
-        entity = m.Entity.objects.create(
+        m.Entity.objects.create(
             account=self.star_wars,
             entity_type=entity_type,
             uuid=entity_uuid,

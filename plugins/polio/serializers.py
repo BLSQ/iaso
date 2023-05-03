@@ -2,22 +2,21 @@ import logging
 from datetime import datetime
 
 import pandas as pd
-from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.transaction import atomic
+from django.utils import timezone
+from django.utils.translation import gettext as _
 from gspread.exceptions import APIError  # type: ignore
 from gspread.exceptions import NoValidUrlKeyFound
 from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.validators import UniqueValidator
-from django.utils.translation import gettext as _
-from django.utils import timezone
 
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
-
 from iaso.models import Group
 from .models import (
+    Config,
     Round,
     LineListImport,
     VIRUSES,
@@ -29,7 +28,7 @@ from .models import (
     RoundScope,
     CampaignScope,
 )
-from .preparedness.calculator import get_preparedness_score, preparedness_summary
+from .preparedness.calculator import get_preparedness_score
 from .preparedness.parser import (
     InvalidFormatError,
     get_preparedness,
@@ -37,6 +36,7 @@ from .preparedness.parser import (
 )
 from .preparedness.spreadsheet_manager import *
 from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
+from .preparedness.summary import preparedness_summary, set_preparedness_cache_for_round
 
 logger = getLogger(__name__)
 
@@ -74,7 +74,7 @@ def _error(message, exc=None):
     return errors
 
 
-# the following serializer are used so we can audit the modification on a campaign.
+# the following serializer are used, so we can audit the modification on a campaign.
 # The related Scope and Round can be modified in the same request but are modelised as separate ORM Object
 # and DjangoSerializer don't serialize relation, DRF Serializer is used
 class AuditGroupSerializer(serializers.ModelSerializer):
@@ -156,7 +156,7 @@ def log_campaign_modification(campaign: Campaign, old_campaign_dump, request_use
 
 
 @transaction.atomic
-def campaign_from_files(file):
+def campaign_from_files(file, account):
     try:
         df = pd.read_excel(file)
     except Exception as exc:
@@ -177,7 +177,7 @@ def campaign_from_files(file):
         onset_date = df["Onset Date"][ind]
         virus = df["VDPV Category"][ind]
         print(epid, onset_date, type(onset_date), virus)
-        c, created = Campaign.objects.get_or_create(epid=epid)
+        c, created = Campaign.objects.get_or_create(epid=epid, account=account)
         if not created:
             skipped_campaigns.append(epid)
             print(f"Skipping existing campaign {c.epid}")
@@ -209,6 +209,7 @@ class LineListImportSerializer(serializers.ModelSerializer):
         read_only_fields = ["import_result", "created_by", "created_at"]
 
     def create(self, validated_data):
+        account = self.context["request"].user.iaso_profile.account
         line_list_import = LineListImport(
             file=validated_data.get("file"),
             import_result="pending",
@@ -218,9 +219,8 @@ class LineListImportSerializer(serializers.ModelSerializer):
         line_list_import.save()
 
         # Tentatively created campaign, will transaction.abort in case of error
-        res = "importing"
         try:
-            res = campaign_from_files(line_list_import.file)
+            res = campaign_from_files(line_list_import.file, account)
         except Exception as exc:
             logging.exception(exc)
             if isinstance(exc, serializers.ValidationError):
@@ -346,7 +346,6 @@ class RoundSerializer(serializers.ModelSerializer):
             round_vaccine_instance = round_vaccine_serializer.save()
             vaccine_instances.append(round_vaccine_instance)
         for shipment_data in shipments:
-            shipment = None
             if shipment_data.get("id"):
                 shipment_id = shipment_data["id"]
                 current_shipment_ids.append(shipment_id)
@@ -366,7 +365,6 @@ class RoundSerializer(serializers.ModelSerializer):
                 current.delete()
         # TODO put repeated code in a function
         for destruction_data in destructions:
-            destruction = None
             if destruction_data.get("id"):
                 destruction_id = destruction_data["id"]
                 current_destruction_ids.append(destruction_id)
@@ -388,6 +386,8 @@ class RoundSerializer(serializers.ModelSerializer):
         instance.shipments.set(shipment_instances)
         instance.destructions.set(destruction_instances)
         round = super().update(instance, validated_data)
+        # update the preparedness cache in case we touched the spreadsheet url
+        set_preparedness_cache_for_round(round)
         return round
 
 
@@ -474,7 +474,7 @@ class SurgePreviewSerializer(serializers.Serializer):
             raise serializers.ValidationError(e.args[0])
         except APIError as e:
             raise serializers.ValidationError(e.args[0].get("message"))
-        except NoValidUrlKeyFound as e:
+        except NoValidUrlKeyFound:
             raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
         except Exception as e:
             raise serializers.ValidationError(f"{type(e)}: {str(e)}")
@@ -563,6 +563,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     )
     # Account is filed per default the one of the connected user that update it
     account: Field = serializers.PrimaryKeyRelatedField(default=CurrentAccountDefault(), read_only=True)
+    has_data_in_budget_tool = serializers.SerializerMethodField(read_only=True)
 
     def get_top_level_org_unit_name(self, campaign):
         if campaign.country:
@@ -582,6 +583,9 @@ class CampaignSerializer(serializers.ModelSerializer):
             elif round.started_at and now_utc >= round.started_at:
                 return _("Round {} started").format(round.number)
         return _("Preparing")
+
+    def get_has_data_in_budget_tool(self, campaign):
+        return campaign.budget_steps.count() > 0
 
     # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)
@@ -636,7 +640,6 @@ class CampaignSerializer(serializers.ModelSerializer):
             round = round_serializer.save()
 
             for scope in scopes:
-
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
@@ -656,6 +659,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
                 scope.group.org_units.set(org_units)
 
+        campaign.update_geojson_field()
+        campaign.save()
         log_campaign_modification(campaign, None, self.context["request"].user)
         return campaign
 
@@ -686,6 +691,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         round_instances = []
         # find existing round either by id or number
+        # Fixme this is not a partial update because of the dfault
         for round_data in rounds:
             round = None
             if round_data.get("id"):
@@ -727,6 +733,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         instance.rounds.set(round_instances)
 
         campaign = super().update(instance, validated_data)
+        campaign.update_geojson_field()
+        campaign.save()
 
         log_campaign_modification(campaign, old_campaign_dump, self.context["request"].user)
         return campaign
@@ -736,7 +744,10 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Campaign
-        fields = "__all__"
+        # TODO in the future specify the fields that need to be returned so we can remove the deprecated fields
+        # fields = "__all__"
+        exclude = ["geojson"]
+
         read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
 
 
@@ -774,7 +785,7 @@ class ListCampaignSerializer(CampaignSerializer):
 
 class CalendarCampaignSerializer(CampaignSerializer):
     """This serializer contains juste enough data for the Calendar view in the web ui. Read only.
-    Used by both anonymous and non anonymous user"""
+    Used by both anonymous and non-anonymous user"""
 
     class NestedListRoundSerializer(RoundSerializer):
         class NestedScopeSerializer(RoundScopeSerializer):
@@ -853,7 +864,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "creation_email_send_at",
             # "group",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -875,7 +885,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "doses_requested",
             "country_name_in_surge_spreadsheet",
             "budget_status",
-            "budget_responsible",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
             "unicef_disbursed_to_co_at",
@@ -894,6 +903,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_id",
             "is_preventive",
             "account",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields
 
@@ -930,7 +940,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "creation_email_send_at",
             # "group",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -953,7 +962,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "doses_requested",
             "country_name_in_surge_spreadsheet",
             "budget_status",
-            "budget_responsible",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
             "unicef_disbursed_to_co_at",
@@ -973,6 +981,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_id",
             "is_preventive",
             "account",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields
 
@@ -990,3 +999,182 @@ class CampaignGroupSerializer(serializers.ModelSerializer):
 
     campaigns = CampaignNameSerializer(many=True, read_only=True)
     campaigns_ids = serializers.PrimaryKeyRelatedField(many=True, queryset=Campaign.objects.all(), source="campaigns")
+
+
+class ExportCampaignSerializer(CampaignSerializer):
+    class NestedRoundSerializer(RoundSerializer):
+        class NestedRoundScopeSerializer(RoundScopeSerializer):
+            class Meta:
+                model = RoundScope
+                fields = ["vaccine"]
+
+        class NestedShipmentSerializer(ShipmentSerializer):
+            class Meta:
+                model = Shipment
+                fields = [
+                    "vaccine_name",
+                    "po_numbers",
+                    "vials_received",
+                    "estimated_arrival_date",
+                    "reception_pre_alert",
+                    "date_reception",
+                    "comment",
+                ]
+
+        class NestedDestructionSerializer(DestructionSerializer):
+            class Meta:
+                model = Destruction
+                fields = [
+                    "vials_destroyed",
+                    "date_report_received",
+                    "date_report",
+                    "comment",
+                ]
+
+        class NestedRoundVaccineSerializer(RoundVaccineSerializer):
+            class Meta:
+                model = RoundVaccine
+                fields = [
+                    "name",
+                    "doses_per_vial",
+                    "wastage_ratio_forecast",
+                ]
+
+        class Meta:
+            model = Round
+            fields = [
+                "scopes",
+                "vaccines",
+                "shipments",
+                "destructions",
+                "number",
+                "started_at",
+                "ended_at",
+                "mop_up_started_at",
+                "mop_up_ended_at",
+                "im_started_at",
+                "im_ended_at",
+                "lqas_started_at",
+                "lqas_ended_at",
+                "target_population",
+                "doses_requested",
+                "cost",
+                "im_percentage_children_missed_in_household",
+                "im_percentage_children_missed_out_household",
+                "im_percentage_children_missed_in_plus_out_household",
+                "awareness_of_campaign_planning",
+                "main_awareness_problem",
+                "lqas_district_passing",
+                "lqas_district_failing",
+                "preparedness_spreadsheet_url",
+                "preparedness_sync_status",
+                "date_signed_vrf_received",
+                "date_destruction",
+                "vials_destroyed",
+                "reporting_delays_hc_to_district",
+                "reporting_delays_district_to_region",
+                "reporting_delays_region_to_national",
+                "forma_reception",
+                "forma_missing_vials",
+                "forma_usable_vials",
+                "forma_unusable_vials",
+                "forma_date",
+                "forma_comment",
+            ]
+
+        scopes = NestedRoundScopeSerializer(many=True, required=False)
+        vaccines = NestedRoundVaccineSerializer(many=True, required=False)
+        shipments = NestedShipmentSerializer(many=True, required=False)
+        destructions = NestedDestructionSerializer(many=True, required=False)
+
+    class ExportCampaignScopeSerializer(CampaignScopeSerializer):
+        class Meta:
+            model = CampaignScope
+            fields = ["vaccine"]
+
+    rounds = NestedRoundSerializer(many=True, required=False)
+    scopes = ExportCampaignScopeSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "obr_name",
+            "rounds",
+            "scopes",
+            "gpei_coordinator",
+            "gpei_email",
+            "description",
+            "initial_org_unit",
+            "country",
+            "creation_email_send_at",
+            "onset_at",
+            "cvdpv_notified_at",
+            "cvdpv2_notified_at",
+            "pv_notified_at",
+            "pv2_notified_at",
+            "virus",
+            "vacine",
+            "detection_status",
+            "detection_responsible",
+            "detection_first_draft_submitted_at",
+            "detection_rrt_oprtt_approval_at",
+            "risk_assessment_status",
+            "risk_assessment_responsible",
+            "investigation_at",
+            "risk_assessment_first_draft_submitted_at",
+            "risk_assessment_rrt_oprtt_approval_at",
+            "ag_nopv_group_met_at",
+            "dg_authorized_at",
+            "verification_score",
+            "doses_requested",
+            "surge_spreadsheet_url",
+            "country_name_in_surge_spreadsheet",
+            "budget_status",
+            "is_test",
+            "budget_current_state_key",
+            "budget_current_state_label",
+            "ra_completed_at_WFEDITABLE",
+            "who_sent_budget_at_WFEDITABLE",
+            "unicef_sent_budget_at_WFEDITABLE",
+            "gpei_consolidated_budgets_at_WFEDITABLE",
+            "submitted_to_rrt_at_WFEDITABLE",
+            "feedback_sent_to_gpei_at_WFEDITABLE",
+            "re_submitted_to_rrt_at_WFEDITABLE",
+            "submitted_to_orpg_operations1_at_WFEDITABLE",
+            "feedback_sent_to_rrt1_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+            "submitted_to_orpg_wider_at_WFEDITABLE",
+            "submitted_to_orpg_operations2_at_WFEDITABLE",
+            "feedback_sent_to_rrt2_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+            "submitted_for_approval_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+            "approved_by_who_at_WFEDITABLE",
+            "approved_by_unicef_at_WFEDITABLE",
+            "approved_at_WFEDITABLE",
+            "approval_confirmed_at_WFEDITABLE",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+            "eomg",
+            "no_regret_fund_amount",
+            "payment_mode",
+            "created_at",
+            "updated_at",
+            "district_count",
+            "is_preventive",
+            "enable_send_weekly_email",
+            "outbreak_declaration_date",
+        ]
+        read_only_fields = fields
+
+
+class ConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Config
+        fields = ["created_at", "updated_at", "key", "data"]
+
+    data = serializers.JSONField(source="content")  # type: ignore
+    key = serializers.CharField(source="slug")

@@ -1,6 +1,16 @@
 import React, { FunctionComponent } from 'react';
-import { Button, makeStyles, useMediaQuery, useTheme } from '@material-ui/core';
+// import { IconButton } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
+import {
+    Button,
+    makeStyles,
+    useMediaQuery,
+    useTheme,
+    Tooltip,
+} from '@material-ui/core';
 import LoopIcon from '@material-ui/icons/Loop';
+
+import MESSAGES from '../../../constants/messages';
 
 const style = theme => {
     return {
@@ -23,8 +33,8 @@ const style = theme => {
                 backgroundColor: theme.palette.error.main,
             },
         },
-        repeatIcon: {
-            marginRight: theme.spacing(1),
+        icon: {
+            cursor: 'pointer',
         },
     };
 };
@@ -35,14 +45,12 @@ type AddStepButtonProps = {
     label: string;
     onClick: () => void;
     color: 'red' | 'green' | 'primary';
-    disabled?: boolean;
-    stepKey: string;
+    disabled: boolean;
 };
 
 export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
     onClick,
     label,
-    stepKey,
     color = 'primary',
     disabled = false,
 }: AddStepButtonProps) => {
@@ -53,25 +61,39 @@ export const AddStepButton: FunctionComponent<AddStepButtonProps> = ({
     const usableColor = color ?? 'primary';
     const className =
         usableColor !== 'primary' ? classes[usableColor] : undefined;
-    const isRepeat = stepKey.includes('repeat');
     // The div prevents the Button from being too big on small screens
     return (
         <div className={classes.addButton}>
             <Button
                 onClick={onClick}
                 size={isMobileLayout ? 'small' : 'medium'}
-                variant={isRepeat ? 'outlined' : 'contained'}
+                variant="contained"
                 component="button"
                 color={usableColor === 'primary' ? usableColor : undefined}
                 className={className}
                 disabled={disabled}
             >
-                {isRepeat && (
-                    <LoopIcon fontSize="small" className={classes.repeatIcon} />
-                )}
-
                 {label}
             </Button>
         </div>
+    );
+};
+
+type RepeatStepIconProps = {
+    onClick: () => void;
+};
+export const RepeatStepIcon: FunctionComponent<RepeatStepIconProps> = ({
+    onClick,
+}: RepeatStepIconProps) => {
+    const { formatMessage } = useSafeIntl();
+    const classes = useButtonStyles();
+    return (
+        <Tooltip title={formatMessage(MESSAGES.repeatBudgetStep)}>
+            <LoopIcon
+                className={classes.icon}
+                color="action"
+                onClick={onClick}
+            />
+        </Tooltip>
     );
 };

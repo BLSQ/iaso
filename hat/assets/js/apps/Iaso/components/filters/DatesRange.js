@@ -4,7 +4,12 @@ import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 
 import { Grid, useTheme, useMediaQuery, Box } from '@material-ui/core';
-import { injectIntl, IconButton, FormControl } from 'bluesquare-components';
+import {
+    injectIntl,
+    IconButton,
+    FormControl,
+    useSkipEffectOnMount,
+} from 'bluesquare-components';
 import EventIcon from '@material-ui/icons/Event';
 import MESSAGES from './messages';
 import {
@@ -88,6 +93,16 @@ const DatesRange = ({
         },
         [blockInvalidDates, onChangeDate],
     );
+    useSkipEffectOnMount(() => {
+        if (from !== dateFrom) {
+            setFrom(dateFrom);
+        }
+    }, [dateFrom]);
+    useSkipEffectOnMount(() => {
+        if (to !== dateTo) {
+            setTo(dateTo);
+        }
+    }, [dateTo]);
     // Converting the displayedDateFormat to this one onChange to avoid a nasty bug in Firefox
     return (
         <Grid container spacing={useCurrentBreakPointSpacing(xs, sm, md, lg)}>

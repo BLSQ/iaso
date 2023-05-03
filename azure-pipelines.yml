@@ -47,7 +47,7 @@ steps:
 
 - task: UsePythonVersion@0
   inputs:
-   versionSpec: '3.6'
+   versionSpec: '3.8'
    addToPath: true
    architecture: 'x64'
 
@@ -62,7 +62,7 @@ steps:
   displayName: 'install pip'
 
 - script: |
-    . ./venv/bin/activate && pip install -r requirements.txt
+    . ./venv/bin/activate && pip install -r requirements.txt  && pip install -r requirements-dev.txt
     pip install unittest-xml-reporting
   displayName: 'install requirements'
 

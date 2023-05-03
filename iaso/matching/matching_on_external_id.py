@@ -1,5 +1,6 @@
-from iaso.models import OrgUnit, MatchingAlgorithm, Link, AlgorithmRun
 from datetime import datetime
+
+from iaso.models import OrgUnit, MatchingAlgorithm, Link, AlgorithmRun
 
 
 class Algorithm:

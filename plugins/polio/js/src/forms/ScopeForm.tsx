@@ -27,6 +27,8 @@ type Values = {
     initial_org_unit: number;
 };
 
+export const scopeFormFields = ['separate_scopes_per_round', 'scopes'];
+
 export const ScopeForm: FunctionComponent = () => {
     const { values } = useFormikContext<Values>();
     const { formatMessage } = useSafeIntl();
@@ -80,7 +82,7 @@ export const ScopeForm: FunctionComponent = () => {
     }, [currentTab, rounds, scopePerRound, sortedRounds, values.scopes]);
 
     const filteredDistricts = useMemo(() => {
-        if (districtShapes) {
+        if (districtShapes && regionShapes) {
             let filtered: FilteredDistricts[] = districtShapes.map(district => {
                 return {
                     ...cloneDeep(district),

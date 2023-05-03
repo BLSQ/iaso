@@ -1,14 +1,5 @@
 /* eslint-disable camelcase */
 
-type SubOrgUnitType = {
-    id: number;
-    name: string;
-    short_name: string | null;
-    depth: number | null;
-    created_at: number;
-    updated_at: number;
-};
-
 type FeatureFlag = {
     id: number;
     name: string;
@@ -36,12 +27,13 @@ export type OrgunitType = {
     created_at: number;
     updated_at: number;
     units_count: number;
-    sub_unit_types: SubOrgUnitType[];
+    sub_unit_types: OrgunitType[];
     reference_form: any;
     projects: Project[];
+    color?: string;
 };
 
-type OrgunitTypes = OrgunitType[];
+export type OrgunitTypes = OrgunitType[];
 
 export type OrgunitTypesApi = {
     orgUnitTypes: OrgunitTypes;

@@ -27,6 +27,7 @@ import MESSAGES from './messages';
 import { redirectTo } from '../../routing/actions';
 import { convertObjectToString } from '../../utils/dataManipulation.ts';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog.tsx';
 
 const baseUrl = baseUrls.users;
 
@@ -92,6 +93,9 @@ const Users = ({ params }) => {
                         saveProfile={saveProfile}
                         allowSendEmailInvitation
                     />
+                    <Box ml={2}>
+                        <BulkImportUsersDialog />
+                    </Box>
                 </Grid>
                 <Table
                     data={data?.profiles ?? []}

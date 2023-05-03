@@ -86,6 +86,10 @@ const routes = [
                 key: 'campaignId',
             },
             ...campaignsFilters,
+            {
+                isRequired: false,
+                key: 'fieldset',
+            },
         ],
     },
     {
@@ -225,7 +229,7 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'current_state__key',
+                key: 'budget_current_state_key__in',
             },
             {
                 isRequired: false,
@@ -234,6 +238,10 @@ const routes = [
             {
                 isRequired: false,
                 key: 'roundStartTo',
+            },
+            {
+                isRequired: false,
+                key: 'country__id__in',
             },
         ],
     },

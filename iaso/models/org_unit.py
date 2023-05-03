@@ -1,15 +1,17 @@
 import operator
 import typing
 from functools import reduce
-from django.db import models, transaction
-from django.contrib.postgres.indexes import GistIndex
+
+import django_cte
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.postgres.indexes import GistIndex
+from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django_ltree.fields import PathField  # type: ignore
 from django.utils.translation import ugettext_lazy as _
+from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
 from iaso.models.data_source import SourceVersion
@@ -64,7 +66,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
     def countries(self):
         return self.filter(category="COUNTRY")
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -149,7 +153,7 @@ class OrgUnitType(models.Model):
 
 
 # noinspection PyTypeChecker
-class OrgUnitQuerySet(models.QuerySet):
+class OrgUnitQuerySet(django_cte.CTEQuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
@@ -291,6 +295,11 @@ class OrgUnit(TreeModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        # work around https://code.djangoproject.com/ticket/33787
+        # where we had empty Z point in the database but couldn't save the OrgUnit back.
+        # because it was missing a dimension
+        if self.location is not None and self.location.empty:
+            self.location = None
 
         if skip_calculate_path:
             super().save(*args, **kwargs)

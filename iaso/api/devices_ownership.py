@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .common import HasPermission
 from iaso.models import DeviceOwnership
+from .common import HasPermission
 
 
 class DevicesOwnershipViewSet(viewsets.ViewSet):
@@ -10,7 +10,7 @@ class DevicesOwnershipViewSet(viewsets.ViewSet):
 
     This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
 
-    GET /api/devicesownership/
+    GET /api/devicesownerships/
     """
 
     permission_classes = [

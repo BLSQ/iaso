@@ -1,8 +1,8 @@
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .common import HasPermission
 from iaso.models import Instance
+from .common import HasPermission
 
 
 class PeriodsViewSet(viewsets.ViewSet):

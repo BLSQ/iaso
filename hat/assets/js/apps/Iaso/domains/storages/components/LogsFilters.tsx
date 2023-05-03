@@ -28,7 +28,7 @@ type Props = {
 const baseUrl = baseUrls.storageDetail;
 export const LogsFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params });
+        useFilterState({ baseUrl, params, saveSearchInHistory: false });
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const operationTypes = useGetOperationsTypes();

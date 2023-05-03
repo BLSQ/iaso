@@ -1,7 +1,8 @@
-from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
-from django.db import transaction
 from time import perf_counter
+
+from django.conf import settings
+from django.core.management.base import BaseCommand, CommandError
+from django.db import transaction
 
 from iaso.models import OrgUnit
 

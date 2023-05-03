@@ -1,15 +1,13 @@
 import json
 
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, permissions
-from iaso.models import WorkflowVersion, Project, WorkflowFollowup
-from rest_framework.viewsets import GenericViewSet
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
 from iaso.api.common import TimestampField
-
-from drf_yasg.utils import swagger_auto_schema
-from drf_yasg import openapi
-
+from iaso.models import WorkflowVersion, Project, WorkflowFollowup
 from iaso.models.workflow import WorkflowVersionsStatus, WorkflowChange
 
 

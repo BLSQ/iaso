@@ -8,13 +8,11 @@ import {
 
 import { cloneDeep } from 'lodash';
 import { baseUrls } from '../constants/urls';
-import { getChipColors } from '../constants/chipColors';
-
-import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import Page404 from '../components/errors/Page404';
 
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config.tsx';
-import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config.tsx';
+import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config/index.tsx';
+import { getOrgUnitsUrl } from '../domains/orgUnits/utils';
 
 const getRedirections = overrideLanding => {
     const getPaginationParams = (order = 'id', pageSize = 20) =>
@@ -26,14 +24,7 @@ const getRedirections = overrideLanding => {
         },
         {
             path: `${baseUrls.orgUnits}`,
-            to: `${
-                baseUrls.orgUnits
-            }/locationLimit/${locationLimitMax}${getPaginationParams(
-                undefined,
-                50,
-            )}/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(
-                0,
-            ).replace('#', '')}"}]`,
+            to: getOrgUnitsUrl(),
         },
         {
             path: `${baseUrls.mappings}`,
@@ -54,6 +45,10 @@ const getRedirections = overrideLanding => {
         {
             path: `${baseUrls.entityTypes}`,
             to: `${baseUrls.entityTypes}${getPaginationParams('name')}`,
+        },
+        {
+            path: `${baseUrls.entityDuplicates}`,
+            to: `${baseUrls.entityDuplicates}${getPaginationParams()}`,
         },
         {
             path: `${baseUrls.groups}`,

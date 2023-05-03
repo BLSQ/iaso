@@ -2,6 +2,7 @@ import { get } from 'lodash';
 import React, { FunctionComponent } from 'react';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { isTouched } from '../../utils';
 
 type Props = {
     options: DropdownOptions<number>;
@@ -24,7 +25,7 @@ export const SingleSelect: FunctionComponent<Props> = ({
 }) => {
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && get(form.touched, field.name));
+        Boolean(get(form.errors, field.name) && isTouched(form.touched));
     return (
         <InputComponent
             keyValue={field.name}

@@ -17,11 +17,11 @@ import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
-import { CompletessStats } from '../domains/completenessStats/index.tsx';
+import { CompletenessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
-import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
-import { Details as BeneficiaryDetail } from '../domains/entities/beneficiaries/details.tsx';
+import { Beneficiaries } from '../domains/entities/index.tsx';
+import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
@@ -36,10 +36,13 @@ import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
-
+import { Registry } from '../domains/registry/index.tsx';
+import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
-import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
+import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
+import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
+import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -416,6 +419,67 @@ export const orgUnitsDetailsPath = {
     ],
 };
 
+export const registryPath = {
+    baseUrl: baseUrls.registry,
+    permissions: ['iaso_registry'],
+    component: props => <Registry {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
+};
+export const registryDetailPath = {
+    baseUrl: baseUrls.registryDetail,
+    permissions: ['iaso_registry'],
+    component: props => <RegistryDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'orgUnitId',
+        },
+        {
+            isRequired: false,
+            key: 'formIds',
+        },
+        {
+            isRequired: false,
+            key: 'columns',
+        },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitListTab',
+        },
+        {
+            isRequired: false,
+            key: 'submissionId',
+        },
+        {
+            isRequired: false,
+            key: 'missingSubmissionVisible',
+        },
+        {
+            isRequired: false,
+            key: 'showTooltip',
+        },
+        {
+            isRequired: false,
+            key: 'isFullScreen',
+        },
+        ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('orgUnitList'),
+    ],
+};
+
 export const linksPath = {
     baseUrl: baseUrls.links,
     permissions: ['iaso_links'],
@@ -537,7 +601,7 @@ export const completenessPath = {
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
     permissions: ['iaso_completeness_stats'],
-    component: props => <CompletessStats {...props} />,
+    component: props => <CompletenessStats {...props} />,
     params: [
         {
             isRequired: false,
@@ -558,7 +622,19 @@ export const completenessStatsPath = {
         },
         {
             isRequired: false,
+            key: 'period',
+        },
+        {
+            isRequired: false,
             key: 'parentId',
+        },
+        {
+            isRequired: false,
+            key: 'planningId',
+        },
+        {
+            isRequired: false,
+            key: 'groupId',
         },
     ],
 };
@@ -797,6 +873,98 @@ export const entityTypesPath = {
         })),
     ],
 };
+export const entityDuplicatesPath = {
+    baseUrl: baseUrls.entityDuplicates,
+    permissions: [
+        'iaso_entity_duplicates_read',
+        'iaso_entity_duplicates_write',
+    ],
+    component: props => <Duplicates {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'algorithm',
+        },
+        {
+            isRequired: false,
+            key: 'similarity',
+        },
+        {
+            isRequired: false,
+            key: 'entity_type',
+        },
+        {
+            isRequired: false,
+            key: 'org_unit',
+        },
+        {
+            isRequired: false,
+            key: 'start_date',
+        },
+        {
+            isRequired: false,
+            key: 'end_date',
+        },
+        {
+            isRequired: false,
+            key: 'submitter',
+        },
+        {
+            isRequired: false,
+            key: 'submitter_team',
+        },
+        {
+            isRequired: false,
+            key: 'ignored',
+        },
+        {
+            isRequired: false,
+            key: 'entity',
+        },
+        {
+            isRequired: false,
+            key: 'fields',
+        },
+        {
+            isRequired: false,
+            key: 'form',
+        },
+    ],
+};
+export const entityDuplicatesDetailsPath = {
+    baseUrl: baseUrls.entityDuplicateDetails,
+    permissions: [
+        'iaso_entity_duplicates_read',
+        'iaso_entity_duplicates_write',
+    ],
+    component: props => <DuplicateDetails {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        // ...paginationPathParams.map(p => ({
+        //     ...p,
+        //     isRequired: true,
+        // })),
+        {
+            isRequired: false,
+            key: 'entities',
+        },
+    ],
+};
 export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
@@ -832,7 +1000,7 @@ export const planningPath = {
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_assignments'],
+    permissions: ['iaso_planning'],
     component: props => <Assignments {...props} />,
     params: [
         {
@@ -866,6 +1034,10 @@ export const assignmentsPath = {
         {
             isRequired: false,
             key: 'order',
+        },
+        {
+            isRequired: false,
+            key: 'search',
         },
     ],
 };
@@ -1047,8 +1219,12 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
+    entityDuplicatesPath,
+    entityDuplicatesDetailsPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,
     workflowsDetailPath,
+    registryPath,
+    registryDetailPath,
 ];

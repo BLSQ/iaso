@@ -1,34 +1,49 @@
 import csv
+import datetime as dt
 import functools
 import json
-import datetime as dt
-from datetime import timedelta, datetime, date
-from typing import Any, Optional
 from collections import defaultdict
+from datetime import timedelta, datetime
 from functools import lru_cache
 from logging import getLogger
-from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
-from django.views.decorators.cache import cache_page
-from django.utils.decorators import method_decorator
+from typing import Any, List, Optional, Union
+from django.db.models.query import QuerySet
+from drf_yasg.utils import swagger_auto_schema, no_body
+from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
+from django.http import FileResponse
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django.utils.timezone import now, make_aware
+from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
+from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from django.conf import settings
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.api.common import (
+    CSVExportMixin,
+    HasPermission,
+    ModelViewSet,
+    DeletionFilterBackend,
+    CONTENT_TYPE_XLSX,
+    CONTENT_TYPE_CSV,
+)
 from iaso.models import OrgUnit
+from plugins.polio.serializers import (
+    ConfigSerializer,
+    CountryUsersGroupSerializer,
+    ExportCampaignSerializer,
+)
 from plugins.polio.serializers import (
     OrgUnitSerializer,
     CampaignSerializer,
@@ -43,10 +58,8 @@ from plugins.polio.serializers import (
     ListCampaignSerializer,
     CalendarCampaignSerializer,
 )
-from plugins.polio.serializers import (
-    CountryUsersGroupSerializer,
-)
 from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
+from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from .forma import (
     FormAStocksViewSetV2,
     make_orgunits_cache,
@@ -58,16 +71,13 @@ from .models import (
     Campaign,
     Config,
     LineListImport,
-    SpreadSheetImport,
     Round,
     CampaignGroup,
     CampaignScope,
     RoundScope,
 )
 from .models import CountryUsersGroup
-from .preparedness.calculator import preparedness_summary
-from .preparedness.parser import get_preparedness
-from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
+from .preparedness.summary import get_or_set_preparedness_cache_for_round
 
 logger = getLogger(__name__)
 
@@ -94,7 +104,7 @@ class PolioOrgunitViewSet(ModelViewSet):
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 
-class CampaignViewSet(ModelViewSet):
+class CampaignViewSet(ModelViewSet, CSVExportMixin):
     """Main endpoint for campaign.
 
     GET (Anonymously too)
@@ -134,6 +144,9 @@ class CampaignViewSet(ModelViewSet):
     # in this case we use a restricted serializer with less field
     # notably not the url that we want to remain private.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    exporter_serializer_class = ExportCampaignSerializer
+    export_filename = "campaigns_list_{date}.csv"
+    use_field_order = False
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
@@ -234,7 +247,7 @@ class CampaignViewSet(ModelViewSet):
             today = dt.date.today()
             return today.year
 
-    def get_calendar_data(self: Any, year: int, params: Any) -> Any:
+    def get_calendar_data(self: "CampaignViewSet", year: int, params: Any) -> Any:
         """
         Returns filtered rounds from database
 
@@ -248,7 +261,6 @@ class CampaignViewSet(ModelViewSet):
         countries = params.get("countries") if params.get("countries") is not None else None
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
-        order_by = params.get("order") if params.get("order") is not None else None
         search = params.get("search")
         rounds = Round.objects.filter(started_at__year=year)
         # Test campaigns should not appear in the xlsx calendar
@@ -267,7 +279,7 @@ class CampaignViewSet(ModelViewSet):
         return self.loop_on_rounds(self, rounds)
 
     @staticmethod
-    def loop_on_rounds(self: Any, rounds: Any) -> list:
+    def loop_on_rounds(self: "CampaignViewSet", rounds: Union[QuerySet, List[Round]]) -> list:
         """
         Returns formatted rounds
 
@@ -281,40 +293,83 @@ class CampaignViewSet(ModelViewSet):
         for round in rounds:
             if round.campaign is not None:
                 if round.campaign.country is not None:
-                    if not any(d["country_id"] == round.campaign.country.id for d in data_row):
-                        row = {"country_id": round.campaign.country.id, "country_name": round.campaign.country.name}
+                    campaign = round.campaign
+                    country = campaign.country
+                    if not any(d["country_id"] == country.id for d in data_row):
+                        row = {"country_id": country.id, "country_name": country.name}
                         month = round.started_at.month
                         row["rounds"] = {}
                         row["rounds"][str(month)] = []
-                        row["rounds"][str(month)].append(self.get_round(round))
+                        row["rounds"][str(month)].append(self.get_round(round, campaign, country))
                         data_row.append(row)
                     else:
-                        row = [sub for sub in data_row if sub["country_id"] == round.campaign.country.id][0]
+                        row = [sub for sub in data_row if sub["country_id"] == country.id][0]
                         row_index = data_row.index(row)
                         if row is not None:
                             month = round.started_at.month
                             if str(month) in data_row[row_index]["rounds"]:
-                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
+                                data_row[row_index]["rounds"][str(month)].append(
+                                    self.get_round(round, campaign, country)
+                                )
                             else:
                                 data_row[row_index]["rounds"][str(month)] = []
-                                data_row[row_index]["rounds"][str(month)].append(self.get_round(round))
-
+                                data_row[row_index]["rounds"][str(month)].append(
+                                    self.get_round(round, campaign, country)
+                                )
         return data_row
 
-    @staticmethod
-    def get_round(round):
+    def get_round(self: "CampaignViewSet", round: Round, campaign: Campaign, country: OrgUnit) -> dict:
         started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
         ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
-        obr_name = round.campaign.obr_name if round.campaign.obr_name is not None else ""
-        vacine = round.campaign.vacine if round.campaign.vacine is not None else ""
+        obr_name = campaign.obr_name if campaign.obr_name is not None else ""
+        vacine = self.get_campain_vaccine(round, campaign)
         round_number = round.number if round.number is not None else ""
+        # count all districts in the country
+        country_districts_count = country.descendants().filter(org_unit_type__category="DISTRICT").count()
+        # count disticts related to the round
+        round_districts_count = campaign.get_districts_for_round_number(round_number).count() if round_number else 0
+        districts_exists = country_districts_count > 0 and round_districts_count > 0
+        # check if country districts is equal to round districts
+        if districts_exists:
+            nid_or_snid = "NID" if country_districts_count == round_districts_count else "sNID"
+        else:
+            nid_or_snid = ""
+
+        # percentage target population
+        percentage_covered_target_population = (
+            round.percentage_covered_target_population if round.percentage_covered_target_population is not None else ""
+        )
+
+        # target population
+        target_population = round.target_population if round.target_population is not None else ""
+
         return {
             "started_at": started_at,
             "ended_at": ended_at,
             "obr_name": obr_name,
             "vacine": vacine,
             "round_number": round_number,
+            "percentage_covered_target_population": percentage_covered_target_population,
+            "target_population": target_population,
+            "nid_or_snid": nid_or_snid,
         }
+
+    def get_campain_vaccine(self: "CampaignViewSet", round: Round, campain: Campaign) -> str:
+        if campain.separate_scopes_per_round:
+            round_scope_vaccines = []
+
+            scopes = round.scopes
+            if scopes.count() < 1:
+                return ""
+            # Loop on round scopes
+            for scope in scopes.all():
+                round_scope_vaccines.append(scope.vaccine)
+            return ", ".join(round_scope_vaccines)
+        else:
+            if campain.vaccines:
+                return campain.vaccines
+
+            return ""
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):
@@ -442,6 +497,7 @@ Timeline tracker Automated message
         if cached_response:
             return cached_response
 
+        # noinspection SqlResolve
         round_scope_queryset = campaigns.filter(separate_scopes_per_round=True).annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
@@ -454,6 +510,7 @@ where polio_round.campaign_id = polio_campaign.id""",
             )
         )
         # For campaign scope
+        # noinspection SqlResolve
         campain_scope_queryset = campaigns.filter(separate_scopes_per_round=False).annotate(
             geom=RawSQL(
                 """select st_asgeojson(st_simplify(st_union(st_buffer(iaso_orgunit.simplified_geom::geometry, 0)), 0.01)::geography)
@@ -495,6 +552,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         url_path="v2/merged_shapes.geojson",
     )
     def shapes_v2(self, request):
+        "Deprecated, should return the same format as shapes v3, kept for comparison"
         # FIXME: The cache ignore all the filter parameter which will return wrong result if used
         key_name = "{0}-geo_shapes_v2".format(request.user.id)
 
@@ -563,8 +621,8 @@ where group_id = polio_roundscope.group_id""",
             )
         )
 
+        scope: RoundScope
         for scope in round_scopes:
-            scope: RoundScope
             if scope.geom:
                 feature = {
                     "type": "Feature",
@@ -583,6 +641,25 @@ where group_id = polio_roundscope.group_id""",
         res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
+        return JsonResponse(res)
+
+    @action(
+        methods=["GET", "HEAD"],  # type: ignore # HEAD is missing in djangorestframework-stubs
+        detail=False,
+        url_path="v3/merged_shapes.geojson",
+    )
+    def shapes_v3(self, request):
+        campaigns = self.filter_queryset(self.get_queryset())
+        # Remove deleted campaigns
+        campaigns = campaigns.filter(deleted_at=None)
+        campaigns = campaigns.only("geojson")
+        features = []
+        for c in campaigns:
+            if c.geojson:
+                features.extend(c.geojson)
+
+        res = {"type": "FeatureCollection", "features": features}
+
         return JsonResponse(res)
 
 
@@ -613,101 +690,22 @@ class LineListImportViewSet(ModelViewSet):
     def get_queryset(self):
         return LineListImport.objects.all()
 
-
-DAYS_EVOLUTION = [
-    # day before, target in percent
-    (1, 90),
-    (3, 85),
-    (7, 80),
-    (14, 60),
-    (21, 40),
-    (28, 20),
-]
-
-
-def score_for_x_day_before(ssi_for_campaign, ref_date: date, n_day: int):
-    day = ref_date - timedelta(days=n_day)
-    try:
-        ssi = ssi_for_campaign.filter(created_at__date=day).last()
-    except SpreadSheetImport.DoesNotExist:
-        return None, day, None
-    try:
-        preparedness = get_preparedness(ssi.cached_spreadsheet)
-        summary = preparedness_summary(preparedness)
-        score = summary["overall_status_score"]
-    except Exception as e:
-        return None, day, None
-    return ssi.created_at, day, score
-
-
-def history_for_campaign(ssi_qs, round: Round):
-    ref_date = round.started_at
-    if not ref_date:
-        return {"error": f"Please configure a start date for the round {round}"}
-    r = []
-    for n_day, target in DAYS_EVOLUTION:
-        sync_time, day, score = score_for_x_day_before(ssi_qs, ref_date, n_day)
-        r.append(
-            {
-                "days_before": n_day,
-                "expected_score": target,
-                "preparedness_score": score,
-                "date": day,
-                "sync_time": sync_time,
-            }
-        )
-    return r
-
-
-def _make_prep(c: Campaign, round: Round):
-    url = round.preparedness_spreadsheet_url
-    if not url:
-        return None
-    campaign_prep = {
-        "campaign_id": c.id,
-        "campaign_obr_name": c.obr_name,
-        "indicators": {},
-        "round": f"Round{round.number}",
-        "round_id": round.id,
-        "round_start": round.started_at,
-        "round_end": round.ended_at,
-    }
-    try:
-        spread_id = extract_id_from_url(url)
-        ssi_qs = SpreadSheetImport.objects.filter(spread_id=spread_id)
-
-        if not ssi_qs:
-            # No import yet
-            campaign_prep["status"] = "not_sync"
-            campaign_prep["details"] = "This spreadsheet has not been synchronised yet"
-            return campaign_prep
-        # FIXME: what if ssi_qs.last() is None?
-        campaign_prep["date"] = ssi_qs.last().created_at  # type: ignore
-        cs = ssi_qs.last().cached_spreadsheet  # type: ignore
-        last_p = get_preparedness(cs)
-        campaign_prep.update(preparedness_summary(last_p))
-        if round.number != last_p["national"]["round"]:
-            logger.info(f"Round mismatch on {c} {round}")
-
-        campaign_prep["history"] = history_for_campaign(ssi_qs, round)
-    except Exception as e:  # FIXME: too broad Exception
-        campaign_prep["status"] = "error"
-        campaign_prep["details"] = str(e)
-        logger.exception(e)
-    return campaign_prep
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=["get"], url_path="getsample")
+    def download_sample_csv(self, request):
+        return FileResponse(open("plugins/polio/fixtures/linelist_template.xls", "rb"))
 
 
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
-
         r = []
-        qs = Campaign.objects.all()
+        qs = Campaign.objects.all().prefetch_related("rounds")
         if request.query_params.get("campaign"):
             qs = qs.filter(obr_name=request.query_params.get("campaign"))
 
         for c in qs:
             for round in c.rounds.all():
-                p = _make_prep(c, round)
+                p = get_or_set_preparedness_cache_for_round(c, round)
                 if p:
                     r.append(p)
         return Response(r)
@@ -752,7 +750,6 @@ class IMStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-
         requested_country = request.GET.get("country_id", None)
         no_cache = request.GET.get("no_cache", "false") == "true"
 
@@ -859,7 +856,12 @@ class IMStatsViewSet(viewsets.ViewSet):
                 .prefetch_related("parent")
             )
             district_dict = _build_district_cache(districts_qs)
-            forms = get_url_content(country_config["url"], country_config["login"], country_config["password"])
+            forms = get_url_content(
+                country_config["url"],
+                country_config["login"],
+                country_config["password"],
+                minutes=country_config.get("minutes", 60 * 24 * 10),
+            )
             debug_response = set()
             for form in forms:
                 form_count += 1
@@ -1095,18 +1097,9 @@ def handle_ona_request_with_key(request, key, country_id=None):
         cid = int(country_id) if (country_id and country_id.isdigit()) else None
         if country_id is not None and config.get("country_id", None) != cid:
             continue
-        forms = get_url_content(
-            url=config["url"] + "?date_created__month__lte=24",
-            login=config["login"],
-            password=config["password"],
-            minutes=config.get("minutes", 60),
-        )
-        if not forms:
-            emails = Config.objects.filter(slug="vaccines_emails")
-            if emails:
-                send_vaccines_notification_email(config["login"], emails)
-            continue
+
         country = OrgUnit.objects.get(id=config["country_id"])
+
         facilities = (
             OrgUnit.objects.hierarchy(country)
             .filter(org_unit_type_id__category="HF")
@@ -1114,12 +1107,32 @@ def handle_ona_request_with_key(request, key, country_id=None):
             .prefetch_related("parent")
         )
         cache = make_orgunits_cache(facilities)
+        logger.info(f"vaccines country cache len {len(cache)}")
         # Add fields to speed up detection of campaign day
         campaign_qs = campaigns.filter(country_id=country.id).annotate(
             last_start_date=Max("rounds__started_at"),
             start_date=Min("rounds__started_at"),
             end_date=Max("rounds__ended_at"),
         )
+
+        # If all the country's campaigns has been over for more than five day, don't fetch submission from remote server
+        # use cache
+        last_campaign_date_agg = campaign_qs.aggregate(last_date=Max("end_date"))
+        last_campaign_date: Optional[dt.date] = last_campaign_date_agg["last_date"]
+        prefer_cache = last_campaign_date and (last_campaign_date + timedelta(days=5)) < dt.date.today()
+        forms = get_url_content(
+            url=config["url"],
+            login=config["login"],
+            password=config["password"],
+            minutes=config.get("minutes", 60),
+            prefer_cache=prefer_cache,
+        )
+        if not forms:
+            emails = Config.objects.filter(slug="vaccines_emails")
+            if emails:
+                send_vaccines_notification_email(config["login"], emails)
+            continue
+        logger.info(f"vaccines  {country.name}  forms: {len(forms)}")
 
         for form in forms:
             try:
@@ -1185,7 +1198,6 @@ def handle_ona_request_with_key(request, key, country_id=None):
     if as_csv:
         response = HttpResponse(content_type=CONTENT_TYPE_CSV)
         writer = csv.writer(response)
-        i = 1
         for item in res:
             writer.writerow(item)
         return response
@@ -1638,6 +1650,16 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
+@swagger_auto_schema(tags=["polio-configs"])
+class ConfigViewSet(ModelViewSet):
+    http_method_names = ["get"]
+    serializer_class = ConfigSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return Config.objects.filter(users=self.request.user)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -1656,3 +1678,4 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")

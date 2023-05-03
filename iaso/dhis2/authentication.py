@@ -1,7 +1,7 @@
 import requests
 from django.contrib.auth import login
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from requests.auth import HTTPBasicAuth
 

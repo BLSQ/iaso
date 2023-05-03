@@ -1,7 +1,6 @@
-from time import time
 from copy import deepcopy
+from time import time
 from typing import Optional, List
-
 
 from django.db import transaction
 
@@ -66,7 +65,7 @@ def org_units_bulk_update(
             # TODO: investigate: can the user be anonymous on next line?
             profile = user.iaso_profile  # type: ignore
             base_queryset = queryset
-            queryset = OrgUnit.objects.none()
+            queryset = OrgUnit.objects.none()  # type: ignore
             for search in searches:
                 search_queryset = build_org_units_queryset(base_queryset, search, profile)
                 queryset = queryset.union(search_queryset)
@@ -75,7 +74,7 @@ def org_units_bulk_update(
         raise Exception("No matching org unit found")
 
     # Assure that none of the OrgUnit we are modifying is in a read only data source
-    # ? Should not this be done in the save() or in a constraint?
+    # ? Shouldn't this be done in the save() or in a constraint?
     read_only_data_sources = DataSource.objects.filter(
         id__in=queryset.values_list("version__data_source", flat=True), read_only=True
     )

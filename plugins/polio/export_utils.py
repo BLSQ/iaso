@@ -1,9 +1,10 @@
+import calendar
+import datetime as dt
+from typing import Any, Optional, Union
+
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
 from openpyxl.styles.borders import Border, Side
-import datetime as dt
-import calendar
-from typing import Any, Optional, Union
 
 CALENDAR_COLUMNS_CELL_WIDTH = 25.75
 CALENDAR_FIRST_COLUMN_CELL_WIDTH = 35.00
@@ -117,7 +118,14 @@ def get_cell_data(round: Any) -> str:
     cell_data = obr_name + "\n"
     cell_data += "Round " + str(round_number) + "\n"
     cell_data += "Dates: " + started_at + " - " + ended_at + "\n"
-    cell_data += round["vacine"] if round["vacine"] is not None else ""
+    cell_data += round["vacine"] + "\n" if round["vacine"] is not None else ""
+    cell_data += "Target population: " + str(round["target_population"]) + "\n" if round["target_population"] else ""
+    cell_data += (
+        "Covered target population: " + str(round["percentage_covered_target_population"]) + "%\n"
+        if round["percentage_covered_target_population"]
+        else ""
+    )
+    cell_data += "Geographic scope: " + round["nid_or_snid"] if round["nid_or_snid"] else ""
 
     return cell_data
 
@@ -217,7 +225,6 @@ def cell_border(cell: Any, all: bool = True, bottom_only: bool = False) -> Any:
             returns:
                 cell (openpyxl.cell): a sheet openpyxl.cell object
     """
-    border = None
     if all:
         border = Border(
             left=Side(style="thin"),

@@ -61,7 +61,7 @@ export const Instances: FunctionComponent<Props> = ({
 
     const { data: formsList, isFetching: isFetchingForms } = useGetForms();
 
-    const { url: apiUrl } = useGetInstanceApi(params, currentType?.id);
+    const { url: apiUrl } = useGetInstanceApi(params, currentType?.id, 'VALID');
     const { data, isFetching: isFetchingList } = useGetInstances(
         params,
         currentType?.id,

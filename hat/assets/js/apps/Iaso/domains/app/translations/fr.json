@@ -403,6 +403,7 @@
     "iaso.label.forms": "Formulaires",
     "iaso.label.formSelectHelperText": "Veuillez sélectioner un projet avent de sélectioner des formulaires",
     "iaso.label.from": "De",
+    "iaso.label.fromOrgunit": "(de l'unité d'organisation)",
     "iaso.label.geo_json": "Forme geo json",
     "iaso.label.geographicalData": "Données géographiques",
     "iaso.label.group": "Groupe",

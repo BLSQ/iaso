@@ -542,6 +542,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.accuracy',
         defaultMessage: 'Accuracy',
     },
+    fromOrgUnit: {
+        id: 'iaso.label.fromOrgunit',
+        defaultMessage: '(from Org Unit)',
+    },
 });
 
 export default MESSAGES;

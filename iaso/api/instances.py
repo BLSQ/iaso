@@ -316,6 +316,21 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.order_by(*orders)
         # IA-1023 = allow to sort instances by form version
 
+        if filters["should_compute_sums_avgs"] and filters["org_unit_id"]:
+            #needs to compute the sums and avgs as defined on the form
+            #needs to also have the number of case where no data was found
+            #add this as metadata to the response
+            #example query
+            # SELECT 
+            #     AVG(COALESCE((data->>'field1')::numeric, 0)) AS avg_field1,
+            #     SUM(COALESCE((data->>'field1')::numeric, 0)) AS sum_field1,
+            #     COUNT(*) - COUNT(data->'field1')  AS empty_values_count
+
+            # Pour une Somme on peut COALESCE -> 0
+            # Pour une Moyenne on devrait rejeter la valeur ???
+
+
+
         # TODO: this function would deserve some more thorough refactor, see the discussion at
         #  https://bluesquare.atlassian.net/browse/IA-1547. Some things were cleaned already, but it would make sense
         #  to change it so:

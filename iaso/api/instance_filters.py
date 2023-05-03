@@ -47,6 +47,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "to_date": req.get("dateTo", None),
         "show_deleted": show_deleted,
         "entity_id": req.get("entityId", None),
+        "should_compute_sums_avgs": req.get("shouldComputeSumsAvgs", None),
         "json_content": json_content,
     }
 

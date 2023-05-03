@@ -231,6 +231,7 @@
     "iaso.formversions.periodError": "Période non valide",
     "iaso.formversions.update": "Modifier version {version_id}",
     "iaso.group.dialog.deleteText": "Cette opération ne peut-être annulée",
+    "iaso.groups.blockOfCountries": "Groupe de pays",
     "iaso.groups.create": "Créer un groupe",
     "iaso.groups.dialog.delete": "Etes-cous certain de vouloir effacer ce groupe?",
     "iaso.groups.dialog.deleteText": "Cette opération est définitive.",

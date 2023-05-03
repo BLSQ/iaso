@@ -376,7 +376,9 @@ class Group(models.Model):
     source_ref = models.TextField(null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
     domain = models.CharField(max_length=10, choices=GROUP_DOMAIN, null=True, blank=True)
-
+    block_of_countries = models.BooleanField(
+        default=False
+    )  # This field is used to mark a group containing only countries
     # The migration 0086_add_version_constraints add a constraint to ensure that the source version
     # is the same between the orgunit and the group
     source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
@@ -401,6 +403,7 @@ class Group(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "source_version": self.source_version_id,
+            "block_of_countries": self.block_of_countries,  # This field is used to mark a group containing only countries
         }
 
         if with_counts:

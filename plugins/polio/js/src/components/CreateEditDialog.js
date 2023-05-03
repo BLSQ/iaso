@@ -21,6 +21,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
+    BackdropClickModal,
 } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -52,7 +53,6 @@ import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
 import { compareArraysValues } from '../utils/compareArraysValues.ts';
 import { PolioDialogTabs } from './MainDialog/PolioDialogTabs.tsx';
-import { BackdropClickModal } from '../../../../../hat/assets/js/apps/Iaso/components/dialogs/BackdropClickModal/BackdropClickModal.tsx';
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();

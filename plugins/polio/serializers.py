@@ -1084,6 +1084,7 @@ class ExportCampaignSerializer(CampaignSerializer):
             "is_test",
             "budget_current_state_key",
             "budget_current_state_label",
+            "ra_completed_at_WFEDITABLE",
             "who_sent_budget_at_WFEDITABLE",
             "unicef_sent_budget_at_WFEDITABLE",
             "gpei_consolidated_budgets_at_WFEDITABLE",

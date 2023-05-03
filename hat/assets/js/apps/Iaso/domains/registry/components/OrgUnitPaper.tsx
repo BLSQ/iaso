@@ -163,6 +163,7 @@ export const OrgUnitPaper: FunctionComponent<Props> = ({
                     )}
                 >
                     <OrgUnitChildrenMap
+                        params={params}
                         orgUnit={orgUnit}
                         subOrgUnitTypes={subOrgUnitTypes}
                         orgUnitChildren={orgUnitMapChildren}

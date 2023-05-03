@@ -22,7 +22,6 @@ class Command(BaseCommand):
         task = FakeTask(iaso_logger)
 
         for i, campaign in enumerate(campaigns):
-
             task.report_progress_and_stop_if_killed(
                 progress_value=i,
                 end_value=total,
@@ -30,7 +29,7 @@ class Command(BaseCommand):
             )
 
             latest_round_end = campaign.rounds.order_by("ended_at").last()
-            if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at > now().date():
+            if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at < now().date():
                 print(f"Campaign {campaign} is finished, skipping")
                 continue
             print(f"Email for {campaign.obr_name}")

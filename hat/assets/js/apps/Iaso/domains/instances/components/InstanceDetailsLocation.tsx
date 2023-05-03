@@ -29,10 +29,24 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    let orgUnitTree: OrgUnit | any[] = [];
-    if (currentInstance.org_unit) {
-        orgUnitTree = getOrgUnitsTree(currentInstance.org_unit);
-    }
+    const orgUnitTree: OrgUnit[] = currentInstance.org_unit
+        ? getOrgUnitsTree(currentInstance.org_unit)
+        : [];
+
+    const {
+        org_unit: orgUnit,
+        latitude,
+        longitude,
+        altitude,
+        accuracy,
+    } = currentInstance;
+
+    const hasOrgunitCoordinatesDetails = orgUnit.latitude && orgUnit.longitude;
+    const hasFormCoordinatesDetails = latitude && longitude;
+    const hasOrgunitAltitude =
+        orgUnit.altitude !== null && orgUnit.altitude !== 0;
+    const hasFormAltitude = altitude !== null && altitude !== 0;
+    const hasAccuracy = accuracy;
 
     return (
         <>
@@ -50,7 +64,7 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         value={<OrgUnitDisplay orgUnit={ou} withType={false} />}
                     />
                 ))}
-                {currentInstance.org_unit && (
+                {orgUnit && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.source_ref)}
                         valueTitle={
@@ -66,36 +80,38 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         }
                     />
                 )}
-                {currentInstance.org_unit &&
-                    currentInstance.org_unit.groups && (
-                        <InstanceDetailsField
-                            label={formatMessage(MESSAGES.groups)}
-                            value={
-                                currentInstance.org_unit.groups.length > 0
-                                    ? currentInstance.org_unit.groups
-                                          .map(g => g.name)
-                                          .join(', ')
-                                    : null
-                            }
-                        />
-                    )}
-                {!currentInstance.latitude &&
-                    !currentInstance.longitude &&
-                    currentInstance.org_unit &&
-                    currentInstance.org_unit.latitude &&
-                    currentInstance.org_unit.longitude && (
+                {orgUnit && orgUnit.groups && (
+                    <InstanceDetailsField
+                        label={formatMessage(MESSAGES.groups)}
+                        value={
+                            currentInstance.org_unit.groups.length > 0
+                                ? currentInstance.org_unit.groups
+                                      .map(g => g.name)
+                                      .join(', ')
+                                : null
+                        }
+                    />
+                )}
+                {orgUnit &&
+                    hasOrgunitCoordinatesDetails &&
+                    !hasFormCoordinatesDetails && (
                         <>
                             <InstanceDetailsField
                                 label={formatMessage(MESSAGES.latitude)}
-                                value={currentInstance.org_unit.latitude}
+                                value={`${
+                                    currentInstance.org_unit.latitude
+                                } ${formatMessage(MESSAGES.fromOrgUnit)}`}
                             />
                             <InstanceDetailsField
                                 label={formatMessage(MESSAGES.longitude)}
-                                value={currentInstance.org_unit.longitude}
+                                value={`${
+                                    currentInstance.org_unit.longitude
+                                } ${formatMessage(MESSAGES.fromOrgUnit)}`}
                             />
                         </>
                     )}
-                {currentInstance.latitude && currentInstance.longitude && (
+
+                {hasFormCoordinatesDetails && (
                     <>
                         <InstanceDetailsField
                             label={formatMessage(MESSAGES.latitude)}
@@ -107,20 +123,26 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                         />
                     </>
                 )}
-                {currentInstance.altitude !== null &&
-                currentInstance.altitude !== 0 ? (
+
+                {hasFormAltitude && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.altitude)}
                         value={currentInstance.altitude}
                     />
-                ) : (
-                    <InstanceDetailsField
-                        label={formatMessage(MESSAGES.altitude)}
-                        value={currentInstance.org_unit?.altitude}
-                    />
                 )}
 
-                {currentInstance.accuracy && (
+                {!hasFormAltitude &&
+                    hasOrgunitAltitude &&
+                    !hasFormCoordinatesDetails && (
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.altitude)}
+                            value={`${orgUnit.altitude} ${formatMessage(
+                                MESSAGES.fromOrgUnit,
+                            )}`}
+                        />
+                    )}
+
+                {hasAccuracy && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.accuracy)}
                         value={currentInstance.accuracy}
@@ -128,19 +150,19 @@ const InstanceDetailsLocation: React.FunctionComponent<Props> = ({
                 )}
             </div>
 
-            {currentInstance.latitude && currentInstance.longitude && (
+            {hasFormCoordinatesDetails && (
                 <MarkerMap
                     latitude={currentInstance.latitude}
                     longitude={currentInstance.longitude}
                 />
             )}
-            {!currentInstance.latitude &&
-                !currentInstance.longitude &&
-                currentInstance.org_unit.latitude &&
-                currentInstance.org_unit.longitude && (
+
+            {!hasFormCoordinatesDetails &&
+                orgUnit.latitude &&
+                orgUnit.longitude && (
                     <MarkerMap
-                        latitude={currentInstance.org_unit.latitude}
-                        longitude={currentInstance.org_unit.longitude}
+                        latitude={orgUnit.latitude}
+                        longitude={orgUnit.longitude}
                     />
                 )}
         </>

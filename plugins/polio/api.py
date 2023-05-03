@@ -188,7 +188,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:
-            campaigns = campaigns.filter(initial_org_unit__groups__in=org_unit_groups.split(","))
+            campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
 
         return campaigns.distinct()
 
@@ -281,7 +281,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
         if org_unit_groups:
-            rounds = rounds.filter(campaign__initial_org_unit__groups__in=org_unit_groups.split(","))
+            rounds = rounds.filter(campaign__country__groups__in=org_unit_groups.split(","))
 
         return self.loop_on_rounds(self, rounds)
 

@@ -42,7 +42,7 @@ class GroupSerializer(serializers.ModelSerializer):
             "org_unit_count",
             "created_at",
             "updated_at",
-            "block_of_countries",
+            "block_of_countries",  # It's used to mark a group containing only countries
         ]
         read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
         ref_name = "iaso_group_serializer"
@@ -106,7 +106,7 @@ class GroupsViewSet(ModelViewSet):
                 queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
 
         block_of_countries = self.request.GET.get("blockOfCountries", None)
-        if block_of_countries:
+        if block_of_countries:  # Filter only org unit groups containing only countries as orgUnits
             queryset = queryset.filter(block_of_countries=block_of_countries)
 
         search = self.request.query_params.get("search", None)

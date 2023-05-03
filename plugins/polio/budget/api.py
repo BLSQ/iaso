@@ -62,7 +62,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
         org_unit_groups = self.request.query_params.get("orgUnitGroups")
         if org_unit_groups:
-            queryset = queryset.filter(initial_org_unit__groups__in=org_unit_groups.split(","))
+            queryset = queryset.filter(country__groups__in=org_unit_groups.split(","))
 
         return queryset
 

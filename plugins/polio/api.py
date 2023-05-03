@@ -33,7 +33,6 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from iaso.api.common import (
     CSVExportMixin,
-    HasPermission,
     ModelViewSet,
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
@@ -67,7 +66,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content, CustomFilterBackend
-from .management.commands.vaccines_email import send_vaccines_notification_email
+from .vaccines_email import send_vaccines_notification_email
 from .models import (
     Campaign,
     Config,
@@ -1132,8 +1131,10 @@ def handle_ona_request_with_key(request, key, country_id=None):
         except HTTPError:
             # Send an email in case the WHO server returns an error.
             logger.exception(f"error refreshing ona data for {country.name}, skipping country")
-            emails = Config.objects.filter(slug="vaccines_emails")
-            if emails:
+            email_config = Config.objects.filter(slug="vaccines_emails").first()
+
+            if email_config and email_config.content:
+                emails = email_config.content
                 send_vaccines_notification_email(config["login"], emails)
             continue
         logger.info(f"vaccines  {country.name}  forms: {len(forms)}")

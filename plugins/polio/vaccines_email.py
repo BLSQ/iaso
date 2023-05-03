@@ -1,4 +1,5 @@
 from logging import getLogger
+from typing import List
 
 from django.conf import settings
 from django.core.mail import send_mail
@@ -6,10 +7,8 @@ from django.core.mail import send_mail
 logger = getLogger(__name__)
 
 
-def send_vaccines_notification_email(country_login, emails):
+def send_vaccines_notification_email(country_login: str, emails: List[str]):
     from_email = settings.DEFAULT_FROM_EMAIL
-
-    emails = [email.content for email in emails]
 
     email_text = f""" This is a warning message,
     

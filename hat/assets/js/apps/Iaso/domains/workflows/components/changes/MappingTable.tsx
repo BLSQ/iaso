@@ -147,16 +147,18 @@ export const MappingTable: FunctionComponent<Props> = ({
             target: undefined,
             source: undefined,
         });
+        setIsTouched(true);
         setMappingArray(newMappings);
-    }, [mappingArray, setMappingArray]);
+    }, [mappingArray, setIsTouched, setMappingArray]);
 
     const handleDelete = useCallback(
         (index: number) => {
             const newMappings = cloneDeep(mappingArray);
             newMappings.splice(index, 1);
+            setIsTouched(true);
             setMappingArray(newMappings);
         },
-        [mappingArray, setMappingArray],
+        [mappingArray, setIsTouched, setMappingArray],
     );
 
     const sourceOptions = useMemo(

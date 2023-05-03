@@ -145,7 +145,6 @@ const Modal: FunctionComponent<Props> = ({
     const allowConfirm =
         isTouched &&
         isValidMapping &&
-        Boolean(form) &&
         mappingArray.length > 0 &&
         !mappingArray.find(mapping => !mapping.target || !mapping.source);
 

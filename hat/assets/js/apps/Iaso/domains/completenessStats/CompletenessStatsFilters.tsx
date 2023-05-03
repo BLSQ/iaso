@@ -148,7 +148,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         options={groups}
                         loading={isFetchingGroups}
                     />
-                    <DisplayIfUserHasPerm permission="iaso.permissions.planning">
+                    <DisplayIfUserHasPerm permission="iaso_planning">
                         <InputComponent
                             type="select"
                             multi

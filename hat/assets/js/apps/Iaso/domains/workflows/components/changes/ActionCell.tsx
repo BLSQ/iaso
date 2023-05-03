@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import { Change, ReferenceForm, WorkflowVersionDetail } from '../../types';
+import { Change, ReferenceForm } from '../../types';
 
 import MESSAGES from '../../messages';
 import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
@@ -16,7 +16,7 @@ type Props = {
     targetPossibleFields?: PossibleField[];
     targetPossibleFieldsByVersion?: FormVersion[];
     referenceForm?: ReferenceForm;
-    workflowVersion?: WorkflowVersionDetail;
+    changes?: Change[];
 };
 
 export const ChangesActionCell: FunctionComponent<Props> = ({
@@ -25,7 +25,7 @@ export const ChangesActionCell: FunctionComponent<Props> = ({
     targetPossibleFields,
     targetPossibleFieldsByVersion,
     referenceForm,
-    workflowVersion,
+    changes,
 }) => {
     const { mutate: deleteWorkflowChange } = useDeleteWorkflowChange();
     return (
@@ -37,7 +37,7 @@ export const ChangesActionCell: FunctionComponent<Props> = ({
                 targetPossibleFields={targetPossibleFields}
                 targetPossibleFieldsByVersion={targetPossibleFieldsByVersion}
                 referenceForm={referenceForm}
-                changes={workflowVersion?.changes || []}
+                changes={changes || []}
             />
             <DeleteDialog
                 keyName={`delete-workflow-change-${change.id}`}

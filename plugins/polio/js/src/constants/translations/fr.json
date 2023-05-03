@@ -138,6 +138,7 @@
     "iaso.polio.form.validator.error.endDateBeforeStartDate": "La date de fin ne peut être avant la date de début",
     "iaso.polio.form.validator.error.positiveInteger": "Veuillez remplir avec un nombre entier positif",
     "iaso.polio.form.validator.error.positiveNumber": "Veuillez remplir avec un nombre positif",
+    "iaso.polio.form.validator.error.positiveRangeInteger": "Veuillez remplir avec un nombre entier positif entre 0 et 100",
     "iaso.polio.form.validator.error.startDateAfterEndDate": "La date de début ne peut pas être après la date de fin",
     "iaso.polio.form.validator.error.startDateBeforePreviousEndDate": "La date de début ne peut être avant ou égal à la date de fin du round précédent",
     "iaso.polio.forms.deleteRound": "Effacer round",

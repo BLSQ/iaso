@@ -18,6 +18,13 @@ const mockPage = () => {
     }).as('getDetails');
     cy.intercept(
         'GET',
+        '/api/workflowchanges/?order=updated_at&version_id=12',
+        {
+            fixture: 'workflows/changes.json',
+        },
+    ).as('getChanges');
+    cy.intercept(
+        'GET',
         'api/formversions/?form_id=7&fields=version_id,possible_fields,created_at',
         {
             fixture: 'workflows/possible_fields.json',
@@ -64,6 +71,7 @@ describe('Workflows details', () => {
 
             cy.wait([
                 '@getDetails',
+                '@getChanges',
                 '@getDescriptor',
                 '@getPossibleFields',
             ]).then(() => {
@@ -336,6 +344,7 @@ describe('Workflows details', () => {
 
             cy.wait([
                 '@getDetails',
+                '@getChanges',
                 '@getDescriptor',
                 '@getPossibleFields',
             ]).then(() => {
@@ -391,6 +400,7 @@ describe('Workflows details', () => {
 
             cy.wait([
                 '@getDetails',
+                '@getChanges',
                 '@getDescriptor',
                 '@getPossibleFields',
                 '@getProfile',
@@ -450,7 +460,7 @@ describe('Workflows details', () => {
                 },
             ).as('deleteFollowUp');
 
-            cy.wait('@getDetails').then(() => {
+            cy.wait(['@getDetails', '@getChanges']).then(() => {
                 cy.get('[data-test="follow-ups"]')
                     .find('table tbody tr')
                     .eq(0)
@@ -475,9 +485,6 @@ describe('Workflows details', () => {
                 {
                     method: 'POST',
                     pathname: '/api/workflowchanges/',
-                    query: {
-                        version_id: '12',
-                    },
                 },
                 req => {
                     interceptFlag = true;
@@ -490,6 +497,7 @@ describe('Workflows details', () => {
 
             cy.wait([
                 '@getDetails',
+                '@getChanges',
                 '@getDescriptor',
                 '@getPossibleFields',
             ]).then(() => {
@@ -561,6 +569,7 @@ describe('Workflows details', () => {
 
             cy.wait([
                 '@getDetails',
+                '@getChanges',
                 '@getDescriptor',
                 '@getPossibleFields',
                 '@getProfile',
@@ -725,6 +734,7 @@ describe('Workflows details', () => {
 
             cy.wait([
                 '@getDetails',
+                '@getChanges',
                 '@getDescriptor',
                 '@getPossibleFields',
             ]).then(() => {
@@ -735,6 +745,7 @@ describe('Workflows details', () => {
                         fixture: 'workflows/possible_fields_source.json',
                     },
                 );
+                cy.wait(100);
                 cy.get('[data-test="changes"]')
                     .find('table tbody tr')
                     .eq(0)

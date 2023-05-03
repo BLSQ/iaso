@@ -546,6 +546,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.fromOrgunit',
         defaultMessage: '(from Org Unit)',
     },
+    created_by: {
+        id: 'iaso.label.created_by',
+        defaultMessage: 'Created  by',
+    },
 });
 
 export default MESSAGES;

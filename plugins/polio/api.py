@@ -26,6 +26,7 @@ from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
+from requests import HTTPError
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -1120,14 +1121,17 @@ def handle_ona_request_with_key(request, key, country_id=None):
         last_campaign_date_agg = campaign_qs.aggregate(last_date=Max("end_date"))
         last_campaign_date: Optional[dt.date] = last_campaign_date_agg["last_date"]
         prefer_cache = last_campaign_date and (last_campaign_date + timedelta(days=5)) < dt.date.today()
-        forms = get_url_content(
-            url=config["url"],
-            login=config["login"],
-            password=config["password"],
-            minutes=config.get("minutes", 60),
-            prefer_cache=prefer_cache,
-        )
-        if not forms:
+        try:
+            forms = get_url_content(
+                url=config["url"],
+                login=config["login"],
+                password=config["password"],
+                minutes=config.get("minutes", 60),
+                prefer_cache=prefer_cache,
+            )
+        except HTTPError:
+            # Send an email in case the WHO server returns an error.
+            logger.exception(f"error refreshing ona data for {country.name}, skipping country")
             emails = Config.objects.filter(slug="vaccines_emails")
             if emails:
                 send_vaccines_notification_email(config["login"], emails)

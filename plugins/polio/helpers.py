@@ -4,7 +4,6 @@ from datetime import timedelta
 import requests
 from django.db.models import Q
 from django.utils.timezone import now
-from requests import HTTPError
 from rest_framework import filters
 
 from iaso.models import OrgUnitType, OrgUnit
@@ -28,11 +27,7 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
     if not (has_cache and use_cache):
         logger.info(f"fetching from {url}")
         response = requests.get(url, auth=(login, password))
-        try:
-            response.raise_for_status()
-        except HTTPError:
-            # Return false in case the WHO server returns an error.
-            return False
+        response.raise_for_status()
         cached_response.content = response.text
         logger.info(f"fetched {len(response.content)} bytes")
         cached_response.save()

@@ -45,6 +45,9 @@ class FakeTask:
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
         self.logger.info(progress_message, progress_value, "/", end_value)
 
+    def report_success(self, message):
+        self.logger.info(message)
+
 
 def parse_type_dict(org_unit_type_file_name):
     type_dict = dict()

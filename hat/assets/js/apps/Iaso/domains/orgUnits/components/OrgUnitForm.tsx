@@ -12,12 +12,8 @@ import { commonStyles } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import { useFormState } from '../../../hooks/form';
 import { OrgUnitInfos } from './OrgUnitInfos';
-import {
-    OrgUnit,
-    OrgUnitType,
-    Group,
-    OrgunitInititialState,
-} from '../types/orgUnit';
+import { OrgUnit, Group, OrgunitInititialState } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
 
 const initialFormState = (orgUnit: OrgUnit): OrgunitInititialState => ({
     id: orgUnit.id,
@@ -41,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     orgUnit: OrgUnit;
-    orgUnitTypes: OrgUnitType[];
+    orgUnitTypes: OrgunitType[];
     groups: Group[];
     saveOrgUnit: (
         // eslint-disable-next-line no-unused-vars

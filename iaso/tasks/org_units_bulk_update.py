@@ -65,7 +65,7 @@ def org_units_bulk_update(
             # TODO: investigate: can the user be anonymous on next line?
             profile = user.iaso_profile  # type: ignore
             base_queryset = queryset
-            queryset = OrgUnit.objects.none()
+            queryset = OrgUnit.objects.none()  # type: ignore
             for search in searches:
                 search_queryset = build_org_units_queryset(base_queryset, search, profile)
                 queryset = queryset.union(search_queryset)

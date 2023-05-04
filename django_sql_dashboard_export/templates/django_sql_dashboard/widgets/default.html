@@ -84,7 +84,7 @@
   <p>Duration: {{ result.duration_ms|floatformat:2 }}ms</p>
   {%  if saved_dashboard  %}
   <p>
-      <a href="export/?index={{ result.index }}&format=csv" >Download as CSV 📉</a>
+      <a id="download_as_csv" href="export/?index={{ result.index }}&format=csv" >Download as CSV 📉</a>
   </p>
 {% endif %}
   <!-- templates considered: {{ result.templates|join:", " }} -->
@@ -109,5 +109,13 @@
     ta.insertAdjacentElement("afterend", p);
     p.insertAdjacentElement("afterbegin", button);
   })();
+
+  //otherwise the parameters from the URL are not passed to the download link
+  window.addEventListener('load', function() { 
+    const urlParams = new URLSearchParams(window.location.search);
+    const current_url = document.getElementById('download_as_csv').getAttribute('href');
+    document.getElementById('download_as_csv').setAttribute('href', current_url + '&' + urlParams.toString());
+  });
+
   </script>
 </div>

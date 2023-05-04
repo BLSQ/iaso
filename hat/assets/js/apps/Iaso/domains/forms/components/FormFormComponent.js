@@ -16,6 +16,10 @@ import { fetchAllOrgUnitTypes } from '../../orgUnits/orgUnitTypes/actions';
 import { formatLabel } from '../../instances/utils/index.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
+import { Link } from 'react-router';
+import { History } from '@material-ui/icons';
+import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 
 const styles = theme => ({
     radio: {
@@ -28,9 +32,11 @@ const styles = theme => ({
         flex: '1',
         cursor: 'pointer',
     },
-    linkToChangesLog: {
-        color: theme.palette.primary.main,
-        cursor: 'pointer',
+    // Align the icon with the text
+    linkWithIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5em',
     },
 });
 
@@ -39,10 +45,6 @@ const formatBooleanForRadio = value => {
     if (value === true) return 'true';
     if (value === false) return 'false';
     return null;
-};
-
-const redirectToChangesLog = url => {
-    window.open(url);
 };
 
 const FormForm = ({ currentForm, setFieldValue }) => {
@@ -327,13 +329,23 @@ const FormForm = ({ currentForm, setFieldValue }) => {
             </Grid>
             {currentForm.id.value && (
                 <Grid justifyContent="flex-end" container spacing={2}>
-                    <Typography
-                        className={classes.linkToChangesLog}
-                        variant="overline"
-                        onClick={() => redirectToChangesLog(logsUrl)}
-                    >
-                        {intl.formatMessage(MESSAGES.formChangeLog)}
-                    </Typography>
+                    <DisplayIfUserHasPerm permission={'iaso_submissions'}>
+                        <Grid item>
+                            <Link
+                                className={classes.linkWithIcon}
+                                href={`/dashboard/forms/submissions/formIds/${currentForm.id.value}/tab/list`}
+                            >
+                                <FormatListBulleted />
+                                {intl.formatMessage(MESSAGES.records)}
+                            </Link>
+                        </Grid>
+                    </DisplayIfUserHasPerm>
+                    <Grid item>
+                        <Link href={logsUrl} className={classes.linkWithIcon}>
+                            <History />
+                            {intl.formatMessage(MESSAGES.formChangeLog)}
+                        </Link>
+                    </Grid>
                 </Grid>
             )}
         </>

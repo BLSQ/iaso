@@ -17,7 +17,7 @@ import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
-import { CompletessStats } from '../domains/completenessStats/index.tsx';
+import { CompletenessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/orgUnitTypes';
 import { Beneficiaries } from '../domains/entities/index.tsx';
@@ -36,7 +36,8 @@ import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
-
+import { Registry } from '../domains/registry/index.tsx';
+import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
@@ -418,6 +419,67 @@ export const orgUnitsDetailsPath = {
     ],
 };
 
+export const registryPath = {
+    baseUrl: baseUrls.registry,
+    permissions: ['iaso_registry'],
+    component: props => <Registry {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
+};
+export const registryDetailPath = {
+    baseUrl: baseUrls.registryDetail,
+    permissions: ['iaso_registry'],
+    component: props => <RegistryDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'orgUnitId',
+        },
+        {
+            isRequired: false,
+            key: 'formIds',
+        },
+        {
+            isRequired: false,
+            key: 'columns',
+        },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitListTab',
+        },
+        {
+            isRequired: false,
+            key: 'submissionId',
+        },
+        {
+            isRequired: false,
+            key: 'missingSubmissionVisible',
+        },
+        {
+            isRequired: false,
+            key: 'showTooltip',
+        },
+        {
+            isRequired: false,
+            key: 'isFullScreen',
+        },
+        ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('orgUnitList'),
+    ],
+};
+
 export const linksPath = {
     baseUrl: baseUrls.links,
     permissions: ['iaso_links'],
@@ -539,7 +601,7 @@ export const completenessPath = {
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
     permissions: ['iaso_completeness_stats'],
-    component: props => <CompletessStats {...props} />,
+    component: props => <CompletenessStats {...props} />,
     params: [
         {
             isRequired: false,
@@ -560,7 +622,19 @@ export const completenessStatsPath = {
         },
         {
             isRequired: false,
+            key: 'period',
+        },
+        {
+            isRequired: false,
             key: 'parentId',
+        },
+        {
+            isRequired: false,
+            key: 'planningId',
+        },
+        {
+            isRequired: false,
+            key: 'groupId',
         },
     ],
 };
@@ -1151,4 +1225,6 @@ export const routeConfigs = [
     storageDetailPath,
     workflowsPath,
     workflowsDetailPath,
+    registryPath,
+    registryDetailPath,
 ];

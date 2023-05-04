@@ -46,7 +46,10 @@ export const TargetCell: FunctionComponent<Props> = ({
         if (sourceKey && sourceType) {
             // only use target option of the same type as the source
             newOptions = newOptions.filter(
-                option => option.type === sourceType,
+                option =>
+                    option.type === sourceType ||
+                    sourceType === 'calculate' ||
+                    option.type === 'calculate',
             );
         }
         // remove already selected options

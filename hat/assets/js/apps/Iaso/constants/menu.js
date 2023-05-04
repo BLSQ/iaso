@@ -18,6 +18,7 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
+import MenuBookIcon from '@material-ui/icons/MenuBook';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -95,6 +96,12 @@ const menuItems = defaultSourceId => [
                 }}]`,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: MESSAGES.registry,
+                permissions: paths.registryPath.permissions,
+                key: 'registry',
+                icon: props => <MenuBookIcon {...props} />,
             },
             {
                 label: MESSAGES.groups,

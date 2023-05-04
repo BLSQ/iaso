@@ -34,7 +34,6 @@ import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
-// import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
 import { orgUnitsTableColumns } from './config';
@@ -246,7 +245,13 @@ const OrgUnitDetail = ({ params, router }) => {
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
-    } = useOrgUnitDetailData(isNewOrgunit, params.orgUnitId, setCurrentOrgUnit);
+        parentOrgUnit,
+    } = useOrgUnitDetailData(
+        isNewOrgunit,
+        params.orgUnitId,
+        setCurrentOrgUnit,
+        params.levels,
+    );
 
     const goToRevision = useCallback(
         (orgUnitRevision, onSuccess) => {
@@ -311,11 +316,17 @@ const OrgUnitDetail = ({ params, router }) => {
     );
 
     useEffect(() => {
-        if (isNewOrgunit) {
-            setCurrentOrgUnit(initialOrgUnit);
+        if (isNewOrgunit && !currentOrgUnit) {
+            if (params.levels && parentOrgUnit) {
+                setCurrentOrgUnit({
+                    ...initialOrgUnit,
+                    parent: parentOrgUnit,
+                });
+            } else if (!params.levels) {
+                setCurrentOrgUnit(initialOrgUnit);
+            }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [parentOrgUnit, isNewOrgunit, params.levels, currentOrgUnit]);
 
     // Set levels params in the url
     useEffect(() => {

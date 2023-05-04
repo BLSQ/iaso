@@ -229,7 +229,7 @@ export const useSnackMutation = <
         arg5 = options;
         arg6 = showSucessSnackBar;
         arg7 = ignoreErrorCodes;
-        arg7 = successSnackBar;
+        arg8 = successSnackBar;
     }
     return useBaseSnackMutation<Data, Error, Variables, Context>(
         arg1,

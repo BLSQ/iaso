@@ -25,18 +25,8 @@ const postBudgetStep = (body: Payload): Promise<BudgetStep> => {
     );
     const { links }: { links?: LinkWithAlias[] } = filteredParams;
     if (links) {
-        const filteredLinks = links
-            .filter(link => link.alias && link.url)
-            .map(({ alias, url }) => {
-                return {
-                    alias,
-                    url:
-                        !url.startsWith('http://') ||
-                        !url.startsWith('https://')
-                            ? `https://${url}`
-                            : url,
-                };
-            });
+        const filteredLinks = links.filter(link => link.alias && link.url);
+
         filteredParams.links = filteredLinks;
     }
     const requestBody: PostRequestBody = {

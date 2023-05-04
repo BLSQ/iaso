@@ -1,4 +1,3 @@
-import { useState, useEffect } from 'react';
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
@@ -12,22 +11,31 @@ import { staleTime } from '../../config';
 type Props = {
     dataSourceId?: number;
     sourceVersionId?: number;
+    blockOfCountries?: string;
 };
 
-const makeGroupsQueryParams = ({ dataSourceId, sourceVersionId }) => {
+const makeGroupsQueryParams = ({
+    dataSourceId,
+    sourceVersionId,
+    blockOfCountries,
+}) => {
     if (sourceVersionId) return `?version=${sourceVersionId}`;
     if (dataSourceId) return `?dataSource=${dataSourceId}`;
+    if (blockOfCountries) return `?blockOfCountries=${blockOfCountries}`;
     return '';
 };
 
 export const useGetGroups = ({
     dataSourceId,
     sourceVersionId,
+    blockOfCountries,
 }: Props): UseQueryResult<DropdownOptions<string>[], Error> => {
     const groupsQueryParams = makeGroupsQueryParams({
         dataSourceId,
         sourceVersionId,
+        blockOfCountries,
     });
+
     return useSnackQuery({
         queryKey: ['groups', dataSourceId, groupsQueryParams],
         queryFn: () => getRequest(`/api/groups/${groupsQueryParams}`),

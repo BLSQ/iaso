@@ -8,12 +8,14 @@ from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
 from django.db.models.query import QuerySet
+from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
+from django.http import FileResponse
 from django.http import HttpResponse
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
@@ -28,10 +30,19 @@ from rest_framework import routers, filters, viewsets, serializers, permissions,
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from iaso.api.common import (
+    CSVExportMixin,
+    HasPermission,
+    ModelViewSet,
+    DeletionFilterBackend,
+    CONTENT_TYPE_XLSX,
+    CONTENT_TYPE_CSV,
+)
 from iaso.models import OrgUnit
 from plugins.polio.serializers import (
+    ConfigSerializer,
     CountryUsersGroupSerializer,
+    ExportCampaignSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -92,7 +103,7 @@ class PolioOrgunitViewSet(ModelViewSet):
         return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 
-class CampaignViewSet(ModelViewSet):
+class CampaignViewSet(ModelViewSet, CSVExportMixin):
     """Main endpoint for campaign.
 
     GET (Anonymously too)
@@ -132,6 +143,9 @@ class CampaignViewSet(ModelViewSet):
     # in this case we use a restricted serializer with less field
     # notably not the url that we want to remain private.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    exporter_serializer_class = ExportCampaignSerializer
+    export_filename = "campaigns_list_{date}.csv"
+    use_field_order = False
 
     def get_serializer_class(self):
         if self.request.user.is_authenticated:
@@ -159,6 +173,8 @@ class CampaignViewSet(ModelViewSet):
         campaign_type = self.request.query_params.get("campaign_type")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
+        org_unit_groups = self.request.query_params.get("org_unit_groups")
+
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
@@ -171,6 +187,8 @@ class CampaignViewSet(ModelViewSet):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+        if org_unit_groups:
+            campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
 
         return campaigns.distinct()
 
@@ -247,6 +265,8 @@ class CampaignViewSet(ModelViewSet):
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
         search = params.get("search")
+        org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
+
         rounds = Round.objects.filter(started_at__year=year)
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
@@ -260,6 +280,8 @@ class CampaignViewSet(ModelViewSet):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
+        if org_unit_groups:
+            rounds = rounds.filter(campaign__country__groups__in=org_unit_groups.split(","))
 
         return self.loop_on_rounds(self, rounds)
 
@@ -319,6 +341,12 @@ class CampaignViewSet(ModelViewSet):
             nid_or_snid = "NID" if country_districts_count == round_districts_count else "sNID"
         else:
             nid_or_snid = ""
+
+        # percentage target population
+        percentage_covered_target_population = (
+            round.percentage_covered_target_population if round.percentage_covered_target_population is not None else ""
+        )
+
         # target population
         target_population = round.target_population if round.target_population is not None else ""
 
@@ -328,6 +356,7 @@ class CampaignViewSet(ModelViewSet):
             "obr_name": obr_name,
             "vacine": vacine,
             "round_number": round_number,
+            "percentage_covered_target_population": percentage_covered_target_population,
             "target_population": target_population,
             "nid_or_snid": nid_or_snid,
         }
@@ -336,11 +365,11 @@ class CampaignViewSet(ModelViewSet):
         if campain.separate_scopes_per_round:
             round_scope_vaccines = []
 
-            scopes = RoundScope.objects.filter(round=round)
+            scopes = round.scopes
             if scopes.count() < 1:
                 return ""
             # Loop on round scopes
-            for scope in scopes:
+            for scope in scopes.all():
                 round_scope_vaccines.append(scope.vaccine)
             return ", ".join(round_scope_vaccines)
         else:
@@ -633,7 +662,8 @@ where group_id = polio_roundscope.group_id""",
         campaigns = campaigns.only("geojson")
         features = []
         for c in campaigns:
-            features.extend(c.geojson)
+            if c.geojson:
+                features.extend(c.geojson)
 
         res = {"type": "FeatureCollection", "features": features}
 
@@ -667,10 +697,14 @@ class LineListImportViewSet(ModelViewSet):
     def get_queryset(self):
         return LineListImport.objects.all()
 
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=["get"], url_path="getsample")
+    def download_sample_csv(self, request):
+        return FileResponse(open("plugins/polio/fixtures/linelist_template.xls", "rb"))
+
 
 class PreparednessDashboardViewSet(viewsets.ViewSet):
     def list(self, request):
-
         r = []
         qs = Campaign.objects.all().prefetch_related("rounds")
         if request.query_params.get("campaign"):
@@ -723,7 +757,6 @@ class IMStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-
         requested_country = request.GET.get("country_id", None)
         no_cache = request.GET.get("no_cache", "false") == "true"
 
@@ -1617,6 +1650,16 @@ class CampaignGroupViewSet(ModelViewSet):
     }
 
 
+@swagger_auto_schema(tags=["polio-configs"])
+class ConfigViewSet(ModelViewSet):
+    http_method_names = ["get"]
+    serializer_class = ConfigSerializer
+    lookup_field = "slug"
+
+    def get_queryset(self):
+        return Config.objects.filter(users=self.request.user)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -1635,3 +1678,4 @@ router.register(r"polio/v2/forma", FormAStocksViewSetV2, basename="forma")
 router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="countryusersgroup")
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
+router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")

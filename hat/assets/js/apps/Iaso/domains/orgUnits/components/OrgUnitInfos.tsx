@@ -24,13 +24,8 @@ import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstan
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { Actions } from './OrgUnitActions';
 
-import {
-    OrgUnitState,
-    OrgUnitType,
-    Group,
-    OrgUnit,
-    Action,
-} from '../types/orgUnit';
+import { OrgUnitState, Group, OrgUnit, Action } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
 
 const useStyles = makeStyles(theme => ({
@@ -53,6 +48,7 @@ const getParentOrgUnit = (orgUnit: OrgUnit): Partial<OrgUnit> =>
         source_id: orgUnit.parent.source_id,
         parent: orgUnit.parent.parent,
         parent_name: orgUnit.parent.parent_name,
+        validation_status: orgUnit.parent.validation_status,
     };
 
 type Props = {
@@ -63,7 +59,7 @@ type Props = {
         // eslint-disable-next-line no-unused-vars
         value: string | number | string[] | number[],
     ) => void;
-    orgUnitTypes: OrgUnitType[];
+    orgUnitTypes: OrgunitType[];
     groups: Group[];
     resetTrigger: boolean;
     params: Record<string, string>;

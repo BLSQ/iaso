@@ -8,7 +8,7 @@ import {
     IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
+import WidgetPaper from '../../../components/papers/WidgetPaperComponent.tsx';
 import InstanceDetailsField from './InstanceDetailsField';
 
 const formatUnixTimestamp = unix =>

@@ -49,6 +49,7 @@ export const FollowUpsTable: FunctionComponent<Props> = ({
                 params={params}
                 extraProps={{
                     isLoading,
+                    followUpsColumns,
                 }}
             />
             <Box display="flex" justifyContent="flex-end" pr={2} pb={2} mt={-2}>

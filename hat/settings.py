@@ -252,7 +252,16 @@ see docs/SQL Dashboard feature.md
 
 [SQL Dashboard feature.md](docs%2FSQL%20Dashboard%20feature.md)
 """
-if os.environ.get("DB_READONLY_USERNAME"):
+
+if "test" in sys.argv and DEBUG:
+    # For when running unit test
+    DATABASES["dashboard"] = DATABASES["default"]
+
+    INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
+    # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
+    DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+elif os.environ.get("DB_READONLY_USERNAME"):
     DATABASES["dashboard"] = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": DB_NAME,
@@ -262,14 +271,6 @@ if os.environ.get("DB_READONLY_USERNAME"):
         "PORT": DB_PORT,
         "OPTIONS": {"options": "-c default_transaction_read_only=on -c statement_timeout=10000"},  # type: ignore
     }
-
-    INSTALLED_APPS.append("django_sql_dashboard")
-    INSTALLED_APPS.append("django_sql_dashboard_export")
-    # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
-    DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
-elif "test" in sys.argv and DEBUG:
-    # For when running unit test
-    DATABASES["dashboard"] = DATABASES["default"]
 
     INSTALLED_APPS.append("django_sql_dashboard")
     INSTALLED_APPS.append("django_sql_dashboard_export")

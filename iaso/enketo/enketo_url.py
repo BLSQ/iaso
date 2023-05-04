@@ -8,7 +8,7 @@ from django.conf import settings as django_settings
 
 logger = logging.getLogger(__name__)
 
-# See REVERSE-ENKETO.md for more info
+# See iaso/enketo/readme.md
 
 
 class EnketoError(Exception):

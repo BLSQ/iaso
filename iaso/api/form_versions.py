@@ -47,6 +47,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "start_period",
             "end_period",
             "mapping_versions",
+            "possible_fields",
         ]
         read_only_fields = [
             "id",
@@ -58,6 +59,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
             "descriptor",
+            "possible_fields",
         ]
 
     form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())

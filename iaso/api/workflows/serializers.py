@@ -12,6 +12,8 @@ from iaso.models import (
 )
 from iaso.models.workflow import WorkflowVersionsStatus
 
+CALCULATE_TYPE = "calculate"
+
 
 class FormNestedSerializer(serializers.ModelSerializer):
     class Meta:
@@ -126,7 +128,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
             else:
                 r_type = q["type"]
 
-            if s_type != r_type:
+            if s_type != r_type and s_type != CALCULATE_TYPE and r_type != CALCULATE_TYPE:
                 raise serializers.ValidationError(f"Question {_source} and {_target} do not have the same type")
 
         return mapping
@@ -261,8 +263,12 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
     reference_form = FormNestedSerializer()
     entity_type = EntityTypeNestedSerializer(source="workflow.entity_type")
-    changes = WorkflowChangeSerializer(many=True)
-    follow_ups = WorkflowFollowupSerializer(many=True)
+    follow_ups = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_follow_ups(obj):
+        sorted_obj = obj.follow_ups.all().order_by("order")
+        return WorkflowFollowupSerializer(sorted_obj, many=True).data
 
     class Meta:
         model = WorkflowVersion
@@ -275,7 +281,6 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
             "reference_form",
             "created_at",
             "updated_at",
-            "changes",
             "follow_ups",
         ]
 

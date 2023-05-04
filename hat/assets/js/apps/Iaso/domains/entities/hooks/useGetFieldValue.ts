@@ -20,6 +20,7 @@ export const useGetFieldValue = (): ((
     const getValue = (fieldKey, fileContent, type): string => {
         switch (type) {
             case 'text':
+            case 'calculate':
             case 'integer':
             case 'decimal':
             case 'select one':

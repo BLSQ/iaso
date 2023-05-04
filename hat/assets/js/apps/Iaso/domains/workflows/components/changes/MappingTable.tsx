@@ -9,7 +9,8 @@ import { useSafeIntl, Table, AddButton } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import { cloneDeep } from 'lodash';
 
-import { Mapping, ChangesOption } from '../../types';
+import { Mapping, ChangesOption, Change, ReferenceForm } from '../../types';
+import { DropdownOptions } from '../../../../types/utils';
 import { IntlFormatMessage } from '../../../../types/intl';
 
 import MESSAGES from '../../messages';
@@ -27,6 +28,19 @@ type Props = {
     isFetchingSourcePossibleFields: boolean;
     form?: number;
     setIsTouched: Dispatch<SetStateAction<boolean>>;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeForm: (_, value: string) => void;
+    changes?: Change[];
+    change?: Change;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeSourceVersion: (_, value: string) => void;
+    sourceVersion: string;
+    sourceVersionsDropdownOptions: DropdownOptions<string>[];
+    // eslint-disable-next-line no-unused-vars
+    handleChangeTargetVersion: (_, value: string) => void;
+    targetVersion: string;
+    targetVersionsDropdownOptions: DropdownOptions<string>[];
+    referenceForm?: ReferenceForm;
 };
 const useStyles = makeStyles(theme => ({
     tableContainer: {
@@ -64,9 +78,9 @@ const useGetOptions = () => {
         useSafeIntl();
     const getOptions = (possibleFields: PossibleField[]): ChangesOption[] =>
         possibleFields.map(field => ({
-            label: `${formatLabel(field)} - ${formatMessage(MESSAGES.type)}: ${
-                field.type
-            }`,
+            label: `${formatLabel(field)} - ID: ${
+                field.fieldKey
+            } - ${formatMessage(MESSAGES.type)}: ${field.type}`,
             value: field.fieldKey,
             type: field.type,
         }));
@@ -81,6 +95,16 @@ export const MappingTable: FunctionComponent<Props> = ({
     isFetchingSourcePossibleFields,
     form,
     setIsTouched,
+    handleChangeForm,
+    changes,
+    change,
+    handleChangeSourceVersion,
+    sourceVersion,
+    sourceVersionsDropdownOptions,
+    handleChangeTargetVersion,
+    targetVersion,
+    targetVersionsDropdownOptions,
+    referenceForm,
 }) => {
     const classes = useStyles();
     const getOptions = useGetOptions();
@@ -123,16 +147,18 @@ export const MappingTable: FunctionComponent<Props> = ({
             target: undefined,
             source: undefined,
         });
+        setIsTouched(true);
         setMappingArray(newMappings);
-    }, [mappingArray, setMappingArray]);
+    }, [mappingArray, setIsTouched, setMappingArray]);
 
     const handleDelete = useCallback(
         (index: number) => {
             const newMappings = cloneDeep(mappingArray);
             newMappings.splice(index, 1);
+            setIsTouched(true);
             setMappingArray(newMappings);
         },
-        [mappingArray, setMappingArray],
+        [mappingArray, setIsTouched, setMappingArray],
     );
 
     const sourceOptions = useMemo(
@@ -152,6 +178,17 @@ export const MappingTable: FunctionComponent<Props> = ({
         handleDelete,
         mappingArray,
         isFetchingSourcePossibleFields,
+        handleChangeForm,
+        changes,
+        change,
+        form,
+        handleChangeSourceVersion,
+        sourceVersion,
+        sourceVersionsDropdownOptions,
+        handleChangeTargetVersion,
+        targetVersion,
+        targetVersionsDropdownOptions,
+        referenceForm,
     });
 
     return (

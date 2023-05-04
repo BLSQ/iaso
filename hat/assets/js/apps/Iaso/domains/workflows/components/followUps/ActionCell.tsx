@@ -28,6 +28,7 @@ export const FollowUpActionCell: FunctionComponent<Props> = ({
                 followUp={followUp}
                 fields={fields}
                 versionId={versionId}
+                iconProps={{}}
             />
             <DeleteDialog
                 keyName={`delete-workflow-follow-up-${followUp.id}`}

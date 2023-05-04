@@ -34,7 +34,16 @@ class SourceVersionSerializerForGroup(serializers.ModelSerializer):
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = ["id", "name", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "name",
+            "source_ref",
+            "source_version",
+            "org_unit_count",
+            "created_at",
+            "updated_at",
+            "block_of_countries",  # It's used to mark a group containing only countries
+        ]
         read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
         ref_name = "iaso_group_serializer"
 
@@ -69,7 +78,7 @@ class GroupsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_org_units"),  # type: ignore
+        HasPermission("menupermissions.iaso_org_units", "menupermissions.iaso_completeness_stats"),  # type: ignore
         HasGroupPermission,
     ]
     serializer_class = GroupSerializer
@@ -95,6 +104,10 @@ class GroupsViewSet(ModelViewSet):
             default_version = self.request.GET.get("defaultVersion", None)
             if default_version == "true":
                 queryset = queryset.filter(source_version=self.request.user.iaso_profile.account.default_version)
+
+        block_of_countries = self.request.GET.get("blockOfCountries", None)
+        if block_of_countries:  # Filter only org unit groups containing only countries as orgUnits
+            queryset = queryset.filter(block_of_countries=block_of_countries)
 
         search = self.request.query_params.get("search", None)
         if search:

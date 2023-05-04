@@ -37,8 +37,8 @@ auth_response = subprocess.check_output(
         f"{source}login/",
     ]
 )
-auth_response = auth_response.decode("UTF-8") # type: ignore
-token = auth_response.split("csrftoken=")[1].split(";")[0] # type: ignore
+auth_response = auth_response.decode("UTF-8")  # type: ignore
+token = auth_response.split("csrftoken=")[1].split(";")[0]  # type: ignore
 
 # Get all data from datastore endpoint
 curl_output = subprocess.check_output(
@@ -48,7 +48,7 @@ curl_output = subprocess.check_output(
         "-X",
         "GET",
         "-H",
-        f"Authorisation: Bearer {token}", # type: ignore
+        f"Authorisation: Bearer {token}",  # type: ignore
         "-H",
         f"Content-Type: application/json",
         "-u",
@@ -80,8 +80,8 @@ if args.localuser and args.localpwd:
             f"{to}login/",
         ]
     )
-    local_auth_response = local_auth_response.decode("UTF-8") # type: ignore
-    local_token = local_auth_response.split("csrftoken=")[1].split(";")[0] # type: ignore
+    local_auth_response = local_auth_response.decode("UTF-8")  # type: ignore
+    local_token = local_auth_response.split("csrftoken=")[1].split(";")[0]  # type: ignore
 
     not_created = []
     created = []
@@ -96,7 +96,7 @@ if args.localuser and args.localpwd:
             "-X",
             "POST",
             "-H",
-            f"Authorisation: Bearer {local_token}", # type: ignore
+            f"Authorisation: Bearer {local_token}",  # type: ignore
             "-H",
             "Content-Type: application/json",
             "-u",

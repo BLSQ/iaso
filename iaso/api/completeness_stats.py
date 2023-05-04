@@ -292,7 +292,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 descending = order.startswith("-")
                 # Need the cast otherwise it comparse as string and put "14" before "5"
                 order_exp = OrderBy(
-                    RawSQL("CAST(form_stats#>>%s as float)", [[order_form_slug, order_form_field]]),
+                    RawSQL("CAST(form_stats->>%s as float)", [[order_form_slug, order_form_field]]),
                     descending=descending,
                     nulls_last=True,  # always put the nulls results last
                 )

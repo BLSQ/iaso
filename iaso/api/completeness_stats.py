@@ -292,7 +292,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 descending = order.startswith("-")
                 # Need the cast otherwise it comparse as string and put "14" before "5"
                 order_exp = OrderBy(
-                    RawSQL("CAST(form_stats->>%s as float)", [[order_form_slug, order_form_field]]),
+                    RawSQL("CAST(form_stats#>>%s as float)", [[order_form_slug, order_form_field]]),
                     descending=descending,
                     nulls_last=True,  # always put the nulls results last
                 )
@@ -306,7 +306,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 slug = f"form_{form.id}"
                 ou_with_stats = ou_with_stats.exclude(
                     RawSQL(
-                        "CAST(form_stats#>%s as integer) > 0",
+                        "CAST(form_stats#>>%s as integer) > 0",
                         [[slug, "itself_has_instances"]],
                         output_field=models.BooleanField(),
                     ),

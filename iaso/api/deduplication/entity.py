@@ -16,6 +16,7 @@ from iaso.api.common import HasPermission, ModelViewSet, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Task
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
+from iaso.tests.api.workflows.base import var_dump
 
 from .algos import POSSIBLE_ALGORITHMS, run_algo
 from .common import PotentialDuplicate
@@ -90,7 +91,18 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
         return math.floor(obj.similarity_score / 20.0)
 
     def get_the_fields(self, obj):
-        return obj.analyze.metadata["fields"]
+        the_fields = obj.analyze.metadata["fields"]
+
+        ret_val = []
+        etype = obj.entity1.entity_type
+        ref_form = etype.reference_form
+        possible_fields = ref_form.possible_fields
+
+        for f in the_fields:
+            the_q = find_question_by_name(f, possible_fields)
+            ret_val.append({"field": the_q["name"], "label": the_q["label"]})
+
+        return ret_val
 
     class Meta:
         model = EntityDuplicate
@@ -158,7 +170,8 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
 class EntityDuplicateViewSet(ModelViewSet):
     """Entity Duplicates API
     GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
-    PATCH /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
+    GET /api/entityduplicates/<pk>/ : Provides an API to retrieve details about a potential duplicate
+    POST /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
     """
 
     filter_backends = [
@@ -182,7 +195,7 @@ class EntityDuplicateViewSet(ModelViewSet):
         Provides an API to retrieve details about a potential duplicate
         For all the 'fields' of the analyzis it will return
         {
-        "field": {
+        "the_field": {
             "field": string, // The key of the field
             label: string | { "English": string, "French":string } // either a string or an object with the translations
             },
@@ -237,7 +250,7 @@ class EntityDuplicateViewSet(ModelViewSet):
 
             return_data.append(
                 {
-                    "field": {
+                    "the_field": {
                         "field": the_q["name"],
                         "label": the_q["label"],
                     },

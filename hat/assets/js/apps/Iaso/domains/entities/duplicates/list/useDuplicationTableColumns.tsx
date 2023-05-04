@@ -40,14 +40,14 @@ export const useDuplicationTableColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.comparedFields),
-                accessor: 'fields',
+                accessor: 'the_fields',
                 resizable: false,
                 sortable: false,
                 Cell: settings => {
-                    const { fields } = settings.row.original;
+                    const { the_fields } = settings.row.original;
                     return (
                         <>
-                            {fields.map((field, index) => (
+                            {the_fields.map((field, index) => (
                                 <p key={`${field.field}- ${index}`}>
                                     {formatLabel(field)}
                                 </p>

@@ -11,8 +11,8 @@ export type DuplicateEntity = {
 
 export type DuplicationAlgorithm = {
     analyze_id: string;
-    type: 'namesim' | 'invert';
-    fields: string[];
+    type: 'namesim' | 'inverse';
+    the_fields: string[];
     similarity: number;
     similarity_star: number;
 };
@@ -20,7 +20,7 @@ export type DuplicationAlgorithm = {
 export type DuplicateData = {
     entity_type: { id: number; name: string };
     form: { id: number; name: string };
-    fields: {
+    the_fields: {
         field: string;
         label: string | Record<string, string>;
     }[];
@@ -49,7 +49,7 @@ export type EntityForTableData = {
 };
 
 export type DuplicateEntityForTable = {
-    field: {
+    the_field: {
         field: string;
         label: string | Record<string, string>;
     };

@@ -69,11 +69,14 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
     the_fields = serializers.SerializerMethodField()
     entity1 = EntityDuplicatedNestedEntitySerializer()
     entity2 = EntityDuplicatedNestedEntitySerializer()
-    analyzis = EntityDuplicateNestedAnalyzisSerializer(source="analyze")
+    analyzis = serializers.SerializerMethodField()
     similarity = serializers.SerializerMethodField()
     similarity_star = serializers.SerializerMethodField()
     ignored = serializers.SerializerMethodField()
     ignored_reason = serializers.SerializerMethodField()
+
+    def get_analyzis(self, obj):
+        return [EntityDuplicateNestedAnalyzisSerializer(obj.analyze).data]
 
     def get_ignored(self, obj):
         return obj.validation_status == IGNORED
@@ -107,6 +110,7 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityDuplicate
         fields = [
+            "id",
             "entity_type",
             "form",
             "the_fields",
@@ -187,11 +191,27 @@ class EntityDuplicateViewSet(ModelViewSet):
     model = EntityDuplicate
 
     def get_queryset(self):
-        return EntityDuplicate.objects.all()
+        entities = self.request.query_params.get("entities", None)
 
-    def retrieve(self, request, pk):
+        initial_queryset = EntityDuplicate.objects.all()
+
+        if entities is not None:
+            entities_arr = entities.split(",")
+
+            if len(entities_arr) != 2:
+                raise serializers.ValidationError("You must provide two entities to compare")
+
+            initial_queryset = initial_queryset.filter(
+                Q(entity1=entities_arr[0], entity2=entities_arr[1])
+                | Q(entity2=entities_arr[0], entity1=entities_arr[1])
+            )
+
+        return initial_queryset
+
+    @action(detail=False, methods=["get"], url_path="detail")
+    def detail_view(self, request):
         """
-        GET /api/entityduplicates/<pk>/
+        GET /api/entityduplicates/detail/?entities=A,B
         Provides an API to retrieve details about a potential duplicate
         For all the 'fields' of the analyzis it will return
         {
@@ -215,8 +235,8 @@ class EntityDuplicateViewSet(ModelViewSet):
         So basically it returns an array of those objects
         """
         try:
-            duplicate = EntityDuplicate.objects.get(pk=pk)
-        except EntityDuplicate.DoesNotExist:
+            duplicate = self.get_queryset().first()
+        except:
             return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entity duplicate not found"})
 
         # we need to create the expected answer from all the fields

@@ -165,7 +165,7 @@ export const mockDuplicatesDetailsResponse = () => {
 export const mockDuplicatesDetailsTableData = () => {
     return [
         {
-            field: {
+            the_field: {
                 field: 'first_name',
                 label: { English: 'First name', French: 'Prénom' },
             },
@@ -174,13 +174,13 @@ export const mockDuplicatesDetailsTableData = () => {
             final: { value: '' },
         },
         {
-            field: { field: 'last_name', label: 'Last name' },
+            the_field: { field: 'last_name', label: 'Last name' },
             entity1: { value: 'Jones', id: 1 },
             entity2: { value: 'Jones', id: 2 },
             final: { value: 'Jones', id: 1 }, // randomly using the id of the 1st entity, since the value is the same
         },
         {
-            field: {
+            the_field: {
                 field: 'date_of_birth',
                 label: {
                     English: 'Date of birth',
@@ -192,7 +192,7 @@ export const mockDuplicatesDetailsTableData = () => {
             final: { value: '' },
         },
         {
-            field: {
+            the_field: {
                 field: 'stage_name',
                 label: { English: 'Stage name', French: 'Nom de scène' },
             },

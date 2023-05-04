@@ -26,7 +26,7 @@ export type DuplicateData = {
     }[];
     entity1: DuplicateEntity;
     entity2: DuplicateEntity;
-    algorithms: DuplicationAlgorithm[];
+    analyzis: DuplicationAlgorithm[];
     ignored: boolean;
     ignored_reason?: string;
     similarity: number;

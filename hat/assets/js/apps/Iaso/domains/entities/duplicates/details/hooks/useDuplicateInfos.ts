@@ -38,9 +38,9 @@ export const useDuplicateInfos = ({
         return {
             unmatchedRemaining: calculateRemainingUnmatched(tableState),
             formName: duplicatesInfos?.[0].form.name ?? '',
-            algorithmRuns: duplicatesInfos?.[0].algorithms.length ?? 0,
+            algorithmRuns: duplicatesInfos?.[0].analyzis.length ?? 0,
             algorithmsUsed: findAlgorithmsUsed(
-                duplicatesInfos?.[0].algorithms ?? [],
+                duplicatesInfos?.[0].analyzis ?? [],
             ),
             similarityScore: duplicatesInfos?.[0].similarity_star,
             isLoading: !duplicatesInfos?.length,

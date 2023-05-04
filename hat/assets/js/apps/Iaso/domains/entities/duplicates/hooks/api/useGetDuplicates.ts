@@ -88,11 +88,11 @@ export const useGetDuplicates = ({
 //     return getRequest('/api/entityduplicates/1/detail/');
 // };
 const getDuplicatesDetails = async (queryString: string) => {
-    const url = `${apiUrl}/details/${queryString}`;
+    const url = `${apiUrl}/detail/?${queryString}`;
     const result = mockDuplicatesDetailsTableData();
     console.log('details url', url);
     console.log('details', result);
-    waitFor(1500);
+    waitFor(150);
     return result;
 };
 
@@ -127,7 +127,7 @@ export const useGetDuplicateDetails = ({
                 if (!data) return [];
                 const result = data.map(row => {
                     return {
-                        field: row.field,
+                        field: row.the_field,
                         entity1: {
                             value: row.entity1.value,
                             id: row.entity1.id,

@@ -13,9 +13,9 @@ import json
 
 parser = argparse.ArgumentParser(description="Provide credentials to fetch datastore")
 
-parser.add_argument("-u", "--user", help="User name") # User name for the source url
+parser.add_argument("-u", "--user", help="User name")  # User name for the source url
 parser.add_argument("-p", "--pwd", help="Password")
-parser.add_argument("-lu", "--localuser", help="Local User name") # User name for the destination/local url
+parser.add_argument("-lu", "--localuser", help="Local User name")  # User name for the destination/local url
 parser.add_argument("-lp", "--localpwd", help="Local Password")
 parser.add_argument("-f", "--file", type=str, help="Output to file")
 parser.add_argument("-d", "--dir", type=str, help="Destination directory for file (with end backslash)")

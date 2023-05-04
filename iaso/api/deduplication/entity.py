@@ -1,74 +1,184 @@
+import math
 from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import Count, F, Q
 from django.http import JsonResponse
-from django_filters import rest_framework as filters
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
 from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
 
 import iaso.models.base as base
 from iaso.api.common import HasPermission, ModelViewSet, Paginator
+from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Task
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
-from iaso.api.workflows.serializers import find_question_by_name
 
 from .algos import POSSIBLE_ALGORITHMS, run_algo
 from .common import PotentialDuplicate
+from iaso.models.deduplication import PENDING, VALIDATED, IGNORED
+
+
+class EntityDuplicateNestedFormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Form
+        fields = ["id", "name"]
+
+
+class EntityDuplicateNestedEntityTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EntityType
+        fields = ["id", "name"]
+
+
+class EntityDuplicatedNestedOrgunitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = base.OrgUnit
+        fields = ["id", "name"]
+
+
+class EntityDuplicatedNestedEntitySerializer(serializers.ModelSerializer):
+    org_unit = EntityDuplicatedNestedOrgunitSerializer(source="attributes.org_unit")
+    json = serializers.DictField(source="attributes.json")
+
+    class Meta:
+        model = Entity
+        fields = ["id", "created_at", "updated_at", "org_unit", "json"]
+
+
+class EntityDuplicateNestedAnalyzisSerializer(serializers.ModelSerializer):
+    analyze_id = serializers.IntegerField(source="id")
+    type = serializers.CharField(source="algorithm")
+    the_fields = serializers.SerializerMethodField()
+
+    def get_the_fields(self, obj):
+        return obj.metadata["fields"]
+
+    class Meta:
+        model = EntityDuplicateAnalyze
+        fields = ["analyze_id", "created_at", "finished_at", "the_fields", "type"]
 
 
 class EntityDuplicateSerializer(serializers.ModelSerializer):
+    entity_type = EntityDuplicateNestedEntityTypeSerializer(source="entity1.entity_type")
+    form = EntityDuplicateNestedFormSerializer(source="entity1.entity_type.reference_form")
+    the_fields = serializers.SerializerMethodField()
+    entity1 = EntityDuplicatedNestedEntitySerializer()
+    entity2 = EntityDuplicatedNestedEntitySerializer()
+    analyzis = EntityDuplicateNestedAnalyzisSerializer(source="analyze")
+    similarity = serializers.SerializerMethodField()
+    similarity_star = serializers.SerializerMethodField()
+    ignored = serializers.SerializerMethodField()
+    ignored_reason = serializers.SerializerMethodField()
+
+    def get_ignored(self, obj):
+        return obj.validation_status == IGNORED
+
+    def get_ignored_reason(self, obj):
+        if "ignored_reason" in obj.metadata:
+            return obj.metadata["ignored_reason"]
+        else:
+            return ""
+
+    def get_similarity(self, obj):
+        return obj.similarity_score
+
+    def get_similarity_star(self, obj):
+        return math.floor(obj.similarity_score / 20.0)
+
+    def get_the_fields(self, obj):
+        return obj.analyze.metadata["fields"]
+
     class Meta:
         model = EntityDuplicate
-        fields = "__all__"
+        fields = [
+            "entity_type",
+            "form",
+            "the_fields",
+            "entity1",
+            "entity2",
+            "analyzis",
+            "similarity",
+            "similarity_star",
+            "ignored",
+            "ignored_reason",
+        ]
 
 
-class EntityDuplicateViewSet(viewsets.ViewSet):
+class EntityDuplicatePostSerializer(serializers.Serializer):
+    entity1_id = serializers.IntegerField(required=True)
+    entity2_id = serializers.IntegerField(required=True)
+    merge = serializers.DictField(child=serializers.IntegerField(), required=False)
+    ignore = serializers.BooleanField(required=False, default=False)
+    reason = serializers.CharField(required=False, allow_blank=True, allow_null=True)
+
+    def validate(self, data):
+        if data["entity1_id"] == data["entity2_id"]:
+            raise serializers.ValidationError("Entities 1 and 2 must be different")
+
+        try:
+            entity1 = Entity.objects.get(pk=data["entity1_id"])
+        except Entity.DoesNotExist:
+            raise serializers.ValidationError("Entity 1 does not exist")
+
+        try:
+            entity2 = Entity.objects.get(pk=data["entity2_id"])
+        except Entity.DoesNotExist:
+            raise serializers.ValidationError("Entity 2 does not exist")
+
+        if entity1.entity_type != entity2.entity_type:
+            raise serializers.ValidationError("Entities must be of the same type")
+
+        if data["ignore"] and data["reason"] == "":
+            print("Ignore the duplicate but no reason provided")
+
+        else:  # merge the duplicates
+            etype = entity1.entity_type
+            ref_form = etype.reference_form
+            possible_fields = ref_form.possible_fields
+
+            for kk, vv in data["merge"]:
+                if vv != data["entity1_id"] and vv != data["entity2_id"]:
+                    raise serializers.ValidationError("The merge must be done with one of the two entities")
+
+                the_q = find_question_by_name(kk, possible_fields)
+
+                if the_q is None:
+                    raise serializers.ValidationError(f"Question {kk} does not exist in the reference form")
+
+        return data
+
+    def create(self, validated_data):
+        pass
+
+
+class EntityDuplicateViewSet(ModelViewSet):
     """Entity Duplicates API
     GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
     PATCH /api/entityduplicates/ : Provides an API to merge duplicate entities or to ignore the match
     """
 
-    # filter_backends = [
-    # filters.OrderingFilter,
-    # DjangoFilterBackend,
-    # ]
-
+    filter_backends = [
+        OrderingFilter,
+        DjangoFilterBackend,
+    ]
+    ordering_fields = ["created_at", "similarity_score", "id"]
+    remove_results_key_if_paginated = False
+    results_key = "results"
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
     serializer_class = EntityDuplicateSerializer
     results_key = "results"
+    model = EntityDuplicate
 
     def get_queryset(self):
         return EntityDuplicate.objects.all()
 
-    # Copied from common.py
-    def pagination_class(self):
-        return Paginator(self.results_key)
-
-    def list(self, request, *args, **kwargs):
+    def retrieve(self, request, pk):
         """
-        GET /api/entityduplicates/
-        Provides an API to retrieve potentially duplicated entities.
-        """
-        queryset = EntityDuplicate.objects.all()
-        # TO DO restore when filters are set up
-        # queryset = self.filter_queryset(queryset)
-
-        paginator = self.pagination_class()
-        page = paginator.paginate_queryset(queryset, request)
-        if page is not None:
-            serializer = self.serializer_class(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-        serializer = EntityDuplicateSerializer(queryset, many=True)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["get"], url_path="detail")
-    def detail_view(self, request, pk):
-        """
-        GET /api/entityduplicates/<pk>/detail
+        GET /api/entityduplicates/<pk>/
         Provides an API to retrieve details about a potential duplicate
         For all the 'fields' of the analyzis it will return
         {
@@ -148,6 +258,7 @@ class EntityDuplicateViewSet(viewsets.ViewSet):
 
         return JsonResponse(return_data, safe=False)
 
+    @swagger_auto_schema(request_body=EntityDuplicatePostSerializer)
     def create(self, request, pk=None, *args, **kwargs):
         """
         POST /api/entityduplicates/

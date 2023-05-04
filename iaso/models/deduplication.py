@@ -34,7 +34,7 @@ class EntityDuplicate(models.Model):
     type_of_relation = models.CharField(max_length=20, choices=DUPLICATE_TYPES, default=DUPLICATE)
     similarity_score = models.SmallIntegerField(null=True)
     updated_at = models.DateTimeField(auto_now=True)
-    metadata = models.JSONField(default=dict)
+    metadata = models.JSONField(default=dict, blank=True)
     analyze = models.ForeignKey(
         EntityDuplicateAnalyze, related_name="duplicates", on_delete=models.CASCADE, default=None, null=True
     )

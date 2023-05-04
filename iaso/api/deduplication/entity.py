@@ -257,16 +257,24 @@ class EntityDuplicateViewSet(ModelViewSet):
         e1_json = duplicate.entity1.attributes.json
         e2_json = duplicate.entity2.attributes.json
 
-        for f in fields:
+        for the_q in possible_fields:
 
-            the_q = find_question_by_name(f, possible_fields)
+            # the_q = find_question_by_name(f, possible_fields)
 
             # needs to handle the case where the field is not found
-            e1_val = e1_json[the_q["name"]]
-            e1_type = type(e1_val).__name__
+            try:
+                e1_val = e1_json[the_q["name"]]
+                e1_type = type(e1_val).__name__
+            except:
+                e1_val = "Not Found"
+                e1_type = "Not Found"
 
-            e2_val = e2_json[the_q["name"]]
-            e2_type = type(e2_val).__name__
+            try:
+                e2_val = e2_json[the_q["name"]]
+                e2_type = type(e2_val).__name__
+            except:
+                e2_val = "Not Found"
+                e2_type = "Not Found"
 
             return_data.append(
                 {

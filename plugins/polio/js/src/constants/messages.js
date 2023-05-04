@@ -649,6 +649,23 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshedAt',
         defaultMessage: 'Refreshed at',
     },
+    recruitmentSurgeUrl: {
+        id: 'iaso.polio.label.recruitmentSurgeUrl',
+        defaultMessage: 'Recruitment Surge Google Sheet URL',
+    },
+    surge_spreadsheet_url: {
+        id: 'iaso.polio.label.recruitmentSurgeUrl',
+        defaultMessage: 'Recruitment Surge Google Sheet URL',
+    },
+
+    countryNameInSheet: {
+        id: 'iaso.polio.label.countryNameInSheet',
+        defaultMessage: 'Country Name in sheet',
+    },
+    country_name_in_surge_spreadsheet: {
+        id: 'iaso.polio.label.countryNameInSheet',
+        defaultMessage: 'Country Name in sheet',
+    },
     whoToRecruit: {
         id: 'iaso.polio.label.whoToRecruit',
         defaultMessage: 'WHO To Recruit',
@@ -664,6 +681,10 @@ const MESSAGES = defineMessages({
     unicefCompletedRecruitement: {
         id: 'iaso.polio.label.unicefCompletedRecruitement',
         defaultMessage: 'UNICEF Completed Recruitment',
+    },
+    refreshRecruitmentData: {
+        id: 'iaso.polio.label.refreshRecruitmentData',
+        defaultMessage: 'Refresh Recruitment Data',
     },
     paymentMode: {
         id: 'iaso.polio.label.paymentMode',

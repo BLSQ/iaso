@@ -37,3 +37,12 @@ export const useGeneratePreparednessSheet = campaign_id => {
         ),
     );
 };
+
+// This retrieve data but since it contact data from an external service this is
+// implemented as a post
+export const useFetchSurgeData = () => {
+    return useSnackMutation(
+        body => postRequest('/api/polio/campaigns/preview_surge/', body),
+        null,
+    );
+};

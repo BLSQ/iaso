@@ -7,7 +7,7 @@ from typing import Any
 
 from django.contrib.auth.models import User, Permission
 
-from iaso.models import Account, Form, OrgUnitType, OrgUnit
+from iaso.models import Account, Form, OrgUnitType, OrgUnit, Instance
 from iaso.test import APITestCase
 
 
@@ -511,3 +511,48 @@ class CompletenessStatsAPITestCase(APITestCase):
             }
         }
         self.assertEqual(form_stats, expected)
+
+    def test_without_submissions_parms(self):
+        """Check that without_submissions params works"""
+        self.client.force_authenticate(self.user)
+        # Check number of result when it's false
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "without_submissions": "false",
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 4)
+
+        # should default to false so same number of result if params is not present
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 4)
+
+        # If we filter it should be two
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "without_submissions": "true",
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 2)
+        for r in j["results"]:
+            # check that the result have effectly zero submission
+            ou = r["org_unit"]["id"]
+            self.assertEqual(Instance.objects.filter(form=self.form_hs_4, org_unit_id=ou).count(), 0)

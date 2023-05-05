@@ -299,7 +299,7 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
         org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
-        with_descriptor = request.GET.get("with_descriptor","false")
+        with_descriptor = request.GET.get("with_descriptor", "false")
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -369,7 +369,14 @@ class InstancesViewSet(viewsets.ViewSet):
                 )
                 return Response([instance.as_small_dict() for instance in queryset])
             else:
-                return Response({"instances": [instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict() for instance in queryset]})
+                return Response(
+                    {
+                        "instances": [
+                            instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
+                            for instance in queryset
+                        ]
+                    }
+                )
         else:  # This is a CSV/XLSX file export
             return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 

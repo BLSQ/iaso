@@ -321,6 +321,7 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 />
                 <InputComponent
                     type="select"
+                    clearable={false}
                     keyValue="validation_status"
                     onChange={handleChange}
                     value={filters?.validation_status}

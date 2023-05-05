@@ -2,12 +2,6 @@
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { PaginationParams } from '../../../../../types/general';
-import { waitFor } from '../../../../../utils';
-import {
-    mockDuplicatesDetailsResponse,
-    mockDuplicatesDetailsTableData,
-    mockDuplicatesTableResponse,
-} from '../../mockDuplicationData';
 import {
     DuplicateData,
     DuplicateEntityForTable,
@@ -17,20 +11,6 @@ import { getRequest } from '../../../../../libs/Api';
 
 const apiUrl = '/api/entityduplicates';
 
-// const getDuplicates = async (queryString: string) => {
-//     const url = `${apiUrl}/${queryString}`;
-//     console.log('GET', url);
-//     waitFor(1000);
-//     if (!queryString.includes('limit')) {
-//         return mockDuplicatesDetailsResponse();
-//     }
-//     return mockDuplicatesTableResponse({
-//         count: 5,
-//         has_next: true,
-//         has_previous: false,
-//         limit: 20,
-//     });
-// };
 const getDuplicates = async (queryString: string) => {
     const url = `${apiUrl}/?${queryString}`;
     return getRequest(url);
@@ -84,16 +64,9 @@ export const useGetDuplicates = ({
     });
 };
 
-// const getDuplicatesDetails = async (queryString: string) => {
-//     return getRequest('/api/entityduplicates/1/detail/');
-// };
 const getDuplicatesDetails = async (queryString: string) => {
     const url = `${apiUrl}/detail/?${queryString}`;
-    const result = mockDuplicatesDetailsTableData();
-    console.log('details url', url);
-    console.log('details', result);
-    waitFor(150);
-    return result;
+    return getRequest(url);
 };
 
 type DuplicatesDetailsGETParams = {
@@ -127,6 +100,7 @@ export const useGetDuplicateDetails = ({
                 if (!data) return [];
                 const result = data.map(row => {
                     return {
+                        // We keep "field" i.o "the_field" as key to avoid a bug with the table
                         field: row.the_field,
                         entity1: {
                             value: row.entity1.value,

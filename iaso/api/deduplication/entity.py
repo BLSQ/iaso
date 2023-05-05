@@ -262,12 +262,12 @@ class EntityDuplicateViewSet(ModelViewSet):
             # the_q = find_question_by_name(f, possible_fields)
 
             # needs to handle the case where the field is not found
-            
+
             try:
                 e1_val = e1_json[the_q["name"]]
                 # FIXME: find a better way to exclude the instance id
                 if "uuid" in e1_val:
-                 continue
+                    continue
                 e1_type = type(e1_val).__name__
             except:
                 e1_val = "Not Found"
@@ -295,7 +295,7 @@ class EntityDuplicateViewSet(ModelViewSet):
                         "id": duplicate.entity2.id,
                     },
                     "final": {
-                        "value": e1_val if e1_val == e2_val else '',  # this needs to be fixed !
+                        "value": e1_val if e1_val == e2_val else "",  # this needs to be fixed !
                         "id": duplicate.entity1.id,  # this needs to be fixed !
                     },
                 }

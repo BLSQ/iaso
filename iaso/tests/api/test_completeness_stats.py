@@ -541,9 +541,9 @@ class CompletenessStatsAPITestCase(APITestCase):
         )
 
         j = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(j["results"]), 4)
+        self.assertEqual(len(j["results"]), 3)
 
-        # should default to false so same number of result if params is not present
+        # should default to false so same number of result if par modiié leams is not present
         response = self.client.get(
             f"/api/v2/completeness_stats/",
             {
@@ -553,7 +553,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         )
 
         j = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(j["results"]), 4)
+        self.assertEqual(len(j["results"]), 3)
 
         # If we filter it should be two
         response = self.client.get(
@@ -566,7 +566,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         )
 
         j = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(j["results"]), 2)
+        self.assertEqual(len(j["results"]), 1)
         for r in j["results"]:
             # check that the result have effectly zero submission
             ou = r["org_unit"]["id"]

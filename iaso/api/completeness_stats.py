@@ -164,7 +164,7 @@ class ParamSerializer(serializers.Serializer):
     )
 
     org_unit_validation_status = serializers.CharField(
-        default="NEW,VALID",
+        default="VALID",
         help_text="Filter org unit on theses validation status"
         " (both for returned orgunit and count), can specify multiple status, separated by a ','",
     )

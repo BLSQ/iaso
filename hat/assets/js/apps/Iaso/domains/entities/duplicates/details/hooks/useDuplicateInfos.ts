@@ -23,7 +23,7 @@ type DuplicateInfos = {
 
 type UseDuplicateInfosArgs = {
     tableState: Record<string, any>[];
-    duplicatesInfos: DuplicateData[];
+    duplicatesInfos: { results: DuplicateData[] };
     params: { accountId?: string; entities: string };
 };
 
@@ -37,13 +37,13 @@ export const useDuplicateInfos = ({
         const entityIds = ids.split(',').map(id => parseInt(id, 10));
         return {
             unmatchedRemaining: calculateRemainingUnmatched(tableState),
-            formName: duplicatesInfos?.[0]?.form.name ?? '',
-            algorithmRuns: duplicatesInfos?.[0]?.analyzis.length ?? 0,
+            formName: duplicatesInfos?.results?.[0]?.form.name ?? '',
+            algorithmRuns: duplicatesInfos?.results?.[0]?.analyzis.length ?? 0,
             algorithmsUsed: findAlgorithmsUsed(
-                duplicatesInfos?.[0]?.analyzis ?? [],
+                duplicatesInfos?.results?.[0]?.analyzis ?? [],
             ),
-            similarityScore: duplicatesInfos?.[0]?.similarity_star,
-            isLoading: (duplicatesInfos ?? []).length === 0,
+            similarityScore: duplicatesInfos?.results?.[0]?.similarity_star,
+            isLoading: (duplicatesInfos?.results ?? []).length === 0,
             // TODO prevent longer arrays of ids
             entityIds: entityIds as [number, number],
         };

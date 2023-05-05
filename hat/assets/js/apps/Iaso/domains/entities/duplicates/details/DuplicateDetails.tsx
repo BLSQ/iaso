@@ -113,7 +113,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     const goBack = useGoBack(router, baseUrls.entityDuplicates);
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
-    }) as { data: DuplicateData[] };
+    }) as { data: { results: DuplicateData[] } };
 
     const [entityIdA, entityIdB] = params.entities.split(',');
 

@@ -91,6 +91,7 @@ class Params(TypedDict):
     order: List[str]
     org_unit_group: Optional[Group]
     without_submissions: bool
+    org_unit_validation_status: List[str]
 
 
 class PrimaryKeysRelatedField(serializers.ManyRelatedField):
@@ -162,6 +163,19 @@ class ParamSerializer(serializers.Serializer):
         help_text="Filter the orgunit used for count on this group",
     )
 
+    org_unit_validation_status = serializers.CharField(
+        default="VALID",
+        help_text="Filter org unit on theses validation status"
+        " (both for returned orgunit and count), can specify multiple status, separated by a ','",
+    )
+
+    def validate_org_unit_validation_status(self, statuses):
+        statuses = statuses.split(",")
+        for status in statuses:
+            if status not in (OrgUnit.VALIDATION_VALID, OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_REJECTED):
+                raise serializers.ValidationError("Invalid status")
+        return statuses
+
     def validate_order(self, order):
         return order.split(",")
 
@@ -205,6 +219,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         form_qs = params["forms"]
         period = params.get("period", None)
         planning = params.get("planning", None)
+        org_unit_validation_status = params["org_unit_validation_status"]
 
         instance_qs = Instance.objects.all()
         if period:
@@ -219,9 +234,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile  # type: ignore
 
         org_units: OrgUnitQuerySet
-        org_units = OrgUnit.objects.filter(
-            validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID)
-        )  # type: ignore
+        org_units = OrgUnit.objects.filter(validation_status__in=org_unit_validation_status)  # type: ignore
         # Calculate the ou for which we want reporting `top_ous`
         #  We only want ou to which user has access
         #   if no params we return the top ou for the default source
@@ -265,10 +278,9 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
+        # Orgunit on which we count the Submissions
         orgunit_qs: OrgUnitQuerySet
-        orgunit_qs = OrgUnit.objects.filter(
-            validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID)
-        )  # type: ignore
+        orgunit_qs = OrgUnit.objects.filter(validation_status__in=org_unit_validation_status)  # type: ignore
         org_unit_group = params.get("org_unit_group")
         if org_unit_group:
             orgunit_qs = orgunit_qs.filter(groups__id=org_unit_group.id)

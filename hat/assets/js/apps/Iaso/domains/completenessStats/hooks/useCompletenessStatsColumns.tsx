@@ -204,6 +204,7 @@ export const useCompletenessStatsColumns = (
             accessor: 'actions',
             sortable: false,
             Cell: settings => {
+                const orgunitName = settings.row.original.name.toLowerCase();
                 return (
                     <>
                         {!settings.row.original.is_root && (
@@ -238,10 +239,18 @@ export const useCompletenessStatsColumns = (
                                 overrideIcon={ArrowUpward}
                             />
                         )}
+                        {settings.row.original.form_stats && (
+                            <IconButtonComponent
+                                id={`form-link-${settings.row.original.id}`}
+                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/tab/list/search/${orgunitName}`}
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.viewInstances}
+                            />
+                        )}
                     </>
                 );
             },
         });
         return columns;
-    }, [dispatch, formatMessage, redirectionParams, completenessStats]);
+    }, [dispatch, formatMessage, redirectionParams, completenessStats, params]);
 };

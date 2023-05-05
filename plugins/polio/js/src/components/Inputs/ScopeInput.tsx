@@ -6,12 +6,7 @@ import React, {
     ReactNode,
 } from 'react';
 import { useField, FieldProps } from 'formik';
-import {
-    // @ts-ignore
-    LoadingSpinner,
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import {
     FormControlLabel,
     FormGroup,

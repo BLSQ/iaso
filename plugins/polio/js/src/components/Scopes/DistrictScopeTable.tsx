@@ -23,6 +23,7 @@ import {
     Typography,
 } from '@material-ui/core';
 import sortBy from 'lodash/sortBy';
+import { cloneDeep } from 'lodash';
 
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
@@ -30,11 +31,7 @@ import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
 
 import { Scope, Shape, FilteredDistricts, ShapeRow } from './types';
-import {
-    findScopeWithOrgUnit,
-    findRegion,
-    checkFullRegionIsPartOfScope,
-} from './utils';
+import { checkFullRegionIsPartOfScope } from './utils';
 
 import { TableText } from './TableText';
 import { TablePlaceHolder } from './TablePlaceHolder';
@@ -104,15 +101,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         if (!regionShapes || !filteredDistricts) {
             return null;
         }
-
-        let ds: ShapeRow[] = filteredDistricts.map(district => {
-            return {
-                ...district,
-                region: findRegion(district, regionShapes),
-                vaccineName:
-                    findScopeWithOrgUnit(scopes, district.id)?.vaccine || '',
-            };
-        });
+        let ds: ShapeRow[] = cloneDeep(filteredDistricts);
 
         if (sortFocus === 'REGION') {
             ds = sortBy(ds, ['region']);
@@ -214,7 +203,9 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                         <TableText text={shape.name} />
                                     </TableCell>
                                     <TableCell>
-                                        <TableText text={shape.vaccineName} />
+                                        <TableText
+                                            text={shape.vaccineName || '-'}
+                                        />
                                     </TableCell>
                                     <TableCell
                                         style={{

@@ -1,7 +1,5 @@
 /* eslint-disable camelcase */
 
-import { checkFullRegionIsPartOfScope } from './utils';
-
 export type Scope = {
     vaccine: string;
     group: {
@@ -26,7 +24,7 @@ export type Values = {
 
 export type FilteredDistricts = {
     name: string;
-    vaccineName: string;
+    vaccineName?: string;
     region: any;
     id: number;
     parent_id: number;
@@ -34,8 +32,8 @@ export type FilteredDistricts = {
 
 export type ShapeRow = Shape & {
     region: string;
-    vaccineName: string;
-    fullRegionIsPartOfScope: boolean;
+    vaccineName?: string;
+    fullRegionIsPartOfScope?: boolean;
 };
 
 export type Round = {

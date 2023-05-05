@@ -62,17 +62,19 @@ class EntityDuplicateNestedAnalyzisSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityDuplicateAnalyze
         fields = ["analyze_id", "created_at", "finished_at", "the_fields", "type"]
-        
+
+
 # credit https://stackoverflow.com/questions/53847404/how-to-check-uuid-validity-in-python
-def is_UUID(value, version = 4):
-    if isinstance(value,str):
-        return False;
+def is_UUID(value, version=4):
+    if isinstance(value, str):
+        return False
     try:
         uuid_obj = UUID(value, version=version)
     except ValueError:
         return False
     return str(uuid_obj) == value
-    
+
+
 class EntityDuplicateSerializer(serializers.ModelSerializer):
     entity_type = EntityDuplicateNestedEntityTypeSerializer(source="entity1.entity_type")
     form = EntityDuplicateNestedFormSerializer(source="entity1.entity_type.reference_form")

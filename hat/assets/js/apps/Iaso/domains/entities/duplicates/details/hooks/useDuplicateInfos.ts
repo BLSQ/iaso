@@ -37,13 +37,13 @@ export const useDuplicateInfos = ({
         const entityIds = ids.split(',').map(id => parseInt(id, 10));
         return {
             unmatchedRemaining: calculateRemainingUnmatched(tableState),
-            formName: duplicatesInfos?.[0].form.name ?? '',
-            algorithmRuns: duplicatesInfos?.[0].analyzis.length ?? 0,
+            formName: duplicatesInfos?.[0]?.form.name ?? '',
+            algorithmRuns: duplicatesInfos?.[0]?.analyzis.length ?? 0,
             algorithmsUsed: findAlgorithmsUsed(
-                duplicatesInfos?.[0].analyzis ?? [],
+                duplicatesInfos?.[0]?.analyzis ?? [],
             ),
-            similarityScore: duplicatesInfos?.[0].similarity_star,
-            isLoading: !duplicatesInfos?.length,
+            similarityScore: duplicatesInfos?.[0]?.similarity_star,
+            isLoading: (duplicatesInfos ?? []).length === 0,
             // TODO prevent longer arrays of ids
             entityIds: entityIds as [number, number],
         };

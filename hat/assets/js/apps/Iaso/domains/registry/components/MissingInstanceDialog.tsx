@@ -17,8 +17,6 @@ import {
 } from 'bluesquare-components';
 import EnketoIcon from '../../instances/components/EnketoIcon';
 
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
-
 import { useGetCreateInstance } from '../hooks/useGetCreateInstance';
 
 import { MissingInstanceButton } from './MissingInstanceButton';
@@ -27,9 +25,10 @@ import { redirectToReplace } from '../../../routing/actions';
 import { RegistryDetailParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
+import { CompletenessStats } from '../../completenessStats/types';
 
 type Props = {
-    missingOrgUnits: OrgUnit[];
+    missingOrgUnits: CompletenessStats[];
     isOpen: boolean;
     closeDialog: () => void;
     params: RegistryDetailParams;
@@ -129,7 +128,8 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                                     <IconButton
                                         onClick={() =>
                                             creteInstance(
-                                                settings.row.original.id,
+                                                settings.row.original.org_unit
+                                                    .id,
                                             )
                                         }
                                         overrideIcon={EnketoIcon}

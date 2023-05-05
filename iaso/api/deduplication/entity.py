@@ -10,6 +10,7 @@ from rest_framework import mixins, permissions, serializers, status, viewsets
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
+from uuid import UUID
 
 import iaso.models.base as base
 from iaso.api.common import HasPermission, ModelViewSet, Paginator
@@ -61,8 +62,17 @@ class EntityDuplicateNestedAnalyzisSerializer(serializers.ModelSerializer):
     class Meta:
         model = EntityDuplicateAnalyze
         fields = ["analyze_id", "created_at", "finished_at", "the_fields", "type"]
-
-
+        
+# credit https://stackoverflow.com/questions/53847404/how-to-check-uuid-validity-in-python
+def is_UUID(value, version = 4):
+    if isinstance(value,str):
+        return False;
+    try:
+        uuid_obj = UUID(value, version=version)
+    except ValueError:
+        return False
+    return str(uuid_obj) == value
+    
 class EntityDuplicateSerializer(serializers.ModelSerializer):
     entity_type = EntityDuplicateNestedEntityTypeSerializer(source="entity1.entity_type")
     form = EntityDuplicateNestedFormSerializer(source="entity1.entity_type.reference_form")
@@ -267,6 +277,8 @@ class EntityDuplicateViewSet(ModelViewSet):
                 e1_val = e1_json[the_q["name"]]
                 # FIXME: find a better way to exclude the instance id
                 if "uuid" in e1_val:
+                    continue
+                if is_UUID(e1_val):
                     continue
                 e1_type = type(e1_val).__name__
             except:

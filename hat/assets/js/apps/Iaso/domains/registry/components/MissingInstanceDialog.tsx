@@ -25,14 +25,17 @@ import { redirectToReplace } from '../../../routing/actions';
 import { RegistryDetailParams } from '../types';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
-import { CompletenessStats } from '../../completenessStats/types';
+import { CompletenessApiResponse } from '../../completenessStats/types';
+
+import { defaultSorted } from '../hooks/useGetEmptyInstanceOrgUnits';
 
 type Props = {
-    missingOrgUnits: CompletenessStats[];
+    missingOrgUnitsData: CompletenessApiResponse;
     isOpen: boolean;
     closeDialog: () => void;
     params: RegistryDetailParams;
     formId?: string;
+    isFetching: boolean;
 };
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -60,6 +63,18 @@ const useStyles = makeStyles(theme => ({
         '& .pagination-count': {
             marginRight: theme.spacing(2),
         },
+        '& .pagination-previous + div': {
+            marginLeft: theme.spacing(2),
+        },
+        '& .pagination-previous + div + div': {
+            marginRight: theme.spacing(2),
+        },
+        '& .MuiTablePagination-toolbar': {
+            padding: theme.spacing(1),
+        },
+        '& .pagination-row-select': {
+            marginLeft: theme.spacing(2),
+        },
     },
     action: {
         paddingBottom: theme.spacing(2),
@@ -68,11 +83,12 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const MissingInstanceDialog: FunctionComponent<Props> = ({
-    missingOrgUnits,
+    missingOrgUnitsData,
     closeDialog,
     isOpen,
     params,
     formId,
+    isFetching,
 }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
@@ -89,7 +105,7 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
     return (
         <Dialog
             fullWidth
-            maxWidth="xs"
+            maxWidth="sm"
             open={isOpen}
             classes={{
                 paper: classes.paper,
@@ -106,16 +122,15 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                 <Table
                     marginTop={false}
                     marginBottom={false}
-                    data={missingOrgUnits}
-                    pages={0}
-                    defaultSorted={[{ id: 'name', desc: true }]}
+                    data={missingOrgUnitsData.results}
+                    pages={missingOrgUnitsData.pages}
+                    defaultSorted={defaultSorted}
                     columns={[
                         {
                             Header: formatMessage(MESSAGES.name),
                             id: 'name',
                             accessor: 'name',
                             align: 'left',
-                            sortable: false,
                         },
                         {
                             Header: formatMessage(MESSAGES.add),
@@ -141,10 +156,14 @@ const MissingInstanceDialog: FunctionComponent<Props> = ({
                             },
                         },
                     ]}
-                    count={missingOrgUnits.length}
+                    extraProps={{ loading: isFetching }}
+                    paramsPrefix="missingSubmissions"
+                    count={missingOrgUnitsData.count}
                     params={params}
-                    showPagination={false}
                     elevation={0}
+                    onTableParamsChange={p => {
+                        dispatch(redirectToReplace(baseUrls.registryDetail, p));
+                    }}
                 />
             </DialogContent>
             <DialogActions className={classes.action}>

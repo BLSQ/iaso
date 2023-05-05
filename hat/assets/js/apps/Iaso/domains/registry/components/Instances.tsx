@@ -67,10 +67,10 @@ export const Instances: FunctionComponent<Props> = ({
         currentType?.id,
     );
 
-    const { data: orgUnitsWithoutCurrentForm } = useGetEmptyInstanceOrgUnits(
-        params,
-        currentType?.id,
-    );
+    const {
+        data: orgUnitsWithoutCurrentForm,
+        isFetching: isFetchingOrgUnitsWithoutCurrentForm,
+    } = useGetEmptyInstanceOrgUnits(params, currentType?.id);
 
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
@@ -187,9 +187,12 @@ export const Instances: FunctionComponent<Props> = ({
                                             currentUser,
                                         ) && (
                                             <MissingInstanceDialog
+                                                isFetching={
+                                                    isFetchingOrgUnitsWithoutCurrentForm
+                                                }
                                                 formId={formIds}
-                                                missingOrgUnits={
-                                                    orgUnitsWithoutCurrentForm.results
+                                                missingOrgUnitsData={
+                                                    orgUnitsWithoutCurrentForm
                                                 }
                                                 params={params}
                                                 iconProps={{

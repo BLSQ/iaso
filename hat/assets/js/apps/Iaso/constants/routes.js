@@ -477,6 +477,7 @@ export const registryDetailPath = {
         },
         ...paginationPathParams,
         ...paginationPathParamsWithPrefix('orgUnitList'),
+        ...paginationPathParamsWithPrefix('missingSubmissions'),
     ],
 };
 

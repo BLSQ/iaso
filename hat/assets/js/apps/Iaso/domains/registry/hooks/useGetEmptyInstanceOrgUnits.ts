@@ -29,9 +29,9 @@ export const useGetEmptyInstanceOrgUnits = (
     const apiParams: ApiParams = {
         org_unit_type_ids: orgUnitTypeId,
         form_id: params.formIds,
-        limit: params.pageSize || '20',
-        order: params.order || getSort(defaultSorted),
-        page: params.page || '1',
+        limit: params.missingSubmissionsPageSize || '10',
+        order: params.missingSubmissionsOrder || getSort(defaultSorted),
+        page: params.missingSubmissionsPage || '1',
         parent_org_unit_id: params.orgUnitId,
         without_submissions: true,
     };
@@ -46,6 +46,7 @@ export const useGetEmptyInstanceOrgUnits = (
             enabled: Boolean(orgUnitTypeId && params.formIds),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            keepPreviousData: true,
         },
     });
 };

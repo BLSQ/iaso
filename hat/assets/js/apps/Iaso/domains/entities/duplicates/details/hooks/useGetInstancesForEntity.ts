@@ -17,7 +17,7 @@ export const useGetInstancesForEntity = ({
     const params: {
         order: string;
         entityId?: string;
-        with_descriptor: 'true' | 'false';
+        with_descriptor?: 'true' | 'false';
     } = {
         order: '-created_at',
         with_descriptor: 'true',

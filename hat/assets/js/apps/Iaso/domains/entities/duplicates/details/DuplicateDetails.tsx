@@ -31,20 +31,20 @@ import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
 
 const updateCellColors =
     (selected: 'entity1' | 'entity2') =>
-        (row: DuplicateEntityForTable): DuplicateEntityForTable => {
-            const dropped = selected === 'entity1' ? 'entity2' : 'entity1';
-            if (row.entity1.status === 'identical') return row;
-            return {
-                ...row,
-                [selected]: { ...row[selected], status: 'selected' },
-                final: {
-                    ...row.final,
-                    status: 'selected',
-                    value: row[selected].value,
-                },
-                [dropped]: { ...row[dropped], status: 'dropped' },
-            };
+    (row: DuplicateEntityForTable): DuplicateEntityForTable => {
+        const dropped = selected === 'entity1' ? 'entity2' : 'entity1';
+        if (row.entity1.status === 'identical') return row;
+        return {
+            ...row,
+            [selected]: { ...row[selected], status: 'selected' },
+            final: {
+                ...row.final,
+                status: 'selected',
+                value: row[selected].value,
+            },
+            [dropped]: { ...row[dropped], status: 'dropped' },
         };
+    };
 
 const resetCellColors = (
     row: DuplicateEntityForTable,
@@ -170,7 +170,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
             const newQuery = {};
             newState.forEach(row => {
                 if (row.entity1.status !== 'identical') {
-                    newQuery[row.the_field.field] = row[selected].id;
+                    newQuery[row.field.field] = row[selected].id;
                 }
             });
             setTableState({ index: 'all', value: newState });

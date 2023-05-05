@@ -49,7 +49,7 @@ export type EntityForTableData = {
 };
 
 export type DuplicateEntityForTable = {
-    the_field: {
+    field: {
         field: string;
         label: string | Record<string, string>;
     };

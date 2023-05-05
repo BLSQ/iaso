@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { getRequest } from '../../../../../libs/Api';
@@ -13,8 +14,13 @@ type QueryResult = {
 export const useGetInstancesForEntity = ({
     entityId,
 }: QueryParams): UseQueryResult<QueryResult, any> => {
-    const params: { order: string; entityId?: string } = {
+    const params: {
+        order: string;
+        entityId?: string;
+        with_descriptor: 'true' | 'false';
+    } = {
         order: '-created_at',
+        with_descriptor: 'true',
     };
     if (entityId) {
         params.entityId = entityId;

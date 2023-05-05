@@ -119,7 +119,7 @@ class ParamSerializer(serializers.Serializer):
             # we could filter but since it's an additional it probably just a waste
             self.fields["org_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
                 user, None
-            )
+            ).distinct()
             self.fields["org_unit_group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
             # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided

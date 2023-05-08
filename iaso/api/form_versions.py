@@ -1,17 +1,18 @@
 import typing
+from typing import Optional
 
 from django.db.models import BooleanField
 from django.db.models import Value, Count, TextField
 from django.db.models.expressions import Case, When
 from django.db.models.functions import Concat
-from rest_framework import serializers, parsers, permissions, exceptions
+from rest_framework import serializers, parsers, exceptions
 from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing
+from iaso.api.query_params import APP_ID
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
-
 
 # noinspection PyMethodMayBeStatic
 class FormVersionSerializer(DynamicFieldsModelSerializer):
@@ -134,6 +135,18 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         return form_version
 
 
+class HasFormVersionPermission(HasFormPermission):
+    def has_object_permission(self, request, view, obj) -> bool:
+        if not self.has_permission(request, view):
+            return False
+
+        ok_forms = Form.objects_include_deleted.filter_for_user_and_app_id(
+            request.user, request.query_params.get("app_id")
+        )
+
+        return ok_forms.filter(id=obj.form_id).exists()
+
+
 class FormVersionsViewSet(ModelViewSet):
     """Form versions API
 
@@ -146,10 +159,7 @@ class FormVersionsViewSet(ModelViewSet):
     """
 
     serializer_class = FormVersionSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
-    ]
+    permission_classes = [HasFormVersionPermission]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
@@ -159,8 +169,16 @@ class FormVersionsViewSet(ModelViewSet):
         orders = self.request.query_params.get("order", "full_name").split(",")
         mapped_filter = self.request.query_params.get("mapped", "")
 
-        profile = self.request.user.iaso_profile
-        queryset = FormVersion.objects.filter(form__projects__account=profile.account)
+        if self.request.user.is_anonymous:
+            app_id = self.request.query_params.get(APP_ID)
+            if app_id is not None:
+                queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
+            else:
+                queryset = FormVersion.objects.none()
+
+        else:
+            profile = self.request.user.iaso_profile
+            queryset = FormVersion.objects.filter(form__projects__account=profile.account)
 
         search_name = self.request.query_params.get("search_name", None)
         if search_name:

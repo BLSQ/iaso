@@ -59,19 +59,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         cls.project.save()
 
-    def test_form_versions_list_without_auth(self):
-        """GET /formversions/: without auth: 403"""
-
-        response = self.client.get("/api/formversions/")
-        self.assertJSONResponse(response, 403)
-
-    def test_form_versions_list_wrong_permission(self):
-        """GET /formversions/: with auth but without the iaso_forms permission"""
-
-        self.client.force_authenticate(self.superman)
-        response = self.client.get("/api/formversions/")
-        self.assertJSONResponse(response, 403)
-
     def test_form_versions_list(self):
         """GET /formversions/: allowed"""
 

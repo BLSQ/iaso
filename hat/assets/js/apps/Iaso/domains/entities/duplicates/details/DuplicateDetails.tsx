@@ -5,6 +5,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
@@ -31,20 +32,20 @@ import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
 
 const updateCellColors =
     (selected: 'entity1' | 'entity2') =>
-        (row: DuplicateEntityForTable): DuplicateEntityForTable => {
-            const dropped = selected === 'entity1' ? 'entity2' : 'entity1';
-            if (row.entity1.status === 'identical') return row;
-            return {
-                ...row,
-                [selected]: { ...row[selected], status: 'selected' },
-                final: {
-                    ...row.final,
-                    status: 'selected',
-                    value: row[selected].value,
-                },
-                [dropped]: { ...row[dropped], status: 'dropped' },
-            };
+    (row: DuplicateEntityForTable): DuplicateEntityForTable => {
+        const dropped = selected === 'entity1' ? 'entity2' : 'entity1';
+        if (row.entity1.status === 'identical') return row;
+        return {
+            ...row,
+            [selected]: { ...row[selected], status: 'selected' },
+            final: {
+                ...row.final,
+                status: 'selected',
+                value: row[selected].value,
+            },
+            [dropped]: { ...row[dropped], status: 'dropped' },
         };
+    };
 
 const resetCellColors = (
     row: DuplicateEntityForTable,
@@ -126,6 +127,9 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     });
 
     const { fields: entities, descriptor1, descriptor2 } = dupDetailData || {};
+    const descriptors = useMemo(() => {
+        return { descriptor1, descriptor2 };
+    }, [descriptor1, descriptor2]);
 
     const {
         unmatchedRemaining,
@@ -159,12 +163,12 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         state: tableState,
         updateCellState,
         setQuery,
+        descriptors,
     });
 
     const takeAllValuesFromEntity = useCallback(
         (entity: 'entity1' | 'entity2') => {
             const selected = entity;
-            // const dropped = entity === 'entity1' ? 'entity2' : 'entity1';
             const newState = [...tableState].map(updateCellColors(entity));
             const newUnfilteredState = [...unfilteredTableState].map(
                 updateCellColors(entity),

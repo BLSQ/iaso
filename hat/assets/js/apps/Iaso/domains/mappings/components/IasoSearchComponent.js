@@ -34,7 +34,7 @@ const IasoSearchComponent = props => {
                     fetch(
                         `/api/${resourceName}.json?search_name=${input.input}${
                             fields ? `&fields=${fields}` : ''
-                        }`,
+                        }&hide_deleted=True`,
                     )
                         .then(resp => resp.json())
                         .then(f => {
@@ -46,7 +46,7 @@ const IasoSearchComponent = props => {
                         }),
                 200,
             ),
-        [],
+        [collectionName, fields, mapOptions, resourceName],
     );
     React.useEffect(() => {
         setInputValue(defaultValue);

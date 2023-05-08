@@ -229,9 +229,9 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         if not self.remove_results_key_if_paginated:
-            return Response({self.get_results_key(): serializer.data})
+            return Response(data={self.get_results_key(): serializer.data}, content_type="application/json")
         else:
-            return Response(serializer.data)
+            return Response(data=serializer.data, content_type="application/json")
 
     def get_queryset(self):
         entities = self.request.query_params.get("entities", None)
@@ -302,12 +302,6 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         e2_json = duplicate.entity2.attributes.json
 
         for the_q in possible_fields:
-
-            # the_q = find_question_by_name(f, possible_fields)
-
-            # needs to handle the case where the field is not found
-
-            print("the_q[_name_]", the_q["name"])
 
             try:
                 e1_val = e1_json[the_q["name"]]

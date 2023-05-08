@@ -82,20 +82,22 @@ const localizeLabel = (field: Field): string => {
     let localeOptions: Record<string, string> = { [localeKey]: field.name };
     if (typeof field === 'object') {
         if (typeof field.label === 'string') {
-            const singleToDoubleQuotes: string = (field.label || '').replaceAll(
-                "'",
-                '"',
+            // Replacing all single quotes used as apostrophe into html entities, and put it back after replacing other single quotes into double quotes
+            const apostrophe = /(?<=[\p{Letter}])'(?=[\p{Letter}])/gu;
+            let label: string = (field.label || '').replaceAll(
+                apostrophe,
+                '&apos;',
             );
-            const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
-            const formattedLabel: string = singleToDoubleQuotes.replace(
-                wrongDoubleQuotes,
-                "'",
-            );
+            label = label.replaceAll("'", '"');
+            label = label.replaceAll('&apos;', "'");
+            const wrongDoubleQuotes = /(?<=[\p{Letter}])"(?=[\p{Letter}])/gu;
+            label = label.replace(wrongDoubleQuotes, "'");
+
             try {
-                localeOptions = JSON.parse(formattedLabel);
+                localeOptions = JSON.parse(label);
             } catch (e) {
                 // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
-                console.warn('Error parsing JSON', formattedLabel, e);
+                console.warn('Error parsing JSON', label, e);
                 return field.name;
             }
         } else if (

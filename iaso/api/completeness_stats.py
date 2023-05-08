@@ -90,6 +90,8 @@ class Params(TypedDict):
     period: Optional[str]  # might migrate to Period in the future
     order: List[str]
     org_unit_group: Optional[Group]
+    without_submissions: bool
+    org_unit_validation_status: List[str]
 
 
 class PrimaryKeysRelatedField(serializers.ManyRelatedField):
@@ -118,7 +120,7 @@ class ParamSerializer(serializers.Serializer):
             # we could filter but since it's an additional it probably just a waste
             self.fields["org_unit_type_ids"].child_relation.queryset = OrgUnitType.objects.filter_for_user_and_app_id(
                 user, None
-            )
+            ).distinct()
             self.fields["org_unit_group_id"].queryset = Group.objects.filter_for_user(user)
             self.fields["parent_org_unit_id"].queryset = OrgUnit.objects.filter_for_user(user)
             # Forms to take into account: we take everything for the user's account, then filter by the form_ids if provided
@@ -151,12 +153,28 @@ class ParamSerializer(serializers.Serializer):
     )
     order = serializers.CharField(default="name")  # actually a list in validated data
     period = serializers.CharField(required=False, help_text="Filter period in this instances")
+    without_submissions = serializers.BooleanField(
+        default=False, help_text="Only return orgunit without direct submissions"
+    )
     org_unit_group_id = serializers.PrimaryKeyRelatedField(
         queryset=Group.objects.none(),
         source="org_unit_group",
         required=False,
         help_text="Filter the orgunit used for count on this group",
     )
+
+    org_unit_validation_status = serializers.CharField(
+        default="VALID",
+        help_text="Filter org unit on theses validation status"
+        " (both for returned orgunit and count), can specify multiple status, separated by a ','",
+    )
+
+    def validate_org_unit_validation_status(self, statuses):
+        statuses = statuses.split(",")
+        for status in statuses:
+            if status not in (OrgUnit.VALIDATION_VALID, OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_REJECTED):
+                raise serializers.ValidationError("Invalid status")
+        return statuses
 
     def validate_order(self, order):
         return order.split(",")
@@ -201,6 +219,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         form_qs = params["forms"]
         period = params.get("period", None)
         planning = params.get("planning", None)
+        org_unit_validation_status = params["org_unit_validation_status"]
 
         instance_qs = Instance.objects.all()
         if period:
@@ -215,7 +234,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile  # type: ignore
 
         org_units: OrgUnitQuerySet
-        org_units = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))  # type: ignore
+        org_units = OrgUnit.objects.filter(validation_status__in=org_unit_validation_status)  # type: ignore
         # Calculate the ou for which we want reporting `top_ous`
         #  We only want ou to which user has access
         #   if no params we return the top ou for the default source
@@ -259,8 +278,9 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
 
+        # Orgunit on which we count the Submissions
         orgunit_qs: OrgUnitQuerySet
-        orgunit_qs = OrgUnit.objects.filter(validation_status__in=(OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_VALID))  # type: ignore
+        orgunit_qs = OrgUnit.objects.filter(validation_status__in=org_unit_validation_status)  # type: ignore
         org_unit_group = params.get("org_unit_group")
         if org_unit_group:
             orgunit_qs = orgunit_qs.filter(groups__id=org_unit_group.id)
@@ -292,6 +312,18 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         ou_with_stats = ou_with_stats.order_by(*converted_orders)
 
+        # filter on orgunit without submissions
+        if params.get("without_submissions"):
+            for form in form_qs:
+                slug = f"form_{form.id}"
+                ou_with_stats = ou_with_stats.exclude(
+                    RawSQL(
+                        "CAST(form_stats#>>%s as integer) > 0",
+                        [[slug, "itself_has_instances"]],
+                        output_field=models.BooleanField(),
+                    ),
+                )
+
         def to_dict(row_ou: OrgUnitWithFormStat):
             return {
                 "name": row_ou.name,
@@ -319,7 +351,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         # If a particular parent is requested we calculate its own stats
         #  and put it on the top of the list
-        if parent_ou:
+        if parent_ou and not params.get("without_submissions"):
             ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
             ou_qs = get_annotated_queryset(ou_qs, orgunit_qs, instance_qs, form_qs)
 
@@ -391,7 +423,6 @@ FROM filtered_roots
 GROUP BY filtered_roots.id
                """
 
-
 # noinspection SqlResolve
 OU_COUNT_QUERY = """ 
 SELECT "iaso_orgunit"."path",
@@ -403,7 +434,7 @@ SELECT "iaso_orgunit"."path",
 FROM "filtered_forms" AS "iaso_form"
          JOIN "iaso_form_org_unit_types"
               ON "iaso_form"."id" = "iaso_form_org_unit_types"."form_id"
-         LEFT OUTER JOIN "filtered_orgunit"  as "iaso_orgunit"
+         LEFT OUTER JOIN "filtered_orgunit"  AS "iaso_orgunit"
                          ON ("iaso_orgunit"."org_unit_type_id" =
                              "iaso_form_org_unit_types"."orgunittype_id")
          LEFT OUTER JOIN "filtered_instance" AS iaso_instance

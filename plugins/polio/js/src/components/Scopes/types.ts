@@ -28,12 +28,21 @@ export type FilteredDistricts = {
     region: any;
     id: number;
     parent_id: number;
+    latitude?: number;
+    longitude?: number;
+    geo_json?: Shape | undefined;
+    has_geo_json: boolean;
 };
 
 export type ShapeRow = Shape & {
     region: string;
     vaccineName?: string;
+    name: string;
     fullRegionIsPartOfScope?: boolean;
+    latitude?: number;
+    longitude?: number;
+    geo_json?: Shape | undefined;
+    has_geo_json: boolean;
 };
 
 export type Round = {

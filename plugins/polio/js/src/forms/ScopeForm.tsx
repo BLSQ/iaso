@@ -14,7 +14,7 @@ import MESSAGES from '../constants/messages';
 import { useStyles } from '../styles/theme';
 
 import { useGetParentOrgUnit } from '../hooks/useGetParentOrgUnit';
-import { useGetGeoJson, useGetDistrictList } from '../hooks/useGetGeoJson';
+import { useGetGeoJson } from '../hooks/useGetGeoJson';
 import { findScopeWithOrgUnit, findRegion } from '../components/Scopes/utils';
 import { ScopeField } from '../components/Inputs/ScopeField';
 
@@ -55,14 +55,6 @@ export const ScopeForm: FunctionComponent = () => {
     const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
     const parentCountryId =
         country?.country_parent?.id || country?.root?.id || country?.id;
-    const { data: districts, isFetching: isFetchingDistricts } =
-        useGetDistrictList(parentCountryId, {
-            pageSize: '10',
-            order: 'id',
-            page: '1',
-            search: debouncedSearch,
-        });
-    console.log('districts', districts);
     const { data: districtShapes, isFetching: isFetchingDistrictsShapes } =
         useGetGeoJson(parentCountryId, 'DISTRICT');
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(

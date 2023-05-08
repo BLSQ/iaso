@@ -492,8 +492,6 @@ class ParentOrgUnitSerializer(serializers.ModelSerializer):
 class OrgUnitSerializer(serializers.ModelSerializer):
     country_parent = serializers.SerializerMethodField()
     root = serializers.SerializerMethodField()  # type: ignore
-    parent = serializers.SerializerMethodField()  # type: ignore
-    vaccine = serializers.SerializerMethodField()  # type: ignore
 
     def get_country_parent(self, instance: OrgUnit):
         countries = instance.country_ancestors()
@@ -505,42 +503,9 @@ class OrgUnitSerializer(serializers.ModelSerializer):
         root = instance.root()
         return ParentOrgUnitSerializer(instance=root).data if root else None
 
-    def get_parent(self, instance: OrgUnit):
-        parent = OrgUnit.objects.all().get(id=instance.parent_id)
-        return ParentOrgUnitSerializer(instance=parent).data
-
-    def get_vaccine(self, instance: OrgUnit):
-        request = self.context["request"]
-        campaign_id = request.GET.get("campaignId", None)
-        round_number = request.GET.get("roundNumber", None)
-        if campaign_id:
-            campaign = Campaign.objects.all().get(id=campaign_id)
-            if campaign:
-                scopes = None
-                if campaign.separate_scopes_per_round:
-                    if campaign.rounds and round_number:
-                        current_round = campaign.rounds.get(number=round_number)
-                        if current_round:
-                            scopes = current_round.scopes
-                else:
-                    scopes = campaign.scopes
-                if scopes:
-
-                    # http://localhost:8081/api/polio/orgunits/?orgUnitTypeCategory%3DDISTRICT&orgUnitParentId=29710&limit=10&campaignId=10e8622d-a2ce-4136-9564-7d65c159c7aa
-                    # current_scope = scopes.all().get(group__org_units__id__icontains=instance.id)
-                    current_scope = None
-                    for scope in scopes.all():
-                        for org_unit in scope.group.org_units.all():
-                            if org_unit == instance:
-                                current_scope = scope
-                    if current_scope:
-                        return current_scope.vaccine
-
-        return None
-
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "root", "country_parent", "parent", "org_unit_type", "vaccine"]
+        fields = ["id", "name", "root", "country_parent"]
 
 
 class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):

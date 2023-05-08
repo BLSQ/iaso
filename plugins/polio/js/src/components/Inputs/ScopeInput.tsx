@@ -24,6 +24,7 @@ import { DistrictScopeTable } from '../Scopes/DistrictScopeTable';
 import { MapScope } from '../Scopes/MapScope';
 
 import { Scope, Shape, Values, FilteredDistricts } from '../Scopes/types';
+import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
@@ -32,8 +33,8 @@ type ExtraProps = {
     onChangeSearchScope: () => void;
     isFetchingDistricts: boolean;
     isFetchingRegions: boolean;
-    districtShapes?: FilteredDistricts[];
-    regionShapes?: Shape[];
+    districtShapes?: OrgUnit[];
+    regionShapes?: OrgUnit[];
     searchComponent: ReactNode;
     page: number;
     // eslint-disable-next-line no-unused-vars

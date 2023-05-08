@@ -101,29 +101,7 @@ class PolioOrgunitViewSet(ModelViewSet):
         return OrgUnitSerializer
 
     def get_queryset(self):
-        queryset = OrgUnit.objects.filter_for_user_and_app_id(
-            self.request.user, self.request.query_params.get("app_id")
-        )
-        order = self.request.GET.get("order", "name").split(",")
-        org_unit_parent_id = self.request.GET.get("orgUnitParentId", None)
-        org_unit_type_category = self.request.GET.get("orgUnitTypeCategory", None)
-        validation_status = self.request.GET.get("validationStatus", OrgUnit.VALIDATION_VALID)
-        search = self.request.GET.get("search", None)
-
-        if validation_status != "all":
-            queryset = queryset.filter(validation_status=validation_status)
-        if org_unit_parent_id:
-            parent = OrgUnit.objects.get(id=org_unit_parent_id)
-            queryset = queryset.hierarchy(parent)
-        if org_unit_type_category:
-            queryset = queryset.filter(org_unit_type__category=org_unit_type_category.upper())
-        queryset = queryset.order_by(*order)
-        if search:
-            queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
-
-        queryset = queryset.select_related("org_unit_type")
-        queryset = queryset.prefetch_related("parent")
-        return queryset.distinct()
+        return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
 
 class CampaignViewSet(ModelViewSet, CSVExportMixin):

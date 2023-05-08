@@ -1,12 +1,13 @@
 import csv
 import datetime
 import io
+import math
 from time import strftime, gmtime
 from typing import List, Any, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Max, Q
+from django.db.models import Max, Q, Count
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -118,6 +119,15 @@ class EntityTypeViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(name__icontains=search)
         return queryset
+
+
+def get_duplicates(entity):
+    results = []
+    if entity.duplicates1.count() > 0:
+        results = results + list(map(lambda x: x.entity2.id, entity.duplicates1.all()))
+    elif entity.duplicates2.count() > 0:
+        results = results + list(map(lambda x: x.entity1.id, entity.duplicates2.all()))
+    return results
 
 
 class EntityViewSet(ModelViewSet):
@@ -266,6 +276,16 @@ class EntityViewSet(ModelViewSet):
 
         entities = entities.order_by(*new_order_columns)
 
+        if limit:
+            limit_int = int(limit)
+            page_offset = int(page_offset)
+            start_int = (page_offset - 1) * limit_int
+            end_int = start_int + limit_int
+            total_count = entities.count()
+            num_pages = math.ceil(total_count / limit_int)
+            entities = entities[start_int:end_int]
+            results_count = entities.count()
+
         if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
             for entity in entities:
                 attributes = entity.attributes
@@ -281,6 +301,7 @@ class EntityViewSet(ModelViewSet):
                     attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 name = None
                 program = None
+
                 if file_content is not None:
                     name = file_content.get("name")
                     program = file_content.get("program")
@@ -296,6 +317,7 @@ class EntityViewSet(ModelViewSet):
                     "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "org_unit": attributes_ou,
                     "program": program,
+                    "duplicates": get_duplicates(entity),
                 }
                 result_list.append(result)
         else:
@@ -333,6 +355,7 @@ class EntityViewSet(ModelViewSet):
                     # FIXME: investigate typing error on next line
                     "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "program": program,
+                    "duplicates": get_duplicates(entity),
                 }
 
                 # Get data from xlsform
@@ -400,23 +423,16 @@ class EntityViewSet(ModelViewSet):
             return response
 
         if limit:
-            limit_int = int(limit)
-            page_offset = int(page_offset)
-            paginator = Paginator(result_list, limit_int)
-
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
             return Response(
                 {
-                    "count": paginator.count,
-                    "has_next": page.has_next(),
-                    "has_previous": page.has_previous(),
+                    "count": results_count,
+                    "has_next": end_int < total_count,
+                    "has_previous": start_int > 0,
                     "page": page_offset,
-                    "pages": paginator.num_pages,
+                    "pages": num_pages,
                     "limit": limit_int,
                     "columns": columns_list,
-                    "result": map(lambda x: x, page.object_list),
+                    "result": result_list,
                 }
             )
 

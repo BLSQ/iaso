@@ -7,7 +7,7 @@ from typing import Any
 
 from django.contrib.auth.models import User, Permission
 
-from iaso.models import Account, Form, OrgUnitType, OrgUnit
+from iaso.models import Account, Form, OrgUnitType, OrgUnit, Instance
 from iaso.test import APITestCase
 
 
@@ -163,7 +163,7 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_base_row_listing(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
         j = self.assertJSONResponse(response, 200)
         expected_result = {
             "forms": [
@@ -372,20 +372,25 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response_with_filter = self.client.get(
-            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}"
+            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}",
+            {"org_unit_validation_status": "VALID,NEW"},
         )
 
         json = self.assertJSONResponse(response_with_filter, 200)
         results_with_filter = json["results"]
         self.assertEqual(len(results_with_filter), 2)
-        response_without_filter = self.client.get(f"/api/v2/completeness_stats/")
+        response_without_filter = self.client.get(
+            f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"}
+        )
         results_without_filter = self.assertJSONResponse(response_without_filter, 200)["results"]
         self.assertListEqual(results_with_filter, results_without_filter)
 
     def test_filter_by_parent_org_unit(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?parent_org_unit_id=1")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
+        )
         json = response.json()
         # All the rows we get are direct children of the Country (region A and B)
         self.assertEqual(len(json["results"]), 3)
@@ -399,7 +404,7 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_pagination(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/?page=1&limit=1")
+        response = self.client.get("/api/v2/completeness_stats/?page=1&limit=1&org_unit_validation_status=VALID,NEW")
         j = self.assertJSONResponse(response, 200)
         self.assertEqual(j["count"], 2)
         self.assertEqual(j["page"], 1)
@@ -413,14 +418,14 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Test that the default limit parameter is 10"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
         json = self.assertJSONResponse(response, 200)
         self.assertEqual(json["limit"], 10)
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/")
+        response = self.client.get(f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
         json = response.json()
         # Two OU, 3 forms => 2 rows
         self.assertEqual(len(json["results"]), 2)
@@ -446,7 +451,9 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         # We filter to get only the district A.A
-        response = self.client.get(f"/api/v2/completeness_stats/?parent_org_unit_id=4")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?parent_org_unit_id=4", {"org_unit_validation_status": "VALID,NEW"}
+        )
         j = self.assertJSONResponse(response, 200)
         self.assertEqual(len(j["results"]), 2)
 
@@ -459,7 +466,11 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.as_abb_ou.save()
         response = self.client.get(
             f"/api/v2/completeness_stats/",
-            {"parent_org_unit_id": self.as_abb_ou.parent.id, "form_id": self.form_hs_4.id},
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "org_unit_validation_status": "VALID,NEW",
+            },
         )
 
         j = self.assertJSONResponse(response, 200)
@@ -488,7 +499,11 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         response = self.client.get(
             f"/api/v2/completeness_stats/",
-            {"parent_org_unit_id": self.as_abb_ou.parent.id, "form_id": self.form_hs_4.id},
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "org_unit_validation_status": "VALID,NEW",
+            },
         )
 
         j = self.assertJSONResponse(response, 200)
@@ -511,3 +526,48 @@ class CompletenessStatsAPITestCase(APITestCase):
             }
         }
         self.assertEqual(form_stats, expected)
+
+    def test_without_submissions_parms(self):
+        """Check that without_submissions params works"""
+        self.client.force_authenticate(self.user)
+        # Check number of result when it's false
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "without_submissions": "false",
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 3)
+
+        # should default to false so same number of result if par modiié leams is not present
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 3)
+
+        # If we filter it should be two
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "without_submissions": "true",
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 1)
+        for r in j["results"]:
+            # check that the result have effectly zero submission
+            ou = r["org_unit"]["id"]
+            self.assertEqual(Instance.objects.filter(form=self.form_hs_4, org_unit_id=ou).count(), 0)

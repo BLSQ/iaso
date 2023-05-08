@@ -344,9 +344,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'preparedness_spreadsheet_url',
         },
         {
-            key: 'surge_spreadsheet_url',
-        },
-        {
             key: 'preperadness_sync_status',
         },
         // Scopes

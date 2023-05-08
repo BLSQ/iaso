@@ -19,6 +19,7 @@ import {
     FormStatRow,
 } from '../types';
 import { Column } from '../../../types/table';
+import { useGetOrgUnitDetail } from '../../orgUnits/hooks/requests/useGetOrgUnitDetail';
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
@@ -204,7 +205,10 @@ export const useCompletenessStatsColumns = (
             accessor: 'actions',
             sortable: false,
             Cell: settings => {
-                const orgunitName = settings.row.original.name.toLowerCase();
+                const { data: orgunit } = useGetOrgUnitDetail(
+                    settings.row.original.id,
+                );
+                const orgunitName = orgunit?.name;
                 return (
                     <>
                         {!settings.row.original.is_root && (

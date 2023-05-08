@@ -93,11 +93,12 @@ export const useGetDuplicateDetails = ({
     // TODO see with backend exact api
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({
-        queryKey: ['entityDuplicateDetails'],
+        queryKey: ['entityDuplicateDetails', params],
         queryFn: () => getDuplicatesDetails(queryString),
         options: {
             select: data => {
-                if (!data) return { fields: [], descriptor1: {}, descriptor2: {} };
+                if (!data)
+                    return { fields: [], descriptor1: {}, descriptor2: {} };
 
                 const fields_result = data.fields.map(row => {
                     return {

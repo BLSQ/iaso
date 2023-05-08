@@ -23,7 +23,7 @@ import MESSAGES from '../../constants/messages';
 import { DistrictScopeTable } from '../Scopes/DistrictScopeTable';
 import { MapScope } from '../Scopes/MapScope';
 
-import { Scope, Shape, Values, FilteredDistricts } from '../Scopes/types';
+import { Scope, Values, FilteredDistricts } from '../Scopes/types';
 import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 type ExtraProps = {
@@ -71,7 +71,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
     };
 
     const toggleRegion = useCallback(
-        (selectOrgUnit: Shape) => {
+        (selectOrgUnit: FilteredDistricts) => {
             const orgUnitsIdInSameRegion: number[] = (districtShapes || [])
                 .filter(s => s.parent_id === selectOrgUnit.parent_id)
                 .map(s => s.id);

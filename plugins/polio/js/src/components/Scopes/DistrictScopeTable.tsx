@@ -21,14 +21,11 @@ import {
     TablePagination,
     TableRow,
     Typography,
-    Tooltip,
     Box,
 } from '@material-ui/core';
 import sortBy from 'lodash/sortBy';
 import { cloneDeep } from 'lodash';
 import MapIcon from '@material-ui/icons/Map';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
 
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
@@ -38,11 +35,11 @@ import { useStyles } from '../../styles/theme';
 import { Scope, Shape, FilteredDistricts, ShapeRow } from './types';
 import { checkFullRegionIsPartOfScope } from './utils';
 
-import ShapeSvg from '../../../../../../hat/assets/js/apps/Iaso/components/svg/ShapeSvgComponent';
-
 import { TableText } from './TableText';
 import { TablePlaceHolder } from './TablePlaceHolder';
 import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+
+import { OrgUnitLocationIcon } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/OrgUnitLocationIcon';
 
 type Props = {
     field: FieldInputProps<Scope[]>;
@@ -109,7 +106,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         if (!regionShapes || !filteredDistricts) {
             return null;
         }
-        let ds: ShapeRow[] = cloneDeep(filteredDistricts);
+        let ds: ShapeRow[] = cloneDeep(filteredDistricts) as ShapeRow[];
 
         if (sortFocus === 'REGION') {
             ds = sortBy(ds, ['region']);
@@ -185,6 +182,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                 style={{
                                     cursor: 'pointer',
                                     textAlign: 'center',
+                                    width: '70px',
                                 }}
                             >
                                 <Box top="4px" position="relative" left="-3px">
@@ -229,44 +227,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                         />
                                     </TableCell>
                                     <TableCell>
-                                        {shape.has_geo_json && (
-                                            <Tooltip
-                                                arrow
-                                                title={formatMessage(
-                                                    MESSAGES.withShape,
-                                                )}
-                                            >
-                                                <Box mt="6px">
-                                                    <ShapeSvg fontSize="small" />
-                                                </Box>
-                                            </Tooltip>
-                                        )}
-                                        {shape.latitude && shape.longitude && (
-                                            <Tooltip
-                                                arrow
-                                                title={formatMessage(
-                                                    MESSAGES.withLocation,
-                                                )}
-                                            >
-                                                <Box mt="6px">
-                                                    <LocationOnIcon fontSize="small" />
-                                                </Box>
-                                            </Tooltip>
-                                        )}
-                                        {!shape.latitude &&
-                                            !shape.longitude &&
-                                            !shape.has_geo_json && (
-                                                <Tooltip
-                                                    arrow
-                                                    title={formatMessage(
-                                                        MESSAGES.noGeographicalData,
-                                                    )}
-                                                >
-                                                    <Box mt="6px">
-                                                        <LocationDisabledIcon fontSize="small" />
-                                                    </Box>
-                                                </Tooltip>
-                                            )}
+                                        <OrgUnitLocationIcon orgUnit={shape} />
                                     </TableCell>
                                     <TableCell
                                         style={{

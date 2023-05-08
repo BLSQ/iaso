@@ -2142,18 +2142,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_line_list.successMessage',
         defaultMessage: 'Imported successfully {amount} campaign(s)',
     },
-    withShape: {
-        defaultMessage: 'With territory',
-        id: 'iaso.registry.withShape',
-    },
-    withLocation: {
-        defaultMessage: 'With point',
-        id: 'iaso.registry.withLocation',
-    },
-    noGeographicalData: {
-        defaultMessage: 'Without geography',
-        id: 'iaso.label.noGeographicalData',
-    },
 });
 
 export default MESSAGES;

@@ -90,7 +90,7 @@ export const ScopeForm: FunctionComponent = () => {
                     vaccineName: findScopeWithOrgUnit(scopes, district.id)
                         ?.vaccine,
                 };
-            });
+            }) as FilteredDistricts[];
             if (scopes) {
                 filtered.forEach((d, index) => {
                     scopes.forEach(scope => {

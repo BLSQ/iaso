@@ -1,3 +1,6 @@
+import { type } from 'cypress/types/jquery';
+import { FormDescriptor } from '../../forms/types/forms';
+
 /* eslint-disable camelcase */
 export type DuplicateEntity = {
     id: number;
@@ -56,4 +59,10 @@ export type DuplicateEntityForTable = {
     entity1: EntityForTableData;
     entity2: EntityForTableData;
     final: EntityForTableData;
+};
+
+export type DuplicateDetailData = {
+    fields: DuplicateEntityForTable[];
+    descriptor1: FormDescriptor;
+    descriptor2: FormDescriptor;
 };

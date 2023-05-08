@@ -31,20 +31,20 @@ import { SubmissionsForEntity } from './submissions/SubmissionsForEntity';
 
 const updateCellColors =
     (selected: 'entity1' | 'entity2') =>
-    (row: DuplicateEntityForTable): DuplicateEntityForTable => {
-        const dropped = selected === 'entity1' ? 'entity2' : 'entity1';
-        if (row.entity1.status === 'identical') return row;
-        return {
-            ...row,
-            [selected]: { ...row[selected], status: 'selected' },
-            final: {
-                ...row.final,
-                status: 'selected',
-                value: row[selected].value,
-            },
-            [dropped]: { ...row[dropped], status: 'dropped' },
+        (row: DuplicateEntityForTable): DuplicateEntityForTable => {
+            const dropped = selected === 'entity1' ? 'entity2' : 'entity1';
+            if (row.entity1.status === 'identical') return row;
+            return {
+                ...row,
+                [selected]: { ...row[selected], status: 'selected' },
+                final: {
+                    ...row.final,
+                    status: 'selected',
+                    value: row[selected].value,
+                },
+                [dropped]: { ...row[dropped], status: 'dropped' },
+            };
         };
-    };
 
 const resetCellColors = (
     row: DuplicateEntityForTable,
@@ -121,9 +121,11 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         tableState.find(row => row.final.status === 'dropped'),
     );
 
-    const { data: entities, isFetching } = useGetDuplicateDetails({
+    const { data: dupDetailData, isFetching } = useGetDuplicateDetails({
         params,
     });
+
+    const { fields: entities, descriptor1, descriptor2 } = dupDetailData || {};
 
     const {
         unmatchedRemaining,

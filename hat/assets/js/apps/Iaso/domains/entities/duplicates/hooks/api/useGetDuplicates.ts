@@ -4,7 +4,7 @@ import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { PaginationParams } from '../../../../../types/general';
 import {
     DuplicateData,
-    DuplicateEntityForTable,
+    DuplicateDetailData,
     DuplicatesList,
 } from '../../types';
 import { getRequest } from '../../../../../libs/Api';
@@ -87,7 +87,7 @@ const getMergedEntityStatus = (final): 'dropped' | 'identical' => {
 export const useGetDuplicateDetails = ({
     params,
 }: DuplicatesDetailsGETParams): UseQueryResult<
-    DuplicateEntityForTable[],
+    DuplicateDetailData,
     unknown
 > => {
     // TODO see with backend exact api
@@ -97,8 +97,9 @@ export const useGetDuplicateDetails = ({
         queryFn: () => getDuplicatesDetails(queryString),
         options: {
             select: data => {
-                if (!data) return [];
-                const result = data.map(row => {
+                if (!data) return { fields: [], descriptor1: {}, descriptor2: {} };
+
+                const fields_result = data.fields.map(row => {
                     return {
                         // We keep "field" i.o "the_field" as key to avoid a bug with the table
                         field: row.the_field,
@@ -125,7 +126,12 @@ export const useGetDuplicateDetails = ({
                         },
                     };
                 });
-                return result;
+
+                return {
+                    fields: fields_result,
+                    descriptor1: data.descriptor1,
+                    descriptor2: data.descriptor2,
+                };
             },
         },
     });

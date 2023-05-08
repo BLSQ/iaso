@@ -6,7 +6,7 @@ from django.utils.timezone import now
 
 from beanstalk_worker import task_decorator
 from plugins.polio.models import Campaign, CountryUsersGroup, Round
-from plugins.polio.serializers import preparedness_from_url
+from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for_round
 
 logger = getLogger(__name__)
 
@@ -14,14 +14,6 @@ logger = getLogger(__name__)
 # TODO Add to message SOPs : Standard operating procedure
 #  As per the outbreak response plan the\
 #  country has completed (activity done as per SOPs) and is now looking forward to (Next activity on SOPs).
-
-
-def get_last_preparedness(campaign):
-    try:
-        round = campaign.rounds.filter(campaign__preparedness__spreadsheet_url__isnull=False).latest("number")
-        preparedness_from_url(round.preparedness_spreadsheet_url)
-    except Round.DoesNotExist:
-        return {}
 
 
 def send_notification_email(campaign):
@@ -45,9 +37,20 @@ def send_notification_email(campaign):
     try:
         first_round = campaign.rounds.earliest("number")
         next_round = campaign.rounds.filter(started_at__gte=now().date()).order_by("started_at").first()
+
     except Round.DoesNotExist:
         first_round = None
         next_round = None
+    if next_round:
+        preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
+        prep_summary = preparedness["indicators"]["status_score"]
+        prep_national = prep_summary.get("national")
+        prep_regional = prep_summary.get("regions")
+        prep_district = prep_summary.get("districts")
+    else:
+        prep_national = ""
+        prep_regional = ""
+        prep_district = ""
 
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
@@ -62,12 +65,11 @@ def send_notification_email(campaign):
         next_round_days_left = (
             (next_round.started_at - now().date()).days if next_round and next_round.started_at else ""
         )
-    # format thousand
+    # format thousands
     target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
 
-    preparedness = get_last_preparedness(campaign)
-
     # French
+
     if lang == "fr":
         email_text = f"""Cher·ère coordinateur.rice de la GPEI – {country.name},
 
@@ -81,9 +83,9 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 * RA Date de l'approbation RRT/ORPG  : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
 * Lien vers la preparedness google sheet du Round {next_round_number} : {next_round_preparedness_spreadsheet_url}
-* Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
-* Prep. régional                 : {preparedness.get('regional_score') if preparedness else ''}
-* Prep. district                 : {preparedness.get('district_score') if preparedness else ''}
+* Prep. national                 : {prep_national:.2f}
+* Prep. régional                 : {prep_regional:.2f}
+* Prep. district                 : {prep_district:.2f}
 
 Pour toute question, contacter l'équipe RRT.
 Ceci est un message automatique.
@@ -102,9 +104,9 @@ Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis
 * RA Data de aprovação RRT/ORPG: {c.risk_assessment_rrt_oprtt_approval_at}
 * Data de envio do orçamento:  {c.submitted_to_rrt_at_WFEDITABLE}
 * Link to {next_round_number} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
-* Prep. nacional: {preparedness.get('national_score') if preparedness else ''}
-* Prep. regional: {preparedness.get('regional_score') if preparedness else ''}
-* Prep. distrital: {preparedness.get('district_score') if preparedness else ''}
+* Prep. nacional: {prep_national}
+* Prep. regional: {prep_regional}
+* Prep. distrital: {prep_district}
 
 Por favor, em caso de qualquer dúvida entre em contato com a equipa RRT.
 Esta é uma mensagem automática.
@@ -124,9 +126,9 @@ If there are missing data or dates; visit {url} to update
 * RA RRT/ORPG approval date      : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
 * Link to Round {next_round_number if next_round else None} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
-* Prep. national                 : {preparedness.get('national_score') if preparedness else ''}
-* Prep. regional                 : {preparedness.get('regional_score') if preparedness else ''}
-* Prep. district                 : {preparedness.get('district_score') if preparedness else ''}
+* Prep. national                 : {prep_national:.2f}
+* Prep. regional                 : {prep_regional:.2f}
+* Prep. district                 : {prep_district:.2f}
 
 For guidance on updating: contact RRT team
 Timeline tracker Automated message.

@@ -5,6 +5,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
@@ -121,9 +122,14 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         tableState.find(row => row.final.status === 'dropped'),
     );
 
-    const { data: entities, isFetching } = useGetDuplicateDetails({
+    const { data: dupDetailData, isFetching } = useGetDuplicateDetails({
         params,
     });
+
+    const { fields: entities, descriptor1, descriptor2 } = dupDetailData || {};
+    const descriptors = useMemo(() => {
+        return { descriptor1, descriptor2 };
+    }, [descriptor1, descriptor2]);
 
     const {
         unmatchedRemaining,
@@ -157,12 +163,12 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         state: tableState,
         updateCellState,
         setQuery,
+        descriptors,
     });
 
     const takeAllValuesFromEntity = useCallback(
         (entity: 'entity1' | 'entity2') => {
             const selected = entity;
-            // const dropped = entity === 'entity1' ? 'entity2' : 'entity1';
             const newState = [...tableState].map(updateCellColors(entity));
             const newUnfilteredState = [...unfilteredTableState].map(
                 updateCellColors(entity),

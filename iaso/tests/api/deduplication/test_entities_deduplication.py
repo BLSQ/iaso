@@ -279,10 +279,11 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         response_duplicate = self.client.get(f"/api/entityduplicates/")
 
-        # var_dump(response_duplicate.data)
+        print("response_duplicate data")
+        var_dump(response_duplicate.data)
 
         self.assertEqual(response_duplicate.status_code, 200)
-        assert len(response_duplicate.data) == 6
+        assert len(response_duplicate.data["results"]) == 6
 
         datas = [
             {"entity1": self.same_entity_2.id, "entity2": self.same_entity_1.id, "similarity_score": 100},
@@ -293,12 +294,11 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             {"entity1": self.same_entity_in_other_ou.id, "entity2": self.close_entity.id, "similarity_score": 67},
         ]
         for idx, datas in enumerate(datas):
-            self.assertEqual(response_duplicate.data[idx]["validation_status"], "PENDING")
-            self.assertEqual(response_duplicate.data[idx]["type_of_relation"], "DUPLICATE")
-            self.assertEqual(response_duplicate.data[idx]["similarity_score"], datas["similarity_score"])
-            self.assertEqual(response_duplicate.data[idx]["entity1"], datas["entity1"])
-            self.assertEqual(response_duplicate.data[idx]["entity2"], datas["entity2"])
-            self.assertEqual(response_duplicate.data[idx]["analyze"], analyze_id)
+            self.assertEqual(response_duplicate.data["results"][idx]["ignored"], False)
+            self.assertEqual(response_duplicate.data["results"][idx]["similarity"], datas["similarity_score"])
+            self.assertEqual(response_duplicate.data["results"][idx]["entity1"]["id"], datas["entity1"])
+            self.assertEqual(response_duplicate.data["results"][idx]["entity2"]["id"], datas["entity2"])
+            self.assertEqual(response_duplicate.data["results"][idx]["analyzis"][0]["analyze_id"], analyze_id)
 
     def test_detail_of_duplicate(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)

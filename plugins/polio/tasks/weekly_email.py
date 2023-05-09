@@ -44,13 +44,14 @@ def send_notification_email(campaign):
     if next_round:
         preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
         prep_summary = preparedness["indicators"]["status_score"]
-        prep_national = prep_summary.get("national")
-        prep_regional = prep_summary.get("regions")
-        prep_district = prep_summary.get("districts")
+        format = lambda x: "{:.1f}".format(x) if isinstance(x, (int, float)) else "N/A"
+        prep_national = format(prep_summary("national"))
+        prep_regional = format(prep_summary.get("regions"))
+        prep_district = format(prep_summary.get("districts"))
     else:
-        prep_national = ""
-        prep_regional = ""
-        prep_district = ""
+        prep_national = "N/A"
+        prep_regional = "N/A"
+        prep_district = "N/A"
 
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
@@ -83,9 +84,9 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 * RA Date de l'approbation RRT/ORPG  : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date de soumission du budget      : {c.submitted_to_rrt_at_WFEDITABLE}
 * Lien vers la preparedness google sheet du Round {next_round_number} : {next_round_preparedness_spreadsheet_url}
-* Prep. national                 : {prep_national:.2f}
-* Prep. régional                 : {prep_regional:.2f}
-* Prep. district                 : {prep_district:.2f}
+* Prep. national                 : {prep_national}
+* Prep. régional                 : {prep_regional}
+* Prep. district                 : {prep_district}
 
 Pour toute question, contacter l'équipe RRT.
 Ceci est un message automatique.
@@ -126,9 +127,9 @@ If there are missing data or dates; visit {url} to update
 * RA RRT/ORPG approval date      : {c.risk_assessment_rrt_oprtt_approval_at}
 * Date Budget Submitted          : {c.submitted_to_rrt_at_WFEDITABLE}
 * Link to Round {next_round_number if next_round else None} preparedness Google sheet: {next_round_preparedness_spreadsheet_url}
-* Prep. national                 : {prep_national:.2f}
-* Prep. regional                 : {prep_regional:.2f}
-* Prep. district                 : {prep_district:.2f}
+* Prep. national                 : {prep_national}
+* Prep. regional                 : {prep_regional}
+* Prep. district                 : {prep_district}
 
 For guidance on updating: contact RRT team
 Timeline tracker Automated message.

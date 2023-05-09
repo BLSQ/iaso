@@ -205,10 +205,7 @@ export const useCompletenessStatsColumns = (
             accessor: 'actions',
             sortable: false,
             Cell: settings => {
-                const { data: orgunit } = useGetOrgUnitDetail(
-                    settings.row.original.id,
-                );
-                const orgunitName = orgunit?.name;
+                const orgunitName = settings.row.original.org_unit.name;
                 return (
                     <>
                         {!settings.row.original.is_root && (

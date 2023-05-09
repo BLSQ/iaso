@@ -7,13 +7,13 @@ const deleteInstance = async (instanceId: string): Promise<any> => {
 };
 export const useDeleteInstance = (
     invalidateQueryKey = 'instance',
-    onSuccess: () => void,
+    onSuccess: () => void = () => undefined,
 ): UseMutationResult =>
     useSnackMutation({
         mutationFn: deleteInstance,
         invalidateQueryKey,
         options: {
-            onSuccess: onSuccess || (() => undefined),
+            onSuccess,
         },
     });
 

@@ -11,6 +11,8 @@ import Typography from '@material-ui/core/Typography';
 import { ArrowUpward } from '@material-ui/icons';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
+import { userHasPermission } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
 import {
     CompletenessApiResponse,
@@ -19,7 +21,6 @@ import {
     FormStatRow,
 } from '../types';
 import { Column } from '../../../types/table';
-import { useGetOrgUnitDetail } from '../../orgUnits/hooks/requests/useGetOrgUnitDetail';
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
@@ -42,6 +43,11 @@ export const useCompletenessStatsColumns = (
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
+    const currentUser = useCurrentUser();
+    const hasSubmissionPermission = userHasPermission(
+        'iaso_submissions',
+        currentUser,
+    );
     const { formatMessage } = useSafeIntl();
     const redirectionParams: CompletenessRouterParams = useMemo(() => {
         const clonedParams = cloneDeep(params);
@@ -205,7 +211,18 @@ export const useCompletenessStatsColumns = (
             accessor: 'actions',
             sortable: false,
             Cell: settings => {
-                const orgunitName = settings.row.original.org_unit.name;
+                const formStats = settings.row.original.form_stats;
+                const orgunitId = settings.row.original.org_unit.id;
+                let hasFormSubmissions = false;
+                Object.entries(formStats).forEach(
+                    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+                    ([_key, value]: [string, Record<string, any>]) => {
+                        if (value.itself_has_instances > 0) {
+                            hasFormSubmissions = true;
+                        }
+                    },
+                );
+
                 return (
                     <>
                         {!settings.row.original.is_root && (
@@ -240,10 +257,10 @@ export const useCompletenessStatsColumns = (
                                 overrideIcon={ArrowUpward}
                             />
                         )}
-                        {settings.row.original.form_stats && (
+                        {hasSubmissionPermission && hasFormSubmissions && (
                             <IconButtonComponent
                                 id={`form-link-${settings.row.original.id}`}
-                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/tab/list/search/${orgunitName}`}
+                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}`}
                                 icon="remove-red-eye"
                                 tooltipMessage={MESSAGES.viewInstances}
                             />
@@ -253,5 +270,12 @@ export const useCompletenessStatsColumns = (
             },
         });
         return columns;
-    }, [dispatch, formatMessage, redirectionParams, completenessStats, params]);
+    }, [
+        dispatch,
+        formatMessage,
+        redirectionParams,
+        completenessStats,
+        params,
+        hasSubmissionPermission,
+    ]);
 };

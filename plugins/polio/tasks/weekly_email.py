@@ -41,6 +41,7 @@ def send_notification_email(campaign):
     except Round.DoesNotExist:
         first_round = None
         next_round = None
+
     if next_round:
         preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
         prep_summary = preparedness["indicators"]["status_score"]
@@ -48,24 +49,22 @@ def send_notification_email(campaign):
         prep_national = format(prep_summary("national"))
         prep_regional = format(prep_summary.get("regions"))
         prep_district = format(prep_summary.get("districts"))
+        next_round_date = next_round.started_at
+        next_round_number = next_round.number
+        next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url
+        next_round_days_left = (next_round.started_at - now().date()).days if next_round.started_at else ""
     else:
         prep_national = "N/A"
         prep_regional = "N/A"
         prep_district = "N/A"
+        next_round_date = "N/A"
+        next_round_number = "N/A"
+        next_round_preparedness_spreadsheet_url = "N/A"
+        next_round_days_left = "N/A"
 
     c = campaign
     url = f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}"
-    next_round_date = ""
-    next_round_number = ""
-    next_round_preparedness_spreadsheet_url = ""
-    next_round_days_left = ""
-    if next_round:
-        next_round_date = next_round.started_at if next_round else ""
-        next_round_number = next_round.number if next_round else ""
-        next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url if next_round else ""
-        next_round_days_left = (
-            (next_round.started_at - now().date()).days if next_round and next_round.started_at else ""
-        )
+
     # format thousands
     target_population = f"{first_round.target_population:,}" if first_round and first_round.target_population else ""
 

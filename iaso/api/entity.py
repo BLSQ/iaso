@@ -425,7 +425,7 @@ class EntityViewSet(ModelViewSet):
         if limit:
             return Response(
                 {
-                    "count": results_count,
+                    "count": total_count,
                     "has_next": end_int < total_count,
                     "has_previous": start_int > 0,
                     "page": page_offset,

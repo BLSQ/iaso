@@ -46,13 +46,13 @@ def send_notification_email(campaign):
         preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
         prep_summary = preparedness["indicators"]["status_score"]
         format = lambda x: "{:.1f}".format(x) if isinstance(x, (int, float)) else "N/A"
-        prep_national = format(prep_summary("national"))
+        prep_national = format(prep_summary.get("national"))
         prep_regional = format(prep_summary.get("regions"))
         prep_district = format(prep_summary.get("districts"))
         next_round_date = next_round.started_at
         next_round_number = next_round.number
-        next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url
-        next_round_days_left = (next_round.started_at - now().date()).days if next_round.started_at else ""
+        next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url if next_round.preparedness_spreadsheet_url else "N/A"
+        next_round_days_left = (next_round.started_at - now().date()).days if next_round.started_at else "N/A"
     else:
         prep_national = "N/A"
         prep_regional = "N/A"

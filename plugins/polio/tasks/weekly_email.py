@@ -51,7 +51,9 @@ def send_notification_email(campaign):
         prep_district = format(prep_summary.get("districts"))
         next_round_date = next_round.started_at
         next_round_number = next_round.number
-        next_round_preparedness_spreadsheet_url = next_round.preparedness_spreadsheet_url if next_round.preparedness_spreadsheet_url else "N/A"
+        next_round_preparedness_spreadsheet_url = (
+            next_round.preparedness_spreadsheet_url if next_round.preparedness_spreadsheet_url else "N/A"
+        )
         next_round_days_left = (next_round.started_at - now().date()).days if next_round.started_at else "N/A"
     else:
         prep_national = "N/A"

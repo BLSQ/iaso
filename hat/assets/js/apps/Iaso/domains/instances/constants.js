@@ -117,14 +117,6 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'location',
     },
     {
-        key: 'latitude',
-        type: 'location',
-    },
-    {
-        key: 'longitude',
-        type: 'location',
-    },
-    {
         key: 'period',
         render: value => <PrettyPeriod value={value} />,
         tableOrder: 3,

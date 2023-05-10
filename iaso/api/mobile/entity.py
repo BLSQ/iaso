@@ -11,8 +11,8 @@ from iaso.models import Entity, FormVersion, Instance, OrgUnit
 from iaso.models.entity import (
     InvalidJsonContentError,
     InvalidLimitDateError,
-    ProjectNotFoundAndUserNotAuthError,
-    ProjectWithoutAccountAndUserNotAuthError,
+    UserNotAuthError,
+    ProjectNotFoundError,
 )
 
 
@@ -33,9 +33,9 @@ def filter_for_mobile_entity(queryset, request):
 def get_queryset_for_user_and_app_id(user, app_id):
     try:
         queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
-    except ProjectNotFoundAndUserNotAuthError as e:
+    except ProjectNotFoundError as e:
         raise NotFound(e.message)
-    except ProjectWithoutAccountAndUserNotAuthError as e:
+    except UserNotAuthError as e:
         raise AuthenticationFailed(e.message)
 
     return queryset

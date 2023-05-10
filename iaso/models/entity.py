@@ -75,11 +75,11 @@ class InvalidJsonContentError(ValidationError):
     pass
 
 
-class ProjectNotFoundAndUserNotAuthError(ValidationError):
+class UserNotAuthError(ValidationError):
     pass
 
 
-class ProjectWithoutAccountAndUserNotAuthError(ValidationError):
+class ProjectNotFoundError(ValidationError):
     pass
 
 
@@ -116,25 +116,22 @@ class EntityQuerySet(models.QuerySet):
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
     ):
 
-        if user and user.is_authenticated:
-            self = self.filter(account=user.iaso_profile.account)
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError(f"User not Authentified")
+
+        self = self.filter(account=user.iaso_profile.account)
 
         if app_id is not None:
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
 
-                if project.account is None and (not user or not user.is_authenticated):
-                    raise ProjectWithoutAccountAndUserNotAuthError(
-                        f"Project Account is None or User not Authentified for app_id {app_id}"
-                    )  # Should be a 401
+                if project.account is None:
+                    raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
 
                 self = self.filter(account=project.account, instances__project=project, attributes__project=project)
 
             except Project.DoesNotExist:
-                if not user or not user.is_authenticated:
-                    raise ProjectNotFoundAndUserNotAuthError(
-                        f"Project Not Found and User not Authentified for app_id {app_id}"
-                    )  # Should be a 404
+                raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
 
         return self
 

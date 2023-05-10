@@ -351,8 +351,8 @@ export const makeDropdownOptions = (
     data: Record<string, LqasImCampaign>,
     campaign: string,
 ): DropdownOptions<number>[] => {
-    if (!campaign || !data[campaign]) return [];
-    return data[campaign].rounds
+    if (!campaign || !data?.[campaign]) return [];
+    return data?.[campaign]?.rounds
         .sort((a, b) => a.number - b.number)
         .map(round => {
             return {

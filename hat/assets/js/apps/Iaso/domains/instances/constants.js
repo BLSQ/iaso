@@ -7,6 +7,7 @@ import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
 import { LinkToForm } from '../forms/components/LinkToForm.tsx';
+import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
 import getDisplayName from '../../utils/usersUtils.ts';
 
 export const INSTANCE_STATUS_READY = 'READY';
@@ -43,6 +44,21 @@ export const INSTANCE_METAS_FIELDS = [
             return (
                 <LinkToForm formId={data.form_id} formName={data.form_name} />
             );
+        },
+    },
+    {
+        key: 'planning',
+        type: 'info',
+        renderValue: data => {
+            if (data.planning_id) {
+                return (
+                    <LinkToPlanning
+                        planningId={data.planning_id}
+                        planningName={data.planning_name}
+                    />
+                );
+            }
+            return '--';
         },
     },
     {

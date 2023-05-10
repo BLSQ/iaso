@@ -46,7 +46,7 @@ def _build_query(params):
     """
 
 
-@DeduplicationAlgorithm.register("inverse")
+@DeduplicationAlgorithm.register("levenshtein")
 class InverseAlgorithm(DeduplicationAlgorithm):
     """
     This algorithm has the following custom parameters:

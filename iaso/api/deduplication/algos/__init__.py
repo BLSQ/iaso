@@ -1,7 +1,7 @@
 from typing import List
 
 from ..common import PotentialDuplicate
-from . import inverse, name_sim
+from . import levenshtein
 from .base import DeduplicationAlgorithm
 
 POSSIBLE_ALGORITHMS = [[k, k] for k in DeduplicationAlgorithm.ALGORITHMS.keys()]

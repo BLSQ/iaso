@@ -33,6 +33,7 @@ type Props = {
 // TODO move to more accessible const
 const algorithmDropDown = [
     { label: 'namesim', value: 'namesim' },
+    { label: 'levenshtein', value: 'levenshtein' },
     { label: 'invert', value: 'invert' },
 ];
 

@@ -15,7 +15,7 @@ type DuplicateInfos = {
     unmatchedRemaining: number;
     formName: string;
     algorithmRuns: number;
-    algorithmsUsed: ('namesim' | 'invert')[];
+    algorithmsUsed: ('namesim' | 'invert' | 'levenshtein')[];
     similarityScore: number;
     isLoading: boolean;
     entityIds: [number, number];

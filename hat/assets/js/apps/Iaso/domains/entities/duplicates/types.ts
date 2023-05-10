@@ -14,7 +14,7 @@ export type DuplicateEntity = {
 
 export type DuplicationAlgorithm = {
     analyze_id: string;
-    type: 'namesim' | 'inverse';
+    type: 'namesim' | 'inverse' | 'levenshtein';
     the_fields: string[];
     similarity: number;
     similarity_star: number;

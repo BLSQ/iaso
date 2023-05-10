@@ -137,6 +137,13 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
         ]
 
 
+class EntityDuplicatePostAnswerSerializer(serializers.Serializer):
+    entity1_id = serializers.IntegerField(required=True)
+    entity2_id = serializers.IntegerField(required=True)
+    new_entity_id = serializers.IntegerField(required=False)
+    ignored = serializers.BooleanField(required=False, default=False)
+
+
 class EntityDuplicatePostSerializer(serializers.Serializer):
     entity1_id = serializers.IntegerField(required=True)
     entity2_id = serializers.IntegerField(required=True)
@@ -354,12 +361,12 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
         return JsonResponse(return_data, safe=False)
 
-    @swagger_auto_schema(request_body=EntityDuplicatePostSerializer(many=True))
+    @swagger_auto_schema(request_body=EntityDuplicatePostSerializer(many=False))
     def create(self, request, pk=None, *args, **kwargs):
         """
         POST /api/entityduplicates/
-        one or multiple
-        [{
+        one
+        {
             "entity1_id": Int,
             "entity2_id": Int,
             "merge": {
@@ -370,11 +377,20 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
             }
             "status": "ignored",
             "reason": "optional reason"
-        }]
+        }
         in the body
         Provides an API to merge duplicate entities or to ignore the match
         """
-        pass
+        var_dump(request.data)
+
+        serializer = EntityDuplicatePostSerializer(data=request.data, context={"request": request})
+
+        serializer.is_valid(raise_exception=True)
+        res = serializer.save()
+
+        return_data = EntityDuplicatePostAnswerSerializer(res).data
+
+        return Response(return_data)
 
 
 def field_exists(f: Form, field_name: str) -> bool:
@@ -495,7 +511,7 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
             "status": "queued", "running", "failed", "success", "canceled",
             "started_at": DateTime?,
             "created_by": {}, // simple user object
-            "algorithm": "namesim", "invert" //See [Algorithms]
+            "algorithm": "namesim", "invert", "levenshtein" //See [Algorithms]
             "entity_type_id": String,
             "fields": String[],
             "parameters": {}, // dictionary

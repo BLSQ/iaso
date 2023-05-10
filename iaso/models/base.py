@@ -1039,6 +1039,8 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "planning_id": self.planning.id if self.planning else None,
+            "planning_name": self.planning.name if self.planning else None,
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),

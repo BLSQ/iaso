@@ -36,7 +36,7 @@ import { MapToggleFullscreen } from './MapToggleFullscreen';
 import TILES from '../../../constants/mapTiles';
 import {
     circleColorMarkerOptions,
-    ZoomControl,
+    // ZoomControl,
     getOrgUnitBounds,
     getOrgUnitsBounds,
     DEFAULT_VIEWPORT,
@@ -170,6 +170,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             </Box>
         );
 
+    return null;
     return (
         <Box
             className={classNames(

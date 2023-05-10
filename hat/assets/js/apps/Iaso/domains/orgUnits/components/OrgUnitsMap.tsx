@@ -38,7 +38,7 @@ import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
 
 // UTILS
 import {
-    ZoomControl,
+    // ZoomControl,
     getLatLngBounds,
     getShapesBounds,
     colorClusterCustomMarker,
@@ -243,6 +243,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
         );
     }
 
+    return null;
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -275,7 +276,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     keyboard={false}
                 >
                     <ScaleControl imperial={false} />
-                    <ZoomControl fitToBounds={() => fitToBounds()} />
+                    {/* <ZoomControl fitToBounds={() => fitToBounds()} /> */}
                     <TileLayer
                         attribution={
                             currentTile.attribution

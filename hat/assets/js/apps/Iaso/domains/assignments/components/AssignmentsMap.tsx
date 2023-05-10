@@ -29,7 +29,7 @@ import {
 import tiles from '../../../constants/mapTiles';
 
 import {
-    ZoomControl,
+    // ZoomControl,
     circleColorMarkerOptions,
     getShapesBounds,
     getLatLngBounds,
@@ -187,6 +187,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
             fitToBounds(locations, parentLocations);
         }
     }, [isLoading, locations, parentLocations]);
+    return null;
     return (
         <section ref={mapContainer}>
             <Box position="relative">

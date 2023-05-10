@@ -20,7 +20,7 @@ import { ExtraColumn } from '../types/fields';
 import { Beneficiary } from '../types/beneficiary';
 
 import {
-    ZoomControl,
+    // ZoomControl,
     circleColorMarkerOptions,
     getLatLngBounds,
     clusterCustomMarker,
@@ -93,6 +93,7 @@ export const ListMap: FunctionComponent<Props> = ({
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isFetchingLocations, locations]);
     const isLoading = isFetchingLocations;
+    return null;
     return (
         <section ref={mapContainer} className={classes.mapContainer}>
             <Box position="relative">

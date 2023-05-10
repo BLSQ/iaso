@@ -58,6 +58,7 @@ export const MapComponent = ({
             map.current?.leafletElement.fitBounds(bounds);
         }
     }, [bounds, fitToBounds]);
+    return null;
     return (
         <Map
             ref={map}

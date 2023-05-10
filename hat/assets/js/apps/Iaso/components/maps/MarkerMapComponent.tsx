@@ -64,6 +64,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
 
     if (!latitude || !longitude) return null;
 
+    return null;
     return (
         <div className={classes.mapContainer}>
             <TilesSwitchDialog
@@ -80,7 +81,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
                 keyboard={false}
                 zoomSnap={0.1}
             >
-                <ZoomControl fitToBounds={() => fitToBounds()} />
+                {/* <ZoomControl fitToBounds={() => fitToBounds()} /> */}
 
                 <ScaleControl imperial={false} />
                 <TileLayer

@@ -45,6 +45,7 @@ export const CalendarMap: FunctionComponent<Props> = ({
 
     const loadingShapes =
         viewport.zoom <= 6 ? isLoadingMergedShapes : isLoadingShapes;
+    return null;
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}

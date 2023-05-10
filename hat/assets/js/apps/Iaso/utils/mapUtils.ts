@@ -137,19 +137,19 @@ export const circleColorMarkerOptions = (
     radius: 8,
 });
 
-class ZoomControl_ extends MapControl {
-    createLeafletElement({ fitToBounds, intl: { formatMessage } }) {
-        return new ZoomBar({
-            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds,
-            position: 'topleft',
-        });
-    }
-}
+// class ZoomControl_ extends MapControl {
+//     createLeafletElement({ fitToBounds, intl: { formatMessage } }) {
+//         return new ZoomBar({
+//             zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
+//             zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
+//             fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
+//             fitToBounds,
+//             position: 'topleft',
+//         });
+//     }
+// }
 
-export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
+// export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
 
 // Takes the value of the .orgUnit field of each org unit and copy it in either shape or location field
 export const mapOrgUnitByLocation = (

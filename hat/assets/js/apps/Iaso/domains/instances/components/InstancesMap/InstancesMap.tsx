@@ -7,7 +7,7 @@ import { Grid, Divider } from '@material-ui/core';
 import {
     getLatLngBounds,
     clusterCustomMarker,
-    ZoomControl,
+    // ZoomControl,
     defaultCenter,
     defaultZoom,
 } from '../../../../utils/mapUtils';
@@ -92,6 +92,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
     if (map.current) {
         map.current.leafletElement.options.maxZoom = currentTile.maxZoom;
     }
+    return null;
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -118,7 +119,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
                     zoomControl={false}
                     keyboard={false}
                 >
-                    <ZoomControl fitToBounds={() => fitToBounds()} />
+                    {/* <ZoomControl fitToBounds={() => fitToBounds()} /> */}
                     <ScaleControl imperial={false} />
                     <TileLayer
                         attribution={

@@ -45,7 +45,7 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
             padding: boundsOptions.padding,
         });
     };
-
+    return null;
     return (
         <div className={classes.mapContainer}>
             <TilesSwitchDialog
@@ -63,7 +63,7 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
                 zoomControl={false}
                 keyboard={false}
             >
-                <ZoomControl fitToBounds={() => fitToBounds()} />
+                {/* <ZoomControl fitToBounds={() => fitToBounds()} /> */}
                 <ScaleControl imperial={false} />
                 <TileLayer
                     attribution={

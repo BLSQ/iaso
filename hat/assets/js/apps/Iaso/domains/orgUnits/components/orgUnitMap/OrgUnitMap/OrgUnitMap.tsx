@@ -15,7 +15,7 @@ import {
     mapOrgUnitByLocation,
     getleafletGeoJson,
     orderOrgUnitTypeByDepth,
-    ZoomControl,
+    // ZoomControl,
 } from '../../../../../utils/mapUtils';
 import TileSwitch from '../../../../../components/maps/tools/TileSwitchComponent';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
@@ -404,6 +404,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
     ]);
 
+    return null;
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -513,7 +514,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     zoomControl={false}
                     keyboard={false}
                 >
-                    <ZoomControl fitToBounds={fitToBounds} />
+                    {/* <ZoomControl fitToBounds={fitToBounds} /> */}
 
                     <ScaleControl imperial={false} />
                     <TileLayer

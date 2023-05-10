@@ -213,14 +213,8 @@ export const useCompletenessStatsColumns = (
             Cell: settings => {
                 const formStats = settings.row.original.form_stats;
                 const orgunitId = settings.row.original.org_unit.id;
-                let hasFormSubmissions = false;
-                Object.entries(formStats).forEach(
-                    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-                    ([_key, value]: [string, Record<string, any>]) => {
-                        if (value.itself_has_instances > 0) {
-                            hasFormSubmissions = true;
-                        }
-                    },
+                const hasFormSubmissions = Object.values(formStats).some(
+                    stat => stat.itself_has_instances > 0,
                 );
 
                 return (

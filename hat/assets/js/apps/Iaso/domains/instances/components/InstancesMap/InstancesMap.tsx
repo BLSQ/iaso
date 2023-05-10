@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { Map, ScaleControl, TileLayer } from 'react-leaflet';
+import { MapContainer, ScaleControl, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { Grid, Divider } from '@material-ui/core';
 
@@ -105,7 +105,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
                     </>
                 }
             >
-                <Map
+                <MapContainer
                     ref={ref => {
                         map.current = ref;
                     }}
@@ -147,7 +147,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
                             PopupComponent={InstancePopup}
                         />
                     )}
-                </Map>
+                </MapContainer>
             </InnerDrawer>
         </Grid>
     );

@@ -14,7 +14,7 @@ import square from '../../images/square.svg';
  *     without it, it's not going to be included in the bar.
  */
 
-export const ZoomBar = L.Control.Zoom.extend({
+L.Control.Zoom = L.Control.Zoom.extend({
     options: {
         zoomInfoTitle: 'Current zoom level',
         zoomBoxTitle:

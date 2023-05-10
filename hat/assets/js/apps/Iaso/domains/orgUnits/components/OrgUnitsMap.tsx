@@ -9,7 +9,7 @@ import React, {
 import { useSelector } from 'react-redux';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import {
-    Map,
+    MapContainer,
     TileLayer,
     GeoJSON,
     Pane,
@@ -265,7 +265,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     />
                 }
             >
-                <Map
+                <MapContainer
                     ref={map}
                     scrollWheelZoom={false}
                     maxZoom={currentTile.maxZoom}
@@ -338,7 +338,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         </Pane>
                     ))}
                     {locations}
-                </Map>
+                </MapContainer>
             </InnerDrawer>
         </Grid>
     );

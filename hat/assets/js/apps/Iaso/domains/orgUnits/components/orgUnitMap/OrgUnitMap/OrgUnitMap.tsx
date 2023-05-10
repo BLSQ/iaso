@@ -6,7 +6,13 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import { Map, TileLayer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
+import {
+    MapContainer,
+    TileLayer,
+    GeoJSON,
+    ScaleControl,
+    Pane,
+} from 'react-leaflet';
 import 'leaflet-draw';
 import pink from '@material-ui/core/colors/pink';
 import { Grid, makeStyles, useTheme } from '@material-ui/core';
@@ -502,7 +508,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
-                <Map
+                <MapContainer
                     key={currentOrgUnit.id}
                     scrollWheelZoom={false}
                     maxZoom={currentTile.maxZoom}
@@ -597,7 +603,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             currentOrgUnit={currentOrgUnit}
                         />
                     )}
-                </Map>
+                </MapContainer>
             </InnerDrawer>
         </Grid>
     );

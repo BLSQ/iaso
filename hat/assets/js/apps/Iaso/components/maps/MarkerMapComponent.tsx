@@ -6,7 +6,7 @@ import React, {
     useRef,
     useCallback,
 } from 'react';
-import { Map, ScaleControl, TileLayer } from 'react-leaflet';
+import { MapContainer, ScaleControl, TileLayer } from 'react-leaflet';
 // @ts-ignore
 import L from 'leaflet';
 
@@ -14,7 +14,7 @@ import { makeStyles } from '@material-ui/core';
 // @ts-ignore
 import { commonStyles } from 'bluesquare-components';
 
-import { ZoomControl } from '../../utils/mapUtils';
+// import { ZoomControl } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
@@ -71,7 +71,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
                 currentTile={currentTile}
                 setCurrentTile={setCurrentTile}
             />
-            <Map
+            <MapContainer
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
                 style={{ height: '100%' }}
@@ -96,7 +96,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
                         longitude,
                     }}
                 />
-            </Map>
+            </MapContainer>
         </div>
     );
 };

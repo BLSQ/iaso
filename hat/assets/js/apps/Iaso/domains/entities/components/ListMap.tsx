@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
-import { Map, TileLayer, Pane, ScaleControl } from 'react-leaflet';
+import { MapContainer, TileLayer, Pane, ScaleControl } from 'react-leaflet';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import {
@@ -102,7 +102,7 @@ export const ListMap: FunctionComponent<Props> = ({
                     setCurrentTile={setCurrentTile}
                 />
                 {isLoading && <LoadingSpinner absolute />}
-                <Map
+                <MapContainer
                     isLoading={isLoading}
                     zoomSnap={0.25}
                     maxZoom={currentTile.maxZoom}
@@ -148,7 +148,7 @@ export const ListMap: FunctionComponent<Props> = ({
                             </Pane>
                         </>
                     )}
-                </Map>
+                </MapContainer>
             </Box>
         </section>
     );

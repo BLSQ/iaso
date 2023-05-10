@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { Map, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import { MapContainer, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import React, { useEffect, useMemo, useRef } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
@@ -60,7 +60,7 @@ export const MapComponent = ({
     }, [bounds, fitToBounds]);
     return null;
     return (
-        <Map
+        <MapContainer
             ref={map}
             style={{ height }}
             center={[0, 0]}
@@ -111,7 +111,7 @@ export const MapComponent = ({
                         </GeoJSON>
                     ))}
             </Pane>
-        </Map>
+        </MapContainer>
     );
 };
 

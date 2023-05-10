@@ -2,7 +2,7 @@ import React, { useRef, useState, useMemo, FunctionComponent } from 'react';
 // @ts-ignore
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
-import { Map, TileLayer } from 'react-leaflet';
+import { MapContainer, TileLayer } from 'react-leaflet';
 import { MapRoundSelector } from './MapRoundSelector';
 import { VaccinesLegend } from './VaccinesLegend';
 import { CampaignsLegend } from './CampaignsLegend';
@@ -67,7 +67,7 @@ export const CalendarMap: FunctionComponent<Props> = ({
                     <VaccinesLegend />
                 </Box>
             </div>
-            <Map
+            <MapContainer
                 zoomSnap={0.25}
                 ref={map}
                 style={{
@@ -95,7 +95,7 @@ export const CalendarMap: FunctionComponent<Props> = ({
                         viewport={viewport}
                     />
                 )}
-            </Map>
+            </MapContainer>
         </Box>
     );
 };

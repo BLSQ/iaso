@@ -4,11 +4,8 @@ import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 import isNumber from 'lodash/isNumber';
-import { injectIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
-import { MapControl, withLeaflet } from 'react-leaflet';
 import { Theme } from '@material-ui/core/styles';
-import { ZoomBar } from '../components/leaflet/zoom-bar';
 import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../domains/orgUnits/types/orgunitTypes';
 import {

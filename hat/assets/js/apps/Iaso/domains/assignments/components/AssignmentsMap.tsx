@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
 import {
-    Map,
+    MapContainer,
     TileLayer,
     GeoJSON,
     Pane,
@@ -211,7 +211,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     setCurrentTile={setCurrentTile}
                 />
                 {isLoading && <LoadingSpinner absolute />}
-                <Map
+                <MapContainer
                     isLoading={isLoading}
                     zoomSnap={0.25}
                     maxZoom={currentTile.maxZoom}
@@ -374,7 +374,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                             )}
                         </>
                     )}
-                </Map>
+                </MapContainer>
             </Box>
         </section>
     );

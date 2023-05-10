@@ -8,7 +8,7 @@ import React, {
 } from 'react';
 import { useDispatch } from 'react-redux';
 import {
-    Map,
+    MapContainer,
     TileLayer,
     GeoJSON,
     Pane,
@@ -191,7 +191,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 currentTile={currentTile}
                 setCurrentTile={setCurrentTile}
             />
-            <Map
+            <MapContainer
                 zoomSnap={0.25}
                 maxZoom={currentTile.maxZoom}
                 ref={map}
@@ -331,7 +331,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         </Pane>
                     </Box>
                 ))}
-            </Map>
+            </MapContainer>
         </Box>
     );
 };

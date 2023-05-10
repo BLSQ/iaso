@@ -11,10 +11,6 @@ from iaso.api.mobile.entity import (
     get_queryset_for_user_and_app_id,
 )
 from iaso.models import Entity, EntityType, Project
-from iaso.models.entity import (
-    ProjectNotFoundAndUserNotAuthError,
-    ProjectWithoutAccountAndUserNotAuthError,
-)
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):

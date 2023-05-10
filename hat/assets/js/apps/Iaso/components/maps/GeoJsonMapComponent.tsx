@@ -6,7 +6,7 @@ import React, {
     useEffect,
 } from 'react';
 import L from 'leaflet';
-import { MapContainer, TileLayer, ScaleControl, GeoJSON } from 'react-leaflet';
+import { MapContainer, ScaleControl, GeoJSON } from 'react-leaflet';
 
 import { makeStyles, useTheme } from '@material-ui/core';
 import { commonStyles } from 'bluesquare-components';
@@ -40,7 +40,10 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
         return shape?.getBounds();
     }, [geoJson]);
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const boundsOptions = { padding: [10, 10] };
+    const boundsOptions: Record<string, any> = {
+        padding: [10, 10],
+        maxZoom: currentTile.maxZoom,
+    };
 
     const ref: any = useRef(null);
     useEffect(() => {
@@ -66,10 +69,7 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
             >
                 <CustomZoomControl
                     bounds={bounds}
-                    boundsOptions={{
-                        padding: [10, 10],
-                        maxZoom: currentTile.maxZoom,
-                    }}
+                    boundsOptions={boundsOptions}
                 />
                 <ScaleControl imperial={false} />
                 <CustomTileLayer currentTile={currentTile} />

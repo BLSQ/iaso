@@ -2,7 +2,7 @@ import React, { Fragment } from 'react';
 
 import PropTypes from 'prop-types';
 
-import { isValidCoordinate } from '../../../utils/mapUtils';
+import { isValidCoordinate } from '../../../utils/mapUtils.ts';
 
 import MarkerComponent from './MarkerComponent';
 import CircleMarkerComponent from './CircleMarkerComponent';

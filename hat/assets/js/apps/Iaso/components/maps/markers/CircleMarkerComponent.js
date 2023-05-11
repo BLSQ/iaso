@@ -3,7 +3,7 @@ import React from 'react';
 import { CircleMarker } from 'react-leaflet';
 
 import PropTypes from 'prop-types';
-import { isValidCoordinate } from '../../../utils/mapUtils';
+import { isValidCoordinate } from '../../../utils/mapUtils.ts';
 
 const CircleMarkerComponent = props => {
     const {
@@ -30,7 +30,9 @@ const CircleMarkerComponent = props => {
         <CircleMarker
             draggable={draggable}
             center={[item.latitude, item.longitude, item.altitude]}
-            onClick={() => onClick(item)}
+            eventHandlers={{
+                click: () => onClick(item),
+            }}
             onDragend={e => onDragend(e.target)}
             {...markerProps(item)}
             onContextmenu={event => {

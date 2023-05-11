@@ -1,6 +1,11 @@
-import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { MapContainer, ScaleControl, TileLayer } from 'react-leaflet';
+import { MapContainer, ScaleControl } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { Grid, Divider } from '@material-ui/core';
 
@@ -23,6 +28,10 @@ import { fetchInstanceDetail } from '../../../../utils/requests';
 import { Instance } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
 import { Tile } from '../../../../components/maps/tools/TileSwitch';
+import { TilesSwitchDialog } from '../../../../components/maps/tools/TilesSwitchDialog';
+import { CustomTileLayer } from '../../../../components/maps/CustomTileLayer';
+import { CustomZoomControl } from '../../../../components/maps/CustomZoomControl';
+import tiles from '../../../../constants/mapTiles';
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -40,13 +49,10 @@ export const InstancesMap: FunctionComponent<Props> = ({
     instances,
     fetching,
 }) => {
-    const map: any = useRef();
     const isClusterActive = useSelector(
         (state: PartialReduxState) => state.map.isClusterActive,
     );
-    const currentTile = useSelector(
-        (state: PartialReduxState) => state.map.currentTile,
-    );
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const notifications = useSelector((state: PartialReduxState) =>
         state.snackBar ? state.snackBar.notifications : [],
     );
@@ -73,14 +79,6 @@ export const InstancesMap: FunctionComponent<Props> = ({
 
     useResetMapReducerOnUnmount();
 
-    const fitToBounds = useCallback(() => {
-        const bounds = getLatLngBounds(instances);
-        map.current?.leafletElement.fitBounds(bounds, {
-            maxZoom: currentTile.maxZoom,
-            padding: boundsOptions.padding,
-        });
-    }, [instances, currentTile]);
-
     const bounds = useMemo(() => {
         if (instances) {
             return getLatLngBounds(instances);
@@ -89,10 +87,6 @@ export const InstancesMap: FunctionComponent<Props> = ({
     }, [instances]);
 
     if (fetching) return null;
-    if (map.current) {
-        map.current.leafletElement.options.maxZoom = currentTile.maxZoom;
-    }
-    return null;
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -105,10 +99,11 @@ export const InstancesMap: FunctionComponent<Props> = ({
                     </>
                 }
             >
+                <TilesSwitchDialog
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
+                />
                 <MapContainer
-                    ref={ref => {
-                        map.current = ref;
-                    }}
                     scrollWheelZoom={false}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '100%' }}
@@ -119,15 +114,12 @@ export const InstancesMap: FunctionComponent<Props> = ({
                     zoomControl={false}
                     keyboard={false}
                 >
-                    {/* <ZoomControl fitToBounds={() => fitToBounds()} /> */}
                     <ScaleControl imperial={false} />
-                    <TileLayer
-                        attribution={
-                            currentTile.attribution
-                                ? currentTile.attribution
-                                : ''
-                        }
-                        url={currentTile.url}
+                    <CustomTileLayer currentTile={currentTile} />
+                    <CustomZoomControl
+                        bounds={bounds}
+                        boundsOptions={boundsOptions}
+                        fitOnLoad
                     />
                     {isClusterActive && (
                         <MarkerClusterGroup

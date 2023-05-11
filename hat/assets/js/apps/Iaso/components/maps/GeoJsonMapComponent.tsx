@@ -17,6 +17,7 @@ import { GeoJson } from './types';
 import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
 import { CustomZoomControl } from './CustomZoomControl';
 import { CustomTileLayer } from './CustomTileLayer';
+import { Bounds } from '../../utils/mapUtils';
 
 const useStyles = makeStyles(theme => ({
     mapContainer: {
@@ -35,7 +36,7 @@ type Props = {
 export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const bounds = useMemo(() => {
+    const bounds: Bounds | undefined = useMemo(() => {
         const shape = L.geoJSON(geoJson);
         return shape?.getBounds();
     }, [geoJson]);
@@ -58,6 +59,7 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
                 setCurrentTile={setCurrentTile}
             />
             <MapContainer
+                doubleClickZoom
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
                 style={{ height: '100%' }}

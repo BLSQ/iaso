@@ -1,15 +1,10 @@
-import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Pane, ScaleControl } from 'react-leaflet';
+import React, { FunctionComponent, useState, useMemo } from 'react';
+import { MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import {
-    // @ts-ignore
-    LoadingSpinner,
-    // @ts-ignore
-    commonStyles,
-} from 'bluesquare-components';
+import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 
-import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
+import { Tile } from '../../../components/maps/tools/TileSwitch';
 import { PopupComponent as Popup } from './Popup';
 
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
@@ -20,12 +15,14 @@ import { ExtraColumn } from '../types/fields';
 import { Beneficiary } from '../types/beneficiary';
 
 import {
-    // ZoomControl,
     circleColorMarkerOptions,
     getLatLngBounds,
     clusterCustomMarker,
 } from '../../../utils/mapUtils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { TilesSwitchDialog } from '../../../components/maps/tools/TilesSwitchDialog';
+import { CustomTileLayer } from '../../../components/maps/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/CustomZoomControl';
 
 const defaultViewport = {
     center: [1, 20],
@@ -67,37 +64,21 @@ export const ListMap: FunctionComponent<Props> = ({
     isFetchingLocations,
     extraColumns,
 }) => {
-    const mapContainer: any = useRef();
-    const map: any = useRef();
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
 
-    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const fitToBounds = (newLocations: Location[]) => {
-        const bounds = getLocationsBounds(newLocations);
-        if (newLocations.length > 0) {
-            if (bounds && map?.current) {
-                try {
-                    map.current.leafletElement.fitBounds(bounds, boundsOptions);
-                } catch (e) {
-                    console.warn(e);
-                }
-            }
-        }
-    };
+    const bounds = useMemo(
+        () => locations && getLocationsBounds(locations),
+        [locations],
+    );
 
-    useEffect(() => {
-        if (!isFetchingLocations && locations) {
-            fitToBounds(locations);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [isFetchingLocations, locations]);
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+
     const isLoading = isFetchingLocations;
-    return null;
     return (
-        <section ref={mapContainer} className={classes.mapContainer}>
+        <section className={classes.mapContainer}>
             <Box position="relative">
-                <TilesSwitch
+                <TilesSwitchDialog
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}
                 />
@@ -106,7 +87,6 @@ export const ListMap: FunctionComponent<Props> = ({
                     isLoading={isLoading}
                     zoomSnap={0.25}
                     maxZoom={currentTile.maxZoom}
-                    ref={map}
                     style={{ height: '60vh' }}
                     center={defaultViewport.center}
                     zoom={defaultViewport.zoom}
@@ -114,17 +94,18 @@ export const ListMap: FunctionComponent<Props> = ({
                     zoomControl={false}
                     contextmenu
                     refocusOnMap={false}
+                    bounds={bounds}
+                    boundsOptions={boundsOptions}
                 >
                     <ScaleControl imperial={false} />
-                    <TileLayer
-                        attribution={currentTile.attribution ?? ''}
-                        url={currentTile.url}
+                    <CustomTileLayer currentTile={currentTile} />
+                    <CustomZoomControl
+                        bounds={bounds}
+                        boundsOptions={boundsOptions}
+                        fitOnLoad
                     />
                     {locations && (
                         <>
-                            <ZoomControl
-                                fitToBounds={() => fitToBounds(locations)}
-                            />
                             <Pane name="markers">
                                 <MarkerClusterGroup
                                     iconCreateFunction={clusterCustomMarker}

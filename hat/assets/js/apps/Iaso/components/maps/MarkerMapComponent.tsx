@@ -54,6 +54,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
                 setCurrentTile={setCurrentTile}
             />
             <MapContainer
+                doubleClickZoom
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
                 style={{ height: '100%' }}

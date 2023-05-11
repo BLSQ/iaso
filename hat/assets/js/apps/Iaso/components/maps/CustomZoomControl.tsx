@@ -1,4 +1,4 @@
-import { FunctionComponent, useEffect } from 'react';
+import { FunctionComponent, useCallback, useEffect, useState } from 'react';
 import { useLeafletContext } from '@react-leaflet/core';
 import L from 'leaflet';
 import { defineMessages } from 'react-intl';
@@ -14,8 +14,9 @@ import { Bounds } from '../../utils/mapUtils';
 import '../leaflet/zoom-bar';
 
 type Props = {
-    bounds: Bounds;
+    bounds?: Bounds;
     boundsOptions?: Record<string, any>;
+    fitOnLoad?: boolean;
 };
 export const MESSAGES = defineMessages({
     'fit-to-bounds': {
@@ -35,18 +36,28 @@ export const MESSAGES = defineMessages({
 export const CustomZoomControl: FunctionComponent<Props> = ({
     bounds,
     boundsOptions = { padding: [10, 10], maxZoom: tiles.osm.maxZoom },
+    fitOnLoad = false,
 }) => {
     const map: any = useMap();
+    const [mapFitted, setMapFitted] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
-    const fitToBounds = () => {
-        map.fitBounds(bounds, boundsOptions);
-    };
-
+    const fitToBounds = useCallback(() => {
+        if (bounds) {
+            map.fitBounds(bounds, boundsOptions);
+        }
+    }, [bounds, boundsOptions, map]);
     const context = useLeafletContext();
 
     L.control.zoom = opts => {
         return new L.Control.Zoom(opts);
     };
+
+    useEffect(() => {
+        if (!mapFitted && bounds?.isValid() && fitOnLoad && map) {
+            fitToBounds();
+            setMapFitted(true);
+        }
+    }, [fitOnLoad, bounds, mapFitted, fitToBounds, map]);
 
     useEffect(() => {
         const container = context.layerContainer || context.map;

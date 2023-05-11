@@ -58,6 +58,9 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                     '& .leaflet-bar a': {
                         textDecoration: 'none !important',
                     },
+                    '& .leaflet-tooltip': {
+                        zIndex: 1000,
+                    },
                     '& #notistack-snackbar': {
                         maxWidth: 400,
                     },

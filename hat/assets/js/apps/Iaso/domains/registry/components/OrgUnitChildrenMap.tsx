@@ -1,15 +1,12 @@
 import React, {
     FunctionComponent,
     useState,
-    useRef,
-    useEffect,
     useMemo,
     useCallback,
 } from 'react';
 import { useDispatch } from 'react-redux';
 import {
     MapContainer,
-    TileLayer,
     GeoJSON,
     Pane,
     ScaleControl,
@@ -21,7 +18,7 @@ import classNames from 'classnames';
 
 import { keyBy } from 'lodash';
 
-import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
+import { Tile } from '../../../components/maps/tools/TileSwitch';
 import { MapLegend } from './MapLegend';
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 
@@ -41,14 +38,14 @@ import {
     getOrgUnitsBounds,
     DEFAULT_VIEWPORT,
     mergeBounds,
-    Bounds,
-    tryFitToBounds,
 } from '../../../utils/mapUtils';
 import { MapPopUp } from './MapPopUp';
-import { Optional } from '../../../types/utils';
 import { RegistryDetailParams } from '../types';
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
+import { TilesSwitchDialog } from '../../../components/maps/tools/TilesSwitchDialog';
+import { CustomTileLayer } from '../../../components/maps/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/CustomZoomControl';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -58,8 +55,13 @@ type Props = {
     params: RegistryDetailParams;
 };
 
+const boundsOptions = {
+    padding: [50, 50],
+};
+
 const useStyles = makeStyles(() => ({
     mapContainer: {
+        height: '542px',
         position: 'relative',
         '& .leaflet-control-zoom': {
             borderBottom: 'none',
@@ -86,10 +88,8 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const map: any = useRef();
     const dispatch = useDispatch();
 
-    const bounds = useRef<Optional<Bounds | undefined>>();
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
         params.isFullScreen === 'true',
     );
@@ -97,9 +97,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const [showTooltip, setShowTooltip] = useState<boolean>(
         params.showTooltip === 'true',
     );
-
     const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
-    const [isMapFitted, setIsMapFitted] = useState<boolean>(false);
     const [legendOptions, setLegendOptions] = useState<Legend[]>(
         getlegendOptions(),
     );
@@ -119,24 +117,14 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const isOrgUnitActive: boolean =
         optionsObject[`${orgUnit.id}`]?.active || false;
 
-    useEffect(() => {
-        const newBounds: Bounds | undefined = mergeBounds(
-            isOrgUnitActive ? getOrgUnitBounds(orgUnit) : undefined,
-            getOrgUnitsBounds(activeChildren),
-        );
-        bounds.current = newBounds;
-    }, [activeChildren, isOrgUnitActive, orgUnit]);
-
-    useEffect(() => {
-        if (!isFetchingChildren && orgUnitChildren && !isMapFitted) {
-            tryFitToBounds(bounds.current, map.current);
-            setIsMapFitted(true);
-        }
-    }, [isFetchingChildren, orgUnitChildren, isMapFitted, bounds]);
-
-    useEffect(() => {
-        map?.current?.leafletElement?.invalidateSize();
-    }, [isMapFullScreen]);
+    const bounds = useMemo(
+        () =>
+            mergeBounds(
+                isOrgUnitActive ? getOrgUnitBounds(orgUnit) : undefined,
+                getOrgUnitsBounds(activeChildren),
+            ),
+        [activeChildren, isOrgUnitActive, orgUnit],
+    );
 
     const handleToggleTooltip = useCallback(
         (isVisible: boolean) => {
@@ -170,7 +158,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             </Box>
         );
 
-    return null;
     return (
         <Box
             className={classNames(
@@ -178,49 +165,49 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 isMapFullScreen && classes.fullScreen,
             )}
         >
-            <MapToggleFullscreen
-                isMapFullScreen={isMapFullScreen}
-                setIsMapFullScreen={handleToggleFullScreen}
-            />
-            <MapToggleTooltips
-                showTooltip={showTooltip}
-                setShowTooltip={handleToggleTooltip}
-            />
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
-            <TilesSwitch
+            <TilesSwitchDialog
                 currentTile={currentTile}
                 setCurrentTile={setCurrentTile}
             />
             <MapContainer
                 zoomSnap={0.25}
                 maxZoom={currentTile.maxZoom}
-                ref={map}
                 style={{
-                    height: isMapFullScreen ? '100vh' : '542px',
-                    width: isMapFullScreen ? '100vw' : '100%',
+                    minHeight: '542px',
+                    height: '100%',
                 }}
                 center={DEFAULT_VIEWPORT.center}
                 zoom={DEFAULT_VIEWPORT.zoom}
                 scrollWheelZoom={false}
                 zoomControl={false}
                 contextmenu
+                bounds={bounds}
+                boundsOptions={boundsOptions}
+                trackResize
             >
-                <ZoomControl
-                    fitToBounds={() => {
-                        tryFitToBounds(bounds.current, map.current);
-                    }}
+                <MapToggleTooltips
+                    showTooltip={showTooltip}
+                    setShowTooltip={handleToggleTooltip}
+                />
+                <MapToggleFullscreen
+                    isMapFullScreen={isMapFullScreen}
+                    setIsMapFullScreen={handleToggleFullScreen}
+                />
+                <CustomZoomControl
+                    bounds={bounds}
+                    boundsOptions={boundsOptions}
+                    fitOnLoad
                 />
                 <ScaleControl imperial={false} />
-                <TileLayer
-                    attribution={currentTile.attribution ?? ''}
-                    url={currentTile.url}
-                />
+                <CustomTileLayer currentTile={currentTile} />
 
                 {isOrgUnitActive && (
                     <>
                         {orgUnit.geo_json && (
                             <Pane name="orgunit-shapes">
                                 <GeoJSON
+                                    // @ts-ignore TODO: fix this type problem
                                     className="secondary"
                                     data={orgUnit.geo_json}
                                     style={() => ({
@@ -262,6 +249,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                         return (
                                             <GeoJSON
                                                 key={childrenOrgUnit.id}
+                                                // @ts-ignore TODO: fix this type problem
                                                 style={() => ({
                                                     color: subType.color || '',
                                                 })}
@@ -270,11 +258,17 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                 <MapPopUp
                                                     orgUnit={childrenOrgUnit}
                                                 />
-                                                <Tooltip
-                                                    permanent={showTooltip}
-                                                >
-                                                    {childrenOrgUnit.name}
-                                                </Tooltip>
+                                                {showTooltip && (
+                                                    // @ts-ignore TODO: fix this type problem
+                                                    <Tooltip permanent>
+                                                        {childrenOrgUnit.name}
+                                                    </Tooltip>
+                                                )}
+                                                {!showTooltip && (
+                                                    <Tooltip>
+                                                        {childrenOrgUnit.name}
+                                                    </Tooltip>
+                                                )}
                                             </GeoJSON>
                                         );
                                     }
@@ -308,11 +302,23 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                 })}
                                                 key={childrenOrgUnit.id}
                                                 TooltipComponent={() => (
-                                                    <Tooltip
-                                                        permanent={showTooltip}
-                                                    >
-                                                        {childrenOrgUnit.name}
-                                                    </Tooltip>
+                                                    <>
+                                                        {showTooltip && (
+                                                            // @ts-ignore TODO: fix this type problem
+                                                            <Tooltip permanent>
+                                                                {
+                                                                    childrenOrgUnit.name
+                                                                }
+                                                            </Tooltip>
+                                                        )}
+                                                        {!showTooltip && (
+                                                            <Tooltip>
+                                                                {
+                                                                    childrenOrgUnit.name
+                                                                }
+                                                            </Tooltip>
+                                                        )}
+                                                    </>
                                                 )}
                                                 markerProps={() => ({
                                                     ...circleColorMarkerOptions(

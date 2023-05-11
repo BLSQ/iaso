@@ -14,9 +14,13 @@ const useStyles = makeStyles(theme => ({
         width: 'auto',
         borderRadius: 4,
         border: '2px solid rgba(0,0,0,0.2)',
+        backgroundColor: 'transparent',
     },
     label: {
         fontSize: 12,
+    },
+    box: {
+        backgroundColor: 'white',
     },
 }));
 
@@ -34,7 +38,7 @@ export const ToggleCluster: FunctionComponent<Props> = ({
     return (
         <Paper elevation={0} className={classes.root}>
             <Tooltip arrow title={formatMessage(MESSAGES.title)}>
-                <Box>
+                <Box className={classes.box}>
                     <Switch
                         size="small"
                         checked={isClusterActive}

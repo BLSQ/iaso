@@ -1,5 +1,4 @@
-import React, { useRef, useState, useMemo, FunctionComponent } from 'react';
-// @ts-ignore
+import React, { useState, useMemo, FunctionComponent } from 'react';
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { MapContainer, TileLayer } from 'react-leaflet';
@@ -27,7 +26,6 @@ export const CalendarMap: FunctionComponent<Props> = ({
     isPdf = false,
 }) => {
     const classes = useStyles();
-    const map = useRef();
     const [viewport, setViewPort] = useState(defaultViewport);
     const [selection, setSelection] = useState('latest');
     const options = useMemo(() => makeSelections(campaigns), [campaigns]);
@@ -45,7 +43,6 @@ export const CalendarMap: FunctionComponent<Props> = ({
 
     const loadingShapes =
         viewport.zoom <= 6 ? isLoadingMergedShapes : isLoadingShapes;
-    return null;
     return (
         <Box position="relative">
             {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
@@ -68,7 +65,6 @@ export const CalendarMap: FunctionComponent<Props> = ({
                 </Box>
             </div>
             <MapContainer
-                ref={map}
                 style={{
                     height: !isPdf ? '72vh' : '800px',
                 }}

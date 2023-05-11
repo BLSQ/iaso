@@ -8,7 +8,7 @@ import { useGetPlanning } from '../../assignments/hooks/requests/useGetPlanning'
 
 type Props = {
     planningId: string | undefined;
-    planningName: unknown;
+    planningName: string;
 };
 
 export const LinkToPlanning: FunctionComponent<Props> = ({

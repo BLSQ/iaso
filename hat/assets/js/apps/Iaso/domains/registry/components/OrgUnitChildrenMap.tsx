@@ -171,7 +171,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 setCurrentTile={setCurrentTile}
             />
             <MapContainer
-                zoomSnap={0.25}
                 maxZoom={currentTile.maxZoom}
                 style={{
                     minHeight: '542px',

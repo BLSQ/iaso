@@ -1,34 +1,18 @@
-import React, {
-    FunctionComponent,
-    useRef,
-    useState,
-    useEffect,
-    useCallback,
-    useMemo,
-} from 'react';
-import { useSelector } from 'react-redux';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import {
     MapContainer,
-    TileLayer,
     GeoJSON,
     Pane,
     Tooltip,
     ScaleControl,
 } from 'react-leaflet';
-import { Grid, Divider, makeStyles } from '@material-ui/core';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    commonStyles,
-} from 'bluesquare-components';
+import { Grid, makeStyles, Box } from '@material-ui/core';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
 
 // COMPONENTS
-import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawer';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
-import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
 import { Tile } from '../../../components/maps/tools/TileSwitch';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
@@ -38,11 +22,11 @@ import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
 
 // UTILS
 import {
-    // ZoomControl,
     getLatLngBounds,
     getShapesBounds,
     colorClusterCustomMarker,
     circleColorMarkerOptions,
+    Bounds,
 } from '../../../utils/mapUtils';
 // UTILS
 
@@ -56,6 +40,11 @@ import { DropdownOptions } from '../../../types/utils';
 import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 // HOOKS
 import MESSAGES from '../messages';
+import { TilesSwitchDialog } from '../../../components/maps/tools/TilesSwitchDialog';
+import tiles from '../../../constants/mapTiles';
+import { CustomTileLayer } from '../../../components/maps/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/CustomZoomControl';
+import { ToggleCluster } from '../../../components/maps/tools/ToggleCluster';
 
 export type Locations = {
     locations: Array<OrgUnit[]>;
@@ -68,18 +57,6 @@ type Props = {
     orgUnits: Locations;
 };
 
-type MapState = {
-    currentTile: Tile;
-    isClusterActive: boolean;
-};
-
-type State = {
-    map: MapState;
-};
-
-const boundsOptions = {
-    padding: [50, 50],
-};
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...innerDrawerStyles(theme),
@@ -104,7 +81,7 @@ const getFullOrgUnits = orgUnits => {
     return fullOrUnits;
 };
 
-const getOrgUnitsBounds = orgUnits => {
+const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
     const orgUnitsLocations = getFullOrgUnits(orgUnits.locations);
     const locationsBounds =
         orgUnitsLocations.length > 0
@@ -112,7 +89,7 @@ const getOrgUnitsBounds = orgUnits => {
             : null;
     const shapeBounds =
         orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
-    let bounds = null;
+    let bounds: Bounds | undefined;
     if (locationsBounds && shapeBounds) {
         bounds = locationsBounds.extend(shapeBounds);
     } else if (locationsBounds) {
@@ -127,13 +104,10 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     orgUnits,
     orgUnitTypes,
 }) => {
-    const map: any = useRef();
     const classes: Record<string, string> = useStyles();
 
-    const currentTile = useSelector((state: State) => state.map.currentTile);
-    const isClusterActive = useSelector(
-        (state: State) => state.map.isClusterActive,
-    );
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
+    const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
     const [currentOrgUnitId, setCurrentOrgUnitId] = useState<
         number | undefined
     >();
@@ -142,19 +116,8 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
 
-    const bounds = getOrgUnitsBounds(orgUnits);
+    const bounds: Bounds | undefined = getOrgUnitsBounds(orgUnits);
     const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
-
-    const fitToBounds = useCallback(() => {
-        const newBounds = getOrgUnitsBounds(orgUnits);
-        if (newBounds) {
-            try {
-                map.current?.leafletElement.fitBounds(newBounds, boundsOptions);
-            } catch (e) {
-                console.warn(e);
-            }
-        }
-    }, [orgUnits]);
 
     const locations = useMemo(() => {
         if (isClusterActive) {
@@ -226,9 +189,6 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
         ));
     }, [currentOrgUnit, getSearchColor, isClusterActive, orgUnits.locations]);
 
-    useEffect(() => {
-        fitToBounds();
-    }, [fitToBounds]);
     if (!bounds && orgUnitsTotal.length > 0) {
         return (
             <Grid container spacing={0}>
@@ -242,21 +202,15 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
             </Grid>
         );
     }
-
-    return null;
+    const boundsOptions: Record<string, any> = {
+        padding: [10, 10],
+        maxZoom: currentTile.maxZoom,
+    };
     return (
         <Grid container spacing={0}>
             <InnerDrawer
-                defaultActiveOption="settings"
+                defaultActiveOption="comments"
                 withTopBorder
-                settingsOptionComponent={
-                    <>
-                        <TileSwitch />
-                        <Divider />
-                        <ClusterSwitch />
-                        <Divider />
-                    </>
-                }
                 commentsOptionComponent={
                     <OrgUnitsMapComments
                         className={classes.commentContainer}
@@ -265,80 +219,100 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                     />
                 }
             >
-                <MapContainer
-                    ref={map}
-                    scrollWheelZoom={false}
-                    maxZoom={currentTile.maxZoom}
-                    style={{ height: '100%' }}
-                    zoom={13}
-                    zoomControl={false}
-                    zoomSnap={0.1}
-                    keyboard={false}
-                >
-                    <ScaleControl imperial={false} />
-                    {/* <ZoomControl fitToBounds={() => fitToBounds()} /> */}
-                    <TileLayer
-                        attribution={
-                            currentTile.attribution
-                                ? currentTile.attribution
-                                : ''
-                        }
-                        url={currentTile.url}
+                <Box position="relative">
+                    <ToggleCluster
+                        isClusterActive={isClusterActive}
+                        setIsClusterActive={setIsClusterActive}
                     />
-                    {orgUnits.shapes
-                        .filter(o => !o.org_unit_type_id)
-                        .map(o => (
-                            <Pane name="no-org-unit-type" key={o.id}>
-                                <GeoJSON
-                                    key={`${o.id}-${o.search_index}`}
-                                    style={() => ({
-                                        color: getSearchColor(o.search_index),
-                                    })}
-                                    data={o.geo_json}
-                                    onClick={() => setCurrentOrgUnitId(o.id)}
-                                >
-                                    <OrgUnitPopupComponent
-                                        currentOrgUnit={currentOrgUnit}
-                                    />
-                                    <Tooltip>{o.name}</Tooltip>
-                                </GeoJSON>
-                            </Pane>
-                        ))}
-                    {orgUnitTypes.map(ot => (
-                        <Pane
-                            style={{
-                                zIndex: 400 + (ot.original?.depth || 1),
-                            }}
-                            name={`org-type-${ot.original?.id}`}
-                            key={ot.original?.id}
-                        >
-                            {orgUnits.shapes
-                                .filter(
-                                    o => o.org_unit_type_id === ot.original?.id,
-                                )
-                                .map(o => (
+                    <TilesSwitchDialog
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
+                    />
+                    <MapContainer
+                        doubleClickZoom={false}
+                        scrollWheelZoom={false}
+                        maxZoom={currentTile.maxZoom}
+                        style={{ height: '80vh', width: '100%' }}
+                        center={[0, 0]}
+                        zoomControl={false}
+                        keyboard={false}
+                        boxZoom
+                        bounds={bounds}
+                        boundsOptions={boundsOptions}
+                        trackResize
+                    >
+                        <ScaleControl imperial={false} />
+                        <CustomTileLayer currentTile={currentTile} />
+                        <CustomZoomControl
+                            bounds={bounds}
+                            boundsOptions={boundsOptions}
+                            fitOnLoad
+                        />
+                        {orgUnits.shapes
+                            .filter(o => !o.org_unit_type_id)
+                            .map(o => (
+                                <Pane name="no-org-unit-type" key={o.id}>
                                     <GeoJSON
                                         key={`${o.id}-${o.search_index}`}
-                                        style={() => ({
+                                        // @ts-ignore TODO: fix this type problem
+                                        style={{
                                             color: getSearchColor(
-                                                o.search_index,
+                                                o.search_index || 0,
                                             ),
-                                        })}
+                                        }}
                                         data={o.geo_json}
-                                        onClick={() =>
-                                            setCurrentOrgUnitId(o.id)
-                                        }
+                                        eventHandlers={{
+                                            click: () =>
+                                                setCurrentOrgUnitId(o.id),
+                                        }}
                                     >
                                         <OrgUnitPopupComponent
                                             currentOrgUnit={currentOrgUnit}
                                         />
                                         <Tooltip>{o.name}</Tooltip>
                                     </GeoJSON>
-                                ))}
-                        </Pane>
-                    ))}
-                    {locations}
-                </MapContainer>
+                                </Pane>
+                            ))}
+                        {orgUnitTypes.map(ot => (
+                            <Pane
+                                style={{
+                                    zIndex: 400 + (ot.original?.depth || 1),
+                                }}
+                                name={`org-type-${ot.original?.id}`}
+                                key={ot.original?.id}
+                            >
+                                {orgUnits.shapes
+                                    .filter(
+                                        o =>
+                                            o.org_unit_type_id ===
+                                            ot.original?.id,
+                                    )
+                                    .map(o => (
+                                        <GeoJSON
+                                            key={`${o.id}-${o.search_index}`}
+                                            // @ts-ignore TODO: fix this type problem
+                                            style={{
+                                                color: getSearchColor(
+                                                    o.search_index || 0,
+                                                ),
+                                            }}
+                                            data={o.geo_json}
+                                            eventHandlers={{
+                                                click: () =>
+                                                    setCurrentOrgUnitId(o.id),
+                                            }}
+                                        >
+                                            <OrgUnitPopupComponent
+                                                currentOrgUnit={currentOrgUnit}
+                                            />
+                                            <Tooltip>{o.name}</Tooltip>
+                                        </GeoJSON>
+                                    ))}
+                            </Pane>
+                        ))}
+                        {locations}
+                    </MapContainer>
+                </Box>
             </InnerDrawer>
         </Grid>
     );

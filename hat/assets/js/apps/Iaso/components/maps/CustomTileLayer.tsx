@@ -10,11 +10,11 @@ export const CustomTileLayer: FunctionComponent<Props> = ({ currentTile }) => {
     const ref: any = useRef(null);
     const map: any = useMap();
     useEffect(() => {
-        map.setMaxZoom(currentTile.maxZoom);
-        if (currentTile.maxZoom < map._zoom) {
-            map.setZoom(currentTile.maxZoom);
-        }
-        if (ref.current) {
+        if (ref.current && ref.current.url !== currentTile.url) {
+            map.setMaxZoom(currentTile.maxZoom);
+            if (currentTile.maxZoom < map.getZoom()) {
+                map.setZoom(currentTile.maxZoom);
+            }
             ref.current.setUrl(currentTile.url);
         }
     }, [currentTile, map]);

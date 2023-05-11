@@ -85,7 +85,6 @@ export const ListMap: FunctionComponent<Props> = ({
                 {isLoading && <LoadingSpinner absolute />}
                 <MapContainer
                     isLoading={isLoading}
-                    zoomSnap={0.25}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '60vh' }}
                     center={defaultViewport.center}

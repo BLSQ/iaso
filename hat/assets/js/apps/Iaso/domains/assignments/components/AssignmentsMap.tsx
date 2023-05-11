@@ -197,7 +197,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                 <MapContainer
                     doubleClickZoom
                     isLoading={isLoading}
-                    zoomSnap={0.25}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '72vh' }}
                     bounds={bounds}

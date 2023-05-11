@@ -54,14 +54,13 @@ export const MarkerMap: FunctionComponent<Props> = ({
                 setCurrentTile={setCurrentTile}
             />
             <MapContainer
-                doubleClickZoom
+                doubleClickZoom={false}
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
                 style={{ height: '100%' }}
                 center={[0, 0]}
                 zoomControl={false}
                 keyboard={false}
-                zoomSnap={0.1}
                 bounds={bounds}
                 boundsOptions={boundsOptions}
             >

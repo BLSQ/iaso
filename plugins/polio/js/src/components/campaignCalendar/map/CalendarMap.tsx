@@ -68,7 +68,6 @@ export const CalendarMap: FunctionComponent<Props> = ({
                 </Box>
             </div>
             <MapContainer
-                zoomSnap={0.25}
                 ref={map}
                 style={{
                     height: !isPdf ? '72vh' : '800px',

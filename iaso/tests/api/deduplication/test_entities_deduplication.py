@@ -246,13 +246,13 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             {
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
-                "algorithm": "inverse",
+                "algorithm": "levenshtein",
                 "parameters": {},
             },
             format="json",
         )
 
-        # var_dump(response)
+        var_dump(response)
 
         self.assertEqual(response.status_code, 201)
         assert "analyze_id" in response.data
@@ -273,7 +273,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(response_data["status"], "SUCCESS")
         self.assertEqual(response_data["entity_type_id"], str(self.default_entity_type.id))
         self.assertEqual(response_data["fields"], ["Prenom", "Nom"])
-        self.assertEqual(response_data["algorithm"], "inverse")
+        self.assertEqual(response_data["algorithm"], "levenshtein")
         self.assertEqual(response_data["parameters"], {})
         self.assertEqual(response_data["created_by"]["id"], self.user_with_default_ou_rw.id)
 
@@ -308,7 +308,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             {
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
-                "algorithm": "inverse",
+                "algorithm": "levenshtein",
                 "parameters": {},
             },
             format="json",
@@ -333,7 +333,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             {
                 "entity_type_id": self.default_entity_type.id,
                 "fields": ["Prenom", "Nom"],
-                "algorithm": "inverse",
+                "algorithm": "levenshtein",
                 "parameters": {},
             },
             format="json",

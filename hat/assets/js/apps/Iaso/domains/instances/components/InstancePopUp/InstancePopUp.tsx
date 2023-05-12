@@ -77,7 +77,7 @@ export const InstancePopup: FunctionComponent<Props> = ({
     }, [currentInstance?.org_unit]);
 
     return (
-        <Popup className={classes.popup} ref={popup}>
+        <Popup className={classes.popup} ref={popup} pane="popupPane">
             {!currentInstance && <LoadingSpinner />}
             {currentInstance && (
                 <Card className={classes.popupCard}>

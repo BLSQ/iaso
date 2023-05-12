@@ -27,7 +27,9 @@ export const CalendarMap: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const [viewport, setViewPort] = useState(defaultViewport);
-    const [selection, setSelection] = useState('latest');
+    const [selection, setSelection] = useState<'all' | 'latest' | string>(
+        'latest',
+    );
     const options = useMemo(() => makeSelections(campaigns), [campaigns]);
     const {
         shapes: campaignsShapes,
@@ -68,12 +70,14 @@ export const CalendarMap: FunctionComponent<Props> = ({
                 style={{
                     height: !isPdf ? '72vh' : '800px',
                 }}
+                // @ts-ignore TODO: fix this type problem
                 center={viewport.center}
                 zoom={viewport.zoom}
                 scrollWheelZoom={false}
                 onViewportChanged={v => setViewPort(v)}
             >
                 <TileLayer
+                    // @ts-ignore TODO: fix this type problem
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     position="bottomleft"

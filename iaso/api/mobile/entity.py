@@ -92,7 +92,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
     def get_instances(entity: Entity):
         ok_instances = []
 
-        for inst in entity.filter(deleted=False).all():
+        for inst in entity.instances.filter(deleted=False).all():
             try:
                 FormVersion.objects.get(version_id=inst.json.get("_version"), form_id=inst.form.id)
                 ok_instances.append(inst)

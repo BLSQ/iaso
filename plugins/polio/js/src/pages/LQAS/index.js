@@ -27,6 +27,7 @@ import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
 import { genUrl } from '../../utils/routing';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { defaultRounds } from '../IM/constants.ts';
+import { useLqasIm } from '../IM/requests.ts';
 
 const paperElevation = 2;
 
@@ -45,17 +46,16 @@ export const Lqas = ({ router }) => {
     const [selectedRounds, setSelectedRounds] = useState(
         rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
     );
+    const { data: LQASData, isFetching } = useLqasIm('lqas', country);
 
     const {
-        LQASData,
-        isFetching,
         convertedData,
         campaigns,
         campaignsFetching,
         debugData,
         hasScope,
         chartData,
-    } = useLqasData(campaign, country, selectedRounds);
+    } = useLqasData({ campaign, country, selectedRounds, LQASData });
 
     const dropDownOptions = useMemo(() => {
         return makeDropdownOptions(LQASData?.stats, campaign, selectedRounds);

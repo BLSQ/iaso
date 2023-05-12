@@ -351,9 +351,9 @@ export const useSnackQueries = <QueryFnData>(
     queries: {
         queryKey: QueryKey;
         queryFn: QueryFunction<QueryFnData>;
-        snackErrorMsg: IntlMessage;
+        snackErrorMsg?: IntlMessage;
         options: UseQueryOptions;
-        dispatchOnError: boolean;
+        dispatchOnError?: boolean;
     }[],
 ): Array<UseQueryResult<unknown, unknown>> => {
     const dispatch = useDispatch();

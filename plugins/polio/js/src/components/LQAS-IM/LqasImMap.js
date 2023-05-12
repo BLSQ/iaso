@@ -27,10 +27,13 @@ import {
     defaultShapeStyle,
 } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { useGetGeoJson } from '../../hooks/useGetGeoJson.ts';
 import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
 
 const defaultShapes = [];
+
+// eslint-disable-next-line no-unused-vars
+const getBackgroundLayerStyle = _shape => defaultShapeStyle;
 
 export const LqasImMap = ({
     type,
@@ -108,9 +111,6 @@ export const LqasImMap = ({
         },
         [type],
     );
-
-    // eslint-disable-next-line no-unused-vars
-    const getBackgroundLayerStyle = _shape => defaultShapeStyle;
 
     const title =
         type === 'lqas'

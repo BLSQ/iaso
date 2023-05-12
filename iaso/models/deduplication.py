@@ -39,5 +39,8 @@ class EntityDuplicate(models.Model):
         EntityDuplicateAnalyze, related_name="duplicates", on_delete=models.CASCADE, default=None, null=True
     )
 
+    def get_entity_type(self):
+        return self.entity1.entity_type
+
     class Meta:
         unique_together = ("entity1", "entity2")

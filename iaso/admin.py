@@ -581,7 +581,15 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
     def entity2_desc(self, obj):
         return f"{obj.entity2.name} ({obj.entity2.id})"
 
-    list_display = ("similarity_score", "entity1_desc", "entity2_desc", "created_at")
+    list_display = (
+        "similarity_score",
+        "validation_status",
+        "get_entity_type",
+        "entity1_desc",
+        "entity2_desc",
+        "created_at",
+    )
+    list_filter = ("validation_status", "entity1__entity_type")
 
 
 class EntityDuplicateAnalyzeAdmin(admin.ModelAdmin):

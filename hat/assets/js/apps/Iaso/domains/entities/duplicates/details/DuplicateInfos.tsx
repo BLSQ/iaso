@@ -62,6 +62,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const successSnackBar = (msg, data) => {
         return succesfullSnackBar(formSuccessFullMessageKey, msg);
         // TODO uncomment when we figured out hwo to style the button
@@ -132,7 +133,11 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                                 variant="contained"
                                 color="primary"
                                 onClick={() => {
-                                    mergeEntities(query);
+                                    mergeEntities({
+                                        entity1_id: entityIds[0],
+                                        entity2_id: entityIds[1],
+                                        merge: query,
+                                    });
                                 }}
                                 disabled={disableMerge}
                             >

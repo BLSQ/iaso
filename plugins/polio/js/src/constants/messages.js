@@ -1534,6 +1534,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.cannotDisplayMap',
         defaultMessage: 'Cannot display map',
     },
+    map: {
+        id: 'iaso.polio.label.map',
+        defaultMessage: 'Map',
+    },
     amount: {
         id: 'iaso.polio.label.amount',
         defaultMessage: 'Amount',

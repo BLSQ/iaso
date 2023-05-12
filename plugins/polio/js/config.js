@@ -37,6 +37,7 @@ import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/c
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
 import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
 import { BudgetList } from './src/pages/Budget/index.tsx';
+import { LqasAfroMap } from './src/pages/LQAS/LqasAfroMap/LqasAfroMap';
 
 const campaignsFilters = [
     {
@@ -96,6 +97,7 @@ const routes = [
             },
         ],
     },
+
     {
         baseUrl: CAMPAIGN_HISTORY_URL,
         component: props => <CampaignHistory {...props} />,
@@ -146,7 +148,7 @@ const routes = [
         ],
     },
     {
-        baseUrl: LQAS_BASE_URL,
+        baseUrl: `${LQAS_BASE_URL}/lqas`,
         component: props => <Lqas {...props} />,
         permissions: ['iaso_polio'],
         params: [
@@ -161,6 +163,17 @@ const routes = [
             {
                 isRequired: false,
                 key: 'rounds',
+            },
+        ],
+    },
+    {
+        baseUrl: `${LQAS_BASE_URL}/lqas-map`,
+        component: props => <LqasAfroMap {...props} round="latest" />,
+        permissions: ['iaso_polio'],
+        params: [
+            {
+                isRequired: false,
+                key: 'round',
             },
         ],
     },
@@ -365,6 +378,20 @@ const menu = [
                 key: 'lqas',
                 permissions: ['iaso_polio'],
                 icon: props => <AssessmentIcon {...props} />,
+                subMenu: [
+                    {
+                        label: MESSAGES.campaigns,
+                        key: 'lqas',
+                        permissions: ['iaso_polio'],
+                        icon: props => <AssessmentIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.map,
+                        key: 'lqas-map',
+                        permissions: ['iaso_polio'],
+                        icon: props => <AssessmentIcon {...props} />,
+                    },
+                ],
             },
             {
                 label: MESSAGES.im,

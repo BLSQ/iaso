@@ -10,12 +10,12 @@ import { MergedShapeWithColor } from '../types';
 
 type Props = {
     mergedShapes: MergedShapeWithColor[];
-    viewport: ViewPort;
+    zoom: number;
 };
 
 export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
     mergedShapes,
-    viewport,
+    zoom,
 }) => {
     return (
         <Pane name="merged-shapes" key="merged-shapes">
@@ -32,7 +32,7 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
                                         mergedShape.properties.vaccine,
                                 )?.color || mergedShape.color,
                                 mergedShape.color,
-                                viewport,
+                                zoom,
                             )
                         }
                     >

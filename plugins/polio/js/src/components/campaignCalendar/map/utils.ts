@@ -1,6 +1,5 @@
 import moment, { Moment } from 'moment';
 import { cloneDeep } from 'lodash';
-import { ViewPort } from '../../../constants/types';
 import { vaccineOpacity } from '../Styles';
 import { boundariesZoomLimit } from './constants';
 import { polioVaccines } from '../../../constants/virus';
@@ -15,13 +14,13 @@ import {
 export const getGeoJsonStyle = (
     fillColor: string,
     color: string,
-    viewport: ViewPort,
+    zoom: number,
 ): Record<string, string | number | undefined> => {
     return {
         color,
         fillOpacity: vaccineOpacity,
         fillColor,
-        weight: viewport.zoom > boundariesZoomLimit ? 2 : 0,
+        weight: zoom > boundariesZoomLimit ? 2 : 0,
     };
 };
 

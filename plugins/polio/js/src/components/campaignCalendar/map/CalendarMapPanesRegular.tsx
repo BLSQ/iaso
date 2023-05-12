@@ -1,17 +1,16 @@
 import React, { FunctionComponent } from 'react';
 import { GeoJSON, Pane } from 'react-leaflet';
-import { ViewPort } from '../../../constants/types';
 import { getGeoJsonStyle } from './utils';
 import { CalendarMapTooltip } from './CalendarMapTooltip';
 
 type Props = {
     campaignsShapes: any[];
-    viewport: ViewPort;
+    zoom: number;
 };
 
 export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
     campaignsShapes,
-    viewport,
+    zoom,
 }) => {
     return (
         <>
@@ -32,7 +31,7 @@ export const CalendarMapPanesRegular: FunctionComponent<Props> = ({
                                     getGeoJsonStyle(
                                         campaignShape.color || color,
                                         color,
-                                        viewport,
+                                        zoom,
                                     )
                                 }
                             >

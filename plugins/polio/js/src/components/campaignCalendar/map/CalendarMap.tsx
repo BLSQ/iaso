@@ -1,18 +1,12 @@
 import React, { useState, useMemo, FunctionComponent } from 'react';
-import { LoadingSpinner } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import { MapContainer, TileLayer } from 'react-leaflet';
-import { MapRoundSelector } from './MapRoundSelector';
-import { VaccinesLegend } from './VaccinesLegend';
-import { CampaignsLegend } from './CampaignsLegend';
-import { useStyles } from '../Styles';
 import { useMergedShapes, useShapes } from './hooks';
 import { makeSelections } from './utils';
 import 'leaflet/dist/leaflet.css';
-import { CalendarMapPanesRegular } from './CalendarMapPanesRegular';
-import { CalendarMapPanesMerged } from './CalendarMapPanesMerged';
-import { defaultViewport, boundariesZoomLimit } from './constants';
 import { MappedCampaign } from '../types';
+import { CalendarMapContainer } from './CalendarMapContainer';
+import { defaultViewport } from './constants';
 
 type Props = {
     isPdf?: boolean;
@@ -25,8 +19,6 @@ export const CalendarMap: FunctionComponent<Props> = ({
     loadingCampaigns,
     isPdf = false,
 }) => {
-    const classes = useStyles();
-    const [viewport, setViewPort] = useState(defaultViewport);
     const [selection, setSelection] = useState<'all' | 'latest' | string>(
         'latest',
     );
@@ -43,38 +35,15 @@ export const CalendarMap: FunctionComponent<Props> = ({
         selection,
     });
 
-    const loadingShapes =
-        viewport.zoom <= 6 ? isLoadingMergedShapes : isLoadingShapes;
     return (
         <Box position="relative">
-            {(loadingCampaigns || loadingShapes) && <LoadingSpinner absolute />}
-            <div className={classes.mapLegend}>
-                <MapRoundSelector
-                    selection={selection}
-                    options={options}
-                    onChange={value => {
-                        setSelection(value);
-                    }}
-                    iconProps={{ selection, viewport }}
-                />
-                {viewport.zoom > boundariesZoomLimit && (
-                    <Box mt={2}>
-                        <CampaignsLegend campaigns={campaigns} />
-                    </Box>
-                )}
-                <Box display="flex" justifyContent="flex-end">
-                    <VaccinesLegend />
-                </Box>
-            </div>
             <MapContainer
                 style={{
                     height: !isPdf ? '72vh' : '800px',
                 }}
-                // @ts-ignore TODO: fix this type problem
-                center={viewport.center}
-                zoom={viewport.zoom}
+                center={defaultViewport.center}
+                zoom={defaultViewport.zoom}
                 scrollWheelZoom={false}
-                onViewportChanged={v => setViewPort(v)}
             >
                 <TileLayer
                     // @ts-ignore TODO: fix this type problem
@@ -82,18 +51,17 @@ export const CalendarMap: FunctionComponent<Props> = ({
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     position="bottomleft"
                 />
-                {viewport.zoom > 6 && (
-                    <CalendarMapPanesRegular
-                        campaignsShapes={campaignsShapes}
-                        viewport={viewport}
-                    />
-                )}
-                {viewport.zoom <= 6 && (
-                    <CalendarMapPanesMerged
-                        mergedShapes={mergedShapes}
-                        viewport={viewport}
-                    />
-                )}
+                <CalendarMapContainer
+                    campaignsShapes={campaignsShapes}
+                    mergedShapes={mergedShapes}
+                    loadingCampaigns={loadingCampaigns}
+                    isLoadingShapes={isLoadingShapes}
+                    isLoadingMergedShapes={isLoadingMergedShapes}
+                    setSelection={setSelection}
+                    selection={selection}
+                    options={options}
+                    campaigns={campaigns}
+                />
             </MapContainer>
         </Box>
     );

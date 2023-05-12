@@ -100,6 +100,7 @@ const Filters = ({
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
         useGetGroupedCampaigns();
+    // Pass the appId to have it works in the embedded calendar where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
         useGetGroupDropdown({ blockOfCountries: 'True', appId: appId });
     const groupedCampaignsOptions = useMemo(

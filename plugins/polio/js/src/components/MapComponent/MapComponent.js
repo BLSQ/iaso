@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
 import { MapContainer, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 import {
@@ -12,11 +12,16 @@ import {
     number,
     bool,
 } from 'prop-types';
+import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/CustomZoomControl.tsx';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(
         backgroundShape => backgroundShape.id === shape.parent_id,
     )[0]?.name;
+};
+
+const boundsOptions = {
+    padding: [5, 5],
 };
 export const MapComponent = ({
     name,
@@ -31,8 +36,6 @@ export const MapComponent = ({
     makePopup,
     fitBoundsToBackground,
 }) => {
-    const map = useRef();
-
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
@@ -53,21 +56,21 @@ export const MapComponent = ({
         return newBounds;
     }, [mainLayer, fitBoundsToBackground, backgroundLayer]);
 
-    useEffect(() => {
-        if (bounds && bounds.isValid() && fitToBounds) {
-            map.current?.leafletElement.fitBounds(bounds);
-        }
-    }, [bounds, fitToBounds]);
-    return null;
     return (
         <MapContainer
-            ref={map}
             style={{ height }}
             center={[0, 0]}
             zoom={3}
             scrollWheelZoom={false}
             bounds={fitToBounds ? bounds : null}
+            boundsOptions={boundsOptions}
+            zoomControl={false}
         >
+            <CustomZoomControl
+                bounds={bounds}
+                boundsOptions={boundsOptions}
+                fitOnLoad={fitToBounds}
+            />
             <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -79,7 +82,6 @@ export const MapComponent = ({
                             key={shape.id}
                             data={shape.geo_json}
                             style={() => getBackgroundLayerStyle(shape)}
-                            onClick={() => null}
                         />
                     ))}
             </Pane>
@@ -90,7 +92,9 @@ export const MapComponent = ({
                             key={shape.id}
                             data={shape.geo_json}
                             style={() => getMainLayerStyle(shape)}
-                            onClick={() => onSelectShape(shape)}
+                            eventHandlers={{
+                                click: () => onSelectShape(shape),
+                            }}
                         >
                             {makePopup && makePopup(shape)}
                             <Tooltip title={shape.name}>

@@ -1,21 +1,44 @@
-import json
-
-from django.core.exceptions import ValidationError
-from django.db.models import Prefetch
-from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
-from rest_framework import serializers
+from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import permissions
+from rest_framework.exceptions import ParseError, AuthenticationFailed, NotFound
 
-from iaso.api.common import (
-    ModelViewSet,
-    DeletionFilterBackend,
-    TimestampField,
-)
+
+from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
 from iaso.api.query_params import LIMIT, PAGE
-from iaso.models import Entity, Instance, OrgUnit, FormVersion
-from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.models import Entity, FormVersion, Instance, OrgUnit
+from iaso.models.entity import (
+    InvalidJsonContentError,
+    InvalidLimitDateError,
+    UserNotAuthError,
+    ProjectNotFoundError,
+)
+
+
+def filter_for_mobile_entity(queryset, request):
+    if queryset:
+        try:
+            queryset = queryset.filter_for_mobile_entity(
+                request.query_params.get("limit_date"), request.query_params.get("json_content")
+            )
+        except InvalidLimitDateError as e:
+            raise ParseError(e.message)
+        except InvalidJsonContentError as e:
+            raise ParseError(e.message)
+
+    return queryset
+
+
+def get_queryset_for_user_and_app_id(user, app_id):
+    try:
+        queryset = Entity.objects.filter_for_user_and_app_id(user, app_id)
+    except ProjectNotFoundError as e:
+        raise NotFound(e.message)
+    except UserNotAuthError as e:
+        raise AuthenticationFailed(e.message)
+
+    return queryset
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -23,32 +46,6 @@ class LargeResultsSetPagination(PageNumberPagination):
     page_size_query_param = LIMIT
     page_query_param = PAGE
     max_page_size = 1000
-
-
-def filter_queryset_for_mobile_entity(queryset, request):
-    limit_date = request.query_params.get("limit_date", None)
-    if limit_date:
-        try:
-            queryset = queryset.filter(instances__updated_at__gte=limit_date)
-        except ValidationError:
-            raise Http404("Invalid Limit Date")
-
-    json_content = request.query_params.get("json_content", None)
-    if json_content:
-        try:
-            q = jsonlogic_to_q(jsonlogic=json.loads(json_content), field_prefix="attributes__json__")  # type: ignore
-            queryset = queryset.filter(q)
-        except ValidationError:
-            raise Http404("Invalid Json Content")
-
-    p = Prefetch(
-        "instances",
-        queryset=Instance.objects.filter(deleted=False).exclude(file=""),
-        to_attr="non_deleted_instances",
-    )
-    queryset = queryset.prefetch_related(p).prefetch_related("non_deleted_instances__form")
-
-    return queryset
 
 
 class MobileEntityAttributesSerializer(serializers.ModelSerializer):
@@ -66,6 +63,8 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_form_version_id(obj: Instance):
+        if obj.json is None:
+            return None
         return FormVersion.objects.get(version_id=obj.json.get("_version"), form_id=obj.form.id).id  # type: ignore
 
 
@@ -93,7 +92,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
     def get_instances(entity: Entity):
         ok_instances = []
 
-        for inst in entity.non_deleted_instances:
+        for inst in entity.filter(deleted=False).all():
             try:
                 FormVersion.objects.get(version_id=inst.json.get("_version"), form_id=inst.form.id)
                 ok_instances.append(inst)
@@ -126,20 +125,28 @@ class MobileEntityViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     pagination_class = LargeResultsSetPagination
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
+
     lookup_field = "uuid"
 
     def get_serializer_class(self):
         return MobileEntitySerializer
 
     def get_queryset(self):
-        profile = self.request.user.iaso_profile
+        user = self.request.user
+        app_id = self.request.query_params.get("app_id")
 
-        # This function alter the queryset by adding non_deleted_instances
-        queryset = filter_queryset_for_mobile_entity(Entity.objects.filter(account=profile.account), self.request)
+        if not app_id:
+            raise ParseError("app_id is required")
+
+        queryset = get_queryset_for_user_and_app_id(user, app_id)
+
+        queryset = filter_for_mobile_entity(queryset, self.request)
 
         # we give all entities having an instance linked to the one of the org units allowed for the current user
-        orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
-        if orgunits:
-            queryset = queryset.filter(instances__org_unit__in=orgunits)
+        if queryset and user and user.is_authenticated:
+            orgunits = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all())
+            if orgunits and len(orgunits) > 0:
+                queryset = queryset.filter(instances__org_unit__in=orgunits)
 
         return queryset

@@ -252,8 +252,6 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             format="json",
         )
 
-        var_dump(response)
-
         self.assertEqual(response.status_code, 201)
         assert "analyze_id" in response.data
 

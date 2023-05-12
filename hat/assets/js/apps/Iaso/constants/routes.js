@@ -929,10 +929,7 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'ignored',
         },
-        {
-            isRequired: false,
-            key: 'entity',
-        },
+
         {
             isRequired: false,
             key: 'fields',
@@ -940,6 +937,10 @@ export const entityDuplicatesPath = {
         {
             isRequired: false,
             key: 'form',
+        },
+        {
+            isRequired: false,
+            key: 'entity_id',
         },
     ],
 };

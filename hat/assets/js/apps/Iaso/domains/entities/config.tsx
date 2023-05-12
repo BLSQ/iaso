@@ -8,6 +8,7 @@ import {
 
 import moment from 'moment';
 import _ from 'lodash';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
 import {
     DateCell,
@@ -111,16 +112,33 @@ export const useColumns = (
             accessor: 'actions',
             resizable: false,
             sortable: false,
-            Cell: (settings): ReactElement => (
+            Cell: (settings): ReactElement => {
                 // TODO: limit to user permissions
-                <>
-                    <IconButtonComponent
-                        url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.see}
-                    />
-                </>
-            ),
+                return (
+                    <>
+                        <IconButtonComponent
+                            url={`/${baseUrls.entityDetails}/entityId/${settings.row.original.id}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.see}
+                        />
+                        {settings.row.original.duplicates.length === 1 && (
+                            <IconButtonComponent
+                                url={`/${baseUrls.entityDuplicateDetails}/entities/${settings.row.original.id},${settings.row.original.duplicates[0]}/`}
+                                overrideIcon={FileCopyIcon}
+                                tooltipMessage={MESSAGES.seeDuplicate}
+                            />
+                        )}
+                        {/* When there's more than one dupe for the entity */}
+                        {settings.row.original.duplicates.length > 1 && (
+                            <IconButtonComponent
+                                url={`/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${settings.row.original.id}/`}
+                                overrideIcon={FileCopyIcon}
+                                tooltipMessage={MESSAGES.seeDuplicates}
+                            />
+                        )}
+                    </>
+                );
+            },
         });
         return columns;
     }, [

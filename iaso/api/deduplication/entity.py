@@ -219,8 +219,10 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
     def list(self, request: Request, *args, **kwargs):
         # """Override to return responses with {"result_key": data} structure"""
-
+        entity_id = self.request.GET.get("entity_id", None)
         queryset = self.filter_queryset(self.get_queryset())
+        if entity_id:
+            queryset = queryset.filter(Q(entity1__id=entity_id) | Q(entity2__id=entity_id))
 
         page = self.paginate_queryset(queryset)
         if page is not None:

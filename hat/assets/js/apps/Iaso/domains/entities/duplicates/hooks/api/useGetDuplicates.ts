@@ -48,6 +48,7 @@ export type DuplicatesGETParams = {
         form?: any;
         fields?: any;
         ignored?: boolean;
+        entity?: string;
     };
 };
 
@@ -97,7 +98,8 @@ export const useGetDuplicateDetails = ({
         queryFn: () => getDuplicatesDetails(queryString),
         options: {
             select: data => {
-                if (!data) return { fields: [], descriptor1: {}, descriptor2: {} };
+                if (!data)
+                    return { fields: [], descriptor1: {}, descriptor2: {} };
 
                 const fields_result = data.fields.map(row => {
                     return {

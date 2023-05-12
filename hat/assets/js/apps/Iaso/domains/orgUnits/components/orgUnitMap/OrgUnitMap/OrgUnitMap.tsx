@@ -15,7 +15,7 @@ import {
     mapOrgUnitByLocation,
     getleafletGeoJson,
     orderOrgUnitTypeByDepth,
-} from '../../../../../utils/mapUtils';
+} from '../../../../../utils/map/mapUtils';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
@@ -29,7 +29,7 @@ import { OrgUnitsMapComments } from '../OrgUnitsMapComments';
 import MESSAGES from '../../../messages';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
-import getBounds from '../getBounds';
+import { useGetBounds } from './useGetBounds';
 import { userHasPermission } from '../../../../users/utils';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
 import { useFormState } from '../../../../../hooks/form';
@@ -42,13 +42,13 @@ import { FormsMarkers } from './FormsMarkers';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { SelectedMarkers } from './SelectedMarkers';
 import { buttonsInitialState } from './constants';
-import { CustomTileLayer } from '../../../../../components/maps/CustomTileLayer';
+import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
 import {
     Tile,
     TilesSwitchDialog,
 } from '../../../../../components/maps/tools/TilesSwitchDialog';
 import tiles from '../../../../../constants/mapTiles';
-import { CustomZoomControl } from '../../../../../components/maps/CustomZoomControl';
+import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -109,8 +109,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const [state, setStateField, _, setState] = useFormState(
         initialState(currentUser),
     );
-    const { resetMapReducer, fetchInstanceDetail, fetchSubOrgUnitDetail } =
-        useRedux();
+    const { fetchInstanceDetail, fetchSubOrgUnitDetail } = useRedux();
     // console.log('state', state);
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
@@ -142,7 +141,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
         state.catchmentGroup.value,
     ]);
-    const bounds = getBounds({
+    const bounds = useGetBounds({
         orgUnit: currentOrgUnit,
         locationGroup: state.locationGroup.value,
         catchmentGroup: state.catchmentGroup.value,
@@ -365,7 +364,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         const currentMap = map.current;
         return () => {
             if (currentMap) {
-                resetMapReducer();
                 state.locationGroup.value.reset(currentMap);
                 state.catchmentGroup.value.reset(currentMap);
                 setState(initialState(currentUser));
@@ -373,7 +371,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         };
     }, [
         currentUser,
-        resetMapReducer,
         setState,
         state.catchmentGroup.value,
         state.locationGroup.value,
@@ -478,6 +475,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 />
                 <MapContainer
                     key={currentOrgUnit.id}
+                    // @ts-ignore TODO: fix this type problem
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '100%' }}
                     center={[0, 0]}
@@ -490,7 +488,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         map.current = mapInstance;
                     }}
                 >
-                    {/* <ZoomControl fitToBounds={fitToBounds} /> */}
                     <CustomZoomControl
                         bounds={bounds}
                         boundsOptions={{ padding }}

@@ -3,7 +3,7 @@ import React from 'react';
 import { CircleMarker } from 'react-leaflet';
 
 import PropTypes from 'prop-types';
-import { isValidCoordinate } from '../../../utils/mapUtils.ts';
+import { isValidCoordinate } from '../../../utils/map/mapUtils.ts';
 
 const CircleMarkerComponent = props => {
     const {

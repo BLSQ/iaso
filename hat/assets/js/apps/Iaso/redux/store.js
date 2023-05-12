@@ -14,7 +14,6 @@ import {
     projectsReducer,
     projectsInitialState,
 } from '../domains/projects/reducer';
-import { mapReducer, mapInitialState } from './mapReducer';
 import {
     instancesReducer,
     instancesInitialState,
@@ -48,7 +47,6 @@ const store = createStore(
         orgUnits: orgUnitsInitialState,
         instances: instancesInitialState,
         snackBar: snackBarsInitialState,
-        map: mapInitialState,
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
@@ -62,7 +60,6 @@ const store = createStore(
         orgUnits: orgUnitsReducer,
         instances: instancesReducer,
         snackBar: snackBarsReducer,
-        map: mapReducer,
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,

@@ -12,7 +12,7 @@ import {
     number,
     bool,
 } from 'prop-types';
-import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/CustomZoomControl.tsx';
+import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
     return backgroundShapes.filter(

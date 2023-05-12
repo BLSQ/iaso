@@ -15,7 +15,10 @@ import {
 
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
-import { Tile } from '../../../components/maps/tools/TileSwitch';
+import {
+    Tile,
+    TilesSwitchDialog,
+} from '../../../components/maps/tools/TilesSwitchDialog';
 import { MapLegend } from './MapLegend';
 import { MapInfo } from './MapInfo';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
@@ -33,14 +36,13 @@ import {
     circleColorMarkerOptions,
     getShapesBounds,
     getLatLngBounds,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
 import { Profile } from '../../../utils/usersUtils';
 
 import { DropdownTeamsOptions } from '../types/team';
 import { AssignmentsApi } from '../types/assigment';
-import { CustomZoomControl } from '../../../components/maps/CustomZoomControl';
-import { CustomTileLayer } from '../../../components/maps/CustomTileLayer';
-import { TilesSwitchDialog } from '../../../components/maps/tools/TilesSwitchDialog';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 
 const defaultViewport = {
     center: [1, 20],

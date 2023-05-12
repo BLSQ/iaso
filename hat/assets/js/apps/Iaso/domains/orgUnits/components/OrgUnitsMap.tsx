@@ -14,7 +14,10 @@ import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import InnerDrawer from '../../../components/nav/InnerDrawer';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import { Tile } from '../../../components/maps/tools/TileSwitch';
+import {
+    Tile,
+    TilesSwitchDialog,
+} from '../../../components/maps/tools/TilesSwitchDialog';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
@@ -27,7 +30,7 @@ import {
     colorClusterCustomMarker,
     circleColorMarkerOptions,
     Bounds,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
 // UTILS
 
 // TYPES
@@ -40,10 +43,9 @@ import { DropdownOptions } from '../../../types/utils';
 import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 // HOOKS
 import MESSAGES from '../messages';
-import { TilesSwitchDialog } from '../../../components/maps/tools/TilesSwitchDialog';
 import tiles from '../../../constants/mapTiles';
-import { CustomTileLayer } from '../../../components/maps/CustomTileLayer';
-import { CustomZoomControl } from '../../../components/maps/CustomZoomControl';
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { ToggleCluster } from '../../../components/maps/tools/ToggleCluster';
 
 export type Locations = {

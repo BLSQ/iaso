@@ -3,8 +3,10 @@ import { MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
-
-import { Tile } from '../../../components/maps/tools/TileSwitch';
+import {
+    Tile,
+    TilesSwitchDialog,
+} from '../../../components/maps/tools/TilesSwitchDialog';
 import { PopupComponent as Popup } from './Popup';
 
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
@@ -18,11 +20,10 @@ import {
     circleColorMarkerOptions,
     getLatLngBounds,
     clusterCustomMarker,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { TilesSwitchDialog } from '../../../components/maps/tools/TilesSwitchDialog';
-import { CustomTileLayer } from '../../../components/maps/CustomTileLayer';
-import { CustomZoomControl } from '../../../components/maps/CustomZoomControl';
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
 const defaultViewport = {
     center: [1, 20],

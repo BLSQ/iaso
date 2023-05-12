@@ -4,7 +4,10 @@ import { Marker } from 'react-leaflet';
 
 import PropTypes from 'prop-types';
 
-import { customMarker, isValidCoordinate } from '../../../utils/mapUtils.ts';
+import {
+    customMarker,
+    isValidCoordinate,
+} from '../../../utils/map/mapUtils.ts';
 
 const MarkerComponent = props => {
     const {

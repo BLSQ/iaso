@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import { connect } from 'react-redux';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -13,7 +12,6 @@ import Typography from '@material-ui/core/Typography';
 import PropTypes from 'prop-types';
 import { injectIntl, commonStyles } from 'bluesquare-components';
 import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
-import { setCurrentTile } from '../../../redux/mapReducer';
 
 import tiles from '../../../constants/mapTiles';
 
@@ -104,21 +102,4 @@ TileSwitchComponent.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = (state, props) => ({
-    currentTile: props.currentTile || state.map.currentTile,
-});
-
-const MapDispatchToProps = (dispatch, props) => ({
-    dispatch,
-    setCurrentTile: currentTile =>
-        props.setCurrentTile
-            ? props.setCurrentTile(currentTile)
-            : dispatch(setCurrentTile(currentTile)),
-});
-
-export default withStyles(styles)(
-    connect(
-        MapStateToProps,
-        MapDispatchToProps,
-    )(injectIntl(TileSwitchComponent)),
-);
+export default withStyles(styles)(injectIntl(TileSwitchComponent));

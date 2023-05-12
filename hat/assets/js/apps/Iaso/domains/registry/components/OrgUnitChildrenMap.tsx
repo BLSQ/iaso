@@ -18,7 +18,10 @@ import classNames from 'classnames';
 
 import { keyBy } from 'lodash';
 
-import { Tile } from '../../../components/maps/tools/TileSwitch';
+import {
+    Tile,
+    TilesSwitchDialog,
+} from '../../../components/maps/tools/TilesSwitchDialog';
 import { MapLegend } from './MapLegend';
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 
@@ -33,19 +36,16 @@ import { MapToggleFullscreen } from './MapToggleFullscreen';
 import TILES from '../../../constants/mapTiles';
 import {
     circleColorMarkerOptions,
-    // ZoomControl,
     getOrgUnitBounds,
     getOrgUnitsBounds,
-    DEFAULT_VIEWPORT,
     mergeBounds,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
 import { MapPopUp } from './MapPopUp';
 import { RegistryDetailParams } from '../types';
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
-import { TilesSwitchDialog } from '../../../components/maps/tools/TilesSwitchDialog';
-import { CustomTileLayer } from '../../../components/maps/CustomTileLayer';
-import { CustomZoomControl } from '../../../components/maps/CustomZoomControl';
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -176,8 +176,8 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     minHeight: '542px',
                     height: '100%',
                 }}
-                center={DEFAULT_VIEWPORT.center}
-                zoom={DEFAULT_VIEWPORT.zoom}
+                center={[1, 20]}
+                zoom={3}
                 scrollWheelZoom={false}
                 zoomControl={false}
                 contextmenu

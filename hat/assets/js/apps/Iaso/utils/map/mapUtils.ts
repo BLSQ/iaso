@@ -1,17 +1,15 @@
-/* eslint-disable class-methods-use-this */
-// @ts-ignore
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 import isNumber from 'lodash/isNumber';
 import { defineMessages } from 'react-intl';
 import { Theme } from '@material-ui/core/styles';
-import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
-import { OrgunitTypes } from '../domains/orgUnits/types/orgunitTypes';
+import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
 import {
     AssociatedOrgUnit,
     MappedOrgUnit,
-} from '../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
+} from '../../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
 
 export const defaultCenter = [5, 20];
 export const defaultZoom = 4;
@@ -160,17 +158,6 @@ export const mapOrgUnitByLocation = (
     return mappedOrgunits;
 };
 
-export const shapeOptions = (): {
-    // eslint-disable-next-line no-unused-vars
-    onEachFeature: (feature: any, layer: any) => void;
-} => ({
-    onEachFeature: (feature, layer) => {
-        layer.setStyle({
-            weight: 3,
-        });
-    },
-});
-
 type ShapeOptions = {
     shapeOptions: { color: string; className: string; pane: string };
 };
@@ -188,6 +175,16 @@ export const polygonDrawOption = (
     };
 };
 
+export const shapeOptions = (): {
+    // eslint-disable-next-line no-unused-vars
+    onEachFeature: (feature: any, layer: any) => void;
+} => ({
+    onEachFeature: (feature, layer) => {
+        layer.setStyle({
+            weight: 3,
+        });
+    },
+});
 export const getleafletGeoJson = (geoJson: any): void =>
     geoJson ? L.geoJson(geoJson, shapeOptions) : null;
 
@@ -202,19 +199,6 @@ export type Bounds = {
     // eslint-disable-next-line no-unused-vars
     extend: (bounds: Bounds) => Bounds;
     isValid: () => boolean;
-};
-type BoundsOptions = {
-    padding: number[];
-};
-type DefaultViewPort = {
-    center: number[];
-    zoom: number;
-};
-type Map = {
-    leafletElement: {
-        // eslint-disable-next-line no-unused-vars
-        fitBounds: (bounds: Bounds, boundsOptions) => void;
-    };
 };
 
 export const getOrgUnitBounds = (orgUnit: OrgUnit): Bounds | undefined => {
@@ -259,22 +243,4 @@ export const mergeBounds = (
         bounds = boundsB;
     }
     return bounds;
-};
-
-export const DEFAULT_VIEWPORT: DefaultViewPort = {
-    center: [1, 20],
-    zoom: 3.25,
-};
-export const BOUNDS_OPTIONS: BoundsOptions = {
-    padding: [50, 50],
-};
-
-export const tryFitToBounds = (bounds?: Bounds, map?: Map): void => {
-    if (bounds) {
-        try {
-            map?.leafletElement.fitBounds(bounds, BOUNDS_OPTIONS);
-        } catch (e) {
-            console.warn(e);
-        }
-    }
 };

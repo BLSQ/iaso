@@ -6,12 +6,12 @@ import L from 'leaflet';
 import { makeStyles } from '@material-ui/core';
 import { commonStyles } from 'bluesquare-components';
 
-import { CustomTileLayer } from './CustomTileLayer';
+import { CustomTileLayer } from './tools/CustomTileLayer';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
 import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
-import { CustomZoomControl } from './CustomZoomControl';
+import { CustomZoomControl } from './tools/CustomZoomControl';
 
 const useStyles = makeStyles(theme => ({
     mapContainer: {

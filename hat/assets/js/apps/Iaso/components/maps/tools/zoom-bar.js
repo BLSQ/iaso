@@ -1,6 +1,6 @@
 import L from 'leaflet';
-import location from '../../images/location.svg';
-import square from '../../images/square.svg';
+import location from '../../../images/location.svg';
+import square from '../../../images/square.svg';
 
 /*
  * In react use the <ZoomControl> component from mapUtils instead !

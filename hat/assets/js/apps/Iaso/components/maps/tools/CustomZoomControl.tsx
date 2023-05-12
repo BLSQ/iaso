@@ -7,11 +7,11 @@ import { useMap } from 'react-leaflet';
 
 import { useSafeIntl } from 'bluesquare-components';
 
-import tiles from '../../constants/mapTiles';
+import tiles from '../../../constants/mapTiles';
 
-import { Bounds } from '../../utils/mapUtils';
+import { Bounds } from '../../../utils/map/mapUtils';
 
-import '../leaflet/zoom-bar';
+import './zoom-bar';
 
 type Props = {
     bounds?: Bounds;

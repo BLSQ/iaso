@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useRef, useEffect } from 'react';
 import { TileLayer, useMap } from 'react-leaflet';
-import { Tile } from './tools/TilesSwitchDialog';
+import { Tile } from './TilesSwitchDialog';
 
 type Props = {
     currentTile: Tile;

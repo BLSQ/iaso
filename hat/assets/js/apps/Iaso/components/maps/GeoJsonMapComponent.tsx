@@ -15,9 +15,9 @@ import tiles from '../../constants/mapTiles';
 
 import { GeoJson } from './types';
 import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
-import { CustomZoomControl } from './CustomZoomControl';
-import { CustomTileLayer } from './CustomTileLayer';
-import { Bounds } from '../../utils/mapUtils';
+import { CustomZoomControl } from './tools/CustomZoomControl';
+import { CustomTileLayer } from './tools/CustomTileLayer';
+import { Bounds } from '../../utils/map/mapUtils';
 
 const useStyles = makeStyles(theme => ({
     mapContainer: {

@@ -15,19 +15,20 @@ import {
     clusterCustomMarker,
     defaultCenter,
     defaultZoom,
-} from '../../../../utils/mapUtils';
+} from '../../../../utils/map/mapUtils';
 
 import MarkersListComponent from '../../../../components/maps/markers/MarkersListComponent';
 import { useShowWarning } from './useShowWarning';
-import { useResetMapReducerOnUnmount } from './useResetMapReducerOnUnmount';
 import { setCurrentInstance } from '../../actions';
 import { fetchInstanceDetail } from '../../../../utils/requests';
 import { Instance } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
-import { Tile } from '../../../../components/maps/tools/TileSwitch';
-import { TilesSwitchDialog } from '../../../../components/maps/tools/TilesSwitchDialog';
-import { CustomTileLayer } from '../../../../components/maps/CustomTileLayer';
-import { CustomZoomControl } from '../../../../components/maps/CustomZoomControl';
+import {
+    TilesSwitchDialog,
+    Tile,
+} from '../../../../components/maps/tools/TilesSwitchDialog';
+import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import { ToggleCluster } from '../../../../components/maps/tools/ToggleCluster';
 
 import tiles from '../../../../constants/mapTiles';
@@ -80,8 +81,6 @@ export const InstancesMap: FunctionComponent<Props> = ({
         [dispatch, dispatchInstance],
     );
     useShowWarning({ instances, notifications, fetching });
-
-    useResetMapReducerOnUnmount();
 
     const bounds = useMemo(() => {
         if (instances) {

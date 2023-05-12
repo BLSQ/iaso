@@ -1,14 +1,23 @@
 import L from 'leaflet';
+import { OrgUnit } from '../../../types/orgUnit';
+import { Bounds } from '../../../../../utils/map/mapUtils';
 
-const getBounds = ({
+type Props = {
+    orgUnit: OrgUnit;
+    locationGroup: Record<string, any>;
+    catchmentGroup: Record<string, any>;
+    ancestorWithGeoJson?: OrgUnit;
+};
+
+export const useGetBounds = ({
     orgUnit,
     locationGroup,
     catchmentGroup,
     ancestorWithGeoJson,
-}) => {
+}: Props): Bounds | undefined => {
     let otherBounds;
-    const groups = [];
-    const locations = [];
+    const groups: Record<string, any>[] = [];
+    const locations: Record<string, any>[] = [];
     let shapesBounds;
     if (ancestorWithGeoJson) {
         const tempBounds = L.geoJSON(ancestorWithGeoJson.geo_json);
@@ -38,4 +47,3 @@ const getBounds = ({
     }
     return otherBounds;
 };
-export default getBounds;

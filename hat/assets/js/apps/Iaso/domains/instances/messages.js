@@ -534,6 +534,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.disableColumnSelectionMessage',
         defaultMessage: 'Apply search to be able to select visible columns',
     },
+    altitude: {
+        id: 'iaso.label.altitude',
+        defaultMessage: 'Altitude',
+    },
+    accuracy: {
+        id: 'iaso.label.accuracy',
+        defaultMessage: 'Accuracy',
+    },
+    fromOrgUnit: {
+        id: 'iaso.label.fromOrgunit',
+        defaultMessage: '(from Org Unit)',
+    },
     created_by: {
         id: 'iaso.label.created_by',
         defaultMessage: 'Created  by',

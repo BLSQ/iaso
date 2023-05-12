@@ -71,7 +71,7 @@ export const orgUnitLabelString = (
     return message;
 };
 
-export const OrgUnitLabel = ({ orgUnit, withType, withSource }) => {
+export const OrgUnitLabel = ({ orgUnit, withType, withSource = false }) => {
     const intl = useSafeIntl();
     return orgUnitLabelString(
         orgUnit,

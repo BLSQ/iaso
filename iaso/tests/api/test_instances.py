@@ -15,6 +15,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import InstanceLock
 from iaso.models.microplanning import Planning, Team
+from iaso.models import OrgUnit, Instance, InstanceLock, FormVersion
 from iaso.test import APITestCase
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
@@ -1351,3 +1352,60 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(instance.entity, entity)
         self.assertEqual(entity.entity_type, entity_type)
         self.assertEqual(entity.account, self.star_wars)
+
+    def test_assign_form_version_id_on_save(self):
+        instance_uuid = str(uuid4())
+        entity_uuid = str(uuid4())
+        entity_type = m.EntityType.objects.create(account=self.star_wars)
+
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "entityUuid": entity_uuid,
+                "entityTypeId": entity_type.id,
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check if the instance created without FormVersion has form_version = None
+
+        self.client.force_authenticate(self.yoda)
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        response = self.client.get(f"/api/instances/{instance.pk}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["form_version_id"], None)
+
+        # Check that once the FormVersion is created and instance.json updated with a "_version" instance.form_version_id is properly updated
+
+        form_version = FormVersion.objects.create(version_id="2022112301", form_id=instance.form.id)
+
+        instance.json = {
+            "end": "2022-11-23T12:12:45.803+01:00",
+            "start": "2022-11-23T12:12:25.930+01:00",
+            "_version": "2022112301",
+            "ou_region": "30015",
+            "instanceID": "uuid:381e988e-87b5-4758-b31a-eb1dac1430a7",
+            "ou_country": "29694",
+            "admin_doses": "66",
+            "ou_district": "32128",
+            "insert_obr_name": "",
+            "insert_doses_requested": "",
+        }
+        instance.save()
+
+        response = self.client.get(f"/api/instances/{instance.pk}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["form_version_id"], form_version.id)
+        self.assertEqual(response.json()["form_name"], "Hydroponics study")

@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { useQueryClient } from 'react-query';
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
@@ -19,12 +20,19 @@ type Props = {
 
 export const ActionCell: FunctionComponent<Props> = ({ settings }) => {
     const user = useCurrentUser();
+
+    const queryClient = useQueryClient();
     const getEnketoUrl = useGetEnketoUrl(
         window.location.href,
         settings.row.original,
     );
-    const { mutate: softDeleteInstance } =
-        useDeleteInstance('registry-instances');
+    const onSuccess = () => {
+        queryClient.invalidateQueries('registry-orgunits-without-instances');
+    };
+    const { mutate: softDeleteInstance } = useDeleteInstance(
+        'registry-instances',
+        onSuccess,
+    );
     return (
         <section>
             <LinkToInstance instanceId={settings.row.original.id} useIcon />

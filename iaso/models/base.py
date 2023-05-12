@@ -15,6 +15,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -825,6 +826,9 @@ class Instance(models.Model):
     planning = models.ForeignKey(
         "Planning", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="instances"
     )
+    form_version = models.ForeignKey(
+        "FormVersion", null=True, blank=True, on_delete=models.DO_NOTHING, related_name="form_version"
+    )
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
@@ -1003,6 +1007,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "accuracy": self.accuracy,
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
@@ -1013,7 +1018,6 @@ class Instance(models.Model):
         form_version = self.get_form_version()
 
         last_modified_by = None
-
         if self.last_modified_by is not None:
             last_modified_by = self.last_modified_by.username
 
@@ -1026,6 +1030,7 @@ class Instance(models.Model):
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
+            "form_version_id": self.form_version.id if self.form_version else None,
             "form_name": self.form.name,
             "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
@@ -1034,6 +1039,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "accuracy": self.accuracy,
             "period": self.period,
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
@@ -1071,6 +1077,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "accuracy": self.accuracy,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
@@ -1108,6 +1115,15 @@ class Instance(models.Model):
     @property
     def has_org_unit(self):
         return self.org_unit if self.org_unit else None
+
+    def save(self, *args, **kwargs):
+        if self.json is not None and self.json.get("_version"):
+            try:
+                form_version = FormVersion.objects.get(version_id=self.json.get("_version"), form_id=self.form.id)
+                self.form_version = form_version
+            except ObjectDoesNotExist:
+                pass
+        return super(Instance, self).save(*args, **kwargs)
 
 
 class InstanceFile(models.Model):

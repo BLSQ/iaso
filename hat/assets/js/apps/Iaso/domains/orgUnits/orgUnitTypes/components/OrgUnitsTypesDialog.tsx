@@ -4,22 +4,23 @@ import React, {
     useRef,
     useState,
     useMemo,
+    FunctionComponent,
+    ReactNode,
 } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import PropTypes from 'prop-types';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    useSkipEffectOnMount,
+    IntlMessage,
+} from 'bluesquare-components';
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
-import { isUndefined } from 'lodash';
+import { isUndefined, mapValues } from 'lodash';
+
 import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../../../users/utils';
-import {
-    saveOrgUnitType as saveOrgUnitTypeAction,
-    createOrgUnitType as createOrgUnitTypeAction,
-} from '../actions';
 import { useFormState } from '../../../../hooks/form';
 import {
     commaSeparatedIdsToArray,
@@ -27,6 +28,13 @@ import {
     isFormValid,
 } from '../../../../utils/forms';
 import { requiredFields } from '../config/requiredFields';
+import { useGetProjectsDropdownOptions } from '../../../projects/hooks/requests';
+import { useGetOrgUnitTypesDropdownOptions } from '../hooks/useGetOrgUnitTypesDropdownOptions';
+import { useSaveOrgUnitType } from '../hooks/useSaveOrgUnitType';
+import { useCurrentUser } from '../../../../utils/usersUtils';
+import { OrgunitType } from '../../types/orgunitTypes';
+import { DropdownOptions } from '../../../../types/utils';
+import { Form } from '../../../forms/types/forms';
 
 const mapOrgUnitType = orgUnitType => {
     return {
@@ -40,22 +48,34 @@ const mapOrgUnitType = orgUnitType => {
     };
 };
 
-const OrgUnitsTypesDialog = ({
-    orgUnitType,
+type Props = {
+    orgUnitType?: OrgunitType;
+    titleMessage: IntlMessage;
+    // eslint-disable-next-line no-unused-vars
+    renderTrigger: ({ openDialog }: { openDialog: () => void }) => ReactNode;
+};
+export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
+    orgUnitType = {
+        id: null,
+        name: '',
+        short_name: '',
+        projects: [],
+        depth: 0,
+        sub_unit_types: [],
+        reference_form: null,
+    },
     titleMessage,
-    onConfirmed,
-    ...dialogProps
+    renderTrigger,
 }) => {
     const [formState, setFieldValue, setFieldErrors, setFormState] =
         useFormState(mapOrgUnitType(orgUnitType));
 
-    const [allForms, setAllForms] = useState();
+    const [allForms, setAllForms] = useState<Form[]>();
     const { data } = useGetFormsByProjects();
     const dataForms = data && data.forms;
 
     const formStateUpdated = useRef(null);
     const projectsEmptyUpdated = useRef(null);
-    const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
 
     const [referenceFormMessage, setReferenceFormMessage] = useState(
@@ -68,10 +88,9 @@ const OrgUnitsTypesDialog = ({
         !!isEmpty(formState.project_ids.value),
     );
 
-    const { allOrgUnitTypes, allProjects } = useSelector(state => ({
-        allOrgUnitTypes: state.orgUnitsTypes.allTypes || [],
-        allProjects: state.projects.allProjects || [],
-    }));
+    const { data: allProjects } = useGetProjectsDropdownOptions();
+    const { data: allOrgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
+    const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {
         return forms?.filter(form => {
@@ -131,7 +150,7 @@ const OrgUnitsTypesDialog = ({
         }
     }, [dataForms, formState.project_ids.value, allForms]);
 
-    const currentUser = useSelector(state => state.users.current);
+    const currentUser = useCurrentUser();
 
     const onChange = useCallback(
         (keyValue, value) => {
@@ -143,7 +162,7 @@ const OrgUnitsTypesDialog = ({
                 if (keyValue === 'project_ids') {
                     const projectIds = value
                         ?.split(',')
-                        .map(val => parseInt(val, 10));
+                        .map((val: string) => parseInt(val, 10));
                     setAllForms(getFormPerProjects(projectIds));
                 }
             } else {
@@ -161,15 +180,9 @@ const OrgUnitsTypesDialog = ({
 
     const onConfirm = useCallback(
         closeDialog => {
-            const savePromise =
-                orgUnitType.id === null
-                    ? dispatch(createOrgUnitTypeAction(formState))
-                    : dispatch(saveOrgUnitTypeAction(formState));
-
-            savePromise
+            saveType(mapValues(formState, v => v.value))
                 .then(() => {
                     closeDialog();
-                    onConfirmed();
                 })
                 .catch(error => {
                     if (error.status === 400) {
@@ -179,8 +192,7 @@ const OrgUnitsTypesDialog = ({
                     }
                 });
         },
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [dispatch, setFieldErrors, formState],
+        [formState, saveType, setFieldErrors],
     );
     const hasPermission =
         userHasPermission('iaso_org_units', currentUser) &&
@@ -190,28 +202,27 @@ const OrgUnitsTypesDialog = ({
         setFormState(mapOrgUnitType(orgUnitType));
     };
 
-    const subUnitTypes = allOrgUnitTypes.filter(
-        subUnit => subUnit.id !== formState.id.value,
-    );
+    const subUnitTypes: DropdownOptions<string>[] =
+        allOrgUnitTypes?.filter(
+            subUnit => subUnit.value !== formState.id.value,
+        ) || [];
 
     const allProjectWithInvalids = useMemo(() => {
-        const allUserProjectsIds = allProjects?.map(p => p.id);
-        const orgUnitypeProjects = orgUnitType.projects
-            .filter(p => !allUserProjectsIds.includes(p.id))
-            ?.map(project => ({
-                label: project.name,
-                value: project.id,
-                color: '#eb4034',
-            }));
+        const allUserProjectsIds = allProjects?.map(p => p.value);
+        const orgUnitypeProjects: DropdownOptions<string>[] =
+            orgUnitType.projects
+                .filter(
+                    p =>
+                        allUserProjectsIds &&
+                        !allUserProjectsIds.includes(`${p.id}`),
+                )
+                ?.map(project => ({
+                    label: project.name,
+                    value: `${project.id}`,
+                    color: '#eb4034',
+                }));
 
-        return (
-            allProjects
-                ?.map(p => ({
-                    label: p.name,
-                    value: p.id,
-                }))
-                .concat(orgUnitypeProjects) ?? []
-        );
+        return allProjects?.concat(orgUnitypeProjects) ?? [];
     }, [allProjects, orgUnitType.projects]);
 
     return (
@@ -225,11 +236,14 @@ const OrgUnitsTypesDialog = ({
             }}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
-            // eslint-disable-next-line react/jsx-props-no-spreading
             allowConfirm={isFormValid(requiredFields, formState)}
             maxWidth="xs"
-            // eslint-disable-next-line react/jsx-props-no-spreading
-            {...dialogProps}
+            renderTrigger={renderTrigger}
+            additionalButton={undefined}
+            additionalMessage={undefined}
+            onAdditionalButtonClick={undefined}
+            allowConfimAdditionalButton={undefined}
+            dataTestId="OuTypes-modal"
         >
             <InputComponent
                 keyValue="name"
@@ -281,10 +295,7 @@ const OrgUnitsTypesDialog = ({
                 value={formState.sub_unit_type_ids.value}
                 errors={formState.sub_unit_type_ids.errors}
                 type="select"
-                options={subUnitTypes.map(orgunitType => ({
-                    value: orgunitType.id,
-                    label: orgunitType.name,
-                }))}
+                options={subUnitTypes}
                 label={MESSAGES.subUnitTypes}
             />
             {hasPermission && (
@@ -309,22 +320,3 @@ const OrgUnitsTypesDialog = ({
         </ConfirmCancelDialogComponent>
     );
 };
-OrgUnitsTypesDialog.propTypes = {
-    orgUnitType: PropTypes.object,
-    titleMessage: PropTypes.object.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    onConfirmed: PropTypes.func.isRequired,
-};
-OrgUnitsTypesDialog.defaultProps = {
-    orgUnitType: {
-        id: null,
-        name: '',
-        short_name: '',
-        projects: [],
-        depth: 0,
-        sub_unit_types: [],
-        reference_form: null,
-    },
-};
-
-export default OrgUnitsTypesDialog;

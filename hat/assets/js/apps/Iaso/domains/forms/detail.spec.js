@@ -15,7 +15,6 @@ import TopBar from '../../components/nav/TopBarComponent';
 import { withQueryClientProvider } from '../../../../test/utils';
 
 const projectActions = require('../projects/actions');
-const orgUnitTypesActions = require('../orgUnits/orgUnitTypes/actions');
 const redirectActions = require('../../routing/actions');
 const requestsStub = require('../../utils/requests');
 
@@ -272,12 +271,6 @@ describe('Detail form connected component', () => {
             });
 
             it('with org_unit_type_ids, project_ids in state and does not call org unit type and projects api', () => {
-                const fetchAllOrgUnitTypesStub = sinon
-                    .stub(orgUnitTypesActions, 'fetchAllOrgUnitTypes')
-                    .returns({ type: 'ZELDA' });
-                const fetchProjectStub = sinon
-                    .stub(projectActions, 'fetchAllProjects')
-                    .returns({ type: 'ZELDA' });
                 connectedWrapper = mount(
                     withQueryClientProvider(
                         renderWithStore(
@@ -299,8 +292,6 @@ describe('Detail form connected component', () => {
                         ),
                     ),
                 );
-                expect(fetchAllOrgUnitTypesStub).not.to.have.been.called;
-                expect(fetchProjectStub).not.to.have.been.called;
                 expect(connectedWrapper.exists()).to.equal(true);
             });
         });

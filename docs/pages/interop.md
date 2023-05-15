@@ -49,14 +49,14 @@ Systems.
 
 1.  **Short-term (by end of 2023)**
 
-    1.  **DHIS2 Tracker data import/export**
+-  **DHIS2 Tracker data import/export**
 
 Recently, we implemented case management features in Iaso, which is
 mainly the possibility to collect and store data about individuals. One
 goal will be to further develop the integration between Iaso and DHIS2
 Tracker, to allow the import and export of data linked to individuals.
 
-    2.  **FHIR**
+-  **FHIR**
 
 In the same context as above, Bluesquare would ensure that Iaso is
 compatible with the FHIR standard for health care data exchange. That
@@ -73,7 +73,7 @@ and implemented if we can identify a project needing the feature.
 
 2.  **Long-term (end of 2023 and beyond)**
 
-    1.  **Better sharing of documentation about Iaso**
+-  **Better sharing of documentation about Iaso**
 
 Iaso’s code and general information is published on the dedicated Github
 repository that you can find here:
@@ -90,7 +90,7 @@ To facilitate interoperability, we are in the process of publishing the
 api specification in the OpenAPI standard (the format used by the
 Swagger tool).
 
-    2.  **Microplanning**
+-  **Microplanning**
 
 Iaso is growing more and more to be a planning system, e.g. for
 vaccination campaigns. We need to investigate if there are existing
@@ -98,7 +98,7 @@ standards (outside of calendar standards like caldav) , especially in
 the OHIE specification that could be reused to expose our plannings to
 external systems.
 
-    3.  **Logistics**
+-  **Logistics**
 
 There is a growing demand for Iaso to be able to handle logistics, in
 order to monitor stocks of certain health-related or other supplies,

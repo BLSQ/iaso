@@ -1,6 +1,6 @@
 import L from 'leaflet';
 import { OrgUnit } from '../../../types/orgUnit';
-import { Bounds } from '../../../../../utils/map/mapUtils';
+import { Bounds, getOrgUnitBounds } from '../../../../../utils/map/mapUtils';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -15,7 +15,7 @@ export const useGetBounds = ({
     catchmentGroup,
     ancestorWithGeoJson,
 }: Props): Bounds | undefined => {
-    let otherBounds;
+    let finalBounds;
     const groups: Record<string, any>[] = [];
     const locations: Record<string, any>[] = [];
     let shapesBounds;
@@ -25,7 +25,12 @@ export const useGetBounds = ({
     }
 
     const locationsBounds = L.latLngBounds(locations);
-    otherBounds = locationsBounds.extend(shapesBounds);
+    finalBounds = locationsBounds.extend(shapesBounds);
+
+    const orgUnitBounds = getOrgUnitBounds(orgUnit);
+    if (orgUnitBounds) {
+        finalBounds = finalBounds.extend(orgUnitBounds);
+    }
     if (orgUnit.geo_json) {
         groups.push(locationGroup.group);
     }
@@ -34,16 +39,13 @@ export const useGetBounds = ({
     }
     const group = new L.FeatureGroup(groups);
     if (orgUnit.latitude && orgUnit.longitude) {
-        const latlng = [L.latLng(orgUnit.latitude, orgUnit.longitude)];
-        let bounds = L.latLngBounds(latlng);
         if (groups.length > 0) {
             const groupBounds = group.getBounds();
-            bounds = groupBounds.extend(bounds);
+            finalBounds = finalBounds.extend(groupBounds);
         }
-        otherBounds = otherBounds.extend(bounds);
     } else if (groups.length > 0) {
         const bounds = group.getBounds();
-        otherBounds = otherBounds.extend(bounds);
+        finalBounds = finalBounds.extend(bounds);
     }
-    return otherBounds;
+    return finalBounds;
 };

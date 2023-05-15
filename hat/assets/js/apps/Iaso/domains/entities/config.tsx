@@ -190,6 +190,7 @@ export const useColumnsFromFieldsList = (
 
 export const useBeneficiariesDetailsColumns = (
     entityId: number | null,
+    duplicates: number[],
     fields: Array<string> = [],
 ): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -232,19 +233,36 @@ export const useBeneficiariesDetailsColumns = (
                 Header: formatMessage(MESSAGES.actions),
                 sortable: false,
                 id: 'actions',
-                Cell: (settings): ReactElement => (
-                    // TODO: limit to user permissions
-                    <section>
-                        <IconButtonComponent
-                            url={`/${baseUrls.entitySubmissionDetail}/instanceId/${settings.row.original.id}/entityId/${entityId}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.see}
-                            disabled={!entityId}
-                        />
-                    </section>
-                ),
+                Cell: (settings): ReactElement => {
+                    return (
+                        // TODO: limit to user permissions
+                        <section>
+                            <IconButtonComponent
+                                url={`/${baseUrls.entitySubmissionDetail}/instanceId/${settings.row.original.id}/entityId/${entityId}`}
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.see}
+                                disabled={!entityId}
+                            />
+                            {/* {duplicates.length === 1 && (
+                                <IconButtonComponent
+                                    url={`/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`}
+                                    overrideIcon={FileCopyIcon}
+                                    tooltipMessage={MESSAGES.seeDuplicate}
+                                />
+                            )}
+                            {/* When there's more than one dupe for the entity */}
+                            {/* {duplicates.length > 1 && (
+                                <IconButtonComponent
+                                    url={`/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`}
+                                    overrideIcon={FileCopyIcon}
+                                    tooltipMessage={MESSAGES.seeDuplicates}
+                                />
+                            )} */}
+                        </section>
+                    );
+                },
             },
         ],
-        [entityId, columnsFromList, formatMessage],
+        [formatMessage, columnsFromList, entityId, duplicates],
     );
 };

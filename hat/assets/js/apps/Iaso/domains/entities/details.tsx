@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useMemo } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -7,7 +7,7 @@ import {
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box, Divider, Grid, makeStyles } from '@material-ui/core';
+import { Box, Button, Divider, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -53,7 +53,20 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data?: Beneficiary;
         isLoading: boolean;
     } = useGetBeneficiary(entityId);
-    const columns = useBeneficiariesDetailsColumns(beneficiary?.id ?? null, []);
+    const columns = useBeneficiariesDetailsColumns(
+        beneficiary?.id ?? null,
+        beneficiary?.duplicates ?? [],
+        [],
+    );
+
+    const duplicates = useMemo(() => {
+        return beneficiary?.duplicates ?? [];
+    }, [beneficiary]);
+
+    const duplicateUrl =
+        duplicates.length === 1
+            ? `/dashboard/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
+            : `/dashboard/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
 
     const { data, isLoading: isLoadingSubmissions } = useGetSubmissions(
         params,
@@ -87,6 +100,19 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             </Box>
                         </WidgetPaper>
                     </Grid>
+                    {duplicates.length > 0 && (
+                        <Grid container item xs={8} justifyContent="flex-end">
+                            <Box>
+                                <Button
+                                    variant="contained"
+                                    color="primary"
+                                    href={duplicateUrl}
+                                >
+                                    {formatMessage(MESSAGES.seeDuplicates)}
+                                </Button>
+                            </Box>
+                        </Grid>
+                    )}
                     {/* TODO uncomment when edition is possible */}
                     {/* <Grid container item xs={1}>
                         <Box ml={2}>

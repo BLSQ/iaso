@@ -100,8 +100,9 @@ class EntitySerializer(serializers.ModelSerializer):
     def get_entity_type_name(obj: Entity):
         return obj.entity_type.name if obj.entity_type else None
 
-    def get_duplicates(self, entity:Entity):
+    def get_duplicates(self, entity: Entity):
         return get_duplicates(entity)
+
 
 class EntityTypeViewSet(ModelViewSet):
     """Entity Type API

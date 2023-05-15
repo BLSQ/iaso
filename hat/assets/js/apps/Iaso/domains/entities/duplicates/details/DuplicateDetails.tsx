@@ -323,6 +323,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                             onlyShowUnmatched,
                             entities,
                             getRowProps,
+                            getCellProps,
                         }}
                         onTableParamsChange={p =>
                             dispatch(

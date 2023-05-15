@@ -1,13 +1,8 @@
-title: <span id="_ihjcjujaa57"
-  class="anchor"></span><img src="./media/image2.png"
-  style="width:2.02604in;height:0.95709in" />
-  .
-  <span id="_1kd2uk203rz0" class="anchor"></span>Interoperability
-  roadmap 2023-2024
+# Interoperability roadmap 2023-2024
 
 ### Introduction
 
-Iaso is an open sourc Iaso, whose name was taken from the name of a
+Iaso, whose name was taken from the name of a
 Greek goddess for health, has initially been developed to support
 national health programmes in their data collection and organization of
 geographical information in remote and low connectivity areas. Since
@@ -33,9 +28,9 @@ Information Exchange (OpenHIE) community**.
 The below below standard technologies are already being used by Iaso
 today:
 
--   Data collection: XLSForm (https://xlsform.org/) , CSV
+-   Data collection: [XLSForm](https://xlsform.org/), CSV
 
--   Geographical data: geopackage (see http://www.geopackage.org/ )
+-   Geographical data: [geopackage](http://www.geopackage.org/)
 
 Iaso data collection can be done through forms in the common **XLSForm
 format** used for example by ODK, and allows to import and export data
@@ -61,7 +56,7 @@ mainly the possibility to collect and store data about individuals. One
 goal will be to further develop the integration between Iaso and DHIS2
 Tracker, to allow the import and export of data linked to individuals.
 
-1.  **FHIR**
+    2.  **FHIR**
 
 In the same context as above, Bluesquare would ensure that Iaso is
 compatible with the FHIR standard for health care data exchange. That
@@ -76,7 +71,7 @@ system and here, there is a very good opportunity to adopt **OHIE**
 facility registry standards. This will be studied by the end of the year
 and implemented if we can identify a project needing the feature.
 
-1.  **Long-term (end of 2023 and beyond)**
+2.  **Long-term (end of 2023 and beyond)**
 
     1.  **Better sharing of documentation about Iaso**
 
@@ -87,15 +82,15 @@ repository that you can find here:
 Bluesquare has started to organize processes to ensure more easily
 accessible documentation about Iaso, that will benefit the open source
 health softwares community. An evolving user guide will be made
-available on https://readthedocs.org/, together with more technical
+available on [https://readthedocs.org/](https://readthedocs.org/), together with more technical
 documentation on new features. A high-level roadmap on next features
 will also be published and maintained.
 
 To facilitate interoperability, we are in the process of publishing the
-api specification in the OpenAPI standard ( the format used by the
+api specification in the OpenAPI standard (the format used by the
 Swagger tool).
 
-1.  **Microplanning**
+    2.  **Microplanning**
 
 Iaso is growing more and more to be a planning system, e.g. for
 vaccination campaigns. We need to investigate if there are existing
@@ -103,7 +98,7 @@ standards (outside of calendar standards like caldav) , especially in
 the OHIE specification that could be reused to expose our plannings to
 external systems.
 
-1.  **Logistics**
+    3.  **Logistics**
 
 There is a growing demand for Iaso to be able to handle logistics, in
 order to monitor stocks of certain health-related or other supplies,

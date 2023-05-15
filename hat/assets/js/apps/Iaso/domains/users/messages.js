@@ -212,6 +212,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_registry',
         defaultMessage: 'Registry',
     },
+    iaso_update_org_unit_types: {
+        id: 'iaso.permissions.iaso_update_org_unit_types',
+        defaultMessage: 'Update org unit types',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',

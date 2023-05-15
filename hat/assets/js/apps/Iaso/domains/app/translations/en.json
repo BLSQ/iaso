@@ -744,6 +744,7 @@
     "iaso.permissions.iaso_entity_duplicates_read": "See entity duplicates",
     "iaso.permissions.iaso_entity_duplicates_write": "Edit entity duplicates",
     "iaso.permissions.iaso_registry": "Registry",
+    "iaso.permissions.iaso_update_org_unit_types": "Update org unit types",
     "iaso.permissions.iaso_workflows": "Workflows",
     "iaso.permissions.links": "Sources matching",
     "iaso.permissions.mappings": "Mappings with DHIS2",

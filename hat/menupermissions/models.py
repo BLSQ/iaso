@@ -54,6 +54,7 @@ ENTITY_DUPLICATES_READ = _("Read Entity duplicates")
 ENTITY_DUPLICATES_WRITE = _("Write Entity duplicates")
 DATASTORE_READ = _("Read data store")
 DATASTORE_WRITE = _("Write data store")
+UPDATE_ORG_UNIT_TYPES = _("Editer types d'unité d'organisation")
 
 
 class CustomPermissionSupport(models.Model):
@@ -113,4 +114,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_entity_duplicates_write", ENTITY_DUPLICATES_WRITE),
             ("iaso_datastore_read", DATASTORE_READ),
             ("iaso_datastore_write", DATASTORE_WRITE),
+            ("iaso_update_org_unit_types", UPDATE_ORG_UNIT_TYPES),
         )

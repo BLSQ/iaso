@@ -184,4 +184,4 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertNotIn("count", j)
         self.assertNotIn("next", j)
         self.assertNotIn("previous", j)
-        self.assertEqual(len(response.json()["orgUnits"]), 3)
+        self.assertEqual(len(j["orgUnits"]), 3)

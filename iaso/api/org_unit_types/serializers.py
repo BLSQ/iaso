@@ -11,15 +11,16 @@ from ..projects.serializers import ProjectSerializer
 
 
 def get_parents(type_id):
-    queryset = OrgUnitType.objects.filter(sub_unit_types__id=type_id)
     parents_ids = []
-    for parent in queryset.all():
-        if parent.id not in parents_ids:
-            parents_ids.append(parent.id)
-        great_parents = get_parents(parent.id)
-        for great_parent_id in great_parents:
-            if great_parent_id not in parents_ids:
-                parents_ids.append(great_parent_id)
+    if type_id is not None:
+        queryset = OrgUnitType.objects.filter(sub_unit_types__id=type_id)
+        for parent in queryset.all():
+            if parent.id not in parents_ids:
+                parents_ids.append(parent.id)
+            great_parents = get_parents(parent.id)
+            for great_parent_id in great_parents:
+                if great_parent_id not in parents_ids:
+                    parents_ids.append(great_parent_id)
     return parents_ids
 
 
@@ -102,7 +103,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
 
     def validate(self, data: typing.Mapping):
         # validate sub org unit type
-        parents = get_parents(self.context["request"].data["id"])
+        parents = get_parents(self.context["request"].data.get("id", None))
         sub_types_errors = []
         for sub_type in data.get("sub_unit_types", []):
             if sub_type.id in parents:

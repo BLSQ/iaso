@@ -110,6 +110,23 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    const orgUnitStatusOptions = useMemo(() => {
+        return [
+            {
+                label: formatMessage(MESSAGES.new),
+                value: 'NEW',
+            },
+            {
+                label: formatMessage(MESSAGES.validated),
+                value: 'VALID',
+            },
+            {
+                label: formatMessage(MESSAGES.rejected),
+                value: 'REJECTED',
+            },
+        ];
+    }, [formatMessage]);
+
     return (
         <>
             <Grid container spacing={2}>
@@ -179,20 +196,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         onChange={handleChange}
                         value={filters.orgunitValidationStatus}
                         label={MESSAGES.validationStatus}
-                        options={[
-                            {
-                                label: formatMessage(MESSAGES.new),
-                                value: 'NEW',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.validated),
-                                value: 'VALID',
-                            },
-                            {
-                                label: formatMessage(MESSAGES.rejected),
-                                value: 'REJECTED',
-                            },
-                        ]}
+                        options={orgUnitStatusOptions}
                     />
                 </Grid>
 

@@ -89,7 +89,7 @@ export const useGetGroupDropdown = (
             staleTime,
             select: data => {
                 if (!data) return [];
-                return data.groups.map(group => {
+                return data.map(group => {
                     return {
                         value: group.id,
                         label: group.name,

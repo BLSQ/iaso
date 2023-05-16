@@ -151,7 +151,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.auth0",
+    "plugins.wfp_auth",
     "storages",
     "corsheaders",
     "rest_framework",
@@ -506,13 +506,13 @@ CODE_CHALLENGE = generate_pkce()
 
 # handle wfp login
 SOCIALACCOUNT_PROVIDERS = {
-    "auth0": {
+    "wfp": {
         "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
         "APP": {
-            "client_id": os.environ.get("IASO_WFP_ID"),
-            "secret": os.environ.get("WFP_SECRET_KEY"),
+            "client_id": os.environ.get("WFP_AUTH_CLIENT_ID"),
+            "secret": os.environ.get("WFP_AUTH_SECRET_KEY"),
         },
-        "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
+        "OAUTH_PKCE_ENABLED": True,
     }
 }
 

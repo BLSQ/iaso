@@ -41,8 +41,10 @@ def wfp_callback(request):
         code = request.GET.get("code", None)
 
         payload = {
+            # Iaso application if configured in CIAM
             "client_id": os.environ.get("IASO_WFP_ID"),
             "grant_type": "authorization_code",
+            # will be something like "https://bluesquare.eu.ngrok.io/api/auth0/login/callback/"
             "redirect_uri": os.environ.get("WFP_CALLBACK_URL"),
             "code": code,
             "code_verifier": settings.CODE_CHALLENGE,

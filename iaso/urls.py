@@ -188,7 +188,7 @@ urlpatterns = urlpatterns + [
 # External Auth
 urlpatterns = urlpatterns + [
     url("auth0/login/callback/", wfp_callback, name="callback"),
-    path("", include("allauth.urls")),
+    # path("", include("allauth.urls")),
     path("auth0/login/", WfpLogin.as_view(), name="openid"),
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),

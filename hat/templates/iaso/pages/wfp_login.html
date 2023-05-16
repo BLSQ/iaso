@@ -1,5 +1,9 @@
 {% load socialaccount %}
-<h1>Connected at WFP Iaso : </h1>
+M<EEEEH
+{% if user.is_authenticated %}
+
+  <p>Welcome {{ user.username }} !!!</p>
+  <h1>Connected at WFP Iaso : </h1>
 <h2>User Info :</h2>
 
 <ul>
@@ -10,3 +14,6 @@
 
 {% endfor %}
 </ul>
+{% else %}
+<a href="{% provider_login_url 'auth0' %}">Sign Up</a>
+{% endif %}

@@ -11,7 +11,10 @@ import { withRouter } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import DatesRange from 'Iaso/components/filters/DatesRange';
-import { useGetGroups } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
+import {
+    useGetGroupDropdown,
+    useGetGroups,
+} from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns.ts';
@@ -21,6 +24,7 @@ import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../../../hat/assets/js/apps/Iaso/utils/dates.ts';
+import { appId } from '../../constants/app';
 
 const campaignTypeOptions = (formatMessage, showTest = false) => {
     const options = [
@@ -96,8 +100,9 @@ const Filters = ({
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedCampaigns, isFetching: isFetchingGroupedGroups } =
         useGetGroupedCampaigns();
+    // Pass the appId to have it works in the embedded calendar where the user is not connected
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroups({ blockOfCountries: 'True' });
+        useGetGroupDropdown({ blockOfCountries: 'True', appId: appId });
     const groupedCampaignsOptions = useMemo(
         () =>
             groupedCampaigns?.results.map(result => ({

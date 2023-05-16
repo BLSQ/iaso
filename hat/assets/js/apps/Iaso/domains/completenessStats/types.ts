@@ -38,7 +38,9 @@ export type FormStatRow = {
 export type CompletenessRouterParams = UrlParams & {
     formId?: string;
     orgUnitTypeIds?: string;
+    orgunitValidationStatus: 'NEW' | 'VALID' | 'REJECTED';
     period?: string;
     groupId?: string;
     parentId?: string;
+    accountId?: string;
 };

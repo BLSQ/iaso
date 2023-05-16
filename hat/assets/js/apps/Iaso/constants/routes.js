@@ -637,6 +637,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'groupId',
         },
+        {
+            isRequired: false,
+            key: 'orgunitValidationStatus',
+        },
     ],
 };
 

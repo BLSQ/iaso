@@ -1,22 +1,19 @@
 import React, { ReactElement } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Tooltip, Box } from '@material-ui/core';
-import LocationOnIcon from '@material-ui/icons/LocationOn';
-import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
+import { Box } from '@material-ui/core';
 import MapIcon from '@material-ui/icons/Map';
 
 import { IntlFormatMessage } from '../../types/intl';
 
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';
-import { OrgUnit } from '../orgUnits/types/orgUnit';
 import { Column } from '../../types/table';
 
 import { LinkToRegistry } from './components/LinkToRegistry';
 
 import MESSAGES from './messages';
-import ShapeSvg from '../../components/svg/ShapeSvgComponent';
 import { LinkToOrgUnit } from '../orgUnits/components/LinkToOrgUnit';
+import { OrgUnitLocationIcon } from '../orgUnits/components/OrgUnitLocationIcon';
 
 export const defaultSorted = [{ id: 'org_unit__name', desc: false }];
 
@@ -113,53 +110,9 @@ export const useGetOrgUnitsListColumns = (): Column[] => {
             id: 'location',
             accessor: 'location',
             width: 50,
-            Cell: settings => {
-                const {
-                    latitude,
-                    longitude,
-                    has_geo_json: hasGeoJson,
-                } = settings.row.original as OrgUnit;
-                if (hasGeoJson) {
-                    return (
-                        <Tooltip
-                            arrow
-                            title={formatMessage(MESSAGES.withShape)}
-                        >
-                            <Box mt="6px">
-                                <ShapeSvg fontSize="small" color="primary" />
-                            </Box>
-                        </Tooltip>
-                    );
-                }
-                if (latitude && longitude) {
-                    return (
-                        <Tooltip
-                            arrow
-                            title={formatMessage(MESSAGES.withLocation)}
-                        >
-                            <Box mt="6px">
-                                <LocationOnIcon
-                                    fontSize="small"
-                                    color="primary"
-                                />
-                            </Box>
-                        </Tooltip>
-                    );
-                }
-                return (
-                    <Tooltip
-                        arrow
-                        title={formatMessage(MESSAGES.noGeographicalData)}
-                    >
-                        <Box mt="6px">
-                            <LocationDisabledIcon
-                                fontSize="small"
-                                color="error"
-                            />
-                        </Box>
-                    </Tooltip>
-                );
-            },
+            Cell: settings => (
+                <OrgUnitLocationIcon orgUnit={settings.row.original} />
+            ),
         },
         {
             Header: formatMessage(MESSAGES.actions),

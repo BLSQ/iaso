@@ -69,12 +69,14 @@ class EntitySerializer(serializers.ModelSerializer):
             "instances",
             "submitter",
             "org_unit",
+            "duplicates",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
     org_unit = serializers.SerializerMethodField()
+    duplicates = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -93,6 +95,9 @@ class EntitySerializer(serializers.ModelSerializer):
         except AttributeError:
             submitter = None
         return submitter
+
+    def get_duplicates(self, entity: Entity):
+        return get_duplicates(entity)
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

@@ -207,12 +207,13 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     const resetForm = () => {
         setFormState(mapOrgUnitType(orgUnitType));
     };
-
-    const subUnitTypes: DropdownOptions<string>[] =
-        allOrgUnitTypes?.filter(
-            subUnit => subUnit.value !== formState.id.value,
-        ) || [];
-
+    const subUnitTypes: DropdownOptions<string>[] = useMemo(
+        () =>
+            allOrgUnitTypes?.filter(
+                subUnit => subUnit.value !== `${formState.id.value}`,
+            ) || [],
+        [allOrgUnitTypes, formState.id.value],
+    );
     const allProjectWithInvalids = useMemo(() => {
         const allUserProjectsIds = allProjects?.map(p => p.value);
         const orgUnitypeProjects: DropdownOptions<string>[] =

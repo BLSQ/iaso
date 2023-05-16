@@ -22,6 +22,13 @@ export const useGetColumns = (): Column[] => {
             align: 'left',
         },
         {
+            Header: formatMessage(MESSAGES.subUnitTypes),
+            accessor: 'sub_unit_types',
+            Cell: settings => (
+                <>{settings.value?.map(subType => subType.name).join(',')}</>
+            ),
+        },
+        {
             Header: formatMessage(MESSAGES.shortName),
             accessor: 'short_name',
         },

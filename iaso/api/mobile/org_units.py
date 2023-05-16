@@ -130,9 +130,23 @@ class MobileOrgUnitViewSet(ModelViewSet):
         return MobileOrgUnitsSetPagination(self.results_key)
 
     def get_queryset(self):
+        user = self.request.user
+
+        limit_download_to_roots = False
+        if user and not user.is_anonymous:
+            account = user.iaso_profile.account
+            limit_download_to_roots = "LIMIT_OU_DOWNLOAD_TO_ROOTS" in account.feature_flags.values_list(
+                "code", flat=True
+            )
+
+        if limit_download_to_roots:
+            org_units = OrgUnit.objects.filter_for_user_and_app_id(
+                self.request.user, self.request.query_params.get(APP_ID)
+            )
+        else:
+            org_units = OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID))
         queryset = (
-            OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID))
-            .filter(validation_status=OrgUnit.VALIDATION_VALID)
+            org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")
             .prefetch_related("parent", "org_unit_type")
             .select_related("org_unit_type")
@@ -154,13 +168,18 @@ class MobileOrgUnitViewSet(ModelViewSet):
         app_id = self.request.query_params.get(APP_ID)
         if not app_id:
             return Response()
+        roots_key = ""
+        roots = []
+        if request.user.is_authenticated:
+            roots = self.request.user.iaso_profile.org_units.values_list("id", flat=True).order_by("id")
+            roots_key = "|".join([str(root) for root in roots])
 
         page_size = self.paginator.get_page_size(request)
         page_number = self.paginator.get_page_number(request)
 
         include_geo_json = self.check_include_geo_json()
 
-        cache_key = f"{app_id}-{page_size}-{page_number}-{'geo_json' if include_geo_json else '' }"
+        cache_key = f"{app_id}-{page_size}-{page_number}-{'geo_json' if include_geo_json else '' }--{roots_key}"
         cached_response = cache.get(cache_key)
         if cached_response is None:
             super_response = super().list(request, *args, **kwargs)
@@ -168,9 +187,6 @@ class MobileOrgUnitViewSet(ModelViewSet):
             cache.set(cache_key, cached_response, 300)
 
         if page_number == 1:
-            roots = []
-            if request.user.is_authenticated:
-                roots = self.request.user.iaso_profile.org_units.values_list("id", flat=True)
             cached_response["roots"] = roots
 
         return Response(cached_response)

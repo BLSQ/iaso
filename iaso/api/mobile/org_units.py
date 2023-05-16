@@ -11,7 +11,7 @@ from rest_framework.serializers import ModelSerializer, JSONField
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
-from iaso.models import OrgUnit, Project
+from iaso.models import OrgUnit, Project, FeatureFlag
 
 
 class MobileOrgUnitsSetPagination(Paginator):

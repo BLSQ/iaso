@@ -96,7 +96,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
             try:
                 if not inst.json:
                     continue
-                FormVersion.objects.get(version_id=inst.json.get("_version"), form_id=inst.form.id)
+                FormVersion.objects.get(version_id=inst.json.get("_version"), form_id=inst.form_id)
                 ok_instances.append(inst)
             except FormVersion.DoesNotExist:
                 pass

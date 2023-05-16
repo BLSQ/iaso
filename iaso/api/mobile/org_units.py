@@ -137,7 +137,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         if user and not user.is_anonymous:
             limit_download_to_roots = Project.objects.get_for_user_and_app_id(user, app_id).has_feature(
-                "LIMIT_OU_DOWNLOAD_TO_ROOTS"
+                FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS
             )
 
         if limit_download_to_roots:

@@ -41,4 +41,5 @@ export type CompletenessRouterParams = UrlParams & {
     period?: string;
     groupId?: string;
     parentId?: string;
+    accountId?: string;
 };

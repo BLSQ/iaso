@@ -78,6 +78,10 @@ const MESSAGES = defineMessages({
             'No descendant OrgUnit is expected to fill that form. Check the Form config if this is unexpected',
         id: 'iaso.completenessStats.descendantsNoSubmissionExpected',
     },
+    viewInstances: {
+        defaultMessage: 'View instances',
+        id: 'iaso.forms.viewInstances',
+    },
 });
 
 export default MESSAGES;

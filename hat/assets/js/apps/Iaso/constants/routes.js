@@ -637,6 +637,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'groupId',
         },
+        {
+            isRequired: false,
+            key: 'orgunitValidationStatus',
+        },
     ],
 };
 
@@ -754,7 +758,7 @@ export const groupsPath = {
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
-    permissions: ['iaso_org_units'],
+    permissions: ['iaso_org_unit_types'],
     component: props => <Types {...props} />,
     params: [
         {

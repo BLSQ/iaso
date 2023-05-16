@@ -461,7 +461,7 @@ const useRoundShape = () => {
         target_population: yup
             .number()
             .nullable()
-            .min(0)
+            .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         cost: yup.number().nullable().min(0).integer(),
@@ -552,15 +552,15 @@ const useRoundShape = () => {
         percentage_covered_target_population: yup
             .number()
             .nullable()
-            .min(0)
-            .max(100)
             .integer()
-            .typeError(formatMessage(MESSAGES.positiveRangeInteger)),
+            .min(0, formatMessage(MESSAGES.positiveRangeInteger))
+            .max(100, formatMessage(MESSAGES.positiveRangeInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         doses_requested: yup
             .number()
             .nullable()
             .integer()
-            .min(0)
+            .min(0, formatMessage(MESSAGES.positiveInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger)),
     });
 };

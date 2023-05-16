@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import {
     // @ts-ignore
     useSafeIntl,
@@ -9,10 +9,10 @@ import {
 } from 'bluesquare-components';
 import { Box, Button, Divider, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
-
-import { redirectToReplace } from '../../routing/actions';
+import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetBeneficiary, useGetSubmissions } from './hooks/requests';
@@ -64,10 +64,14 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         return beneficiary?.duplicates ?? [];
     }, [beneficiary]);
 
-    const duplicateUrl =
-        duplicates.length === 1
-            ? `/dashboard/${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
-            : `/dashboard/${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
+    const onClickDuplicateButton = useCallback(() => {
+        const duplicateUrl =
+            duplicates.length === 1
+                ? `${baseUrls.entityDuplicateDetails}/entities/${entityId},${duplicates[0]}/`
+                : `${baseUrls.entityDuplicates}/order/id/pageSize/50/page/1/entity_id/${entityId}/`;
+        dispatch(redirectTo(duplicateUrl));
+    }, [dispatch, duplicates, entityId]);
+
     return (
         <>
             <TopBar
@@ -99,13 +103,15 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                     {duplicates.length > 0 && (
                         <Grid container item xs={8} justifyContent="flex-end">
                             <Box>
-                                <Button
-                                    variant="contained"
-                                    color="primary"
-                                    href={duplicateUrl}
-                                >
-                                    {formatMessage(MESSAGES.seeDuplicates)}
-                                </Button>
+                                <Link>
+                                    <Button
+                                        variant="contained"
+                                        color="primary"
+                                        onClick={onClickDuplicateButton}
+                                    >
+                                        {formatMessage(MESSAGES.seeDuplicates)}
+                                    </Button>
+                                </Link>
                             </Box>
                         </Grid>
                     )}

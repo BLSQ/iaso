@@ -1,13 +1,5 @@
-import os
-
-import requests
-from django.http import HttpResponse
-from django.shortcuts import render
-from django.views.generic import TemplateView
 from rest_framework import permissions
 from rest_framework.authentication import SessionAuthentication
-
-from hat import settings
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):

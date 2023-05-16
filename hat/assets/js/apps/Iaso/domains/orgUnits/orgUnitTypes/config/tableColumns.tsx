@@ -20,12 +20,10 @@ export const useGetColumns = (): Column[] => {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
             align: 'left',
-            sortable: false,
         },
         {
             Header: formatMessage(MESSAGES.shortName),
             accessor: 'short_name',
-            sortable: false,
         },
         {
             Header: formatMessage(MESSAGES.validatedOrgUnitCount),
@@ -37,24 +35,20 @@ export const useGetColumns = (): Column[] => {
             Header: formatMessage(MESSAGES.depth),
             headerInfo: formatMessage(MESSAGES.depthInfos),
             accessor: 'depth',
-            sortable: false,
         },
         {
             Header: formatMessage(MESSAGES.projects),
             accessor: 'projects',
-            sortable: false,
             Cell: settings => settings.value.map(p => p.name).join(', '),
         },
         {
             Header: formatMessage(MESSAGES.createdAt),
             accessor: 'created_at',
-            sortable: false,
             Cell: DateTimeCell,
         },
         {
             Header: formatMessage(MESSAGES.updatedAt),
             accessor: 'updated_at',
-            sortable: false,
             Cell: DateTimeCell,
         },
         {

@@ -178,22 +178,28 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         [setFieldValue, setFieldErrors, formatMessage, getFormPerProjects],
     );
 
-    const onConfirm = useCallback(
-        closeDialog => {
-            saveType(mapValues(formState, v => v.value))
-                .then(() => {
-                    closeDialog();
-                })
-                .catch(error => {
-                    if (error.status === 400) {
-                        Object.entries(error.details).forEach(entry =>
-                            setFieldErrors(entry[0], entry[1]),
+    const onConfirm = useCallback(async () => {
+        try {
+            await saveType(mapValues(formState, v => v.value));
+        } catch (error) {
+            if (error.status === 400) {
+                Object.entries(error.details).forEach(entry => {
+                    if (entry[0] === 'sub_unit_type_ids') {
+                        const typeName = (entry[1] as number[]).join(', ');
+                        const errorText: string = formatMessage(
+                            MESSAGES.subTypesErrors,
+                            {
+                                typeName,
+                            },
                         );
+                        setFieldErrors(entry[0], [errorText]);
+                    } else {
+                        setFieldErrors(entry[0], entry[1]);
                     }
                 });
-        },
-        [formState, saveType, setFieldErrors],
-    );
+            }
+        }
+    }, [formState, formatMessage, saveType, setFieldErrors]);
     const hasPermission =
         userHasPermission('iaso_org_units', currentUser) &&
         userHasPermission('iaso_forms', currentUser);

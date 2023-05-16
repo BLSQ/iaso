@@ -711,6 +711,7 @@
     "iaso.orgUnitsTypes.dialog.delete": "Etes-vous certain de vouloir effacer ce type d'unité d'organisation ?",
     "iaso.orgUnitsTypes.dialog.deleteText": "Cette opération est définitive.",
     "iaso.orgUnitsTypes.projects": "Projets",
+    "iaso.orgUnitsTypes.subTypesErrors": "Un sous type d'unité d'organisation ne peut pas aussi être parent ({typeName})",
     "iaso.orgUnitsTypes.update": "Mettre à jour le type d'unité d'organisation",
     "iaso.page.deleteError": "Erreur lors de la suppression de la page",
     "iaso.page.deleteSuccess": "Page supprimée",

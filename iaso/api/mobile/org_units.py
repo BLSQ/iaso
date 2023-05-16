@@ -131,20 +131,19 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
+        app_id = self.request.query_params.get(APP_ID)
 
         limit_download_to_roots = False
+
         if user and not user.is_anonymous:
-            account = user.iaso_profile.account
-            limit_download_to_roots = "LIMIT_OU_DOWNLOAD_TO_ROOTS" in account.feature_flags.values_list(
-                "code", flat=True
+            limit_download_to_roots = Project.objects.get_for_user_and_app_id(user, app_id).has_feature(
+                "LIMIT_OU_DOWNLOAD_TO_ROOTS"
             )
 
         if limit_download_to_roots:
-            org_units = OrgUnit.objects.filter_for_user_and_app_id(
-                self.request.user, self.request.query_params.get(APP_ID)
-            )
+            org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
         else:
-            org_units = OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID))
+            org_units = OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
         queryset = (
             org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")

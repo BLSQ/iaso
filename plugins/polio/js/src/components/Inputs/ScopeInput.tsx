@@ -6,12 +6,7 @@ import React, {
     ReactNode,
 } from 'react';
 import { useField, FieldProps } from 'formik';
-import {
-    // @ts-ignore
-    LoadingSpinner,
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import {
     FormControlLabel,
     FormGroup,
@@ -28,7 +23,8 @@ import MESSAGES from '../../constants/messages';
 import { DistrictScopeTable } from '../Scopes/DistrictScopeTable';
 import { MapScope } from '../Scopes/MapScope';
 
-import { Scope, Shape, Values, FilteredDistricts } from '../Scopes/types';
+import { Scope, Values, FilteredDistricts } from '../Scopes/types';
+import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 type ExtraProps = {
     filteredDistricts: FilteredDistricts[];
@@ -37,8 +33,8 @@ type ExtraProps = {
     onChangeSearchScope: () => void;
     isFetchingDistricts: boolean;
     isFetchingRegions: boolean;
-    districtShapes?: FilteredDistricts[];
-    regionShapes?: Shape[];
+    districtShapes?: OrgUnit[];
+    regionShapes?: OrgUnit[];
     searchComponent: ReactNode;
     page: number;
     // eslint-disable-next-line no-unused-vars
@@ -75,7 +71,7 @@ export const ScopeInput: FunctionComponent<Props> = ({
     };
 
     const toggleRegion = useCallback(
-        (selectOrgUnit: Shape) => {
+        (selectOrgUnit: FilteredDistricts) => {
             const orgUnitsIdInSameRegion: number[] = (districtShapes || [])
                 .filter(s => s.parent_id === selectOrgUnit.parent_id)
                 .map(s => s.id);

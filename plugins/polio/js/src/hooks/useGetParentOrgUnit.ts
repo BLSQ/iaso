@@ -18,7 +18,7 @@ type OrgUnit = {
 };
 
 const getOrgUnit = (orgUnitId: number | undefined): Promise<OrgUnit> => {
-    return getRequest(`/api/polio/orgunits/${orgUnitId}`);
+    return getRequest(`/api/polio/orgunits/${orgUnitId}/`);
 };
 export const useGetParentOrgUnit = (
     orgUnitId: number | undefined,

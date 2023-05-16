@@ -94,6 +94,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validation status',
         id: 'iaso.forms.validationStatus',
     },
+    viewInstances: {
+        defaultMessage: 'View instances',
+        id: 'iaso.forms.viewInstances',
+    },
 });
 
 export default MESSAGES;

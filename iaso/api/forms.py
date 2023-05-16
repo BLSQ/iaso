@@ -273,7 +273,6 @@ class FormsViewSet(ModelViewSet):
         order = self.request.query_params.get("order", "instance_updated_at").split(",")
         queryset = queryset.order_by(*order)
 
-        print(queryset)
         return queryset
 
     def list(self, request: Request, *args, **kwargs):

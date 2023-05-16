@@ -205,7 +205,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_completeness_stats"),  # type: ignore
+        HasPermission("menupermissions.iaso_completeness_stats", "menupermissions.iaso_registry"),  # type: ignore
     ]  # type: ignore
 
     # @swagger_auto_schema(query_serializer=ParamSerializer())

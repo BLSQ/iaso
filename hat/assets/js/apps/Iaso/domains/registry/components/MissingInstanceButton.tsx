@@ -4,7 +4,6 @@ import { useSafeIntl } from 'bluesquare-components';
 import { Button, Tooltip, makeStyles } from '@material-ui/core';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { RegistryDetailParams } from '../types';
 
 import MESSAGES from '../messages';
@@ -13,7 +12,7 @@ import { redirectToReplace } from '../../../routing/actions';
 
 type Props = {
     params: RegistryDetailParams;
-    missingOrgUnits: OrgUnit[];
+    count: number;
     onClick: () => void;
 };
 const useStyles = makeStyles(theme => ({
@@ -38,7 +37,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 export const MissingInstanceButton: FunctionComponent<Props> = ({
-    missingOrgUnits,
+    count,
     onClick,
     params,
 }) => {
@@ -58,7 +57,7 @@ export const MissingInstanceButton: FunctionComponent<Props> = ({
         <Tooltip
             arrow
             title={formatMessage(MESSAGES.missingSubmissionCount, {
-                count: missingOrgUnits.length,
+                count,
             })}
         >
             <Button

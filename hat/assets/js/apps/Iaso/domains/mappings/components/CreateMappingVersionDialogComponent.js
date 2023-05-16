@@ -148,12 +148,14 @@ const CreateMappingVersionDialogComponent = ({
                                 ? formatMessage(MESSAGES.dataset)
                                 : formatMessage(MESSAGES.program)
                         }
-                        mapOptions={options =>
-                            options.map(o => ({
-                                name: `${o.name} (${o.periodType} ${o.id})`,
-                                id: o.id,
-                            }))
-                        }
+                        mapOptions={options => {
+                            return options
+                                .filter(o => o !== undefined)
+                                .map(o => ({
+                                    name: `${o.name} (${o.periodType} ${o.id})`,
+                                    id: o.id,
+                                }));
+                        }}
                         dataSourceId={source}
                         onChange={(name, val) => {
                             setDataset(val);

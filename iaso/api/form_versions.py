@@ -180,6 +180,8 @@ class FormVersionsViewSet(ModelViewSet):
             profile = self.request.user.iaso_profile
             queryset = FormVersion.objects.filter(form__projects__account=profile.account)
 
+        # We don't send versions for deleted forms
+        queryset = queryset.filter(form__deleted_at=None)
         search_name = self.request.query_params.get("search_name", None)
         if search_name:
             queryset = queryset.filter(form__name__icontains=search_name)

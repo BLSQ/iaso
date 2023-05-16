@@ -41,6 +41,7 @@ export const useGetColumns = (): Column[] => {
         {
             Header: formatMessage(MESSAGES.depth),
             headerInfo: formatMessage(MESSAGES.depthInfos),
+            sortable: true,
             accessor: 'depth',
         },
         {

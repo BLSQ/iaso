@@ -14,7 +14,6 @@ import formsFixture from './fixtures/forms.json';
 import TopBar from '../../components/nav/TopBarComponent';
 import { withQueryClientProvider } from '../../../../test/utils';
 
-const projectActions = require('../projects/actions');
 const redirectActions = require('../../routing/actions');
 const requestsStub = require('../../utils/requests');
 
@@ -23,18 +22,6 @@ const fakeForm = formsFixture.forms[0];
 const formId = 69;
 
 const requests = theId => [
-    {
-        url: `/api/orgunittypes/`,
-        body: {
-            orgUnitTypes: [],
-        },
-    },
-    {
-        url: `/api/projects/`,
-        body: {
-            projects: [],
-        },
-    },
     {
         url: `/api/formversions/?&limit=10&page=1&order=-created_at&form_id=${theId}`,
         body: {

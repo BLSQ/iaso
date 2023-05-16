@@ -233,6 +233,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     }, [allProjects, orgUnitType.projects]);
 
     return (
+        //  @ts-ignore
         <ConfirmCancelDialogComponent
             id="OuTypes-modal"
             titleMessage={titleMessage}
@@ -246,10 +247,6 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             allowConfirm={isFormValid(requiredFields, formState)}
             maxWidth="xs"
             renderTrigger={renderTrigger}
-            additionalButton={undefined}
-            additionalMessage={undefined}
-            onAdditionalButtonClick={undefined}
-            allowConfimAdditionalButton={undefined}
             dataTestId="OuTypes-modal"
         >
             <InputComponent

@@ -90,7 +90,18 @@ class MobileEntitySerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_instances(entity: Entity):
-        return MobileEntityAttributesSerializer(entity.instances.filter(deleted=False), many=True).data  # type: ignore
+        ok_instances = []
+
+        for inst in entity.instances.filter(deleted=False):
+            try:
+                if not inst.json:
+                    continue
+                FormVersion.objects.get(version_id=inst.json.get("_version"), form_id=inst.form_id)
+                ok_instances.append(inst)
+            except FormVersion.DoesNotExist:
+                pass
+
+        return MobileEntityAttributesSerializer(ok_instances, many=True).data  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

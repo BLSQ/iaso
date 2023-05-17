@@ -713,6 +713,7 @@
     "iaso.orgUnitsTypes.dialog.delete": "Are you sure you want to delete this org Unit type?",
     "iaso.orgUnitsTypes.dialog.deleteText": "This operation cannot be undone.",
     "iaso.orgUnitsTypes.projects": "Projects",
+    "iaso.orgUnitsTypes.subTypesErrors": "A sub org unit type cannot be a parent too ({typeName})",
     "iaso.orgUnitsTypes.update": "Update org unit type",
     "iaso.page.deleteError": "Error removing page",
     "iaso.page.deleteSuccess": "Page successfully removed",

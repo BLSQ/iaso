@@ -5,6 +5,7 @@ export type DropdownOptions<T> = {
     label: string;
     value: T;
     original?: Record<any, any>;
+    color?: string;
 };
 export type DropdownOptionsWithOriginal<T> = {
     label: string;

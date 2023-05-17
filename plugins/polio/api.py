@@ -248,16 +248,16 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         groups = Group.objects.filter(id__in=request.GET.get("group", None).split(","))
         org_units_list = []
         for group in groups:
-            item = {}
             org_units = OrgUnit.objects.filter(groups=group.id)
             campaign_scope = CampaignScope.objects.get(group_id=group.id)
             campaign = campaign_scope.campaign
             rounds = Round.objects.filter(campaign_id=campaign.id)
             for org_unit in org_units:
+                item = {}
                 item["id"] = org_unit.id
                 item["org_unit_name"] = org_unit.name
-                item["org_unit_parent"] = org_unit.parent.name
-                item["org_unit_parent_parent"] = org_unit.parent.parent.name
+                item["org_unit_parent_name"] = org_unit.parent.name
+                item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
                 item["obr_name"] = campaign.obr_name
                 item["round_number"] = [round.number for round in rounds]
                 org_units_list.append(item)
@@ -276,8 +276,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             campaign_scope_values = [
                 org_unit.get("id"),
                 org_unit.get("org_unit_name"),
-                org_unit.get("org_unit_parent"),
-                org_unit.get("org_unit_parent_parent"),
+                org_unit.get("org_unit_parent_name"),
+                org_unit.get("org_unit_parent_of_parent_name"),
                 org_unit.get("obr_name"),
                 org_unit.get("round_number"),
             ]

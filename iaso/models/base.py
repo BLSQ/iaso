@@ -1265,6 +1265,7 @@ class FeatureFlag(models.Model):
     TAKE_GPS_ON_FORM = "TAKE_GPS_ON_FORM"
     REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
     FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
+    LIMIT_OU_DOWNLOAD_TO_ROOTS = "LIMIT_OU_DOWNLOAD_TO_ROOTS"
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
@@ -1283,6 +1284,13 @@ class FeatureFlag(models.Model):
             "",
             _(
                 "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
+            ),
+        ),
+        (
+            LIMIT_OU_DOWNLOAD_TO_ROOTS,
+            "Mobile: Limit download of orgunit to what the user has access to",
+            _(
+                "Mobile: Limit download of orgunit to what the user has access to",
             ),
         ),
     }

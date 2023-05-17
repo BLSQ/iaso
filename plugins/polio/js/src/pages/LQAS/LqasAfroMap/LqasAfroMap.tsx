@@ -27,7 +27,6 @@ import {
 } from '../../../hooks/useGetGeoJson';
 import { defaultViewport } from '../../../components/campaignCalendar/map/constants';
 import { MapPanes } from '../../../components/MapComponent/MapPanes';
-import { OK_COLOR } from '../../../styles/constants';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useGetCountriesLqasStatus } from './useGetCountriesLqasStatus';
 
@@ -41,7 +40,7 @@ type Props = {
 const getBackgroundLayerStyle = _shape => defaultShapeStyle;
 
 const getMainLayerStyle = shape => {
-    return lqasDistrictColors[shape.status];
+    return lqasDistrictColors[shape.status] ?? lqasDistrictColors[IN_SCOPE];
 };
 
 export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
@@ -70,7 +69,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
             />
             <Box position="relative">
                 {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                {isFetchingCountries && (
+                {(isFetchingCountries || isFetching) && (
                     <LoadingSpinner fixed={false} absolute />
                 )}
                 <Map

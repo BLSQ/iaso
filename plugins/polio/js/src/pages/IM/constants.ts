@@ -44,18 +44,21 @@ export const imDistrictColors = {
 export const lqasDistrictColors = {
     [LQAS_PASS]: {
         color: OK_COLOR,
+        fillColor: OK_COLOR,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [LQAS_DISQUALIFIED]: {
         color: WARNING_COLOR,
+        fillColor: WARNING_COLOR,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [LQAS_FAIL]: {
         color: FAIL_COLOR,
+        fillColor: FAIL_COLOR,
         weight: '2',
         opacity: '1',
         zIndex: 999,

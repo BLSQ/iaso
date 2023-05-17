@@ -136,9 +136,11 @@ export const useGetCountriesLqasStatus = ({
             }) ?? []
         );
     }, [allLqasData, countries, isFetching, round]);
+    const isFetchingOrComputing =
+        isFetching || countriesWithStatus!.length === 0;
 
     return useMemo(
-        () => ({ isFetching, countriesWithStatus }),
-        [countriesWithStatus, isFetching],
+        () => ({ isFetching: isFetchingOrComputing, countriesWithStatus }),
+        [countriesWithStatus, isFetchingOrComputing],
     );
 };

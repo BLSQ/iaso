@@ -6,9 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0206_add_feature_flag_LIMIT_OU_DOWNLOAD_TO_ROOTS'),
-        ('iaso', '0206_alter_planning_forms'),
+        ("iaso", "0206_add_feature_flag_LIMIT_OU_DOWNLOAD_TO_ROOTS"),
+        ("iaso", "0206_alter_planning_forms"),
     ]
 
-    operations = [
-    ]
+    operations = []

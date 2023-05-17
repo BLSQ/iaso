@@ -259,7 +259,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
                 item["org_unit_parent_name"] = org_unit.parent.name
                 item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
                 item["obr_name"] = campaign.obr_name
-                item["round_number"] = [round.number for round in rounds]
+                item["round_number"] = ", ".join(["R" + str(round.number) for round in rounds])
                 org_units_list.append(item)
 
         filename = "%s--%s-%s" % ("campaigns", "org_units", strftime("%Y-%m-%d-%H-%M", gmtime()))

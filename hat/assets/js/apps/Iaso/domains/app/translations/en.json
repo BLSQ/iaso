@@ -143,6 +143,8 @@
     "iaso.entities.male": "Male",
     "iaso.entities.program": "Program",
     "iaso.entities.registrationDate": "Registration date",
+    "iaso.entities.seeDuplicate": "See duplicate",
+    "iaso.entities.seeDuplicates": "See duplicates",
     "iaso.entities.title": "Entities",
     "iaso.entities.type": "Type",
     "iaso.entities.typeNotSupported": "Type not supported yet: {type}",

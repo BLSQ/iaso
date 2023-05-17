@@ -69,12 +69,14 @@ class EntitySerializer(serializers.ModelSerializer):
             "instances",
             "submitter",
             "org_unit",
+            "duplicates",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
     org_unit = serializers.SerializerMethodField()
+    duplicates = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -93,6 +95,9 @@ class EntitySerializer(serializers.ModelSerializer):
         except AttributeError:
             submitter = None
         return submitter
+
+    def get_duplicates(self, entity: Entity):
+        return get_duplicates(entity)
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
@@ -123,10 +128,12 @@ class EntityTypeViewSet(ModelViewSet):
 
 def get_duplicates(entity):
     results = []
-    if entity.duplicates1.count() > 0:
-        results = results + list(map(lambda x: x.entity2.id, entity.duplicates1.all()))
-    elif entity.duplicates2.count() > 0:
-        results = results + list(map(lambda x: x.entity1.id, entity.duplicates2.all()))
+    e1qs = entity.duplicates1.filter(validation_status="PENDING")
+    e2qs = entity.duplicates2.filter(validation_status="PENDING")
+    if e1qs.count() > 0:
+        results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
+    elif e2qs.count() > 0:
+        results = results + list(map(lambda x: x.entity1.id, e2qs.all()))
     return results
 
 

@@ -140,6 +140,8 @@
     "iaso.entities.male": "Masculin",
     "iaso.entities.program": "Programme",
     "iaso.entities.registrationDate": "Date d'enregistrement",
+    "iaso.entities.seeDuplicate": "Voir doublon",
+    "iaso.entities.seeDuplicates": "Voir doublons",
     "iaso.entities.title": "Entités",
     "iaso.entities.type": "Type",
     "iaso.entities.typeNotSupported": "Type non supporté: {type}",

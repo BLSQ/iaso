@@ -233,7 +233,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
 
         params = request.query_params
         calendar_data = self.get_calendar_data(current_year, params)
-        filename = "xlsx_file_name"
+        filename = xlsx_file_name("calendar", params)
         xlsx_file = generate_xlsx_campaigns_calendar(filename, calendar_data)
 
         response = HttpResponse(

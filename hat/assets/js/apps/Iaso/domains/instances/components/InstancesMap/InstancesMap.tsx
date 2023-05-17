@@ -29,7 +29,7 @@ import {
 } from '../../../../components/maps/tools/TilesSwitchDialog';
 import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
-import { ToggleCluster } from '../../../../components/maps/tools/ToggleCluster';
+import { MapToggleCluster } from '../../../../components/maps/tools/MapToggleCluster';
 
 import tiles from '../../../../constants/mapTiles';
 
@@ -92,7 +92,7 @@ export const InstancesMap: FunctionComponent<Props> = ({
     if (fetching) return null;
     return (
         <Box className={classes.root}>
-            <ToggleCluster
+            <MapToggleCluster
                 isClusterActive={isClusterActive}
                 setIsClusterActive={setIsClusterActive}
             />

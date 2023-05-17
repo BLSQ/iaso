@@ -46,7 +46,7 @@ import MESSAGES from '../messages';
 import tiles from '../../../constants/mapTiles';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
-import { ToggleCluster } from '../../../components/maps/tools/ToggleCluster';
+import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
 
 export type Locations = {
     locations: Array<OrgUnit[]>;
@@ -222,7 +222,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                 }
             >
                 <Box position="relative">
-                    <ToggleCluster
+                    <MapToggleCluster
                         isClusterActive={isClusterActive}
                         setIsClusterActive={setIsClusterActive}
                     />

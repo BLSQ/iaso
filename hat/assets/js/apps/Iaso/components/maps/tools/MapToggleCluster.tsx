@@ -29,7 +29,7 @@ type Props = {
     setIsClusterActive: Dispatch<SetStateAction<boolean>>;
 };
 
-export const ToggleCluster: FunctionComponent<Props> = ({
+export const MapToggleCluster: FunctionComponent<Props> = ({
     isClusterActive,
     setIsClusterActive,
 }) => {

@@ -4,23 +4,18 @@ import { Link } from 'react-router';
 import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
-import { useGetPlanning } from '../../assignments/hooks/requests/useGetPlanning';
+import { Planning } from '../../assignments/types/planning';
 
 type Props = {
-    planningId: string | undefined;
-    planningName: string;
+    planning: Planning;
 };
 
-export const LinkToPlanning: FunctionComponent<Props> = ({
-    planningId,
-    planningName,
-}) => {
+export const LinkToPlanning: FunctionComponent<Props> = ({ planning }) => {
     const user = useCurrentUser();
-    const { data: planning } = useGetPlanning(planningId);
 
     if (userHasPermission('iaso_planning', user)) {
-        const planningUrl = `/${baseUrls.assignments}/planningId/${planningId}/team/${planning?.team}`;
-        return <Link to={planningUrl}>{planningName}</Link>;
+        const planningUrl = `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
+        return <Link to={planningUrl}>{planning.name}</Link>;
     }
-    return <>{planningName}</>;
+    return <>{planning.name}</>;
 };

@@ -53,14 +53,18 @@ export const INSTANCE_METAS_FIELDS = [
             if (data.planning_id) {
                 return (
                     <LinkToPlanning
-                        planningId={data.planning_id}
-                        planningName={data.planning_name}
+                        planning={{
+                            id: data.planning_id,
+                            name: data.planning_name,
+                            team: data.team_id,
+                        }}
                     />
                 );
             }
             return '--';
         },
     },
+
     {
         key: 'version',
         accessor: 'formVersion',

@@ -26,13 +26,13 @@ from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
+from requests import HTTPError
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from iaso.api.common import (
     CSVExportMixin,
-    HasPermission,
     ModelViewSet,
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
@@ -66,6 +66,7 @@ from .forma import (
     find_orgunit_in_cache,
 )
 from .helpers import get_url_content, CustomFilterBackend
+from .vaccines_email import send_vaccines_notification_email
 from .models import (
     Campaign,
     Config,
@@ -173,6 +174,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         campaign_type = self.request.query_params.get("campaign_type")
         campaign_groups = self.request.query_params.get("campaign_groups")
         show_test = self.request.query_params.get("show_test", "false")
+        org_unit_groups = self.request.query_params.get("org_unit_groups")
+
         campaigns = queryset
         if show_test == "false":
             campaigns = campaigns.filter(is_test=False)
@@ -185,6 +188,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             campaigns = campaigns.filter(is_preventive=False).filter(is_test=False)
         if campaign_groups:
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
+        if org_unit_groups:
+            campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
 
         return campaigns.distinct()
 
@@ -261,6 +266,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         campaign_groups = params.get("campaignGroups") if params.get("campaignGroups") is not None else None
         campaign_type = params.get("campaignType") if params.get("campaignType") is not None else None
         search = params.get("search")
+        org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
+
         rounds = Round.objects.filter(started_at__year=year)
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
@@ -274,6 +281,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             rounds = rounds.filter(campaign__is_preventive=False).filter(campaign__is_test=False)
         if search:
             rounds = rounds.filter(Q(campaign__obr_name__icontains=search) | Q(campaign__epid__icontains=search))
+        if org_unit_groups:
+            rounds = rounds.filter(campaign__country__groups__in=org_unit_groups.split(","))
 
         return self.loop_on_rounds(self, rounds)
 
@@ -1096,6 +1105,7 @@ def handle_ona_request_with_key(request, key, country_id=None):
         cid = int(country_id) if (country_id and country_id.isdigit()) else None
         if country_id is not None and config.get("country_id", None) != cid:
             continue
+
         country = OrgUnit.objects.get(id=config["country_id"])
 
         facilities = (
@@ -1118,13 +1128,23 @@ def handle_ona_request_with_key(request, key, country_id=None):
         last_campaign_date_agg = campaign_qs.aggregate(last_date=Max("end_date"))
         last_campaign_date: Optional[dt.date] = last_campaign_date_agg["last_date"]
         prefer_cache = last_campaign_date and (last_campaign_date + timedelta(days=5)) < dt.date.today()
-        forms = get_url_content(
-            url=config["url"],
-            login=config["login"],
-            password=config["password"],
-            minutes=config.get("minutes", 60),
-            prefer_cache=prefer_cache,
-        )
+        try:
+            forms = get_url_content(
+                url=config["url"],
+                login=config["login"],
+                password=config["password"],
+                minutes=config.get("minutes", 60),
+                prefer_cache=prefer_cache,
+            )
+        except HTTPError:
+            # Send an email in case the WHO server returns an error.
+            logger.exception(f"error refreshing ona data for {country.name}, skipping country")
+            email_config = Config.objects.filter(slug="vaccines_emails").first()
+
+            if email_config and email_config.content:
+                emails = email_config.content
+                send_vaccines_notification_email(config["login"], emails)
+            continue
         logger.info(f"vaccines  {country.name}  forms: {len(forms)}")
 
         for form in forms:
@@ -1202,6 +1222,7 @@ class VaccineStocksViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
     sample config: [{"url": "https://afro.who.int/api/v1/data/yyy", "login": "d", "country": "hyrule", "password": "zeldarules", "country_id": 2115781}]
+     A notification email can be automatically send for in case of login error by creating a config into polio under the name vaccines_emails.  The content must be an array of emails.
     """
 
     @method_decorator(cache_page(60 * 60 * 1))  # cache result for one hour

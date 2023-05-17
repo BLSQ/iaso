@@ -110,6 +110,23 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    const orgUnitStatusOptions = useMemo(() => {
+        return [
+            {
+                label: formatMessage(MESSAGES.new),
+                value: 'NEW',
+            },
+            {
+                label: formatMessage(MESSAGES.validated),
+                value: 'VALID',
+            },
+            {
+                label: formatMessage(MESSAGES.rejected),
+                value: 'REJECTED',
+            },
+        ];
+    }, [formatMessage]);
+
     return (
         <>
             <Grid container spacing={2}>
@@ -161,6 +178,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         />
                     </DisplayIfUserHasPerm>
                 </Grid>
+
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input-parent">
                         <OrgUnitTreeviewModal
@@ -170,6 +188,16 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                             initialSelection={initialParent}
                         />
                     </Box>
+                    <InputComponent
+                        type="select"
+                        clearable={false}
+                        multi
+                        keyValue="orgunitValidationStatus"
+                        onChange={handleChange}
+                        value={filters.orgunitValidationStatus}
+                        label={MESSAGES.validationStatus}
+                        options={orgUnitStatusOptions}
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={3}>

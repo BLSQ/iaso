@@ -46,7 +46,7 @@ const IasoSearchComponent = props => {
                         }),
                 200,
             ),
-        [],
+        [collectionName, fields, mapOptions, resourceName],
     );
     React.useEffect(() => {
         setInputValue(defaultValue);

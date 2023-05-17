@@ -1,6 +1,5 @@
 /* eslint-disable camelcase */
-
-import { checkFullRegionIsPartOfScope } from './utils';
+import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 export type Scope = {
     vaccine: string;
@@ -10,7 +9,7 @@ export type Scope = {
     };
 };
 
-export type Shape = {
+export type Shape = OrgUnit & {
     name: string;
     id: number;
     parent_id: number;
@@ -26,16 +25,25 @@ export type Values = {
 
 export type FilteredDistricts = {
     name: string;
-    vaccineName: string;
+    vaccineName?: string;
     region: any;
     id: number;
     parent_id: number;
+    latitude?: number;
+    longitude?: number;
+    geo_json?: Shape | undefined;
+    has_geo_json: boolean;
 };
 
 export type ShapeRow = Shape & {
     region: string;
-    vaccineName: string;
-    fullRegionIsPartOfScope: boolean;
+    vaccineName?: string;
+    name: string;
+    fullRegionIsPartOfScope?: boolean;
+    latitude?: number;
+    longitude?: number;
+    geo_json?: Shape | undefined;
+    has_geo_json: boolean;
 };
 
 export type Round = {

@@ -21,7 +21,6 @@ import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 import { RegistryDetailParams } from '../types';
 import { Column } from '../../../types/table';
 import { Form } from '../../forms/types/forms';
-import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 import { useGetForms } from '../hooks/useGetForms';
 import { useGetInstanceApi, useGetInstances } from '../hooks/useGetInstances';
@@ -31,6 +30,7 @@ import { baseUrls } from '../../../constants/urls';
 import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
 import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
+import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
 
 type Props = {
     isLoading: boolean;
@@ -66,18 +66,12 @@ export const Instances: FunctionComponent<Props> = ({
         params,
         currentType?.id,
     );
-    const OrgUnitsWithoutCurrentForm: OrgUnit[] = useMemo(
-        () =>
-            (data &&
-                currentType?.orgUnits.filter(
-                    orgUnit =>
-                        !data.instances.find(
-                            instance => instance.org_unit.id === orgUnit.id,
-                        ),
-                )) ||
-            [],
-        [currentType?.orgUnits, data],
-    );
+
+    const {
+        data: orgUnitsWithoutCurrentForm,
+        isFetching: isFetchingOrgUnitsWithoutCurrentForm,
+    } = useGetEmptyInstanceOrgUnits(params, currentType?.id);
+
     const handleFilterChange = useCallback(
         (key: string, value: number | string) => {
             dispatch(
@@ -186,20 +180,23 @@ export const Instances: FunctionComponent<Props> = ({
                                     width="100%"
                                     mt={2}
                                 >
-                                    {OrgUnitsWithoutCurrentForm.length > 0 &&
+                                    {orgUnitsWithoutCurrentForm &&
+                                        orgUnitsWithoutCurrentForm.count > 0 &&
                                         userHasPermission(
                                             'iaso_update_submission',
                                             currentUser,
                                         ) && (
                                             <MissingInstanceDialog
+                                                isFetching={
+                                                    isFetchingOrgUnitsWithoutCurrentForm
+                                                }
                                                 formId={formIds}
-                                                missingOrgUnits={
-                                                    OrgUnitsWithoutCurrentForm
+                                                missingOrgUnitsData={
+                                                    orgUnitsWithoutCurrentForm
                                                 }
                                                 params={params}
                                                 iconProps={{
-                                                    missingOrgUnits:
-                                                        OrgUnitsWithoutCurrentForm,
+                                                    count: orgUnitsWithoutCurrentForm.count,
                                                     params,
                                                 }}
                                                 defaultOpen={

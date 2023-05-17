@@ -101,7 +101,7 @@ export const useGetDuplicateDetails = ({
                 if (!data)
                     return { fields: [], descriptor1: {}, descriptor2: {} };
 
-                const fields_result = data.fields.map(row => {
+                const fields_result = data?.fields?.map(row => {
                     return {
                         // We keep "field" i.o "the_field" as key to avoid a bug with the table
                         field: row.the_field,
@@ -130,7 +130,7 @@ export const useGetDuplicateDetails = ({
                 });
 
                 return {
-                    fields: fields_result,
+                    fields: fields_result ?? [],
                     descriptor1: data.descriptor1,
                     descriptor2: data.descriptor2,
                 };

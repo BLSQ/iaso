@@ -971,6 +971,10 @@ class Instance(models.Model):
 
     def as_dict(self):
         file_content = self.get_and_save_json_of_xml()
+        last_modified_by = None
+
+        if self.last_modified_by is not None:
+            last_modified_by = self.last_modified_by.username
 
         return {
             "uuid": self.uuid,
@@ -997,7 +1001,14 @@ class Instance(models.Model):
             }
             if self.created_by
             else None,
+            "last_modified_by": last_modified_by,
         }
+
+    def as_dict_with_descriptor(self):
+        dict = self.as_dict()
+        form_version = self.get_form_version()
+        dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
+        return dict
 
     def as_dict_with_parents(self):
         file_content = self.get_and_save_json_of_xml()
@@ -1071,6 +1082,13 @@ class Instance(models.Model):
                 for export_status in Paginator(self.exportstatus_set.order_by("-id"), 3).object_list
             ],
             "deleted": self.deleted,
+            "created_by": {
+                "first_name": self.created_by.first_name,
+                "user_name": self.created_by.username,
+                "last_name": self.created_by.last_name,
+            }
+            if self.created_by
+            else None,
         }
 
     def as_small_dict(self):

@@ -40,18 +40,6 @@ const OrgUnitTypes: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <TableWithDeepLink
-                    marginTop={false}
-                    data={data?.orgUnitTypes ?? []}
-                    pages={data?.pages ?? 1}
-                    defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={columns}
-                    count={data?.count ?? 0}
-                    baseUrl={baseUrl}
-                    params={params}
-                    extraProps={{ loading: isFetching }}
-                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
-                />
                 <Grid
                     container
                     spacing={0}
@@ -69,6 +57,18 @@ const OrgUnitTypes: FunctionComponent<Props> = ({ params }) => {
                         )}
                     />
                 </Grid>
+                <TableWithDeepLink
+                    marginTop={false}
+                    data={data?.orgUnitTypes ?? []}
+                    pages={data?.pages ?? 1}
+                    defaultSorted={[{ id: 'name', desc: false }]}
+                    columns={columns}
+                    count={data?.count ?? 0}
+                    baseUrl={baseUrl}
+                    params={params}
+                    extraProps={{ loading: isFetching }}
+                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                />
             </Box>
         </>
     );

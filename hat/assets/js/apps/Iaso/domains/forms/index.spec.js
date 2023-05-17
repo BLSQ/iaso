@@ -11,23 +11,7 @@ import { mockGetRequestsList } from '../../../../test/utils/requests';
 
 const redirectActions = require('../../routing/actions');
 
-const baseRequests = [
-    {
-        url: '/api/projects/',
-        body: {
-            projects: [],
-        },
-    },
-    {
-        url: '/api/orgunittypes/',
-        body: {
-            orgUnitTypes: [],
-        },
-    },
-];
-
 const requests = [
-    ...baseRequests,
     {
         url: '/api/forms/?&all=true&limit=10&page=1&order=-created_at',
         body: {
@@ -38,7 +22,6 @@ const requests = [
 ];
 
 const requestsForArchivedForms = [
-    ...baseRequests,
     {
         url: '/api/forms/?&all=true&showDeleted=true&limit=10&page=1&order=-created_at',
         body: {
@@ -49,7 +32,6 @@ const requestsForArchivedForms = [
 ];
 
 const requestForDeletedForms = [
-    ...baseRequests,
     {
         url: '/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true',
         body: {

@@ -75,9 +75,6 @@ export const useStyles = makeStyles(() => ({
         '& thead tr th': {
             boxShadow: `2px 2px ${theme.palette.ligthGray.main}`,
         },
-        '& .MuiSvgIcon-root': {
-            color: theme.palette.gray.main,
-        },
         '& tbody tr:hover': {
             backgroundColor: theme.palette.action.hover,
         },

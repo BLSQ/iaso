@@ -10,7 +10,7 @@ import { BUDGET } from '../../constants/routes';
 import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useGetCountries } from '../../hooks/useGetCountries';
-import { useGetGroups } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
+import { useGetGroupDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 
 type Props = {
     params: UrlParams & {
@@ -41,7 +41,7 @@ export const BudgetFilters: FunctionComponent<Props> = ({
     const isXSLayout = useMediaQuery(theme.breakpoints.down('xs'));
     const { data, isFetching: isFetchingCountries } = useGetCountries();
     const { data: groupedOrgUnits, isFetching: isFetchingGroupedOrgUnits } =
-        useGetGroups({ blockOfCountries: 'True' });
+        useGetGroupDropdown({ blockOfCountries: 'True' });
     const countriesList = (data && data.orgUnits) || [];
     return (
         <Box mb={4}>

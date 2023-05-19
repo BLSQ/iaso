@@ -309,10 +309,6 @@ class FormPredefinedFilter(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class FormAttachmentQuerySet(models.QuerySet):
-    pass
-
-
 class FormAttachment(models.Model):
     """ODK supports attaching files to form in order to display/play media or attach external data sources.
 
@@ -328,5 +324,3 @@ class FormAttachment(models.Model):
     md5 = models.CharField(null=False, blank=False, max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    objects = FormAttachmentQuerySet()

@@ -5,6 +5,7 @@ from django.core import exceptions
 from django.core.files import File
 from rest_framework import serializers, parsers, status
 from rest_framework.exceptions import NotFound
+from rest_framework.fields import Field
 from rest_framework.response import Response
 
 from iaso.models import FormAttachment, Form, Project
@@ -18,7 +19,7 @@ class FormAttachmentSerializer(serializers.ModelSerializer):
         model = FormAttachment
         fields = ["id", "name", "file", "md5", "form_id", "created_at", "updated_at"]
 
-    form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
+    form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     file = serializers.FileField(required=True, allow_empty_file=False)  # field is not required in model
     name = serializers.CharField(read_only=True)
     md5 = serializers.CharField(read_only=True)

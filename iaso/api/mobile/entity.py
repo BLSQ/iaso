@@ -62,7 +62,7 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     created_at = TimestampField()
     updated_at = TimestampField()
 
-    def get_form_version_id(self, obj: Instance):
+    def get_form_version_id(self, obj):
         if obj.json is None:
             return None
         possible_form_versions = self.context.get("possible_form_versions")
@@ -90,7 +90,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
     defining_instance_id = serializers.CharField(read_only=True, source="attributes.uuid")
     entity_type_id = serializers.CharField(read_only=True, source="entity_type.id")
 
-    def get_instances(self, entity: Entity):
+    def get_instances(self, entity):
         possible_form_versions = self.context.get("possible_form_versions")
         ok_instances = []
 
@@ -140,7 +140,6 @@ class MobileEntityViewSet(ModelViewSet):
     results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
-    pagination_class = LargeResultsSetPagination
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
 
     def pagination_class(self):
@@ -162,6 +161,7 @@ class MobileEntityViewSet(ModelViewSet):
             key = "%s|%s" % (version.version_id, str(version.form_id))
             possible_form_versions_dict[key] = version.id
         context["possible_form_versions"] = possible_form_versions_dict
+
         return context
 
     def get_queryset(self):

@@ -128,8 +128,9 @@ class EntityQuerySet(models.QuerySet):
                 if project.account is None:
                     raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
 
-                self = self.filter(account=project.account, instances__project=project, attributes__project=project)
-
+                self = self.filter(
+                    account=project.account, instances__project=project, attributes__project=project
+                ).distinct("id")
             except Project.DoesNotExist:
                 raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
 

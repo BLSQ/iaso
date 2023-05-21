@@ -143,7 +143,6 @@ class MobileEntityViewSet(ModelViewSet):
     pagination_class = LargeResultsSetPagination
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
 
-
     def pagination_class(self):
         return MobileEntitiesSetPagination(self.results_key)
 

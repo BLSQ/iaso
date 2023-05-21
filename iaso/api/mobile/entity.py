@@ -188,4 +188,4 @@ class MobileEntityViewSet(ModelViewSet):
             "instances__form__form_versions",
             "attributes__form__form_versions",
         )
-        return queryset
+        return queryset.order_by("id")

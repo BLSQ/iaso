@@ -137,12 +137,12 @@ class MobileEntityViewSet(ModelViewSet):
 
     """
 
-    results_key = "entities"
+    results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     pagination_class = LargeResultsSetPagination
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
-    results_key = "entities"
+
 
     def pagination_class(self):
         return MobileEntitiesSetPagination(self.results_key)
@@ -188,4 +188,4 @@ class MobileEntityViewSet(ModelViewSet):
             "instances__form__form_versions",
             "attributes__form__form_versions",
         )
-        return queryset
+        return queryset.order_by("id")

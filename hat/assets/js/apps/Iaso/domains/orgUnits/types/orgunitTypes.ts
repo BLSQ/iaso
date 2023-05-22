@@ -1,3 +1,4 @@
+import { Pagination, UrlParams } from '../../../types/table';
 /* eslint-disable camelcase */
 
 type FeatureFlag = {
@@ -9,7 +10,7 @@ type FeatureFlag = {
     updated_at: number;
 };
 
-type Project = {
+export type Project = {
     id: number;
     name: string;
     app_id: string | null;
@@ -37,4 +38,13 @@ export type OrgunitTypes = OrgunitType[];
 
 export type OrgunitTypesApi = {
     orgUnitTypes: OrgunitTypes;
+};
+
+export interface PaginatedOrgUnitTypes extends Pagination {
+    orgUnitTypes: OrgunitType[];
+}
+
+export type OrgUnitTypesParams = UrlParams & {
+    accountId?: string;
+    search?: string;
 };

@@ -1,16 +1,20 @@
+import { UseQueryResult } from 'react-query';
+
+// @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
+// @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+import { OrgUnit } from '../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 export const useGetGeoJson = (
     topParentId: number | undefined,
     orgUnitCategory: string,
-) => {
+): UseQueryResult<OrgUnit[], Error> => {
     const params = {
         validation_status: 'all',
-        asLocation: true,
-        limit: 3000,
+        withShapes: 'true',
         order: 'id',
-        orgUnitParentId: topParentId,
+        orgUnitParentId: `${topParentId}`,
         orgUnitTypeCategory: orgUnitCategory,
     };
 
@@ -24,6 +28,7 @@ export const useGetGeoJson = (
             enabled: Boolean(topParentId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            select: data => data?.orgUnits,
         },
     );
 };

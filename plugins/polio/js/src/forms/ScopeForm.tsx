@@ -55,7 +55,7 @@ export const ScopeForm: FunctionComponent = () => {
     const { data: country } = useGetParentOrgUnit(values.initial_org_unit);
     const parentCountryId =
         country?.country_parent?.id || country?.root?.id || country?.id;
-    const { data: districtShapes, isFetching: isFetchingDistricts } =
+    const { data: districtShapes, isFetching: isFetchingDistrictsShapes } =
         useGetGeoJson(parentCountryId, 'DISTRICT');
     const { data: regionShapes, isFetching: isFetchingRegions } = useGetGeoJson(
         parentCountryId,
@@ -81,7 +81,7 @@ export const ScopeForm: FunctionComponent = () => {
         return [];
     }, [currentTab, rounds, scopePerRound, sortedRounds, values.scopes]);
 
-    const filteredDistricts = useMemo(() => {
+    const filteredDistricts: FilteredDistricts[] | undefined = useMemo(() => {
         if (districtShapes && regionShapes) {
             let filtered: FilteredDistricts[] = districtShapes.map(district => {
                 return {
@@ -90,7 +90,7 @@ export const ScopeForm: FunctionComponent = () => {
                     vaccineName: findScopeWithOrgUnit(scopes, district.id)
                         ?.vaccine,
                 };
-            });
+            }) as FilteredDistricts[];
             if (scopes) {
                 filtered.forEach((d, index) => {
                     scopes.forEach(scope => {
@@ -158,7 +158,7 @@ export const ScopeForm: FunctionComponent = () => {
                         searchScope={searchScope}
                         setSearchScope={setSearchScope}
                         isFetchingDistricts={
-                            isFetchingDistricts || !filteredDistricts
+                            isFetchingDistrictsShapes || !filteredDistricts
                         }
                         isFetchingRegions={isFetchingRegions || !regionShapes}
                         districtShapes={districtShapes}
@@ -182,7 +182,8 @@ export const ScopeForm: FunctionComponent = () => {
                                 searchScope={searchScope}
                                 setSearchScope={setSearchScope}
                                 isFetchingDistricts={
-                                    isFetchingDistricts || !filteredDistricts
+                                    isFetchingDistrictsShapes ||
+                                    !filteredDistricts
                                 }
                                 isFetchingRegions={
                                     isFetchingRegions || !regionShapes

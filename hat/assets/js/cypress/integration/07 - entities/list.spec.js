@@ -36,7 +36,7 @@ const mockPage = (
     });
     const options = {
         method: 'GET',
-        pathname: '/api/entities',
+        pathname: '/api/entities/**',
     };
     const query = {
         ...defaultQuery,
@@ -161,6 +161,7 @@ describe('Entities', () => {
 
             cy.wait('@getEntities').then(() => {
                 cy.get('table tbody tr')
+                    .should('exist')
                     .eq(1)
                     .find('td')
                     .last()

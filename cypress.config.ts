@@ -19,3 +19,6 @@ export default defineConfig({
     supportFile: 'hat/assets/js/cypress/support/index.js',
   },
 })
+
+
+// "testFiles": ["hat/assets/js/cypress/integration/**/*.js", "plugins/**/cypress/integration/**/*.js"]

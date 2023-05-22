@@ -233,6 +233,13 @@ describe('Entities', () => {
         beforeEach(() => {
             mockPage();
             cy.intercept(
+                'GET',
+                '/api/entities/?limit=20&order_columns=last_saved_instance&page=1',
+                {
+                    fixture: 'entities/list.json',
+                },
+            );
+            cy.intercept(
                 {
                     pathname: '/api/entities/',
                     query: {

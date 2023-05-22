@@ -15,10 +15,7 @@ export default defineConfig({
       return require('./hat/assets/js/cypress/plugins/index.js')(on, config)
     },
     specPattern:
-      './/hat/assets/js/cypress/integration/07 - entities/list.spec.js',
+      ['.//hat/assets/js/cypress/integration/**/*.js', './/plugins/**/cypress/integration/**/*.js'],
     supportFile: 'hat/assets/js/cypress/support/index.js',
   },
 })
-
-
-// "testFiles": ["hat/assets/js/cypress/integration/**/*.js", "plugins/**/cypress/integration/**/*.js"]

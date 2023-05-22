@@ -16,7 +16,11 @@ const defaultQuery = {
     order_columns: 'last_saved_instance',
     page: '1',
 };
-const mockPage = (fakeUser = superUser, fixture = 'entities/list.json') => {
+const mockPage = (
+    fakeUser = superUser,
+    formQuery,
+    fixture = 'entities/list.json',
+) => {
     cy.login();
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
@@ -32,11 +36,13 @@ const mockPage = (fakeUser = superUser, fixture = 'entities/list.json') => {
     });
     const options = {
         method: 'GET',
-        pathname: '/api/entities/',
-        times: 100,
+        pathname: '/api/entities',
     };
-
-    cy.intercept({ ...options }, req => {
+    const query = {
+        ...defaultQuery,
+        ...formQuery,
+    };
+    cy.intercept({ ...options, query }, req => {
         req.continue(res => {
             interceptFlag = true;
             res.send({ fixture });
@@ -45,36 +51,36 @@ const mockPage = (fakeUser = superUser, fixture = 'entities/list.json') => {
 };
 
 describe('Entities', () => {
-    it.skip('Filter button action should deep link search and call api with same params', () => {
+    it('Filter button action should deep link search and call api with same params', () => {
         mockPage();
         cy.visit(baseUrl);
         cy.get('[data-test="search-button"]')
             .invoke('attr', 'disabled')
             .should('equal', 'disabled');
         interceptFlag = false;
-        // cy.intercept(
-        //     {
-        //         method: 'GET',
-        //         pathname: '/api/entities/',
-        //         query: {
-        //             ...defaultQuery,
-        //             search,
-        //             entityTypeIds: '1,2',
-        //             dateFrom: '10-03-2022',
-        //             dateTo: '20-03-2022',
-        //             created_by_team_id: '25',
-        //             created_by_id: '2',
-        //             orgUnitId: '2',
-        //         },
-        //     },
-        //     req => {
-        //         interceptFlag = true;
-        //         req.reply({
-        //             statusCode: 200,
-        //             body: listFixture,
-        //         });
-        //     },
-        // ).as('getEntities2');
+        cy.intercept(
+            {
+                method: 'GET',
+                pathname: '/api/entities/',
+                query: {
+                    ...defaultQuery,
+                    search,
+                    entityTypeIds: '1,2',
+                    dateFrom: '10-03-2022',
+                    dateTo: '20-03-2022',
+                    created_by_team_id: '25',
+                    created_by_id: '2',
+                    orgUnitId: '2',
+                },
+            },
+            req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: listFixture,
+                });
+            },
+        ).as('getEntities');
 
         cy.intercept('GET', '/api/profiles', {
             fixture: 'profiles/list-not-paginated.json',
@@ -112,7 +118,7 @@ describe('Entities', () => {
         });
     });
 
-    it.skip('submitter team and submitter filters should be linked', () => {
+    it('submitter team and submitter filters should be linked', () => {
         mockPage();
         cy.visit(baseUrl);
         cy.testInputValue('#submitterTeamId', '');
@@ -128,7 +134,7 @@ describe('Entities', () => {
         });
     });
     describe('Page', () => {
-        it.skip('should redirect to url with pagination params', () => {
+        it('should redirect to url with pagination params', () => {
             mockPage();
             cy.visit(baseUrl);
 
@@ -139,7 +145,7 @@ describe('Entities', () => {
                 );
             });
         });
-        it.skip('should not be accessible if user does not have permission', () => {
+        it('should not be accessible if user does not have permission', () => {
             mockPage({
                 ...superUser,
                 permissions: [],
@@ -151,17 +157,18 @@ describe('Entities', () => {
         });
         it('click on a row button should open entity detail page', () => {
             mockPage();
-            cy.visit(baseUrl);
+
             cy.intercept(
                 'GET',
                 '/api/entities/?limit=20&order_columns=last_saved_instance&page=1',
                 {
                     fixture: 'entities/list.json',
                 },
-            ).as('brol');
-            cy.wait('@brol').then(() => {
+            ).as('getEntitiesTwice');
+            cy.visit(baseUrl);
+
+            cy.wait('@getEntitiesTwice').then(() => {
                 cy.get('table tbody tr')
-                    .should('exist')
                     .eq(1)
                     .find('td')
                     .last()
@@ -177,7 +184,7 @@ describe('Entities', () => {
         });
     });
 
-    describe.skip('Search field', () => {
+    describe('Search field', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
@@ -185,7 +192,7 @@ describe('Entities', () => {
         testSearchField(search, searchWithForbiddenChars);
     });
 
-    describe.skip('Search button', () => {
+    describe('Search button', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
@@ -222,7 +229,7 @@ describe('Entities', () => {
         });
     });
 
-    describe.skip('Table', () => {
+    describe('Table', () => {
         beforeEach(() => {
             mockPage();
             cy.intercept(

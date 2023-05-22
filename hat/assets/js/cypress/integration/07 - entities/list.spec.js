@@ -160,6 +160,7 @@ describe('Entities', () => {
             cy.visit(baseUrl);
 
             cy.wait('@getEntities').then(() => {
+                cy.wait(500);
                 cy.get('table tbody tr')
                     .should('exist')
                     .eq(1)

@@ -32,7 +32,7 @@ const mockPage = (fakeUser = superUser, fixture = 'entities/list.json') => {
     });
     const options = {
         method: 'GET',
-        pathname: '/api/entities/**',
+        pathname: '/api/entities/',
         times: 100,
     };
 
@@ -45,12 +45,121 @@ const mockPage = (fakeUser = superUser, fixture = 'entities/list.json') => {
 };
 
 describe('Entities', () => {
+    it.skip('Filter button action should deep link search and call api with same params', () => {
+        mockPage();
+        cy.visit(baseUrl);
+        cy.get('[data-test="search-button"]')
+            .invoke('attr', 'disabled')
+            .should('equal', 'disabled');
+        interceptFlag = false;
+        // cy.intercept(
+        //     {
+        //         method: 'GET',
+        //         pathname: '/api/entities/',
+        //         query: {
+        //             ...defaultQuery,
+        //             search,
+        //             entityTypeIds: '1,2',
+        //             dateFrom: '10-03-2022',
+        //             dateTo: '20-03-2022',
+        //             created_by_team_id: '25',
+        //             created_by_id: '2',
+        //             orgUnitId: '2',
+        //         },
+        //     },
+        //     req => {
+        //         interceptFlag = true;
+        //         req.reply({
+        //             statusCode: 200,
+        //             body: listFixture,
+        //         });
+        //     },
+        // ).as('getEntities2');
+
+        cy.intercept('GET', '/api/profiles', {
+            fixture: 'profiles/list-not-paginated.json',
+        }).as('getProfiles');
+
+        cy.intercept(
+            'GET',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
+            {
+                fixture: 'orgunits/list.json',
+            },
+        );
+        cy.intercept('GET', '/api/orgunits/3', {
+            fixture: 'orgunits/details.json',
+        });
+        cy.get('#search-search').type(search);
+        cy.fillMultiSelect('#entityTypeIds', [0, 1], false);
+        cy.get('[data-test="start-date"] input').type('10032022');
+        cy.get('[data-test="end-date"] input').type('20032022');
+        cy.fillSingleSelect('#submitterTeamId', 0);
+
+        cy.wait('@getProfiles').then(() => {
+            cy.fillSingleSelect('#submitterId', 0);
+            cy.fillTreeView('#ou-tree-input', 2, false);
+
+            cy.get('[data-test="search-button"]').click();
+            cy.url().should(
+                'contain',
+                `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/entityTypeIds/1,2`,
+            );
+
+            cy.wait('@getEntities').then(() => {
+                cy.wrap(interceptFlag).should('eq', true);
+            });
+        });
+    });
+
+    it.skip('submitter team and submitter filters should be linked', () => {
+        mockPage();
+        cy.visit(baseUrl);
+        cy.testInputValue('#submitterTeamId', '');
+        cy.testInputValue('#submitterId', '');
+        cy.fillSingleSelect('#submitterId', 0);
+        cy.testInputValue('#submitterId', 'oneFistPunch (Bruce Lee) ');
+        cy.intercept('GET', '/api/profiles', {
+            fixture: 'profiles/list-not-paginated.json',
+        }).as('getProfiles');
+        cy.fillSingleSelect('#submitterTeamId', 0);
+        cy.wait('@getProfiles').then(() => {
+            cy.testInputValue('#submitterId', '');
+        });
+    });
     describe('Page', () => {
-        it('click on a row button should open entity detail page', () => {
+        it.skip('should redirect to url with pagination params', () => {
             mockPage();
             cy.visit(baseUrl);
 
             cy.wait('@getEntities').then(() => {
+                cy.url().should(
+                    'eq',
+                    `${baseUrl}/accountId/1/order/last_saved_instance/pageSize/20/page/1`,
+                );
+            });
+        });
+        it.skip('should not be accessible if user does not have permission', () => {
+            mockPage({
+                ...superUser,
+                permissions: [],
+                is_superuser: false,
+            });
+            cy.visit(baseUrl);
+            const errorCode = cy.get('#error-code');
+            errorCode.should('contain', '401');
+        });
+        it('click on a row button should open entity detail page', () => {
+            mockPage();
+            cy.visit(baseUrl);
+            cy.intercept(
+                'GET',
+                '/api/entities/?limit=20&order_columns=last_saved_instance&page=1',
+                {
+                    fixture: 'entities/list.json',
+                },
+            ).as('brol');
+            cy.wait('@brol').then(() => {
                 cy.get('table tbody tr')
                     .should('exist')
                     .eq(1)
@@ -65,6 +174,86 @@ describe('Entities', () => {
                         '/dashboard/entities/details/entityId/2',
                     );
             });
+        });
+    });
+
+    describe.skip('Search field', () => {
+        beforeEach(() => {
+            mockPage();
+            cy.visit(baseUrl);
+        });
+        testSearchField(search, searchWithForbiddenChars);
+    });
+
+    describe.skip('Search button', () => {
+        beforeEach(() => {
+            mockPage();
+            cy.visit(baseUrl);
+        });
+        it('should be disabled', () => {
+            cy.wait('@getEntities').then(() => {
+                cy.get('[data-test="search-button"]')
+                    .invoke('attr', 'disabled')
+                    .should('equal', 'disabled');
+            });
+        });
+        it('should be enabled while searching', () => {
+            cy.get('#search-search').type(search);
+            cy.wait('@getEntities').then(() => {
+                cy.get('[data-test="search-button"]')
+                    .invoke('attr', 'disabled')
+                    .should('equal', undefined);
+            });
+        });
+
+        it('action should deep link search', () => {
+            cy.wait('@getEntities').then(() => {
+                cy.wait('@getEntitiesTypes').then(() => {
+                    cy.get('#search-search').type(search);
+                    cy.fillSingleSelect('#entityTypeIds', 0);
+
+                    cy.get('[data-test="search-button"]').click();
+                    cy.url().should(
+                        'contain',
+                        `${baseUrl}/accountId/1/search/${search}/entityTypeIds/1`,
+                    );
+                });
+            });
+        });
+    });
+
+    describe.skip('Table', () => {
+        beforeEach(() => {
+            mockPage();
+            cy.intercept(
+                {
+                    pathname: '/api/entities/',
+                    query: {
+                        page: '2',
+                        limit: '20',
+                        order_columns: 'last_saved_instance',
+                    },
+                },
+                page2,
+            );
+        });
+        testTablerender({
+            baseUrl,
+            rows: 20,
+            columns: 5,
+            apiKey: 'entities',
+        });
+        testPagination({
+            baseUrl,
+            apiPath: '/api/entities/**',
+            apiKey: 'result',
+            withSearch: false,
+            fixture: listFixture,
+            query: {
+                page: '1',
+                limit: '20',
+                order_columns: 'last_saved_instance',
+            },
         });
     });
 });

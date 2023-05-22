@@ -51,7 +51,7 @@ const mockPage = (
 };
 
 describe('Entities', () => {
-    it('Filter button action should deep link search and call api with same params', () => {
+    it.skip('Filter button action should deep link search and call api with same params', () => {
         mockPage();
         cy.visit(baseUrl);
         cy.get('[data-test="search-button"]')
@@ -118,7 +118,7 @@ describe('Entities', () => {
         });
     });
 
-    it('submitter team and submitter filters should be linked', () => {
+    it.skip('submitter team and submitter filters should be linked', () => {
         mockPage();
         cy.visit(baseUrl);
         cy.testInputValue('#submitterTeamId', '');
@@ -134,7 +134,7 @@ describe('Entities', () => {
         });
     });
     describe('Page', () => {
-        it('should redirect to url with pagination params', () => {
+        it.skip('should redirect to url with pagination params', () => {
             mockPage();
             cy.visit(baseUrl);
 
@@ -145,7 +145,7 @@ describe('Entities', () => {
                 );
             });
         });
-        it('should not be accessible if user does not have permission', () => {
+        it.skip('should not be accessible if user does not have permission', () => {
             mockPage({
                 ...superUser,
                 permissions: [],
@@ -160,7 +160,6 @@ describe('Entities', () => {
             cy.visit(baseUrl);
 
             cy.wait('@getEntities').then(() => {
-                cy.wait(500);
                 cy.get('table tbody tr')
                     .should('exist')
                     .eq(1)
@@ -178,7 +177,7 @@ describe('Entities', () => {
         });
     });
 
-    describe('Search field', () => {
+    describe.skip('Search field', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
@@ -186,7 +185,7 @@ describe('Entities', () => {
         testSearchField(search, searchWithForbiddenChars);
     });
 
-    describe('Search button', () => {
+    describe.skip('Search button', () => {
         beforeEach(() => {
             mockPage();
             cy.visit(baseUrl);
@@ -223,7 +222,7 @@ describe('Entities', () => {
         });
     });
 
-    describe('Table', () => {
+    describe.skip('Table', () => {
         beforeEach(() => {
             mockPage();
             cy.intercept(

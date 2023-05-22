@@ -19,11 +19,6 @@ import './commands';
 // Alternatively you can use CommonJS syntax:
 // require('./commands')
 
-// now any cookie with the name 'session_id' or 'django_language'
-// will not be cleared before each test runs
-Cypress.Cookies.defaults({
-    preserve: ['sessionid', 'django_language', 'sessionCookie'],
-});
 // eslint-disable-next-line no-unused-vars
 Cypress.on('uncaught:exception', (err, _runnable, _promise) => {
     if (

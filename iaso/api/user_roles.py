@@ -1,7 +1,7 @@
 from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
 from rest_framework import viewsets, permissions
-from django.contrib.auth.models import Permission
+from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from rest_framework.response import Response
 from iaso.models import UserRole
@@ -86,3 +86,26 @@ class UserRolesViewSet(viewsets.ViewSet):
         userRole = get_object_or_404(self.get_queryset(), id=pk)
         userRole.delete()
         return Response(True)
+
+    def create(self, request: Request) -> Response:
+        groupname = request.data.get("name")
+        permissions = request.data.get("permissions", [])
+
+        if not groupname:
+            return Response({"error": "User group name is required"}, status=400)
+
+        group = Group(name=groupname)
+        group.save()
+
+        if group.id and len(permissions) > 0:
+            for permission_codename in permissions:
+                permission = get_object_or_404(Permission, codename=permission_codename)
+                group.permissions.add(permission)
+            group.save()
+
+        userRole = UserRole()
+        userRole.group = group
+
+        userRole.save()
+
+        return Response(userRole.as_dict())

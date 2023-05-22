@@ -11,8 +11,7 @@ import MESSAGES from '../messages';
 const useStyles = makeStyles(theme => ({
     speedDial: {
         position: 'absolute',
-        zIndex: 1000000,
-        top: theme.spacing(6.5),
+        bottom: theme.spacing(2),
         right: theme.spacing(2),
     },
     fab: {
@@ -48,7 +47,7 @@ const SpeedDialInstanceActions = props => {
                 onClose={handleClose}
                 onOpen={handleOpen}
                 open={open}
-                direction="left"
+                direction="up"
                 FabProps={{ className: classes.fab }}
             >
                 {actions.map(action => (

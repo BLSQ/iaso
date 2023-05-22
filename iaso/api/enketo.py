@@ -20,11 +20,10 @@ from iaso.enketo import (
     enketo_url_for_edition,
     enketo_url_for_creation,
     to_xforms_xml,
-    inject_userid_and_version,
     inject_instance_id_in_form,
-    inject_instance_id_in_instance,
     EnketoError,
 )
+from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
 from iaso.models import User
 
@@ -51,6 +50,7 @@ def enketo_create_url(request):
     form_id = request.data.get("form_id")
     period = request.data.get("period", None)
     org_unit_id = request.data.get("org_unit_id")
+    return_url = request.data.get("return_url", None)
 
     uuid = str(uuid4())
     form = get_object_or_404(Form, id=form_id)
@@ -68,10 +68,12 @@ def enketo_create_url(request):
     i.save()
 
     try:
+        if not return_url:
+            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id)
         edit_url = enketo_url_for_creation(
             server_url=public_url_for_enketo(request, "/api/enketo"),
             uuid=uuid,
-            return_url=request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id),
+            return_url=return_url,
         )
 
         return JsonResponse({"edit_url": edit_url}, status=201)
@@ -207,24 +209,19 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
 
 
 def _build_url_for_edition(request, instance, user_id=None):
-    if user_id is None:
-        user_id = request.user.id
+    # Construct a modified XML from the initial one, with some custom value we want Enketo to pass around
+    # then send it as POST to enketo that will return an url for us
     instance_xml = instance.file.read()
-    soup = Soup(instance_xml, "xml")
-    instance_id = soup.meta.instanceID.contents[0].strip().replace("uuid:", "")
-
-    # inject editUserID in the meta section of the xml
-    # to allow assign Modification to the user
-    instance_xml = inject_userid_and_version(
-        instance_xml.decode("utf-8"), user_id, instance.form.latest_version.version_id
+    version_id = instance.form.latest_version.version_id
+    instance_uuid, new_xml = inject_xml_find_uuid(
+        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id
     )
-    instance_xml = inject_instance_id_in_instance(instance_xml, instance.id)
 
     edit_url = enketo_url_for_edition(
         public_url_for_enketo(request, "/api/enketo"),
         form_id_string=instance.uuid,
-        instance_xml=instance_xml,
-        instance_id=instance_id,
+        instance_xml=new_xml,
+        instance_id=instance_uuid,
         return_url=request.GET.get("return_url", public_url_for_enketo(request, "")),
     )
     return edit_url
@@ -236,14 +233,14 @@ def enketo_edit_url(request, instance_uuid):
     """Used by Edit submission feature in Iaso Dashboard.
     Restricted to user with the `update submission` permission, to submissions in their account.
 
-    Return an in Enketo service that the front end will redirect to."""
+    Return an url  in the Enketo service that the front end will redirect to."""
     instance = Instance.objects.filter(uuid=instance_uuid, project__account=request.user.iaso_profile.account).first()
 
     if instance is None:
         return JsonResponse({"error": "No such instance or not allowed"}, status=404)
     try:
         instance.to_export = False  # could be controlled but, by default, for a normal edit, no auto export
-        edit_url = _build_url_for_edition(request, instance)
+        edit_url = _build_url_for_edition(request, instance, request.user.id)
     except EnketoError as error:
         print(error)
         return JsonResponse({"error": str(error)}, status=409)

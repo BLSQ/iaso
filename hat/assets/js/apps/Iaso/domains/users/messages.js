@@ -208,6 +208,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_entity_duplicates_write',
         defaultMessage: 'Edit entity duplicates',
     },
+    iaso_registry: {
+        id: 'iaso.permissions.iaso_registry',
+        defaultMessage: 'Registry',
+    },
+    iaso_org_unit_types: {
+        id: 'iaso.permissions.iaso_org_unit_types',
+        defaultMessage: 'Org unit types',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',

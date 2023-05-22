@@ -14,11 +14,10 @@ import CallMade from '@material-ui/icons/CallMade';
 import { truncateText, useSafeIntl, getTableUrl } from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
-import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 import { VisibleColumn } from '../types/visibleColumns';
 import { Instance } from '../types/instance';
-import { Column, Setting } from '../../../types/table';
+import { Column, Setting, RenderCell } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 
 import {
@@ -38,6 +37,10 @@ import { fetchLatestOrgUnitLevelId } from '../../orgUnits/utils';
 import { baseUrls } from '../../../constants/urls';
 
 import { Selection } from '../../orgUnits/types/selection';
+
+import { userHasPermission } from '../../users/utils';
+
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
@@ -79,20 +82,22 @@ const localizeLabel = (field: Field): string => {
     let localeOptions: Record<string, string> = { [localeKey]: field.name };
     if (typeof field === 'object') {
         if (typeof field.label === 'string') {
-            const singleToDoubleQuotes: string = (field.label || '').replaceAll(
-                "'",
-                '"',
+            // Replacing all single quotes used as apostrophe into html entities, and put it back after replacing other single quotes into double quotes
+            const apostrophe = /(?<=[\p{Letter}])'(?=[\p{Letter}])/gu;
+            let label: string = (field.label || '').replaceAll(
+                apostrophe,
+                '&apos;',
             );
-            const wrongDoubleQuotes = /(?:[a-zA-Z])"(?=[a-zA-Z])/g;
-            const formattedLabel: string = singleToDoubleQuotes.replace(
-                wrongDoubleQuotes,
-                "'",
-            );
+            label = label.replaceAll("'", '"');
+            label = label.replaceAll('&apos;', "'");
+            const wrongDoubleQuotes = /(?<=[\p{Letter}])"(?=[\p{Letter}])/gu;
+            label = label.replace(wrongDoubleQuotes, "'");
+
             try {
-                localeOptions = JSON.parse(formattedLabel);
+                localeOptions = JSON.parse(label);
             } catch (e) {
                 // some fields are using single quotes. Logging just for info, this can be deleted if it clutters the console
-                console.warn('Error parsing JSON', formattedLabel, e);
+                console.warn('Error parsing JSON', label, e);
                 return field.name;
             }
         } else if (
@@ -158,8 +163,12 @@ const renderValue = (settings: Setting<Instance>, c: VisibleColumn) => {
     }
     return <span>{formatValue(value)}</span>;
 };
+
 export const useGetInstancesColumns = (
-    showDeleted = false,
+    // eslint-disable-next-line no-unused-vars
+    getActionCell: RenderCell = settings => (
+        <ActionTableColumnComponent settings={settings} />
+    ),
     // eslint-disable-next-line no-unused-vars
 ): ((visibleColumns: VisibleColumn[]) => Column[]) => {
     const { formatMessage } = useSafeIntl();
@@ -168,10 +177,6 @@ export const useGetInstancesColumns = (
         () => [...instancesTableColumns(formatMessage)],
         [formatMessage],
     );
-    if (showDeleted) {
-        metasColumns.shift();
-    }
-
     const getInstancesColumns = useCallback(
         (visibleColumns: VisibleColumn[]) => {
             let tableColumns: Column[] = [];
@@ -218,22 +223,19 @@ export const useGetInstancesColumns = (
                     }
                 });
             tableColumns = tableColumns.concat(childrenArray);
-            tableColumns.push({
-                Header: formatMessage(MESSAGES.actions),
-                accessor: 'actions',
-                resizable: false,
-                sortable: false,
-                width: 150,
-                Cell: settings => (
-                    <ActionTableColumnComponent
-                        settings={settings}
-                        user={currentUser}
-                    />
-                ),
-            });
+            if (userHasPermission('iaso_update_submission', currentUser)) {
+                tableColumns.push({
+                    Header: formatMessage(MESSAGES.actions),
+                    accessor: 'actions',
+                    resizable: false,
+                    sortable: false,
+                    width: 150,
+                    Cell: getActionCell,
+                });
+            }
             return tableColumns;
         },
-        [currentUser, formatMessage, metasColumns],
+        [formatMessage, getActionCell, metasColumns],
     );
     return getInstancesColumns;
 };

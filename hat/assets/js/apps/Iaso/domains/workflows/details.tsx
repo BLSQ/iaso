@@ -2,6 +2,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useState,
+    useMemo,
     useEffect,
 } from 'react';
 import {
@@ -15,9 +16,11 @@ import {
     SortableTable,
     useHumanReadableJsonLogic,
 } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import { Box, Grid, makeStyles, Button } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import orderBy from 'lodash/orderBy';
+import uniqWith from 'lodash/uniqWith';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 
@@ -26,13 +29,20 @@ import { redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import { useGetWorkflowVersion } from './hooks/requests/useGetWorkflowVersions';
+
+import { useGetWorkflowVersionChanges } from './hooks/requests/useGetWorkflowVersionChanges';
 import { useGetQueryBuildersFields } from '../forms/fields/hooks/useGetQueryBuildersFields';
 import { useGetQueryBuilderListToReplace } from '../forms/fields/hooks/useGetQueryBuilderListToReplace';
 
 import { useGetFormDescriptor } from '../forms/fields/hooks/useGetFormDescriptor';
 import { useBulkUpdateWorkflowFollowUp } from './hooks/requests/useBulkUpdateWorkflowFollowUp';
 
-import { WorkflowVersionDetail, WorkflowParams, FollowUps } from './types';
+import {
+    WorkflowVersionDetail,
+    WorkflowParams,
+    FollowUps,
+    Change,
+} from './types';
 
 import { WorkflowBaseInfo } from './components/WorkflowBaseInfo';
 import { FollowUpsTable } from './components/followUps/Table';
@@ -42,8 +52,9 @@ import { AddChangeModal } from './components/changes/Modal';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { useGetChangesColumns } from './config/changes';
-import { useGetFollowUpsColumns, getConfigFields } from './config/followUps';
-import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields';
+import { useGetFollowUpsColumns, iasoFields } from './config/followUps';
+import { useGetPossibleFieldsByFormVersion } from '../forms/hooks/useGetPossibleFields';
+import { PossibleField } from '../forms/types/forms';
 
 type Router = {
     goBack: () => void;
@@ -93,6 +104,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data?: WorkflowVersionDetail;
         isLoading: boolean;
     } = useGetWorkflowVersion(versionId);
+    const {
+        data: changes,
+    }: {
+        data?: Change[];
+    } = useGetWorkflowVersionChanges(params);
 
     const updateCurrentFollowUps = workflowVersionFollowUps => {
         if (workflowVersionFollowUps) {
@@ -114,16 +130,24 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         updateCurrentFollowUps(workflowVersion?.follow_ups);
     }, [workflowVersion?.follow_ups]);
 
-    const { possibleFields: targetPossibleFields } = useGetPossibleFields(
-        workflowVersion?.reference_form.id,
-    );
+    const { formVersions: targetPossibleFieldsByVersion } =
+        useGetPossibleFieldsByFormVersion(workflowVersion?.reference_form.id);
+    const targetPossibleFields: PossibleField[] | undefined = useMemo(() => {
+        if (!targetPossibleFieldsByVersion) return undefined;
+        return uniqWith(
+            targetPossibleFieldsByVersion.flatMap(
+                formVersion => formVersion.possible_fields,
+            ),
+            isEqual,
+        );
+    }, [targetPossibleFieldsByVersion]);
     const { data: formDescriptors } = useGetFormDescriptor(
         workflowVersion?.reference_form.id,
     );
     const fields = useGetQueryBuildersFields(
         formDescriptors,
         targetPossibleFields,
-        getConfigFields(),
+        iasoFields,
     );
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
     const getHumanReadableJsonLogic = useHumanReadableJsonLogic(
@@ -133,7 +157,9 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
     const changesColumns = useGetChangesColumns(
         versionId,
         targetPossibleFields,
+        targetPossibleFieldsByVersion,
         workflowVersion,
+        changes,
     );
     const followUpsColumns = useGetFollowUpsColumns(
         getHumanReadableJsonLogic,
@@ -271,9 +297,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                         title={formatMessage(MESSAGES.changes)}
                     >
                         <Box className={classes.count}>
-                            {`${formatThousand(
-                                workflowVersion?.changes.length ?? 0,
-                            )} `}
+                            {`${formatThousand(changes?.length ?? 0)} `}
                             {formatMessage(MESSAGES.results)}
                         </Box>
                         <TableWithDeepLink
@@ -282,11 +306,11 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             elevation={0}
                             showPagination={false}
                             baseUrl={baseUrls.workflowDetail}
-                            data={workflowVersion?.changes ?? []}
+                            data={changes ?? []}
                             pages={1}
                             defaultSorted={[{ id: 'updated_at', desc: false }]}
                             columns={changesColumns}
-                            count={workflowVersion?.changes.length}
+                            count={changes?.length}
                             params={params}
                             onTableParamsChange={p =>
                                 dispatch(
@@ -298,16 +322,18 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                             }
                             extraProps={{
                                 isLoading,
-                                targetPossibleFields,
+                                targetPossibleFieldsByVersion,
+                                changesColumns,
                             }}
                         />
                         {workflowVersion?.status === 'DRAFT' && (
                             <Box m={2} textAlign="right">
                                 <AddChangeModal
                                     versionId={versionId}
-                                    changes={workflowVersion?.changes || []}
-                                    targetPossibleFields={
-                                        targetPossibleFields || []
+                                    changes={changes || []}
+                                    targetPossibleFields={targetPossibleFields}
+                                    targetPossibleFieldsByVersion={
+                                        targetPossibleFieldsByVersion
                                     }
                                     referenceForm={
                                         workflowVersion?.reference_form

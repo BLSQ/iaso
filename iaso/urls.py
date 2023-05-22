@@ -4,6 +4,7 @@ from typing import Union, List
 from django.conf.urls import url
 from django.contrib import auth
 from django.urls import path, include, URLPattern, URLResolver
+from iaso.api.data_store import DataStoreViewSet
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
@@ -23,7 +24,7 @@ from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
-from .api.completeness_stats import CompletenessStatsViewSet
+from .api.completeness_stats import CompletenessStatsV2ViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.derived_instances import DerivedInstancesViewSet
 from .api.devices import DevicesViewSet
@@ -105,7 +106,7 @@ router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
-router.register(r"completeness_stats", CompletenessStatsViewSet, basename="completeness_stats")
+router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
 router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
@@ -142,6 +143,8 @@ router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobilework
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 router.register(r"userroles", UserRolesViewSet, basename="userroles")
+
+router.register(r"datastore", DataStoreViewSet, basename="datastore")
 
 router.registry.extend(plugins_router.registry)
 

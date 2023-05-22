@@ -4,9 +4,9 @@ import { dispatch } from '../../../../redux/store';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../../../constants/snackBars';
 
-export const getChildrenData = id => {
+export const getChildrenData = (id, validationStatus = 'all') => {
     return getRequest(
-        `/api/orgunits/?&parent_id=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
+        `/api/orgunits/treesearch/?&parent_id=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`,
     )
         .then(response => {
             return response.orgunits.map(orgUnit => {
@@ -29,19 +29,19 @@ export const getChildrenData = id => {
         });
 };
 
-const makeUrl = (id, type) => {
+const makeUrl = (id, type, validationStatus = 'all') => {
     if (id) {
         if (type === 'version')
-            return `/api/orgunits/?&rootsForUser=true&version=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+            return `/api/orgunits/treesearch/?&rootsForUser=true&version=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
         if (type === 'source')
-            return `/api/orgunits/?&rootsForUser=true&source=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+            return `/api/orgunits/treesearch/?&rootsForUser=true&source=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
     }
-    return `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+    return `/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=${validationStatus}&ignoreEmptyNames=true`;
 };
 
 // mapping the request result here i.o in the useRootData hook to keep the hook more generic
-export const getRootData = (id, type = 'source') => {
-    return getRequest(makeUrl(id, type))
+export const getRootData = (id, type = 'source', validationStatus = 'all') => {
+    return getRequest(makeUrl(id, type, validationStatus))
         .then(response => {
             return response.orgunits.map(orgUnit => {
                 return {

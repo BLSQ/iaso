@@ -3,10 +3,97 @@
 
 # Please refer to the diagram in ../docs/test_completeness_stats.png to understand the expected results
 
+from typing import Any
+
 from django.contrib.auth.models import User, Permission
 
-from iaso.models import Account, Form, OrgUnitType, OrgUnit
+from iaso.models import Account, Form, OrgUnitType, OrgUnit, Instance
 from iaso.test import APITestCase
+
+
+def _slug(form):
+    return f"form_{form.id}"
+
+
+# from https://stackoverflow.com/a/54649973 redsk
+def are_almost_equal(o1: Any, o2: Any, max_abs_ratio_diff: float, max_abs_diff: float) -> bool:
+    """
+    Compares two objects by recursively walking them through. Equality is as usual except for floats.
+    Floats are compared according to the two measures defined below.
+
+    :param o1: The first object.
+    :param o2: The second object.
+    :param max_abs_ratio_diff: The maximum allowed absolute value of the difference.
+    `abs(1 - (o1 / o2)` and vice-versa if o2 == 0.0. Ignored if < 0.
+    :param max_abs_diff: The maximum allowed absolute difference `abs(o1 - o2)`. Ignored if < 0.
+    :return: Whether the two objects are almost equal.
+    """
+    if type(o1) != type(o2):
+        return False
+
+    composite_type_passed = False
+
+    if hasattr(o1, "__slots__"):
+        if len(o1.__slots__) != len(o2.__slots__):
+            return False
+        if any(
+            not are_almost_equal(getattr(o1, s1), getattr(o2, s2), max_abs_ratio_diff, max_abs_diff)
+            for s1, s2 in zip(sorted(o1.__slots__), sorted(o2.__slots__))
+        ):
+            return False
+        else:
+            composite_type_passed = True
+
+    if hasattr(o1, "__dict__"):
+        if len(o1.__dict__) != len(o2.__dict__):
+            return False
+        if any(
+            not are_almost_equal(k1, k2, max_abs_ratio_diff, max_abs_diff)
+            or not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff)
+            for ((k1, v1), (k2, v2)) in zip(sorted(o1.__dict__.items()), sorted(o2.__dict__.items()))
+            if not k1.startswith("__")
+        ):  # avoid infinite loops
+            return False
+        else:
+            composite_type_passed = True
+
+    if isinstance(o1, dict):
+        if len(o1) != len(o2):
+            return False
+        if any(
+            not are_almost_equal(k1, k2, max_abs_ratio_diff, max_abs_diff)
+            or not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff)
+            for ((k1, v1), (k2, v2)) in zip(sorted(o1.items()), sorted(o2.items()))
+        ):
+            return False
+
+    elif any(issubclass(o1.__class__, c) for c in (list, tuple, set)):
+        if len(o1) != len(o2):
+            return False
+        if any(not are_almost_equal(v1, v2, max_abs_ratio_diff, max_abs_diff) for v1, v2 in zip(o1, o2)):
+            return False
+
+    elif isinstance(o1, float):
+        if o1 == o2:
+            return True
+        else:
+            # FIXME we can probably replace this by math.isclose
+            if max_abs_ratio_diff > 0:  # if max_abs_ratio_diff < 0, max_abs_ratio_diff is ignored
+                if o2 != 0:
+                    if abs(1.0 - (o1 / o2)) > max_abs_ratio_diff:
+                        return False
+                else:  # if both == 0, we already returned True
+                    if abs(1.0 - (o2 / o1)) > max_abs_ratio_diff:
+                        return False
+            if 0 < max_abs_diff < abs(o1 - o2):  # if max_abs_diff < 0, max_abs_diff is ignored
+                return False
+            return True
+
+    else:
+        if not composite_type_passed:
+            return o1 == o2
+
+    return True
 
 
 class CompletenessStatsAPITestCase(APITestCase):
@@ -54,75 +141,128 @@ class CompletenessStatsAPITestCase(APITestCase):
         cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
         cls.create_form_instance(form=cls.form_hs_4, org_unit=cls.as_abb_ou)
 
+    def assertAlmostEqualRecursive(self, first, second, msg: Any = None) -> None:
+        "to use when float are the worst"
+        self.assertTrue(
+            are_almost_equal(first, second, 0.000001, 0.000001),
+            msg=msg,
+        )
+
     def test_row_listing_anonymous(self):
         """An anonymous user should not be able to access the API"""
-        response = self.client.get("/api/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/")
         self.assertEqual(response.status_code, 403)
 
     def test_row_listing_insufficient_permissions(self):
         """A user without the permission should not be able to access the API"""
         self.client.force_authenticate(self.user_without_permission)
 
-        response = self.client.get("/api/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/")
         self.assertEqual(response.status_code, 403)
 
     def test_base_row_listing(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
         j = self.assertJSONResponse(response, 200)
-        self.assertDictEqual(
-            {
-                "count": 3,
-                "results": [
-                    {
-                        "parent_org_unit": None,
-                        "org_unit_type": {"name": "Country", "id": 1},
-                        "org_unit": {"name": "LaLaland", "id": 1},
-                        "form": {"name": "Hydroponics study 1", "id": self.form_hs_1.id},
+        expected_result = {
+            "forms": [
+                {"id": self.form_hs_1.id, "name": "Hydroponics study 1", "slug": f"form_{self.form_hs_1.id}"},
+                {"id": self.form_hs_2.id, "name": "Hydroponics study 2", "slug": f"form_{self.form_hs_2.id}"},
+                {"id": self.form_hs_4.id, "name": "Hydroponics study 4", "slug": f"form_{self.form_hs_4.id}"},
+            ],
+            "count": 2,
+            "results": [
+                {
+                    "name": "LaLaland",
+                    "id": 1,
+                    "org_unit": {"name": "LaLaland", "id": 1},
+                    "form_stats": {
                         # "Hydroponics study 1" applies to OUt "District" and "Hospital"
-                        "forms_filled": 1,  # Only one form instance for "Hospital"
-                        "forms_to_fill": 3,  # 2 OUs of type "District" and 1 of type "Hospital" in the tree with LalaLand on top
-                        "completeness_ratio": "33.3%",
-                        # No forms/instances are directly associated to "LaLaland" (only to its children)
-                        "forms_filled_direct": 0,
-                        "forms_to_fill_direct": 0,
-                        "completeness_ratio_direct": "N/A",
-                        "has_multiple_direct_submissions": False,
+                        f"form_{self.form_hs_1.id}": {
+                            "name": "Hydroponics study 1",
+                            "percent": 33.333333333333336,
+                            "descendants": 3,
+                            # 2 OUs of type "District" and 1 of type "Hospital" in the tree with LalaLand on top
+                            "itself_target": 0,
+                            "descendants_ok": 1,
+                            "total_instances": 1,  # Only one form instance for "Hospital"
+                            "itself_has_instances": 0,
+                            # No forms/instances are directly associated to "LaLaland" (only to its children)
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_2.id}": {
+                            "name": "Hydroponics study 2",
+                            "percent": 0,
+                            "descendants": 1,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_4.id}": {
+                            "name": "Hydroponics study 4",
+                            "percent": 33.333333333333336,
+                            "descendants": 3,
+                            "itself_target": 1,
+                            "descendants_ok": 1,
+                            "total_instances": 2,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
                     },
-                    {
-                        "parent_org_unit": None,
-                        "org_unit_type": {"name": "Country", "id": 1},
-                        "org_unit": {"name": "LaLaland", "id": 1},
-                        "form": {"name": "Hydroponics study 2", "id": self.form_hs_2.id},
-                        "forms_filled": 0,
-                        "forms_to_fill": 1,
-                        "completeness_ratio": "0.0%",
-                        "forms_filled_direct": 0,
-                        "forms_to_fill_direct": 0,
-                        "completeness_ratio_direct": "N/A",
-                        "has_multiple_direct_submissions": False,
+                    "org_unit_type": {"name": "Country", "id": 1},
+                    "parent_org_unit": None,
+                },
+                {
+                    "name": "Not yet validated country",
+                    "id": 9,
+                    "org_unit": {"name": "Not yet validated country", "id": 9},
+                    "form_stats": {
+                        f"form_{self.form_hs_1.id}": {
+                            "name": "Hydroponics study 1",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_2.id}": {
+                            "name": "Hydroponics study 2",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_4.id}": {
+                            "name": "Hydroponics study 4",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 1,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
                     },
-                    {
-                        "parent_org_unit": None,
-                        "org_unit_type": {"name": "Country", "id": 1},
-                        "org_unit": {"name": "LaLaland", "id": 1},
-                        "form": {"name": "Hydroponics study 4", "id": self.form_hs_4.id},
-                        "forms_filled": 1,
-                        "forms_to_fill": 3,
-                        "completeness_ratio": "33.3%",
-                        "forms_filled_direct": 0,
-                        "forms_to_fill_direct": 1,
-                        "completeness_ratio_direct": "0.0%",
-                        "has_multiple_direct_submissions": False,
-                    },
-                ],
-                "has_next": False,
-                "has_previous": False,
-                "page": 1,
-                "pages": 1,
-                "limit": 10,
-            },
+                    "org_unit_type": {"name": "Country", "id": 1},
+                    "parent_org_unit": None,
+                },
+            ],
+            "has_next": False,
+            "has_previous": False,
+            "page": 1,
+            "pages": 1,
+            "limit": 10,
+        }
+        self.assertAlmostEqualRecursive(
+            expected_result,
             j,
         )
 
@@ -130,7 +270,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """No filters are used: only the heads OU (countries) are returned"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/")
         json = response.json()
         for result in json["results"]:
             # There are lower-levels OUs in fixtures, but they shouldn't appear here
@@ -140,56 +280,74 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Filtering by form type"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_1.id}")
-        json = response.json()
-        # Without filtering, we would also have results for form_hs_2 and form_hs_4 just like in test_base_row_listing()
+        response = self.client.get(f"/api/v2/completeness_stats/")
+        json = self.assertJSONResponse(response, 200)
+        # Without filtering, we  also have results for form_hs_2 and form_hs_4 just like in test_base_row_listing()
+        self.assertEqual(len(json["forms"]), 3)
+        for form in json["forms"]:
+            self.assertIn(form["id"], [self.form_hs_1.id, self.form_hs_2.id, self.form_hs_4.id])
+
+        # with filtering
+        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}")
+        json = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(json["forms"]), 1)
+        for form in json["forms"]:
+            self.assertEqual(form["id"], self.form_hs_1.id)
+
         for result in json["results"]:
-            self.assertEqual(result["form"]["id"], self.form_hs_1.id)
+            for form in result["form_stats"].values():
+                self.assertEqual(form["name"], self.form_hs_1.name)
 
     def test_filter_by_multiple_form_types(self):
         """Filtering by multiple form types"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_1.id}, {self.form_hs_4.id}")
+        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}, {self.form_hs_4.id}")
         json = response.json()
+        self.assertEqual(len(json["forms"]), 2)
+        for form in json["forms"]:
+            self.assertIn(form["id"], [self.form_hs_1.id, self.form_hs_4.id])
         # Without filtering, we would also have results for form_hs_2 just like in test_base_row_listing()
         for result in json["results"]:
-            form_id_result = result["form"]["id"]
-            self.assertIn(form_id_result, [self.form_hs_1.id, self.form_hs_4.id])
+            for form in result["form_stats"].values():
+                self.assertIn(form["name"], [self.form_hs_1.name, self.form_hs_4.name])
 
     def test_only_forms_from_account(self):
         """Only forms from the account are returned"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_3.id}")
-        json = response.json()
-        # No results because the form is not in the user's account
-        self.assertEqual(json["count"], 0)
+        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_3.id}")
+        j = self.assertJSONResponse(response, 400)
+        # Error because the form is not in the user's account
+        self.assertIn("form_id", j)
+        self.assertEqual(j["form_id"], [f'Invalid pk "{self.form_hs_3.id}" - object does not exist.'])
 
     def test_only_valid_ou_returned(self):
         """OUs with a non-valid status are excluded from the API"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/")
+        response = self.client.get(f"/api/v2/completeness_stats/")
         json = response.json()
         ou_ids = [result["org_unit"]["id"] for result in json["results"]]
         # Those two OUs have a non-valid status
         self.assertNotIn(8, ou_ids)
-        self.assertNotIn(9, ou_ids)
+        # for now we accept new ou but not rejected
+        # self.assertNotIn(9, ou_ids)
 
     def test_filter_by_org_unit_type(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}")
+        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids={self.org_unit_type_hopital.id}")
         json = response.json()
         for result in json["results"]:
             self.assertEqual(result["org_unit_type"]["id"], self.org_unit_type_hopital.id)
 
-    def test_filter_by_multiple_org_unit_types(self):
+    # we removed the multiple type for now
+    def disabled_test_filter_by_multiple_org_unit_types(self):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}, {self.org_unit_type_aire_sante.id}"
+            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}, {self.org_unit_type_aire_sante.id}"
         )
         json = response.json()
         for result in json["results"]:
@@ -197,14 +355,15 @@ class CompletenessStatsAPITestCase(APITestCase):
                 result["org_unit_type"]["id"], [self.org_unit_type_hopital.id, self.org_unit_type_aire_sante.id]
             )
 
-    def test_filter_by_org_unit_type_no_results(self):
+    def test_filter_by_org_unit_type_400(self):
+        "Invalid orgunit type -> 400"
         # We don't specify the parent_org_unit_id filter (so we only have the root OUs - a country)
         # Then we ask to filter to only keep the hospitals: nothing at this level is a hospital => no results
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}")
-        json = response.json()
-        self.assertListEqual(json["results"], [])
+        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids=100000")
+        j = self.assertJSONResponse(response, 400)
+        self.assertIn("org_unit_type_ids", j)
 
     def test_filter_by_org_unit_type_with_results(self):
         # Opposite scenario compared to test_filter_by_org_unit_type_no_results()
@@ -213,39 +372,43 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response_with_filter = self.client.get(
-            f"/api/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}"
+            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}",
+            {"org_unit_validation_status": "VALID,NEW"},
         )
-        results_with_filter = response_with_filter.json()["results"]
-        response_without_filter = self.client.get(f"/api/completeness_stats/")
-        results_without_filter = response_without_filter.json()["results"]
+
+        json = self.assertJSONResponse(response_with_filter, 200)
+        results_with_filter = json["results"]
+        self.assertEqual(len(results_with_filter), 2)
+        response_without_filter = self.client.get(
+            f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"}
+        )
+        results_without_filter = self.assertJSONResponse(response_without_filter, 200)["results"]
         self.assertListEqual(results_with_filter, results_without_filter)
-
-    def test_filter_by_org_unit(self):
-        self.client.force_authenticate(self.user)
-
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=7")
-        json = response.json()
-        # We have only rows concerning the requested OU
-        for result in json["results"]:
-            self.assertEqual(result["org_unit"]["id"], 7)
 
     def test_filter_by_parent_org_unit(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=1")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
+        )
         json = response.json()
         # All the rows we get are direct children of the Country (region A and B)
+        self.assertEqual(len(json["results"]), 3)
+
         for result in json["results"]:
-            self.assertEqual(result["parent_org_unit"][0]["id"], 1)
+            if result.get("is_root"):
+                self.assertEqual(result["org_unit"]["id"], 1)
+            else:
+                self.assertEqual(result["parent_org_unit"]["id"], 1)
 
     def test_pagination(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/completeness_stats/?page=1&limit=1")
+        response = self.client.get("/api/v2/completeness_stats/?page=1&limit=1&org_unit_validation_status=VALID,NEW")
         j = self.assertJSONResponse(response, 200)
-        self.assertEqual(j["count"], 3)
+        self.assertEqual(j["count"], 2)
         self.assertEqual(j["page"], 1)
-        self.assertEqual(j["pages"], 3)
+        self.assertEqual(j["pages"], 2)
         self.assertEqual(j["limit"], 1)
         self.assertEqual(len(j["results"]), 1)
         self.assertTrue(j["has_next"])
@@ -255,178 +418,156 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Test that the default limit parameter is 10"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
         json = self.assertJSONResponse(response, 200)
         self.assertEqual(json["limit"], 10)
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/completeness_stats/")
+        response = self.client.get(f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
         json = response.json()
-        # One OU, 3 forms => 3 rows
-        self.assertEqual(len(json["results"]), 3)
+        # Two OU, 3 forms => 2 rows
+        self.assertEqual(len(json["results"]), 2)
 
     def test_percentage_calculation_with_zero_forms_to_fill(self):
         self.client.force_authenticate(self.user)
 
         # We request a form/OU combination that has no forms to fill.
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=2&form_id={self.form_hs_2.id}")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/", {"parent_org_unit_id": self.as_abb_ou.id, "form_id": self.form_hs_2.id}
+        )
+        j = self.assertJSONResponse(response, expected_status_code=200)
         json = response.json()
-        # 0 forms to fill: the percentage should be returned as N/A and not as 0% or as a division error :)
-        row = json["results"][0]
-        self.assertEqual(row["forms_to_fill_direct"], 0)
-        self.assertEqual(row["completeness_ratio_direct"], "N/A")
+        self.assertEqual(len(j["results"]), 1, j)
+        form_slug = f"form_{self.form_hs_2.id}"
+
+        form_stats = json["results"][0]["form_stats"][form_slug]
+        self.assertEqual(form_stats["itself_target"], 0)
+        self.assertEqual(form_stats["total_instances"], 0)
 
     def test_counts_include_current_ou_and_children(self):
         """The forms_to_fill/forms_filled counts include the forms for the OU and all its children"""
         self.client.force_authenticate(self.user)
 
         # We filter to get only the district A.A
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=4")
-        json = response.json()
-
-        result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
-        # Form 1 targets both district (ou 4) and hospital (there's one under ou 4: ou 7), so 2 forms to fill
-        self.assertEqual(result_form_1["forms_to_fill"], 2)
-        # But only one form is filled (for the hospital)
-        self.assertEqual(result_form_1["forms_filled"], 1)
-        # Let's check the percentage calculation is correct
-        self.assertEqual(result_form_1["completeness_ratio"], "50.0%")
-
-    def test_direct_counts_dont_include_children(self):
-        """The forms_to_fill_direct/forms_filled_direct counts don't include the forms for the children of the OU"""
-        self.client.force_authenticate(self.user)
-
-        # We filter to get only the district A.A
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=4")
-        json = response.json()
-
-        result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
-
-        # Form 1 targets both district (ou 4) and hospital (there's one under ou 4: ou 7), but the
-        # hospital shouldn't be counted in the direct counts
-        self.assertEqual(result_form_1["forms_to_fill_direct"], 1)
-        # But only one form is filled (for the hospital), so it shouldn't be counted in the direct counts
-        self.assertEqual(result_form_1["forms_filled_direct"], 0)
-        # Let's check the percentage calculation is correct
-        self.assertEqual(result_form_1["completeness_ratio_direct"], "0.0%")
-
-    def test_counts_dont_include_parents(self):
-        self.client.force_authenticate(self.user)
-        # We have the same situation as in test_counts_include_current_ou_and_children(), except that we filter to only
-        # get the hospital (ou 7). Therefore, the form_to_fill count doens't include the form for the district (ou 4)
-        # because it's a parent of the hospital (ou 7), and the count is 1/1
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=7")
-        json = response.json()
-
-        result_form_1 = next(result for result in json["results"] if result["form"]["id"] == self.form_hs_1.id)
-        # Form 1 targets both district (ou 4) and hospital (there's one under ou 4: ou 7), so 2 forms to fill
-        self.assertEqual(result_form_1["forms_to_fill"], 1)
-        # But only one form is filled (for the hospital)
-        self.assertEqual(result_form_1["forms_filled"], 1)
-        # Let's check the percentage calculation is correct
-        self.assertEqual(result_form_1["completeness_ratio"], "100.0%")
-
-    def test_counts_with_skipped_levels(self):
-        """Regression test: make sure the direct/indirect counts make sense even when there are skipped levels"""
-        # Form hs_4 is linked to the two AS at the bottom of the tree and also to the country at the top, but not to the
-        # region and district in between. We'll check direct and indirect counters for each level, starting at the
-        # country and going down.
-        self.client.force_authenticate(self.user)
-
-        # We filter to get only the country and the relevant form
-        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}")
-        json = response.json()
-        results_country = json["results"][0]
-        self.assertEqual(results_country["forms_to_fill"], 3)
-        self.assertEqual(results_country["forms_filled"], 1)
-        self.assertEqual(results_country["forms_to_fill_direct"], 1)
-        self.assertEqual(results_country["forms_filled_direct"], 0)
-
-        # We filter to get only the region and the relevant form
-        # no direct here, but the two grandchildren should be counted
         response = self.client.get(
-            f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=1&org_unit_id=3"
+            f"/api/v2/completeness_stats/?parent_org_unit_id=4", {"org_unit_validation_status": "VALID,NEW"}
         )
-        json = response.json()
-        results_region_b = json["results"][0]
-        self.assertEqual(results_region_b["forms_to_fill"], 2)
-        self.assertEqual(results_region_b["forms_filled"], 1)
-        self.assertEqual(results_region_b["forms_to_fill_direct"], 0)
-        self.assertEqual(results_region_b["forms_filled_direct"], 0)
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 2)
 
-        # We filter to get only the district A.B and the relevant form
-        # no direct here, but the two children should be counted
-        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=3")
-        json = response.json()
-        results_district_ab = json["results"][0]
-        self.assertEqual(results_district_ab["forms_to_fill"], 2)
-        self.assertEqual(results_district_ab["forms_filled"], 1)
-        self.assertEqual(results_district_ab["forms_to_fill_direct"], 0)
-        self.assertEqual(results_district_ab["forms_filled_direct"], 0)
-
-        # Finally, we request the two AS at the bottom of the tree
-        # each one is targeted by one form, submissions only on A.B.B
-        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=5")
-        json = response.json()
-        results_as = json["results"]
-        for result_as in results_as:
-            self.assertEqual(result_as["forms_to_fill"], 1)
-            self.assertEqual(result_as["forms_to_fill_direct"], 1)
-            if result_as["org_unit"]["id"] == self.as_abb_ou.pk:
-                self.assertEqual(result_as["forms_filled"], 1)
-                self.assertEqual(result_as["forms_filled_direct"], 1)
-            else:
-                self.assertEqual(result_as["forms_filled"], 0)
-                self.assertEqual(result_as["forms_filled_direct"], 0)
-
-    def test_has_multiple_direct_submissions(self):
-        #  see: https://bluesquare.atlassian.net/browse/IA-1826
-
-        self.client.force_authenticate(self.user)
-
-        # Case 1: the OU has no direct submissions => False
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=1&form_id={self.form_hs_4.id}")
-        json = response.json()
-        result = json["results"][0]
-        self.assertFalse(result["has_multiple_direct_submissions"])
-
-        # Case 2: the OU has one direct submissions => False
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=7&form_id={self.form_hs_1.id}")
-        json = response.json()
-        result = json["results"][0]
-        self.assertFalse(result["has_multiple_direct_submissions"])
-
-        # Case 3: the OU has one two direct submissions => True
-        response = self.client.get(f"/api/completeness_stats/?org_unit_id=10&form_id={self.form_hs_4.id}")
-        json = response.json()
-        result = json["results"][0]
-        self.assertTrue(result["has_multiple_direct_submissions"])
-
-    def test_non_valid_ous_not_counted(self):
+    def test_rejected_ous_not_counted(self):
         """Make sure that non-valid ous are not counted in the counters for OU+children. See IA-1788"""
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=3&form_id={self.form_hs_4.id}")
-        json = response.json()
-        self.assertEqual(
-            json["results"][0]["forms_to_fill"], 2
-        )  # Because AS A.B.C is not included since its status is new
+        # first check it's counted when it's valid
+        self.create_form_instance(form=self.form_hs_4, org_unit=self.as_abb_ou)
+        self.as_abb_ou.validation_status = OrgUnit.VALIDATION_NEW
+        self.as_abb_ou.save()
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "org_unit_validation_status": "VALID,NEW",
+            },
+        )
 
-    def test_non_valid_ous_not_listed(self):
-        """Make sure that non-valid ous are not listed in the results"""
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 4)
+
+        # take the root (which will be District A.B).
+        form_stats = j["results"][0]["form_stats"]
+
+        expected_before = {
+            _slug(self.form_hs_4): {
+                "name": "Hydroponics study 4",
+                "percent": 33.333333333333336,
+                "descendants": 3,
+                "itself_target": 0,
+                "descendants_ok": 1,
+                "total_instances": 3,
+                "itself_has_instances": 0,
+                "itself_instances_count": 0,
+            }
+        }
+        self.assertAlmostEqualRecursive(form_stats, expected_before)
+
+        # Then reject the orgunit and remake the query
+        self.as_abb_ou.validation_status = OrgUnit.VALIDATION_REJECTED
+        self.as_abb_ou.save()
+
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "org_unit_validation_status": "VALID,NEW",
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 3)  # Because AS A.B.B is not included since its status is rejected
+
+        # take the root (which will be District A.B).
+        form_stats = j["results"][0]["form_stats"]
+        self.assertEqual(j["results"][0]["org_unit"]["name"], "District A.B")
+
+        expected = {
+            _slug(self.form_hs_4): {
+                "name": "Hydroponics study 4",
+                "percent": 0,
+                "descendants": 2,  # one less because AS A.B.B is not included since its status is rejected
+                "itself_target": 0,
+                "descendants_ok": 0,
+                "total_instances": 0,
+                "itself_has_instances": 0,
+                "itself_instances_count": 0,
+            }
+        }
+        self.assertEqual(form_stats, expected)
+
+    def test_without_submissions_parms(self):
+        """Check that without_submissions params works"""
         self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/completeness_stats/?parent_org_unit_id=5&form_id={self.form_hs_4.id}")
-        json = response.json()
-        self.assertEqual(len(json["results"]), 2)  # Because AS A.B.C is not included since its status is new
+        # Check number of result when it's false
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "without_submissions": "false",
+            },
+        )
 
-    def test_no_rows_if_form_not_for_ou_and_descendants(self):
-        """
-        The API exclude the rows that qre not relevant because the form is not for the OU and its descendants.
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 3)
 
-        Those lines would have 0/0 in the "count with descendants" column and would pollute the table.
-        """
-        self.client.force_authenticate(self.user)
-        response = self.client.get(f"/api/completeness_stats/?form_id={self.form_hs_4.id}&parent_org_unit_id=2")
-        json = response.json()
-        self.assertEqual(json["results"], [])
+        # should default to false so same number of result if par modiié leams is not present
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 3)
+
+        # If we filter it should be two
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "form_id": self.form_hs_4.id,
+                "without_submissions": "true",
+            },
+        )
+
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(j["results"]), 1)
+        for r in j["results"]:
+            # check that the result have effectly zero submission
+            ou = r["org_unit"]["id"]
+            self.assertEqual(Instance.objects.filter(form=self.form_hs_4, org_unit_id=ou).count(), 0)

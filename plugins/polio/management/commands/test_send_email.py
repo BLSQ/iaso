@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from django.core.management.base import BaseCommand
 from django.utils.timezone import now
 
@@ -12,17 +13,21 @@ logger = getLogger(__name__)
 
 class Command(BaseCommand):
     help = """Send campaigns automatic email to GPEI coordinator
-    (to use for dev debguging)"""
+    (to use for dev debugging)"""
 
-    def handle(self, *args, **options):
+    def add_arguments(self, parser: ArgumentParser):
+        parser.add_argument("--name", type=str, required=False, help="Campaign obr name")
+
+    def handle(self, name=None, *args, **options):
         campaigns = Campaign.objects.exclude(enable_send_weekly_email=False)
+        if name:
+            campaigns = campaigns.filter(obr_name__icontains=name)
         total = campaigns.count()
         email_sent = 0
         iaso_logger = CommandLogger(self.stdout)
         task = FakeTask(iaso_logger)
 
         for i, campaign in enumerate(campaigns):
-
             task.report_progress_and_stop_if_killed(
                 progress_value=i,
                 end_value=total,
@@ -30,7 +35,7 @@ class Command(BaseCommand):
             )
 
             latest_round_end = campaign.rounds.order_by("ended_at").last()
-            if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at > now().date():
+            if latest_round_end and latest_round_end.ended_at and latest_round_end.ended_at < now().date():
                 print(f"Campaign {campaign} is finished, skipping")
                 continue
             print(f"Email for {campaign.obr_name}")

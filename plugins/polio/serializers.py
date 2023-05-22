@@ -16,6 +16,7 @@ from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
 from iaso.models import Group
 from .models import (
+    Config,
     Round,
     LineListImport,
     VIRUSES,
@@ -584,9 +585,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         return _("Preparing")
 
     def get_has_data_in_budget_tool(self, campaign):
-        if campaign.budget_steps.all():
-            return True
-        return False
+        return campaign.budget_steps.count() > 0
 
     # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)
@@ -641,7 +640,6 @@ class CampaignSerializer(serializers.ModelSerializer):
             round = round_serializer.save()
 
             for scope in scopes:
-
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
                 source_version_id = None
@@ -866,7 +864,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "creation_email_send_at",
             # "group",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -906,6 +903,7 @@ class SmallCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_id",
             "is_preventive",
             "account",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields
 
@@ -942,7 +940,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "creation_email_send_at",
             # "group",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -984,6 +981,7 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "top_level_org_unit_id",
             "is_preventive",
             "account",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields
 
@@ -1110,7 +1108,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             "country",
             "creation_email_send_at",
             "onset_at",
-            "three_level_call_at",
             "cvdpv_notified_at",
             "cvdpv2_notified_at",
             "pv_notified_at",
@@ -1136,6 +1133,7 @@ class ExportCampaignSerializer(CampaignSerializer):
             "is_test",
             "budget_current_state_key",
             "budget_current_state_label",
+            "ra_completed_at_WFEDITABLE",
             "who_sent_budget_at_WFEDITABLE",
             "unicef_sent_budget_at_WFEDITABLE",
             "gpei_consolidated_budgets_at_WFEDITABLE",
@@ -1168,5 +1166,15 @@ class ExportCampaignSerializer(CampaignSerializer):
             "district_count",
             "is_preventive",
             "enable_send_weekly_email",
+            "outbreak_declaration_date",
         ]
         read_only_fields = fields
+
+
+class ConfigSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Config
+        fields = ["created_at", "updated_at", "key", "data"]
+
+    data = serializers.JSONField(source="content")  # type: ignore
+    key = serializers.CharField(source="slug")

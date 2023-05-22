@@ -4,7 +4,6 @@ from typing import TypedDict
 from typing_extensions import Annotated
 
 from django.db import transaction
-from django_stubs_ext import WithAnnotations
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 

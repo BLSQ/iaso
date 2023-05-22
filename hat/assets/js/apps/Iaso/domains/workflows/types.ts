@@ -6,6 +6,7 @@ import { FieldType } from '../forms/types/forms';
 export type WorkflowParams = UrlParams & {
     entityTypeId: string;
     versionId: string;
+    order?: string;
 };
 
 export type WorkflowsParams = UrlParams & {
@@ -51,7 +52,6 @@ export type WorkflowVersionDetail = {
     reference_form: ReferenceForm;
     created_at: string;
     updated_at: string;
-    changes: Change[];
     follow_ups: FollowUps[];
 };
 

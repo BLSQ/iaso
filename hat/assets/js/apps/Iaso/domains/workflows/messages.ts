@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    allVersions: {
+        id: 'iaso.workflows.allVersions',
+        defaultMessage: 'All versions',
+    },
     actions: {
         id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',
@@ -8,6 +12,14 @@ const MESSAGES = defineMessages({
     version: {
         id: 'iaso.label.version',
         defaultMessage: 'Version',
+    },
+    targetVersion: {
+        id: 'iaso.workflows.targetVersion',
+        defaultMessage: 'Target version',
+    },
+    sourceVersion: {
+        id: 'iaso.workflows.sourceVersion',
+        defaultMessage: 'Source version',
     },
     see: {
         defaultMessage: 'See',
@@ -218,6 +230,10 @@ const MESSAGES = defineMessages({
     order: {
         id: 'iaso.workflows.order',
         defaultMessage: 'Order',
+    },
+    latest: {
+        id: 'iaso.workflows.latest',
+        defaultMessage: 'latest',
     },
 });
 

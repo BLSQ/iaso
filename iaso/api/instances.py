@@ -12,13 +12,13 @@ from django.db import transaction
 from django.db.models import Q, Count, QuerySet
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.timezone import now
-from django_stubs_ext import WithAnnotations
 from rest_framework import serializers, status
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
+from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
@@ -82,6 +82,7 @@ class HasInstancePermission(permissions.BasePermission):
         return request.user.is_authenticated and (
             request.user.has_perm("menupermissions.iaso_forms")
             or request.user.has_perm("menupermissions.iaso_submissions")
+            or request.user.has_perm("menupermissions.iaso_registry")
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -127,6 +128,11 @@ class InstanceLockSerializer(serializers.ModelSerializer):
 class UnlockSerializer(serializers.Serializer):
     lock = serializers.PrimaryKeyRelatedField(queryset=InstanceLock.objects.all())
     # we will  check that the user can access from the directly in remove_lock()
+
+
+class LockAnnotation(TypedDict):
+    count_lock_applying_to_user: int
+    count_active_lock: int
 
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -175,6 +181,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Export id", "width": 20},
             {"title": "Latitude", "width": 40},
             {"title": "Longitude", "width": 20},
+            {"title": "Altitude", "width": 20},
+            {"title": "Précision", "width": 20},
             {"title": "Période", "width": 20},
             {"title": "Date de création", "width": 20},
             {"title": "Date de modification", "width": 20},
@@ -233,6 +241,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 idict.get("export_id"),
                 idict.get("latitude"),
                 idict.get("longitude"),
+                idict.get("altitude"),
+                idict.get("accuracy"),
                 idict.get("period"),
                 created_at,
                 updated_at,
@@ -292,6 +302,7 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
+        org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -317,6 +328,9 @@ class InstancesViewSet(viewsets.ViewSet):
         #       exports, paginated or not, as small dict or not)
         #  - 2) the limit and asSmallDict parameters are independent from each other (the consumer can choose to use
         #       one, both or None and get predictable results)
+        if org_unit_status:
+            queryset = queryset.filter(org_unit__validation_status=org_unit_status)
+
         if not file_export:
             if limit:
                 limit = int(limit)
@@ -330,7 +344,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                def as_dict_formatter(instance: WithAnnotations[Instance]) -> Dict:
+                def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
                     d = instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0

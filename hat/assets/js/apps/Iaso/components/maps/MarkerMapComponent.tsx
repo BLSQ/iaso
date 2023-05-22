@@ -31,8 +31,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    latitude: number;
-    longitude: number;
+    latitude: number | undefined;
+    longitude: number | undefined;
 };
 
 export const MarkerMap: FunctionComponent<Props> = ({

@@ -1,4 +1,10 @@
-import React, { useEffect, FunctionComponent, useMemo } from 'react';
+import React, {
+    useEffect,
+    FunctionComponent,
+    useMemo,
+    ReactNode,
+    ReactElement,
+} from 'react';
 import { useDispatch } from 'react-redux';
 import { useSafeIntl } from 'bluesquare-components';
 
@@ -19,12 +25,26 @@ import { Form } from '../../forms/types/forms';
 import { Column } from '../../../types/table';
 
 import MESSAGES from '../messages';
+import { Instance } from '../types/instance';
 
 type Params = {
     order?: string;
     showDeleted?: string;
-    columns: string;
-    formIds: string;
+    columns?: string;
+    formIds?: string;
+};
+
+export type InstanceMetasField = {
+    key: string;
+    type: string;
+    accessor?: string;
+    active?: boolean;
+    sortable?: boolean;
+    tableOrder?: number;
+    // eslint-disable-next-line no-unused-vars
+    renderValue?: (form: Instance) => ReactNode;
+    // eslint-disable-next-line no-unused-vars
+    Cell?: (s: any) => ReactElement;
 };
 
 type Props = {
@@ -37,6 +57,9 @@ type Props = {
     formDetails: Form;
     tableColumns: Column[];
     disabled: boolean;
+    instanceMetasFields?: InstanceMetasField[];
+    // eslint-disable-next-line no-unused-vars
+    getActionCell?: (settings: any) => ReactElement;
 };
 
 const defaultOrder = 'updated_at';
@@ -44,11 +67,12 @@ const defaultOrder = 'updated_at';
 const getDefaultCols = (
     formIds: string[],
     labelKeys: string[],
+    instanceMetasFields: InstanceMetasField[],
     periodType?: string,
 ): string => {
-    let newCols: string[] = INSTANCE_METAS_FIELDS.filter(
-        f => Boolean(f.tableOrder) && f.active,
-    ).map(f => f.accessor || f.key);
+    let newCols: string[] = instanceMetasFields
+        .filter(f => Boolean(f.tableOrder) && f.active)
+        .map(f => f.accessor || f.key);
     if (formIds && formIds.length === 1) {
         newCols = newCols.filter(c => c !== 'form__name');
         if (periodType === null) {
@@ -70,6 +94,8 @@ export const ColumnSelect: FunctionComponent<Props> = ({
     formDetails,
     tableColumns,
     disabled = false,
+    instanceMetasFields,
+    getActionCell,
 }) => {
     const { formatMessage } = useSafeIntl();
     const formIds = useMemo(
@@ -83,9 +109,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         order: params.order,
         defaultOrder,
     });
-    const getInstancesColumns = useGetInstancesColumns(
-        params.showDeleted === 'true',
-    );
+    const getInstancesColumns = useGetInstancesColumns(getActionCell);
     const handleChangeVisibleColmuns = cols => {
         const columns = cols.filter(c => c.active);
         const newParams: Params = {
@@ -100,7 +124,12 @@ export const ColumnSelect: FunctionComponent<Props> = ({
     const visibleColumns: VisibleColumn[] = useMemo(() => {
         const newColsString: string = params.columns
             ? params.columns
-            : getDefaultCols(formIds, labelKeys, periodType);
+            : getDefaultCols(
+                  formIds,
+                  labelKeys,
+                  instanceMetasFields || INSTANCE_METAS_FIELDS,
+                  periodType,
+              );
         let newCols: VisibleColumn[] = [];
         // single form
         if (formIds?.length === 1) {
@@ -120,6 +149,7 @@ export const ColumnSelect: FunctionComponent<Props> = ({
         formDetails,
         formIds,
         getInstancesVisibleColumns,
+        instanceMetasFields,
         labelKeys,
         params.columns,
         periodType,

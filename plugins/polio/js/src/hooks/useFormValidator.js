@@ -458,7 +458,12 @@ const useRoundShape = () => {
                 yup.ref('lqas_started_at'),
                 formatMessage(MESSAGES.endDateBeforeStartDate),
             ),
-        target_population: yup.number().nullable().min(0).integer(),
+        target_population: yup
+            .number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         cost: yup.number().nullable().min(0).integer(),
         lqas_district_passing: yup
             .number()
@@ -544,6 +549,19 @@ const useRoundShape = () => {
         shipments: yup.array(shipment).nullable(),
         vaccines: yup.array(vaccine).nullable(),
         destructions: yup.array(destruction).nullable(),
+        percentage_covered_target_population: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0, formatMessage(MESSAGES.positiveRangeInteger))
+            .max(100, formatMessage(MESSAGES.positiveRangeInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_requested: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
     });
 };
 
@@ -558,24 +576,43 @@ export const useFormValidator = () => {
         initial_org_unit: yup.number().positive().integer().required(),
         grouped_campaigns: yup.array(yup.number()).nullable(),
         description: yup.string().nullable(),
-        onset_at: yup.date().nullable(),
-        three_level_call_at: yup.date().nullable(),
+        onset_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        outbreak_declaration_date: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
 
         cvdpv_notified_at: yup.date().nullable(),
         cvdpv2_notified_at: yup.date().nullable(),
 
-        pv_notified_at: yup.date().nullable(),
-        pv2_notified_at: yup.date().nullable(),
         verification_score: yup.number().nullable().positive().integer(),
 
         detection_first_draft_submitted_at: yup.date().nullable(),
         detection_rrt_oprtt_approval_at: yup.date().nullable(),
 
-        investigation_at: yup.date().nullable(),
-        risk_assessment_first_draft_submitted_at: yup.date().nullable(),
-        risk_assessment_rrt_oprtt_approval_at: yup.date().nullable(),
-        ag_nopv_group_met_at: yup.date().nullable(),
-        dg_authorized_at: yup.date().nullable(),
+        investigation_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        risk_assessment_first_draft_submitted_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        risk_assessment_rrt_oprtt_approval_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        ag_nopv_group_met_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        dg_authorized_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
         // Budget tab
         who_sent_budget_at_WFEDITABLE: yup.date().nullable(),
         unicef_sent_budget_at_WFEDITABLE: yup.date().nullable(),

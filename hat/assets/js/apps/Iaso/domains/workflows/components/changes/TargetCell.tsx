@@ -48,7 +48,8 @@ export const TargetCell: FunctionComponent<Props> = ({
             newOptions = newOptions.filter(
                 option =>
                     option.type === sourceType ||
-                    (option.type === 'text' && sourceType === 'calculate'),
+                    sourceType === 'calculate' ||
+                    option.type === 'calculate',
             );
         }
         // remove already selected options

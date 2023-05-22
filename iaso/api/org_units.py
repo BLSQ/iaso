@@ -6,7 +6,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
 from django.core.paginator import Paginator
-from django.db.models import Q, IntegerField, Value
+from django.db.models import Q, IntegerField, Value, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -21,7 +21,7 @@ from iaso.api.common import safe_api_import, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.api.org_unit_search import build_org_units_queryset, annotate_query
 from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSerializer, OrgUnitTreeSearchSerializer
 from iaso.gpkg import org_units_to_gpkg_bytes
-from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance
+from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
 from iaso.utils import geojson_queryset
 
 
@@ -34,6 +34,8 @@ class HasOrgUnitPermission(permissions.BasePermission):
                 request.user.has_perm("menupermissions.iaso_forms")
                 or request.user.has_perm("menupermissions.iaso_org_units")
                 or request.user.has_perm("menupermissions.iaso_submissions")
+                or request.user.has_perm("menupermissions.iaso_registry")
+                or request.user.has_perm("menupermissions.iaso_polio")
             )
         ):
             return False
@@ -100,7 +102,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
-        tree_search = request.GET.get("treeSearch", None)
 
         if as_location:
             queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
@@ -162,9 +163,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 }
 
                 return Response(res)
-            elif tree_search:
-                org_units = OrgUnitTreeSearchSerializer(queryset, many=True).data
-                return Response({"orgunits": org_units})
             elif with_shapes:
                 org_units = []
                 for unit in queryset:
@@ -294,6 +292,57 @@ class OrgUnitViewSet(viewsets.ViewSet):
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
 
+        return response
+
+    @action(methods=["GET"], detail=False)
+    def treesearch(self, request, **kwargs):
+        queryset = self.get_queryset().order_by("name")
+        params = request.GET
+        parent_id = params.get("parent_id")
+        validation_status = params.get("validation_status")
+        roots_for_user = params.get("rootsForUser", None)
+        source = params.get("source", None)
+        version = params.get("version", None)
+        ignore_empty_names = params.get("ignoreEmptyNames", False)
+        default_version = params.get("defaultVersion", None)
+        if not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+        else:
+            profile = None
+
+        if source:
+            source = DataSource.objects.get(id=source)
+            if source.default_version:
+                queryset = queryset.filter(version=source.default_version)
+            else:
+                queryset = queryset.filter(version__data_source_id=source)
+
+        if version:
+            queryset = queryset.filter(version=version)
+
+        if default_version == "true" and profile is not None:
+            queryset = queryset.filter(version=profile.account.default_version)
+
+        if roots_for_user:
+            org_unit_for_profile = request.user.iaso_profile.org_units.only("id")
+            if org_unit_for_profile:
+                queryset = queryset.filter(id__in=org_unit_for_profile)
+            else:
+                queryset = queryset.filter(parent__isnull=True)
+
+        if parent_id:
+            get_object_or_404(self.get_queryset().only("id"), id=parent_id)
+            queryset = queryset.filter(parent=parent_id)
+
+        if validation_status != "all":
+            queryset = queryset.filter(validation_status=validation_status)
+        if ignore_empty_names:
+            queryset = queryset.filter(~Q(name=""))
+
+        queryset = queryset.only("id", "name", "validation_status", "version", "org_unit_type", "parent")
+        queryset = queryset.annotate(children_count=Count("orgunit__id"))
+        org_units = OrgUnitTreeSearchSerializer(queryset, many=True).data
+        response = Response({"orgunits": org_units})
         return response
 
     def partial_update(self, request, pk=None):

@@ -283,7 +283,7 @@ describe('Submissions', () => {
     it('change filters should deep link and call api with correct params', () => {
         cy.intercept(
             'GET',
-            '/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
             {
                 fixture: 'orgunits/list.json',
             },
@@ -394,9 +394,9 @@ describe('Submissions', () => {
         };
         cy.wait('@getSubmissions').then(() => {
             // TODO: test new period type day
-            testPeriod(1, '201901', '202001');
-            testPeriod(2, '2019Q1', '2020Q1');
-            testPeriod(3, '2019', '2020');
+            testPeriod(1, '201401', '201501');
+            testPeriod(2, '2014Q1', '2015Q1');
+            testPeriod(3, '2014', '2015');
         });
     });
 
@@ -425,7 +425,7 @@ describe('Submissions', () => {
             cy.get('#ColumnsSelectDrawer-search').type('form');
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
-            cy.get('@selectColumnsList').find('li').should('have.length', 12);
+            cy.get('@selectColumnsList').find('li').should('have.length', 13);
             const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');
@@ -491,14 +491,14 @@ describe('Submissions', () => {
 });
 
 describe('Map Tab', () => {
-    it.skip('should display a map', () => { });
-    it.skip('should different location', () => { });
-    it.skip('should have working cluster', () => { });
+    it.skip('should display a map', () => {});
+    it.skip('should different location', () => {});
+    it.skip('should have working cluster', () => {});
 });
 
 describe('Files Tab', () => {
-    it.skip('should display a files list', () => { });
-    it.skip('should display a warning if no files', () => { });
-    it.skip('should have a working pagination', () => { });
-    it.skip('should split files types into tabs', () => { });
+    it.skip('should display a files list', () => {});
+    it.skip('should display a warning if no files', () => {});
+    it.skip('should have a working pagination', () => {});
+    it.skip('should split files types into tabs', () => {});
 });

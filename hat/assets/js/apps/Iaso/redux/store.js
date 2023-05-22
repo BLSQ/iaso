@@ -11,10 +11,6 @@ import {
     orgUnitsInitialState,
 } from '../domains/orgUnits/reducer';
 import {
-    projectsReducer,
-    projectsInitialState,
-} from '../domains/projects/reducer';
-import {
     instancesReducer,
     instancesInitialState,
 } from '../domains/instances/reducer';
@@ -30,10 +26,6 @@ import { snackBarsInitialState, snackBarsReducer } from './snackBarsReducer';
 import { routerInitialState, routerReducer } from './routerReducer';
 import { linksInitialState, linksReducer } from '../domains/links/reducer';
 import { usersReducer, usersInitialState } from '../domains/users/reducer';
-import {
-    orgUnitsTypesInitialState,
-    reducer as orgUnitsTypesReducer,
-} from '../domains/orgUnits/orgUnitTypes/reducer';
 import { localeMiddleware } from '../domains/app/middleware';
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -50,9 +42,7 @@ const store = createStore(
         routerCustom: routerInitialState,
         links: linksInitialState,
         users: usersInitialState,
-        projects: projectsInitialState,
         mappings: mappingsInitialState,
-        orgUnitsTypes: orgUnitsTypesInitialState,
     },
     {
         app: appReducer,
@@ -63,9 +53,7 @@ const store = createStore(
         routerCustom: routerReducer,
         links: linksReducer,
         users: usersReducer,
-        projects: projectsReducer,
         mappings: mappingReducer,
-        orgUnitsTypes: orgUnitsTypesReducer,
     },
     [routerMiddleware(storeHistory), thunk, localeMiddleware],
 );

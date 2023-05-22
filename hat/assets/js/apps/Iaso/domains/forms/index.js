@@ -7,8 +7,6 @@ import {
     commonStyles,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { fetchAllProjects } from '../projects/actions';
-import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
 import { redirectTo } from '../../routing/actions';
 
 import formsTableColumns from './config';
@@ -49,8 +47,6 @@ const Forms = ({ params }) => {
             setForceRefresh(true);
         });
     useEffect(() => {
-        dispatch(fetchAllProjects());
-        dispatch(fetchAllOrgUnitTypes());
         // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
         setForceRefresh(true);
         setShowDeleted(Boolean(params.showDeleted === 'true'));

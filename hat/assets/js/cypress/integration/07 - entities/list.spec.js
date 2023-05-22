@@ -145,6 +145,16 @@ describe('Entities', () => {
                 );
             });
         });
+        it('should not be accessible if user does not have permission', () => {
+            mockPage({
+                ...superUser,
+                permissions: [],
+                is_superuser: false,
+            });
+            cy.visit(baseUrl);
+            const errorCode = cy.get('#error-code');
+            errorCode.should('contain', '401');
+        });
         it('click on a row button should open entity detail page', () => {
             mockPage();
             cy.visit(baseUrl);
@@ -163,16 +173,6 @@ describe('Entities', () => {
                         '/dashboard/entities/details/entityId/2',
                     );
             });
-        });
-        it('should not be accessible if user does not have permission', () => {
-            mockPage({
-                ...superUser,
-                permissions: [],
-                is_superuser: false,
-            });
-            cy.visit(baseUrl);
-            const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
         });
     });
 

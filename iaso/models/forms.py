@@ -320,7 +320,7 @@ class FormAttachment(models.Model):
 
     form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
     name = models.TextField(null=False, blank=False)
-    file = models.FileField(upload_to=form_folder, storage=OverwriteStorage())
+    file = models.FileField(upload_to=form_folder)
     md5 = models.CharField(null=False, blank=False, max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

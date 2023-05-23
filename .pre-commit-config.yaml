@@ -2,7 +2,7 @@
 # see Black section in README
 repos:
 -   repo: https://github.com/ambv/black
-    rev: 23.3.0
+    rev: 21.5b1
     hooks:
     - id: black
       language_version: python3

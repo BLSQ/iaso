@@ -2,12 +2,14 @@ import typing
 from unittest import mock
 
 from django.core.files import File
+from django.http import HttpResponse
 from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.test import APITestCase
 
 BASE_URL = "/api/formattachments/"
+MANIFEST_URL = "/api/forms/{form_id}/manifest/"
 
 
 class FormAttachmentsAPITestCase(APITestCase):
@@ -201,3 +203,54 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.assertHasField(form_data, "form_id", int)
         self.assertHasField(form_data, "created_at", float)
         self.assertHasField(form_data, "updated_at", float)
+
+    def test_manifest_without_auth(self):
+        f"""GET {BASE_URL} without auth: 0 result"""
+
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
+        self.assertJSONResponse(response, 404)
+
+    def test_manifest_form_not_found(self):
+        f"""GET {MANIFEST_URL} with wrong id: 404"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(MANIFEST_URL.format(form_id=100))
+        self.assertJSONResponse(response, 404)
+
+    def test_manifest_form_found_but_empty_attachments(self):
+        f"""GET {MANIFEST_URL} with no attachments: 200"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
+        content = self.assertXMLResponse(response, 200)
+        self.assertEqual(
+            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
+            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n\n</manifest>',
+            content,
+        )
+
+    def test_manifest_form_found_with_attachments(self):
+        f"""GET {MANIFEST_URL} with attachments: 200"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
+        content = self.assertXMLResponse(response, 200)
+        self.assertEqual(
+            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
+            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>first '
+            b"attachment</filename>\n    <hash>md5:test1</hash>\n    "
+            b"<downloadUrl>/media/form_attachments/2/document1</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
+            b"<filename>second attachment</filename>\n    <hash>md5:test2</hash>\n    "
+            b"<downloadUrl>/media/form_attachments/2/document2</downloadUrl>\n</mediaFile>\n</manifest>",
+            content,
+        )
+
+    def assertXMLResponse(self, response: typing.Any, expected_status_code: int):
+        self.assertIsInstance(response, HttpResponse)
+        self.assertEqual(expected_status_code, response.status_code, response.content)
+
+        self.assertEqual("1.0", response["X-OpenRosa-Version"], response.content)
+        if expected_status_code != 204:
+            self.assertEqual("text/xml", response["Content-Type"], response.content)
+
+        return response.content

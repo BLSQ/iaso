@@ -1,4 +1,5 @@
 from .base import *
+from .base import Instance
 from .device import Device, DeviceOwnership, DevicePosition
 from .forms import Form, FormVersion, FormPredefinedFilter
 from .org_unit import OrgUnit, OrgUnitType

@@ -562,6 +562,7 @@ class EntityAPITestCase(APITestCase):
         self.form_1.form_id = "A_FORM_ID"
 
         self.form_1.json = {"_version": "A_FORM_ID"}
+        self.form_1.projects.add(self.project)
 
         self.form_1.save()
 
@@ -707,6 +708,8 @@ class EntityAPITestCase(APITestCase):
         project = Project.objects.create(name="Project 1", app_id=app_id, account=self.star_wars)
         project.account = self.star_wars
         project.save()
+
+        self.form_1.projects.add(project)
 
         # we should return only the entities whose instaces/attributes are linked to this project.
 

@@ -7,7 +7,6 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
@@ -17,7 +16,6 @@ from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilte
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .projects import ProjectSerializer
-from .query_params import APP_ID
 
 
 class HasFormPermission(permissions.BasePermission):
@@ -140,7 +138,8 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
     @staticmethod
     def get_has_attachments(obj: Form):
-        return len(obj.attachments.all()) > 0
+        # We should calculate this via an annotation to reduce queries
+        return obj.attachments.exists()
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)

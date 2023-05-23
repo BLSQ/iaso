@@ -340,46 +340,37 @@ class FormsViewSet(ModelViewSet):
 
     FORM_PK = "form_pk"
 
-    @action(detail=False, methods=["get"], url_path=rf"(?P<{FORM_PK}>\d+)/manifest")
+    @action(detail=True, methods=["get"])
     def manifest(self, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
 
         This is used for the mobile app and Enketo to fetch the list of file attached to the Form
         see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
         """
-        form_pk = kwargs.get(FormsViewSet.FORM_PK, None)
-        if not form_pk:
-            raise ParseError(f"{FormsViewSet.FORM_PK} is required")
-
-        app_id = self.request.query_params.get(APP_ID)  # Not mandatory in /forms/<id> so not mandatory here either.
-        try:
-            form = Form.objects.filter_for_user_and_app_id(self.request.user, app_id).get(id=form_pk)
-            attachments = form.attachments.all()
-
-            media_files = []
-            for attachment in attachments:
-                media_files.append(
-                    f"""<mediaFile>
+        form = self.get_object()
+        attachments = form.attachments.all()
+        media_files = []
+        for attachment in attachments:
+            media_files.append(
+                f"""<mediaFile>
     <filename>{attachment.name}</filename>
     <hash>md5:{attachment.md5}</hash>
     <downloadUrl>{attachment.file.url}</downloadUrl>
 </mediaFile>"""
-                )
+            )
 
-            nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
-            return HttpResponse(
-                status=status.HTTP_200_OK,
-                content_type="text/xml",
-                headers={
-                    "X-OpenRosa-Version": "1.0",
-                },
-                content=f"""<?xml version="1.0" encoding="UTF-8"?>
+        nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+        return HttpResponse(
+            status=status.HTTP_200_OK,
+            content_type="text/xml",
+            headers={
+                "X-OpenRosa-Version": "1.0",
+            },
+            content=f"""<?xml version="1.0" encoding="UTF-8"?>
 <manifest xmlns="http://openrosa.org/xforms/xformsManifest">
 {nl.join(media_files)}
 </manifest>""",
-            )
-        except Form.DoesNotExist:
-            raise NotFound("form could not be found")
+        )
 
 
 class MobileFormViewSet(FormsViewSet):

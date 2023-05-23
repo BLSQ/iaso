@@ -396,7 +396,23 @@ class SubmitterFilterBackend(filters.BaseFilterBackend):
         submitter_id = request.query_params.get("submitter")
 
         if submitter_id:
-            queryset = queryset.filter(analyze__task__launcher__pk=submitter_id)
+            queryset = queryset.filter(
+                Q(entity1__attributes__created_by__pk=submitter_id)
+                | Q(entity2__attributes__created_by__pk=submitter_id)
+            )
+
+        return queryset
+
+
+class SubmitterTeamFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        submitter_team_id = request.query_params.get("submitter_team")
+
+        if submitter_team_id:
+            queryset = queryset.filter(
+                Q(entity1__attributes__created_by__teams__pk=submitter_team_id)
+                | Q(entity2__attributes__created_by__teams__pk=submitter_team_id)
+            ).distinct()
 
         return queryset
 
@@ -436,6 +452,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
     filter_backends = [
         SubmitterFilterBackend,
+        SubmitterTeamFilterBackend,
         EntityIdFilterBackend,
         EntitySearchFilterBackend,
         AlgorithmFilterBackend,

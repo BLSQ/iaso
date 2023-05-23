@@ -35,7 +35,7 @@ class UserRoleAPITestCase(APITestCase):
     def test_create_user_role(self):
         self.client.force_authenticate(self.yoda)
 
-        payload = {"name": "New OrgUnit Group"}
+        payload = {"name": "New user role name"}
 
         response = self.client.post("/api/userroles/", data=payload, format="json")
 

@@ -37,8 +37,8 @@ const MarkerComponent = props => {
             position={[item.latitude, item.longitude, item.altitude]}
             eventHandlers={{
                 click: () => onClick(item),
+                dragend: e => onDragend(e.target),
             }}
-            onDragend={e => onDragend(e.target)}
             {...markerProps(item)}
             onContextmenu={event => onContextmenu(event, item)}
         >

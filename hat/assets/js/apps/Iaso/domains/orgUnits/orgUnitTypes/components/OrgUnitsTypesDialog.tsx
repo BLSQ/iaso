@@ -44,6 +44,8 @@ const mapOrgUnitType = orgUnitType => {
         project_ids: orgUnitType.projects.map(project => project.id),
         depth: orgUnitType.depth,
         sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
+        allow_creating_sub_unit_type_ids:
+            orgUnitType.allow_creating_sub_unit_types.map(unit => unit.id),
         reference_form_id: orgUnitType?.reference_form?.id,
     };
 };
@@ -62,6 +64,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         projects: [],
         depth: 0,
         sub_unit_types: [],
+        allow_creating_sub_unit_types: [],
         reference_form: null,
     },
     titleMessage,
@@ -156,6 +159,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         (keyValue, value) => {
             if (
                 keyValue === 'sub_unit_type_ids' ||
+                keyValue === 'allow_creating_sub_unit_type_ids' ||
                 keyValue === 'project_ids'
             ) {
                 setFieldValue(keyValue, commaSeparatedIdsToArray(value));
@@ -184,7 +188,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         } catch (error) {
             if (error.status === 400) {
                 Object.entries(error.details).forEach(entry => {
-                    if (entry[0] === 'sub_unit_type_ids') {
+                    if (
+                        entry[0] === 'sub_unit_type_ids' ||
+                        entry[0] === 'allow_creating_sub_unit_type_ids'
+                    ) {
                         const typeName = (entry[1] as number[]).join(', ');
                         const errorText: string = formatMessage(
                             MESSAGES.subTypesErrors,
@@ -290,7 +297,6 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 type="number"
                 label={MESSAGES.depth}
             />
-
             <InputComponent
                 multi
                 clearable
@@ -301,6 +307,17 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 type="select"
                 options={subUnitTypes}
                 label={MESSAGES.subUnitTypes}
+            />
+            <InputComponent
+                multi
+                clearable
+                keyValue="allow_creating_sub_unit_type_ids"
+                onChange={onChange}
+                value={formState.allow_creating_sub_unit_type_ids.value}
+                errors={formState.allow_creating_sub_unit_type_ids.errors}
+                type="select"
+                options={subUnitTypes}
+                label={MESSAGES.createSubUnitTypes}
             />
             {hasPermission && (
                 <InputComponent

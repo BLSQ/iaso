@@ -1413,9 +1413,11 @@ class InstancesAPITestCase(APITestCase):
 
         team = Team.objects.create(project=self.project, manager=self.yoda)
         orgunit = m.OrgUnit.objects.create(name="Org Unit 1")
-        instance_1 = self.create_form_instance(form=self.form_1, period="202001", org_unit=orgunit)
+        instance_1 = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=orgunit, project=self.project
+        )
         instance_2 = self.create_form_instance(
-            form=self.form_1, period="202002", org_unit=orgunit, last_export_success_at=now()
+            form=self.form_1, period="202002", org_unit=orgunit, last_export_success_at=now(), project=self.project
         )
         planning_1 = Planning.objects.create(name="Planning 1", org_unit=orgunit, project=self.project, team=team)
         planning_2 = Planning.objects.create(name="Planning 2", org_unit=orgunit, project=self.project, team=team)

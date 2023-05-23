@@ -5,7 +5,6 @@ import hat.audit.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("audit", "0002_alter_modification_object_id"),
     ]

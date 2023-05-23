@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("vector_control", "0013_gpsimport_count")]
 
     operations = [

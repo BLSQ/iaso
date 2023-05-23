@@ -5,7 +5,6 @@ import django.contrib.gis.db.models.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0056_merge_20200616_1223")]
 
     operations = [

@@ -114,7 +114,6 @@ class EntityQuerySet(models.QuerySet):
     def filter_for_user_and_app_id(
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
     ):
-
         if not user or not user.is_authenticated:
             raise UserNotAuthError(f"User not Authentified")
 

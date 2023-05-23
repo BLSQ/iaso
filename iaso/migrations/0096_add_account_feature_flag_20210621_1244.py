@@ -12,7 +12,6 @@ def reverse_create_shape_account_flag(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0095_auto_20210621_1131"),
     ]

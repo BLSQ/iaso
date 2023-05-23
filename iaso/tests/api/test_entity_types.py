@@ -112,7 +112,6 @@ class EntityTypeAPITestCase(APITestCase):
         cls.project.save()
 
     def test_create_entity_type(self):
-
         self.client.force_authenticate(self.yoda)
 
         payload = {
@@ -182,7 +181,6 @@ class EntityTypeAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_entity_types_are_multitenancy(self):
-
         self.client.force_authenticate(self.yoda)
         EntityType.objects.create(
             name="beneficiary", reference_form=self.form_1, account=self.yoda.iaso_profile.account

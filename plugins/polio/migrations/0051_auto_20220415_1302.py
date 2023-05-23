@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0050_alter_campaigngroup_campaigns"),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0068_auto_20220712_0957"),
         ("polio", "0069_campaign_separate_scopes_per_round"),

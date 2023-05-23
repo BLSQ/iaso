@@ -23,7 +23,6 @@ def budgetstep_fill_from_to_nodes(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0115_auto_20221222_1330"),
     ]

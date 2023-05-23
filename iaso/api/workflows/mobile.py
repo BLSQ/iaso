@@ -18,7 +18,6 @@ class ChangeNestedSerializer(serializers.ModelSerializer):
 
 
 class FollowupNestedSerializer(serializers.ModelSerializer):
-
     condition = serializers.SerializerMethodField()
     form_ids = serializers.SerializerMethodField()
 

@@ -5,7 +5,6 @@ import django.db.models.manager
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0150_profile_home_page"),
     ]

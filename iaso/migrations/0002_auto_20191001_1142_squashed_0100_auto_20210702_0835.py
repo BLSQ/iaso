@@ -49,7 +49,6 @@ def reverse_catchment_shape_account_flag(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("iaso", "0002_auto_20191001_1142"),
         ("iaso", "0003_auto_20191003_1301"),

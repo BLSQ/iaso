@@ -22,7 +22,6 @@ def add_user_permissions(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("menupermissions", "0021_auto_20210901_1228"),
     ]

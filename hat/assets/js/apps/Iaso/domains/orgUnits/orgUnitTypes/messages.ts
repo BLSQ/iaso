@@ -93,6 +93,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.error.fieldRequired',
         defaultMessage: 'This field is required',
     },
+    subTypesErrors: {
+        id: 'iaso.orgUnitsTypes.subTypesErrors',
+        defaultMessage:
+            'A sub org unit type cannot be a parent too ({typeName})',
+    },
 });
 
 export default MESSAGES;

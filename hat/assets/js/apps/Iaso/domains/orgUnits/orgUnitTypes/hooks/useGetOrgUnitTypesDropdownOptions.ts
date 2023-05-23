@@ -5,18 +5,17 @@ import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
 import { DropdownOptions } from '../../../../types/utils';
-import { OrgunitTypesApi } from '../../../orgUnits/types/orgunitTypes';
+import { OrgunitTypesApi } from '../../types/orgunitTypes';
 
 const getOrgunitTypes = (): Promise<OrgunitTypesApi> => {
     return getRequest('/api/orgunittypes/');
 };
 
-export const useGetOrgUnitTypes = (): UseQueryResult<
+export const useGetOrgUnitTypesDropdownOptions = (): UseQueryResult<
     DropdownOptions<string>[],
     Error
 > => {
-    const queryKey: any[] = ['orgunittypes'];
-    // @ts-ignore
+    const queryKey: any[] = ['orgunittypes-dropdown'];
     return useSnackQuery(queryKey, () => getOrgunitTypes(), undefined, {
         select: data => {
             if (!data) return [];

@@ -38,8 +38,8 @@ const algorithmDropDown = [
 ];
 
 const similarityDropdown = [5, 4, 3, 2, 1].map(score => {
-    const offset = 200 * (score - 1);
-    return { label: `${score}`, value: 1000 - offset };
+    const offset = 20 * score;
+    return { label: `${score}`, value: offset };
 });
 
 // TODO add error management

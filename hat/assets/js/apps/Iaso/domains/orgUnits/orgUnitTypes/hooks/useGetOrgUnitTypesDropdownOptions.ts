@@ -17,6 +17,7 @@ export const useGetOrgUnitTypesDropdownOptions = (): UseQueryResult<
 > => {
     const queryKey: any[] = ['orgunittypes-dropdown'];
     return useSnackQuery(queryKey, () => getOrgunitTypes(), undefined, {
+        keepPreviousData: true,
         select: data => {
             if (!data) return [];
             return data.orgUnitTypes

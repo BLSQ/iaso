@@ -94,8 +94,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     );
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
-    const { data: allOrgUnitTypes, isFetching: isFetchingAllOrgUnitTypes } =
-        useGetOrgUnitTypesDropdownOptions();
+    const { data: allOrgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {
@@ -185,31 +184,35 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         [setFieldValue, setFieldErrors, formatMessage, getFormPerProjects],
     );
 
-    const onConfirm = useCallback(async () => {
-        try {
-            await saveType(mapValues(formState, v => v.value));
-        } catch (error) {
-            if (error.status === 400) {
-                Object.entries(error.details).forEach(entry => {
-                    if (
-                        entry[0] === 'sub_unit_type_ids' ||
-                        entry[0] === 'allow_creating_sub_unit_type_ids'
-                    ) {
-                        const typeName = (entry[1] as number[]).join(', ');
-                        const errorText: string = formatMessage(
-                            MESSAGES.subTypesErrors,
-                            {
-                                typeName,
-                            },
-                        );
-                        setFieldErrors(entry[0], [errorText]);
-                    } else {
-                        setFieldErrors(entry[0], entry[1]);
-                    }
-                });
+    const onConfirm = useCallback(
+        async (closeDialog: () => void) => {
+            try {
+                await saveType(mapValues(formState, v => v.value));
+                closeDialog();
+            } catch (error) {
+                if (error.status === 400) {
+                    Object.entries(error.details).forEach(entry => {
+                        if (
+                            entry[0] === 'sub_unit_type_ids' ||
+                            entry[0] === 'allow_creating_sub_unit_type_ids'
+                        ) {
+                            const typeName = (entry[1] as number[]).join(', ');
+                            const errorText: string = formatMessage(
+                                MESSAGES.subTypesErrors,
+                                {
+                                    typeName,
+                                },
+                            );
+                            setFieldErrors(entry[0], [errorText]);
+                        } else {
+                            setFieldErrors(entry[0], entry[1]);
+                        }
+                    });
+                }
             }
-        }
-    }, [formState, formatMessage, saveType, setFieldErrors]);
+        },
+        [formState, formatMessage, saveType, setFieldErrors],
+    );
     const hasPermission =
         userHasPermission('iaso_org_units', currentUser) &&
         userHasPermission('iaso_forms', currentUser);
@@ -246,7 +249,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         <ConfirmCancelDialogComponent
             id="OuTypes-modal"
             titleMessage={titleMessage}
-            onConfirm={onConfirm}
+            onConfirm={closeDialog => onConfirm(closeDialog)}
             onCancel={closeDialog => {
                 closeDialog();
                 resetForm();
@@ -304,11 +307,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 clearable
                 keyValue="sub_unit_type_ids"
                 onChange={onChange}
-                loading={isFetchingAllOrgUnitTypes}
-                value={
-                    isFetchingAllOrgUnitTypes &&
-                    formState.sub_unit_type_ids.value
-                }
+                loading={!allOrgUnitTypes}
+                value={allOrgUnitTypes && formState.sub_unit_type_ids.value}
                 errors={formState.sub_unit_type_ids.errors}
                 type="select"
                 options={subUnitTypes}
@@ -322,9 +322,9 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                         clearable
                         keyValue="allow_creating_sub_unit_type_ids"
                         onChange={onChange}
-                        loading={isFetchingAllOrgUnitTypes}
+                        loading={!allOrgUnitTypes}
                         value={
-                            !isFetchingAllOrgUnitTypes &&
+                            allOrgUnitTypes &&
                             formState.allow_creating_sub_unit_type_ids.value
                         }
                         errors={

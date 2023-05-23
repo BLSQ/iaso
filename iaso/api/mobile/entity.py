@@ -105,7 +105,7 @@ class MobileEntitySerializer(serializers.ModelSerializer):
                 if form_version is not None:
                     ok_instances.append(inst)
 
-        return MobileEntityAttributesSerializer(entity.instances, many=True, context=self.context).data  # type: ignore
+        return MobileEntityAttributesSerializer(ok_instances, many=True, context=self.context).data  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):

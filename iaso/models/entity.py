@@ -103,12 +103,11 @@ class EntityQuerySet(models.QuerySet):
             queryset=Instance.objects.filter(
                 deleted=False, org_unit__validation_status=OrgUnit.VALIDATION_VALID
             ).exclude(file=""),
-            to_attr="non_deleted_instances",
         )
 
         self = self.filter(attributes__isnull=False).filter(instances__isnull=False)
 
-        self = self.prefetch_related(p).prefetch_related("non_deleted_instances__form")
+        self = self.prefetch_related(p).prefetch_related("instances__form")
 
         return self
 

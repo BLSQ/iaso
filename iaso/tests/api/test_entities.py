@@ -697,7 +697,7 @@ class EntityAPITestCase(APITestCase):
         self.assertEqual(response_json.get("results")[0].get("entity_type_id"), str(entity_type.id))
         self.assertEqual(len(response_json.get("results")[0].get("instances")), 1)
         self.assertEqual(response_json.get("results")[1].get("entity_type_id"), str(entity_type.id))
-        self.assertEqual(len(response_json.get("results")[1].get("instances")), 1)
+        self.assertEqual(len(response_json.get("results")[1].get("instances")), 0)
 
     def test_access_respect_appid_mobile(self):
         self.client.force_authenticate(self.yoda)

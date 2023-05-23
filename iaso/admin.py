@@ -38,6 +38,7 @@ from .models import (
     Form,
     FormVersion,
     FormPredefinedFilter,
+    FormAttachment,
     Instance,
     InstanceFile,
     Account,
@@ -172,6 +173,12 @@ class FormPredefinedFilterAdmin(admin.ModelAdmin):
     list_filter = ("form", "name", "short_name")
 
 
+class FormAttachmentAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at", "updated_at")
+    list_display = ("form", "name", "file", "md5")
+    list_filter = ("form", "name")
+
+
 class InstanceFileAdminInline(admin.TabularInline):
     model = InstanceFile
     extra = 0
@@ -203,6 +210,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "last_modified_by",
                     "created_by",
                     "form_version",
+                    "planning",
                 )
             },
         ),
@@ -584,6 +592,7 @@ admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun, AlgorithmRunAdmin)
 admin.site.register(FormVersion, FormVersionAdmin)
 admin.site.register(FormPredefinedFilter, FormPredefinedFilterAdmin)
+admin.site.register(FormAttachment, FormAttachmentAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
 admin.site.register(Mapping, MappingAdmin)

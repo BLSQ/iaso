@@ -1,7 +1,8 @@
 from django.contrib.gis.geos import Polygon, MultiPolygon
+from django.core.cache import cache
 
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
-from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource
+from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource, FeatureFlag
 from iaso.test import APITestCase
 
 BASE_URL = "/api/mobile/orgunits/"
@@ -49,6 +50,11 @@ class MobileOrgUnitAPITestCase(APITestCase):
 
         raditz.parent = bardock
         raditz.save()
+
+        # bardock
+        #  -goku
+        #    - gohan
+        #    - goten
 
         cls.goku = goku = OrgUnit.objects.create(
             parent=bardock,
@@ -152,3 +158,30 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
         self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
         self.assertEqual(response.json()["orgUnits"][1]["geo_json"], None)
+
+    def test_LIMIT_OU_DOWNLOAD_TO_ROOTS(self):
+        self.user.iaso_profile.org_units.set([self.goku])
+        self.goku.validation_status = OrgUnit.VALIDATION_VALID
+        self.goku.save()
+        self.client.force_authenticate(self.user)
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        j = self.assertJSONResponse(response, 200)
+        # set limit on user
+
+        self.assertEqual([self.goku.id], j["roots"])
+        self.assertNotIn("count", j)
+        self.assertNotIn("next", j)
+        self.assertNotIn("previous", j)
+        self.assertEqual(len(j["orgUnits"]), 5)
+
+        ff = FeatureFlag.objects.get(code=FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS)  # created via migrations
+        self.project.feature_flags.add(ff)
+        cache.clear()  # to fix cache don't clear when the feature flags are modified
+        self.client.force_authenticate(self.user)
+        response = self.client.get(BASE_URL, data={APP_ID: BASE_APP_ID})
+        j = self.assertJSONResponse(response, 200)
+        self.assertEqual([self.goku.id], j["roots"])
+        self.assertNotIn("count", j)
+        self.assertNotIn("next", j)
+        self.assertNotIn("previous", j)
+        self.assertEqual(len(j["orgUnits"]), 3)

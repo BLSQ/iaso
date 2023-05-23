@@ -61,6 +61,8 @@ services:
       ENKETO_URL: http://enketo:8005/
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
       LIVE_COMPONENTS:
+      WFP_AUTH_CLIENT_ID:
+      WFP_AUTH_ACCOUNT:
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"

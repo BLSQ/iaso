@@ -21,9 +21,12 @@ Reconciliation with existing user is done via their email address (not yet imple
 ## Settings
 The following environment variables are used for configuration (see corporate password vault for dev access):
 * WFP_AUTH_CLIENT_ID
-* WFP_AUTH_SECRET_KEY
 
-These are provided by the CIAM team.
+this is provided by the CIAM team. The secret key is not needed
+
+* WFP_AUTH_ACCOUNT
+To which iaso account to attach the user
+
 
 ## Documentations
 * CIAM documentation https://docs.ciam.auth.wfp.org/login-methods/

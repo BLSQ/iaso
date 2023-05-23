@@ -158,10 +158,15 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
 
     lookup = {e1.pk: att1, e2.pk: att2}
 
-    tree = ET.parse(att1.file)
+    try:
+        tree = ET.parse(att1.file)
+    except Exception as e:
+        print(f"Error parsing xml file {att1.file}")
+        raise e
+
     root = tree.getroot()
 
-    # ET.dump(root)
+    ET.dump(root)
 
     for field_name, e_id in merge_def.items():
         the_val = lookup[e_id].json[field_name]

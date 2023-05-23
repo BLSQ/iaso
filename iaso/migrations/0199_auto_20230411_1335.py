@@ -85,7 +85,6 @@ def remove_user_roles(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0198_userrole"),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0199_auto_20230411_1335"),
         ("iaso", "0206_add_feature_flag_LIMIT_OU_DOWNLOAD_TO_ROOTS"),

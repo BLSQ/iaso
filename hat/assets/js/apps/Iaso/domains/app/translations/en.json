@@ -665,6 +665,7 @@
     "iaso.orgUnits.confirmMultiChange": "Confirm bulk changes ?",
     "iaso.orgUnits.createdBy": "Created By",
     "iaso.orgUnits.createSubUnitTypes": "Sub org units types to create",
+    "iaso.orgUnits.createSubUnitTypesInfos": "Enable the creation of the above sub org unit types (mobile)",
     "iaso.orgUnits.dataSources": "Data Sources",
     "iaso.orgUnits.depth": "Level",
     "iaso.orgUnits.depthInfos": "Level of the type in the hierarchy: province (1)> zone (2)> aire (3)> village (4)",

@@ -73,6 +73,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.createSubUnitTypes',
         defaultMessage: 'Sub org units types to create',
     },
+    createSubUnitTypesInfos: {
+        id: 'iaso.orgUnits.createSubUnitTypesInfos',
+        defaultMessage:
+            'Enable the creation of the above sub org unit types (mobile)',
+    },
     projects: {
         id: 'iaso.orgUnitsTypes.projects',
         defaultMessage: 'Projects',

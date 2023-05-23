@@ -15,6 +15,8 @@ import {
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import { isUndefined, mapValues } from 'lodash';
+import { Tooltip, Grid, Box } from '@material-ui/core';
+import InfoIcon from '@material-ui/icons/Info';
 
 import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -92,7 +94,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     );
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
-    const { data: allOrgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
+    const { data: allOrgUnitTypes, isFetching: isFetchingAllOrgUnitTypes } =
+        useGetOrgUnitTypesDropdownOptions();
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {
@@ -238,7 +241,6 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
         return allProjects?.concat(orgUnitypeProjects) ?? [];
     }, [allProjects, orgUnitType.projects]);
-
     return (
         //  @ts-ignore
         <ConfirmCancelDialogComponent
@@ -252,7 +254,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             allowConfirm={isFormValid(requiredFields, formState)}
-            maxWidth="xs"
+            maxWidth="sm"
             renderTrigger={renderTrigger}
             dataTestId="OuTypes-modal"
         >
@@ -302,23 +304,56 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 clearable
                 keyValue="sub_unit_type_ids"
                 onChange={onChange}
-                value={formState.sub_unit_type_ids.value}
+                loading={isFetchingAllOrgUnitTypes}
+                value={
+                    isFetchingAllOrgUnitTypes &&
+                    formState.sub_unit_type_ids.value
+                }
                 errors={formState.sub_unit_type_ids.errors}
                 type="select"
                 options={subUnitTypes}
                 label={MESSAGES.subUnitTypes}
             />
-            <InputComponent
-                multi
-                clearable
-                keyValue="allow_creating_sub_unit_type_ids"
-                onChange={onChange}
-                value={formState.allow_creating_sub_unit_type_ids.value}
-                errors={formState.allow_creating_sub_unit_type_ids.errors}
-                type="select"
-                options={subUnitTypes}
-                label={MESSAGES.createSubUnitTypes}
-            />
+
+            <Grid container spacing={1}>
+                <Grid item xs={11}>
+                    <InputComponent
+                        multi
+                        clearable
+                        keyValue="allow_creating_sub_unit_type_ids"
+                        onChange={onChange}
+                        loading={isFetchingAllOrgUnitTypes}
+                        value={
+                            !isFetchingAllOrgUnitTypes &&
+                            formState.allow_creating_sub_unit_type_ids.value
+                        }
+                        errors={
+                            formState.allow_creating_sub_unit_type_ids.errors
+                        }
+                        type="select"
+                        options={subUnitTypes}
+                        label={MESSAGES.createSubUnitTypes}
+                    />
+                </Grid>
+                <Grid item xs={1}>
+                    <Tooltip
+                        title={formatMessage(MESSAGES.createSubUnitTypesInfos)}
+                        arrow
+                    >
+                        <Box
+                            position="relative"
+                            top={32}
+                            display="flex"
+                            justifyContent="center"
+                        >
+                            <InfoIcon
+                                color="primary"
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </Box>
+                    </Tooltip>
+                </Grid>
+            </Grid>
             {hasPermission && (
                 <InputComponent
                     clearable

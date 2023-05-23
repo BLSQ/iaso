@@ -142,9 +142,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.assertValidAttachmentData(form_attachment_data)
         self.assertEqual("logo.png", form_attachment_data["name"])
         self.assertEqual("36e9383ddb4944fee0f791eedbab13db", form_attachment_data["md5"])
-        self.assertEqual(
-            f"http://testserver/media/form_attachments/{self.form_1.id}/logo.png", form_attachment_data["file"]
-        )
+        self.assertEqual(f"http://testserver{self.form_1.attachments.first().file.url}", form_attachment_data["file"])
         response = self.client.delete(f"{BASE_URL}{form_attachment_data['id']}/")
         self.assertJSONResponse(response, 204)
 
@@ -164,9 +162,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         form_attachment_data = response.json()
         self.assertEqual("logo.png", form_attachment_data["name"])
-        self.assertEqual(
-            f"http://testserver/media/form_attachments/{self.form_1.id}/logo.png", form_attachment_data["file"]
-        )
+        self.assertEqual(f"http://testserver{attachment.file.url}", form_attachment_data["file"])
         self.assertEqual("test1", form_attachment_data["md5"])
 
         with open("iaso/static/images/logo.png", "rb") as file:
@@ -181,9 +177,7 @@ class FormAttachmentsAPITestCase(APITestCase):
         self.assertValidAttachmentData(form_attachment_data)
         self.assertEqual("logo.png", form_attachment_data["name"])
         self.assertEqual("36e9383ddb4944fee0f791eedbab13db", form_attachment_data["md5"])
-        self.assertEqual(
-            f"http://testserver/media/form_attachments/{self.form_1.id}/logo.png", form_attachment_data["file"]
-        )
+        self.assertEqual(f"http://testserver{self.form_1.attachments.first().file.url}", form_attachment_data["file"])
         response = self.client.delete(f"{BASE_URL}{form_attachment_data['id']}/")
         self.assertJSONResponse(response, 204)
 
@@ -239,9 +233,11 @@ class FormAttachmentsAPITestCase(APITestCase):
             b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
             b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>first '
             b"attachment</filename>\n    <hash>md5:test1</hash>\n    "
-            b"<downloadUrl>/media/form_attachments/2/document1</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
+            b"<downloadUrl>"
+            + self.attachment1.file.url.encode("ascii")
+            + b"</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
             b"<filename>second attachment</filename>\n    <hash>md5:test2</hash>\n    "
-            b"<downloadUrl>/media/form_attachments/2/document2</downloadUrl>\n</mediaFile>\n</manifest>",
+            b"<downloadUrl>" + self.attachment2.file.url.encode("ascii") + b"</downloadUrl>\n</mediaFile>\n</manifest>",
             content,
         )
 

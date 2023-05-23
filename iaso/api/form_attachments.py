@@ -81,9 +81,9 @@ class FormAttachmentsViewSet(ModelViewSet):
     having the "menupermissions.iaso_forms"  permission.
 
     GET /api/formattachments/?form_id=<form_id>
-    GET /api/formattachments/<id>
+    GET /api/formattachments/<id>/
     POST /api/formattachments/
-    DELETE /api/forms/<id>/attachments?attachmentId=<attachment_id>
+    DELETE /api/formattachments/<id>/
     """
 
     permission_classes = [HasFormAttachmentPermission]
@@ -118,7 +118,7 @@ class FormAttachmentsViewSet(ModelViewSet):
             except Form.DoesNotExist:
                 raise NotFound(f"Form not found for {form_id}")
 
-        return queryset
+        return queryset.distinct()
 
     def delete(self, request, pk=None):
         attachment: FormAttachment = FormAttachment.objects.get(id=pk)

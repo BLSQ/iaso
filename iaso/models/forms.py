@@ -13,7 +13,6 @@ from .project import Project
 from .. import periods
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
-from ..storage import OverwriteStorage
 from ..utils import slugify_underscore
 from ..utils.models.soft_deletable import (
     DefaultSoftDeletableManager,
@@ -314,6 +313,9 @@ class FormAttachment(models.Model):
 
     This is the representation of those attachments within Iaso.
     """
+
+    class Meta:
+        unique_together = [["form", "name"]]
 
     def form_folder(self, filename):
         return "/".join(["form_attachments", str(self.form.id), filename])

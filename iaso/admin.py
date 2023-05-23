@@ -203,6 +203,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "last_modified_by",
                     "created_by",
                     "form_version",
+                    "planning",
                 )
             },
         ),

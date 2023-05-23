@@ -10,7 +10,6 @@ def forwards_func(apps, schema_edito):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0029_campaign_country"),
     ]

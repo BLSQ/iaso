@@ -237,7 +237,6 @@ class MonthPeriod(Period):
 
 
 class DayPeriod(Period):
-
     LOWER_BOUND = "20000101"
     HIGHER_BOUND = "20301231"
 

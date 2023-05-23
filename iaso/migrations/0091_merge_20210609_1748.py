@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0090_auto_20210604_1553"),
         ("iaso", "0089_profile_language"),

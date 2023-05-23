@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("vector_control", "0015_auto_20190104_1231")]
 
     operations = [

@@ -9,6 +9,5 @@ def put_devices_in_projects(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0023_device_projects")]
     operations = []

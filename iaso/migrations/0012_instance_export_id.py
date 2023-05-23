@@ -5,7 +5,6 @@ import iaso.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0011_orgunittype_depth")]
 
     operations = [

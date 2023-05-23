@@ -114,7 +114,6 @@ class ParsingTestCase(SimpleTestCase):
             return json.load(json_file)
 
     def test_to_questions_by_name(self):
-
         descriptor = self.fixture_json("odk_json_descriptor")
 
         questions_by_name = to_questions_by_name(descriptor)
@@ -165,7 +164,6 @@ class ParsingTestCase(SimpleTestCase):
         )
 
     def test_to_questions_by_name_with_empty_dict(self):
-
         self.assertEqual(to_questions_by_name({}), {})
 
         self.assertEqual(to_questions_by_name(None), {})

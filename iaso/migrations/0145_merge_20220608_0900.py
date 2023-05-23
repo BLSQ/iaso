@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0143_add_microplanning_feature_flag"),
         ("iaso", "0144_alter_assignment_options"),

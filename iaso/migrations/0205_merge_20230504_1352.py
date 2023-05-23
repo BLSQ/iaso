@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0198_instance_form_version"),
         ("iaso", "0204_rename_to_display_group_block_of_countries"),

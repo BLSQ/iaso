@@ -1,3 +1,4 @@
+from typing import Any
 from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
 from rest_framework import viewsets, permissions
@@ -50,7 +51,7 @@ class UserRolesViewSet(viewsets.ViewSet):
             limit = int(limit_str)
             page_offset = int(page_offset)
             paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
+            res: Any = {"count": paginator.count}
             if page_offset > paginator.num_pages:
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)

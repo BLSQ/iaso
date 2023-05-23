@@ -50,7 +50,7 @@ const RoundPopper = ({
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
     const urlParams = {
-        group: groupIds,
+        round: round.id,
         app_id: 'com.poliooutbreaks.app',
     };
     const url = getTableUrl(

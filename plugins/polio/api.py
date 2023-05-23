@@ -245,24 +245,37 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
 
     @action(methods=["GET"], detail=False, serializer_class=None)
     def csv_campaign_scopes_export(self, request, **kwargs):
-        groups = Group.objects.filter(id__in=request.GET.get("group", None).split(","))
-        org_units_list = []
-        for group in groups:
-            org_units = OrgUnit.objects.filter(groups=group.id)
-            campaign_scope = CampaignScope.objects.get(group_id=group.id)
-            campaign = campaign_scope.campaign
-            rounds = Round.objects.filter(campaign_id=campaign.id)
-            for org_unit in org_units:
-                item = {}
-                item["id"] = org_unit.id
-                item["org_unit_name"] = org_unit.name
-                item["org_unit_parent_name"] = org_unit.parent.name
-                item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
-                item["obr_name"] = campaign.obr_name
-                item["round_number"] = ", ".join(["R" + str(round.number) for round in rounds])
-                org_units_list.append(item)
+        """
+        It generates a csv export file with round's related informations
 
-        filename = "%s--%s-%s" % ("campaigns", "org_units", strftime("%Y-%m-%d-%H-%M", gmtime()))
+            parameters:
+                self: a self
+                round: an integer representing the round id
+            returns:
+                it generates a csv file export
+        """
+        round = Round.objects.get(pk=request.GET.get("round"))
+        campaign = round.campaign
+        org_units_list = []
+        org_units = campaign.get_districts_for_round(round)
+
+        for org_unit in org_units:
+            item = {}
+            item["id"] = org_unit.id
+            item["org_unit_name"] = org_unit.name
+            item["org_unit_parent_name"] = org_unit.parent.name
+            item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+            item["obr_name"] = campaign.obr_name
+            item["round_number"] = "R" + str(round.number)
+            org_units_list.append(item)
+
+        filename = "%s-%s--%s--%s-%s" % (
+            "campaign",
+            campaign.obr_name,
+            "R" + str(round.number),
+            "org_units",
+            strftime("%Y-%m-%d-%H-%M", gmtime()),
+        )
         columns = [
             {"title": "ID", "width": 10},
             {"title": "Admin 2", "width": 25},

@@ -73,14 +73,28 @@ class UserRolesViewSet(viewsets.ViewSet):
     def partial_update(self, request: Request, pk: int = None) -> Response:
         userRole = get_object_or_404(self.get_queryset(), id=pk)
         group = userRole.group
+
+        name = request.data.get("name", None)
         permissions = request.data.get("permissions", [])
-        group.permissions.clear()
-        for permission_codename in permissions:
-            permission = get_object_or_404(Permission, codename=permission_codename)
-            group.permissions.add(permission)
-        group.save()
-        userRole.save()
-        return Response(userRole.as_dict())
+        modified = False
+
+        if name:
+            group.name = name
+            modified = True
+
+        if len(permissions) > 0:
+            group.permissions.clear()
+            for permission_codename in permissions:
+                permission = get_object_or_404(Permission, codename=permission_codename)
+                group.permissions.add(permission)
+            modified = True
+
+        if modified:
+            group.save()
+            userRole.save()
+            return Response(userRole.as_dict())
+        else:
+            return Response({})
 
     def delete(self, request: Request, pk: int = None) -> Response:
         userRole = get_object_or_404(self.get_queryset(), id=pk)

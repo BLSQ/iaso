@@ -10,7 +10,6 @@ def transfer_validation_status(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0061_auto_20200811_1742")]
 
     operations = [migrations.RunPython(transfer_validation_status)]

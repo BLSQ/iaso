@@ -68,7 +68,6 @@ def dump_attributes(obj):
 
 class DataValueExporterTests(TestCase):
     def build_instance(self, form):
-
         instance = Instance()
         instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.org_unit = self.org_unit
@@ -165,7 +164,6 @@ class DataValueExporterTests(TestCase):
         self.mapping_quality = mapping_quality
 
     def test_error_handling_support_various_versions(self):
-
         ErrorTestCase = namedtuple("ErrorTestCase", "fixture expected_counts expected_messages")
         testcases = [
             ErrorTestCase(
@@ -318,7 +316,6 @@ class DataValueExporterTests(TestCase):
 
     @responses.activate
     def test_aggregate_export_works(self):
-
         mapping_version = MappingVersion(
             name="aggregate", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )

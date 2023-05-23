@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0111_merge_20221114_1423"),
         ("polio", "0112_alter_campaign_budget_current_state_key"),

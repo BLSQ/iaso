@@ -110,7 +110,6 @@ GRANT SELECT(
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("iaso", "0101_page_needs_authentication"),
         ("iaso", "0102_page_type"),

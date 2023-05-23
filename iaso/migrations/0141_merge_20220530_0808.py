@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0139_bulkcreateusercsvfile_account"),
         ("iaso", "0140_auto_20220519_1249"),

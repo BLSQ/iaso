@@ -56,7 +56,6 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
 
     aggregations = cvs_stat_mapping_version.json["aggregations"]
     for aggregation in aggregations:
-
         answer = Cast(KeyTextTransform(aggregation["questionName"], "json"), FloatField())
         # Blanks are generally there because the "calculate" in the xlsform ended up to NaN
         # because other dependencies where not 'relevant' or 'filled'
@@ -147,7 +146,6 @@ def process_page(paginator, page, project, cvs_stat_mapping_version, progress, a
 
 
 def process_instance(record, project, cvs_stat_mapping_version, progress, aggregations):
-
     instance, _created = Instance.objects.get_or_create(
         org_unit_id=record["org_unit_id"],
         period=record["period"],
@@ -197,7 +195,6 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
 
 
 def nullify_stats_without_cvs(progress, cvs_form, cvs_stat_mapping_version, period):
-
     stats_instances = cvs_stat_mapping_version.form_version.form.instances
     subquery_cvs = (
         cvs_form.instances.filter(period=period)

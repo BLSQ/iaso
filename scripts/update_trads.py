@@ -88,7 +88,7 @@ if __name__ == "__main__":
             previous_trad_for_lang.update(original)
             # somehow try to replicate VSCODE bizarre keys ordering
             sorted_dict = OrderedDict(sorted(original.items(), key=lambda x: x[0].lower().replace("_", "!")))
-            with (open(original_name, "w+", encoding="utf8")) as file_write:
+            with open(original_name, "w+", encoding="utf8") as file_write:
                 # ensure_ascii is necessary othewhise it didn't properly encode unicode, not sure why.
                 json.dump(sorted_dict, fp=file_write, indent=4, ensure_ascii=False)
     if missing_translations:

@@ -31,6 +31,7 @@ class BudgetStepQuerySet(models.QuerySet):
 # noinspection PyTypeChecker
 BudgetManager = models.Manager.from_queryset(BudgetStepQuerySet)
 
+
 # source : https://stackoverflow.com/questions/29034721/check-if-model-field-exists-in-django
 def model_field_exists(campaign, field):
     campaign_fields = dir(campaign)

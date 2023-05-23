@@ -12,7 +12,6 @@ def reverse_create_page_account_flag(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0107_auto_20211001_1845"),
     ]

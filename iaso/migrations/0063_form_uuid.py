@@ -10,7 +10,6 @@ def create_uuid(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0062_transfer_validation_status"),
     ]

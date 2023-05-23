@@ -160,7 +160,6 @@ def send_email(task=None):
     email_sent = 0
 
     for i, campaign in enumerate(campaigns):
-
         task.report_progress_and_stop_if_killed(
             progress_value=i,
             end_value=total,

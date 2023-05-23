@@ -14,6 +14,7 @@ from iaso.api.query_params import APP_ID
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
 
+
 # noinspection PyMethodMayBeStatic
 class FormVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:

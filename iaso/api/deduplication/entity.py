@@ -15,9 +15,10 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework import filters
+
 
 import iaso.models.base as base
 from iaso.api.common import HasPermission, Paginator
@@ -162,7 +163,8 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
         tree = ET.parse(att1.file)
     except Exception as e:
         print(f"Error parsing xml file {att1.file}")
-        raise e
+        print(e)
+        return None
 
     root = tree.getroot()
 
@@ -203,7 +205,13 @@ def copy_instance(inst: Instance, new_entity: Entity):
     new_uuid = uuid4()
     new_inst = deepcopy(inst)
 
-    tree = ET.parse(inst.file)
+    try:
+        tree = ET.parse(inst.file)
+    except Exception as e:
+        print(f"Error parsing xml file {inst.file}")
+        print(e)
+        return None
+
     root = tree.getroot()
 
     # ET.dump(root)
@@ -351,6 +359,74 @@ duplicate_detail_entities_param = openapi.Parameter(
 )
 
 
+class EntityIdFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        entity_id = request.GET.get("entity_id")
+
+        if entity_id:
+            queryset = queryset.filter(Q(entity1__id=entity_id) | Q(entity2__id=entity_id))
+
+        return queryset
+
+
+class EntitySearchFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get("search")
+
+        if search:
+            queryset = queryset.filter(
+                Q(entity1__name__icontains=search) | Q(entity2__name__icontains=search)
+            ).distinct()
+
+        return queryset
+
+
+class AlgorithmFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        algorithm = request.query_params.get("algorithm")
+
+        if algorithm:
+            queryset = queryset.filter(analyze__algorithm=algorithm)
+
+        return queryset
+
+
+class SubmitterFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        submitter_id = request.query_params.get("submitter")
+
+        if submitter_id:
+            queryset = queryset.filter(analyze__task__launcher__pk=submitter_id)
+
+        return queryset
+
+
+class EntityTypeFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        entity_type_id = request.query_params.get("entity_type")
+
+        if entity_type_id:
+            queryset = queryset.filter(
+                Q(entity1__entity_type__pk=entity_type_id) | Q(entity2__entity_type__pk=entity_type_id)
+            )
+
+        return queryset
+
+
+class SimilarityFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        similarity_str = request.query_params.get("similarity")
+
+        if similarity_str:
+            similarity = int(similarity_str)
+            similarity_below = similarity - 20
+            similarity_above = similarity + 20
+
+            queryset = queryset.filter(similarity_score__gte=similarity_below, similarity_score__lte=similarity_above)
+
+        return queryset
+
+
 class EntityDuplicateViewSet(viewsets.GenericViewSet):
     """Entity Duplicates API
     GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
@@ -359,7 +435,13 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
     """
 
     filter_backends = [
-        OrderingFilter,
+        SubmitterFilterBackend,
+        EntityIdFilterBackend,
+        EntitySearchFilterBackend,
+        AlgorithmFilterBackend,
+        EntityTypeFilterBackend,
+        SimilarityFilterBackend,
+        filters.OrderingFilter,
         DjangoFilterBackend,
     ]
 
@@ -376,11 +458,8 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
-        # """Override to return responses with {"result_key": data} structure"""
-        entity_id = self.request.GET.get("entity_id", None)
+
         queryset = self.filter_queryset(self.get_queryset())
-        if entity_id:
-            queryset = queryset.filter(Q(entity1__id=entity_id) | Q(entity2__id=entity_id))
 
         page = self.paginate_queryset(queryset)
         if page is not None:

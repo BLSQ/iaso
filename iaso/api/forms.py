@@ -342,6 +342,11 @@ class FormsViewSet(ModelViewSet):
 
     @action(detail=False, methods=["get"], url_path=rf"(?P<{FORM_PK}>\d+)/manifest")
     def manifest(self, *args, **kwargs):
+        """Returns a xml manifest file in the openrosa format for the Form
+
+        This is used for the mobile app and Enketo to fetch the list of file attached to the Form
+        see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
+        """
         form_pk = kwargs.get(FormsViewSet.FORM_PK, None)
         if not form_pk:
             raise ParseError(f"{FormsViewSet.FORM_PK} is required")

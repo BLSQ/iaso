@@ -1425,8 +1425,6 @@ class InstancesAPITestCase(APITestCase):
         instance_1.planning = planning_1
         instance_1.save()
 
-        print(instance_1)
-
         # it should return only instance_1
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
@@ -1434,19 +1432,20 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 1)
-        self.assertEqual(response.json()["instances"][0]["name"], instance_1.name)
-        # it should return instance_1 and instance_2
-        # self.client.force_authenticate(self.yoda)
-        # response = self.client.get("/api/instances/", headers={"Content-Type": "application/json"})
-        # self.assertJSONResponse(response, 200)
-        # self.assertValidInstanceListData(response.json(), 8)
-        # print("list", response.json()["instances"])
-        # self.assertEqual(response.json()["instances"][0]["id"], instance_1.id)
-        # self.assertEqual(response.json()["instances"][1]["id"], instance_2.id)
-        # it should return none of the forms
-        # self.client.force_authenticate(self.yoda)
-        # response = self.client.get(
-        #     "/api/instances/", {"planning_id": planning_2.id}, headers={"Content-Type": "application/json"}
-        # )
-        # self.assertJSONResponse(response, 200)
-        # self.assertValidInstanceListData(response.json(), 0)
+        self.assertEqual(response.json()["instances"][0]["id"], instance_1.id)
+        # it should return all of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/?order=-id", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 8)
+        print("list", response.json()["instances"])
+
+        self.assertEqual(response.json()["instances"][0]["id"], instance_2.id)
+        self.assertEqual(response.json()["instances"][1]["id"], instance_1.id)
+        # it should return none of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/", {"planning_id": planning_2.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 0)

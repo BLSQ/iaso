@@ -1,9 +1,11 @@
 import math
+import operator
 import xml.etree.ElementTree as ET
 from copy import deepcopy
+from io import BytesIO
 from typing import Dict
 from uuid import UUID, uuid4
-from io import BytesIO
+from functools import reduce
 
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
@@ -13,17 +15,15 @@ from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, serializers, status, viewsets
+from rest_framework import filters, permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework import filters
-
 
 import iaso.models.base as base
 from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
-from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Instance
+from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Instance, OrgUnit
 from iaso.models.deduplication import IGNORED, PENDING, VALIDATED
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 from iaso.tests.api.workflows.base import var_dump
@@ -417,6 +417,30 @@ class SubmitterTeamFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class FormFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        form_id = request.query_params.get("form")
+        form_fields = request.query_params.get("fields")
+
+        if form_id:
+            queryset = queryset.filter(
+                Q(entity1__attributes__form__pk=form_id) | Q(entity2__attributes__form__pk=form_id)
+            )
+
+            if form_fields:
+                form_fields = form_fields.split(",")
+                qs = []
+                for f_name in form_fields:
+                    qs.append(Q(entity1__attributes__form__possible_fields__contains=[{"name": f_name}]))
+                    qs.append(Q(entity2__attributes__form__possible_fields__contains=[{"name": f_name}]))
+
+                if qs:
+                    q = reduce(operator.or_, qs)
+                    queryset = queryset.filter(q)
+
+        return queryset
+
+
 class EntityTypeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         entity_type_id = request.query_params.get("entity_type")
@@ -443,6 +467,28 @@ class SimilarityFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
+class OrgUnitFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        org_units = request.query_params.get("org_unit")
+
+        if org_units:
+            org_units = org_units.split(",")
+            qs = []
+            for org_unit_id in org_units:
+                try:
+                    ou = OrgUnit.objects.get(pk=org_unit_id)
+                    qs.append(Q(entity1__attributes__org_unit__path__descendants=ou.path))
+                    qs.append(Q(entity2__attributes__org_unit__path__descendants=ou.path))
+                except OrgUnit.DoesNotExist:
+                    pass
+
+            if qs:
+                q = reduce(operator.or_, qs)
+                queryset = queryset.filter(q)
+
+        return queryset
+
+
 class EntityDuplicateViewSet(viewsets.GenericViewSet):
     """Entity Duplicates API
     GET /api/entityduplicates/ : Provides an API to retrieve potentially duplicated entities.
@@ -458,6 +504,8 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         AlgorithmFilterBackend,
         EntityTypeFilterBackend,
         SimilarityFilterBackend,
+        FormFilterBackend,
+        OrgUnitFilterBackend,
         filters.OrderingFilter,
         DjangoFilterBackend,
     ]

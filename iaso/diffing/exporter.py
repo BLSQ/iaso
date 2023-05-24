@@ -163,7 +163,6 @@ class Exporter:
             )
         index = 0
         for current_slice in slices:
-
             ids = list(map(lambda x: x.org_unit.source_ref, current_slice))
             filter_params = "id:in:[" + ",".join(ids) + "]"
             resp = api.get("organisationUnits?", params={"filter": filter_params, "fields": ":all"})

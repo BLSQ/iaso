@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0028_remove_campaign_budget_first_draft_submitted_at"),
         ("polio", "0027_urlcache"),

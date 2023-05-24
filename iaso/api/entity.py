@@ -11,22 +11,22 @@ from django.db.models import Max, Q, Count
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
-from rest_framework import serializers
+from rest_framework import filters, permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import (
-    TimestampField,
-    ModelViewSet,
-    DeletionFilterBackend,
-    CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
+    CONTENT_TYPE_XLSX,
     EXPORTS_DATETIME_FORMAT,
+    DeletionFilterBackend,
+    HasPermission,
+    ModelViewSet,
+    TimestampField,
 )
-from iaso.models import Entity, Instance, EntityType
+from iaso.models import Entity, EntityType, Instance
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -158,6 +158,7 @@ class EntityViewSet(ModelViewSet):
     results_key = "entities"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
 
     def get_serializer_class(self):
         return EntitySerializer

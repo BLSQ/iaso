@@ -181,6 +181,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Export id", "width": 20},
             {"title": "Latitude", "width": 40},
             {"title": "Longitude", "width": 20},
+            {"title": "Altitude", "width": 20},
+            {"title": "Précision", "width": 20},
             {"title": "Période", "width": 20},
             {"title": "Date de création", "width": 20},
             {"title": "Date de modification", "width": 20},
@@ -239,6 +241,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 idict.get("export_id"),
                 idict.get("latitude"),
                 idict.get("longitude"),
+                idict.get("altitude"),
+                idict.get("accuracy"),
                 idict.get("period"),
                 created_at,
                 updated_at,
@@ -391,7 +395,6 @@ class InstancesViewSet(viewsets.ViewSet):
     # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
     @action(detail=False, methods=["POST"])
     def unlock_lock(self, request):
-
         serializer = UnlockSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         lock = serializer.validated_data["lock"]
@@ -505,7 +508,6 @@ class InstancesViewSet(viewsets.ViewSet):
             self.check_object_permissions(request, instance)
 
         try:
-
             with transaction.atomic():
                 for instance in instances_query.iterator():
                     if is_deletion == True:

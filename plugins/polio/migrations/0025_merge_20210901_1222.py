@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0024_countryusersgroup_language"),
         ("polio", "0023_linelistimport"),

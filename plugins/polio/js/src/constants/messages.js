@@ -288,6 +288,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.outbreakdeclarationdate',
         defaultMessage: 'Outbreak declaration date',
     },
+    outbreak_declaration_date: {
+        id: 'iaso.polio.form.label.outbreakdeclarationdate',
+        defaultMessage: 'Outbreak declaration date',
+    },
     baseInfoFormTitle: {
         id: 'iaso.polio.form.title.baseInfoFormTitle',
         defaultMessage: 'Enter information about the new outbreak response',
@@ -649,23 +653,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshedAt',
         defaultMessage: 'Refreshed at',
     },
-    recruitmentSurgeUrl: {
-        id: 'iaso.polio.label.recruitmentSurgeUrl',
-        defaultMessage: 'Recruitment Surge Google Sheet URL',
-    },
-    surge_spreadsheet_url: {
-        id: 'iaso.polio.label.recruitmentSurgeUrl',
-        defaultMessage: 'Recruitment Surge Google Sheet URL',
-    },
-
-    countryNameInSheet: {
-        id: 'iaso.polio.label.countryNameInSheet',
-        defaultMessage: 'Country Name in sheet',
-    },
-    country_name_in_surge_spreadsheet: {
-        id: 'iaso.polio.label.countryNameInSheet',
-        defaultMessage: 'Country Name in sheet',
-    },
     whoToRecruit: {
         id: 'iaso.polio.label.whoToRecruit',
         defaultMessage: 'WHO To Recruit',
@@ -681,10 +668,6 @@ const MESSAGES = defineMessages({
     unicefCompletedRecruitement: {
         id: 'iaso.polio.label.unicefCompletedRecruitement',
         defaultMessage: 'UNICEF Completed Recruitment',
-    },
-    refreshRecruitmentData: {
-        id: 'iaso.polio.label.refreshRecruitmentData',
-        defaultMessage: 'Refresh Recruitment Data',
     },
     paymentMode: {
         id: 'iaso.polio.label.paymentMode',
@@ -1873,6 +1856,14 @@ const MESSAGES = defineMessages({
     cvdpv_notified_at: {
         id: 'iaso.polio.label.cvdpv_notified_at',
         defaultMessage: 'CVDPV Notification date',
+    },
+    pv_notified_at: {
+        id: 'iaso.polio.label.pv_notified_at',
+        defaultMessage: 'PV Notification',
+    },
+    three_level_call_at: {
+        id: 'iaso.polio.form.label.threelevelCall"',
+        defaultMessage: '3 level call',
     },
     detection_status: {
         id: 'iaso.polio.label.detection_status',

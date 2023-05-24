@@ -2,7 +2,8 @@ import React, { FunctionComponent } from 'react';
 import { Field } from 'formik';
 import { ScopeSearch } from '../Scopes/ScopeSearch';
 import { ScopeInput } from './ScopeInput';
-import { FilteredDistricts, Shape } from '../Scopes/types';
+import { FilteredDistricts } from '../Scopes/types';
+import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 type Props = {
     name: string;
@@ -13,8 +14,8 @@ type Props = {
     setSearchScope: (newSearchScope: boolean) => void;
     isFetchingDistricts: boolean;
     isFetchingRegions: boolean;
-    regionShapes?: Shape[];
-    districtShapes?: FilteredDistricts[];
+    regionShapes?: OrgUnit[];
+    districtShapes?: OrgUnit[];
     // eslint-disable-next-line no-unused-vars
     setSearch: (newSearch: string) => void;
     page: number;

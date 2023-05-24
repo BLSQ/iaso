@@ -7,7 +7,6 @@ from iaso.test import APITestCase
 class DevicesAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-
         wha = m.Account.objects.create(name="Worldwide Health Aid")
         cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_forms"])
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=wha)

@@ -22,10 +22,9 @@ export const useGetOrgUnitTypes = (): UseQueryResult<
             if (!data) return [];
             return data.orgUnitTypes
                 .sort((orgunitType1, orgunitType2) => {
-                    if (orgunitType1.depth && orgunitType2.depth) {
-                        return orgunitType1.depth < orgunitType2.depth ? -1 : 1;
-                    }
-                    return 1;
+                    const depth1 = orgunitType1.depth ?? 0;
+                    const depth2 = orgunitType2.depth ?? 0;
+                    return depth1 < depth2 ? -1 : 1;
                 })
                 .map(orgunitType => {
                     return {

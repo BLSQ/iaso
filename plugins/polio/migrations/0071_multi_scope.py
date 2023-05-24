@@ -12,7 +12,6 @@ def move_campaign_to_scope(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0070_merge_20220729_0849"),
     ]

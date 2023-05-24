@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0133_merge_20220413_1156"),
         ("iaso", "0133_add_dhis2_ling_feature_flag"),

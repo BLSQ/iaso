@@ -21,6 +21,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
+    BackdropClickModal,
 } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -31,10 +32,7 @@ import {
 } from '../forms/RiskAssessmentForm';
 import { ScopeForm, scopeFormFields } from '../forms/ScopeForm.tsx';
 import { BudgetForm, budgetFormFields } from '../forms/BudgetForm.tsx';
-import {
-    PreparednessForm,
-    preparednessFormFields,
-} from '../forms/PreparednessForm';
+import { PreparednessForm } from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
 import { RoundsForm, roundFormFields } from '../forms/RoundsForm';
 import {
@@ -52,7 +50,6 @@ import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
 import { compareArraysValues } from '../utils/compareArraysValues.ts';
 import { PolioDialogTabs } from './MainDialog/PolioDialogTabs.tsx';
-import { BackdropClickModal } from '../../../../../hat/assets/js/apps/Iaso/components/dialogs/BackdropClickModal/BackdropClickModal.tsx';
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
@@ -171,10 +168,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             {
                 title: formatMessage(MESSAGES.preparedness),
                 form: PreparednessForm,
-                hasTabError: compareArraysValues(
-                    preparednessFormFields,
-                    formik.errors,
-                ),
                 key: 'preparedness',
             },
             {

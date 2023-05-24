@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0148_alter_team_path"),
         ("iaso", "0144_add_show_link_instance_reference"),

@@ -3,6 +3,7 @@ import React from 'react';
 import { expect } from 'chai';
 import FormFormComponent from './FormFormComponent';
 import { renderWithStore } from '../../../../../test/utils/redux';
+import { withQueryClientProvider } from '../../../../../test/utils';
 
 let connectedWrapper;
 
@@ -92,31 +93,15 @@ describe('FormFormComponent connected component', () => {
     describe('with a full form', () => {
         before(() => {
             connectedWrapper = mount(
-                renderWithStore(
-                    <FormFormComponent
-                        currentForm={currentForm}
-                        setFieldValue={() => {
-                            setFieldValueSpy();
-                        }}
-                    />,
-                    {
-                        projects: {
-                            allProjects: [
-                                {
-                                    name: "Majora's mask",
-                                    id: 0,
-                                },
-                            ],
-                        },
-                        orgUnitsTypes: {
-                            allTypes: [
-                                {
-                                    name: 'GAME',
-                                    id: 0,
-                                },
-                            ],
-                        },
-                    },
+                withQueryClientProvider(
+                    renderWithStore(
+                        <FormFormComponent
+                            currentForm={currentForm}
+                            setFieldValue={() => {
+                                setFieldValueSpy();
+                            }}
+                        />,
+                    ),
                 ),
             );
         });
@@ -155,50 +140,38 @@ describe('FormFormComponent connected component', () => {
         });
         it('mount properly without org_unit_type_ids and project_ids', () => {
             connectedWrapper = mount(
-                renderWithStore(
-                    <FormFormComponent
-                        currentForm={{
-                            ...currentForm,
-                            org_unit_type_ids: { value: [] },
-                            project_ids: { value: [] },
-                        }}
-                        setFieldValue={() => {
-                            setFieldValueSpy();
-                        }}
-                    />,
-                    {
-                        projects: {
-                            allProjects: [],
-                        },
-                        orgUnitsTypes: {
-                            allTypes: [],
-                        },
-                    },
+                withQueryClientProvider(
+                    renderWithStore(
+                        <FormFormComponent
+                            currentForm={{
+                                ...currentForm,
+                                org_unit_type_ids: { value: [] },
+                                project_ids: { value: [] },
+                            }}
+                            setFieldValue={() => {
+                                setFieldValueSpy();
+                            }}
+                        />,
+                    ),
                 ),
             );
             expect(connectedWrapper.exists()).to.equal(true);
         });
         it('mount properly without projects and orgUnitsTypes', () => {
             connectedWrapper = mount(
-                renderWithStore(
-                    <FormFormComponent
-                        currentForm={{
-                            ...currentForm,
-                            org_unit_type_ids: { value: [] },
-                            project_ids: { value: [] },
-                        }}
-                        setFieldValue={() => {
-                            setFieldValueSpy();
-                        }}
-                    />,
-                    {
-                        projects: {
-                            allProjects: null,
-                        },
-                        orgUnitsTypes: {
-                            allTypes: null,
-                        },
-                    },
+                withQueryClientProvider(
+                    renderWithStore(
+                        <FormFormComponent
+                            currentForm={{
+                                ...currentForm,
+                                org_unit_type_ids: { value: [] },
+                                project_ids: { value: [] },
+                            }}
+                            setFieldValue={() => {
+                                setFieldValueSpy();
+                            }}
+                        />,
+                    ),
                 ),
             );
             expect(connectedWrapper.exists()).to.equal(true);

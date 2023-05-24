@@ -14,7 +14,6 @@ def buid_de(value_type, option_set=None):
 
 class ValueFormatterTests(TestCase):
     def test_formats_basic_types(self):
-
         testcases = (
             ("INTEGER", "", None),
             ("INTEGER", "25", 25),
@@ -98,7 +97,6 @@ class ValueFormatterTests(TestCase):
         )
 
     def test_fail_fast_on_bad_string_value(self):
-
         testcases = (
             ("INTEGER", "(\"Bad value for int 'a bad string'\", {'id': 'dataElementId', 'valueType': 'INTEGER'})"),
             ("NUMBER", "(\"Bad value for float 'a bad string'\", {'id': 'dataElementId', 'valueType': 'NUMBER'})"),
@@ -115,7 +113,6 @@ class ValueFormatterTests(TestCase):
             self.assertTrue(str(context.exception).startswith(testcase[1]))
 
     def test_dont_fail_fast_on_int_or_float(self):
-
         testcases = (
             ("INTEGER", 0),
             ("NUMBER", 0.0),

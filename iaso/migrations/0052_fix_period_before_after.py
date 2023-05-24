@@ -14,7 +14,6 @@ def fix_period_before_after(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0051_device_position")]
 
     operations = [

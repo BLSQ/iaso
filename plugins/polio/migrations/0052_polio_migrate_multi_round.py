@@ -17,7 +17,6 @@ def migrate_round(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0051_auto_20220415_1302"),
     ]

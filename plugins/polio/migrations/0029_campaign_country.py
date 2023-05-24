@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0107_auto_20211001_1845"),
         ("polio", "0028_remove_campaign_budget_first_draft_submitted_at"),

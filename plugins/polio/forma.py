@@ -233,7 +233,6 @@ def get_content_for_config(config, prefer_cache):
 
 
 def fetch_and_match_forma_data(country_id=None):
-
     conf = Config.objects.get(slug="forma")
     campaign_qs = Campaign.objects.filter(deleted_at=None).all().prefetch_related("rounds").prefetch_related("country")
 

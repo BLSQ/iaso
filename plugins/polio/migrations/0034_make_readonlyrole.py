@@ -30,7 +30,6 @@ TO "readonlyrole";
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0033_merge_20211028_1257"),
     ]

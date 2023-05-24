@@ -10,7 +10,7 @@ from iaso.api.mobile.entity import (
     filter_for_mobile_entity,
     get_queryset_for_user_and_app_id,
 )
-from iaso.models import Entity, EntityType, Project
+from iaso.models import Entity, EntityType, Project, FormVersion
 
 
 class MobileEntityTypeSerializer(serializers.ModelSerializer):
@@ -76,6 +76,18 @@ class MobileEntityTypesViewSet(ModelViewSet):
     def get_serializer_class(self):
         return MobileEntityTypeSerializer
 
+    def get_possible_form_versions_dict(self):
+        user = self.request.user
+        possible_form_versions = FormVersion.objects.filter(
+            form__projects__account=user.iaso_profile.account
+        ).distinct()
+        possible_form_versions_dict = {}
+        for version in possible_form_versions:
+            key = "%s|%s" % (version.version_id, str(version.form_id))
+            possible_form_versions_dict[key] = version.id
+
+        return possible_form_versions_dict
+
     def get_queryset(self):
         app_id = self.request.query_params.get("app_id")
         user = self.request.user
@@ -121,5 +133,7 @@ class MobileEntityTypesViewSet(ModelViewSet):
         queryset = filter_for_mobile_entity(queryset, self.request)
 
         page = self.paginate_queryset(queryset)
-        serializer = MobileEntitySerializer(page, many=True)
+        serializer = MobileEntitySerializer(
+            page, many=True, context={"possible_form_versions": self.get_possible_form_versions_dict()}
+        )
         return self.get_paginated_response(serializer.data)

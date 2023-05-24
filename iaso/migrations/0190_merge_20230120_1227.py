@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0187_remove_workflowversion_reference_form"),
         ("iaso", "0189_merge_20230109_1747"),

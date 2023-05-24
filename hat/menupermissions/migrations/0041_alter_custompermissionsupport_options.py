@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("menupermissions", "0040_delete_perm_beneficiary"),
     ]

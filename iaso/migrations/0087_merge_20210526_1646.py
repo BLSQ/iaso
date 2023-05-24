@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0086_delete_bulkoperation"),
         ("iaso", "0086_add_version_constraints"),

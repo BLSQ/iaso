@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0096_alter_budgetstep_options"),
         ("polio", "0100_alter_mailtemplate_subject_template"),

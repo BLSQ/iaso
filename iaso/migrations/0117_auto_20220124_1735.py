@@ -6,7 +6,6 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0116_auto_20220124_1342"),
     ]

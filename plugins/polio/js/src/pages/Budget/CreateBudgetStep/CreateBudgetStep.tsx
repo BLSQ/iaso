@@ -187,7 +187,7 @@ const CreateBudgetStep: FunctionComponent<Props> = ({
         const formHasBeenTouched = touched.links || touched.amount;
         if (quickTransition && !formHasBeenTouched) {
             const { links, amount } = values;
-            if ((links?.length ?? []) > 0) {
+            if ((links ?? []).length > 0) {
                 setFieldTouched('links', true);
             }
             if (amount) {

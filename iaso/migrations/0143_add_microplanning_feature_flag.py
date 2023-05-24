@@ -16,7 +16,6 @@ def destroy_feature_flags(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0142_merge_20220530_0856"),
     ]

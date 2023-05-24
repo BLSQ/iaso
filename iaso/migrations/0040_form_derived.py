@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0039_formversion_form_descriptor")]
 
     operations = [migrations.AddField(model_name="form", name="derived", field=models.BooleanField(default=False))]

@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0199_data_migration_form_version_possible_fields"),
     ]

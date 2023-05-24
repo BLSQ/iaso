@@ -9,7 +9,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("vector_control", "0001_initial"),
         ("vector_control", "0002_auto_20181207_1112"),

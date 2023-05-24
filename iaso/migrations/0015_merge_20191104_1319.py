@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0014_orgunit_catchment"), ("iaso", "0014_record_recordtype")]
 
     operations = []

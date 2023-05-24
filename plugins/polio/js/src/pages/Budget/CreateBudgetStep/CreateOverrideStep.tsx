@@ -157,7 +157,7 @@ const CreateOverrideStep: FunctionComponent<Props> = ({
         const formHasBeenTouched = touched.links || touched.amount;
         if (!formHasBeenTouched) {
             const { links, amount } = values;
-            if ((links?.length ?? []) > 0) {
+            if ((links ?? []).length > 0) {
                 setFieldTouched('links', true);
             }
             if (amount) {

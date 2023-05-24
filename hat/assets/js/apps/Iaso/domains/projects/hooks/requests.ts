@@ -3,8 +3,35 @@ import { getRequest, postRequest, putRequest } from '../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../libs/apiHooks';
 
 import { PaginatedProjects } from '../types/paginatedProjects';
+import { Project } from '../types/project';
 import { FeatureFlag } from '../types/featureFlag';
+import { DropdownOptions } from '../../../types/utils';
 import { UrlParams, ApiParams } from '../../../types/table';
+
+type ProjectApi = {
+    projects: Array<Project>;
+};
+const getProjects = (): Promise<ProjectApi> => {
+    return getRequest('/api/projects/');
+};
+
+export const useGetProjectsDropdownOptions = (): UseQueryResult<
+    DropdownOptions<string>[],
+    Error
+> => {
+    const queryKey: any[] = ['projects-dropdown'];
+    return useSnackQuery(queryKey, () => getProjects(), undefined, {
+        select: data => {
+            if (!data) return [];
+            return data.projects.map(project => {
+                return {
+                    value: project.id.toString(),
+                    label: project.name,
+                };
+            });
+        },
+    });
+};
 
 export const useGetProjectsPaginated = (
     params: UrlParams,

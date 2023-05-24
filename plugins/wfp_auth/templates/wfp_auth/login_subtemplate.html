@@ -1,0 +1,5 @@
+<form method="post" action="{% url 'wfp_login' %}" type="submit"  class="auth__form">
+  {% csrf_token %}
+  <button type="submit" class="button">Login via WFP CIAM</button>
+</form>
+

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
@@ -13,6 +14,7 @@ import InstanceDetail from '../domains/instances/details.tsx';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
+import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
@@ -684,6 +686,18 @@ export const usersPath = {
     ],
 };
 
+export const userRolesPath = {
+    baseUrl: baseUrls.userRoles,
+    permissions: ['iaso_user_roles'],
+    component: props => <UserRoles {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
+};
+
 export const projectsPath = {
     baseUrl: baseUrls.projects,
     permissions: ['iaso_projects'],
@@ -1208,6 +1222,7 @@ export const routeConfigs = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    userRolesPath,
     projectsPath,
     dataSourcesPath,
     tasksPath,

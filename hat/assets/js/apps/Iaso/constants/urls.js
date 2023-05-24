@@ -19,6 +19,7 @@ export const baseUrls = {
     completeness: 'forms/completeness',
     completenessStats: 'forms/completenessStats',
     users: 'settings/users',
+    userRoles: 'settings/userRoles',
     projects: 'settings/projects',
     sources: 'orgunits/sources/list',
     tasks: 'settings/tasks',

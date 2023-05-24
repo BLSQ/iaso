@@ -1,6 +1,7 @@
 import typing
 from copy import copy
 from datetime import timedelta
+from xml.sax.saxutils import escape
 
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
@@ -353,9 +354,9 @@ class FormsViewSet(ModelViewSet):
         for attachment in attachments:
             media_files.append(
                 f"""<mediaFile>
-    <filename>{attachment.name}</filename>
+    <filename>{escape(attachment.name)}</filename>
     <hash>md5:{attachment.md5}</hash>
-    <downloadUrl>{attachment.file.url}</downloadUrl>
+    <downloadUrl>{escape(attachment.file.url)}</downloadUrl>
 </mediaFile>"""
             )
 

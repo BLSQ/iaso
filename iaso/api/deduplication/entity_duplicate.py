@@ -165,9 +165,12 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
 
     for field_name, e_id in merge_def.items():
         the_val = lookup[e_id].json[field_name]
-        # FIXME: error prone if in prod
-        the_field = root.find(".//" + field_name)
-        the_field.text = the_val
+        try:
+            the_field = root.find(".//" + field_name)
+            the_field.text = the_val
+        except Exception as e:
+            print(f"Error updating xml field {field_name}")
+            print(e)
 
     entity_uuid = root.find("entityUuid")
     if entity_uuid is not None:

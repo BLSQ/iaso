@@ -35,6 +35,10 @@ import { FormAttachments } from './components/FormAttachments.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    tabs: {
+        ...commonStyles(theme).tabs,
+        padding: 0,
+    },
 }));
 
 const defaultForm = {

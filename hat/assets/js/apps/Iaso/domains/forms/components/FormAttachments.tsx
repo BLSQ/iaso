@@ -15,6 +15,8 @@ import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { useDeleteAttachment } from '../hooks/useDeleteAttachment';
+import { useUploadAttachment } from '../hooks/useUploadAttachment';
+import { AttachmentModal } from './AttachmentModal';
 
 export const defaultSorted = [{ id: 'updated_at', desc: false }];
 
@@ -89,10 +91,25 @@ export const FormAttachments: FunctionComponent<Props> = ({
 }) => {
     const { data: attachments, isFetching: isFetchingAttachments } =
         useGetAttachments(formId, params);
+
+    const { mutateAsync: upload, isLoading: isUploading } =
+        useUploadAttachment(formId);
     const dispatch = useDispatch();
     const columns = useGetColumns();
     return (
         <Box>
+            <Box
+                mb={2}
+                justifyContent="flex-end"
+                alignItems="center"
+                display="flex"
+            >
+                <AttachmentModal
+                    iconProps={{}}
+                    upload={upload}
+                    isUploading={isUploading}
+                />
+            </Box>
             <TableWithDeepLink
                 marginTop={false}
                 data={attachments?.results ?? []}
@@ -103,7 +120,7 @@ export const FormAttachments: FunctionComponent<Props> = ({
                 baseUrl={baseUrls.formDetail}
                 params={params}
                 paramsPrefix="attachments"
-                extraProps={{ loading: isFetchingAttachments }}
+                extraProps={{ loading: isFetchingAttachments || isUploading }}
                 onTableParamsChange={p =>
                     dispatch(redirectToReplace(baseUrls.formDetail, p))
                 }

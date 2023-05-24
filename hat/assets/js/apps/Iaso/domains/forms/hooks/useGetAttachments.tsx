@@ -39,6 +39,7 @@ export const useGetAttachments = (
         options: {
             retry: false,
             enabled: Boolean(formId),
+            keepPreviousData: true,
         },
     });
 };

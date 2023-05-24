@@ -1,39 +1,19 @@
-import React, { useState } from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent } from 'react';
 import { Box } from '@material-ui/core';
-import {
-    useSafeIntl,
-    AddButton as AddButtonComponent,
-    selectionInitialState,
-    setTableSelection,
-} from 'bluesquare-components';
-import { fetchList } from '../../../utils/requests';
+import { useGetAttachments } from '../hooks/useGetAttachments';
 
-import SingleTable from '../../../components/tables/SingleTable';
-import FormVersionsDialog from './FormVersionsDialogComponent';
+type Props = {
+    formId: string;
+};
 
-import { baseUrls } from '../../../constants/urls';
+export const FormAttachments: FunctionComponent<Props> = ({ formId }) => {
+    const { data: attachments, isFetching: isFetchingAttachments } =
+        useGetAttachments(formId);
 
-import { formVersionsTableColumns } from '../config';
-import MESSAGES from '../messages';
-import { PERIOD_TYPE_DAY } from '../../periods/constants';
-
-const baseUrl = baseUrls.formDetail;
-const defaultOrder = 'version_id';
-const FormVersionsComponent = ({
-    forceRefresh,
-    setForceRefresh,
-    periodType,
-    formId,
-}) => {
-    const intl = useSafeIntl();
-    const [selection, setSelection] = useState(selectionInitialState);
-
-    if (!formId) return null;
-
+    console.log('attachments', attachments);
     return (
-        <Box>
-            <Box
+        <Box mt={4}>
+            {/* <Box
                 mb={2}
                 justifyContent="flex-end"
                 alignItems="center"
@@ -51,8 +31,8 @@ const FormVersionsComponent = ({
                     )}
                     onConfirmed={() => setForceRefresh(true)}
                 />
-            </Box>
-            <SingleTable
+            </Box> */}
+            {/* <SingleTable
                 isFullHeight={false}
                 baseUrl={baseUrl}
                 endPointPath="formversions"
@@ -89,23 +69,7 @@ const FormVersionsComponent = ({
                 }}
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
-            />
+            /> */}
         </Box>
     );
 };
-
-FormVersionsComponent.defaultProps = {
-    periodType: PERIOD_TYPE_DAY,
-    setForceRefresh: () => null,
-    forceRefresh: false,
-    formId: null,
-};
-
-FormVersionsComponent.propTypes = {
-    periodType: PropTypes.string,
-    forceRefresh: PropTypes.bool,
-    setForceRefresh: PropTypes.func,
-    formId: PropTypes.number,
-};
-
-export default FormVersionsComponent;

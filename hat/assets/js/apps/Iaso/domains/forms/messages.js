@@ -529,6 +529,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.formChangeLog',
         defaultMessage: 'Link to changes log',
     },
+    attachments: {
+        id: 'iaso.form.attachments',
+        defaultMessage: 'Attachments',
+    },
 });
 
 export default MESSAGES;

@@ -127,6 +127,10 @@ export const formDetailPath = {
             isRequired: true,
             key: 'formId',
         },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
         ...paginationPathParams,
     ],
 };

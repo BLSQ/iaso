@@ -1,5 +1,6 @@
 import typing
 from unittest import mock
+from xml.sax.saxutils import escape
 
 from django.core.files import File
 from django.http import HttpResponse
@@ -238,6 +239,30 @@ class FormAttachmentsAPITestCase(APITestCase):
             + b"</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
             b"<filename>second attachment</filename>\n    <hash>md5:test2</hash>\n    "
             b"<downloadUrl>" + self.attachment2.file.url.encode("ascii") + b"</downloadUrl>\n</mediaFile>\n</manifest>",
+            content,
+        )
+
+    def test_form_attachments_with_invalid_character(self):
+        f"""POST {BASE_URL}: allowed to update"""
+
+        file = mock.MagicMock(spec=File)
+        file.name = "<&>.png"
+        attachment = self.form_1.attachments.create(
+            name="<&>.png",
+            file=file,
+            md5="test1",
+        )
+        self.form_1.save()
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(MANIFEST_URL.format(form_id=self.form_1.id))
+        content = self.assertXMLResponse(response, 200)
+        self.assertEqual(
+            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
+            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>&lt;&amp;&gt;.png'
+            b"</filename>\n    <hash>md5:test1</hash>\n    "
+            b"<downloadUrl>"
+            + escape(attachment.file.url).encode("ascii")
+            + b"</downloadUrl>\n</mediaFile>\n</manifest>",
             content,
         )
 

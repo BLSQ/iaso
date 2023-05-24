@@ -387,7 +387,6 @@ class InstancesViewSet(viewsets.ViewSet):
     # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
     @action(detail=False, methods=["POST"])
     def unlock_lock(self, request):
-
         serializer = UnlockSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         lock = serializer.validated_data["lock"]
@@ -501,7 +500,6 @@ class InstancesViewSet(viewsets.ViewSet):
             self.check_object_permissions(request, instance)
 
         try:
-
             with transaction.atomic():
                 for instance in instances_query.iterator():
                     if is_deletion == True:

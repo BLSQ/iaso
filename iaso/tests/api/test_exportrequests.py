@@ -49,7 +49,6 @@ class ExportRequestsAPITestCase(APITestCase):
         m.MappingVersion.objects.create(name="aggregate", form_version=form_version, mapping=mapping, json={})
 
     def build_instance(self, org_unit, instance_uuid, period):
-
         instance = m.Instance()
         instance.uuid = instance_uuid
         instance.export_id = "EVENT_DHIS2_UID"

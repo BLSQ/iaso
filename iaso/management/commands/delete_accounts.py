@@ -88,13 +88,11 @@ class Command(BaseCommand):
         parser.add_argument("--account-to-keep", type=int)
 
     def delete_account(self, account):
-
         print("************ deleting data related to ", account.id, account.name)
 
         forms = Form.objects_include_deleted.filter(projects__account=account)
 
         for form in forms:
-
             print(
                 "InstanceFile without project",
                 InstanceFile.objects.filter(instance__form=form, instance__project=None).delete(),

@@ -9,7 +9,6 @@ def set_all_writeable(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0064_instance_deleted")]
 
     operations = [

@@ -533,6 +533,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.attachments',
         defaultMessage: 'Attachments',
     },
+    file: {
+        id: 'iaso.instance.file',
+        defaultMessage: 'File',
+    },
+    deleteAttachment: {
+        id: 'iaso.label.deleteAttachment',
+        defaultMessage: 'Delete attachment : {attachmentName}',
+    },
+    deleteWarning: {
+        id: 'iaso.label.deleteWarning',
+        defaultMessage: 'Are you sure you want to delete {attachmentName}?',
+    },
+    download: {
+        id: 'iaso.label.download',
+        defaultMessage: 'Download',
+    },
 });
 
 export default MESSAGES;

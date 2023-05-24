@@ -132,6 +132,7 @@ export const formDetailPath = {
             key: 'tab',
         },
         ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('attachments'),
     ],
 };
 

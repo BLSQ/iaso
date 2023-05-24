@@ -31,7 +31,7 @@ import { useGetForm } from './requests';
 import { requiredFields } from './config';
 
 import { isFieldValid, isFormValid } from '../../utils/forms';
-import { FormAttachments } from './components/FormAttachments';
+import { FormAttachments } from './components/FormAttachments.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -253,7 +253,7 @@ const FormDetail = ({ router, params }) => {
                     />
                 )}
                 {tab === 'attachments' && (
-                    <FormAttachments formId={params.formId} />
+                    <FormAttachments formId={params.formId} params={params} />
                 )}
             </Box>
         </>

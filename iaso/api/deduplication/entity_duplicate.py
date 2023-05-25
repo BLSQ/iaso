@@ -145,7 +145,6 @@ class EntityDuplicatePostAnswerSerializer(serializers.Serializer):
 
 
 def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: Dict):
-
     new_uuid = uuid4()
     att1 = e1.attributes
     att2 = e2.attributes
@@ -234,7 +233,6 @@ def copy_instance(inst: Instance, new_entity: Entity):
 
 
 def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
-
     new_entity_uuid = uuid4()
     new_attributes = merge_attributes(e1, e2, new_entity_uuid, merge_def)
 
@@ -363,6 +361,8 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
     """
 
     filter_backends = [
+        dedup_filters.EntitiesFilterBackend,
+        dedup_filters.IgnoredMergedFilterBackend,
         dedup_filters.SubmitterFilterBackend,
         dedup_filters.SubmitterTeamFilterBackend,
         dedup_filters.EntityIdFilterBackend,
@@ -390,7 +390,6 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
-
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
@@ -405,27 +404,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
             return Response(data=serializer.data, content_type="application/json")
 
     def get_queryset(self):
-        entities = self.request.query_params.get("entities", None)
-        ignored = self.request.query_params.get("ignored", "false")
-
         initial_queryset = EntityDuplicate.objects.all()
-
-        if entities is not None:
-            entities_arr = entities.split(",")
-
-            if len(entities_arr) != 2:
-                raise serializers.ValidationError("You must provide two entities to compare")
-
-            initial_queryset = initial_queryset.filter(
-                Q(entity1=entities_arr[0], entity2=entities_arr[1])
-                | Q(entity2=entities_arr[0], entity1=entities_arr[1])
-            )
-        else:
-            if ignored == "true":
-                initial_queryset = initial_queryset.filter(Q(validation_status=IGNORED) | Q(validation_status=PENDING))
-            else:
-                initial_queryset = initial_queryset.filter(validation_status=PENDING)
-
         return initial_queryset
 
     @swagger_auto_schema(manual_parameters=[duplicate_detail_entities_param])
@@ -479,7 +458,6 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         e2_json = duplicate.entity2.attributes.json
 
         for the_q in possible_fields:
-
             try:
                 e1_val = e1_json[the_q["name"]]
                 # FIXME: find a better way to exclude the instance id

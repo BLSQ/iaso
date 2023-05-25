@@ -530,6 +530,7 @@
     "iaso.label.sentEmailInvitationWhenAdresseExist": "Saisissez l'adresse e-mail avant d'envoyer un e-mail d'invitation",
     "iaso.label.settings": "Paramètres",
     "iaso.label.showIgnored": "Montrer les doublons ignorés",
+    "iaso.label.showMerged": "Montrer les doublons fusionnés",
     "iaso.label.showUnmatchedOnly": "Montrer uniquement les champs non-résolus",
     "iaso.label.similarity_score": "Score de similarité",
     "iaso.label.singlePerPeriod": "Une seule réponse par période",

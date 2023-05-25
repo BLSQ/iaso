@@ -1,5 +1,6 @@
 import operator
 from functools import reduce
+from itertools import combinations
 
 from django.db.models import Q
 from rest_framework import filters
@@ -7,6 +8,7 @@ from rest_framework import filters
 from iaso.models import OrgUnit
 from datetime import datetime
 from django.utils import timezone
+from iaso.models.deduplication import IGNORED, PENDING, VALIDATED
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):
@@ -163,5 +165,46 @@ class StartEndDateFilterBackend(filters.BaseFilterBackend):
                 queryset = queryset.filter(analyze__created_at__lte=end_date_dt)
             except ValueError:
                 pass
+
+        return queryset
+
+
+class EntitiesFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        entities = request.query_params.get("entities")
+
+        if entities:
+            entities = entities.split(",")
+            qs = []
+            pairs = list(combinations(entities, 2))
+
+            for p in pairs:
+                qs.append(Q(entity1__id=p[0], entity2__id=p[1]))
+                qs.append(Q(entity1__id=p[1], entity2__id=p[0]))
+
+            if qs:
+                q = reduce(operator.or_, qs)
+                queryset = queryset.filter(q)
+
+        return queryset
+
+
+class IgnoredMergedFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        ignored = request.query_params.get("ignored")
+        merged = request.query_params.get("merged")
+
+        qs = [Q(validation_status=PENDING)]
+
+        if ignored == "true":
+            qs.append(Q(validation_status=IGNORED))
+        if merged == "true":
+            qs.append(Q(validation_status=VALIDATED))
+
+        if len(qs) > 1:
+            q = reduce(operator.or_, qs)
+            queryset = queryset.filter(q)
+        else:
+            queryset = queryset.filter(qs[0])
 
         return queryset

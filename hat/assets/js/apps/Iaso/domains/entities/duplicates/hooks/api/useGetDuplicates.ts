@@ -48,6 +48,7 @@ export type DuplicatesGETParams = {
         form?: any;
         fields?: any;
         ignored?: boolean;
+        merged?: boolean;
         entity?: string;
     };
 };

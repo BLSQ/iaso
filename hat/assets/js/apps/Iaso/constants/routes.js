@@ -931,6 +931,10 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'ignored',
         },
+        {
+            isRequired: false,
+            key: 'merged',
+        },
 
         {
             isRequired: false,

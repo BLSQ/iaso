@@ -73,6 +73,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.showIgnored',
         defaultMessage: 'Show ignored',
     },
+    showMerged: {
+        id: 'iaso.label.showMerged',
+        defaultMessage: 'Show merged',
+    },
     algorithm: {
         id: 'iaso.label.algorithm',
         defaultMessage: 'Algorithm',

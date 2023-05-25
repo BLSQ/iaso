@@ -534,6 +534,7 @@
     "iaso.label.sentEmailInvitationWhenAdresseExist": "Enter email address before sending an invitation email",
     "iaso.label.settings": "Settings",
     "iaso.label.showIgnored": "Show ignored",
+    "iaso.label.showMerged": "Show merged",
     "iaso.label.showUnmatchedOnly": "Show unmatched fields only",
     "iaso.label.similarity_score": "Similarity score",
     "iaso.label.singlePerPeriod": "Single per period",

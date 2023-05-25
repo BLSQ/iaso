@@ -59,11 +59,18 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             handleChange,
         });
 
-    const { checkBoxValue: showIgnored, handleCheckboxChange } =
+    const { checkBoxValue: showIgnored, handleCheckboxChange: handleIgnoredCheckboxChange } =
         useCheckBoxFilter({
             initialValue: filters.ignored === 'true',
             handleChange,
             keyValue: 'ignored',
+        });
+
+    const { checkBoxValue: showMerged, handleCheckboxChange: handleMergedCheckboxChange } =
+        useCheckBoxFilter({
+            initialValue: filters.merged === 'true',
+            handleChange,
+            keyValue: 'merged',
         });
 
     const { data: submitterTeamsDropdown, isFetching: isFetchingTeams } =
@@ -227,14 +234,28 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
 
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="checkbox"
-                        value={showIgnored}
-                        keyValue="ignored"
-                        // TODO put in callback
-                        onChange={handleCheckboxChange}
-                        label={MESSAGES.showIgnored}
-                    />
+                    <Grid container item spacing={2}>
+                        <Grid item xs={4} md={6}>
+                            <InputComponent
+                                type="checkbox"
+                                value={showIgnored}
+                                keyValue="ignored"
+                                // TODO put in callback
+                                onChange={handleIgnoredCheckboxChange}
+                                label={MESSAGES.showIgnored}
+                            />
+                        </Grid>
+                        <Grid item xs={4} md={6}>
+                            <InputComponent
+                                type="checkbox"
+                                value={showMerged}
+                                keyValue="merged"
+                                // TODO put in callback
+                                onChange={handleMergedCheckboxChange}
+                                label={MESSAGES.showMerged}
+                            />
+                        </Grid>
+                    </Grid>
                 </Grid>
             </Grid>
             {/* line 4 */}

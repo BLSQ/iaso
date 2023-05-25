@@ -34,7 +34,7 @@ describe('Instance details', () => {
         it('Displays TopBar with title and menu', () => {
             cy.visit(baseUrl);
             cy.wait('@getSubmission');
-            cy.get('#top-bar-back-button').should('exist');
+            cy.get('#top-bar-back-button').should('not.exist');
             cy.get('#top-bar-title', { timeout: 1000 }).should(
                 'contain',
                 topBarTitle,

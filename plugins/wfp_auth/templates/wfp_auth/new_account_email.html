@@ -1,0 +1,18 @@
+{% load i18n %}{% url 'reset_password_confirmation' uidb64=uid token=token  as reset_url %}
+{% autoescape off %}{% blocktrans with  username=user.get_username  first_name=user.first_name last_name=user.last_name %}
+Hello,
+
+A new user {{ first_name}} {{ last_name }} `{{ username }}`, has connected to {{  site_name }} via CIAM and the corresponding account has been created in our system, no permissions has been granted,
+please attribute some by following this link:
+
+{{ profile_url }}
+
+Action required:
+ * granting of permissions for {{ username}}
+
+If clicking the link above doesn't work, please copy and paste the URL in a new browser
+window instead.
+
+Sincerely,
+The {{ site_name }} Team.
+{% endblocktrans %}{% endautoescape %}

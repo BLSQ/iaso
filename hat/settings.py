@@ -506,7 +506,6 @@ CODE_CHALLENGE = generate_pkce()
 
 SOCIALACCOUNT_PROVIDERS = {}
 if os.environ.get("WFP_AUTH_CLIENT_ID"):
-
     # Activate WFP login
     SOCIALACCOUNT_PROVIDERS["wfp"] = {
         "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
@@ -517,6 +516,7 @@ if os.environ.get("WFP_AUTH_CLIENT_ID"):
         "OAUTH_PKCE_ENABLED": True,
         # To which tenant this is linked
         "IASO_ACCOUNT_NAME": os.environ.get("WFP_AUTH_ACCOUNT", "polio"),
+        "EMAIL_RECIPIENTS_NEW_ACCOUNT": os.environ.get("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
 
 

@@ -1,4 +1,5 @@
 import typing
+from logging import getLogger
 
 import requests
 from allauth.account.utils import perform_login
@@ -12,12 +13,18 @@ from allauth.socialaccount.providers.oauth2.views import (
     OAuth2View,
 )
 from django.contrib.auth.models import User
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
+from django.core.mail import EmailMultiAlternatives
+from django.http import HttpRequest
+from django.template import loader
 from oauthlib.oauth2 import OAuth2Error
 from requests import RequestException
 
 from iaso.models import Account, Profile
 from .provider import WFPProvider
+
+logger = getLogger(__name__)
 
 
 class ExtraData(typing.TypedDict):
@@ -25,6 +32,24 @@ class ExtraData(typing.TypedDict):
     sub: str  # same as email
     given_name: typing.Optional[str]
     family_name: typing.Optional[str]
+
+
+def send_mail(subject_template_name, email_template_name, context, from_email, to_email, html_email_template_name=None):
+    """
+    Send a django.core.mail.EmailMultiAlternatives to `to_email`.
+    taken from django.contrib.auth.forms.PasswordResetForm
+    """
+    subject = loader.render_to_string(subject_template_name, context)
+    # Email subject *must not* contain newlines
+    subject = "".join(subject.splitlines())
+    body = loader.render_to_string(email_template_name, context)
+
+    email_message = EmailMultiAlternatives(subject, body, from_email, [to_email])
+    if html_email_template_name is not None:
+        html_email = loader.render_to_string(html_email_template_name, context)
+        email_message.attach_alternative(html_email, "text/html")
+
+    email_message.send()
 
 
 class WFP2Adapter(Auth0OAuth2Adapter):
@@ -37,6 +62,36 @@ class WFP2Adapter(Auth0OAuth2Adapter):
     access_token_url = "{0}/token".format(provider_base_url)
     authorize_url = "{0}/authorize".format(provider_base_url)
     profile_url = "{0}/userinfo".format(provider_base_url)
+
+    def send_new_account_email(self, request: HttpRequest, user):
+        to_email = self.settings.get("EMAIL_RECIPIENTS_NEW_ACCOUNT")
+        if not to_email:
+            logger.warning("no 'EMAIL_RECIPIENTS_NEW_ACCOUNT' configured not sending mail to warn of new account")
+            return
+
+        current_site = get_current_site(request=request)
+        site_name = current_site.name
+        domain = current_site.domain
+        profile_url = request.build_absolute_uri(
+            f"/dashboard/settings/users/accountId/1/search/{user.username}/order/user__username/pageSize/20/page/1"
+        )
+        context = {
+            "new_user": user,
+            "profile_url": profile_url,
+            "domain": domain,
+            "site_name": site_name,
+            "user": user,
+            # "protocol": "https" if use_https else "http",
+        }
+        for email in to_email:
+            email = email.strip()
+            send_mail(
+                subject_template_name="wfp_auth/new_account_subject.txt",
+                email_template_name="wfp_auth/new_account_email.html",
+                from_email=None,
+                to_email=email,
+                context=context,
+            )
 
     def complete_login(self, request, app, token, response):
         # simplify the logic from django-allauth a lot so the flow is less flexible but more followable
@@ -74,6 +129,7 @@ class WFP2Adapter(Auth0OAuth2Adapter):
                 )
                 user.iaso_profile = iaso_profile
                 user.save()
+                self.send_new_account_email(request, user)
 
             socialaccount = SocialAccount(uid=uid, provider=self.provider_id, extra_data=extra_data, user=user)
 

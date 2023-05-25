@@ -10,6 +10,7 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { useGetOrgUnitParentLocations } from '../hooks/requests/useGetOrgUnitParentLocations';
 import { useGetOrgUnitParentIds } from '../hooks/useGetOrgUnitParentIds';
+import { ParentOrgUnit } from '../types/orgUnit';
 
 type Props = {
     allAssignments: AssignmentsApi;
@@ -19,7 +20,7 @@ type Props = {
     profiles: Profile[];
     params: AssignmentParams;
     // eslint-disable-next-line no-unused-vars
-    setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
+    setParentSelected: (orgUnit: ParentOrgUnit | undefined) => void;
     locations: Locations | undefined;
     isFetchingLocations: boolean;
     isLoadingAssignments: boolean;

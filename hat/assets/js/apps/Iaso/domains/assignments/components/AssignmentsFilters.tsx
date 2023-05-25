@@ -34,7 +34,12 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, withPagination: false });
+        useFilterState({
+            baseUrl,
+            params,
+            withPagination: false,
+            saveSearchInHistory: false,
+        });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
         <Grid container spacing={2}>

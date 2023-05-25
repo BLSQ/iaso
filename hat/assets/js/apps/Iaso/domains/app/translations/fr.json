@@ -325,6 +325,8 @@
     "iaso.label.algorithmsRuns": "Exécution d'algorithmes",
     "iaso.label.algorithmsUsed": "Algorithmes utilisés",
     "iaso.label.all": "Tous",
+    "iaso.label.alreadyIgnored": "Déjà ignoré",
+    "iaso.label.alreadyMerged": "Déjà mergé",
     "iaso.label.altitude": "Altitude",
     "iaso.label.anyGeography": "Avec point ou territoire",
     "iaso.label.apply": "Appliquer",

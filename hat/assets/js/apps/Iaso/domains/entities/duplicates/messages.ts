@@ -17,6 +17,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',
     },
+    alreadyMerged: {
+        id: 'iaso.label.alreadyMerged',
+        defaultMessage: 'Already merged',
+    },
+    alreadyIgnored: {
+        id: 'iaso.label.alreadyIgnored',
+        defaultMessage: 'Already ignored',
+    },
     seeDetails: {
         id: 'iaso.label.seeDetails',
         defaultMessage: 'See details',

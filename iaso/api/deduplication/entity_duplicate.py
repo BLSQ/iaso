@@ -87,12 +87,16 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
     similarity_star = serializers.SerializerMethodField()
     ignored = serializers.SerializerMethodField()
     ignored_reason = serializers.SerializerMethodField()
+    merged = serializers.SerializerMethodField()
 
     def get_analyzis(self, obj):
         return [EntityDuplicateNestedAnalyzisSerializer(obj.analyze).data]
 
     def get_ignored(self, obj):
         return obj.validation_status == IGNORED
+
+    def get_merged(self, obj):
+        return obj.validation_status == VALIDATED
 
     def get_ignored_reason(self, obj):
         if "ignored_reason" in obj.metadata:
@@ -134,6 +138,7 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
             "similarity_star",
             "ignored",
             "ignored_reason",
+            "merged",
         ]
 
 

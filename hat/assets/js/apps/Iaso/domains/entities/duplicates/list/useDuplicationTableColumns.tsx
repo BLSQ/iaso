@@ -2,6 +2,8 @@
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, IconButton } from 'bluesquare-components';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
+import MergeIcon from '@mui/icons-material/Merge';
+import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline';
 import { Box } from '@material-ui/core';
 import { Column } from '../../../../types/table';
 import { StarsComponent } from '../../../../components/stars/StarsComponent';
@@ -83,15 +85,43 @@ export const useDuplicationTableColumns = (): Column[] => {
                 accessor: 'actions',
                 resizable: false,
                 sortable: false,
-                Cell: (settings): ReactElement => (
-                    <>
-                        <IconButton
-                            url={`/${baseUrls.entityDuplicateDetails}/entities/${settings.row.original.entity1.id},${settings.row.original.entity2.id}`}
-                            overrideIcon={CompareArrowsIcon}
-                            tooltipMessage={MESSAGES.seeDetails}
-                        />
-                    </>
-                ),
+                Cell: (settings): ReactElement => {
+                    const { entity1, entity2, ignored, merged } =
+                        settings.row.original;
+                    let retVal = (
+                        <>
+                            <IconButton
+                                url={`/${baseUrls.entityDuplicateDetails}/entities/${entity1.id},${entity2.id}`}
+                                overrideIcon={CompareArrowsIcon}
+                                tooltipMessage={MESSAGES.seeDetails}
+                            />
+                        </>
+                    );
+
+                    if (ignored) {
+                        retVal = (
+                            <>
+                                <IconButton
+                                    color="disabled"
+                                    overrideIcon={RemoveCircleOutlineIcon}
+                                    tooltipMessage={MESSAGES.alreadyIgnored}
+                                />
+                            </>
+                        );
+                    } else if (merged) {
+                        retVal = (
+                            <>
+                                <IconButton
+                                    color="disabled"
+                                    overrideIcon={MergeIcon}
+                                    tooltipMessage={MESSAGES.alreadyMerged}
+                                />
+                            </>
+                        );
+                    }
+
+                    return retVal;
+                },
             },
         ];
         return columns;

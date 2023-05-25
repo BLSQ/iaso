@@ -32,6 +32,7 @@ export type DuplicateData = {
     analyzis: DuplicationAlgorithm[];
     ignored: boolean;
     ignored_reason?: string;
+    merged: boolean;
     similarity: number;
     similarity_star: number;
 };

@@ -328,6 +328,8 @@
     "iaso.label.algorithmsRuns": "Algorithm runs",
     "iaso.label.algorithmsUsed": "Algorithms used",
     "iaso.label.all": "All",
+    "iaso.label.alreadyIgnored": "Already ignored",
+    "iaso.label.alreadyMerged": "Already merged",
     "iaso.label.altitude": "Altitude",
     "iaso.label.anyGeography": "With point or territory",
     "iaso.label.apply": "Apply",

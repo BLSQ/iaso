@@ -28,6 +28,7 @@ describe('Instance details', () => {
             submissionLogs,
         ).as('getLogs');
     });
+    console.log(baseUrl);
     testPermission(baseUrl);
     describe.skip('Top Bar', () => {
         it('Displays TopBar with title and menu', () => {

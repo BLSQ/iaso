@@ -346,7 +346,7 @@ const MESSAGES = defineMessages({
     },
     percentage_covered_target_population: {
         id: 'iaso.polio.form.label.percentageCoveredTargetPopulationRound',
-        defaultMessage: 'Percentage covered target population Round',
+        defaultMessage: 'Percentage covered target population',
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',

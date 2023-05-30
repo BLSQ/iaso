@@ -17,13 +17,13 @@ import {
     Column,
     Setting,
     RenderCell,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
 import MESSAGES from '../messages';
 import { VisibleColumn } from '../types/visibleColumns';
 import { Instance } from '../types/instance';
-import { IntlFormatMessage } from '../../../types/intl';
 
 import {
     apiDateTimeFormat,

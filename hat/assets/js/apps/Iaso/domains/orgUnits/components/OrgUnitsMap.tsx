@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, {
     FunctionComponent,
     useRef,
@@ -18,10 +19,9 @@ import {
 } from 'react-leaflet';
 import { Grid, Divider, makeStyles } from '@material-ui/core';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 
 // COMPONENTS
@@ -47,7 +47,6 @@ import {
 // UTILS
 
 // TYPES
-import { IntlFormatMessage } from '../../../types/intl';
 import { OrgUnit } from '../types/orgUnit';
 import { DropdownOptions } from '../../../types/utils';
 // TYPES
@@ -57,9 +56,13 @@ import { useGetOrgUnitDetail } from '../hooks/requests/useGetOrgUnitDetail';
 // HOOKS
 import MESSAGES from '../messages';
 
+type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
+    search_index: number;
+};
+
 export type Locations = {
-    locations: Array<OrgUnit[]>;
-    shapes: OrgUnit[];
+    locations: Array<OrgUnitWithSearchIndex[]>;
+    shapes: OrgUnitWithSearchIndex[];
 };
 type Props = {
     // eslint-disable-next-line no-unused-vars

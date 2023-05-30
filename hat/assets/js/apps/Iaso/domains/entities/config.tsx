@@ -5,6 +5,7 @@ import {
     IconButton as IconButtonComponent,
     useSafeIntl,
     Column,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 
 import moment from 'moment';
@@ -16,7 +17,6 @@ import {
     DateTimeCellRfc,
 } from '../../components/Cells/DateTimeCell';
 
-import { IntlFormatMessage } from '../../types/intl';
 import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';

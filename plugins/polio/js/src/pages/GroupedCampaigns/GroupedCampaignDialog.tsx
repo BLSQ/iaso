@@ -4,6 +4,7 @@ import React, {
     useCallback,
     useState,
     useMemo,
+    ReactNode,
 } from 'react';
 import { Box, Divider, Grid } from '@material-ui/core';
 // @ts-ignore
@@ -27,7 +28,7 @@ type Props = {
     type: 'create' | 'edit';
     id?: string;
     // eslint-disable-next-line no-unused-vars
-    renderTrigger: (openDialog: { openDialog: () => void }) => Element;
+    renderTrigger: (openDialog: { openDialog: () => void }) => ReactNode;
 };
 
 const GROUPED_CAMPAIGN_NAME = 'groupedCampaignName';

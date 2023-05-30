@@ -1,9 +1,6 @@
 import React, { FunctionComponent } from 'react';
 
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
 import { OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
@@ -11,7 +8,6 @@ import { getDisplayName } from '../../../utils/usersUtils';
 import { getParentTeam } from '../utils';
 
 import { DropdownTeamsOptions } from '../types/team';
-import { IntlFormatMessage } from '../../../types/intl';
 
 import MESSAGES from '../messages';
 

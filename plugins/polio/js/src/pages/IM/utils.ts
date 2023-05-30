@@ -1,9 +1,9 @@
+import { IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import {
     BarChartData,
     ConvertedLqasImData,
     FormatForNFMArgs,
-    IntlFormatMessage,
     LqasImCampaign,
     LqasImDistrictData,
 } from '../../constants/types';

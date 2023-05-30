@@ -1,5 +1,4 @@
-import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
-import { Pagination } from '../../../../../hat/assets/js/apps/Iaso/types/table';
+import { Pagination, IntlFormatMessage } from 'bluesquare-components';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 
@@ -53,9 +52,6 @@ export type LqasImDistrictDataWithNameAndRegion = LqasImDistrictData & {
 export type ConvertedLqasImData = {
     rounds: { number: number; data: LqasImDistrictDataWithNameAndRegion[] }[];
 };
-
-// eslint-disable-next-line no-unused-vars
-export type IntlFormatMessage = (message: IntlMessage) => string;
 
 export type LqasIMtype = 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
 

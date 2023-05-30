@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react';
 
-import { useSafeIntl, Column } from 'bluesquare-components';
+import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 
-import { IntlFormatMessage } from '../../../types/intl';
 import { SubTeam, User } from '../types/team';
 
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';

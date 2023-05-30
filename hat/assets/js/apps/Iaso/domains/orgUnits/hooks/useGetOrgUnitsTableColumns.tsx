@@ -1,13 +1,17 @@
 import React, { useMemo } from 'react';
 import { makeStyles } from '@material-ui/core';
 import Color from 'color';
-import { commonStyles, useSafeIntl, Column } from 'bluesquare-components';
+import {
+    commonStyles,
+    useSafeIntl,
+    Column,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 import OrgUnitTooltip from '../components/OrgUnitTooltip';
 import MESSAGES from '../messages';
 import { getStatusMessage, getOrgUnitGroups } from '../utils';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { Search } from '../types/search';
-import { IntlFormatMessage } from '../../../types/intl';
 import { ActionCell } from '../components/ActionCell';
 
 const useStyles = makeStyles(theme => ({

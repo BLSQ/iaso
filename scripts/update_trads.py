@@ -1,19 +1,20 @@
 #!python3
-"""Update the translation json files
+"""Update the translation json files for React
 
-Run the npm formats command to extract the translation from the code
-Add them to the traduction file if not present.
-Add a CHECKME on the new added traduction so they can be found easily
-Count the number of CHECKME and missing trad so we can check the translation is complete.
+What it does:
+    Run the npm formats command to extract the translations from the code
+    Add them to the traduction file if not present.
+    Add a CHECKME on the newly added traduction so they can be found easily
+    Count the number of CHECKME and missing trad so we can check the translation is complete.
 
-To use:
+How to use it:
  - run it
- - search for CHECKME in your editor. Check these string, remove the CHECKME
+ - search for CHECKME in your editor. Check these string, translate them, remove the CHECKME
  - re run it. If it's say it's ok that's good.
  - commit
  - success
 
-This does not handle the django translation
+This does not handle the django translations. see instructions in main README
 
 TODO: Remove old trad?
 """

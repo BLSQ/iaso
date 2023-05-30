@@ -4,13 +4,13 @@ import { Link } from 'react-router';
 
 import { IconButton as IconButtonComponent } from 'bluesquare-components';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
-import FormVersionsDialog from './components/FormVersionsDialogComponent';
-import { baseUrls } from '../../constants/urls';
-import { userHasPermission } from '../users/utils';
-import MESSAGES from './messages';
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import { DateTimeCell } from '../../components/Cells/DateTimeCell';
-import { YesNoCell } from '../../components/Cells/YesNoCell';
+import FormVersionsDialog from '../components/FormVersionsDialogComponent';
+import { baseUrls } from '../../../constants/urls';
+import { userHasPermission } from '../../users/utils';
+import MESSAGES from '../messages';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
+import { YesNoCell } from '../../../components/Cells/YesNoCell';
 
 export const baseUrl = baseUrls.forms;
 

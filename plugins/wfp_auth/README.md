@@ -18,6 +18,19 @@ Reconciliation with existing user is done via their email address (not yet imple
    2. If the user doesn't exist, create it with no group or permissions. These will be added later per an admin (add a message to tell the user that he needs an admin to give the permissions). An email will be sent to EMAIL_RECIPIENTS_NEW_ACCOUNT to tell them to add permissions.
 5. Authenticate the user in the platform
 
+
+Information taken from CIAM:
+* Email (used for reconciliation and default username)
+* First Name
+* Last Name
+
+The email is validated in CIAM but not the first and last name so special care
+should be done around identity thief.
+
+Once a user has made an account via CIAM they can also reset their password,
+allowing them to look via regular login password even if their CIAM account get blocked.
+
+
 ## Settings
 The following environment variables are used for configuration (see corporate password vault for dev access):
 * `WFP_AUTH_CLIENT_ID`

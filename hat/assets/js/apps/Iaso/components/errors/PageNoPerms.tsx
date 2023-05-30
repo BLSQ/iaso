@@ -15,11 +15,9 @@ import TopBar from '../nav/TopBarComponent';
 import MESSAGES from './messages';
 
 // @ts-ignore
-const useStyles = makeStyles(theme => ({
+const useStyles = makeStyles(() => ({
     icon: {
-        // @ts-ignore
-        color: theme.palette.ligthGray.border,
-        fontWeight: 'light',
+        fontWeight: 'lighter',
         fontSize: 150,
     },
 }));

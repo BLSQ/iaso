@@ -2,12 +2,12 @@
 /* eslint-disable react/require-default-props */
 import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 import React, { FunctionComponent, useState } from 'react';
+import { UrlParams } from 'bluesquare-components';
 import { FilterButton } from '../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import MESSAGES from '../../constants/messages';
 import { BUDGET } from '../../constants/routes';
-import { UrlParams } from '../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetGroupDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';

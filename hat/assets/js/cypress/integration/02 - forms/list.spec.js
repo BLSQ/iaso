@@ -59,7 +59,7 @@ describe('Forms', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', 'Awaiting Access Permissions');
         });
 
         it('click on create button should redirect to form creation url', () => {

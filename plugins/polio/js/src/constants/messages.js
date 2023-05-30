@@ -1862,7 +1862,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'PV Notification',
     },
     three_level_call_at: {
-        id: 'iaso.polio.form.label.threelevelCall"',
+        id: 'iaso.polio.form.label.threelevelCall',
         defaultMessage: '3 level call',
     },
     detection_status: {

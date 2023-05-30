@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0127_delete_orgunitaslocationcache"),
         ("iaso", "0129_merge_20220328_0559"),

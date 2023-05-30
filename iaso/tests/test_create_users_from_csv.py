@@ -13,7 +13,6 @@ BASE_URL = "/api/bulkcreateuser/"
 class BulkCreateCsvTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-
         star_wars = m.Account.objects.create(name="Star Wars")
 
         cls.project = m.Project.objects.create(
@@ -64,6 +63,14 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(users), 6)
         self.assertEqual(len(profiles), 6)
+        new_user_1 = users.get(username="broly")
+        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
+        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_1.first_name, "broly")
+        self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_1.iaso_profile.language, "fr")
+        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(org_unit_ids, [9999])
 
     def test_upload_valid_csv_with_perms(self):
         self.client.force_authenticate(self.yoda)
@@ -120,7 +127,6 @@ class BulkCreateCsvTestCase(APITestCase):
         )
 
     def test_upload_user_already_exists(self):
-
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
 
@@ -157,7 +163,6 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(profiles), 3)
 
     def test_user_cant_access_without_permission(self):
-
         self.client.force_authenticate(self.obi)
         self.sw_source.projects.set([self.project])
 

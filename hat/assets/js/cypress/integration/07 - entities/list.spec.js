@@ -88,7 +88,7 @@ describe('Entities', () => {
 
         cy.intercept(
             'GET',
-            '/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
             {
                 fixture: 'orgunits/list.json',
             },
@@ -157,9 +157,17 @@ describe('Entities', () => {
         });
         it('click on a row button should open entity detail page', () => {
             mockPage();
+
+            cy.intercept(
+                'GET',
+                '/api/entities/?limit=20&order_columns=last_saved_instance&page=1',
+                {
+                    fixture: 'entities/list.json',
+                },
+            ).as('getEntitiesTwice');
             cy.visit(baseUrl);
 
-            cy.wait('@getEntities').then(() => {
+            cy.wait('@getEntitiesTwice').then(() => {
                 cy.get('table tbody tr')
                     .eq(1)
                     .find('td')
@@ -224,6 +232,13 @@ describe('Entities', () => {
     describe('Table', () => {
         beforeEach(() => {
             mockPage();
+            cy.intercept(
+                'GET',
+                '/api/entities/?limit=20&order_columns=last_saved_instance&page=1',
+                {
+                    fixture: 'entities/list.json',
+                },
+            );
             cy.intercept(
                 {
                     pathname: '/api/entities/',

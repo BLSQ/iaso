@@ -193,6 +193,7 @@ class Round(models.Model):
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
     forma_date = models.DateField(null=True, blank=True)
     forma_comment = models.TextField(blank=True, null=True)
+    percentage_covered_target_population = models.IntegerField(null=True, blank=True)
     # End of vaccine management
 
     def get_item_by_key(self, key):
@@ -285,10 +286,10 @@ class Campaign(SoftDeletableModel):
         blank=True,
     )
 
-    three_level_call_at = models.DateField(
+    outbreak_declaration_date = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("3 level call"),
+        verbose_name=_("Outbreak declaration date"),
     )
 
     # Deprecated
@@ -390,6 +391,7 @@ class Campaign(SoftDeletableModel):
 
     # Budget tab
     # These fields can be either filled manually or via the budget workflow when a step is done.
+    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
     who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
     unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
     gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
@@ -682,6 +684,7 @@ class Config(models.Model):
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    users = models.ManyToManyField(User, related_name="polioconfigs", blank=True)
 
     def __str__(self):
         return self.slug
@@ -767,7 +770,6 @@ class CampaignGroup(SoftDeletableModel):
 
 # Deprecated
 class BudgetEvent(SoftDeletableModel):
-
     TYPES = (
         ("submission", "Budget Submission"),
         ("comments", "Comments"),

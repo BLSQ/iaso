@@ -21,6 +21,7 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
     """
     cached_response, created = URLCache.objects.get_or_create(url=url)
     delta = now() - cached_response.updated_at
+
     has_cache = bool(not created and cached_response.content)
     use_cache = delta < timedelta(minutes=minutes) or prefer_cache
     if not (has_cache and use_cache):

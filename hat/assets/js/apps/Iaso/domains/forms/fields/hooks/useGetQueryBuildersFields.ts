@@ -50,6 +50,7 @@ export const useGetQueryBuildersFields = (
                                 value: child.name,
                                 title: formatLabel(child),
                             })) || [];
+                        // @ts-ignore
                         fields[field.fieldKey].fieldSettings = {
                             listValues,
                         };

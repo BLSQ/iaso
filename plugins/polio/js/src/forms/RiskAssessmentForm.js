@@ -4,23 +4,17 @@ import { Field, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import {
-    DateInput,
-    ResponsibleField,
-    TextInput,
-    NumberInput,
-} from '../components/Inputs';
+import { DateInput, TextInput, NumberInput } from '../components/Inputs';
 
 export const riskAssessmentFormFields = [
     'risk_assessment_status',
-    'risk_assessment_responsible',
     'verification_score',
     'investigation_at',
-    'three_level_call_at',
+    'outbreak_declaration_date',
     'risk_assessment_first_draft_submitted_at',
     'risk_assessment_rrt_oprtt_approval_at',
-    'ag_nopv_group_met_at',
-    'dg_authorized_at',
+    // 'ag_nopv_group_met_at',
+    // 'dg_authorized_at',
 ];
 
 export const RiskAssessmentForm = () => {
@@ -30,86 +24,103 @@ export const RiskAssessmentForm = () => {
     const { rounds = [] } = values;
     const updateFirstDraftSubmission = useCallback(
         (fieldName, date) => {
-            if (
-                date &&
-                !values.risk_assessment_rrt_oprtt_approval_at &&
-                !values.dg_authorized_at
-            ) {
+            if (date && !values.risk_assessment_rrt_oprtt_approval_at) {
                 setFieldValue('risk_assessment_status', 'SUBMITTED');
             }
-            if (
-                !date &&
-                !values.risk_assessment_rrt_oprtt_approval_at &&
-                !values.dg_authorized_at
-            ) {
+            if (!date && !values.risk_assessment_rrt_oprtt_approval_at) {
                 setFieldValue('risk_assessment_status', 'TO_SUBMIT');
             }
+            // if (
+            //     date &&
+            //     !values.risk_assessment_rrt_oprtt_approval_at &&
+            //     !values.dg_authorized_at
+            // ) {
+            //     setFieldValue('risk_assessment_status', 'SUBMITTED');
+            // }
+            // if (
+            //     !date &&
+            //     !values.risk_assessment_rrt_oprtt_approval_at &&
+            //     !values.dg_authorized_at
+            // ) {
+            //     setFieldValue('risk_assessment_status', 'TO_SUBMIT');
+            // }
         },
         [
             setFieldValue,
-            values.dg_authorized_at,
+            // values.dg_authorized_at,
             values.risk_assessment_rrt_oprtt_approval_at,
         ],
     );
     const updateRRTApproval = useCallback(
         (fieldName, date) => {
-            if (date && !values.dg_authorized_at) {
-                setFieldValue('risk_assessment_status', 'REVIEWED');
-            }
-            if (
-                !date &&
-                values.risk_assessment_first_draft_submitted_at &&
-                !values.dg_authorized_at
-            ) {
-                setFieldValue('risk_assessment_status', 'SUBMITTED');
-            }
-            if (
-                !date &&
-                !values.risk_assessment_first_draft_submitted_at &&
-                !values.dg_authorized_at
-            ) {
-                setFieldValue('risk_assessment_status', 'TO_SUBMIT');
-            }
-        },
-        [
-            setFieldValue,
-            values.dg_authorized_at,
-            values.risk_assessment_first_draft_submitted_at,
-        ],
-    );
-    const updateDGAuthorized = useCallback(
-        (fieldName, date) => {
             if (date) {
                 setFieldValue('risk_assessment_status', 'APPROVED');
             }
-            if (
-                !date &&
-                values.risk_assessment_rrt_oprtt_approval_at &&
-                !values.risk_assessment_first_draft_submitted_at
-            ) {
-                setFieldValue('risk_assessment_status', 'REVIEWED');
-            }
-            if (
-                !date &&
-                !values.risk_assessment_rrt_oprtt_approval_at &&
-                values.risk_assessment_first_draft_submitted_at
-            ) {
+
+            if (!date && values.risk_assessment_first_draft_submitted_at) {
                 setFieldValue('risk_assessment_status', 'SUBMITTED');
             }
-            if (
-                !date &&
-                !values.risk_assessment_rrt_oprtt_approval_at &&
-                !values.risk_assessment_first_draft_submitted_at
-            ) {
+
+            if (!date && !values.risk_assessment_first_draft_submitted_at) {
                 setFieldValue('risk_assessment_status', 'TO_SUBMIT');
             }
+            // if (date && !values.dg_authorized_at) {
+            //     setFieldValue('risk_assessment_status', 'REVIEWED');
+            // }
+            // if (
+            //     !date &&
+            //     values.risk_assessment_first_draft_submitted_at &&
+            //     !values.dg_authorized_at
+            // ) {
+            //     setFieldValue('risk_assessment_status', 'SUBMITTED');
+            // }
+            // if (
+            //     !date &&
+            //     !values.risk_assessment_first_draft_submitted_at &&
+            //     !values.dg_authorized_at
+            // ) {
+            //     setFieldValue('risk_assessment_status', 'TO_SUBMIT');
+            // }
         },
         [
             setFieldValue,
+            // values.dg_authorized_at,
             values.risk_assessment_first_draft_submitted_at,
-            values.risk_assessment_rrt_oprtt_approval_at,
         ],
     );
+    // const updateDGAuthorized = useCallback(
+    //     (fieldName, date) => {
+    //         if (date) {
+    //             setFieldValue('risk_assessment_status', 'APPROVED');
+    //         }
+    //         if (
+    //             !date &&
+    //             values.risk_assessment_rrt_oprtt_approval_at &&
+    //             !values.risk_assessment_first_draft_submitted_at
+    //         ) {
+    //             setFieldValue('risk_assessment_status', 'REVIEWED');
+    //         }
+    //         if (
+    //             !date &&
+    //             !values.risk_assessment_rrt_oprtt_approval_at &&
+    //             values.risk_assessment_first_draft_submitted_at
+    //         ) {
+    //             setFieldValue('risk_assessment_status', 'SUBMITTED');
+    //         }
+    //         if (
+    //             !date &&
+    //             !values.risk_assessment_rrt_oprtt_approval_at &&
+    //             !values.risk_assessment_first_draft_submitted_at
+    //         ) {
+    //             setFieldValue('risk_assessment_status', 'TO_SUBMIT');
+    //         }
+    //     },
+    //     [
+    //         setFieldValue,
+    //         values.risk_assessment_first_draft_submitted_at,
+    //         values.risk_assessment_rrt_oprtt_approval_at,
+    //     ],
+    // );
     const status = values.risk_assessment_status
         ? formatMessage(MESSAGES[values.risk_assessment_status])
         : formatMessage(MESSAGES.TO_SUBMIT);
@@ -128,22 +139,6 @@ export const RiskAssessmentForm = () => {
                             <Divider style={{ width: '50%' }} />
                         </Box>
                     </Grid>
-                    <Grid xs={12} md={6} item>
-                        <Field
-                            name="risk_assessment_responsible"
-                            component={ResponsibleField}
-                        />
-                    </Grid>
-                    <Grid xs={12} md={6} item>
-                        <Field
-                            label={formatMessage(MESSAGES.verificationScore)}
-                            name="verification_score"
-                            component={NumberInput}
-                            className={classes.input}
-                            min={0}
-                            max={20}
-                        />
-                    </Grid>
                 </Grid>
                 <Grid item md={6}>
                     <Field
@@ -153,8 +148,8 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                     />
                     <Field
-                        label={formatMessage(MESSAGES.threelevelCall)}
-                        name="three_level_call_at"
+                        label={formatMessage(MESSAGES.outbreakdeclarationdate)}
+                        name="outbreak_declaration_date"
                         component={DateInput}
                         fullWidth
                     />
@@ -174,19 +169,30 @@ export const RiskAssessmentForm = () => {
                         fullWidth
                         onChange={updateRRTApproval}
                     />
-                    <Field
+                    {/* temporary hiding those fields but should not be removed as we will need them at a later sta
+                    {/* <Field
                         label={formatMessage(MESSAGES.ag_nopv_group_met_at)}
                         name="ag_nopv_group_met_at"
                         component={DateInput}
                         fullWidth
-                    />
-                    <Field
+                    /> */}
+                    {/* <Field
                         label={formatMessage(MESSAGES.dgAuthorization)}
                         name="dg_authorized_at"
                         component={DateInput}
                         fullWidth
                         onChange={updateDGAuthorized}
-                    />
+                    /> */}
+                    <Box mt={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.verificationScore)}
+                            name="verification_score"
+                            component={NumberInput}
+                            className={classes.input}
+                            min={0}
+                            max={20}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item md={6}>
                     {rounds.map((round, i) => {
@@ -194,11 +200,9 @@ export const RiskAssessmentForm = () => {
                             <Field
                                 key={round.number}
                                 label={`${formatMessage(
-                                    MESSAGES.dosesRequested,
-                                )} ${formatMessage(MESSAGES.round)} ${
-                                    round.number
-                                }`}
-                                name={`rounds[${i}].doses_requested`}
+                                    MESSAGES.percentage_covered_target_population,
+                                )} ${round.number}`}
+                                name={`rounds[${i}].percentage_covered_target_population`}
                                 component={TextInput}
                                 className={classes.input}
                             />
@@ -212,6 +216,21 @@ export const RiskAssessmentForm = () => {
                                     MESSAGES.target_population,
                                 )} ${round.number}`}
                                 name={`rounds[${i}].target_population`}
+                                component={TextInput}
+                                className={classes.input}
+                            />
+                        );
+                    })}
+                    {rounds.map((round, i) => {
+                        return (
+                            <Field
+                                key={round.number}
+                                label={`${formatMessage(
+                                    MESSAGES.dosesRequested,
+                                )} ${formatMessage(MESSAGES.round)} ${
+                                    round.number
+                                }`}
+                                name={`rounds[${i}].doses_requested`}
                                 component={TextInput}
                                 className={classes.input}
                             />

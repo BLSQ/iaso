@@ -35,4 +35,6 @@ class OrgUnitTypeViewSet(ModelViewSet):
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
 
-        return queryset.order_by("depth").distinct().order_by("name")
+        orders = self.request.query_params.get("order", "name").split(",")
+
+        return queryset.order_by("depth").distinct().order_by(*orders)

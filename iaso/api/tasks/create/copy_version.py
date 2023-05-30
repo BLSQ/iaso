@@ -20,7 +20,6 @@ class CopyVersionSerializer(serializers.Serializer):
     force = serializers.BooleanField(required=False, default=False)
 
     def validate(self, attrs):
-
         validated_data = super().validate(attrs)
         request = self.context["request"]
         user = request.user

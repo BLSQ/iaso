@@ -25,6 +25,8 @@ def build_org_units_queryset(queryset, params, profile):
     group = params.get("group", None)
     version = params.get("version", None)
     default_version = params.get("defaultVersion", None)
+    direct_children = params.get("onlyDirectChildren", None)
+    direct_children = False if direct_children == "false" else True
 
     org_unit_parent_id = params.get("orgUnitParentId", None)
     org_unit_parent_ids = params.get("orgUnitParentIds", None)
@@ -204,6 +206,9 @@ def build_org_units_queryset(queryset, params, profile):
 
     if path_depth is not None:
         queryset = queryset.filter(path__depth=path_depth)
+
+    if not direct_children:
+        queryset = queryset.exclude(pk=org_unit_parent_id)
 
     queryset = queryset.select_related("version__data_source")
     queryset = queryset.select_related("org_unit_type")

@@ -28,6 +28,7 @@ FORMS = _("Formulaires")
 MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
+REGISTRY = _("Registre")
 LINKS = _("Correspondances sources")
 PAGES = _("Pages")
 PROJECTS = _("Projets")
@@ -51,6 +52,9 @@ WORKFLOWS = _("Workflows")
 REPORTS = _("Reports")
 ENTITY_DUPLICATES_READ = _("Read Entity duplicates")
 ENTITY_DUPLICATES_WRITE = _("Write Entity duplicates")
+DATASTORE_READ = _("Read data store")
+DATASTORE_WRITE = _("Write data store")
+ORG_UNIT_TYPES = _("Org unit types")
 
 
 class CustomPermissionSupport(models.Model):
@@ -85,6 +89,7 @@ class CustomPermissionSupport(models.Model):
             ("iaso_mappings", MAPPINGS),
             ("iaso_completeness", COMPLETENESS),
             ("iaso_org_units", ORG_UNITS),
+            ("iaso_registry", REGISTRY),
             ("iaso_links", LINKS),
             ("iaso_users", USERS),
             ("iaso_pages", PAGES),
@@ -107,4 +112,7 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio_budget_admin", POLIO_BUDGET_ADMIN),
             ("iaso_entity_duplicates_read", ENTITY_DUPLICATES_READ),
             ("iaso_entity_duplicates_write", ENTITY_DUPLICATES_WRITE),
+            ("iaso_datastore_read", DATASTORE_READ),
+            ("iaso_datastore_write", DATASTORE_WRITE),
+            ("iaso_org_unit_types", ORG_UNIT_TYPES),
         )

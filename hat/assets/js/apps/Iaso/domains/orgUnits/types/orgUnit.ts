@@ -3,6 +3,7 @@ import { UrlParams, Pagination } from '../../../types/table';
 import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
+import { OrgunitType } from './orgunitTypes';
 
 /* eslint-disable camelcase */
 export type ShortOrgUnit = {
@@ -42,7 +43,7 @@ export type OrgUnit = {
     source_ref: string;
     source_url: null;
     parent_id: number;
-    validation_status: string;
+    validation_status: 'NEW' | 'VALID' | 'REJECTED';
     parent_name: string;
     parent: OrgUnit;
     org_unit_type_id: number;
@@ -61,7 +62,7 @@ export type OrgUnit = {
     source_id: number;
     version: number;
     groups: Group[];
-    org_unit_type: string;
+    org_unit_type: OrgunitType;
     search_index?: number;
     reference_instance_id: Nullable<number>;
     reference_instance: Instance;
@@ -105,11 +106,6 @@ export type OrgUnitState = {
     source_ref: FormState<string>;
     creator: FormStateRequired<Record<string, any>>;
     reference_instance_id: FormState<number>;
-};
-
-export type OrgUnitType = {
-    id: number;
-    name: string;
 };
 
 export type Action = {

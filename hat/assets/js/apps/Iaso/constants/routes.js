@@ -36,7 +36,8 @@ import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
-
+import { Registry } from '../domains/registry/index.tsx';
+import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
 import { paginationPathParams } from '../routing/common';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
@@ -418,6 +419,68 @@ export const orgUnitsDetailsPath = {
     ],
 };
 
+export const registryPath = {
+    baseUrl: baseUrls.registry,
+    permissions: ['iaso_registry'],
+    component: props => <Registry {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
+};
+export const registryDetailPath = {
+    baseUrl: baseUrls.registryDetail,
+    permissions: ['iaso_registry'],
+    component: props => <RegistryDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'orgUnitId',
+        },
+        {
+            isRequired: false,
+            key: 'formIds',
+        },
+        {
+            isRequired: false,
+            key: 'columns',
+        },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitListTab',
+        },
+        {
+            isRequired: false,
+            key: 'submissionId',
+        },
+        {
+            isRequired: false,
+            key: 'missingSubmissionVisible',
+        },
+        {
+            isRequired: false,
+            key: 'showTooltip',
+        },
+        {
+            isRequired: false,
+            key: 'isFullScreen',
+        },
+        ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('orgUnitList'),
+        ...paginationPathParamsWithPrefix('missingSubmissions'),
+    ],
+};
+
 export const linksPath = {
     baseUrl: baseUrls.links,
     permissions: ['iaso_links'],
@@ -574,6 +637,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'groupId',
         },
+        {
+            isRequired: false,
+            key: 'orgunitValidationStatus',
+        },
     ],
 };
 
@@ -691,7 +758,7 @@ export const groupsPath = {
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
-    permissions: ['iaso_org_units'],
+    permissions: ['iaso_org_unit_types'],
     component: props => <Types {...props} />,
     params: [
         {
@@ -1163,4 +1230,6 @@ export const routeConfigs = [
     storageDetailPath,
     workflowsPath,
     workflowsDetailPath,
+    registryPath,
+    registryDetailPath,
 ];

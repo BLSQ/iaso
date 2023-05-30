@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
@@ -11,7 +12,7 @@ import {
     Box,
 } from '@material-ui/core';
 import CloseIcon from '@material-ui/icons/Close';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, getTableUrl } from 'bluesquare-components';
 
 import { useSelector } from 'react-redux';
 import MESSAGES from '../../../constants/messages';
@@ -48,7 +49,15 @@ const RoundPopper = ({
     const isLogged = useSelector(state => Boolean(state.users.current));
     const id = open ? `campaign-popover-${campaign.id}-${round.id}` : undefined;
     const groupIds = groupsForCampaignRound(campaign, round).join(',');
-    const url = `/api/orgunits/?csv=true&group=${groupIds}&app_id=com.poliooutbreaks.app`;
+    const urlParams = {
+        round: round.id,
+        app_id: 'com.poliooutbreaks.app',
+    };
+    const url = getTableUrl(
+        'polio/campaigns/csv_campaign_scopes_export',
+        urlParams,
+    );
+
     const getMessage = useCallback(
         key => (MESSAGES[key] ? formatMessage(MESSAGES[key]) : key),
         [formatMessage],

@@ -232,6 +232,13 @@ class FormVersion(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     start_period = models.TextField(blank=True, null=True)
     end_period = models.TextField(blank=True, null=True)
+    possible_fields = models.JSONField(
+        null=True,
+        blank=True,
+        help_text="Questions present in this form version, as a flat list."
+        "Update on save. See equivalent on Form for all version",
+        editable=False,
+    )
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
@@ -275,6 +282,17 @@ class FormVersion(models.Model):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
 
 
+def update_possible_fields(sender, instance, **kwargs):
+    if not instance.form_descriptor and instance.xls_file:
+        json_survey = parsing.to_json_dict(instance)
+        instance.form_descriptor = json_survey
+    questions = instance.questions_by_path()
+    instance.possible_fields = _reformat_questions(questions)
+
+
+models.signals.pre_save.connect(update_possible_fields, sender=FormVersion)
+
+
 class FormPredefinedFilter(models.Model):
     """A Predefined filter allows to add quick filters in the UI to surface some instance which needs attention.
 
@@ -286,5 +304,25 @@ class FormPredefinedFilter(models.Model):
     name = models.TextField(null=False, blank=False)
     short_name = models.CharField(null=False, blank=False, max_length=25)
     json_logic = models.JSONField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class FormAttachment(models.Model):
+    """ODK supports attaching files to form in order to display/play media or attach external data sources.
+
+    This is the representation of those attachments within Iaso.
+    """
+
+    class Meta:
+        unique_together = [["form", "name"]]
+
+    def form_folder(self, filename):
+        return "/".join(["form_attachments", str(self.form.id), filename])
+
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
+    name = models.TextField(null=False, blank=False)
+    file = models.FileField(upload_to=form_folder)
+    md5 = models.CharField(null=False, blank=False, max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

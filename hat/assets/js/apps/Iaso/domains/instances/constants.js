@@ -7,6 +7,8 @@ import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
 import { LinkToForm } from '../forms/components/LinkToForm.tsx';
+import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
+import getDisplayName from '../../utils/usersUtils.ts';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -45,6 +47,25 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
+        key: 'planning',
+        type: 'info',
+        renderValue: data => {
+            if (data.planning_id) {
+                return (
+                    <LinkToPlanning
+                        planning={{
+                            id: data.planning_id,
+                            name: data.planning_name,
+                            team: data.team_id,
+                        }}
+                    />
+                );
+            }
+            return '--';
+        },
+    },
+
+    {
         key: 'version',
         accessor: 'formVersion',
         active: false,
@@ -74,6 +95,19 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
     },
     {
+        key: 'created_by',
+        accessor: 'created_by__username',
+        active: false,
+        tableOrder: 6,
+        type: 'info',
+        Cell: settings => {
+            const data = settings.row.original;
+            return (
+                <>{data.created_by ? getDisplayName(data.created_by) : '--'}</>
+            );
+        },
+    },
+    {
         key: 'device_id',
         type: 'info',
     },
@@ -100,14 +134,6 @@ export const INSTANCE_METAS_FIELDS = [
         },
         active: true,
         tableOrder: 4,
-        type: 'location',
-    },
-    {
-        key: 'latitude',
-        type: 'location',
-    },
-    {
-        key: 'longitude',
         type: 'location',
     },
     {

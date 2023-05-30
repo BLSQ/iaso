@@ -6,38 +6,232 @@ import { Box } from '@material-ui/core';
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToForm } from '../../forms/components/LinkToForm';
+import { getLocaleDateFormat } from '../../../utils/dates';
 
 import { IntlFormatMessage } from '../../../types/intl';
 import { Column } from '../../../types/table';
 
 import { FollowUpActionCell } from '../components/followUps/ActionCell';
 import { WorkflowVersionDetail } from '../types';
-import { iasoFields, Field } from '../../forms/fields/constants';
+import { Field } from '../../forms/fields/constants';
 
 interface FollowUpsColumns extends Column {
     accessor: string;
 }
-
-export const getConfigFields = (): Field[] => {
-    const configFields = [...iasoFields];
-    if (configFields[2].queryBuilder?.operators) {
-        configFields[2].queryBuilder.operators = [
-            'equal',
-            'not_equal',
-            'greater_or_equal',
-            'less_or_equal',
-        ];
-    }
-    if (configFields[3].queryBuilder?.operators) {
-        configFields[3].queryBuilder.operators = [
-            'equal',
-            'not_equal',
-            'greater_or_equal',
-            'less_or_equal',
-        ];
-    }
-    return configFields;
-};
+export const iasoFields: Field[] = [
+    {
+        type: 'text',
+        queryBuilder: {
+            type: 'text',
+            excludeOperators: [
+                'proximity',
+                'ends_with',
+                'starts_with',
+                'like',
+                'not_like',
+                'is_empty',
+                'is_not_empty',
+            ],
+        },
+    },
+    {
+        type: 'note',
+        queryBuilder: {
+            type: 'text',
+            excludeOperators: [
+                'proximity',
+                'ends_with',
+                'starts_with',
+                'like',
+                'not_like',
+                'is_empty',
+                'is_not_empty',
+            ],
+        },
+    },
+    {
+        type: 'integer',
+        queryBuilder: {
+            type: 'number',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+            preferWidgets: ['number'],
+        },
+    },
+    {
+        type: 'decimal',
+        queryBuilder: {
+            type: 'number',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+            preferWidgets: ['number'],
+        },
+    },
+    {
+        type: 'select_one',
+        alias: 'select one',
+        useListValues: true,
+        queryBuilder: {
+            type: 'select',
+            excludeOperators: [
+                'proximity',
+                'select_any_in',
+                'select_not_any_in',
+            ],
+            valueSources: ['value'],
+        },
+    },
+    {
+        type: 'date',
+        queryBuilder: {
+            type: 'currentDate',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+        },
+    },
+    {
+        type: 'dateTime',
+        queryBuilder: {
+            type: 'currentDatetime',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+        },
+    },
+    {
+        type: 'select_multiple',
+        alias: 'select multiple',
+        disabled: true,
+        useListValues: true,
+        queryBuilder: {
+            type: 'multiselect',
+            excludeOperators: [
+                'proximity',
+                'select_any_in',
+                'select_not_any_in',
+            ],
+            valueSources: ['value'],
+        },
+    },
+    {
+        type: 'time',
+        queryBuilder: {
+            type: 'time',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+            fieldSettings: {
+                timeFormat: getLocaleDateFormat('LT'),
+            },
+        },
+    },
+    {
+        type: 'range',
+        disabled: true,
+    },
+    {
+        type: 'select_one_from_file',
+        disabled: true,
+    },
+    {
+        type: 'select_multiple_from_file',
+        disabled: true,
+    },
+    {
+        type: 'rank',
+        disabled: true,
+    },
+    {
+        type: 'rank',
+        disabled: true,
+    },
+    {
+        type: 'geopoint',
+        disabled: true,
+    },
+    {
+        type: 'geotrace',
+        disabled: true,
+    },
+    {
+        type: 'geoshape',
+        disabled: true,
+    },
+    {
+        type: 'start',
+        disabled: true,
+    },
+    {
+        type: 'end',
+        disabled: true,
+    },
+    {
+        type: 'image',
+        disabled: true,
+    },
+    {
+        type: 'audio',
+        disabled: true,
+    },
+    {
+        type: 'background-audio',
+        disabled: true,
+    },
+    {
+        type: 'video',
+        disabled: true,
+    },
+    {
+        type: 'file',
+        disabled: true,
+    },
+    {
+        type: 'barcode',
+        disabled: true,
+    },
+    {
+        type: 'calculate',
+        queryBuilder: {
+            type: 'text',
+            operators: [
+                'equal',
+                'not_equal',
+                'greater_or_equal',
+                'less_or_equal',
+            ],
+        },
+    },
+    {
+        type: 'acknowledge',
+        disabled: true,
+    },
+    {
+        type: 'hidden',
+        disabled: true,
+    },
+    {
+        type: 'xml-external',
+        disabled: true,
+    },
+];
 
 export const useGetFollowUpsColumns = (
     getHumanReadableJsonLogic: (

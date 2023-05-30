@@ -23,7 +23,6 @@ def fix_campaign_status(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0019_auto_20210715_1751"),
     ]

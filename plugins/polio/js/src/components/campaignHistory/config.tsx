@@ -120,9 +120,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'virus',
         },
         {
-            key: 'vacine',
-        },
-        {
             key: 'is_preventive',
             getLogValue: log =>
                 convertBoolean(log.is_preventive, formatMessage),
@@ -137,12 +134,15 @@ export const useGetConfig = (): Record<string, any> => {
                 convertBoolean(log.enable_send_weekly_email, formatMessage),
         },
         {
-            key: 'pv_notified_at',
+            key: 'pv_notified_at', // deprecated
             getLogValue: log => convertDate(log.pv_notified_at),
         },
         {
-            key: 'three_level_call_at',
-            getLogValue: log => convertDate(log.three_level_call_at),
+            key: 'outbreak_declaration_date',
+            getLogValue: log => convertDate(log.outbreak_declaration_date),
+        },
+        {
+            key: 'vacine', // deprecated
         },
         // Detection
         {
@@ -151,6 +151,20 @@ export const useGetConfig = (): Record<string, any> => {
         {
             key: 'detection_responsible',
         },
+        {
+            key: 'cvdpv_notified_at', // deprecated
+            getLogValue: log => convertDate(log.cvdpv_notified_at),
+        },
+        {
+            key: 'pv2_notified_at', // deprecated
+            getLogValue: log => convertDate(log.pv2_notified_at),
+        },
+        {
+            key: 'detection_rrt_oprtt_approval_at', // deprecated
+            getLogValue: log =>
+                convertDate(log.detection_rrt_oprtt_approval_at),
+        },
+
         // Risk assessment
         {
             key: 'risk_assessment_status',
@@ -168,6 +182,18 @@ export const useGetConfig = (): Record<string, any> => {
                 convertDate(log.risk_assessment_first_draft_submitted_at),
         },
         {
+            key: 'three_level_call_at', // deprecated
+            getLogValue: log => convertDate(log.three_level_call_at),
+        },
+        {
+            key: 'outbreak_declaration_date',
+            getLogValue: log => convertDate(log.outbreak_declaration_date),
+        },
+        {
+            key: 'outbreak_declaration_date',
+            getLogValue: log => convertDate(log.outbreak_declaration_date),
+        },
+        {
             key: 'risk_assessment_rrt_oprtt_approval_at',
             getLogValue: log =>
                 convertDate(log.risk_assessment_rrt_oprtt_approval_at),
@@ -183,48 +209,51 @@ export const useGetConfig = (): Record<string, any> => {
         {
             key: 'risk_assessment_responsible',
         },
+        {
+            key: 'doses_request', // deprecated
+        },
         // Budget
         {
-            key: 'budget_status',
+            key: 'budget_status_at_WFEDITABLE',
             getLogValue: log => upperCase(log.budget_status),
         },
         {
-            key: 'budget_current_state_label',
+            key: 'budget_current_state_label_at_WFEDITABLE',
         },
         // Budget request
         {
-            key: 'who_sent_budget',
+            key: 'who_sent_budget_at_WFEDITABLE',
             getLogValue: log => convertDate(log.who_sent_budget_at_WFEDITABLE),
         },
         {
-            key: 'unicef_sent_budget',
+            key: 'unicef_sent_budget_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.unicef_sent_budget_at_WFEDITABLE, 'L'),
         },
         {
-            key: 'gpei_consolidated_budgets',
+            key: 'gpei_consolidated_budgets_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.gpei_consolidated_budgets_at_WFEDITABLE, 'L'),
         },
         // RRT review
         {
-            key: 'submitted_to_rrt',
+            key: 'submitted_to_rrt_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.submitted_to_rrt_at_WFEDITABLE, 'L'),
         },
         {
-            key: 'feedback_sent_to_gpei',
+            key: 'feedback_sent_to_gpei_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.feedback_sent_to_gpei_at_WFEDITABLE, 'L'),
         },
         {
-            key: 're_submitted_to_rrt',
+            key: 're_submitted_to_rrt_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.re_submitted_to_rrt_at_WFEDITABLE, 'L'),
         },
         // ORPG review
         {
-            key: 'submitted_to_orpg_operations1',
+            key: 'submitted_to_orpg_operations1_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(
                     log.submitted_to_orpg_operations1_at_WFEDITABLE,
@@ -232,12 +261,12 @@ export const useGetConfig = (): Record<string, any> => {
                 ),
         },
         {
-            key: 'feedback_sent_to_rrt1',
+            key: 'feedback_sent_to_rrt1_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.feedback_sent_to_rrt1_at_WFEDITABLE, 'L'),
         },
         {
-            key: 're_submitted_to_orpg_operations1',
+            key: 're_submitted_to_orpg_operations1_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(
                     log.re_submitted_to_orpg_operations1_at_WFEDITABLE,
@@ -245,12 +274,12 @@ export const useGetConfig = (): Record<string, any> => {
                 ),
         },
         {
-            key: 'submitted_to_orpg_wider',
+            key: 'submitted_to_orpg_wider_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.submitted_to_orpg_wider_at_WFEDITABLE, 'L'),
         },
         {
-            key: 'submitted_to_orpg_operations2',
+            key: 'submitted_to_orpg_operations2_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(
                     log.submitted_to_orpg_operations2_at_WFEDITABLE,
@@ -258,12 +287,12 @@ export const useGetConfig = (): Record<string, any> => {
                 ),
         },
         {
-            key: 'feedback_sent_to_rrt2',
+            key: 'feedback_sent_to_rrt2_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.feedback_sent_to_rrt2_at_WFEDITABLE, 'L'),
         },
         {
-            key: 're_submitted_to_orpg_operations2',
+            key: 're_submitted_to_orpg_operations2_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(
                     log.re_submitted_to_orpg_operations2_at_WFEDITABLE,
@@ -272,12 +301,12 @@ export const useGetConfig = (): Record<string, any> => {
         },
         // APPROVAL
         {
-            key: 'submitted_for_approval',
+            key: 'submitted_for_approval_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.submitted_for_approval_at_WFEDITABLE, 'L'),
         },
         {
-            key: 'feedback_sent_to_orpg_operations_unicef',
+            key: 'feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(
                     log.feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE,
@@ -285,7 +314,7 @@ export const useGetConfig = (): Record<string, any> => {
                 ),
         },
         {
-            key: 'feedback_sent_to_orpg_operations_who',
+            key: 'feedback_sent_to_orpg_operations_who_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(
                     log.feedback_sent_to_orpg_operations_who_at_WFEDITABLE,
@@ -293,20 +322,20 @@ export const useGetConfig = (): Record<string, any> => {
                 ),
         },
         {
-            key: 'approved_by_who',
+            key: 'approved_by_who_at_WFEDITABLE',
             getLogValue: log => convertDate(log.approved_by_who_at_WFEDITABLE),
         },
         {
-            key: 'approved_by_unicef',
+            key: 'approved_by_unicef_at_WFEDITABLE',
             getLogValue: log =>
-                convertDate(log.approved_by_unicefat_WFEDITABLE),
+                convertDate(log.approved_by_unicef_at_WFEDITABLE),
         },
         {
-            key: 'approved',
+            key: 'approved_at_WFEDITABLE',
             getLogValue: log => convertDate(log.approved_at_WFEDITABLE),
         },
         {
-            key: 'approval_confirmed',
+            key: 'approval_confirmed_at_WFEDITABLE',
             getLogValue: log =>
                 convertDate(log.approval_confirmed_at_WFEDITABLE),
         },
@@ -322,6 +351,14 @@ export const useGetConfig = (): Record<string, any> => {
             getLogValue: log => convertDate(log.unicef_disbursed_to_co_at),
         },
         {
+            key: 'unicef_disbursed_to_moh_at',
+            getLogValue: log => convertDate(log.unicef_disbursed_to_moh_at),
+        },
+        {
+            key: 'who_disbursed_to_moh_at',
+            getLogValue: log => convertDate(log.who_disbursed_to_moh_at),
+        },
+        {
             key: 'district_count',
         },
         {
@@ -331,15 +368,51 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'budget_submitted_at',
             getLogValue: log => convertDate(log.budget_submitted_at),
         },
+        {
+            key: 'budget_responsible', // deprecated
+        },
+        {
+            key: 'last_budget_event', // deprecated
+        },
+        {
+            key: 'budget_requested_at_WFEDITABLE_old', // deprecated
+            getLogValue: log =>
+                convertDate(log.budget_requested_at_WFEDITABLE_old),
+        },
+        {
+            key: 'feedback_sent_to_rrt3_at_WFEDITABLE_old', // deprecated
+            getLogValue: log =>
+                convertDate(log.feedback_sent_to_rrt3_at_WFEDITABLE_old),
+        },
+        {
+            key: 're_submitted_to_orpg_at_WFEDITABLE_old', // deprecated
+            getLogValue: log =>
+                convertDate(log.re_submitted_to_orpg_at_WFEDITABLE_old),
+        },
+        {
+            key: 'budget_rrt_oprtt_approval_at', // deprecated
+            getLogValue: log => convertDate(log.budget_rrt_oprtt_approval_at),
+        },
+        {
+            key: 'eomg', // deprecated
+        },
+        {
+            key: 'budget_submitted_at', // deprecated
+            getLogValue: log => convertDate(log.budget_submitted_at),
+        },
+
         // Preparedness
         {
-            key: 'preparedness_spreadsheet_url',
+            key: 'preparedness_spreadsheet_url', // depreacted
         },
         {
-            key: 'surge_spreadsheet_url',
+            key: 'preperadness_sync_status', // deprecated
         },
         {
-            key: 'preperadness_sync_status',
+            key: 'surge_spreadsheet_url', // deprecated
+        },
+        {
+            key: 'country_name_in_surge_spreadsheet', // deprecated
         },
         // Scopes
         {

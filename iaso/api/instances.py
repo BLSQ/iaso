@@ -82,6 +82,7 @@ class HasInstancePermission(permissions.BasePermission):
         return request.user.is_authenticated and (
             request.user.has_perm("menupermissions.iaso_forms")
             or request.user.has_perm("menupermissions.iaso_submissions")
+            or request.user.has_perm("menupermissions.iaso_registry")
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -180,6 +181,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Export id", "width": 20},
             {"title": "Latitude", "width": 40},
             {"title": "Longitude", "width": 20},
+            {"title": "Altitude", "width": 20},
+            {"title": "Précision", "width": 20},
             {"title": "Période", "width": 20},
             {"title": "Date de création", "width": 20},
             {"title": "Date de modification", "width": 20},
@@ -238,6 +241,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 idict.get("export_id"),
                 idict.get("latitude"),
                 idict.get("longitude"),
+                idict.get("altitude"),
+                idict.get("accuracy"),
                 idict.get("period"),
                 created_at,
                 updated_at,
@@ -297,6 +302,7 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
+        org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -322,6 +328,9 @@ class InstancesViewSet(viewsets.ViewSet):
         #       exports, paginated or not, as small dict or not)
         #  - 2) the limit and asSmallDict parameters are independent from each other (the consumer can choose to use
         #       one, both or None and get predictable results)
+        if org_unit_status:
+            queryset = queryset.filter(org_unit__validation_status=org_unit_status)
+
         if not file_export:
             if limit:
                 limit = int(limit)
@@ -378,7 +387,6 @@ class InstancesViewSet(viewsets.ViewSet):
     # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
     @action(detail=False, methods=["POST"])
     def unlock_lock(self, request):
-
         serializer = UnlockSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         lock = serializer.validated_data["lock"]
@@ -492,7 +500,6 @@ class InstancesViewSet(viewsets.ViewSet):
             self.check_object_permissions(request, instance)
 
         try:
-
             with transaction.atomic():
                 for instance in instances_query.iterator():
                     if is_deletion == True:

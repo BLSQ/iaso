@@ -113,7 +113,6 @@ class ProfilesViewSet(viewsets.ViewSet):
                 )
 
             if parent_ou and children_ou:
-
                 if no_parent_ou:
                     queryset_parent = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
                 else:

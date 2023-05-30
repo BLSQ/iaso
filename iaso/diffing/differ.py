@@ -53,7 +53,6 @@ class Differ:
         org_unit_types_ref=None,
         field_names=None,
     ):
-
         if field_names is None:
             field_names = ["name", "geometry", "parent"]
         if not ignore_groups:

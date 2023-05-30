@@ -3,6 +3,7 @@
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
+import isNumber from 'lodash/isNumber';
 import { injectIntl } from 'bluesquare-components';
 import { defineMessages } from 'react-intl';
 import { MapControl, withLeaflet } from 'react-leaflet';
@@ -206,3 +207,90 @@ export const polygonDrawOption = (
 
 export const getleafletGeoJson = (geoJson: any): void =>
     geoJson ? L.geoJson(geoJson, shapeOptions) : null;
+
+// TODO: this should be available in the new version of leaflet
+type LatLng = {
+    lat: number;
+    lng: number;
+};
+export type Bounds = {
+    _northEast: LatLng;
+    _southWest: LatLng;
+    // eslint-disable-next-line no-unused-vars
+    extend: (bounds: Bounds) => Bounds;
+};
+type BoundsOptions = {
+    padding: number[];
+};
+type DefaultViewPort = {
+    center: number[];
+    zoom: number;
+};
+type Map = {
+    leafletElement: {
+        // eslint-disable-next-line no-unused-vars
+        fitBounds: (bounds: Bounds, boundsOptions) => void;
+    };
+};
+
+export const getOrgUnitBounds = (orgUnit: OrgUnit): Bounds | undefined => {
+    let bounds: Bounds | undefined;
+    const locations: { latitude: number; longitude: number }[] = [];
+    if (orgUnit.geo_json) {
+        bounds = L.geoJSON(orgUnit.geo_json).getBounds();
+    } else if (isNumber(orgUnit.latitude) && isNumber(orgUnit.longitude)) {
+        locations.push(L.latLng(orgUnit.latitude, orgUnit.longitude));
+        const locationsBounds: Bounds | undefined = L.latLngBounds(locations);
+        bounds = locationsBounds;
+    }
+    return bounds;
+};
+
+export const getOrgUnitsBounds = (orgUnits: OrgUnit[]): Bounds | undefined => {
+    let bounds: Bounds | undefined;
+    orgUnits.forEach((childOrgUnit: OrgUnit) => {
+        const childrenBounds: Bounds | undefined =
+            getOrgUnitBounds(childOrgUnit);
+        if (bounds) {
+            if (childrenBounds) {
+                bounds = bounds.extend(childrenBounds);
+            }
+        } else if (childrenBounds) {
+            bounds = childrenBounds;
+        }
+    });
+    return bounds;
+};
+
+export const mergeBounds = (
+    boundsA?: Bounds,
+    boundsB?: Bounds,
+): Bounds | undefined => {
+    let bounds: Bounds | undefined = boundsA;
+    if (bounds) {
+        if (boundsB) {
+            bounds = bounds.extend(boundsB);
+        }
+    } else if (boundsB) {
+        bounds = boundsB;
+    }
+    return bounds;
+};
+
+export const DEFAULT_VIEWPORT: DefaultViewPort = {
+    center: [1, 20],
+    zoom: 3.25,
+};
+export const BOUNDS_OPTIONS: BoundsOptions = {
+    padding: [50, 50],
+};
+
+export const tryFitToBounds = (bounds?: Bounds, map?: Map): void => {
+    if (bounds) {
+        try {
+            map?.leafletElement.fitBounds(bounds, BOUNDS_OPTIONS);
+        } catch (e) {
+            console.warn(e);
+        }
+    }
+};

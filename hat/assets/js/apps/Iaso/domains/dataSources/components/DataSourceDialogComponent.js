@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { merge } from 'lodash';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { FormattedMessage } from 'react-intl';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -22,7 +23,7 @@ const ProjectSelectorIds = ({
     fieldHasBeenChanged,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const projects = useSelector(state => state.projects.allProjects ?? []);
+    const {data: projects, isFetching} = useGetProjectsDropdownOptions();
     const allErrors = [...errors];
     if (value.length === 0 && fieldHasBeenChanged) {
         allErrors.unshift(formatMessage(MESSAGES.emptyProjectsError));
@@ -35,11 +36,9 @@ const ProjectSelectorIds = ({
                 onChange(key, commaSeparatedIdsToArray(newValue))
             }
             errors={allErrors}
-            options={projects.map(p => ({
-                label: p.name,
-                value: p.id,
-            }))}
+            options={projects}
             label={label}
+            loading={isFetching}
             type="select"
             multi
             required

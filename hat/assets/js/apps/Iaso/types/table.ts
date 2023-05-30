@@ -7,6 +7,7 @@ export type Column = {
     accessor?: string;
     sortable?: boolean;
     resizable?: boolean;
+    headerInfo?: string;
     width?: number;
     // eslint-disable-next-line no-unused-vars
     Cell?: (s: any) => ReactElement | string;
@@ -48,3 +49,6 @@ type Row<T> = {
 export type Setting<T> = {
     row: Row<T>;
 };
+
+// eslint-disable-next-line no-unused-vars
+export type RenderCell = (settings: Record<string, any>) => ReactElement;

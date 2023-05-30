@@ -13,7 +13,6 @@ from iaso.models import (
 from iaso.models.workflow import WorkflowVersionsStatus
 
 CALCULATE_TYPE = "calculate"
-TEXT_TYPE = "text"
 
 
 class FormNestedSerializer(serializers.ModelSerializer):
@@ -115,7 +114,6 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError(f"Mapping cannot have two identical values")
 
         for _source, _target in mapping.items():
-
             q = find_question_by_name(_source, s_questions)
             if q is None:
                 raise serializers.ValidationError(f"Question {_source} does not exist in source form")
@@ -128,13 +126,7 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
             else:
                 r_type = q["type"]
 
-            if s_type == CALCULATE_TYPE:
-                if r_type != TEXT_TYPE and r_type != CALCULATE_TYPE:
-                    raise serializers.ValidationError(
-                        f"Question {_source} is a 'calculate' question and cannot only be mapped to 'string' or "
-                        f"'calculate' type, found : {r_type}"
-                    )
-            elif s_type != r_type:
+            if s_type != r_type and s_type != CALCULATE_TYPE and r_type != CALCULATE_TYPE:
                 raise serializers.ValidationError(f"Question {_source} and {_target} do not have the same type")
 
         return mapping
@@ -269,8 +261,12 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
     version_id = serializers.IntegerField(source="pk")
     reference_form = FormNestedSerializer()
     entity_type = EntityTypeNestedSerializer(source="workflow.entity_type")
-    changes = WorkflowChangeSerializer(many=True)
-    follow_ups = WorkflowFollowupSerializer(many=True)
+    follow_ups = serializers.SerializerMethodField()
+
+    @staticmethod
+    def get_follow_ups(obj):
+        sorted_obj = obj.follow_ups.all().order_by("order")
+        return WorkflowFollowupSerializer(sorted_obj, many=True).data
 
     class Meta:
         model = WorkflowVersion
@@ -283,7 +279,6 @@ class WorkflowVersionDetailSerializer(serializers.ModelSerializer):
             "reference_form",
             "created_at",
             "updated_at",
-            "changes",
             "follow_ups",
         ]
 
@@ -317,7 +312,6 @@ class WorkflowPostSerializer(serializers.Serializer):
 
 
 class WorkflowPartialUpdateSerializer(serializers.Serializer):
-
     status = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
 

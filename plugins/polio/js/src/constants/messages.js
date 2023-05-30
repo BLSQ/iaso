@@ -215,6 +215,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.validator.error.positiveInteger',
         defaultMessage: 'Please use a positive integer',
     },
+    positiveRangeInteger: {
+        id: 'iaso.polio.form.validator.error.positiveRangeInteger',
+        defaultMessage: 'Please use a positive integer between 0 and 100',
+    },
     positiveNumber: {
         id: 'iaso.polio.form.validator.error.positiveNumber',
         defaultMessage: 'Please use a positive number',
@@ -280,21 +284,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.virusNotificationDate',
         defaultMessage: 'Virus notification date',
     },
-    pv2_notification_date: {
-        id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV notification date',
+    outbreakdeclarationdate: {
+        id: 'iaso.polio.form.label.outbreakdeclarationdate',
+        defaultMessage: 'Outbreak declaration date',
     },
-    pv2_notified_at: {
-        id: 'iaso.polio.form.label.pv2_notification_date',
-        defaultMessage: 'PV notification date',
-    },
-    threelevelCall: {
-        id: 'iaso.polio.form.label.threelevelCall',
-        defaultMessage: '3 level call',
-    },
-    three_level_call_at: {
-        id: 'iaso.polio.form.label.threelevelCall',
-        defaultMessage: '3 level call',
+    outbreak_declaration_date: {
+        id: 'iaso.polio.form.label.outbreakdeclarationdate',
+        defaultMessage: 'Outbreak declaration date',
     },
     baseInfoFormTitle: {
         id: 'iaso.polio.form.title.baseInfoFormTitle',
@@ -347,6 +343,10 @@ const MESSAGES = defineMessages({
     target_population: {
         id: 'iaso.polio.form.label.targetpopulationRound',
         defaultMessage: 'Target population Round',
+    },
+    percentage_covered_target_population: {
+        id: 'iaso.polio.form.label.percentageCoveredTargetPopulationRound',
+        defaultMessage: 'Percentage covered target population Round',
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
@@ -653,23 +653,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshedAt',
         defaultMessage: 'Refreshed at',
     },
-    recruitmentSurgeUrl: {
-        id: 'iaso.polio.label.recruitmentSurgeUrl',
-        defaultMessage: 'Recruitment Surge Google Sheet URL',
-    },
-    surge_spreadsheet_url: {
-        id: 'iaso.polio.label.recruitmentSurgeUrl',
-        defaultMessage: 'Recruitment Surge Google Sheet URL',
-    },
-
-    countryNameInSheet: {
-        id: 'iaso.polio.label.countryNameInSheet',
-        defaultMessage: 'Country Name in sheet',
-    },
-    country_name_in_surge_spreadsheet: {
-        id: 'iaso.polio.label.countryNameInSheet',
-        defaultMessage: 'Country Name in sheet',
-    },
     whoToRecruit: {
         id: 'iaso.polio.label.whoToRecruit',
         defaultMessage: 'WHO To Recruit',
@@ -685,10 +668,6 @@ const MESSAGES = defineMessages({
     unicefCompletedRecruitement: {
         id: 'iaso.polio.label.unicefCompletedRecruitement',
         defaultMessage: 'UNICEF Completed Recruitment',
-    },
-    refreshRecruitmentData: {
-        id: 'iaso.polio.label.refreshRecruitmentData',
-        defaultMessage: 'Refresh Recruitment Data',
     },
     paymentMode: {
         id: 'iaso.polio.label.paymentMode',
@@ -829,10 +808,6 @@ const MESSAGES = defineMessages({
     childrenMarked: {
         id: 'iaso.polio.label.childrenMarked',
         defaultMessage: 'Children with mark',
-    },
-    dictrictName: {
-        id: 'iaso.polio.label.dictrictName',
-        defaultMessage: 'Name',
     },
     passing: {
         id: 'iaso.polio.label.passed',
@@ -1238,6 +1213,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Grouped campaigns',
         id: 'iaso.polio.label.groupedCampaigns',
     },
+    countryBlock: {
+        defaultMessage: 'Country block',
+        id: 'iaso.polio.label.countryBlock',
+    },
     updated_at: {
         id: 'iaso.forms.updated_at',
         defaultMessage: 'Updated',
@@ -1276,7 +1255,7 @@ const MESSAGES = defineMessages({
     },
     is_test: {
         id: 'iaso.polio.label.testCampaign',
-        defaultMessage: 'Test campaign',
+        defaultMessage: 'Test campaigns/On hold status',
     },
     testCampaigns: {
         id: 'iaso.polio.label.testCampaigns',
@@ -1874,13 +1853,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.gpei_email',
         defaultMessage: 'Email GPEI',
     },
-    pv_notified_at: {
-        id: 'iaso.polio.label.pv_notified_at',
-        defaultMessage: 'PV Notification date',
-    },
     cvdpv_notified_at: {
         id: 'iaso.polio.label.cvdpv_notified_at',
         defaultMessage: 'CVDPV Notification date',
+    },
+    pv_notified_at: {
+        id: 'iaso.polio.label.pv_notified_at',
+        defaultMessage: 'PV Notification',
+    },
+    three_level_call_at: {
+        id: 'iaso.polio.form.label.threelevelCall"',
+        defaultMessage: '3 level call',
     },
     detection_status: {
         id: 'iaso.polio.label.detection_status',
@@ -1990,10 +1973,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.approved_by_who',
         defaultMessage: 'Approved by WHO',
     },
-    approved_by_who_at_WFEDITABLE: {
-        id: 'iaso.polio.form.label.approved_by_who_at_WFEDITABLE',
-        defaultMessage: 'Date of approval by WHO',
-    },
     feedback_sent_to_orpg_operations_who: {
         id: 'iaso.polio.form.label.feedback_sent_to_orpg_operations_who',
         defaultMessage: 'Feedback requested by WHO',
@@ -2065,6 +2044,10 @@ const MESSAGES = defineMessages({
     approval_confirmed: {
         id: 'iaso.polio.form.label.approval_confirmed',
         defaultMessage: 'Approval confirmed',
+    },
+    ra_completed: {
+        id: 'iaso.polio.form.label.ra_completed',
+        defaultMessage: 'Risk Assessment completed',
     },
     fundsRelease: {
         id: 'iaso.polio.form.label.fundsRelease',

@@ -641,14 +641,14 @@ docker-compose exec iaso ./manage.py test
 Translations
 ------------
 
-There are a some user facing text in the Django side and they requiere translations. For examples the login and reset password email and their page.
-These are handled separatly and differently from the JS frontend translations, and are storer in the folder `hat/locale/`
+There are a some user facing text in the Django side, and they require translations. For examples the login and reset password email and their page.
+These are handled separately and differently from the JS frontend translations, and are storer in the folder `hat/locale/`
 
-We only require translatations for the html and e-mail template.
+We only require translations for the html and e-mail template.
 not the python code (e.g. strings on model or the admin), stuff that the end users are going to see directly.
 
 When modifying or adding new strings that require translation, use the following command to
-regenerate the translatios file:
+regenerate the translations file:
 
 ```manage.py makemessages --locale=fr --extension txt --extension html```
 

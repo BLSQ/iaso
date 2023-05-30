@@ -13,8 +13,9 @@ To use:
  - commit
  - success
 
+This does not handle the django translation
+
 TODO: Remove old trad?
-TODO: Add the check in CI
 """
 
 import json

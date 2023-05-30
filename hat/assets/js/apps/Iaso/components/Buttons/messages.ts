@@ -5,6 +5,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.user.label.downloadTemplate',
         defaultMessage: 'Download template',
     },
+    missingTranslation: {
+        id: 'iaso.user.label.missingTranslation',
+        defaultMessage: 'missingTranslation',
+    },
     cancel: {
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',

@@ -151,7 +151,7 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.auth0",
+    "plugins.wfp_auth",
     "storages",
     "corsheaders",
     "rest_framework",
@@ -504,16 +504,20 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 CODE_CHALLENGE = generate_pkce()
 
-# handle wfp login
-SOCIALACCOUNT_PROVIDERS = {
-    "auth0": {
+SOCIALACCOUNT_PROVIDERS = {}
+if os.environ.get("WFP_AUTH_CLIENT_ID"):
+    # Activate WFP login
+    SOCIALACCOUNT_PROVIDERS["wfp"] = {
         "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
         "APP": {
-            "client_id": os.environ.get("IASO_WFP_ID"),
-            "secret": os.environ.get("WFP_SECRET_KEY"),
+            "client_id": os.environ.get("WFP_AUTH_CLIENT_ID"),
+            "secret": None,  # Secret is not accepted since we use PKCE
         },
-        "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
+        "OAUTH_PKCE_ENABLED": True,
+        # To which tenant this is linked
+        "IASO_ACCOUNT_NAME": os.environ.get("WFP_AUTH_ACCOUNT", "polio"),
+        "EMAIL_RECIPIENTS_NEW_ACCOUNT": os.environ.get("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
-}
+
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}

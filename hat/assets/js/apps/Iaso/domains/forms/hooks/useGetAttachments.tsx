@@ -26,7 +26,6 @@ const useGetApiParams = (params: FormParams): ApiParams => ({
 });
 
 export const useGetAttachments = (
-    formId: string,
     params: FormParams,
 ): UseQueryResult<FormAttachmentsApiResult, Error> => {
     const queryKey: any[] = ['formAttachments', params];
@@ -38,7 +37,7 @@ export const useGetAttachments = (
         queryFn: () => getRequest(url),
         options: {
             retry: false,
-            enabled: Boolean(formId),
+            enabled: Boolean(params.formId),
             keepPreviousData: true,
         },
     });

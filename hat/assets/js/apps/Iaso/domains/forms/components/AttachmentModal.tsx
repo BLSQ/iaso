@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 import {
     useSafeIntl,
@@ -32,9 +32,9 @@ const AttachmentModal: FunctionComponent<Props> = ({
 }) => {
     const [files, setFiles] = useState<File[]>([]);
     const { formatMessage } = useSafeIntl();
-    const handleConfirm = () => {
+    const handleConfirm = useCallback(() => {
         upload(files);
-    };
+    }, [files, upload]);
     return (
         <ConfirmCancelModal
             allowConfirm={files.length > 0 && !isUploading}

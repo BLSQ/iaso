@@ -43,7 +43,6 @@ def get_or_create(
             org_unit = org_units.first()
 
     if org_unit is None:
-
         org_unit = OrgUnit()
         org_unit.org_unit_type = org_unit_type
         org_unit.name = name.strip()

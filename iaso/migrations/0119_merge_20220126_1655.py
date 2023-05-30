@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0113_add_account_feature_flag_quarter"),
         ("iaso", "0118_entity_deleted_at"),

@@ -38,6 +38,19 @@ describe('Org unit types', () => {
                 fixture: 'orgunittypes/page1_limit20.json',
             },
         ).as('getOrgUnitTypes');
+        cy.intercept(
+            {
+                pathname: '/api/orgunittypes/**',
+                query: {
+                    order: 'name',
+                    limit: '20',
+                    page: '2',
+                },
+            },
+            {
+                fixture: 'orgunittypes/page1_limit20.json',
+            },
+        );
         cy.intercept('GET', '/api/profiles/me/**', superUser);
     });
 
@@ -53,7 +66,7 @@ describe('Org unit types', () => {
             testTablerender({
                 baseUrl,
                 rows: 20,
-                columns: 8,
+                columns: 9,
                 apiKey: 'orgunittypes',
                 responseKey: 'orgUnitTypes',
                 withVisit: false,
@@ -102,7 +115,7 @@ describe('Org unit types', () => {
         it('displays tooltip when hovering over info icon', () => {
             cy.visit(baseUrl);
             cy.wait('@getOrgUnitTypes');
-            cy.findTableHead(3).find('svg').eq(0).as('icon');
+            cy.findTableHead(4).find('svg').eq(0).as('icon');
             cy.assertTooltipDiplay('icon');
         });
         describe('edit button', () => {

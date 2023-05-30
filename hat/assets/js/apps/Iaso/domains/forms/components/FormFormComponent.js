@@ -1,24 +1,25 @@
 // To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router';
+import { History } from '@material-ui/icons';
+import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-import { fetchAllOrgUnitTypes } from '../../orgUnits/orgUnitTypes/actions';
+
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions.ts';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 import { formatLabel } from '../../instances/utils/index.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
-import { Link } from 'react-router';
-import { History } from '@material-ui/icons';
-import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 
 const styles = theme => ({
@@ -50,11 +51,12 @@ const formatBooleanForRadio = value => {
 const FormForm = ({ currentForm, setFieldValue }) => {
     const classes = useStyles();
     const intl = useSafeIntl();
-    const dispatch = useDispatch();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
-    const allProjects = useSelector(state => state.projects.allProjects);
-    const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
-    const [isOuTypeLoading, setIsOuTypeLoading] = useState(true);
+
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+    const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
+        useGetOrgUnitTypesDropdownOptions();
     const setPeriodType = value => {
         setFieldValue('period_type', value);
         if (value === null) {
@@ -76,22 +78,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
         projects = currentForm.project_ids.value.join(',');
     }
     const logsUrl = `/${baseUrls.apiLogs}/?objectId=${currentForm.id.value}&contentType=iaso.form`;
-
-    useEffect(() => {
-        // if (!allProjects) {
-        //     dispatch(fetchAllProjects());
-        // }
-        if (!allOrgUnitTypes) {
-            dispatch(fetchAllOrgUnitTypes());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useEffect(() => {
-        if (allOrgUnitTypes) {
-            setIsOuTypeLoading(false);
-        }
-    }, [allOrgUnitTypes]);
-
     return (
         <>
             <Grid container spacing={2} justifyContent="flex-start">
@@ -206,16 +192,10 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                         value={projects}
                         errors={currentForm.project_ids.errors}
                         type="select"
-                        options={
-                            allProjects
-                                ? allProjects.map(p => ({
-                                      label: p.name,
-                                      value: p.id,
-                                  }))
-                                : []
-                        }
+                        options={allProjects || []}
                         label={MESSAGES.projects}
                         required
+                        loading={isFetchingProjects}
                     />
                     <InputComponent
                         multi
@@ -227,14 +207,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                         value={orgUnitTypes}
                         errors={currentForm.org_unit_type_ids.errors}
                         type="select"
-                        options={
-                            allOrgUnitTypes
-                                ? allOrgUnitTypes.map(o => ({
-                                      label: o.name,
-                                      value: o.id,
-                                  }))
-                                : []
-                        }
+                        options={allOrgUnitTypes || []}
                         label={MESSAGES.orgUnitsTypes}
                         loading={isOuTypeLoading}
                     />
@@ -329,7 +302,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
             </Grid>
             {currentForm.id.value && (
                 <Grid justifyContent="flex-end" container spacing={2}>
-                    <DisplayIfUserHasPerm permission={'iaso_submissions'}>
+                    <DisplayIfUserHasPerm permission="iaso_submissions">
                         <Grid item>
                             <Link
                                 className={classes.linkWithIcon}

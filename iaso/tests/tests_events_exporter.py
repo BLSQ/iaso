@@ -66,7 +66,6 @@ def dump_attributes(obj):
 
 class DataValueExporterTests(TestCase):
     def build_instance(self, form):
-
         instance = Instance()
         instance.export_id = "EVENT_DHIS2_UID"
 
@@ -158,12 +157,10 @@ class DataValueExporterTests(TestCase):
         testcases = ["event-create-error-" + version + ".json" for version in versions]
 
         for testcase in testcases:
-
             exception = EventHandler().handle_exception(load_dhis2_fixture(testcase), "error")
             self.assertIsNotNone(exception)
 
     def test_event_mapping_works(self):
-
         event, errors = EventHandler().map_to_values(self.build_instance(self.form), build_form_mapping())
 
         self.assertEquals(
@@ -224,7 +221,6 @@ class DataValueExporterTests(TestCase):
 
     @responses.activate
     def test_event_export_works(self):
-
         mapping_version = MappingVersion(
             name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )

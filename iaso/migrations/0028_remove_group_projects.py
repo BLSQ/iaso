@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0027_put_devices_in_projects")]
 
     operations = [migrations.RemoveField(model_name="group", name="projects")]

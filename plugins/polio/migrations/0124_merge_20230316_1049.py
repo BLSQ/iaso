@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0123_auto_20230316_1038"),
         ("polio", "0123_make_polio_cron_task_user"),

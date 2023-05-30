@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0180_workflow_workflowchange_workflowfollowup_workflowversion"),
     ]

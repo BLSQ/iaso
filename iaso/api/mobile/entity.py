@@ -3,6 +3,7 @@ from rest_framework import filters, serializers
 from rest_framework.pagination import PageNumberPagination
 from rest_framework import permissions
 from rest_framework.exceptions import ParseError, AuthenticationFailed, NotFound
+from iaso.api.common import Paginator
 
 
 from iaso.api.common import DeletionFilterBackend, ModelViewSet, TimestampField, HasPermission
@@ -61,11 +62,12 @@ class MobileEntityAttributesSerializer(serializers.ModelSerializer):
     created_at = TimestampField()
     updated_at = TimestampField()
 
-    @staticmethod
-    def get_form_version_id(obj: Instance):
+    def get_form_version_id(self, obj):
         if obj.json is None:
             return None
-        return FormVersion.objects.get(version_id=obj.json.get("_version"), form_id=obj.form.id).id  # type: ignore
+        possible_form_versions = self.context.get("possible_form_versions")
+        key = "%s|%s" % (obj.json.get("_version"), str(obj.form.id))
+        return possible_form_versions.get(key)
 
 
 class MobileEntitySerializer(serializers.ModelSerializer):
@@ -88,13 +90,36 @@ class MobileEntitySerializer(serializers.ModelSerializer):
     defining_instance_id = serializers.CharField(read_only=True, source="attributes.uuid")
     entity_type_id = serializers.CharField(read_only=True, source="entity_type.id")
 
-    @staticmethod
-    def get_instances(entity: Entity):
-        return MobileEntityAttributesSerializer(entity.instances.filter(deleted=False), many=True).data  # type: ignore
+    def get_instances(self, entity):
+        possible_form_versions = self.context.get("possible_form_versions")
+        ok_instances = []
+
+        for inst in entity.instances.all():
+            if inst.deleted == False:
+                if not inst.json:
+                    continue
+
+                key = "%s|%s" % (inst.json.get("_version"), str(inst.form_id))
+                form_version = possible_form_versions.get(key, None)
+
+                if form_version is not None:
+                    ok_instances.append(inst)
+
+        return MobileEntityAttributesSerializer(ok_instances, many=True, context=self.context).data  # type: ignore
 
     @staticmethod
     def get_entity_type_name(obj: Entity):
         return obj.entity_type.name if obj.entity_type else None
+
+
+class MobileEntitiesSetPagination(Paginator):
+    page_size_query_param = LIMIT
+    page_query_param = PAGE
+    page_size = 1000
+    max_page_size = 1000
+
+    def get_page_number(self, request):
+        return int(request.query_params.get(self.page_query_param, 1))
 
 
 class MobileEntityViewSet(ModelViewSet):
@@ -112,16 +137,32 @@ class MobileEntityViewSet(ModelViewSet):
 
     """
 
-    results_key = "entities"
+    results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
-    pagination_class = LargeResultsSetPagination
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
+
+    def pagination_class(self):
+        return MobileEntitiesSetPagination(self.results_key)
 
     lookup_field = "uuid"
 
     def get_serializer_class(self):
         return MobileEntitySerializer
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        user = self.request.user
+        possible_form_versions = FormVersion.objects.filter(
+            form__projects__account=user.iaso_profile.account
+        ).distinct()
+        possible_form_versions_dict = {}
+        for version in possible_form_versions:
+            key = "%s|%s" % (version.version_id, str(version.form_id))
+            possible_form_versions_dict[key] = version.id
+        context["possible_form_versions"] = possible_form_versions_dict
+
+        return context
 
     def get_queryset(self):
         user = self.request.user
@@ -130,7 +171,7 @@ class MobileEntityViewSet(ModelViewSet):
         if not app_id:
             raise ParseError("app_id is required")
 
-        queryset = get_queryset_for_user_and_app_id(user, app_id)
+        queryset = get_queryset_for_user_and_app_id(user, app_id).filter(deleted_at__isnull=True)
 
         queryset = filter_for_mobile_entity(queryset, self.request)
 
@@ -140,4 +181,10 @@ class MobileEntityViewSet(ModelViewSet):
             if orgunits and len(orgunits) > 0:
                 queryset = queryset.filter(instances__org_unit__in=orgunits)
 
-        return queryset
+        queryset = queryset.select_related("entity_type").prefetch_related(
+            "instances__org_unit",
+            "attributes__org_unit",
+            "instances__form__form_versions",
+            "attributes__form__form_versions",
+        )
+        return queryset.order_by("id")

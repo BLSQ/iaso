@@ -16,7 +16,6 @@ class DerivedInstanceSerializer(serializers.Serializer):
         return {"periods": periods, "form_ids": form_ids}
 
     def create(self, validated_data):
-
         forms = Form.objects.filter(pk__in=validated_data["form_ids"])
         profile = self.context["request"].user.iaso_profile
         forms = forms.filter(projects__account=profile.account)

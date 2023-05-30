@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0191_merge_20230125_1559"),
         ("iaso", "0191_page_powerbi_language"),

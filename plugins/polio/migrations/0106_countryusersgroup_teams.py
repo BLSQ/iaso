@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0173_storagedevice_org_unit"),
         ("polio", "0105_merge_20221021_1308"),

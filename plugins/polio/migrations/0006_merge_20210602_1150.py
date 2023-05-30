@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0005_auto_20210525_1849"),
         ("polio", "0005_campaign_group"),

@@ -1,4 +1,5 @@
 import typing
+from pprint import pprint
 
 from django.db.models import Q
 from rest_framework import serializers
@@ -7,6 +8,20 @@ from iaso.models import OrgUnitType, OrgUnit, Project, Form
 from ..common import TimestampField, DynamicFieldsModelSerializer
 from ..forms import FormSerializer
 from ..projects.serializers import ProjectSerializer
+
+
+def get_parents(type_id):
+    parents_ids = []
+    if type_id is not None:
+        queryset = OrgUnitType.objects.filter(sub_unit_types__id=type_id)
+        for parent in queryset.all():
+            if parent.id not in parents_ids:
+                parents_ids.append(parent.id)
+            great_parents = get_parents(parent.id)
+            for great_parent_id in great_parents:
+                if great_parent_id not in parents_ids:
+                    parents_ids.append(great_parent_id)
+    return parents_ids
 
 
 class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
@@ -87,6 +102,14 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         ).data
 
     def validate(self, data: typing.Mapping):
+        # validate sub org unit type
+        parents = get_parents(self.context["request"].data.get("id", None))
+        sub_types_errors = []
+        for sub_type in data.get("sub_unit_types", []):
+            if sub_type.id in parents:
+                sub_types_errors.append(sub_type.name)
+        if len(sub_types_errors) > 0:
+            raise serializers.ValidationError({"sub_unit_type_ids": sub_types_errors})
         # validate projects (access check)
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:

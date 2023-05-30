@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("vector_control", "0010_auto_20181218_1457")]
 
     operations = [

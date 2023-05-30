@@ -1,10 +1,7 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { Paper, Typography, makeStyles, Box } from '@material-ui/core';
 
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-
-import { IntlMessage } from '../../types/intl';
+import { useSafeIntl, IntlMessage } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     root: {

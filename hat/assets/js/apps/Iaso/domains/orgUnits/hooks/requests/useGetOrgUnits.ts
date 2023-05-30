@@ -1,5 +1,6 @@
 import { UseQueryResult } from 'react-query';
 
+import { Pagination } from 'bluesquare-components';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 
@@ -8,7 +9,6 @@ import { Search } from '../../types/search';
 
 import { ApiParams } from '../useGetApiParams';
 
-import { Pagination } from '../../../../types/table';
 import { Locations } from '../../components/OrgUnitsMap';
 
 import { mapOrgUnitByLocation } from '../../utils';

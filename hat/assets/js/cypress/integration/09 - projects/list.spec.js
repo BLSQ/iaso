@@ -43,11 +43,6 @@ const goToPage = (
         ...formQuery,
     };
     cy.intercept({ ...options, query }, req => {
-        // req.continue(res => {
-        //     interceptFlag = true;
-        //     res.send({ fixture });
-        // });
-
         req.on('response', response => {
             if (response.statusMessage === 'OK') {
                 interceptFlag = true;

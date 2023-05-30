@@ -39,7 +39,7 @@ def extract_translations(path, trad_dir):
     return extracted
 
 
-# command to manually extracd trad
+# command to manually extract trad
 # ./node_modules/.bin/formatjs extract --out-file 'extracted.json' './hat/assets/js/apps/Iaso/**/*.[js]sx?' --format=simple
 
 
@@ -89,7 +89,7 @@ if __name__ == "__main__":
             # somehow try to replicate VSCODE bizarre keys ordering
             sorted_dict = OrderedDict(sorted(original.items(), key=lambda x: x[0].lower().replace("_", "!")))
             with open(original_name, "w+", encoding="utf8") as file_write:
-                # ensure_ascii is necessary othewhise it didn't properly encode unicode, not sure why.
+                # ensure_ascii is necessary otherwise it didn't properly encode unicode, not sure why.
                 json.dump(sorted_dict, fp=file_write, indent=4, ensure_ascii=False)
     if missing_translations:
         print("Please translate the translation containing CHECKME and remove it.")

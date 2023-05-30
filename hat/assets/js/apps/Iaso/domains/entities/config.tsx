@@ -4,6 +4,7 @@ import React, { ReactElement, useMemo } from 'react';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
+    Column,
 } from 'bluesquare-components';
 
 import moment from 'moment';
@@ -20,7 +21,6 @@ import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 
-import { Column } from '../../types/table';
 import { ExtraColumn } from './types/fields';
 import getDisplayName from '../../utils/usersUtils';
 import { useGetFieldValue } from './hooks/useGetFieldValue';

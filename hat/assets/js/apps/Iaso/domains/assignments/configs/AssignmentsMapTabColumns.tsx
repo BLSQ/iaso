@@ -1,16 +1,12 @@
 import React, { useMemo } from 'react';
 import { Box, Radio } from '@material-ui/core';
 import { Theme, useTheme } from '@material-ui/core/styles';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl, Column } from 'bluesquare-components';
 
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 
 import { AssignmentsApi } from '../types/assigment';
 import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
-import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 
 import { Profile } from '../../../utils/usersUtils';

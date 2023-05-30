@@ -1,15 +1,12 @@
-import React from 'react';
-import { Table } from 'bluesquare-components';
+import React, { FunctionComponent } from 'react';
+import { Table, TableComponentProps } from 'bluesquare-components';
 import { handleTableDeepLink } from '../../utils/table';
 
-// stub waiting for https://github.com/BLSQ/bluesquare-components/pull/111
-interface TableProps {}
-
-interface TableWithDeepLinkProps extends TableProps {
+type TableWithDeepLinkProps = TableComponentProps & {
     baseUrl: string;
-}
+};
 
-export const TableWithDeepLink: React.FC<TableWithDeepLinkProps> = ({
+export const TableWithDeepLink: FunctionComponent<TableWithDeepLinkProps> = ({
     baseUrl,
     ...props
 }) => {

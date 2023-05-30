@@ -1,11 +1,7 @@
 import React, { useMemo } from 'react';
 
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl, Column } from 'bluesquare-components';
 
-import { Column } from '../../../types/table';
 import { IntlFormatMessage } from '../../../types/intl';
 import { SubTeam, User } from '../types/team';
 

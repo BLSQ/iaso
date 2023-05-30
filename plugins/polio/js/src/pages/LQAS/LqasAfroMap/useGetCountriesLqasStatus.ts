@@ -26,32 +26,22 @@ const calculateStatus = (country, allLqasData, round = 'latest') => {
     const lqasDataForCountry = allLqasData.find(
         lqasData => lqasData?.data?.id === country.id,
     );
-    // console.log('LQASDATA', lqasDataForCountry);
     if (!lqasDataForCountry) {
-        console.log('NO DATA FOR COUNTRY', country.name);
         return IN_SCOPE;
     }
     if (!lqasDataForCountry?.data) {
-        console.log('NO DATA.DATA FOR COUNTRY', country.name);
         return IN_SCOPE;
     }
     const { stats } = lqasDataForCountry.data;
     // TODO enable tracking of campaign by date for calendar view
     const latestCampaign: any = Object.values(stats)[0];
-    if (country.name === 'MOZAMBIQUE') {
-        console.log('MOZ latestCampaign', latestCampaign);
-    }
     // TODO check date for latest round: don't pick future round or round where lqas not over
     const dataForRound =
         round === 'latest'
             ? latestCampaign?.rounds?.[latestCampaign.rounds.length - 1]?.data
             : latestCampaign?.rounds?.find(r => `${r.number}` === round)?.data;
     if (!dataForRound) {
-        console.log('NO DATA FOR ROUND', country.name);
         return IN_SCOPE;
-    }
-    if (country.name === 'MOZAMBIQUE') {
-        console.log('MOZ ROUND', dataForRound);
     }
     const statuses = Object.values(dataForRound ?? {})
         .map((districtData: any) => {
@@ -82,21 +72,10 @@ const calculateStatus = (country, allLqasData, round = 'latest') => {
             {},
         );
 
-    if (statuses.total === 0) {
-        console.log('NO TOTAL IN STATUSES', country.name);
-    }
     const status =
         statuses.total > 0
             ? calculateCountryStatus(statuses.passed, statuses.total)
             : IN_SCOPE;
-    if (country.name === 'MOZAMBIQUE') {
-        console.log(
-            'MOZ',
-            statuses,
-            calculateCountryStatus(statuses.passed, statuses.total),
-        );
-    }
-    console.log('status', status, country.name);
     return status;
 };
 
@@ -123,6 +102,8 @@ export const useGetCountriesLqasStatus = ({
             };
         });
     }, [countries]);
+
+    // TODO make api endpoint to avoid all these calls
     const allLqasData = useSnackQueries(queries);
     const isFetching = allLqasData.some(query => query.isFetching);
     const countriesWithStatus = useMemo(() => {

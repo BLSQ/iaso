@@ -2,30 +2,21 @@ import React, { useCallback, useMemo } from 'react';
 import { oneOf, string, array, number, bool, object } from 'prop-types';
 import { Box } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { isEqual } from 'lodash';
 import { any } from 'lodash/fp';
 import { MapComponent } from '../MapComponent/MapComponent';
 import { MapLegend } from '../MapComponent/MapLegend';
 import { MapLegendContainer } from '../MapComponent/MapLegendContainer';
 import { makePopup } from './LqasImPopUp';
 import {
-    determineStatusForDistrict as imDistrictStatus,
     makeImMapLegendItems,
+    getLqasImMapLayer,
 } from '../../pages/IM/utils.ts';
-import {
-    determineStatusForDistrict as lqasDistrictStatus,
-    makeLqasMapLegendItems,
-} from '../../pages/LQAS/utils.ts';
+import { makeLqasMapLegendItems } from '../../pages/LQAS/utils.ts';
 import {
     imDistrictColors,
     lqasDistrictColors,
-    IN_SCOPE,
 } from '../../pages/IM/constants.ts';
-import {
-    findDataForShape,
-    findScopeIds,
-    defaultShapeStyle,
-} from '../../utils/index';
+import { defaultShapeStyle } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
 import { useGetGeoJson } from '../../hooks/useGetGeoJson.ts';
 import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
@@ -69,38 +60,14 @@ export const LqasImMap = ({
     }, [data, selectedCampaign, round, formatMessage, type]);
 
     const mainLayer = useMemo(() => {
-        if (isEqual(data, {})) return [];
-        if (!selectedCampaign) return [];
-        const determineStatusForDistrict =
-            type === 'lqas' ? lqasDistrictStatus : imDistrictStatus;
-        const scopeIds = findScopeIds(selectedCampaign, campaigns, round);
-        const hasScope = scopeIds.length > 0;
-        const shapesInScope = hasScope
-            ? shapes.filter(shape => scopeIds.includes(shape.id))
-            : shapes;
-        const shapesWithData = shapesInScope.map(shape => ({
-            ...shape,
-            data: findDataForShape({
-                shape,
-                data,
-                round,
-                campaign: selectedCampaign,
-            }),
-        }));
-        if (hasScope) {
-            return shapesWithData.map(shape => ({
-                ...shape,
-                status: shape.data
-                    ? determineStatusForDistrict(shape.data)
-                    : IN_SCOPE,
-            }));
-        }
-        return shapesWithData
-            .filter(shape => Boolean(shape.data))
-            .map(shape => ({
-                ...shape,
-                status: determineStatusForDistrict(shape.data),
-            }));
+        return getLqasImMapLayer({
+            data,
+            selectedCampaign,
+            type,
+            campaigns,
+            round,
+            shapes,
+        });
     }, [shapes, data, selectedCampaign, type, round, campaigns]);
 
     const getMainLayerStyles = useCallback(

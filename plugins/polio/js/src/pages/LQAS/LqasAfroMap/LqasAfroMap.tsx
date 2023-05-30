@@ -61,6 +61,11 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
     // Determine the point at which we switch to detailed view
     const showCountries = viewport.zoom <= 5;
 
+    const mainLayer = useMemo(() => {
+        if (showCountries) return countriesWithStatus;
+        return null;
+    }, [countriesWithStatus, showCountries]);
+
     return (
         <>
             <TopBar
@@ -89,7 +94,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                     />
                     {showCountries && (
                         <MapPanes
-                            mainLayer={countriesWithStatus}
+                            mainLayer={mainLayer}
                             // backgroundLayer={}
                             getMainLayerStyle={getMainLayerStyle}
                             // getBackgroundLayerStyle={}

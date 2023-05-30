@@ -6,7 +6,6 @@ import iaso.models.forms
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0206_add_feature_flag_LIMIT_OU_DOWNLOAD_TO_ROOTS"),
     ]

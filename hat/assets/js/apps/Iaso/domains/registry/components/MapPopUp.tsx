@@ -45,7 +45,7 @@ export const MapPopUp: FunctionComponent<Props> = ({ orgUnit }) => {
     const popup: any = useRef();
 
     return (
-        <Popup className={classes.popup} ref={popup}>
+        <Popup className={classes.popup} ref={popup} pane="popupPane">
             <Card className={classes.popupCard}>
                 <Box display="flex" justifyContent="flex-end" px={1} py="4px">
                     <Box mr="auto">

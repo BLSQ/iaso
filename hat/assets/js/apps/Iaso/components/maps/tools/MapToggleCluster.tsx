@@ -1,5 +1,5 @@
 import React, { FunctionComponent, Dispatch, SetStateAction } from 'react';
-import { Paper, makeStyles, Box, Tooltip, Switch } from '@material-ui/core';
+import { Paper, makeStyles, Switch, Tooltip, Box } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
@@ -8,9 +8,9 @@ const useStyles = makeStyles(theme => ({
         position: 'absolute', // assuming you have a parent relative
         zIndex: 500,
         bottom: 'auto',
-        right: 'auto',
-        left: theme.spacing(6),
-        top: 10,
+        left: 'auto',
+        right: theme.spacing(5),
+        top: theme.spacing(1),
         width: 'auto',
         borderRadius: 4,
         border: '2px solid rgba(0,0,0,0.2)',
@@ -25,24 +25,24 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    showTooltip: boolean;
-    setShowTooltip: Dispatch<SetStateAction<boolean>>;
+    isClusterActive: boolean;
+    setIsClusterActive: Dispatch<SetStateAction<boolean>>;
 };
 
-export const MapToggleTooltips: FunctionComponent<Props> = ({
-    showTooltip,
-    setShowTooltip,
+export const MapToggleCluster: FunctionComponent<Props> = ({
+    isClusterActive,
+    setIsClusterActive,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return (
         <Paper elevation={0} className={classes.root}>
-            <Tooltip arrow title={formatMessage(MESSAGES.showNames)}>
+            <Tooltip arrow title={formatMessage(MESSAGES.title)}>
                 <Box className={classes.box}>
                     <Switch
                         size="small"
-                        checked={showTooltip}
-                        onChange={() => setShowTooltip(!showTooltip)}
+                        checked={isClusterActive}
+                        onChange={() => setIsClusterActive(!isClusterActive)}
                         color="primary"
                     />
                 </Box>

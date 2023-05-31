@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import { Map, TileLayer } from 'react-leaflet';
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useMemo } from 'react';
+import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 import {
@@ -14,6 +14,17 @@ import {
 } from 'prop-types';
 import { MapPanes } from './MapPanes.tsx';
 
+import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
+
+const findBackgroundShape = (shape, backgroundShapes) => {
+    return backgroundShapes.filter(
+        backgroundShape => backgroundShape.id === shape.parent_id,
+    )[0]?.name;
+};
+
+const boundsOptions = {
+    padding: [5, 5],
+};
 export const MapComponent = ({
     name,
     onSelectShape,
@@ -27,8 +38,6 @@ export const MapComponent = ({
     makePopup,
     fitBoundsToBackground,
 }) => {
-    const map = useRef();
-
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
@@ -52,26 +61,27 @@ export const MapComponent = ({
     console.log('bounds', bounds);
     console.log('map bounds', map.current?.leafletElement.getBounds());
 
-    useEffect(() => {
-        if (bounds && bounds.isValid() && fitToBounds) {
-            map.current?.leafletElement.fitBounds(bounds);
-        }
-    }, [bounds, fitToBounds]);
     return (
-        <Map
-            ref={map}
+        <MapContainer
             style={{ height }}
             center={[0, 0]}
             zoom={3}
             // zoomControl={false}
             scrollWheelZoom={false}
             bounds={fitToBounds ? bounds : null}
+            boundsOptions={boundsOptions}
+            zoomControl={false}
         >
+            <CustomZoomControl
+                bounds={bounds}
+                boundsOptions={boundsOptions}
+                fitOnLoad={fitToBounds}
+            />
             <TileLayer
                 attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-            <MapPanes
+            {/* <MapPanes
                 backgroundLayer={backgroundLayer}
                 mainLayer={mainLayer}
                 getMainLayerStyle={getMainLayerStyle}
@@ -80,8 +90,48 @@ export const MapComponent = ({
                 makePopup={makePopup}
                 tooltipLabels={tooltipLabels}
                 name={name}
-            />
-        </Map>
+            /> */}
+            <Pane name={`BackgroundLayer-${name}`}>
+                {backgroundLayer?.length > 0 &&
+                    backgroundLayer.map(shape => (
+                        <GeoJSON
+                            key={shape.id}
+                            data={shape.geo_json}
+                            style={() => getBackgroundLayerStyle(shape)}
+                        />
+                    ))}
+            </Pane>
+            <Pane name={`MainLayer-${name}`}>
+                {mainLayer?.length > 0 &&
+                    mainLayer.map(shape => (
+                        <GeoJSON
+                            key={shape.id}
+                            data={shape.geo_json}
+                            style={() => getMainLayerStyle(shape)}
+                            eventHandlers={{
+                                click: () => onSelectShape(shape),
+                            }}
+                        >
+                            {makePopup && makePopup(shape)}
+                            <Tooltip title={shape.name}>
+                                {backgroundLayer?.length > 0 && (
+                                    <span>
+                                        {`${
+                                            tooltipLabels.background
+                                        }: ${findBackgroundShape(
+                                            shape,
+                                            backgroundLayer,
+                                        )} > `}
+                                    </span>
+                                )}
+                                <span>
+                                    {`${tooltipLabels.main}: ${shape.name}`}
+                                </span>
+                            </Tooltip>
+                        </GeoJSON>
+                    ))}
+            </Pane>
+        </MapContainer>
     );
 };
 
@@ -97,7 +147,6 @@ MapComponent.propTypes = {
     fitToBounds: bool,
     makePopup: func,
     fitBoundsToBackground: bool,
-    withZoomControl: bool,
 };
 
 MapComponent.defaultProps = {
@@ -111,5 +160,4 @@ MapComponent.defaultProps = {
     tooltipLabels: { main: 'District', background: 'Region' },
     makePopup: () => null,
     fitBoundsToBackground: false,
-    withZoomControl: false,
 };

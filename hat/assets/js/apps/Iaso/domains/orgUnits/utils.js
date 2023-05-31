@@ -5,7 +5,7 @@ import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 
 import { locationLimitMax } from './constants/orgUnitConstants';
-import { orderOrgUnitsByDepth } from '../../utils/mapUtils.ts';
+import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils';
 
 import MESSAGES from './messages';
 

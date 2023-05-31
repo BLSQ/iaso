@@ -1,5 +1,11 @@
-import React, { FunctionComponent, Dispatch, SetStateAction } from 'react';
+import React, {
+    FunctionComponent,
+    Dispatch,
+    SetStateAction,
+    useEffect,
+} from 'react';
 import { Paper, makeStyles, Box } from '@material-ui/core';
+import { useMap } from 'react-leaflet';
 import FullscreenIcon from '@material-ui/icons/Fullscreen';
 import FullscreenExitIcon from '@material-ui/icons/FullscreenExit';
 
@@ -50,6 +56,10 @@ export const MapToggleFullscreen: FunctionComponent<Props> = ({
     setIsMapFullScreen,
 }) => {
     const classes = useStyles();
+    const map = useMap();
+    useEffect(() => {
+        map.invalidateSize();
+    }, [isMapFullScreen, map]);
     return (
         <Paper elevation={1} className={classes.root}>
             <Box

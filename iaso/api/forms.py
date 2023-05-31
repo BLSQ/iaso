@@ -226,7 +226,7 @@ class FormsViewSet(ModelViewSet):
 
         planning_id = self.request.query_params.get("planning", None)
         if planning_id:
-            queryset = queryset.filter(plannings__id=planning_id)
+            queryset = queryset.filter(plannings__id__in=planning_id.split(","))
 
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 

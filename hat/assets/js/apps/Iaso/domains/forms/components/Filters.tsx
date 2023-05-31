@@ -18,6 +18,7 @@ import { useFilterState } from '../../../hooks/useFilterState';
 import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -44,6 +45,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
     );
+    const { data: planningsDropdown } = useGetPlanningsOptions();
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
@@ -61,6 +63,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         blockForbiddenChars
                         onEnterPressed={handleSearch}
                         onErrorChange={setTextSearchError}
+                    />
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="planning"
+                        onChange={handleChange}
+                        value={filters.planning}
+                        label={MESSAGES.planning}
+                        options={planningsDropdown}
                     />
                 </Grid>
 

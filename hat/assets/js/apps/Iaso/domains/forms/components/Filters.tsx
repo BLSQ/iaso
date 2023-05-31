@@ -30,6 +30,7 @@ type Params = {
     page: string;
     search?: string;
     showDeleted?: string;
+    planning?: string;
 };
 
 type Props = {

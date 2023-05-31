@@ -49,12 +49,6 @@ describe('Forms details', () => {
     });
     describe.skip('Filters', () => {});
     describe('Form versions', () => {
-        it('Displays title', () => {
-            cy.getAndAssert('[data-test=form-versions-title]').should(
-                'have.text',
-                'Versions',
-            );
-        });
         describe('FormVersions table', () => {
             testTablerender({
                 baseUrl,

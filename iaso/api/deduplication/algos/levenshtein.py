@@ -14,21 +14,43 @@ ABOVE_SCORE_DISPLAY = 50
 
 
 def _build_query(params):
-
     print("params", params)
     the_fields = params.get("fields", [])
     custom_params = params.get("parameters", {})
     levenshtein_max_distance = custom_params.get("levenshtein_max_distance", LEVENSHTEIN_MAX_DISTANCE)
     above_score_display = custom_params.get("above_score_display", ABOVE_SCORE_DISPLAY)
     n = len(the_fields)
-    fields_comparison = " + ".join(
-        f"(1.0 - (levenshtein_less_equal(instance1.json->>'{field}', instance2.json->>'{field}', {levenshtein_max_distance}) / {levenshtein_max_distance}::float))"
-        for field in the_fields
-    )
+    fc_arr = []
+    query_params = []
+    for field in the_fields:
+        f_name = field.get("name")
+        f_type = field.get("type")
+        if f_type == "text":
+            fc_arr.append(f"(1.0 - (levenshtein_less_equal(instance1.json->>%s, instance2.json->>%s, %s) / %s::float))")
+            query_params.append(f_name)
+            query_params.append(f_name)
+            query_params.append(levenshtein_max_distance)
+            query_params.append(levenshtein_max_distance)
+        elif f_type == "number":
+            # if field is a number we need to get as a result the difference between the two numbers
+            # the final value should be 1 - (abs(number1 - number2) / max(number1, number2))
+            fc_arr.append(
+                f"(1.0 - (abs(instance1.json->>%s::float - instance2.json->>%s::float) / greatest(instance1.json->>%s::float, instance2.json->>%s::float)))"
+            )
+            query_params.append(f_name)
+            query_params.append(f_name)
+            query_params.append(f_name)
+            query_params.append(f_name)
 
-    # verifier que les champs sont pas du SQL injection
+    fields_comparison = " + ".join(fc_arr)
 
-    return f"""
+    query_params.append(params.get("entity_type_id"))
+    query_params.append(params.get("entity_type_id"))
+    query_params.append(above_score_display)
+
+    return (
+        query_params,
+        f"""
     SELECT * FROM (
         SELECT
         entity1.id,
@@ -39,11 +61,14 @@ def _build_query(params):
         AND entity1.attributes_id = instance1.id
         AND entity2.attributes_id = instance2.id
         AND entity1.created_at > entity2.created_at
-        AND entity1.entity_type_id = {params.get("entity_type_id")}
-        AND entity2.entity_type_id = {params.get("entity_type_id")}
+        AND entity1.entity_type_id = %s
+        AND entity2.entity_type_id = %s
+        AND entity1.deleted_at = NULL
+        AND entity2.deleted_at = NULL
         AND NOT EXISTS (SELECT id FROM iaso_entityduplicate WHERE iaso_entityduplicate.entity1_id = entity1.id AND iaso_entityduplicate.entity2_id = entity2.id)
-    ) AS subquery_high_score WHERE score > {above_score_display} ORDER BY score DESC
-    """
+    ) AS subquery_high_score WHERE score > %s ORDER BY score DESC
+    """,
+    )
 
 
 @DeduplicationAlgorithm.register("levenshtein")
@@ -55,13 +80,12 @@ class InverseAlgorithm(DeduplicationAlgorithm):
     """
 
     def run(self, params, task=None) -> List[PotentialDuplicate]:
-
         count = 100
 
         task.report_progress_and_stop_if_killed(
             progress_value=0,
             end_value=count,
-            progress_message=f"Started InverseAlgorithm",
+            progress_message=f"Started Levenshtein Algorithm",
         )
 
         print(f"Received params: {params}")
@@ -69,9 +93,12 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         cursor = connection.cursor()
         potential_duplicates = []
         try:
-            the_query = _build_query(params)
+            the_params, the_query = _build_query(params)
             print(the_query)
-            cursor.execute(the_query)
+            print(the_params)
+            cursor.execute(the_query, the_params)
+            print(cursor.query)
+
             while True:
                 records = cursor.fetchmany(size=100)
 
@@ -87,7 +114,7 @@ class InverseAlgorithm(DeduplicationAlgorithm):
         task.report_progress_and_stop_if_killed(
             progress_value=100,
             end_value=count,
-            progress_message=f"Ended InverseAlgorithm",
+            progress_message=f"Ended Levenshtein Algorithm",
         )
 
         finalize_from_task(task, potential_duplicates)

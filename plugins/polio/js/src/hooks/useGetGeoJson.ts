@@ -40,6 +40,7 @@ export const useGetGeoJson = (
             enabled: Boolean(topParentId),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
+            select: data => data?.orgUnits,
         },
     );
 };

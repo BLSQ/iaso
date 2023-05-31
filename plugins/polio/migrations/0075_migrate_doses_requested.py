@@ -13,7 +13,6 @@ def get_round_doses_requested(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0074_round_doses_requested"),
     ]

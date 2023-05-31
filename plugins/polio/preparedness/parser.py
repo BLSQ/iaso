@@ -161,7 +161,6 @@ def get_national_level_preparedness(spread: CachedSpread):
 
 
 def get_regional_level_preparedness(spread: CachedSpread):
-
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -246,7 +245,6 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
 
 def get_regional_level_preparedness_v2(spread: CachedSpread):
-
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change

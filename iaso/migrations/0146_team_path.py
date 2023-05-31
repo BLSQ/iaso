@@ -5,7 +5,6 @@ import django_ltree.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0145_merge_20220608_0900"),
     ]

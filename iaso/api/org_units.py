@@ -35,6 +35,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
                 or request.user.has_perm("menupermissions.iaso_org_units")
                 or request.user.has_perm("menupermissions.iaso_submissions")
                 or request.user.has_perm("menupermissions.iaso_registry")
+                or request.user.has_perm("menupermissions.iaso_polio")
             )
         ):
             return False

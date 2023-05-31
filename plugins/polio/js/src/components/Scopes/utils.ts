@@ -1,6 +1,7 @@
 import { cloneDeep } from 'lodash';
 import { Optional } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
-import { FilteredDistricts, Scope, Shape } from './types';
+import { Scope, Shape } from './types';
+import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 export const findScopeWithOrgUnit = (
     scopes: Scope[],
@@ -21,7 +22,7 @@ export const findRegion = (shape: Shape, regionShapes: Shape[]): string => {
 export const checkFullRegionIsPartOfScope = (
     selectedOrgUnit: Shape,
     selectedVaccine: string,
-    districtShapes: Optional<FilteredDistricts[]>,
+    districtShapes: Optional<OrgUnit[]>,
     scopes: Optional<Scope[]>,
 ): boolean => {
     const regionIds: number[] = (districtShapes || [])

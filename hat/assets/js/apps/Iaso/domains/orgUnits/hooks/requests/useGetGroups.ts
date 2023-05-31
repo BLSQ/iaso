@@ -55,3 +55,48 @@ export const useGetGroups = ({
         },
     });
 };
+
+// Correspondance between the name in the filter object and what the API expect
+const queryParamsMap = new Map([
+    ['dataSourceId', 'dataSource'],
+    ['sourceVersionId', 'sourceVersionId'],
+    ['blockOfCountries', 'blockOfCountries'],
+    ['appId', 'app_id'],
+]);
+
+type Params = {
+    dataSourceId?: number;
+    sourceVersionId?: number;
+    blockOfCountries?: string;
+    appId?: string;
+};
+export const useGetGroupDropdown = (
+    params: Params,
+): UseQueryResult<DropdownOptions<string>[], Error> => {
+    const queryParams = {};
+    queryParamsMap.forEach((keyInApi, keyInJS) => {
+        if (params[keyInJS]) {
+            queryParams[keyInApi] = params[keyInJS];
+        }
+    });
+    const urlSearchParams = new URLSearchParams(queryParams);
+    const queryString = urlSearchParams.toString();
+    return useSnackQuery({
+        queryKey: ['groups', queryString],
+        queryFn: () => getRequest(`/api/groups/dropdown/?${queryString}`),
+        snackErrorMsg: MESSAGES.fetchGroupsError,
+        options: {
+            staleTime,
+            select: data => {
+                if (!data) return [];
+                return data.map(group => {
+                    return {
+                        value: group.id,
+                        label: group.name,
+                        original: group,
+                    };
+                });
+            },
+        },
+    });
+};

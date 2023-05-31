@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0084_alter_budgetstep_created_by_team"),
     ]

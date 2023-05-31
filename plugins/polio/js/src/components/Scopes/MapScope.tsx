@@ -18,14 +18,15 @@ import {
 } from '../../styles/constants';
 import { useStyles } from '../../styles/theme';
 
-import { Scope, Shape, Values, FilteredDistricts } from './types';
+import { Scope, Shape, Values } from './types';
 import { findScopeWithOrgUnit } from './utils';
+import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
 
 type Props = {
     field: FieldInputProps<Scope[]>;
     values: Values;
-    regionShapes: Shape[];
-    districtShapes: FilteredDistricts[];
+    regionShapes: OrgUnit[];
+    districtShapes: OrgUnit[];
     // eslint-disable-next-line no-unused-vars
     onSelectOrgUnit: (id: Shape) => void;
     selectedVaccine: string;
@@ -83,12 +84,31 @@ export const MapScope: FunctionComponent<Props> = ({
         [values.org_unit?.id, scopes],
     );
 
+    const districts = useMemo(
+        () =>
+            districtShapes.filter(
+                ogrUnit =>
+                    ogrUnit.has_geo_json ||
+                    (ogrUnit.latitude && ogrUnit.longitude),
+            ),
+        [districtShapes],
+    );
+    const regions = useMemo(
+        () =>
+            regionShapes.filter(
+                ogrUnit =>
+                    ogrUnit.has_geo_json ||
+                    (ogrUnit.latitude && ogrUnit.longitude),
+            ),
+        [regionShapes],
+    );
+
     return (
         <Box position="relative">
             <MapComponent
                 name="ScopeMap"
-                mainLayer={districtShapes}
-                backgroundLayer={regionShapes}
+                mainLayer={districts}
+                backgroundLayer={regions}
                 onSelectShape={onSelectOrgUnit}
                 getMainLayerStyle={getShapeStyle}
                 getBackgroundLayerStyle={getBackgroundLayerStyle}

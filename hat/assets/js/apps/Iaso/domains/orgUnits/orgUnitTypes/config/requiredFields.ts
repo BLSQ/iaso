@@ -1,4 +1,8 @@
-export const requiredFields = [
+type RequiredFields = {
+    type: string;
+    key: string;
+};
+export const requiredFields: RequiredFields[] = [
     {
         type: 'string',
         key: 'name',

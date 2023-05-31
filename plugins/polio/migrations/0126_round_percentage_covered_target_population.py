@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0125_campaign_re_submitted_to_orpg_operations1_at_wfeditable"),
     ]

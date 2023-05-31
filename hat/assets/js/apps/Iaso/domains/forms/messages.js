@@ -529,6 +529,55 @@ const MESSAGES = defineMessages({
         id: 'iaso.form.label.formChangeLog',
         defaultMessage: 'Link to changes log',
     },
+    attachments: {
+        id: 'iaso.form.attachments',
+        defaultMessage: 'Attachments',
+    },
+    attachment: {
+        id: 'iaso.form.attachment',
+        defaultMessage: 'Attachment',
+    },
+    file: {
+        id: 'iaso.instance.file',
+        defaultMessage: 'File',
+    },
+    deleteAttachment: {
+        id: 'iaso.label.deleteAttachment',
+        defaultMessage: 'Delete attachment : {attachmentName}',
+    },
+    deleteWarning: {
+        id: 'iaso.label.deleteWarning',
+        defaultMessage: 'Are you sure you want to delete {attachmentName}?',
+    },
+    download: {
+        id: 'iaso.label.download',
+        defaultMessage: 'Download',
+    },
+    confirm: {
+        id: 'iaso.mappings.confirm',
+        defaultMessage: 'Confirm',
+    },
+    addUpdate: {
+        id: 'iaso.form.addUpdate',
+        defaultMessage: 'Add / Update',
+    },
+    attachmentModalTitle: {
+        id: 'iaso.attachments.attachmentModalTitle',
+        defaultMessage: 'Upload file',
+    },
+    attachmentModalContent: {
+        id: 'iaso.attachments.attachmentModalContent',
+        defaultMessage:
+            'If a file with the same name already exists, it will be overridden. Once a file is overridden, it cannot be recovered',
+    },
+    uploadError: {
+        id: 'iaso.attachments.uploadError',
+        defaultMessage: 'Error uploading file',
+    },
+    uploadSuccess: {
+        id: 'iaso.attachments.uploadSuccess',
+        defaultMessage: 'File uploaded successfully',
+    },
 });
 
 export default MESSAGES;

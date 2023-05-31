@@ -6,7 +6,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0102_page_type"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

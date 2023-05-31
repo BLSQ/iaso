@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("menupermissions", "0015_auto_20200415_1242")]
 
     operations = [

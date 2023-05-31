@@ -288,6 +288,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.outbreakdeclarationdate',
         defaultMessage: 'Outbreak declaration date',
     },
+    outbreak_declaration_date: {
+        id: 'iaso.polio.form.label.outbreakdeclarationdate',
+        defaultMessage: 'Outbreak declaration date',
+    },
     baseInfoFormTitle: {
         id: 'iaso.polio.form.title.baseInfoFormTitle',
         defaultMessage: 'Enter information about the new outbreak response',
@@ -341,8 +345,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Target population Round',
     },
     percentage_covered_target_population: {
-        id: 'iaso.polio.form.label.percentageCoveredTargetPopulationRound',
-        defaultMessage: 'Percentage covered target population Round',
+        id: 'iaso.polio.form.label.percentageCoveredTargetPopulation',
+        defaultMessage: 'Percentage covered target population',
     },
     dosesRequested: {
         id: 'iaso.polio.form.label.dosesRequested',
@@ -1856,6 +1860,14 @@ const MESSAGES = defineMessages({
     cvdpv_notified_at: {
         id: 'iaso.polio.label.cvdpv_notified_at',
         defaultMessage: 'CVDPV Notification date',
+    },
+    pv_notified_at: {
+        id: 'iaso.polio.label.pv_notified_at',
+        defaultMessage: 'PV Notification',
+    },
+    three_level_call_at: {
+        id: 'iaso.polio.form.label.threelevelCall',
+        defaultMessage: '3 level call',
     },
     detection_status: {
         id: 'iaso.polio.label.detection_status',

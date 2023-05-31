@@ -4,13 +4,12 @@ from typing import Union, List
 from django.conf.urls import url
 from django.contrib import auth
 from django.urls import path, include, URLPattern, URLResolver
-from iaso.api.data_store import DataStoreViewSet
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
-from hat.api.authentication import WfpLogin, wfp_callback
 from hat.api.token_authentication import token_auth
 from iaso import matching
+from iaso.api.data_store import DataStoreViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
@@ -43,6 +42,7 @@ from .api.enketo import (
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.groups import GroupsViewSet
@@ -91,6 +91,7 @@ router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
+router.register(r"formattachments", FormAttachmentsViewSet, basename="formattachments")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
@@ -187,9 +188,6 @@ urlpatterns = urlpatterns + [
 ]
 # External Auth
 urlpatterns = urlpatterns + [
-    url("auth0/login/callback/", wfp_callback, name="callback"),
-    path("", include("allauth.urls")),
-    path("auth0/login/", WfpLogin.as_view(), name="openid"),
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
 ]

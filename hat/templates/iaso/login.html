@@ -1,6 +1,7 @@
 {% extends 'iaso/base_auth.html' %}
 {% load i18n %}
 {% load static %}
+{% load socialaccount %}
 {% block body %}
 <div class="auth__container iasologin">
   <div class="auth__content">
@@ -8,6 +9,12 @@
       <h1 class="auth__heading"> <img alt="logo" src="{% static logo_path %}" /></h1>
     </header>
     <div>
+      {% get_providers as socialaccount_providers %}
+      <!-- {% for provider in socialaccount_providers %}
+        {% if  provider.id == 'wfp' %}
+          {% include "wfp_auth/login_subtemplate.html" %}
+        {% endif %}
+      {% endfor %} -->
       <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login' %}">
         {% if next %}
         {% if user.is_authenticated %}

@@ -2,7 +2,7 @@
 import React, { FunctionComponent, useCallback, useMemo } from 'react';
 import { Grid, Typography, Box, Divider } from '@material-ui/core';
 import { Field, FormikErrors, FormikTouched, useFormikContext } from 'formik';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { DateInput, TextInput, PaymentField } from '../components/Inputs';
@@ -14,7 +14,6 @@ import {
     REVIEW_FOR_APPROVAL,
     WORKFLOW_SUFFIX,
 } from '../constants/budget';
-import { ExpandableItem } from '../../../../../hat/assets/js/apps/Iaso/domains/app/components/ExpandableItem';
 import { hasFormikFieldError } from '../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { Round } from '../constants/types';
 

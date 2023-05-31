@@ -114,7 +114,6 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError(f"Mapping cannot have two identical values")
 
         for _source, _target in mapping.items():
-
             q = find_question_by_name(_source, s_questions)
             if q is None:
                 raise serializers.ValidationError(f"Question {_source} does not exist in source form")
@@ -313,7 +312,6 @@ class WorkflowPostSerializer(serializers.Serializer):
 
 
 class WorkflowPartialUpdateSerializer(serializers.Serializer):
-
     status = serializers.CharField(required=False)
     name = serializers.CharField(required=False)
 

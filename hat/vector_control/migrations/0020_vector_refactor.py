@@ -8,7 +8,6 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("vector_control", "0019_auto_20190225_1007"),

@@ -19,7 +19,6 @@ import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
 import dataSourcesTableColumns from './config';
 
-import { fetchAllProjects } from '../projects/actions';
 import MESSAGES from './messages';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
@@ -30,9 +29,6 @@ const DataSources = () => {
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
     const intl = useSafeIntl();
-    useEffect(() => {
-        dispatch(fetchAllProjects());
-    }, []);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
     return (
         <>

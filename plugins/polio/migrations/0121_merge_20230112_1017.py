@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0119_alter_campaign_budget_status"),
         ("polio", "0120_campaign_fill_geojson"),

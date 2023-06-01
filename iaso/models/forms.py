@@ -139,6 +139,17 @@ class Form(SoftDeletableModel):
             "id": self.id,
         }
 
+    def get_all_possible_fields_by_path(self):
+        all_questions = {}
+        for form_version in self.form_versions.order_by("created_at"):
+            # proceed from the oldest to the newest so we take newest labels
+            questions = form_version.questions_by_path()
+            if isinstance(questions, dict):
+                all_questions.update(questions)
+            else:
+                print(f"Invalid questions on version {form_version}: {str(questions)[:50]}")
+        return all_questions
+
     def update_possible_fields(self: "Form"):
         """Keep accumulated list of all the flat fields that were present at some point in a version of the form.
         This is used to build a table view of the form answers without having to parse the xml files

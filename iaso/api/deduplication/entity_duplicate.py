@@ -76,6 +76,15 @@ def is_UUID(value, version=4):
     return str(uuid_obj) == value
 
 
+def find_question_by_name_in_pathdict(name, questions):
+    if questions is not None:
+        for kk, vv in questions.items():
+            if vv["name"] == name:
+                vv["path"] = kk
+                return vv
+    return None
+
+
 class EntityDuplicateSerializer(serializers.ModelSerializer):
     entity_type = EntityDuplicateNestedEntityTypeSerializer(source="entity1.entity_type")
     form = EntityDuplicateNestedFormSerializer(source="entity1.entity_type.reference_form")
@@ -118,9 +127,14 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
         ref_form = etype.reference_form
         possible_fields = ref_form.possible_fields
 
+        all_possible_fields_by_path = ref_form.get_all_possible_fields_by_path()
+
         for f in the_fields:
-            the_q = find_question_by_name(f, possible_fields)
-            ret_val.append({"field": the_q["name"], "label": the_q["label"]})
+            the_q = find_question_by_name_in_pathdict(f, all_possible_fields_by_path)
+            if the_q is not None:
+                ret_val.append(
+                    {"field": the_q["name"], "label": the_q["label"], "type": the_q["type"], "path": the_q["path"]}
+                )
 
         return ret_val
 

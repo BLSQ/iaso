@@ -272,7 +272,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                         <OrgUnitPopupComponent
                                             currentOrgUnit={currentOrgUnit}
                                         />
-                                        <Tooltip>{o.name}</Tooltip>
+                                        <Tooltip pane="popupPane">
+                                            {o.name}
+                                        </Tooltip>
                                     </GeoJSON>
                                 </Pane>
                             ))}
@@ -308,7 +310,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                             <OrgUnitPopupComponent
                                                 currentOrgUnit={currentOrgUnit}
                                             />
-                                            <Tooltip>{o.name}</Tooltip>
+                                            <Tooltip pane="popupPane">
+                                                {o.name}
+                                            </Tooltip>
                                         </GeoJSON>
                                     ))}
                             </Pane>

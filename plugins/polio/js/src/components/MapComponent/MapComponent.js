@@ -97,7 +97,8 @@ export const MapComponent = ({
                             }}
                         >
                             {makePopup && makePopup(shape)}
-                            <Tooltip title={shape.name}>
+                            {/* @ts-ignore TODO: fix this type problem */}
+                            <Tooltip title={shape.name} pane="popupPane">
                                 {backgroundLayer?.length > 0 && (
                                     <span>
                                         {`${

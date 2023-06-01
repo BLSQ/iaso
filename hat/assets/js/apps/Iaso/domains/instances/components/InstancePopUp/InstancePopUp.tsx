@@ -1,7 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent, useCallback, useMemo, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { Popup } from 'react-leaflet';
+import { Popup, useMap } from 'react-leaflet';
 import { Link } from 'react-router';
 
 import {
@@ -58,13 +58,14 @@ export const InstancePopup: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const popup: any = useRef();
+    const map = useMap();
     const currentInstance = useSelector(
         (state: any) => state.instances.current,
     );
 
     const confirmDialog = useCallback(() => {
         replaceLocation(currentInstance);
-        popup.current.leafletElement.options.leaflet.map.closePopup();
+        map.closePopup(popup.current);
     }, [currentInstance, replaceLocation]);
 
     const hasHero = (currentInstance?.files?.length ?? 0) > 0;

@@ -180,13 +180,13 @@ oauth2_callback = WFPCallbackView.adapter_view(WFP2Adapter)
 def token_view(request):
     """Login workflow via the Mobile Application
 
-    1. User click on Login via WFP button in APP
-    2. Browser open, user auth
-    3. App is called as callback, receive token
-    4. App call this view with WFP token
-    5. We call the /userinfo/ endpoint on WFP auth server using this token to retrieve user info (email, fullname)
-    6. We do reconciliation, user creation, sending of email etc...
-    7. Iaso token representing the user connexion is created and returned (using DRF simple-jwt like in regular workflow
+    1. User clicks on Login via WFP button in app
+    2. Browser opens, user authenticates
+    3. App is called as callback, receives token
+    4. App calls this view with WFP token
+    5. We call the /userinfo/ endpoint on WFP auth server using this token to retrieve user info (email, full name)
+    6. We do reconciliation, user creation, sending of email, etc...
+    7. Iaso token representing the user connection is created and returned (using DRF simple-jwt like in regular workflow)
     """
     token = request.POST.get("token") or request.GET.get("token")
     if not token:

@@ -279,6 +279,7 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                         <OrgUnitPopupComponent
                                             currentOrgUnit={currentOrgUnit}
                                         />
+                                        {/* @ts-ignore TODO: fix this type problem */}
                                         <Tooltip pane="popupPane">
                                             {o.name}
                                         </Tooltip>

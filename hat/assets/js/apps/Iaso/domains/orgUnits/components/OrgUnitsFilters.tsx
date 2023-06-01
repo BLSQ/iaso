@@ -11,6 +11,7 @@ import {
     commonStyles,
     useSafeIntl,
     useSkipEffectOnMount,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
@@ -26,7 +27,6 @@ import { useGetDataSources } from '../hooks/requests/useGetDataSources';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetOrgUnit } from './TreeView/requests';
 
-import { IntlFormatMessage } from '../../../types/intl';
 import { Search } from '../types/search';
 import { DropdownOptions } from '../../../types/utils';
 

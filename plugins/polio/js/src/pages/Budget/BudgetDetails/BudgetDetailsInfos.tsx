@@ -11,11 +11,10 @@ import {
 } from '@material-ui/core';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, Paginated } from 'bluesquare-components';
 import classnames from 'classnames';
 import WidgetPaperComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import MESSAGES from '../../../constants/messages';
-import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStep, Categories, Transition } from '../types';
 import { CreateBudgetStep } from '../CreateBudgetStep/CreateBudgetStep';
 import { CreateOverrideStep } from '../CreateBudgetStep/CreateOverrideStep';

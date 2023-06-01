@@ -10,15 +10,13 @@ import {
     CardContent,
 } from '@material-ui/core';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     IconButton as IconButtonComponent,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 import classnames from 'classnames';
 
 import { BUDGET_DETAILS } from '../../../constants/routes';
-import { IntlFormatMessage } from '../../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import MESSAGES from '../../../constants/messages';
 import { WARNING_COLOR } from '../../../styles/constants';
 import { Budget } from '../types';

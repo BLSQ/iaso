@@ -1,11 +1,14 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 
 import { Grid, Typography, Box } from '@material-ui/core';
 import { usePrettyPeriod } from '../../../periods/utils';
-import { IntlFormatMessage } from '../../../../types/intl';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 
 import { getDisplayName, User } from '../../../../utils/usersUtils';

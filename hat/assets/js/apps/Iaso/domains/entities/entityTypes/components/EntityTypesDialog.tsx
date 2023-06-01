@@ -3,17 +3,16 @@ import React, { ReactNode, FunctionComponent, useState } from 'react';
 import { useFormik, FormikProvider, FormikProps } from 'formik';
 import * as yup from 'yup';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     IconButton as IconButtonComponent,
+    IntlFormatMessage,
+    IntlMessage,
 } from 'bluesquare-components';
 import { makeStyles, Box } from '@material-ui/core';
 import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { IntlMessage, IntlFormatMessage } from '../../../../types/intl';
 import { EntityType } from '../types/entityType';
 
 import { baseUrls } from '../../../../constants/urls';
@@ -267,7 +266,11 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                         onChange={(key, value) =>
                             onChange(key, value ? value.split(',') : null)
                         }
-                        value={!isFetchingForm ? values.fields_duplicate_search : []}
+                        value={
+                            !isFetchingForm
+                                ? values.fields_duplicate_search
+                                : []
+                        }
                         label={MESSAGES.fieldsDuplicateSearch}
                         options={possibleFields.map(field => ({
                             value: field.name,

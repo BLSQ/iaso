@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
+import { Pagination } from 'bluesquare-components';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { Pagination } from '../../../types/table';
 import { User } from '../../../utils/usersUtils';
 
 type Lock = {

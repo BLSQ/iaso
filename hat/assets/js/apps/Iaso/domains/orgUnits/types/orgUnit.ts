@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { UrlParams, Pagination } from '../../../types/table';
+import { UrlParams, Pagination } from 'bluesquare-components';
 import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';

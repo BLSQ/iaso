@@ -1,6 +1,6 @@
 import React from 'react';
 import { Tooltip, Typography } from '@material-ui/core';
-import { IntlFormatMessage } from '../../constants/types';
+import { IntlFormatMessage } from 'bluesquare-components';
 
 export const makeTableText = (text: string) => {
     return (

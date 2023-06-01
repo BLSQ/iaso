@@ -37,6 +37,10 @@ const getRedirections = overrideLanding => {
             to: `${baseUrls.users}${getPaginationParams('user__username')}`,
         },
         {
+            path: `${baseUrls.userRoles}`,
+            to: `${baseUrls.userRoles}${getPaginationParams('group__name')}`,
+        },
+        {
             path: `${baseUrls.entities}`,
             to: `${baseUrls.entities}${getPaginationParams(
                 'last_saved_instance',

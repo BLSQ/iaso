@@ -24,7 +24,6 @@ const getUserRoles = async (
     if (params.select) {
         delete params.select;
     }
-    console.log(params);
     const url = makeUrlWithParams('/api/userroles', params);
     return getRequest(url) as Promise<UserRolesList>;
 };

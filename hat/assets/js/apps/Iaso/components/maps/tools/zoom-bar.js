@@ -1,6 +1,6 @@
 import L from 'leaflet';
-import location from '../../images/location.svg';
-import square from '../../images/square.svg';
+import location from '../../../images/location.svg';
+import square from '../../../images/square.svg';
 
 /*
  * In react use the <ZoomControl> component from mapUtils instead !
@@ -14,7 +14,7 @@ import square from '../../images/square.svg';
  *     without it, it's not going to be included in the bar.
  */
 
-export const ZoomBar = L.Control.Zoom.extend({
+L.Control.Zoom = L.Control.Zoom.extend({
     options: {
         zoomInfoTitle: 'Current zoom level',
         zoomBoxTitle:

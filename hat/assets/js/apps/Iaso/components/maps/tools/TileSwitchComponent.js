@@ -1,25 +1,23 @@
 import React, { Fragment } from 'react';
-import { connect } from 'react-redux';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { withStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import RadioButtonChecked from '@material-ui/icons/RadioButtonChecked';
 import RadioButtonUnchecked from '@material-ui/icons/RadioButtonUnchecked';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 
 import PropTypes from 'prop-types';
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
-import { setCurrentTile } from '../../../redux/mapReducer';
 
 import tiles from '../../../constants/mapTiles';
 
 import MESSAGES from '../messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...innerDrawerStyles(theme),
     list: {
@@ -43,14 +41,12 @@ const styles = theme => ({
     item: {
         fontSize: 14,
     },
-});
+}));
 
 function TileSwitchComponent(props) {
-    const {
-        currentTile,
-        classes,
-        intl: { formatMessage },
-    } = props;
+    const { currentTile } = props;
+    const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     return (
         <>
             <Box px={2} className={classes.innerDrawerToolbar} component="div">
@@ -98,27 +94,8 @@ function TileSwitchComponent(props) {
 }
 
 TileSwitchComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
     currentTile: PropTypes.object.isRequired,
     setCurrentTile: PropTypes.func.isRequired,
-    classes: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = (state, props) => ({
-    currentTile: props.currentTile || state.map.currentTile,
-});
-
-const MapDispatchToProps = (dispatch, props) => ({
-    dispatch,
-    setCurrentTile: currentTile =>
-        props.setCurrentTile
-            ? props.setCurrentTile(currentTile)
-            : dispatch(setCurrentTile(currentTile)),
-});
-
-export default withStyles(styles)(
-    connect(
-        MapStateToProps,
-        MapDispatchToProps,
-    )(injectIntl(TileSwitchComponent)),
-);
+export default TileSwitchComponent;

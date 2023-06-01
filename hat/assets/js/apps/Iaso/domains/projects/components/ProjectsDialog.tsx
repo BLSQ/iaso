@@ -8,14 +8,13 @@ import React, {
 } from 'react';
 import get from 'lodash/get';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, IntlMessage } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import { ProjectInfos } from './ProjectInfos';
 import { ProjectFeatureFlags } from './ProjectFeatureFlags';
 
 import { Project } from '../types/project';
-import { IntlMessage } from '../../../types/intl';
 
 import MESSAGES from '../messages';
 import { useGetFeatureFlags } from '../hooks/requests';
@@ -122,7 +121,7 @@ const ProjectsDialog: FunctionComponent<Props> = ({
     const onConfirm = closeDialog => {
         const currentProject: Project = {
             id: initialData?.app_id,
-            feature_flags: featureFlags.filter(fF =>
+            feature_flags: (featureFlags ?? []).filter(fF =>
                 project.feature_flags.value.includes(fF.id),
             ),
             app_id: project.app_id.value || '',

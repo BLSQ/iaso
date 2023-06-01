@@ -1,6 +1,11 @@
 /* eslint-disable camelcase */
 import React from 'react';
-import { useSafeIntl, IconButton } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    IconButton,
+    IntlFormatMessage,
+    Column,
+} from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
@@ -12,8 +17,6 @@ import { MappingCell } from '../components/changes/MappingCell';
 import { HeadTargetCell } from '../components/changes/HeadTargetCell';
 import { HeadSourceCell } from '../components/changes/HeadSourceCell';
 
-import { IntlFormatMessage } from '../../../types/intl';
-import { Column } from '../../../types/table';
 import {
     WorkflowVersionDetail,
     ChangesOption,

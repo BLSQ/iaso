@@ -2,6 +2,7 @@ import React, { ReactElement, useMemo } from 'react';
 import {
     IconButton as IconButtonComponent,
     useSafeIntl,
+    Column,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { cloneDeep } from 'lodash';
@@ -20,7 +21,6 @@ import {
     FormDesc,
     FormStatRow,
 } from '../types';
-import { Column } from '../../../types/table';
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
@@ -214,7 +214,7 @@ export const useCompletenessStatsColumns = (
                 const formStats = settings.row.original.form_stats;
                 const orgunitId = settings.row.original.org_unit.id;
                 const hasFormSubmissions = Object.values(formStats).some(
-                    stat => stat.itself_has_instances > 0,
+                    (stat: any) => stat.itself_has_instances > 0,
                 );
 
                 return (

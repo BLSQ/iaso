@@ -4,12 +4,12 @@ import {
     // @ts-ignore
     formatThousand,
     useSafeIntl,
+    Column,
 } from 'bluesquare-components';
 import { OrgUnitsTypesDialog } from '../components/OrgUnitsTypesDialog';
 import DeleteDialog from '../../../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../../components/Cells/DateTimeCell';
-import { Column } from '../../../../types/table';
 import { useDeleteOrgUnitType } from '../hooks/useDeleteOrgUnitType';
 
 export const useGetColumns = (): Column[] => {

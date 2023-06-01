@@ -1,13 +1,10 @@
 import React, { ReactElement } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage, Column } from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 import MapIcon from '@material-ui/icons/Map';
 
-import { IntlFormatMessage } from '../../types/intl';
-
 import { InstanceMetasField } from '../instances/components/ColumnSelect';
 import { Instance } from '../instances/types/instance';
-import { Column } from '../../types/table';
 
 import { LinkToRegistry } from './components/LinkToRegistry';
 

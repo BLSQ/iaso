@@ -1,9 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { Table, TableBody, makeStyles } from '@material-ui/core';
-import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    ExpandableItem,
+    IntlMessage,
+} from 'bluesquare-components';
 import { Row } from './Row';
 import { Campaign } from '../../constants/types';
-import { IntlMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
 
 import { useGetMapLog } from './useGetMapLog';
 import { Head } from './Head';

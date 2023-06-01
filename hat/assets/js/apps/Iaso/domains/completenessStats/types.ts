@@ -1,4 +1,4 @@
-import { Paginated, UrlParams } from '../../types/table';
+import { Paginated, UrlParams } from 'bluesquare-components';
 import { NameAndId } from '../../types/utils';
 import { OrgUnitStatus } from '../orgUnits/types/orgUnit';
 

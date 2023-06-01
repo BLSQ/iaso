@@ -1,14 +1,9 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useRef,
-    useState,
-} from 'react';
-import { Map, TileLayer } from 'react-leaflet';
+import React, { FunctionComponent, useMemo, useRef, useState } from 'react';
+
 import { Box } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { isEqual } from 'lodash';
+import { MapContainer, useMapEvent } from 'react-leaflet';
 import { makePopup } from '../../../components/LQAS-IM/LqasImPopUp';
 import {
     determineStatusForDistrict as lqasDistrictStatus,
@@ -25,10 +20,18 @@ import {
     useGetCountriesGeoJson,
     useGetGeoJson,
 } from '../../../hooks/useGetGeoJson';
+import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
+
 import { defaultViewport } from '../../../components/campaignCalendar/map/constants';
 import { MapPanes } from '../../../components/MapComponent/MapPanes';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useGetCountriesLqasStatus } from './useGetCountriesLqasStatus';
+import { CustomTileLayer } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
+import {
+    Tile,
+    TilesSwitchDialog,
+} from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchDialog';
+import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
 
 const defaultShapes = [];
 
@@ -39,15 +42,11 @@ type Props = {
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
 const getBackgroundLayerStyle = _shape => defaultShapeStyle;
 
-const getMainLayerStyle = shape => {
-    return lqasDistrictColors[shape.status] ?? lqasDistrictColors[IN_SCOPE];
-};
-
 export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
     const { formatMessage } = useSafeIntl();
     // Get all countries shapes
-    const map = useRef();
-    const [viewport, setViewPort] = useState(defaultViewport);
+    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
+
     // This may be grouped with the statuses hook
     const { data: countries, isFetching: isFetchingCountries } =
         useGetCountriesGeoJson(true);
@@ -57,14 +56,6 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
     });
     // console.log('countries', countries);
     // console.log('countriesWithStatus', countriesWithStatus);
-
-    // Determine the point at which we switch to detailed view
-    const showCountries = viewport.zoom <= 5;
-
-    const mainLayer = useMemo(() => {
-        if (showCountries) return countriesWithStatus;
-        return null;
-    }, [countriesWithStatus, showCountries]);
 
     return (
         <>
@@ -77,31 +68,24 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                 {(isFetchingCountries || isFetching) && (
                     <LoadingSpinner fixed={false} absolute />
                 )}
-                <Map
-                    zoomSnap={0.25}
-                    ref={map}
+                <TilesSwitchDialog
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
+                />
+                <MapContainer
                     style={{
                         height: '72vh',
                     }}
-                    center={viewport.center}
-                    zoom={viewport.zoom}
+                    center={defaultViewport.center}
+                    zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
-                    onViewportChanged={v => setViewPort(v)}
                 >
-                    <TileLayer
-                        attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    <CustomTileLayer currentTile={currentTile} />
+
+                    <LqasAfroMapPanesContainer
+                        countriesWithStatus={countriesWithStatus}
                     />
-                    {showCountries && (
-                        <MapPanes
-                            mainLayer={mainLayer}
-                            // backgroundLayer={}
-                            getMainLayerStyle={getMainLayerStyle}
-                            // getBackgroundLayerStyle={}
-                            name="LQAS-Map-country-view"
-                        />
-                    )}
-                </Map>
+                </MapContainer>
             </Box>
         </>
     );

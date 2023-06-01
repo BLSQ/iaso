@@ -20,7 +20,7 @@ from django.http import HttpRequest, JsonResponse
 from django.template import loader
 from oauthlib.oauth2 import OAuth2Error
 from requests import RequestException, HTTPError
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.models import Account, Profile
 from .provider import WFPProvider

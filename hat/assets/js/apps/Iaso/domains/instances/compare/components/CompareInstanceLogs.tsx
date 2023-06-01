@@ -3,10 +3,9 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Box, Grid, Theme } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     commonStyles,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 
 import {
@@ -19,8 +18,6 @@ import TopBar from '../../../../components/nav/TopBarComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 import { InstanceLogDetail } from './InstanceLogDetail';
 import { InstanceLogInfos } from './InstanceLogInfos';
-
-import { IntlFormatMessage } from '../../../../types/intl';
 
 import { redirectToReplace } from '../../../../routing/actions';
 

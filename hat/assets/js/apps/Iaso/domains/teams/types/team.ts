@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import { UrlParams } from '../../../types/table';
+import { UrlParams } from 'bluesquare-components';
 import { TeamType } from '../constants';
 
 export type SubTeam = {

@@ -1,7 +1,6 @@
 import { Box, Divider, Grid, Paper } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, Column, Paginated } from 'bluesquare-components';
 import { TableWithDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { GraphTitle } from '../../../components/LQAS-IM/GraphTitle';
 import { BudgetDetailsFilters } from './BudgetDetailsFilters';
@@ -9,10 +8,7 @@ import { BudgetDetailsFilters } from './BudgetDetailsFilters';
 import { LinkToProcedure } from './LinkToProcedure';
 import MESSAGES from '../../../constants/messages';
 import { BUDGET_DETAILS } from '../../../constants/routes';
-import {
-    Column,
-    Paginated,
-} from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
+
 import { BudgetStep } from '../types';
 
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';

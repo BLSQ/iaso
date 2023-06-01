@@ -54,16 +54,23 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     renderTrigger: ({ openDialog }: { openDialog: () => void }) => ReactNode;
 };
+
+const defaultOrgUnitType: Omit<
+    OrgunitType,
+    'id' | 'created_at' | 'updated_at' | 'units_count'
+> & {
+    id: null;
+} = {
+    id: null,
+    name: '',
+    short_name: '',
+    projects: [],
+    depth: 0,
+    sub_unit_types: [],
+    reference_form: null,
+};
 export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
-    orgUnitType = {
-        id: null,
-        name: '',
-        short_name: '',
-        projects: [],
-        depth: 0,
-        sub_unit_types: [],
-        reference_form: null,
-    },
+    orgUnitType = defaultOrgUnitType,
     titleMessage,
     renderTrigger,
 }) => {

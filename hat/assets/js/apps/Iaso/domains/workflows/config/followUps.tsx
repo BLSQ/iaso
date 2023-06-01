@@ -1,15 +1,17 @@
 /* eslint-disable camelcase */
 import React, { ReactNode } from 'react';
-import { useSafeIntl, QueryBuilderFields } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    QueryBuilderFields,
+    IntlFormatMessage,
+    Column,
+} from 'bluesquare-components';
 import { Box } from '@material-ui/core';
 
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToForm } from '../../forms/components/LinkToForm';
 import { getLocaleDateFormat } from '../../../utils/dates';
-
-import { IntlFormatMessage } from '../../../types/intl';
-import { Column } from '../../../types/table';
 
 import { FollowUpActionCell } from '../components/followUps/ActionCell';
 import { WorkflowVersionDetail } from '../types';

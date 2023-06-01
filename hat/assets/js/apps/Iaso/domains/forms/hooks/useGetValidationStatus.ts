@@ -8,7 +8,7 @@ import { Pagination } from '../../../types/table';
 import { DropdownOptions } from '../../../types/utils';
 
 const MESSAGES = defineMessages({
-    ALL: {
+    all: {
         id: 'iaso.forms.all',
         defaultMessage: 'All',
     },
@@ -48,7 +48,7 @@ export const useGetValidationStatus = (
             retry: false,
             keepPreviousData: true,
             select: (data: ValidationStatusApiResult) => {
-                let options: DropdownOptions<string>[] = data.results.map(
+                const options: DropdownOptions<string>[] = data.results.map(
                     (status: Status) => ({
                         value: status[0],
                         label: MESSAGES[status[0]]
@@ -56,10 +56,11 @@ export const useGetValidationStatus = (
                             : status[0],
                     }),
                 );
-                if (!includeAll) {
-                    options = options.filter(
-                        statusOption => statusOption.value !== 'ALL',
-                    );
+                if (includeAll) {
+                    options.push({
+                        value: 'all',
+                        label: formatMessage(MESSAGES.all),
+                    });
                 }
                 return options;
             },

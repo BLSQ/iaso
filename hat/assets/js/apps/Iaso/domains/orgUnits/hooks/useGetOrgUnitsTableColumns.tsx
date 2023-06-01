@@ -1,16 +1,10 @@
 import React, { useMemo } from 'react';
 import { makeStyles } from '@material-ui/core';
 import Color from 'color';
-import {
-    // @ts-ignore
-    // @ts-ignore
-    commonStyles,
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import OrgUnitTooltip from '../components/OrgUnitTooltip';
 import MESSAGES from '../messages';
-import { getStatusMessage, getOrgUnitGroups } from '../utils';
+import { useGetStatusMessage, getOrgUnitGroups } from '../utils';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 
 import { Search } from '../types/search';
@@ -39,23 +33,10 @@ const useStyles = makeStyles(theme => ({
 
 export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
     const classes: Record<string, string> = useStyles();
+    const getStatusMessage = useGetStatusMessage();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const cols = useMemo(() => {
-        const getStatusColor = status => {
-            switch (status) {
-                case 'NEW': {
-                    // value taken from /iaso/hat/assets/css/_iaso.scss
-                    return classes.statusNew;
-                }
-                case 'CLOSED':
-                case 'REJECTED': {
-                    return classes.statusRejected;
-                }
-                default:
-                    return classes.statusValidated;
-            }
-        };
         const columns: Column[] = [
             {
                 Header: 'Id',
@@ -89,11 +70,7 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
             {
                 Header: formatMessage(MESSAGES.status),
                 accessor: 'validation_status',
-                Cell: settings => (
-                    <span className={getStatusColor(settings.value)}>
-                        {getStatusMessage(settings.value, formatMessage)}
-                    </span>
-                ),
+                Cell: settings => getStatusMessage(settings.value),
             },
             {
                 Header: formatMessage(MESSAGES.instances_count),

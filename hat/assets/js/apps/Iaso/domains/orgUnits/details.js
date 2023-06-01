@@ -36,7 +36,7 @@ import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { orgUnitsTableColumns } from './config';
+import { useOrgUnitsTableColumns } from './config';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
@@ -113,7 +113,7 @@ const OrgUnitDetail = ({ params, router }) => {
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
-
+    const childrenColumns = useOrgUnitsTableColumns(classes);
     const prevPathname =
         useSelector(state => state.routerCustom.prevPathname) || null;
     const currentUser = useCurrentUser();
@@ -560,10 +560,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                     baseUrl={baseUrl}
                                     endPointPath="orgunits"
                                     fetchItems={fetchOrgUnitsList}
-                                    columns={orgUnitsTableColumns(
-                                        formatMessage,
-                                        classes,
-                                    )}
+                                    columns={childrenColumns}
                                 />
                             </div>
                             <div

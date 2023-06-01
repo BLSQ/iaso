@@ -10,11 +10,11 @@
     </header>
     <div>
       {% get_providers as socialaccount_providers %}
-      <!-- {% for provider in socialaccount_providers %}
+      {% for provider in socialaccount_providers %}
         {% if  provider.id == 'wfp' %}
           {% include "wfp_auth/login_subtemplate.html" %}
         {% endif %}
-      {% endfor %} -->
+      {% endfor %}
       <form method="post" data-qa="login-form" class="auth__form" action="{% url 'login' %}">
         {% if next %}
         {% if user.is_authenticated %}

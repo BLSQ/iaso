@@ -21,11 +21,14 @@ export const SourceShape: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <GeoJSON
+            // @ts-ignore TODO: fix this type problem
             style={{
                 color: source.color,
             }}
             data={shape.geo_json}
-            onClick={onClick}
+            eventHandlers={{
+                click: onClick,
+            }}
         >
             <OrgUnitPopupComponent
                 titleMessage={formatMessage(MESSAGES.ouLinked)}

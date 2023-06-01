@@ -1,11 +1,5 @@
 import React, { FunctionComponent, Dispatch, SetStateAction } from 'react';
-import {
-    Paper,
-    makeStyles,
-    Box,
-    FormControlLabel,
-    Switch,
-} from '@material-ui/core';
+import { Paper, makeStyles, Box, Tooltip, Switch } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 
@@ -18,9 +12,15 @@ const useStyles = makeStyles(theme => ({
         left: theme.spacing(6),
         top: 10,
         width: 'auto',
+        borderRadius: 4,
+        border: '2px solid rgba(0,0,0,0.2)',
+        backgroundColor: 'transparent',
     },
     label: {
         fontSize: 12,
+    },
+    box: {
+        backgroundColor: 'white',
     },
 }));
 
@@ -36,24 +36,17 @@ export const MapToggleTooltips: FunctionComponent<Props> = ({
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     return (
-        <Paper elevation={1} className={classes.root}>
-            <Box pl={2}>
-                <FormControlLabel
-                    control={
-                        <Switch
-                            size="small"
-                            checked={showTooltip}
-                            onChange={() => setShowTooltip(!showTooltip)}
-                            color="primary"
-                        />
-                    }
-                    label={
-                        <span className={classes.label}>
-                            {formatMessage(MESSAGES.showNames)}
-                        </span>
-                    }
-                />
-            </Box>
+        <Paper elevation={0} className={classes.root}>
+            <Tooltip arrow title={formatMessage(MESSAGES.showNames)}>
+                <Box className={classes.box}>
+                    <Switch
+                        size="small"
+                        checked={showTooltip}
+                        onChange={() => setShowTooltip(!showTooltip)}
+                        color="primary"
+                    />
+                </Box>
+            </Tooltip>
         </Paper>
     );
 };

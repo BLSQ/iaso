@@ -1,6 +1,6 @@
 import React, { Component, FunctionComponent } from 'react';
 import MarkersListComponent from '../../../../../components/maps/markers/MarkersListComponent';
-import { circleColorMarkerOptions } from '../../../../../utils/mapUtils';
+import { circleColorMarkerOptions } from '../../../../../utils/map/mapUtils';
 import { OrgUnit } from '../../../types/orgUnit';
 import OrgUnitPopupComponent from '../../OrgUnitPopupComponent';
 

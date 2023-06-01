@@ -2,7 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Pane } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { clusterSize, orgunitsPane } from './constants';
-import { colorClusterCustomMarker } from '../../../../../utils/mapUtils';
+import { colorClusterCustomMarker } from '../../../../../utils/map/mapUtils';
 import { MarkerList } from './MarkersList';
 import { InstancePopup } from '../../../../instances/components/InstancePopUp/InstancePopUp';
 import { OrgUnit } from '../../../types/orgUnit';

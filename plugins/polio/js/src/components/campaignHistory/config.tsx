@@ -186,14 +186,6 @@ export const useGetConfig = (): Record<string, any> => {
             getLogValue: log => convertDate(log.three_level_call_at),
         },
         {
-            key: 'outbreak_declaration_date',
-            getLogValue: log => convertDate(log.outbreak_declaration_date),
-        },
-        {
-            key: 'outbreak_declaration_date',
-            getLogValue: log => convertDate(log.outbreak_declaration_date),
-        },
-        {
             key: 'risk_assessment_rrt_oprtt_approval_at',
             getLogValue: log =>
                 convertDate(log.risk_assessment_rrt_oprtt_approval_at),
@@ -506,6 +498,9 @@ export const useGetConfig = (): Record<string, any> => {
                 {
                     key: 'lqas_ended_at',
                     getLogValue: log => convertDate(log.lqas_ended_at),
+                },
+                {
+                    key: 'percentage_covered_target_population',
                 },
                 {
                     key: 'lqas_district_passing',

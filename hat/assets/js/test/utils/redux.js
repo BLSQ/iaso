@@ -6,7 +6,6 @@ import { Link } from 'react-router';
 import { LinkProvider } from 'bluesquare-components';
 
 import { orgUnitsInitialState } from '../../apps/Iaso/domains/orgUnits/reducer';
-import { mapInitialState } from '../../apps/Iaso/redux/mapReducer';
 import { instancesInitialState } from '../../apps/Iaso/domains/instances/reducer';
 import { mappingsInitialState } from '../../apps/Iaso/domains/mappings/reducer';
 import { sidebarMenuInitialState } from '../../apps/Iaso/redux/sidebarMenuReducer';
@@ -29,7 +28,6 @@ const initialState = {
     orgUnits: orgUnitsInitialState,
     instances: instancesInitialState,
     snackBar: snackBarsInitialState,
-    map: mapInitialState,
     routerCustom: routerInitialState,
     links: linksInitialState,
     users: usersInitialState,

@@ -1,4 +1,4 @@
-import { UrlParams } from '../../types/table';
+import { UrlParams } from 'bluesquare-components';
 
 export type PublishingStatus = 'all' | 'draft' | 'published';
 

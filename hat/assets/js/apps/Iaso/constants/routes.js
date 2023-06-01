@@ -700,6 +700,11 @@ export const userRolesPath = {
             isRequired: false,
             key: 'accountId',
         },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams,
     ],
 };
 

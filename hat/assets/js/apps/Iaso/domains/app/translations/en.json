@@ -977,6 +977,7 @@
     "iaso.user.label.selectCsvFile": "Select CSV file",
     "iaso.user.label.uploadError": "Error uploading file",
     "iaso.user.label.uploadSuccess": "Users created from CSV",
+    "iaso.userRoles.title": "User roles",
     "iaso.users.create": "Create user",
     "iaso.users.dialog.chooseLocation": "Select location(s)",
     "iaso.users.dialog.deleteUserText": "This operation cannot be undone.",

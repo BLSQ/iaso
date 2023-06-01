@@ -46,7 +46,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
     );
-    const { data: planningsDropdown } = useGetPlanningsOptions();
+    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
@@ -75,7 +75,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         onChange={handleChange}
                         value={filters.planning}
                         label={MESSAGES.planning}
-                        options={planningsDropdown}
+                        options={planningsDropdownOptions}
                     />
                 </Grid>
 

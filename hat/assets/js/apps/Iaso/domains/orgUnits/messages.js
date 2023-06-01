@@ -45,6 +45,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.rejected',
         defaultMessage: 'rejected',
     },
+    closed: {
+        id: 'iaso.forms.closed',
+        defaultMessage: 'Closed',
+    },
     editValidation: {
         defaultMessage: 'Edit validation',
         id: 'iaso.orgUnits.editValidation',
@@ -349,6 +353,10 @@ const MESSAGES = defineMessages({
     statusRejected: {
         id: 'iaso.orgUnits.statusRejected',
         defaultMessage: 'Validation status: REJECTED',
+    },
+    statusClosed: {
+        id: 'iaso.orgUnits.statusClosed',
+        defaultMessage: 'Validation status: CLOSED',
     },
     bulkChangeCount: {
         id: 'iaso.orgUnits.bulkChangeCount',

@@ -239,11 +239,13 @@ class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
     VALIDATION_REJECTED = "REJECTED"
+    VALIDATION_CLOSED = "CLOSED"
 
     VALIDATION_STATUS_CHOICES = (
         (VALIDATION_NEW, _("new")),
         (VALIDATION_VALID, _("valid")),
         (VALIDATION_REJECTED, _("rejected")),
+        (VALIDATION_CLOSED, _("closed")),
     )
 
     name = models.CharField(max_length=255)

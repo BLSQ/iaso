@@ -198,6 +198,9 @@ export const getStatusMessage = (status, formatMessage) => {
         case 'REJECTED': {
             return formatMessage(MESSAGES.rejected);
         }
+        case 'CLOSED': {
+            return formatMessage(MESSAGES.closed);
+        }
         default:
             return formatMessage(MESSAGES.validated);
     }

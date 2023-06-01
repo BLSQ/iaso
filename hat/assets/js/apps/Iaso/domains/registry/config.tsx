@@ -75,12 +75,6 @@ export const INSTANCE_METAS_FIELDS: InstanceMetasField[] = [
         type: 'info',
     },
     {
-        key: 'status',
-        active: false,
-        tableOrder: 6,
-        type: 'info',
-    },
-    {
         key: 'last_modified_by',
         type: 'info',
     },

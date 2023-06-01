@@ -22,6 +22,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
                 // value taken from /iaso/hat/assets/css/_iaso.scss
                 return classes.statusNew;
             }
+            case 'CLOSED':
             case 'REJECTED': {
                 return classes.statusRejected;
             }

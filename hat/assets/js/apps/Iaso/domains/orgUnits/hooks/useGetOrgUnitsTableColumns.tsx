@@ -48,6 +48,7 @@ export const useGetOrgUnitsTableColumns = (searches: [Search]): Column[] => {
                     // value taken from /iaso/hat/assets/css/_iaso.scss
                     return classes.statusNew;
                 }
+                case 'CLOSED':
                 case 'REJECTED': {
                     return classes.statusRejected;
                 }

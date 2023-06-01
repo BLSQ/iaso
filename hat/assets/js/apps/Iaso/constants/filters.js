@@ -22,26 +22,6 @@ export const search = (urlKey = 'search') => ({
     type: 'search',
 });
 
-// CAUTION: value ALL has to be converted to empty string before being sent to API
-export const orgUnitStatusAsOptions = formatMessage => [
-    {
-        label: formatMessage(MESSAGES.all),
-        value: 'ALL',
-    },
-    {
-        label: formatMessage(MESSAGES.new),
-        value: 'NEW',
-    },
-    {
-        label: formatMessage(MESSAGES.validated),
-        value: 'VALID',
-    },
-    {
-        label: formatMessage(MESSAGES.rejected),
-        value: 'REJECTED',
-    },
-];
-
 export const status = (formatMessage, urlKey = 'validation_status') => ({
     urlKey,
     isMultiSelect: false,

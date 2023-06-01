@@ -34,6 +34,7 @@ import { SaveData } from '../types/saveMulti';
 import { Selection } from '../types/selection';
 import { Group } from '../types/group';
 import { OrgunitType } from '../types/orgunitTypes';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 
 type Props = {
     open: boolean;
@@ -116,6 +117,11 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
     const groupsWithoutAdded = [...groups].filter(
         g => groupsAdded.indexOf(g.id) === -1,
     );
+
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
     const handleSetEditGroups = editEnabled => {
         if (!editEnabled) {
             setGroupsAdded([]);
@@ -304,24 +310,8 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                                     }}
                                     value={validationStatus}
                                     type="radio"
-                                    options={[
-                                        {
-                                            value: 'NEW',
-                                            label: formatMessage(MESSAGES.new),
-                                        },
-                                        {
-                                            value: 'VALID',
-                                            label: formatMessage(
-                                                MESSAGES.valid,
-                                            ),
-                                        },
-                                        {
-                                            value: 'REJECTED',
-                                            label: formatMessage(
-                                                MESSAGES.rejected,
-                                            ),
-                                        },
-                                    ]}
+                                    options={validationStatusOptions || []}
+                                    loading={isLoadingValidationStatusOptions}
                                 />
                             </div>
                         )}

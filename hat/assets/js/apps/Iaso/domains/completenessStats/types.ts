@@ -1,5 +1,6 @@
 import { Paginated, UrlParams } from '../../types/table';
 import { NameAndId } from '../../types/utils';
+import { OrgUnitStatus } from '../orgUnits/types/orgUnit';
 
 export type FormDesc = {
     id: number;
@@ -38,7 +39,7 @@ export type FormStatRow = {
 export type CompletenessRouterParams = UrlParams & {
     formId?: string;
     orgUnitTypeIds?: string;
-    orgunitValidationStatus: 'NEW' | 'VALID' | 'REJECTED';
+    orgunitValidationStatus: OrgUnitStatus;
     period?: string;
     groupId?: string;
     parentId?: string;

@@ -23,6 +23,7 @@ import { getChipColors } from '../../../constants/chipColors';
 
 import { useGetGroups } from '../hooks/requests/useGetGroups';
 import { useGetDataSources } from '../hooks/requests/useGetDataSources';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetOrgUnit } from './TreeView/requests';
 
@@ -106,6 +107,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         dataSourceId,
         sourceVersionId,
     });
+
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus(true);
     const handleChange = (key, value) => {
         if (key === 'version') {
             setSourceVersionId(parseInt(value, 10));
@@ -326,24 +332,8 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     onChange={handleChange}
                     value={filters?.validation_status}
                     label={MESSAGES.validationStatus}
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.all),
-                            value: 'all',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.new),
-                            value: 'NEW',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.validated),
-                            value: 'VALID',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.rejected),
-                            value: 'REJECTED',
-                        },
-                    ]}
+                    options={validationStatusOptions || []}
+                    loading={isLoadingValidationStatusOptions}
                 />
 
                 {currentTab === 'map' && (

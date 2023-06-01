@@ -91,15 +91,16 @@ const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
             : null;
     const shapeBounds =
         orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
-    let bounds: Bounds | undefined;
     if (locationsBounds && shapeBounds) {
-        bounds = locationsBounds.extend(shapeBounds);
-    } else if (locationsBounds) {
-        bounds = locationsBounds;
-    } else if (shapeBounds) {
-        bounds = shapeBounds;
+        return locationsBounds.extend(shapeBounds);
     }
-    return bounds;
+    if (locationsBounds) {
+        return locationsBounds;
+    }
+    if (shapeBounds) {
+        return shapeBounds;
+    }
+    return undefined;
 };
 export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,

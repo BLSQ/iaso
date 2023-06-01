@@ -18,16 +18,25 @@ type Props = {
     boundsOptions?: Record<string, any>;
     fitOnLoad?: boolean;
 };
+
+type ZoomOptions = {
+    fitToBounds: () => void;
+    fitToBoundsTitle: string;
+    position: 'topleft' | 'topright' | 'bottomleft' | 'bottomright';
+    zoomBoxTitle: string;
+    zoomInfoTitle: string;
+};
+
 export const MESSAGES = defineMessages({
-    'fit-to-bounds': {
+    fitToBounds: {
         defaultMessage: 'Center the map',
         id: 'map.label.fitToBounds',
     },
-    'box-zoom-title': {
+    boxZoomTitle: {
         defaultMessage: 'Draw a square on the map to zoom in to an area',
         id: 'map.label.zoom.box',
     },
-    'info-zoom-title': {
+    infoZoomTitle: {
         defaultMessage: 'Current zoom level',
         id: 'map.label.zoom.info',
     },
@@ -48,9 +57,7 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
     }, [bounds, boundsOptions, map]);
     const context = useLeafletContext();
 
-    L.control.zoom = opts => {
-        return new L.Control.Zoom(opts);
-    };
+    L.control.zoom = (opts: ZoomOptions) => new L.Control.Zoom(opts);
 
     useEffect(() => {
         if (!mapFitted && bounds?.isValid() && fitOnLoad && map) {
@@ -63,9 +70,9 @@ export const CustomZoomControl: FunctionComponent<Props> = ({
         const container = context.layerContainer || context.map;
 
         const control = L.control.zoom({
-            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
+            zoomBoxTitle: formatMessage(MESSAGES.boxZoomTitle),
+            zoomInfoTitle: formatMessage(MESSAGES.infoZoomTitle),
+            fitToBoundsTitle: formatMessage(MESSAGES.fitToBounds),
             fitToBounds,
             position: 'topleft',
         });

@@ -20,6 +20,7 @@ import {
     circleColorMarkerOptions,
     getLatLngBounds,
     clusterCustomMarker,
+    Bounds,
 } from '../../../utils/map/mapUtils';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
@@ -68,7 +69,7 @@ export const ListMap: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
 
-    const bounds = useMemo(
+    const bounds: Bounds | undefined = useMemo(
         () => locations && getLocationsBounds(locations),
         [locations],
     );

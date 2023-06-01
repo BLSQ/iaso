@@ -1,10 +1,4 @@
-import React, {
-    FunctionComponent,
-    useMemo,
-    useState,
-    useRef,
-    useEffect,
-} from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 import L from 'leaflet';
 import { MapContainer, ScaleControl, GeoJSON } from 'react-leaflet';
 
@@ -46,12 +40,6 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
         maxZoom: currentTile.maxZoom,
     };
 
-    const ref: any = useRef(null);
-    useEffect(() => {
-        if (ref.current) {
-            ref.current.setUrl(currentTile.url);
-        }
-    }, [currentTile]);
     return (
         <div className={classes.mapContainer}>
             <TilesSwitchDialog

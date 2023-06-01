@@ -103,19 +103,17 @@ class EntityQuerySet(models.QuerySet):
             queryset=Instance.objects.filter(
                 deleted=False, org_unit__validation_status=OrgUnit.VALIDATION_VALID
             ).exclude(file=""),
-            to_attr="non_deleted_instances",
         )
 
         self = self.filter(attributes__isnull=False).filter(instances__isnull=False)
 
-        self = self.prefetch_related(p).prefetch_related("non_deleted_instances__form")
+        self = self.prefetch_related(p).prefetch_related("instances__form")
 
         return self
 
     def filter_for_user_and_app_id(
         self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
     ):
-
         if not user or not user.is_authenticated:
             raise UserNotAuthError(f"User not Authentified")
 
@@ -128,8 +126,9 @@ class EntityQuerySet(models.QuerySet):
                 if project.account is None:
                     raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
 
-                self = self.filter(account=project.account, instances__project=project, attributes__project=project)
-
+                self = self.filter(
+                    account=project.account, instances__project=project, attributes__project=project
+                ).distinct("id")
             except Project.DoesNotExist:
                 raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
 

@@ -1,4 +1,4 @@
-import { Pagination, UrlParams } from '../../../types/table';
+import { Pagination, UrlParams } from 'bluesquare-components';
 /* eslint-disable camelcase */
 
 type FeatureFlag = {

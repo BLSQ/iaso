@@ -5,13 +5,17 @@ import React, {
     SetStateAction,
     Dispatch,
 } from 'react';
-import { useSafeIntl, Table, AddButton } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    Table,
+    AddButton,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import { cloneDeep } from 'lodash';
 
 import { Mapping, ChangesOption, Change, ReferenceForm } from '../../types';
 import { DropdownOptions } from '../../../../types/utils';
-import { IntlFormatMessage } from '../../../../types/intl';
 
 import MESSAGES from '../../messages';
 import { PossibleField } from '../../../forms/types/forms';

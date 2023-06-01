@@ -1,14 +1,10 @@
 import React, { useMemo } from 'react';
 import get from 'lodash/get';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl, Column } from 'bluesquare-components';
 
 import { AssignmentsApi } from '../types/assigment';
 import { AssignmentUnit } from '../types/locations';
 import { DropdownTeamsOptions, Team } from '../types/team';
-import { Column } from '../../../types/table';
 
 import { getOrgUnitAssignation } from '../utils';
 import { Profile } from '../../../utils/usersUtils';

@@ -39,7 +39,6 @@ def calculate_team_paths(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0146_team_path"),
     ]

@@ -21,7 +21,6 @@ def move_preparedness_to_round(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0040_round_preparedness_sync_status"),
     ]

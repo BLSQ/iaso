@@ -17,7 +17,6 @@ def copy_version(
     force=False,
     task=None,
 ):
-
     the_task = task
     source_source = DataSource.objects.get(id=source_source_id)
     source_version = SourceVersion.objects.get(number=source_version_number, data_source=source_source)

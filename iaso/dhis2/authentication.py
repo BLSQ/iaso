@@ -10,7 +10,6 @@ from iaso.models import Profile, ExternalCredentials
 
 def dhis2_callback(request, dhis2_slug):
     if request.GET.get("code"):
-
         ext_credentials = get_object_or_404(ExternalCredentials, name=dhis2_slug)
 
         DHIS2_SERVER_URL = ext_credentials.login
@@ -36,7 +35,6 @@ def dhis2_callback(request, dhis2_slug):
         response.raise_for_status()
 
         if response.json()["access_token"]:
-
             access_token = response.json()["access_token"]
 
             user_info = requests.get(

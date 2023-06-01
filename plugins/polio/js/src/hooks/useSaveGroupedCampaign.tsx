@@ -1,10 +1,10 @@
 import { UseMutationResult } from 'react-query';
+import { PartialBy } from 'bluesquare-components';
 import {
     postRequest,
     patchRequest,
 } from '../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackMutation } from '../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { PartialBy } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 type QueryData = {
     id: string;

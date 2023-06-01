@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0043_auto_20220210_1045"),
         ("polio", "0043_imstatscache_lqasimcache"),

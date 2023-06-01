@@ -2,16 +2,15 @@ import React, { ReactElement } from 'react';
 import {
     IconButton as IconButtonComponent,
     textPlaceholder,
+    IntlMessage,
+    Column,
 } from 'bluesquare-components';
 import { ProjectsDialog } from './components/ProjectsDialog';
 
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
-import { Column } from '../../types/table';
-import { IntlMessage } from '../../types/intl';
 
-import { FeatureFlag } from './types/featureFlag';
 import { Project } from './types/project';
 
 type Params = {
@@ -27,6 +26,7 @@ export const columns = (
     formatMessage: (msg: IntlMessage) => string,
     // eslint-disable-next-line no-unused-vars
     params: Params,
+    // eslint-disable-next-line no-unused-vars
     saveProject: (s: Project) => Promise<any>,
 ): Array<Column> => [
     {

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0163_merge_0153_instancelock_0162_merge_20220901_1052"),
     ]

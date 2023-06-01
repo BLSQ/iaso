@@ -1,12 +1,12 @@
 import { IconButton } from 'bluesquare-components';
 import { expect } from 'chai';
-import formsTableColumns, { formVersionsTableColumns } from './config';
-import FormVersionsDialog from './components/FormVersionsDialogComponent';
+import formsTableColumns, { formVersionsTableColumns } from '.';
+import FormVersionsDialog from '../components/FormVersionsDialogComponent';
 
-import formsFixture from './fixtures/forms.json';
-import formVersionsfixture from './fixtures/formVersions.json';
+import formsFixture from '../fixtures/forms.json';
+import formVersionsfixture from '../fixtures/formVersions.json';
 
-import { colOriginal } from '../../../../test/utils';
+import { colOriginal } from '../../../../../test/utils';
 
 let columns;
 let formVersionscolumns;

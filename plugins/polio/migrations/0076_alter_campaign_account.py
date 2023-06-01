@@ -7,7 +7,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0162_merge_20220901_1052"),
         ("polio", "0075_assign_existing_campaigns_account"),

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0107_alter_countryusersgroup_teams"),
         ("polio", "0110_alter_destruction_round"),

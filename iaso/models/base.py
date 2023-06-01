@@ -651,6 +651,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         show_deleted=None,
         entity_id=None,
         json_content=None,
+        planning_id=None,
     ):
         queryset = self
 
@@ -712,6 +713,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
 
         if entity_id:
             queryset = queryset.filter(entity_id=entity_id)
+
+        if planning_id:
+            queryset = queryset.filter(planning_id=planning_id)
 
         if search:
             if search.startswith("ids:"):
@@ -1041,6 +1045,9 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
             "accuracy": self.accuracy,
             "period": self.period,
+            "planning_id": self.planning.id if self.planning else None,
+            "planning_name": self.planning.name if self.planning else None,
+            "team_id": self.planning.team_id if self.planning else None,
             "file_content": file_content,
             "files": [f.file.url if f.file else None for f in self.instancefile_set.filter(deleted=False)],
             "status": getattr(self, "status", None),

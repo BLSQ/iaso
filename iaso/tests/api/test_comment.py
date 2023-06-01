@@ -63,7 +63,6 @@ class CommentApiTestCase(APITestCase):
         self.assertEqual(r["non_field_errors"], ["only comment on OrgUnit are accepted for now"])
 
     def test_setupaccount_post(self):
-
         self.client.force_authenticate(self.user)
 
         ct = ContentType.objects.get_for_model(m.OrgUnit)

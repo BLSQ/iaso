@@ -228,7 +228,6 @@ class AggregateHandler(BaseHandler):
 
 class EventHandler(BaseHandler):
     def map_to_values(self, instance, form_mapping, export_status=None):
-
         event = {
             "program": form_mapping["program_id"],
             "event": instance.export_id,
@@ -364,7 +363,6 @@ class EventTrackerHandler(BaseHandler):
         return status
 
     def map_to_values(self, instance, form_mapping, export_status=None, related_data=None):
-
         answers = related_data if related_data else instance.json
 
         question_mappings = form_mapping["question_mappings"]
@@ -458,7 +456,6 @@ class EventTrackerHandler(BaseHandler):
     def find_tracked_entity(
         self, api, country_dhis2_id, tracked_entity_type, unique_number_attribute_id, unique_number
     ):
-
         resp = api.get(
             "trackedEntityInstances",
             params={
@@ -573,7 +570,6 @@ class EventTrackerHandler(BaseHandler):
                 self.flag_as_exported(export_status, stats, export_logs)
 
             except RequestException as dhis2_exception:
-
                 export_logs = api.pop_export_logs()
                 for export_log in export_logs:
                     export_log.save()
@@ -614,7 +610,6 @@ class EventTrackerHandler(BaseHandler):
                 api, country_dhis2_id, form_mapping["tracked_entity_type"], unique_number_attribute_id, unique_number
             )
             if tracked_entity_dhis2:
-
                 # copy the new events in the first enrollment
                 for event in tracked_entity_iaso["enrollments"][0]["events"]:
                     tracked_entity_dhis2["enrollments"][0]["events"].append(event)
@@ -623,7 +618,6 @@ class EventTrackerHandler(BaseHandler):
             else:
                 raise Exception(f"error : no tracked entity with unique number : {unique_number}")
         else:
-
             unique_number = self.generate_unique_number(api, unique_number_attribute_id, instance.org_unit)
 
             self.logger.debug(str(instance.id) + "unique number ?" + str(unique_number))
@@ -689,7 +683,6 @@ class EventTrackerHandler(BaseHandler):
             return InstanceExportError(message, counts, descriptions)
 
     def flag_as_errored(self, export_status, message, stats):
-
         stats["errored_count"] += 1
         export_status.status = ERRORED
         export_status.last_error_message = message
@@ -707,7 +700,6 @@ class DataValueExporter:
         }
 
     def get_api(self, mapping_version):
-
         if not mapping_version.id in self.api_cache:
             credentials = mapping_version.mapping.data_source.credentials
             self.api_cache[mapping_version.id] = Api(credentials.url, credentials.login, credentials.password)

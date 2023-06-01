@@ -46,7 +46,7 @@ def send_notification_email(campaign):
         preparedness = get_or_set_preparedness_cache_for_round(campaign, next_round)
         if preparedness and preparedness.get("indicators", {}).get("status_score"):
             prep_summary = preparedness["indicators"]["status_score"]
-            format = lambda x: "{:.1f}".format(x) if isinstance(x, (int, float)) else "N/A"
+            format = lambda x: "{:.2f}%".format(x * 10) if isinstance(x, (int, float)) else "N/A"
             prep_national = format(prep_summary.get("national"))
             prep_regional = format(prep_summary.get("regions"))
             prep_district = format(prep_summary.get("districts"))

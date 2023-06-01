@@ -67,7 +67,7 @@ export const PopupComponent: FunctionComponent<Props> = ({
     const popup = createRef();
     const getValue = useGetFieldValue();
     return (
-        <Popup className={classes.popup} ref={popup}>
+        <Popup className={classes.popup} ref={popup} pane="popupPane">
             <Card className={classes.popupCard}>
                 <CardContent className={classNames(classes.popupCardContent)}>
                     {titleMessage && (

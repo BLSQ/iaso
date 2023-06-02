@@ -46,6 +46,7 @@ import { Popper } from '../../forms/fields/components/Popper.tsx';
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -96,6 +97,7 @@ const InstancesFiltersComponent = ({
     const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
     useSkipEffectOnMount(() => {
         Object.entries(params).forEach(([key, value]) => {
             if (key === 'showDeleted') {
@@ -118,6 +120,7 @@ const InstancesFiltersComponent = ({
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
             : undefined;
+
     const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
@@ -239,6 +242,7 @@ const InstancesFiltersComponent = ({
         startPeriodError ||
         endPeriodError ||
         hasLocationLimitError;
+
     return (
         <div className={classes.marginBottom}>
             <UserOrgUnitRestriction />
@@ -357,6 +361,15 @@ const InstancesFiltersComponent = ({
                         }))}
                         label={MESSAGES.org_unit_type_id}
                         loading={fetchingOrgUnitTypes}
+                    />
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="planning"
+                        onChange={handleFormChange}
+                        value={formState.planning.value || null}
+                        options={planningsDropdownOptions}
+                        label={MESSAGES.planning}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>

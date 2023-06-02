@@ -125,7 +125,11 @@ class FiltersComponent extends React.Component {
                                                 filter.callback,
                                             )
                                         }
-                                        value={filterValue}
+                                        value={
+                                            filter.loading
+                                                ? undefined
+                                                : filterValue
+                                        }
                                         type="select"
                                         options={filter.options}
                                         label={filter.label}

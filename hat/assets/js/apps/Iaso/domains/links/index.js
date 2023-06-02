@@ -20,6 +20,7 @@ import { baseUrls } from '../../constants/urls';
 import { linksFilters } from '../../constants/filters';
 
 import { useLinksFiltersData } from './hooks';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
 
 import MESSAGES from './messages';
 
@@ -59,6 +60,10 @@ export const Links = ({ params, router }) => {
         setFetchingAlgorithms,
         setFetchingSource,
     });
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
 
     const validateLink = link => {
         const newLink = {
@@ -128,6 +133,8 @@ export const Links = ({ params, router }) => {
                         fetchingProfiles,
                         fetchingAlgorithms,
                         fetchingSources,
+                        validationStatusOptions,
+                        isLoadingValidationStatusOptions,
                     })}
                     onDataLoaded={({ list, count, pages }) => {
                         onDataLoaded(list, count, pages);

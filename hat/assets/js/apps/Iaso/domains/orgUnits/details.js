@@ -19,8 +19,8 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
+import { redirectTo, redirectToReplace } from '../../routing/actions.ts';
 import { baseUrls } from '../../constants/urls';
-import { redirectTo, redirectToReplace } from '../../routing/actions';
 import {
     deleteForm,
     fetchAssociatedOrgUnits,
@@ -137,7 +137,7 @@ const OrgUnitDetail = ({ params, router }) => {
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus();
+    } = useGetValidationStatus(true);
 
     const title = useMemo(() => {
         if (isNewOrgunit) {
@@ -589,6 +589,8 @@ const OrgUnitDetail = ({ params, router }) => {
                                         profiles,
                                         algorithms,
                                         sources,
+                                        validationStatusOptions,
+                                        isLoadingValidationStatusOptions,
                                     )}
                                     params={params}
                                     paramsPrefix="linksParams"

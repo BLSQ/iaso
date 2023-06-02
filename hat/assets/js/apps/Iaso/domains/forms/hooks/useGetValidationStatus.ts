@@ -1,10 +1,9 @@
 import { UseQueryResult } from 'react-query';
 import { defineMessages } from 'react-intl';
 
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, Pagination } from 'bluesquare-components';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
-import { Pagination } from '../../../types/table';
 import { DropdownOptions } from '../../../types/utils';
 
 const MESSAGES = defineMessages({
@@ -57,7 +56,7 @@ export const useGetValidationStatus = (
                     }),
                 );
                 if (includeAll) {
-                    options.push({
+                    options.unshift({
                         value: 'all',
                         label: formatMessage(MESSAGES.all),
                     });

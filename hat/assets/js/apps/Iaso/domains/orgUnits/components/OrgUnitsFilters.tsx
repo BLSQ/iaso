@@ -330,7 +330,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     clearable={false}
                     keyValue="validation_status"
                     onChange={handleChange}
-                    value={filters?.validation_status}
+                    value={
+                        isLoadingValidationStatusOptions
+                            ? undefined
+                            : filters?.validation_status
+                    }
                     label={MESSAGES.validationStatus}
                     options={validationStatusOptions || []}
                     loading={isLoadingValidationStatusOptions}

@@ -114,8 +114,10 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-    const { data: orgUnitStatusOptions, isLoading: isLoadingStatus } =
-        useGetValidationStatus();
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
 
     return (
         <>
@@ -184,10 +186,10 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         multi
                         keyValue="orgunitValidationStatus"
                         onChange={handleChange}
-                        loading={isLoadingStatus}
+                        loading={isLoadingValidationStatusOptions}
                         value={filters.orgunitValidationStatus}
                         label={MESSAGES.validationStatus}
-                        options={orgUnitStatusOptions || []}
+                        options={validationStatusOptions || []}
                     />
                 </Grid>
 

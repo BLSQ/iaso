@@ -42,6 +42,7 @@ import {
     useRefreshOrgUnit,
     useSaveOrgUnit,
 } from './hooks';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
 import MESSAGES from './messages';
 import {
     getAliasesArrayFromString,
@@ -132,6 +133,11 @@ const OrgUnitDetail = ({ params, router }) => {
         () => params.orgUnitId === '0',
         [params.orgUnitId],
     );
+
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
 
     const title = useMemo(() => {
         if (isNewOrgunit) {
@@ -554,6 +560,8 @@ const OrgUnitDetail = ({ params, router }) => {
                                         formatMessage,
                                         groups,
                                         orgUnitTypes,
+                                        validationStatusOptions,
+                                        isLoadingValidationStatusOptions,
                                     )}
                                     params={params}
                                     paramsPrefix="childrenParams"

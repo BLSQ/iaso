@@ -22,30 +22,17 @@ export const search = (urlKey = 'search') => ({
     type: 'search',
 });
 
-export const status = (formatMessage, urlKey = 'validation_status') => ({
-    urlKey,
+export const status = (
+    validationStatusOptions,
+    isLoadingValidationStatusOptions,
+) => ({
+    urlKey: 'validation_status',
     isMultiSelect: false,
     isClearable: false,
-    options: [
-        {
-            label: formatMessage(MESSAGES.all),
-            value: 'all',
-        },
-        {
-            label: formatMessage(MESSAGES.new),
-            value: 'NEW',
-        },
-        {
-            label: formatMessage(MESSAGES.validated),
-            value: 'VALID',
-        },
-        {
-            label: formatMessage(MESSAGES.rejected),
-            value: 'REJECTED',
-        },
-    ],
+    options: validationStatusOptions,
     label: MESSAGES.validationStatus,
     type: 'select',
+    loading: isLoadingValidationStatusOptions,
 });
 
 export const hasInstances = (formatMessage, urlKey = 'hasInstances') => ({
@@ -405,6 +392,8 @@ export const orgUnitFilters = (
     groups = [],
     orgUnitTypes = [],
     withChildren = false,
+    validationStatusOptions = [],
+    isLoadingValidationStatusOptions = false,
 ) => {
     const filters = [
         {
@@ -435,7 +424,10 @@ export const orgUnitFilters = (
             column: 3,
         },
         {
-            ...status(formatMessage),
+            ...status(
+                validationStatusOptions,
+                isLoadingValidationStatusOptions,
+            ),
             defaultValue: 'all',
             column: 3,
         },
@@ -462,9 +454,18 @@ export const orgUnitFiltersWithPrefix = (
     formatMessage,
     groups,
     orgUnitTypes,
+    validationStatusOptions,
+    isLoadingValidationStatusOptions,
 ) =>
     filtersWithPrefix(
-        orgUnitFilters(formatMessage, groups, orgUnitTypes, withChildren),
+        orgUnitFilters(
+            formatMessage,
+            groups,
+            orgUnitTypes,
+            withChildren,
+            validationStatusOptions,
+            isLoadingValidationStatusOptions,
+        ),
         paramsPrefix,
     );
 export const linksFiltersWithPrefix = (
@@ -474,6 +475,8 @@ export const linksFiltersWithPrefix = (
     profiles = [],
     algorithms = [],
     sources = [],
+    validationStatusOptions = [],
+    isLoadingValidationStatusOptions = false,
 ) =>
     filtersWithPrefix(
         [
@@ -486,7 +489,10 @@ export const linksFiltersWithPrefix = (
                 column: 1,
             },
             {
-                ...status(formatMessage),
+                ...status(
+                    validationStatusOptions,
+                    isLoadingValidationStatusOptions,
+                ),
                 column: 3,
             },
             {
@@ -620,6 +626,8 @@ export const linksFilters = props => {
         fetchingProfiles,
         fetchingAlgorithms,
         fetchingSources,
+        validationStatusOptions = [],
+        isLoadingValidationStatusOptions = false,
     } = props;
     const filters = [
         {
@@ -640,7 +648,10 @@ export const linksFilters = props => {
             column: 1,
         },
         {
-            ...status(formatMessage),
+            ...status(
+                validationStatusOptions,
+                isLoadingValidationStatusOptions,
+            ),
             column: 1,
         },
         {

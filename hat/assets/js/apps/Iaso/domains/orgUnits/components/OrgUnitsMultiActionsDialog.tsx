@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import { UseMutateAsyncFunction } from 'react-query';
 
 import {
     Dialog,
@@ -22,6 +21,7 @@ import {
 import ReportIcon from '@material-ui/icons/Report';
 // @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import { UseMutateAsyncFunction } from 'react-query';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 import MESSAGES from '../messages';
@@ -97,6 +97,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         undefined,
     );
     const [editValidation, setEditValidation] = useState<boolean>(false);
+    const [updateGPS, setUpdateGPS] = useState<boolean>(false);
     const [validationStatus, setValidationStatus] = useState<
         string | undefined
     >(undefined);
@@ -135,6 +136,12 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         }
         setEditValidation(editEnabled);
     };
+    const handleSetUpdateGPS = editEnabled => {
+        if (!editEnabled) {
+            setUpdateGPS(false);
+        }
+        setUpdateGPS(editEnabled);
+    };
     const closeAndReset = () => {
         setEditGroups(false);
         setGroupsAdded([]);
@@ -142,6 +149,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         setEditOrgUnitType(false);
         setOrgUnitType(undefined);
         setEditValidation(false);
+        setUpdateGPS(false);
         setValidationStatus(undefined);
         closeDialog();
     };
@@ -176,7 +184,11 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
             });
             data.searches = searches;
         }
-        saveMulti(data).then(() => closeAndReset());
+        saveMulti({
+            ...data,
+            saveGPS: updateGPS,
+            saveOtherField: editValidation || editOrgUnitType || editGroups,
+        }).then(() => closeAndReset());
     };
     return (
         <>
@@ -325,6 +337,17 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                                 />
                             </div>
                         )}
+                    </div>
+                    <div>
+                        <InputComponent
+                            keyValue="updateGPS"
+                            onChange={(key, checked) =>
+                                handleSetUpdateGPS(checked)
+                            }
+                            value={updateGPS}
+                            type="checkbox"
+                            label={MESSAGES.useGPSFromSubmission}
+                        />
                     </div>
                 </DialogContent>
                 <DialogActions className={classes.action}>

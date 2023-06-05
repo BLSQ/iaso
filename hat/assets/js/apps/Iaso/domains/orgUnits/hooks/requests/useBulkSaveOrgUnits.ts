@@ -7,7 +7,7 @@ import { SaveData } from '../../types/saveMulti';
 import MESSAGES from '../../messages';
 
 const saveBulkOgrUnits = (data: SaveData) => {
-    const url = '/api/tasks/create/orgunitsbulklocationset/';
+    const url = '/api/tasks/create/orgunitsbulkupdate/';
     return postRequest(url, data);
 };
 

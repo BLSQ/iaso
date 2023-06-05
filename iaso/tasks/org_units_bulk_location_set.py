@@ -1,4 +1,5 @@
 from copy import deepcopy
+from logging import getLogger
 from time import time
 from typing import Optional, List, TypedDict
 
@@ -14,6 +15,7 @@ from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.api.org_unit_search import build_org_units_queryset
 from iaso.models import Task, OrgUnit, DataSource
+from iaso.utils.gis import convert_2d_point_to_3d
 
 
 class InstanceCenterAnnotation(TypedDict):
@@ -23,12 +25,19 @@ class InstanceCenterAnnotation(TypedDict):
 OrgUnitWithFormStat = Annotated[OrgUnit, InstanceCenterAnnotation]
 
 
+logger = getLogger(__name__)
+
+
 def update_single_org_unit_location_from_bulk(user: Optional[User], org_unit: OrgUnitWithFormStat):
     original_copy = deepcopy(org_unit)
-    if org_unit.location:
+    if org_unit.location and not org_unit.geom:
         # skip orgunit if it already has location
+        logger.info(f"skipping {org_unit.name} {org_unit.id} as it already has a location or geom")
         return
-    org_unit.location = org_unit.instance_center
+    # Assign and ensure it is 3d
+    org_unit.location = convert_2d_point_to_3d(org_unit.instance_center)
+    logger.info(f"updating {org_unit.name} {org_unit.id} with {org_unit.location}")
+    org_unit.save()
     audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API_BULK, user=user)
 
 

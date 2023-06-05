@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 
 import { Planning } from '../types/planning';
 import { SubTeam, User, Team, DropdownTeamsOptions } from '../types/team';
-import { OrgUnitShape, Locations } from '../types/locations';
+import { Locations } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import { ChildrenOrgUnits } from '../types/orgUnit';
+import { ChildrenOrgUnits, ParentOrgUnit } from '../types/orgUnit';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 
 import { useGetTeams } from './requests/useGetTeams';
@@ -29,7 +29,7 @@ import { OrgUnit } from '../../orgUnits/types/orgUnit';
 type Props = {
     planningId: string;
     currentTeam: Team | undefined;
-    parentSelected: OrgUnitShape | undefined;
+    parentSelected: ParentOrgUnit | undefined;
     baseOrgunitType: string | undefined;
     order?: string;
     search?: string;

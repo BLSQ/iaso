@@ -197,7 +197,7 @@ describe('Forms', () => {
         });
     });
 
-    describe.only('api', () => {
+    describe('api', () => {
         it('should be called with base params', () => {
             goToPage(
                 superUser,

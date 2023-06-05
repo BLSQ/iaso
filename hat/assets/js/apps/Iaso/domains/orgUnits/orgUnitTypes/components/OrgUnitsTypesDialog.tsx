@@ -101,7 +101,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     );
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
-    const { data: allOrgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
+    const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
+        useGetOrgUnitTypesDropdownOptions();
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {
@@ -314,7 +315,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 clearable
                 keyValue="sub_unit_type_ids"
                 onChange={onChange}
-                loading={!allOrgUnitTypes}
+                loading={isLoadingOrgUitTypes}
                 value={allOrgUnitTypes && formState.sub_unit_type_ids.value}
                 errors={formState.sub_unit_type_ids.errors}
                 type="select"
@@ -329,7 +330,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                         clearable
                         keyValue="allow_creating_sub_unit_type_ids"
                         onChange={onChange}
-                        loading={!allOrgUnitTypes}
+                        loading={isLoadingOrgUitTypes}
                         value={
                             allOrgUnitTypes &&
                             formState.allow_creating_sub_unit_type_ids.value

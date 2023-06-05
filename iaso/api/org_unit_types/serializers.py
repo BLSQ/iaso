@@ -99,6 +99,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         ).data
 
     def get_sub_unit_types(self, obj: OrgUnitType):
+        # Filter sub unit types to show only visible items for the current app id
         unit_types = obj.sub_unit_types.all()
         app_id = self.context["request"].query_params.get("app_id")
         if app_id is not None:
@@ -112,6 +113,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         ).data
 
     def get_allow_creating_sub_unit_types(self, obj: OrgUnitType):
+        # Filter sub unit types to show only visible items for the current app id
         unit_types = obj.allow_creating_sub_unit_types.all()
         app_id = self.context["request"].query_params.get("app_id")
         if app_id is not None:

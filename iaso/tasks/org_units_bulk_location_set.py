@@ -24,8 +24,6 @@ OrgUnitWithFormStat = Annotated[OrgUnit, InstanceCenterAnnotation]
 
 
 def update_single_org_unit_location_from_bulk(user: Optional[User], org_unit: OrgUnitWithFormStat):
-    """Used within the context of a bulk operation"""
-
     original_copy = deepcopy(org_unit)
     if org_unit.location:
         # skip orgunit if it already has location
@@ -34,8 +32,8 @@ def update_single_org_unit_location_from_bulk(user: Optional[User], org_unit: Or
     audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API_BULK, user=user)
 
 
-@task_decorator(task_name="org_unit_bulk_location_update")
-def org_units_bulk_location_update(
+@task_decorator(task_name="org_unit_bulk_location_set")
+def org_units_bulk_location_set(
     app_id: Optional[str],
     select_all: bool,
     selected_ids: List[int],

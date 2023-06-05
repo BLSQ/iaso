@@ -1,19 +1,14 @@
 /* eslint-disable camelcase */
 import React, { useMemo, useState } from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     IconButton as IconButtonComponent,
-    // @ts-ignore
     useSkipEffectOnMount,
+    Column,
+    Paginated,
 } from 'bluesquare-components';
 import { Box, makeStyles } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
-import {
-    Column,
-    Paginated,
-} from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import {
     DateCell,
@@ -43,7 +38,6 @@ export const styles = theme => {
 // @ts-ignore
 export const useStyles = makeStyles(styles);
 export const getStyle = classes => isHidden => {
-    // const isHidden = Boolean(settings.row.original.deleted_at);
     return isHidden ? classes.hiddenRow : '';
 };
 

@@ -23,6 +23,7 @@ from typing import Any, Dict
 from urllib.parse import urlparse
 
 import sentry_sdk
+from django.core.exceptions import ImproperlyConfigured
 from django.utils.translation import ugettext_lazy as _
 from sentry_sdk.integrations.django import DjangoIntegration
 
@@ -151,7 +152,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.auth0",
     "storages",
     "corsheaders",
     "rest_framework",
@@ -504,16 +504,26 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 CODE_CHALLENGE = generate_pkce()
 
-# handle wfp login
-SOCIALACCOUNT_PROVIDERS = {
-    "auth0": {
+SOCIALACCOUNT_PROVIDERS = {}
+if os.environ.get("WFP_AUTH_CLIENT_ID"):
+    # Activate WFP login
+    # activate the wfp_auth plugin only if needed
+    index = INSTALLED_APPS.index("allauth.socialaccount")
+    INSTALLED_APPS.insert(index + 1, "plugins.wfp_auth")
+    iaso_account = os.environ.get("WFP_AUTH_ACCOUNT", "")
+    if not iaso_account:
+        raise ImproperlyConfigured("need a WFP_AUTH_ACCOUNT to associate a tenant to the auth server")
+    SOCIALACCOUNT_PROVIDERS["wfp"] = {
         "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
         "APP": {
-            "client_id": os.environ.get("IASO_WFP_ID"),
-            "secret": os.environ.get("WFP_SECRET_KEY"),
+            "client_id": os.environ.get("WFP_AUTH_CLIENT_ID"),
+            "secret": None,  # Secret is not accepted since we use PKCE
         },
-        "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
+        "OAUTH_PKCE_ENABLED": True,
+        # To which tenant this is linked
+        "IASO_ACCOUNT_NAME": iaso_account,
+        "EMAIL_RECIPIENTS_NEW_ACCOUNT": os.environ.get("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
-}
+
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}

@@ -1,4 +1,5 @@
 import { UseQueryResult, UseMutationResult } from 'react-query';
+import { UrlParams, ApiParams } from 'bluesquare-components';
 import { getRequest, postRequest, putRequest } from '../../../libs/Api';
 import { useSnackQuery, useSnackMutation } from '../../../libs/apiHooks';
 
@@ -6,7 +7,6 @@ import { PaginatedProjects } from '../types/paginatedProjects';
 import { Project } from '../types/project';
 import { FeatureFlag } from '../types/featureFlag';
 import { DropdownOptions } from '../../../types/utils';
-import { UrlParams, ApiParams } from '../../../types/table';
 
 type ProjectApi = {
     projects: Array<Project>;

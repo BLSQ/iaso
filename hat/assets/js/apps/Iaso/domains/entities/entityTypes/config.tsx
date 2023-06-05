@@ -1,6 +1,10 @@
 import React, { ReactElement } from 'react';
 // @ts-ignore
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    IntlMessage,
+    Column,
+} from 'bluesquare-components';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
@@ -11,8 +15,6 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../../constants/urls';
 
 import { EntityType } from './types/entityType';
-import { Column } from '../../../types/table';
-import { IntlMessage } from '../../../types/intl';
 
 export const baseUrl = baseUrls.entityTypes;
 

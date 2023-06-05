@@ -7,7 +7,6 @@ from django.urls import path, include, URLPattern, URLResolver
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
-from hat.api.authentication import WfpLogin, wfp_callback
 from hat.api.token_authentication import token_auth
 from iaso import matching
 from iaso.api.data_store import DataStoreViewSet
@@ -191,9 +190,6 @@ urlpatterns = urlpatterns + [
 ]
 # External Auth
 urlpatterns = urlpatterns + [
-    url("auth0/login/callback/", wfp_callback, name="callback"),
-    path("", include("allauth.urls")),
-    path("auth0/login/", WfpLogin.as_view(), name="openid"),
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
 ]

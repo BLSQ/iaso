@@ -1,20 +1,14 @@
-/* eslint-disable class-methods-use-this */
-// @ts-ignore
 import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 import isNumber from 'lodash/isNumber';
-import { injectIntl } from 'bluesquare-components';
-import { defineMessages } from 'react-intl';
-import { MapControl, withLeaflet } from 'react-leaflet';
 import { Theme } from '@material-ui/core/styles';
-import { ZoomBar } from '../components/leaflet/zoom-bar';
-import { OrgUnit } from '../domains/orgUnits/types/orgUnit';
-import { OrgunitTypes } from '../domains/orgUnits/types/orgunitTypes';
+import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
+import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
 import {
     AssociatedOrgUnit,
     MappedOrgUnit,
-} from '../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
+} from '../../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
 
 export const defaultCenter = [5, 20];
 export const defaultZoom = 4;
@@ -24,21 +18,6 @@ export const orderOrgUnitsByDepth = (orgUnits: OrgUnit[]): OrgUnit[] =>
 export const orderOrgUnitTypeByDepth = (
     orgUnitTypes: OrgunitTypes,
 ): OrgunitTypes => orderBy(orgUnitTypes, [o => o.depth], ['asc']);
-
-export const MESSAGES = defineMessages({
-    'fit-to-bounds': {
-        defaultMessage: 'Center the map',
-        id: 'map.label.fitToBounds',
-    },
-    'box-zoom-title': {
-        defaultMessage: 'Draw a square on the map to zoom in to an area',
-        id: 'map.label.zoom.box',
-    },
-    'info-zoom-title': {
-        defaultMessage: 'Current zoom level',
-        id: 'map.label.zoom.info',
-    },
-});
 
 export const isValidCoordinate = (
     latitude: number,
@@ -137,20 +116,6 @@ export const circleColorMarkerOptions = (
     radius: 8,
 });
 
-class ZoomControl_ extends MapControl {
-    createLeafletElement({ fitToBounds, intl: { formatMessage } }) {
-        return new ZoomBar({
-            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds,
-            position: 'topleft',
-        });
-    }
-}
-
-export const ZoomControl = injectIntl(withLeaflet(ZoomControl_));
-
 // Takes the value of the .orgUnit field of each org unit and copy it in either shape or location field
 export const mapOrgUnitByLocation = (
     origin: OrgunitTypes | AssociatedOrgUnit[],
@@ -177,17 +142,6 @@ export const mapOrgUnitByLocation = (
     return mappedOrgunits;
 };
 
-export const shapeOptions = (): {
-    // eslint-disable-next-line no-unused-vars
-    onEachFeature: (feature: any, layer: any) => void;
-} => ({
-    onEachFeature: (feature, layer) => {
-        layer.setStyle({
-            weight: 3,
-        });
-    },
-});
-
 type ShapeOptions = {
     shapeOptions: { color: string; className: string; pane: string };
 };
@@ -205,6 +159,16 @@ export const polygonDrawOption = (
     };
 };
 
+export const shapeOptions = (): {
+    // eslint-disable-next-line no-unused-vars
+    onEachFeature: (feature: any, layer: any) => void;
+} => ({
+    onEachFeature: (feature, layer) => {
+        layer.setStyle({
+            weight: 3,
+        });
+    },
+});
 export const getleafletGeoJson = (geoJson: any): void =>
     geoJson ? L.geoJson(geoJson, shapeOptions) : null;
 
@@ -218,19 +182,7 @@ export type Bounds = {
     _southWest: LatLng;
     // eslint-disable-next-line no-unused-vars
     extend: (bounds: Bounds) => Bounds;
-};
-type BoundsOptions = {
-    padding: number[];
-};
-type DefaultViewPort = {
-    center: number[];
-    zoom: number;
-};
-type Map = {
-    leafletElement: {
-        // eslint-disable-next-line no-unused-vars
-        fitBounds: (bounds: Bounds, boundsOptions) => void;
-    };
+    isValid: () => boolean;
 };
 
 export const getOrgUnitBounds = (orgUnit: OrgUnit): Bounds | undefined => {
@@ -275,22 +227,4 @@ export const mergeBounds = (
         bounds = boundsB;
     }
     return bounds;
-};
-
-export const DEFAULT_VIEWPORT: DefaultViewPort = {
-    center: [1, 20],
-    zoom: 3.25,
-};
-export const BOUNDS_OPTIONS: BoundsOptions = {
-    padding: [50, 50],
-};
-
-export const tryFitToBounds = (bounds?: Bounds, map?: Map): void => {
-    if (bounds) {
-        try {
-            map?.leafletElement.fitBounds(bounds, BOUNDS_OPTIONS);
-        } catch (e) {
-            console.warn(e);
-        }
-    }
 };

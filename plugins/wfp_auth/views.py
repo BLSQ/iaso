@@ -18,6 +18,7 @@ from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
 from django.http import HttpRequest, JsonResponse
 from django.template import loader
+from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
 from requests import RequestException, HTTPError
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
@@ -177,6 +178,7 @@ oauth2_login = OAuth2LoginView.adapter_view(WFP2Adapter)
 oauth2_callback = WFPCallbackView.adapter_view(WFP2Adapter)
 
 
+@csrf_exempt
 def token_view(request):
     """Login workflow via the Mobile Application
 

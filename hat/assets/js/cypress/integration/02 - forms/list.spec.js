@@ -29,9 +29,11 @@ const goToPage = (
     };
     if (formQuery) {
         cy.intercept({ ...options, query: formQuery }, req => {
-            req.continue(res => {
-                interceptFlag = true;
-                res.send({ fixture });
+            req.on('response', response => {
+                if (response.statusMessage === 'OK') {
+                    interceptFlag = true;
+                    response.send({ fixture });
+                }
             });
         }).as('getForms');
     } else {

@@ -200,19 +200,6 @@ export const RiskAssessmentForm = () => {
                             <Field
                                 key={round.number}
                                 label={`${formatMessage(
-                                    MESSAGES.percentage_covered_target_population,
-                                )} ${round.number}`}
-                                name={`rounds[${i}].percentage_covered_target_population`}
-                                component={TextInput}
-                                className={classes.input}
-                            />
-                        );
-                    })}
-                    {rounds.map((round, i) => {
-                        return (
-                            <Field
-                                key={round.number}
-                                label={`${formatMessage(
                                     MESSAGES.target_population,
                                 )} ${round.number}`}
                                 name={`rounds[${i}].target_population`}

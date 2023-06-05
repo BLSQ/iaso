@@ -1,10 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Tooltip, Checkbox } from '@material-ui/core';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../messages';
-import { IntlFormatMessage } from '../../../types/intl';
 import { ChildrenOrgUnitsArrayItem } from '../types/orgUnit';
 import { SubTeam, User } from '../types/team';
 

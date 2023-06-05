@@ -1,14 +1,12 @@
 import { Box, Grid } from '@material-ui/core';
 import React, { FunctionComponent, useState } from 'react';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import { FilterButton } from '../../components/FilterButton';
 import DatesRange from '../../components/filters/DatesRange';
 import InputComponent from '../../components/forms/InputComponent';
 import { useFilterState } from '../../hooks/useFilterState';
 import { PlanningParams } from './types';
 import MESSAGES from './messages';
-import { IntlFormatMessage } from '../../types/intl';
 import { publishingStatuses } from './constants';
 import { baseUrls } from '../../constants/urls';
 

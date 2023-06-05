@@ -1,3 +1,4 @@
+import { IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from '../IM/constants';
 import {
@@ -5,7 +6,6 @@ import {
     ConvertedLqasImData,
     LqasImCampaign,
     LqasImDistrictData,
-    IntlFormatMessage,
 } from '../../constants/types';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 import { makeLegendItem } from '../../utils';

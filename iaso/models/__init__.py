@@ -1,4 +1,5 @@
 from .base import *
+from .base import Instance
 from .device import Device, DeviceOwnership, DevicePosition
 from .forms import Form, FormVersion, FormPredefinedFilter, FormAttachment
 from .org_unit import OrgUnit, OrgUnitType
@@ -11,3 +12,4 @@ from .storage import StorageDevice, StorageLogEntry, StoragePassword
 from .workflow import Workflow, WorkflowVersion, WorkflowFollowup, WorkflowChange
 from .reports import Report, ReportVersion
 from .deduplication import EntityDuplicateAnalyze, EntityDuplicate
+from .microplanning import Planning, Team

@@ -7,12 +7,10 @@ import {
     TableRow,
     TableHead,
 } from '@material-ui/core';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 
 import { formatLabel } from '../../utils';
 import { FileContent } from '../../types/instance';
-import { IntlFormatMessage } from '../../../../types/intl';
 import MESSAGES from '../messages';
 
 type Props = {

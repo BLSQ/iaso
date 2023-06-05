@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-import { Box, Typography } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
@@ -33,14 +32,7 @@ const FormVersionsComponent = ({
     if (!formId) return null;
 
     return (
-        <Box mt={4}>
-            <Typography
-                color="primary"
-                variant="h5"
-                data-test="form-versions-title"
-            >
-                <FormattedMessage {...MESSAGES.versions} />
-            </Typography>
+        <Box>
             <Box
                 mb={2}
                 justifyContent="flex-end"

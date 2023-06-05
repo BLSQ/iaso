@@ -5,7 +5,7 @@ import {
     closeFixedSnackbar,
     enqueueSnackbar,
 } from '../../../../redux/snackBarsReducer';
-import { getLatLngBounds } from '../../../../utils/mapUtils';
+import { getLatLngBounds } from '../../../../utils/map/mapUtils';
 
 const snackbarKey = 'noInstancesOnMap';
 

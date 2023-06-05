@@ -21,6 +21,7 @@ from django.template import loader
 from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
 from requests import RequestException, HTTPError
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.models import Account, Profile
@@ -179,6 +180,9 @@ oauth2_callback = WFPCallbackView.adapter_view(WFP2Adapter)
 
 
 @csrf_exempt
+@api_view(http_method_names=["POST", "GET"])
+@authentication_classes([])
+@permission_classes([])
 def token_view(request):
     """Login workflow via the Mobile Application
 
@@ -190,7 +194,7 @@ def token_view(request):
     6. We do reconciliation, user creation, sending of email, etc...
     7. Iaso token representing the user connection is created and returned (using DRF simple-jwt like in regular workflow)
     """
-    token = request.POST.get("token") or request.GET.get("token")
+    token = request.data.get("token")
     if not token:
         return JsonResponse(
             {

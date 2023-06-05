@@ -74,6 +74,13 @@ PAYMENT = [
     ("DFC", _("DFC")),
 ]
 
+DELAY_REASONS = [("INITIAL_DATA", _("initial_data")), ("ENCODING_ERROR", _("encoding_error"))]
+
+START_DATE = "START_DATE"
+END_DATE = "END_DATE"
+
+START_OR_END = [(START_DATE), _("start_date"), (END_DATE), _("end_date")]
+
 
 def make_group_round_scope():
     return Group.objects.create(name="hidden roundScope")
@@ -142,6 +149,14 @@ class RoundVaccine(models.Model):
     wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
+class DateLog(models.Model):
+    previous_value: models.DateTimeField(null=True, blank=True)
+    value: models.DateTimeField(null=True, blank=True)
+    reason = models.CharField(null=True, blank=True, choices=DELAY_REASONS)
+    kind = models.CharField(null=True, blank=True, choices=START_OR_END)
+    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
+
+
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
@@ -154,6 +169,7 @@ class Round(models.Model):
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)
+
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)
     im_started_at = models.DateField(null=True, blank=True)

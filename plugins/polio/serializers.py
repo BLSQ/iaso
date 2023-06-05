@@ -16,7 +16,10 @@ from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
 from iaso.models import Group
 from .models import (
+    END_DATE,
+    START_DATE,
     Config,
+    DateLog,
     Round,
     LineListImport,
     VIRUSES,
@@ -297,6 +300,12 @@ class RoundVaccineSerializer(serializers.ModelSerializer):
         fields = ["wastage_ratio_forecast", "doses_per_vial", "name", "id"]
 
 
+class DateLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DateLog
+        fields = "__all__"
+
+
 class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
@@ -306,6 +315,17 @@ class RoundSerializer(serializers.ModelSerializer):
     vaccines = RoundVaccineSerializer(many=True, required=False)
     shipments = ShipmentSerializer(many=True, required=False)
     destructions = DestructionSerializer(many=True, required=False)
+    datelogs = DateLogSerializer(many=True, required=False)
+    start_date_history = serializers.SerializerMethodField()
+    end_date_history = serializers.SerializerMethodField()
+
+    def get_start_date_history(self, instance: Round):
+        logs = instance.datelogs.filter(kind=START_DATE)
+        return DateLogSerializer(logs, many=True).data
+
+    def get_end_date_history(self, instance: Round):
+        logs = instance.datelogs.filter(kind=END_DATE)
+        return DateLogSerializer(logs, many=True).data
 
     @atomic
     def create(self, validated_data):

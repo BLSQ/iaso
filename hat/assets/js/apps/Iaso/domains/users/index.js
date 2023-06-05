@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
@@ -9,7 +9,6 @@ import {
     LoadingSpinner,
     AddButton as AddButtonComponent,
     useSafeIntl,
-    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -24,8 +23,7 @@ import { useSaveProfile } from './hooks/useSaveProfile';
 import usersTableColumns from './config';
 import MESSAGES from './messages';
 
-import { redirectTo } from '../../routing/actions';
-import { convertObjectToString } from '../../utils/dataManipulation.ts';
+import { redirectTo } from '../../routing/actions.ts';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog.tsx';
 
@@ -38,12 +36,6 @@ const useStyles = makeStyles(theme => ({
 const Users = ({ params }) => {
     const classes = useStyles();
     const currentUser = useCurrentUser();
-    const [resetPageToOne, setResetPageToOne] = useState(
-        convertObjectToString({
-            pageSize: params.pageSize,
-            search: params.search,
-        }),
-    );
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
@@ -55,15 +47,6 @@ const Users = ({ params }) => {
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
 
     const isLoading = fetchingProfiles || deletingProfile || savingProfile;
-
-    useSkipEffectOnMount(() => {
-        setResetPageToOne(
-            convertObjectToString({
-                pageSize: params.pageSize,
-                search: params.search,
-            }),
-        );
-    }, [params.pageSize, params.search]);
 
     return (
         <>
@@ -111,7 +94,11 @@ const Users = ({ params }) => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    resetPageToOne={resetPageToOne}
+                    // resetPageToOne={resetPageToOne}
+                    extraProps={{
+                        pageSize: params.pageSize,
+                        search: params.search,
+                    }}
                     redirectTo={(b, p) => dispatch(redirectTo(b, p))}
                 />
             </Box>

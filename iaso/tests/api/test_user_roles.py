@@ -65,7 +65,7 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.get("/api/userroles/")
 
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r["user_roles"]), 6)
+        self.assertEqual(len(r["results"]), 6)
 
     def test_list_with_search_on_user_role_name(self):
         self.client.force_authenticate(self.yoda)
@@ -74,8 +74,8 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.get("/api/userroles/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r["user_roles"]), 1)
-        self.assertEqual(r["user_roles"][0]["name"], self.group.name)
+        self.assertEqual(len(r["results"]), 1)
+        self.assertEqual(r["results"][0]["name"], self.group.name)
 
     def test_partial_update_no_modification(self):
         self.client.force_authenticate(self.yoda)

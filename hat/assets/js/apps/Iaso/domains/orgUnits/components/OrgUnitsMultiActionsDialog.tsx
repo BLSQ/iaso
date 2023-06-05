@@ -108,12 +108,14 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         sourceVersionId: currentUser?.account?.default_version?.id,
     });
     const isSaveDisabled = () =>
-        (editGroups &&
+        ((editGroups &&
             groupsAdded.length === 0 &&
             groupsRemoved.length === 0) ||
-        (editOrgUnitType && !orgUnitType) ||
-        (editValidation && validationStatus === null) ||
-        (!editGroups && !editOrgUnitType && !editValidation);
+            (editOrgUnitType && !orgUnitType) ||
+            (editValidation && validationStatus === null) ||
+            (!editGroups && !editOrgUnitType && !editValidation)) &&
+        updateGPS === false;
+
     const groupsWithoutAdded = [...groups].filter(
         g => groupsAdded.indexOf(g.id) === -1,
     );

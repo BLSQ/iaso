@@ -23,10 +23,10 @@ type SaveDataWithOptions = SaveData & {
 
 const saveMulti = async (args: SaveDataWithOptions): Promise<void> => {
     if (args.saveGPS) {
-        await saveBulkOrgUnits(args);
+        await saveBulkOrgUnitsGPS(args);
     }
     if (args.saveOtherField) {
-        await saveBulkOrgUnitsGPS(args);
+        await saveBulkOrgUnits(args);
     }
 };
 

@@ -29,6 +29,7 @@ export type OrgunitType = {
     updated_at: number;
     units_count: number;
     sub_unit_types: OrgunitType[];
+    allow_creating_sub_unit_types: OrgunitType[];
     reference_form: any;
     projects: Project[];
     color?: string;

@@ -988,6 +988,7 @@
     "iaso.users.filter.searchUser": "Search user",
     "iaso.users.isSuperUser": "User is a super admin and has all rights",
     "iaso.users.label.homePage": "Home page",
+    "iaso.users.label.noTypeAssigned": "No org unit type assigned",
     "iaso.users.newPassword": "New password",
     "iaso.users.ouChildrenCheckbox": "Users with access to children org unit",
     "iaso.users.ouParentCheckbox": "Users with access to parent org unit",

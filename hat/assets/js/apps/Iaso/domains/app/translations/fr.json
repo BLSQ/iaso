@@ -715,6 +715,7 @@
     "iaso.orgUnits.titleMulti": "unités",
     "iaso.orgUnits.titleSingle": "unité",
     "iaso.orgUnits.type": "Type",
+    "iaso.orgUnits.useGPSFromSubmission": "Utiliser les coordonnées GPS de la soumission",
     "iaso.orgUnitsTypes.create": "Créer un type d'unité d'organisation",
     "iaso.orgUnitsTypes.dialog.delete": "Etes-vous certain de vouloir effacer ce type d'unité d'organisation ?",
     "iaso.orgUnitsTypes.dialog.deleteText": "Cette opération est définitive.",

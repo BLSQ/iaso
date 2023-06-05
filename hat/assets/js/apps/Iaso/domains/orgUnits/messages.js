@@ -514,6 +514,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.depth',
         defaultMessage: 'Depth',
     },
+    useGPSFromSubmission: {
+        id: 'iaso.orgUnits.useGPSFromSubmission',
+        defaultMessage: 'Use GPS coordinates from form submission',
+    },
 });
 
 export default MESSAGES;

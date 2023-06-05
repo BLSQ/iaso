@@ -120,7 +120,10 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
 
         for f in the_fields:
             the_q = find_question_by_name(f, possible_fields)
-            ret_val.append({"field": the_q["name"], "label": the_q["label"]})
+            if the_q is not None:
+                ret_val.append(
+                    {"field": the_q["name"], "label": the_q["label"], "type": the_q["type"], "path": the_q["path"]}
+                )
 
         return ret_val
 

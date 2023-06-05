@@ -973,6 +973,7 @@
     "iaso.users.filter.searchUser": "Rechercher un utilisateur",
     "iaso.users.isSuperUser": "L'utilisateur est administrateur et a tous les droits.",
     "iaso.users.label.homePage": "Page d'accueil",
+    "iaso.users.label.noTypeAssigned": "Aucun type d'unité d'org assigné",
     "iaso.users.newPassword": "Nouveau mot de passe",
     "iaso.users.ouChildrenCheckbox": "Utilisateurs avec accès aux unités d'organisations enfants",
     "iaso.users.ouParentCheckbox": "Utilisateurs avec accès aux unités d'organisations parents",

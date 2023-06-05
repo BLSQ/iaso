@@ -88,7 +88,7 @@ const OrgUnitPopupComponent = ({
         groups = activeOrgUnit.groups.map(g => g.name).join(', ');
     }
     return (
-        <Popup className={classes.popup} ref={popup}>
+        <Popup className={classes.popup} ref={popup} pane="popupPane">
             {!activeOrgUnit && <LoadingSpinner />}
             {activeOrgUnit && (
                 <Card className={classes.popupCard}>

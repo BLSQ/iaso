@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
+import { IntlFormatMessage } from 'bluesquare-components';
 import {
     BarChartData,
     ConvertedLqasImData,
     FormatForNFMArgs,
-    IntlFormatMessage,
     LqasImCampaign,
     LqasImDistrictData,
     LqasImDistrictDataWithNameAndRegion,

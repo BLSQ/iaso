@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import 'leaflet-draw';
 
-import { customMarker, polygonDrawOption } from '../../../../utils/mapUtils';
+import { customMarker, polygonDrawOption } from '../../../../utils/map/mapUtils';
 
 class EditableGroup {
     constructor() {

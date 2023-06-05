@@ -1,10 +1,10 @@
 /* eslint-disable camelcase */
 import React from 'react';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     IconButton as IconButtonComponent,
+    IntlFormatMessage,
+    Column,
 } from 'bluesquare-components';
 import MESSAGES from './messages';
 
@@ -13,9 +13,6 @@ import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import { StatusCell } from './components/StatusCell';
 import { LinkToEntity } from './components/LinkToEntity';
 import { LinkToInstance } from '../instances/components/LinkToInstance';
-
-import { IntlFormatMessage } from '../../types/intl';
-import { Column } from '../../types/table';
 import { baseUrls } from '../../constants/urls';
 import { StorageParams } from './types/storages';
 

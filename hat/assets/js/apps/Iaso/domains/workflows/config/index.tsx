@@ -1,11 +1,9 @@
 /* eslint-disable camelcase */
 import React from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 
-import { IntlFormatMessage } from '../../../types/intl';
-import { Column } from '../../../types/table';
 import { baseUrls } from '../../../constants/urls';
 
 import { StatusCell } from '../components/StatusCell';

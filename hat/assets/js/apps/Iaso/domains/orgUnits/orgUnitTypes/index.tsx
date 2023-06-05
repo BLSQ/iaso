@@ -1,7 +1,12 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid, makeStyles } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
-import { commonStyles, AddButton, useSafeIntl } from 'bluesquare-components';
+import {
+    commonStyles,
+    AddButton,
+    useSafeIntl,
+    Column,
+} from 'bluesquare-components';
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import { OrgUnitsTypesDialog } from './components/OrgUnitsTypesDialog';
@@ -16,7 +21,6 @@ import MESSAGES from './messages';
 import { redirectTo } from '../../../routing/actions';
 
 import { useGetOrgUnitTypes } from './hooks/useGetOrgUnitTypes';
-import { Column } from '../../../types/table';
 
 const baseUrl = baseUrls.orgUnitTypes;
 

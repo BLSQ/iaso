@@ -97,3 +97,20 @@ export type FormDescriptor = {
     type: string;
     children: ChildrenDescriptor[];
 };
+
+export type FormAttachment = {
+    id: number;
+    name: string;
+    file: string;
+    md5: string;
+    form_id: number;
+    created_at: number;
+    updated_at: number;
+};
+export type FormParams = {
+    formId: string;
+    tab?: string;
+    attachmentsOrder?: string;
+    attachmentsPageSize?: string;
+    attachmentsPage?: string;
+};

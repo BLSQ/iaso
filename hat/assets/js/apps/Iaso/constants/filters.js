@@ -35,6 +35,23 @@ export const status = (
     loading: isLoadingValidationStatusOptions,
 });
 
+export const linkStatus = formatMessage => ({
+    urlKey: 'validated',
+    isMultiSelect: false,
+    isClearable: true,
+    options: [
+        {
+            label: formatMessage(MESSAGES.validated),
+            value: 'true',
+        },
+        {
+            label: formatMessage(MESSAGES.notValidated),
+            value: 'false',
+        },
+    ],
+    label: MESSAGES.validationStatus,
+    type: 'select',
+});
 export const hasInstances = (formatMessage, urlKey = 'hasInstances') => ({
     urlKey,
     isMultiSelect: false,
@@ -475,8 +492,6 @@ export const linksFiltersWithPrefix = (
     profiles = [],
     algorithms = [],
     sources = [],
-    validationStatusOptions = [],
-    isLoadingValidationStatusOptions = false,
 ) =>
     filtersWithPrefix(
         [
@@ -489,10 +504,7 @@ export const linksFiltersWithPrefix = (
                 column: 1,
             },
             {
-                ...status(
-                    validationStatusOptions,
-                    isLoadingValidationStatusOptions,
-                ),
+                ...linkStatus(formatMessage),
                 column: 3,
             },
             {
@@ -626,8 +638,6 @@ export const linksFilters = props => {
         fetchingProfiles,
         fetchingAlgorithms,
         fetchingSources,
-        validationStatusOptions = [],
-        isLoadingValidationStatusOptions = false,
     } = props;
     const filters = [
         {
@@ -648,10 +658,7 @@ export const linksFilters = props => {
             column: 1,
         },
         {
-            ...status(
-                validationStatusOptions,
-                isLoadingValidationStatusOptions,
-            ),
+            ...linkStatus(formatMessage),
             column: 1,
         },
         {

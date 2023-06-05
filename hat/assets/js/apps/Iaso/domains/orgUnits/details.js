@@ -589,8 +589,6 @@ const OrgUnitDetail = ({ params, router }) => {
                                         profiles,
                                         algorithms,
                                         sources,
-                                        validationStatusOptions,
-                                        isLoadingValidationStatusOptions,
                                     )}
                                     params={params}
                                     paramsPrefix="linksParams"

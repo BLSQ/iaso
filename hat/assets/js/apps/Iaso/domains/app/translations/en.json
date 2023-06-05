@@ -752,6 +752,7 @@
     "iaso.permissions.iaso_dhis2_link": "Link with DHIS2",
     "iaso.permissions.iaso_entity_duplicates_read": "See entity duplicates",
     "iaso.permissions.iaso_entity_duplicates_write": "Edit entity duplicates",
+    "iaso.permissions.iaso_org_unit_groups": "Org unit groups",
     "iaso.permissions.iaso_org_unit_types": "Org unit types",
     "iaso.permissions.iaso_registry": "Registry",
     "iaso.permissions.iaso_workflows": "Workflows",

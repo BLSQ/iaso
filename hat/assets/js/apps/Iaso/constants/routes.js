@@ -743,7 +743,7 @@ export const devicesPath = {
 
 export const groupsPath = {
     baseUrl: baseUrls.groups,
-    permissions: ['iaso_org_units'],
+    permissions: ['iaso_org_unit_groups'],
     component: props => <Groups {...props} />,
     params: [
         {

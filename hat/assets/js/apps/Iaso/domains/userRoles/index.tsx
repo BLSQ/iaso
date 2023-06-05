@@ -9,7 +9,7 @@ import { useSingleTableParams } from '../../components/tables/SingleTable';
 import { baseUrls } from '../../constants/urls';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { UserRoleParams } from './types/userRoles';
-import { userRolesColumns } from './config';
+import { useGetUserRolesColumns } from './config';
 import { useGetUserRoles } from './hooks/requests/useGetUserRoles';
 import { redirectTo } from '../../routing/actions';
 
@@ -27,6 +27,7 @@ export const UserRoles: FunctionComponent<Props> = ({ params }) => {
 
     const { data, isFetching } = useGetUserRoles(apiParams);
     const { formatMessage } = useSafeIntl();
+    const columns = useGetUserRolesColumns();
     return (
         <>
             <TopBar
@@ -38,10 +39,10 @@ export const UserRoles: FunctionComponent<Props> = ({ params }) => {
             </Box>
             <TableWithDeepLink
                 baseUrl={baseUrl}
-                data={data?.user_roles ?? []}
+                data={data?.results ?? []}
                 pages={data?.pages ?? 1}
                 defaultSorted={[{ id: 'name', desc: false }]}
-                columns={userRolesColumns(formatMessage)}
+                columns={columns}
                 count={data?.count ?? 0}
                 params={apiParams}
                 onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}

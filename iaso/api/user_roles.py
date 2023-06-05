@@ -56,7 +56,7 @@ class UserRolesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["user_roles"] = map(lambda x: x.as_dict(), page.object_list)
+            res["results"] = map(lambda x: x.as_dict(), page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -64,7 +64,7 @@ class UserRolesViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         else:
-            return Response({"user_roles": [userrole.as_short_dict() for userrole in queryset]})
+            return Response({"results": [userrole.as_short_dict() for userrole in queryset]})
 
     def retrieve(self, request: Request, *args, **kwargs) -> Response:
         pk = kwargs.get("pk")

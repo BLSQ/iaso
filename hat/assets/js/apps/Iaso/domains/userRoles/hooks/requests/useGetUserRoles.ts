@@ -11,7 +11,7 @@ import {
 } from '../../types/userRoles';
 
 type UserRolesList = Pagination & {
-    user_roles: UserRole[];
+    results: UserRole[];
 };
 
 const getUserRoles = async (

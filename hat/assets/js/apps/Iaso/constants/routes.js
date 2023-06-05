@@ -21,7 +21,7 @@ import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import { CompletenessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/orgUnitTypes';
+import Types from '../domains/orgUnits/orgUnitTypes/index.tsx';
 import { Beneficiaries } from '../domains/entities/index.tsx';
 import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';

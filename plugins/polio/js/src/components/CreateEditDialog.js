@@ -107,7 +107,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: handleSubmit,
+        onSubmit: (values, helpers) => {
+            helpers.setSubmitting(true);
+            handleSubmit(values, helpers);
+        },
     });
     const { touched } = formik;
 

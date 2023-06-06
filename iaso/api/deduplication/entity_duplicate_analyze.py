@@ -1,10 +1,11 @@
 from django.contrib.auth.models import User
+from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import permissions, serializers, status, viewsets
+from rest_framework import filters, permissions, serializers, status, viewsets
 from rest_framework.response import Response
 
 import iaso.models.base as base
-from iaso.api.common import HasPermission
+from iaso.api.common import HasPermission, Paginator
 from iaso.models import Entity, EntityDuplicateAnalyze, EntityType, Form
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
@@ -57,7 +58,6 @@ class UserNestedSerializer(serializers.ModelSerializer):
 
 
 class EntityDuplicateAnalyzeDetailSerializer(serializers.ModelSerializer):
-
     status = serializers.ChoiceField(source="task.status", choices=base.STATUS_TYPE_CHOICES)
     started_at = serializers.DateTimeField(source="task.started_at")
     created_by = UserNestedSerializer(source="task.launcher")
@@ -92,7 +92,7 @@ class EntityDuplicateAnalyzeDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
+class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
     """Entity Duplicates API
     GET /api/entityduplicates/analyzes : Provides an API to retrieve the list of running and finished analyzes
     POST /api/entityduplicates/analyzes : Provides an API to launch a duplicate analyzes
@@ -102,17 +102,40 @@ class EntityDuplicateAnalyzeViewSet(viewsets.ViewSet):
 
     """
 
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+    ordering_fields = ["created_at", "finished_at", "id"]
+    results_key = "results"
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
     serializer_class = EntityDuplicateAnalyzeSerializer
+    pagination_class = Paginator
+
+    def get_results_key(self):
+        return self.results_key
+
+    def get_queryset(self):
+        initial_queryset = EntityDuplicateAnalyze.objects.all()
+        return initial_queryset
 
     def list(self, request, *args, **kwargs):
         """
         GET /api/entityduplicates_analyzes/
         Provides an API to retrieve the list of running and finished analyzes
         """
-        queryset = EntityDuplicateAnalyze.objects.all()
+        queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
         serializer = EntityDuplicateAnalyzeSerializer(queryset, many=True)
-        return Response(serializer.data)
+        if not self.remove_results_key_if_paginated:
+            return Response(data={self.get_results_key(): serializer.data}, content_type="application/json")
+        else:
+            return Response(data=serializer.data, content_type="application/json")
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         """

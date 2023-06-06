@@ -3,6 +3,7 @@ import React, {
     useState,
     MouseEvent,
     ReactChildren,
+    ReactNode,
 } from 'react';
 import { makeStyles, Theme } from '@material-ui/core/styles';
 import {
@@ -32,7 +33,7 @@ const useStyles = makeStyles((theme: Theme) => ({
 }));
 
 type Props = {
-    children: ReactChildren;
+    children: ReactNode;
     placement?: PopperPlacementType;
 };
 

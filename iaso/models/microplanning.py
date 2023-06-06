@@ -119,6 +119,33 @@ class PlanningQuerySet(models.QuerySet):
         return self.filter(project__account=user.iaso_profile.account)
 
 
+class MissionType(models.TextChoices):
+    DEFAULT = "DEFAULT", "default"
+    FORMS = "MULTIPLE_FORMS", "Multiple Forms"
+    CREATE_ORG_UNITS = "CREATE_ORG_UNITS", "Create org units"
+    CREATE_ENTITIES = "CREATE_ENTITIES", "Create entities"
+
+
+"""
+Current ideas to improve plannings. 
+
+We have now 4 examples of plannings that we would like to allow to specify:
+- Like in Luallaba: for each area, create at least 10 (an as much as you want) POI and for each one of these, fill  
+one or multiple forms. 
+- Polio LQAS: go to an orgunit and find 60 children and check if they have been vaccinated
+- Like for malaria bed net distribution: for a given set of households,  create one entity per person in the household and fill the reference form of that entity. 
+  (It should also be possible to add households if they are missing)
+- for Niger: ask that a form is filled for a given entity every night (on top of having an initial form filled to specify existing stocks)
+"""
+
+
+class Mission(SoftDeletableModel):
+    type = models.CharField(choices=MissionType.choices, max_length=100, null=True, blank=True)
+    task_min_count = models.IntegerField(null=True, blank=True)
+    task_max_count = models.IntegerField(null=True, blank=True)
+    forms = models.ManyToManyField(Form, related_name="teams")
+
+
 class Planning(SoftDeletableModel):
     objects = PlanningQuerySet.as_manager()
 
@@ -130,7 +157,8 @@ class Planning(SoftDeletableModel):
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    forms = models.ManyToManyField(Form, related_name="teams")
+    forms = models.ManyToManyField(Form, related_name="plannings")
+    missions = models.ManyToManyField(Mission, related_name="teams")  # should replace forms
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
     published_at = models.DateTimeField(null=True, blank=True)

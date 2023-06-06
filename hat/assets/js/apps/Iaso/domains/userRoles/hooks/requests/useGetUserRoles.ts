@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
+import { Pagination } from 'bluesquare-components';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
-import { Pagination } from '../../../../types/table';
 import {
     UserRoleParams,
     UserRolesFilterParams,
@@ -17,10 +17,11 @@ type UserRolesList = Pagination & {
 const getUserRoles = async (
     options: UserRoleParams | UserRolesFilterParams,
 ): Promise<UserRolesList> => {
-    const { pageSize, ...params } = options as Record<string, any>;
-    if (pageSize) {
-        params.limit = pageSize;
-    }
+    const { pageSize, order, page, ...params } = options as Record<string, any>;
+
+    params.limit = pageSize || 20;
+    params.order = order || 'group__name';
+    params.page = page || 1;
     if (params.select) {
         delete params.select;
     }

@@ -5,7 +5,6 @@ import { useDispatch } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { UserRolesFilters } from './components/UserRolesFilters';
-import { useSingleTableParams } from '../../components/tables/SingleTable';
 import { baseUrls } from '../../constants/urls';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { UserRoleParams } from './types/userRoles';
@@ -23,9 +22,8 @@ const baseUrl = baseUrls.userRoles;
 export const UserRoles: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
-    const apiParams = useSingleTableParams(params);
 
-    const { data, isFetching } = useGetUserRoles(apiParams);
+    const { data, isFetching } = useGetUserRoles(params);
     const { formatMessage } = useSafeIntl();
     const columns = useGetUserRolesColumns();
     return (
@@ -35,19 +33,20 @@ export const UserRoles: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <UserRolesFilters params={apiParams} />
+                <UserRolesFilters params={params} />
+                <TableWithDeepLink
+                    marginTop={false}
+                    data={data?.results ?? []}
+                    pages={data?.pages ?? 1}
+                    defaultSorted={[{ id: 'group__name', desc: false }]}
+                    columns={columns}
+                    count={data?.count ?? 0}
+                    baseUrl={baseUrl}
+                    params={params}
+                    extraProps={{ loading: isFetching }}
+                    onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                />
             </Box>
-            <TableWithDeepLink
-                baseUrl={baseUrl}
-                data={data?.results ?? []}
-                pages={data?.pages ?? 1}
-                defaultSorted={[{ id: 'name', desc: false }]}
-                columns={columns}
-                count={data?.count ?? 0}
-                params={apiParams}
-                onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
-                extraProps={{ loading: isFetching }}
-            />
         </>
     );
 };

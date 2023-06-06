@@ -1,8 +1,4 @@
-import { useSafeIntl } from 'bluesquare-components';
-
-import { IntlFormatMessage } from '../../types/intl';
-
-import { Column } from '../../types/table';
+import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 
 import MESSAGES from './messages';
 
@@ -17,8 +13,8 @@ export const useGetUserRolesColumns = (): Column[] => {
         },
         {
             Header: formatMessage(MESSAGES.name),
-            accessor: 'name',
-            id: 'name',
+            accessor: 'group__name',
+            id: 'group__name',
         },
         {
             Header: formatMessage(MESSAGES.created_at),

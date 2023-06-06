@@ -706,7 +706,6 @@ export const userRolesPath = {
         },
         ...paginationPathParams.map(p => ({
             ...p,
-            isRequired: true,
         })),
     ],
 };

@@ -9,6 +9,8 @@ import {
     makeStyles,
     Box,
     Typography,
+    useTheme,
+    Tooltip,
 } from '@material-ui/core';
 import {
     // @ts-ignore
@@ -22,6 +24,7 @@ import ReportIcon from '@material-ui/icons/Report';
 // @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { UseMutateAsyncFunction } from 'react-query';
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 import MESSAGES from '../messages';
@@ -88,6 +91,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const theme = useTheme();
     const { data: orgUnitTypes } = useGetOrgUnitTypes();
     const [editGroups, setEditGroups] = useState<boolean>(false);
     const [groupsAdded, setGroupsAdded] = useState<Group[]>([]);
@@ -340,7 +344,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                             </div>
                         )}
                     </div>
-                    <div>
+                    <Box style={{ display: 'flex' }}>
                         <InputComponent
                             keyValue="updateGPS"
                             onChange={(key, checked) =>
@@ -350,7 +354,21 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                             type="checkbox"
                             label={MESSAGES.useGPSFromSubmission}
                         />
-                    </div>
+                        <Box position="relative">
+                            <Box
+                                position="absolute"
+                                top={theme.spacing(3)}
+                                left={theme.spacing(-1)}
+                            >
+                                <Tooltip
+                                    arrow
+                                    title={formatMessage(MESSAGES.GPSWarning)}
+                                >
+                                    <InfoOutlinedIcon />
+                                </Tooltip>
+                            </Box>
+                        </Box>
+                    </Box>
                 </DialogContent>
                 <DialogActions className={classes.action}>
                     <Button onClick={closeAndReset} color="primary">
@@ -360,18 +378,6 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                     <ConfirmDialog
                         withDivider
                         btnMessage={formatMessage(MESSAGES.validate)}
-                        message={
-                            <Typography
-                                variant="body2"
-                                color="error"
-                                component="span"
-                                className={classes.warningMessage}
-                            >
-                                {formatMessage(MESSAGES.bulkChangeCount, {
-                                    count: `${formatThousand(selectCount)}`,
-                                })}
-                            </Typography>
-                        }
                         question={
                             <Box className={classes.warningTitle}>
                                 <ReportIcon
@@ -386,6 +392,18 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                                     fontSize="large"
                                 />
                             </Box>
+                        }
+                        message={
+                            <Typography
+                                variant="body2"
+                                color="error"
+                                component="span"
+                                className={classes.warningMessage}
+                            >
+                                {formatMessage(MESSAGES.bulkChangeCount, {
+                                    count: `${formatThousand(selectCount)}`,
+                                })}
+                            </Typography>
                         }
                         confirm={() => saveAndReset()}
                         btnDisabled={isSaveDisabled()}

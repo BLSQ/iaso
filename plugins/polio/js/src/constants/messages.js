@@ -2133,6 +2133,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_line_list.successMessage',
         defaultMessage: 'Imported successfully {amount} campaign(s)',
     },
+    reasonForDateChange: {
+        id: 'iaso.polio.label.reasonForDateChange',
+        defaultMessage: 'Reason for date change',
+    },
+    editRoundDates: {
+        id: 'iaso.polio.label.editRoundDates',
+        defaultMessage: 'Edit round dates',
+    },
+    ENCODING_ERROR: {
+        id: 'iaso.polio.label.ENCODING_ERROR',
+        defaultMessage: 'Encoding error',
+    },
+    INITIAL_DATA: {
+        id: 'iaso.polio.label.INITIAL_DATA',
+        defaultMessage: 'Initial data',
+    },
 });
 
 export default MESSAGES;

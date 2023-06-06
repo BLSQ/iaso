@@ -518,6 +518,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.useGPSFromSubmission',
         defaultMessage: 'Use GPS coordinates from form submission',
     },
+    GPSWarning: {
+        id: 'iaso.orgUnits.GPSWarning',
+        defaultMessage:
+            'GPS coordinates will NOT be updated for org units that already have coordinates or a shape',
+    },
 });
 
 export default MESSAGES;

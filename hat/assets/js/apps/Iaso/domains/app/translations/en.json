@@ -684,6 +684,7 @@
     "iaso.orgUnits.editValidation": "Edit validation",
     "iaso.orgUnits.forms.noData": "No form",
     "iaso.orgUnits.formsHelperText": "Form submissions",
+    "iaso.orgUnits.GPSWarning": "GPS coordinates will NOT be updated for org units that already have coordinates or a shape",
     "iaso.orgUnits.infos": "Infos",
     "iaso.orgUnits.instances_count": "Number of submissions",
     "iaso.orgUnits.missingGeolocation": "Cannot find an org unit with geolocation",

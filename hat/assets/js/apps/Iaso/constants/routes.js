@@ -97,6 +97,10 @@ export const formsPath = {
             isRequired: false,
             key: 'showDeleted',
         },
+        {
+            isRequired: false,
+            key: 'planning',
+        },
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,

@@ -405,6 +405,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.noOptions',
         defaultMessage: 'No results found',
     },
+    planning: {
+        id: 'iaso.label.planning',
+        defaultMessage: 'Planning',
+    },
     textSearch: {
         id: 'iaso.forms.textSearch',
         defaultMessage: 'Text search',

@@ -6,7 +6,7 @@ import React, {
     ReactElement,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, Column } from 'bluesquare-components';
 
 import { redirectToReplace } from '../../../routing/actions';
 
@@ -22,7 +22,6 @@ import { INSTANCE_METAS_FIELDS } from '../constants';
 
 import { VisibleColumn } from '../types/visibleColumns';
 import { Form } from '../../forms/types/forms';
-import { Column } from '../../../types/table';
 
 import MESSAGES from '../messages';
 import { Instance } from '../types/instance';

@@ -51,6 +51,8 @@ type Props = {
     profiles: Profile[];
     selectedItem: SubTeam | User | undefined;
     currentTeam?: Team;
+    // eslint-disable-next-line no-unused-vars
+    setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
 };
 
 const baseUrl = baseUrls.assignments;
@@ -64,6 +66,7 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     selectedItem,
     params,
     currentTeam,
+    setParentSelected,
 }: Props) => {
     const columns = useColumns({
         orgUnits,
@@ -96,7 +99,11 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                     params={{ order: params.order }}
                     onRowClick={(row, event) => {
                         if (!event.target.href) {
-                            handleSaveAssignment(row);
+                            if (params.parentPicking === 'true') {
+                                setParentSelected(row.parent);
+                            } else {
+                                handleSaveAssignment(row);
+                            }
                         }
                     }}
                     onTableParamsChange={p => {

@@ -95,6 +95,10 @@ export const formsPath = {
             isRequired: false,
             key: 'showDeleted',
         },
+        {
+            isRequired: false,
+            key: 'planning',
+        },
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
@@ -127,7 +131,12 @@ export const formDetailPath = {
             isRequired: true,
             key: 'formId',
         },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
         ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('attachments'),
     ],
 };
 

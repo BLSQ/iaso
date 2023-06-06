@@ -141,18 +141,20 @@ class InnerDrawer extends Component {
                                             }
                                         />
                                     )}
-                                    <Tab
-                                        classes={{
-                                            root: classes.innerDrawerTab,
-                                        }}
-                                        disabled={settingsDisabled}
-                                        value="settings"
-                                        label={
-                                            <FormattedMessage
-                                                {...MESSAGES.settings}
-                                            />
-                                        }
-                                    />
+                                    {settingsOptionComponent && (
+                                        <Tab
+                                            classes={{
+                                                root: classes.innerDrawerTab,
+                                            }}
+                                            disabled={settingsDisabled}
+                                            value="settings"
+                                            label={
+                                                <FormattedMessage
+                                                    {...MESSAGES.settings}
+                                                />
+                                            }
+                                        />
+                                    )}
                                     {commentsOptionComponent && (
                                         <Tab
                                             classes={{
@@ -199,11 +201,12 @@ class InnerDrawer extends Component {
                                         {commentsOptionComponent}
                                     </Box>
                                 )}
-                                {activeOption === 'settings' && (
-                                    <Box width="100%">
-                                        {settingsOptionComponent}
-                                    </Box>
-                                )}
+                                {activeOption === 'settings' &&
+                                    settingsOptionComponent && (
+                                        <Box width="100%">
+                                            {settingsOptionComponent}
+                                        </Box>
+                                    )}
                                 {footerComponent && activeOption === 'edit' && (
                                     <div
                                         className={
@@ -225,6 +228,7 @@ class InnerDrawer extends Component {
 InnerDrawer.defaultProps = {
     children: null,
     editOptionComponent: null,
+    settingsOptionComponent: null,
     commentsOptionComponent: null,
     filtersOptionComponent: null,
     footerComponent: null,
@@ -239,7 +243,7 @@ InnerDrawer.defaultProps = {
 InnerDrawer.propTypes = {
     classes: PropTypes.object.isRequired,
     children: PropTypes.any,
-    settingsOptionComponent: PropTypes.object.isRequired,
+    settingsOptionComponent: PropTypes.object,
     editOptionComponent: PropTypes.object,
     filtersOptionComponent: PropTypes.object,
     commentsOptionComponent: PropTypes.object,

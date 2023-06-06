@@ -89,6 +89,7 @@ class FormAttachmentsViewSet(ModelViewSet):
     permission_classes = [HasFormAttachmentPermission]
     serializer_class = FormAttachmentSerializer
     queryset = FormAttachment.objects.all()
+    ordering_fields = ["order"]
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
     http_method_names = ["get", "post", "head", "delete", "options", "trace"]
 
@@ -108,6 +109,7 @@ class FormAttachmentsViewSet(ModelViewSet):
             profile = self.request.user.iaso_profile
             queryset = FormAttachment.objects.filter(form__projects__account=profile.account)
 
+        orders = self.request.query_params.get("order", "updated_at").split(",")
         # We don't send attachments for deleted forms
         queryset = queryset.filter(form__deleted_at=None)
         form_id = self.request.query_params.get("form_id", None)
@@ -118,6 +120,7 @@ class FormAttachmentsViewSet(ModelViewSet):
             except Form.DoesNotExist:
                 raise NotFound(f"Form not found for {form_id}")
 
+        queryset = queryset.order_by(*orders)
         return queryset.distinct()
 
     def delete(self, request, pk=None):

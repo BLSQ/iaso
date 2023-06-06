@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -13,6 +13,7 @@ import { switchLocale } from '../../app/actions';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import { WrongAccountModal } from './WrongAccountModal.tsx';
+import PageNoPerms from '../../../components/errors/PageNoPerms.tsx';
 
 const ProtectedRoute = ({
     routeConfig,
@@ -73,6 +74,12 @@ const ProtectedRoute = ({
         isRootUrl,
         permissions,
     ]);
+
+    // this should kick in if the above effect didn't redirect the user to a better page
+    const hasNoPermWarning =
+        isRootUrl &&
+        (!currentUser.permissions ||
+            (currentUser.permissions.length === 0 && !isAuthorized));
     if (!currentUser) {
         return null;
     }
@@ -81,7 +88,10 @@ const ProtectedRoute = ({
             <SidebarMenu location={location} />
             <WrongAccountModal isOpen={isWrongAccount} />
             {isAuthorized && component}
-            {!isAuthorized && <PageError errorCode="401" />}
+            {hasNoPermWarning && <PageNoPerms />}
+            {!isAuthorized && !hasNoPermWarning && (
+                <PageError errorCode="401" />
+            )}
         </>
     );
 };

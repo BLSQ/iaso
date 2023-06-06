@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
+import { Pagination } from 'bluesquare-components';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
-import { Pagination } from '../../../../types/table';
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,

@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { UseMutationResult, UseQueryResult } from 'react-query';
+import { Paginated } from 'bluesquare-components';
 import {
     deleteRequest,
     getRequest,
@@ -9,7 +10,6 @@ import {
     useSnackMutation,
     useSnackQuery,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { Paginated } from '../../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStep } from '../../types';
 
 const getBudgetDetails = (params: any) => {

@@ -93,7 +93,7 @@
     "iaso.polio.form.label.ORPGReview": "ORPG review",
     "iaso.polio.form.label.outbreakdeclarationdate": "Outbreak declaration date",
     "iaso.polio.form.label.override": "Override",
-    "iaso.polio.form.label.percentageCoveredTargetPopulationRound": "Percentage covered target population Round",
+    "iaso.polio.form.label.percentageCoveredTargetPopulation": "Percentage covered target population",
     "iaso.polio.form.label.pleaseSaveCampaign": "Please save the Campaign before selecting scope.",
     "iaso.polio.form.label.preventive": "Preventive campaign",
     "iaso.polio.form.label.preventive.short": "Preventive",

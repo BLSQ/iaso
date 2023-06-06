@@ -32,6 +32,7 @@ export const roundFormFields = rounds => {
                     `rounds[${i}].mop_up_started_at`,
                     `rounds[${i}].ended_at`,
                     `rounds[${i}].started_at`,
+                    `rounds[${i}].percentage_covered_target_population`,
                 ];
             })
             .flat(),

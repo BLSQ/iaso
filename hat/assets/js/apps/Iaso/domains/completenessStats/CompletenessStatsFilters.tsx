@@ -6,7 +6,11 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    useSkipEffectOnMount,
+    UrlParams,
+} from 'bluesquare-components';
 import uniq from 'lodash/uniq';
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
@@ -14,7 +18,6 @@ import { FilterButton } from '../../components/FilterButton';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
 import { useFilterState } from '../../hooks/useFilterState';
-import { UrlParams } from '../../types/table';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';

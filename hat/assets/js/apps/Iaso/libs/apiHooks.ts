@@ -14,9 +14,9 @@ import {
     QueryFunction,
 } from 'react-query';
 import { defineMessages } from 'react-intl';
+import { IntlMessage } from 'bluesquare-components';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
-import { IntlMessage } from '../types/intl';
 
 const MESSAGES = defineMessages({
     defaultMutationApiError: {

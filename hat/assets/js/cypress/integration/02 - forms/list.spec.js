@@ -29,9 +29,11 @@ const goToPage = (
     };
     if (formQuery) {
         cy.intercept({ ...options, query: formQuery }, req => {
-            req.continue(res => {
-                interceptFlag = true;
-                res.send({ fixture });
+            req.on('response', response => {
+                if (response.statusMessage === 'OK') {
+                    interceptFlag = true;
+                    response.send({ fixture });
+                }
             });
         }).as('getForms');
     } else {
@@ -59,7 +61,7 @@ describe('Forms', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', 'Awaiting Access Permissions');
         });
 
         it('click on create button should redirect to form creation url', () => {

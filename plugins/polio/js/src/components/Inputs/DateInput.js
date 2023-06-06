@@ -15,6 +15,7 @@ export const DateInput = ({
     required,
     disabled,
     onChange = () => {},
+    onBlur,
 }) => {
     const hasError =
         form.errors &&
@@ -36,6 +37,7 @@ export const DateInput = ({
                         date ? date.format(apiDateFormat) : null,
                     );
                 }}
+                onBlur={onBlur}
             />
         </Box>
     );
@@ -44,6 +46,7 @@ DateInput.defaultProps = {
     required: false,
     disabled: false,
     onChange: () => {},
+    onBlur: undefined,
 };
 
 DateInput.propTypes = {
@@ -53,4 +56,5 @@ DateInput.propTypes = {
     required: PropTypes.bool,
     disabled: PropTypes.bool,
     onChange: PropTypes.func,
+    onBlur: PropTypes.func,
 };

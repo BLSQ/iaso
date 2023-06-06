@@ -75,6 +75,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             },
             onError: error => {
                 helpers.setErrors(error.details);
+                helpers.setSubmitting(false);
             },
         });
     };

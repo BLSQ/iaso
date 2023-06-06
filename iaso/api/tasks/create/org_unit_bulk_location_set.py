@@ -14,7 +14,7 @@ class OrgUnitsBulkLocationSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasOrgUnitPermission]
 
     def create(self, request):
-        select_all = request.data.get("select_all", None)
+        select_all = request.data.get("select_all", False)
         selected_ids = request.data.get("selected_ids", [])
         unselected_ids = request.data.get("unselected_ids", [])
         searches = request.data.get("searches", [])

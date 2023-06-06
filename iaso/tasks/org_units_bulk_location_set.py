@@ -21,6 +21,9 @@ from iaso.utils.gis import convert_2d_point_to_3d
 class OrgUnitWithFormStat(OrgUnit):
     instance_center: Optional[Point]
 
+    class Meta:
+        abstract = True
+
 
 logger = getLogger(__name__)
 

@@ -16,6 +16,7 @@ export const DateInput = ({
     disabled,
     onChange = () => {},
     onBlur,
+    clearable = true,
 }) => {
     const hasError =
         form.errors &&
@@ -38,6 +39,7 @@ export const DateInput = ({
                     );
                 }}
                 onBlur={onBlur}
+                clearable={clearable}
             />
         </Box>
     );
@@ -47,6 +49,7 @@ DateInput.defaultProps = {
     disabled: false,
     onChange: () => {},
     onBlur: undefined,
+    clearable: true,
 };
 
 DateInput.propTypes = {
@@ -55,6 +58,7 @@ DateInput.propTypes = {
     label: PropTypes.string.isRequired,
     required: PropTypes.bool,
     disabled: PropTypes.bool,
+    clearable: PropTypes.bool,
     onChange: PropTypes.func,
     onBlur: PropTypes.func,
 };

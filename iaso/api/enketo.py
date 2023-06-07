@@ -270,7 +270,11 @@ def enketo_form_list(request):
 
     latest_form_version = i.form.latest_version
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
-    manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/")
+    # Only add a manifest if we actually have attachment so it doesn't make more unecessary request
+    if i.form.attachments.exists():
+        manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/")
+    else:
+        manifest_url = None
 
     if request.method == "GET":
         xforms = to_xforms_xml(

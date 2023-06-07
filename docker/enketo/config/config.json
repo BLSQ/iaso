@@ -2,10 +2,10 @@
     "app name": "Enketo for iaso dev",
     "encryption key": "Test encryption key do not use in prod",
     "ip filtering": {
-        "comment": "modification necessary for attachment download",
         "allowIPAddressList": [],
         "allowMetaIPAddress": false,
         "allowPrivateIPAddress": true,
+        "comment": "modification necessary for attachment download",
         "denyAddressList": []
     },
     "linked form and data server": {

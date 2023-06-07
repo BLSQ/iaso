@@ -443,6 +443,7 @@ export const getFilters = (
         showDeleted: params.showDeleted,
         form_ids: params.formIds,
         jsonContent: params.fieldsSearch,
+        planningIds: params.planningIds,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

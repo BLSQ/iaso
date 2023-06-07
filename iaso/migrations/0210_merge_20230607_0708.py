@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0208_merge_0207_formattachment_0207_merge_20230522_0825'),
-        ('iaso', '0209_merge_20230602_1002'),
+        ("iaso", "0208_merge_0207_formattachment_0207_merge_20230522_0825"),
+        ("iaso", "0209_merge_20230602_1002"),
     ]
 
-    operations = [
-    ]
+    operations = []

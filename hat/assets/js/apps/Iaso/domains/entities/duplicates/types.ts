@@ -67,3 +67,16 @@ export type DuplicateDetailData = {
     descriptor1: FormDescriptor;
     descriptor2: FormDescriptor;
 };
+
+export type Analysis = {
+    id: number;
+    algorithm: string;
+    created_at?: string; // DateTime
+    finished_at?: string; // DateTime
+    metadata: {
+        fields: string[];
+        parameters: Record<string, string>;
+        entity_type_id: string;
+    };
+    task: number;
+};

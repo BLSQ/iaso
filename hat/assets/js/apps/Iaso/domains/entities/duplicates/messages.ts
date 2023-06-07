@@ -153,6 +153,38 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Submissions for Beneficiary {entity}',
         id: 'iaso.entity.label.submissionsForEntity',
     },
+    created_at: {
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created',
+    },
+    finished_at: {
+        id: 'iaso.label.finished_at',
+        defaultMessage: 'Finished at',
+    },
+    parameters: {
+        id: 'iaso.label.parameters',
+        defaultMessage: 'Parameters',
+    },
+    entityType: {
+        id: 'iaso.entityTypes.label',
+        defaultMessage: 'Beneficiary type',
+    },
+    latestAnalysis: {
+        defaultMessage: 'Latest analysis completed at {finishedAt}',
+        id: 'iaso.duplicate.latestAnalysis',
+    },
+    relaunchAnalysis: {
+        defaultMessage: 'Relaunch Analysis',
+        id: 'iaso.duplicate.relaunchAnalysis',
+    },
+    noAnalysis: {
+        defaultMessage: 'No analysis found',
+        id: 'iaso.duplicate.noAnalysis',
+    },
+    analysisBusy: {
+        defaultMessage: 'Analysis in progress',
+        id: 'iaso.duplicate.analysisBusy',
+    },
 });
 
 export default MESSAGES;

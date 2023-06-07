@@ -59,19 +59,23 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             handleChange,
         });
 
-    const { checkBoxValue: showIgnored, handleCheckboxChange: handleIgnoredCheckboxChange } =
-        useCheckBoxFilter({
-            initialValue: filters.ignored === 'true',
-            handleChange,
-            keyValue: 'ignored',
-        });
+    const {
+        checkBoxValue: showIgnored,
+        handleCheckboxChange: handleIgnoredCheckboxChange,
+    } = useCheckBoxFilter({
+        initialValue: filters.ignored === 'true',
+        handleChange,
+        keyValue: 'ignored',
+    });
 
-    const { checkBoxValue: showMerged, handleCheckboxChange: handleMergedCheckboxChange } =
-        useCheckBoxFilter({
-            initialValue: filters.merged === 'true',
-            handleChange,
-            keyValue: 'merged',
-        });
+    const {
+        checkBoxValue: showMerged,
+        handleCheckboxChange: handleMergedCheckboxChange,
+    } = useCheckBoxFilter({
+        initialValue: filters.merged === 'true',
+        handleChange,
+        keyValue: 'merged',
+    });
 
     const { data: submitterTeamsDropdown, isFetching: isFetchingTeams } =
         useGetTeamsDropdown({
@@ -260,7 +264,7 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
             </Grid>
             {/* line 4 */}
             <Grid container item xs={12} justifyContent="flex-end" spacing={2}>
-                <Box mb={2}>
+                <Box mb={2} mt={2}>
                     <FilterButton
                         disabled={!filtersUpdated}
                         onFilter={handleSearch}

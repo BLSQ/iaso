@@ -104,6 +104,8 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
         queryKey: ['beneficiaryTypes'],
         queryFn: () => getRequest('/api/entitytypes/'),
         options: {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             select: data =>
                 data?.map(
                     type =>

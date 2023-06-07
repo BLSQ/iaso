@@ -22,7 +22,7 @@ from django.db import models
 from django.db.models import Q, FilteredRelation, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models.data_source import SourceVersion, DataSource

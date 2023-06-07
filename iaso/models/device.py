@@ -3,7 +3,7 @@ from uuid import uuid4
 from django.conf import settings
 from django.contrib.gis.db.models import PointField
 from django.db import models
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 
 class Device(models.Model):

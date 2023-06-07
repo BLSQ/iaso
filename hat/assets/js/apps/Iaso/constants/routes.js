@@ -240,7 +240,7 @@ export const instancesPath = {
         },
         {
             isRequired: false,
-            key: 'planning',
+            key: 'planningIds',
         },
     ],
 };

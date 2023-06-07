@@ -365,9 +365,9 @@ const InstancesFiltersComponent = ({
                     <InputComponent
                         type="select"
                         multi
-                        keyValue="planning"
+                        keyValue="planningIds"
                         onChange={handleFormChange}
-                        value={formState.planning.value || null}
+                        value={formState.planningIds.value || null}
                         options={planningsDropdownOptions}
                         label={MESSAGES.planning}
                     />

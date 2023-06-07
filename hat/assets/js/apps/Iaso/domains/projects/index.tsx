@@ -3,31 +3,22 @@ import { useDispatch } from 'react-redux';
 import { makeStyles, Box, Grid } from '@material-ui/core';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     Table,
-    // @ts-ignore
     LoadingSpinner,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     AddButton as AddButtonComponent,
+    UrlParams,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import { ProjectsDialog } from './components/ProjectsDialog';
-import {
-    useGetProjectsPaginated,
-    useSave,
-    useGetFeatureFlags,
-} from './hooks/requests';
+import { useGetProjectsPaginated, useSave } from './hooks/requests';
 
 import { columns, baseUrl } from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../routing/actions';
-import { UrlParams } from '../../types/table';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

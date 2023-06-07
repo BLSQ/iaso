@@ -1,5 +1,6 @@
 import { UseQueryResult } from 'react-query';
 
+import { Pagination } from 'bluesquare-components';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 
@@ -7,7 +8,6 @@ import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../orgUnits/types/orgunitTypes';
 import { makeUrlWithParams } from '../../../libs/utils';
 import { RegistryDetailParams } from '../types';
-import { Pagination } from '../../../types/table';
 
 export const useGetOrgUnit = (
     orgUnitId: string,

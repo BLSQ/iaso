@@ -137,6 +137,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.error.label.planningAndTeams',
         defaultMessage: 'Planning and teams must be in the same project',
     },
+    planningsError: {
+        id: 'iaso.snackBar.fetchProjectsError',
+        defaultMessage: 'An error occurred while fetching plannings list',
+    },
     EndDateBeforeStartDate: {
         id: 'iaso.error.label.EndDateBeforeStartDate',
         defaultMessage: "End date can't before start date",

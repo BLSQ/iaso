@@ -1,11 +1,10 @@
 import React, { ReactElement } from 'react';
-// @ts-ignore
-import { IconButton as IconButtonComponent } from 'bluesquare-components';
-
+import {
+    IntlFormatMessage,
+    Column,
+    IconButton as IconButtonComponent,
+} from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
-
-import { IntlFormatMessage } from '../../types/intl';
-import { Column } from '../../types/table';
 
 import { CreateEditPlanning } from './CreateEditPlanning/CreateEditPlanning';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';

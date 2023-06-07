@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useDispatch } from 'react-redux';
 import PropTypes from 'prop-types';
 
@@ -15,7 +15,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 
 import InputComponent from 'Iaso/components/forms/InputComponent';
-import { redirectTo } from '../../../routing/actions';
+import { redirectTo } from '../../../routing/actions.ts';
 import MESSAGES from '../messages';
 import { useGetPermissionsDropDown } from '../hooks/useGetPermissionsDropdown.ts';
 import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes.ts';
@@ -48,8 +48,18 @@ const Filters = ({ baseUrl, params }) => {
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: orgUnitTypeDropdown, isFetching: isFetchingOuTypes } =
+    const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypes();
+
+    const orgUnitTypeDropdown = useMemo(() => {
+        if (!orgUnitTypes?.length) return orgUnitTypes;
+        const options = [...orgUnitTypes];
+        options.push({
+            value: 'unassigned',
+            label: formatMessage(MESSAGES.noTypeAssigned),
+        });
+        return options;
+    }, [formatMessage, orgUnitTypes]);
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));

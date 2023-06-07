@@ -51,7 +51,11 @@ export const OrgUnitTypesSelectedShapes: FunctionComponent<Props> = ({
                                     <GeoJSON
                                         key={o.id}
                                         data={o.geo_json}
-                                        onClick={() => fetchSubOrgUnitDetail(o)}
+                                        eventHandlers={{
+                                            click: () =>
+                                                fetchSubOrgUnitDetail(o),
+                                        }}
+                                        // @ts-ignore TODO: fix this type problem
                                         style={() => ({
                                             color: ot.color,
                                         })}

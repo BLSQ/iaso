@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { resetMapReducer as resetMapReducerAction } from '../../../../../redux/mapReducer';
+import { useDispatch } from 'react-redux';
 import { setCurrentSubOrgUnit as setCurrentSubOrgUnitAction } from '../../../actions';
 import { setCurrentInstance as setCurrentInstanceAction } from '../../../../instances/actions';
 import {
@@ -10,9 +9,6 @@ import {
 
 export const useRedux = () => {
     const dispatch = useDispatch();
-    const currentTile = useSelector(
-        (reduxState: any) => reduxState.map.currentTile,
-    );
     const setCurrentSubOrgUnit = useCallback(
         o => dispatch(setCurrentSubOrgUnitAction(o)),
         [dispatch],
@@ -23,10 +19,6 @@ export const useRedux = () => {
         [dispatch],
     );
 
-    const resetMapReducer = useCallback(
-        () => dispatch(resetMapReducerAction()),
-        [dispatch],
-    );
     const fetchSubOrgUnitDetail = useCallback(
         orgUnit => {
             setCurrentSubOrgUnit(null);
@@ -48,8 +40,6 @@ export const useRedux = () => {
     );
 
     return {
-        currentTile,
-        resetMapReducer,
         fetchSubOrgUnitDetail,
         fetchInstanceDetail,
     };

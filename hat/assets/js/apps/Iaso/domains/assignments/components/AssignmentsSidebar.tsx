@@ -30,7 +30,6 @@ type Props = {
     selectedItem: SubTeam | User | undefined;
     // eslint-disable-next-line no-unused-vars
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
-    showMapSelector: boolean;
 };
 
 export const Sidebar: FunctionComponent<Props> = ({
@@ -45,7 +44,6 @@ export const Sidebar: FunctionComponent<Props> = ({
     currentTeam,
     selectedItem,
     setSelectedItem,
-    showMapSelector,
 }) => {
     const columns = useColumns({
         assignments,
@@ -79,15 +77,13 @@ export const Sidebar: FunctionComponent<Props> = ({
                     }}
                 />
             </Box>
-            {showMapSelector && (
-                <Box px={2}>
-                    <AssignmentsMapSelectors
-                        params={params}
-                        orgunitTypes={orgunitTypes}
-                        isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
-                    />
-                </Box>
-            )}
+            <Box px={2}>
+                <AssignmentsMapSelectors
+                    params={params}
+                    orgunitTypes={orgunitTypes}
+                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                />
+            </Box>
         </Paper>
     );
 };

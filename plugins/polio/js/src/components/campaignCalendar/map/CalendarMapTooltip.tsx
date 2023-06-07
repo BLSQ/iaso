@@ -26,7 +26,8 @@ export const CalendarMapTooltip: FunctionComponent<Props> = ({
 }) => {
     return (
         <>
-            <Tooltip>
+            {/* @ts-ignore TODO: fix this type problem */}
+            <Tooltip pane="popupPane">
                 <div>
                     <FormattedMessage {...MESSAGES.campaign} />
                     {`: ${campaign}`}

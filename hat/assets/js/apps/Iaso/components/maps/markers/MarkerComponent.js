@@ -4,7 +4,10 @@ import { Marker } from 'react-leaflet';
 
 import PropTypes from 'prop-types';
 
-import { customMarker, isValidCoordinate } from '../../../utils/mapUtils';
+import {
+    customMarker,
+    isValidCoordinate,
+} from '../../../utils/map/mapUtils.ts';
 
 const MarkerComponent = props => {
     const {
@@ -32,8 +35,10 @@ const MarkerComponent = props => {
             draggable={draggable}
             icon={marker || customMarker}
             position={[item.latitude, item.longitude, item.altitude]}
-            onClick={() => onClick(item)}
-            onDragend={e => onDragend(e.target)}
+            eventHandlers={{
+                click: () => onClick(item),
+                dragend: e => onDragend(e.target),
+            }}
             {...markerProps(item)}
             onContextmenu={event => onContextmenu(event, item)}
         >
@@ -59,7 +64,7 @@ MarkerComponent.defaultProps = {
 MarkerComponent.propTypes = {
     item: PropTypes.object.isRequired,
     onClick: PropTypes.func,
-    PopupComponent: PropTypes.object,
+    PopupComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     onDragend: PropTypes.func,
     draggable: PropTypes.bool,
     marker: PropTypes.object,

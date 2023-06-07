@@ -1428,7 +1428,7 @@ class InstancesAPITestCase(APITestCase):
         # it should return only instance_1
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            "/api/instances/", {"planningIds": planning_1.id}, headers={"Content-Type": "application/json"}
+            "/api/instances/", {"planning_ids": planning_1.id}, headers={"Content-Type": "application/json"}
         )
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 1)
@@ -1445,7 +1445,7 @@ class InstancesAPITestCase(APITestCase):
         # it should return none of the instances
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            "/api/instances/", {"planningIds": planning_2.id}, headers={"Content-Type": "application/json"}
+            "/api/instances/", {"planning_ids": planning_2.id}, headers={"Content-Type": "application/json"}
         )
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 0)

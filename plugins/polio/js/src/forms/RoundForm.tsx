@@ -15,6 +15,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
+        setFieldValue,
     } = useFormikContext<Campaign>();
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
 
@@ -22,7 +23,11 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
         <>
             <Grid container spacing={2}>
                 <Grid xs={12} md={6} item>
-                    <RoundDates roundIndex={roundIndex} />
+                    <RoundDates
+                        roundIndex={roundIndex}
+                        setParentFieldValue={setFieldValue}
+                        parentFieldValue={rounds[roundIndex]}
+                    />
                     <Field
                         label={formatMessage(MESSAGES.mop_up_started_at)}
                         name={`rounds[${roundIndex}].mop_up_started_at`}

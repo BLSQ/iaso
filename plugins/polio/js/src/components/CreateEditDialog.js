@@ -196,10 +196,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         setSelectedTab(0);
     }, [isOpen]);
 
-    const [isFormChanged, setIsFormChanged] = useState(false);
-    useEffect(() => {
-        setIsFormChanged(!isEqual(formik.values, formik.initialValues));
-    }, [formik]);
+    const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||

@@ -25,7 +25,7 @@ def inject_instance_id_in_form(xml_str, instance_id):
     return instance_xml.decode("utf-8")
 
 
-def to_xforms_xml(form, download_url, version, md5checksum, new_form_id=None):
+def to_xforms_xml(form, download_url, manifest_url, version, md5checksum, new_form_id=None):
     # create XML
     ns = {"xmlns": "http://openrosa.org/xforms/xformsList"}
     root = etree.Element("xforms", ns)
@@ -65,6 +65,11 @@ def to_xforms_xml(form, download_url, version, md5checksum, new_form_id=None):
     form_url = etree.Element("downloadUrl")
     form_url.text = download_url
     xform.append(form_url)
+
+    if manifest_url:
+        form_url = etree.Element("manifestUrl")
+        form_url.text = manifest_url
+        xform.append(form_url)
 
     xforms_xml = etree.tostring(root, pretty_print=False, encoding="UTF-8")
     return xforms_xml.decode("utf-8")

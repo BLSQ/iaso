@@ -2,7 +2,6 @@ import React, {
     FunctionComponent,
     useState,
     MouseEvent,
-    ReactChildren,
     ReactNode,
 } from 'react';
 import { makeStyles, Theme } from '@material-ui/core/styles';

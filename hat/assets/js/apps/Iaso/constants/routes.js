@@ -19,7 +19,7 @@ import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import { CompletenessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/orgUnitTypes';
+import Types from '../domains/orgUnits/orgUnitTypes/index.tsx';
 import { Beneficiaries } from '../domains/entities/index.tsx';
 import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
@@ -39,7 +39,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { Registry } from '../domains/registry/index.tsx';
 import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
-import { paginationPathParams } from '../routing/common';
+import { paginationPathParams } from '../routing/common.ts';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';

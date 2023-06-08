@@ -57,6 +57,7 @@ def enketo_create_url(request):
 
     i = Instance(
         form_id=form_id,
+        name=form.name,
         period=period,
         uuid=uuid,
         org_unit_id=org_unit_id,
@@ -163,6 +164,7 @@ def enketo_public_create_url(request):
         uuid = str(uuid4())
         instance = Instance.objects.create(
             form_id=form.id,
+            name=form.name,
             period=period,
             uuid=uuid,
             org_unit_id=org_unit.id,
@@ -192,6 +194,7 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     uuid = str(uuid4())
     i = Instance(
         form_id=form.id,
+        name=form.name,
         period=period,
         uuid=uuid,
         org_unit=org_unit,
@@ -340,6 +343,7 @@ class EnketoSubmissionAPIView(APIView):
                     instance.created_by = user
 
             instance.file = main_file
+            instance.name = instance.form.name
             instance.json = {}
             instance.save()
 

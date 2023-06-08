@@ -40,6 +40,8 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             "project_ids",
             "sub_unit_types",
             "sub_unit_type_ids",
+            "allow_creating_sub_unit_types",
+            "allow_creating_sub_unit_type_ids",
             "created_at",
             "updated_at",
             "units_count",
@@ -55,6 +57,14 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
     sub_unit_types = serializers.SerializerMethodField(read_only=True)
     sub_unit_type_ids = serializers.PrimaryKeyRelatedField(
         source="sub_unit_types", write_only=True, many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
+    )
+    allow_creating_sub_unit_types = serializers.SerializerMethodField(read_only=True)
+    allow_creating_sub_unit_type_ids = serializers.PrimaryKeyRelatedField(
+        source="allow_creating_sub_unit_types",
+        write_only=True,
+        many=True,
+        allow_empty=True,
+        queryset=OrgUnitType.objects.all(),
     )
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -89,6 +99,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         ).data
 
     def get_sub_unit_types(self, obj: OrgUnitType):
+        # Filter sub unit types to show only visible items for the current app id
         unit_types = obj.sub_unit_types.all()
         app_id = self.context["request"].query_params.get("app_id")
         if app_id is not None:
@@ -101,15 +112,36 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             context=self.context,
         ).data
 
+    def get_allow_creating_sub_unit_types(self, obj: OrgUnitType):
+        # Filter sub unit types to show only visible items for the current app id
+        unit_types = obj.allow_creating_sub_unit_types.all()
+        app_id = self.context["request"].query_params.get("app_id")
+        if app_id is not None:
+            unit_types = unit_types.filter(projects__app_id=app_id)
+
+        return OrgUnitTypeSerializer(
+            unit_types,
+            fields=["id", "name", "short_name", "depth", "created_at", "updated_at"],
+            many=True,
+            context=self.context,
+        ).data
+
     def validate(self, data: typing.Mapping):
-        # validate sub org unit type
         parents = get_parents(self.context["request"].data.get("id", None))
+        # validate sub org unit type
         sub_types_errors = []
         for sub_type in data.get("sub_unit_types", []):
             if sub_type.id in parents:
                 sub_types_errors.append(sub_type.name)
         if len(sub_types_errors) > 0:
             raise serializers.ValidationError({"sub_unit_type_ids": sub_types_errors})
+        # validate sub org unit type allowed to be created
+        create_sub_types_errors = []
+        for sub_type in data.get("allow_creating_sub_unit_types", []):
+            if sub_type.id in parents:
+                create_sub_types_errors.append(sub_type.name)
+        if len(create_sub_types_errors) > 0:
+            raise serializers.ValidationError({"allow_creating_sub_unit_type_ids": create_sub_types_errors})
         # validate projects (access check)
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:

@@ -18,6 +18,7 @@ import { useFilterState } from '../../../hooks/useFilterState';
 import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -29,6 +30,7 @@ type Params = {
     page: string;
     search?: string;
     showDeleted?: string;
+    planning?: string;
 };
 
 type Props = {
@@ -44,6 +46,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
     );
+    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
@@ -51,7 +54,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -64,11 +67,22 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                     />
                 </Grid>
 
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="planning"
+                        onChange={handleChange}
+                        value={filters.planning}
+                        label={MESSAGES.planning}
+                        options={planningsDropdownOptions}
+                    />
+                </Grid>
+
                 <Grid
                     item
                     xs={12}
-                    sm={6}
-                    md={9}
+                    md={6}
                     container
                     justifyContent="flex-end"
                     alignItems="center"

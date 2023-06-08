@@ -1,7 +1,6 @@
 import pkgutil
 from typing import Union, List
 
-from django.conf.urls import url
 from django.contrib import auth
 from django.urls import path, include, URLPattern, URLResolver
 from rest_framework import routers
@@ -73,6 +72,7 @@ from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
@@ -121,6 +121,7 @@ router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
+router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")

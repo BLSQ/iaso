@@ -4,12 +4,10 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0210_auto_20230605_1314'),
+        ("iaso", "0210_auto_20230605_1314"),
     ]
 
     operations = [
-        migrations.RunSQL("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;",
-                          "DROP EXTENSION IF EXISTS fuzzystrmatch;"),
+        migrations.RunSQL("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;", "DROP EXTENSION IF EXISTS fuzzystrmatch;"),
     ]

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0200_auto_20230419_0846"),
         ("iaso", "0205_merge_20230504_1352"),

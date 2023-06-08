@@ -7,7 +7,6 @@ from django.apps import apps
 
 
 def finalize_from_task(the_task: Task, potential_duplicates: List[PotentialDuplicate]):
-
     eda = the_task.entity_duplicate_analyze.first()
     ed_model = apps.get_model("iaso", "EntityDuplicate")
 

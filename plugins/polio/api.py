@@ -1735,13 +1735,14 @@ class ConfigViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Config.objects.filter(users=self.request.user)
-    
-@swagger_auto_schema(tags=["datelogs"])  
+
+
+@swagger_auto_schema(tags=["datelogs"])
 class RoundDateHistoryEntryViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = RoundDateHistoryEntrySerializer
-    queryset=RoundDateHistoryEntry.objects.all()
+    queryset = RoundDateHistoryEntry.objects.all()
     ordering_fields = ["modified_by", "created_at"]
     filter_backends = [
         filters.OrderingFilter,
@@ -1750,6 +1751,7 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
     filterset_fields = {
         "round__id": ["exact"],
     }
+
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")

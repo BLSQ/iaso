@@ -7,8 +7,8 @@ import MESSAGES from '../../../constants/messages';
 import { DateInput } from '../../Inputs';
 import { Campaign, Round } from '../../../constants/types';
 import { ReasonForDelayModal } from '../ReasonForDelayModal/ReasonForDelayModal';
-import { ReasonForDelayPopper } from '../ReasonForDelayModal/ReasonForDelayPopper';
 import { useRoundDateHistorySchema } from '../ReasonForDelayModal/validation';
+import { RoundDatesHistoryModal } from '../RoundDatesHistory/RoundDatesHistoryModal';
 
 type Props = {
     roundIndex: number;
@@ -146,7 +146,11 @@ export const RoundDates: FunctionComponent<Props> = ({
                                 justifyContent="flex-end"
                             >
                                 <Box style={{ display: 'flex' }}>
-                                    <ReasonForDelayPopper />
+                                    <RoundDatesHistoryModal
+                                        roundId={rounds[roundIndex]?.id}
+                                        roundNumber={rounds[roundIndex]?.number}
+                                        iconProps={{}}
+                                    />
                                     <Box
                                         style={{
                                             display: 'flex',

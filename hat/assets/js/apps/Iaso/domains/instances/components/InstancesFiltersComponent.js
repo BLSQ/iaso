@@ -97,7 +97,8 @@ const InstancesFiltersComponent = ({
     const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
-    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
+    const { data: planningsDropdownOptions, isFetching: fetchingPlannings } =
+        useGetPlanningsOptions();
     useSkipEffectOnMount(() => {
         Object.entries(params).forEach(([key, value]) => {
             if (key === 'showDeleted') {
@@ -370,6 +371,7 @@ const InstancesFiltersComponent = ({
                         value={formState.planningIds.value || null}
                         options={planningsDropdownOptions}
                         label={MESSAGES.planning}
+                        loading={fetchingPlannings}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>

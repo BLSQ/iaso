@@ -3,7 +3,6 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { Box, Divider, Grid, Typography } from '@material-ui/core';
 import { isEqual } from 'lodash';
-import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../constants/messages';
 import { DateInput } from '../../Inputs';
 import { Campaign, Round } from '../../../constants/types';
@@ -30,7 +29,6 @@ export const RoundDates: FunctionComponent<Props> = ({
     parentFieldValue,
     // TODO pass parentFieldValue to allow spreading
 }) => {
-    const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const {
         values: { rounds = [] },
@@ -42,24 +40,22 @@ export const RoundDates: FunctionComponent<Props> = ({
         initialValues.rounds?.[roundIndex]?.started_at &&
             initialValues.rounds?.[roundIndex]?.ended_at,
     );
-    const save = ({ startDate, endDate, reason, user }, helpers) => {
-        // TODO spread parentFieldValue.datelogs and add new value i.o replacing
-        setParentFieldValue(`round[${roundIndex}]`, {
+    const save = ({ startDate, endDate, reason }, helpers) => {
+        setParentFieldValue(`rounds[${roundIndex}]`, {
             ...rounds[roundIndex],
             started_at: startDate,
             ended_at: endDate,
+            datelogs: [
+                ...(parentFieldValue?.datelogs ?? []),
+                {
+                    reason,
+                    previous_started_at: currentStartDate,
+                    previous_ended_at: currentEndDate,
+                    started_at: startDate,
+                    ended_at: endDate,
+                },
+            ],
         });
-        setParentFieldValue(`round[${roundIndex}].datelogs`, [
-            ...(parentFieldValue?.datelogs ?? []),
-            {
-                reason,
-                user,
-                previous_started_at: currentStartDate,
-                previous_ended_at: currentEndDate,
-                started_at: startDate,
-                ended_at: endDate,
-            },
-        ]);
         helpers.setSubmitting(false);
     };
 
@@ -70,7 +66,6 @@ export const RoundDates: FunctionComponent<Props> = ({
             startDate: currentStartDate,
             endDate: currentEndDate,
             reason: null,
-            user: currentUser.id,
         },
         enableReinitialize: true,
         validateOnBlur: true,

@@ -24,8 +24,8 @@ from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
 from .api.data_sources import DataSourceViewSet
-from .api.deduplication.entity_duplicate import EntityDuplicateViewSet
-from .api.deduplication.entity_duplicate_analyze import EntityDuplicateAnalyzeViewSet
+from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
+from .api.deduplication.entity_duplicate_analyze import EntityDuplicateAnalyzeViewSet  # type: ignore
 from .api.derived_instances import DerivedInstancesViewSet
 from .api.devices import DevicesViewSet
 from .api.devices_ownership import DevicesOwnershipViewSet

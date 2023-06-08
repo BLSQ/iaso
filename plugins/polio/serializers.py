@@ -312,8 +312,8 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
         ]
 
     modified_by = UserSerializer(required=False, read_only=True)
-    
-    def validate(self,data):
+
+    def validate(self, data):
         if not data["reason"]:
             raise serializers.ValidationError("No reason provided")
         start_date_changed = data["started_at"] != data["previous_started_at"]

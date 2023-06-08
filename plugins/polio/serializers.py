@@ -316,10 +316,10 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
     def validate(self, data):
         if not data["reason"]:
             raise serializers.ValidationError("No reason provided")
-        start_date = data["started_at"]
+        start_date =  data["started_at"]
         end_date = data["ended_at"]
         start_date_changed = start_date != data["previous_started_at"]
-        end_date_changed = end_date != data["previous_ended_at"]
+        end_date_changed = start_date != data["previous_ended_at"]
         if start_date and end_date and end_date < start_date:
             raise serializers.ValidationError("End date should be after start date")
         if not start_date_changed and not end_date_changed:

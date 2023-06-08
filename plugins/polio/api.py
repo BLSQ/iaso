@@ -43,6 +43,7 @@ from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
+    RoundDateHistoryEntrySerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -74,6 +75,7 @@ from .models import (
     Round,
     CampaignGroup,
     CampaignScope,
+    RoundDateHistoryEntry,
     RoundScope,
 )
 from hat.api.export_utils import Echo, iter_items
@@ -1733,7 +1735,21 @@ class ConfigViewSet(ModelViewSet):
 
     def get_queryset(self):
         return Config.objects.filter(users=self.request.user)
-
+    
+@swagger_auto_schema(tags=["datelogs"])  
+class RoundDateHistoryEntryViewset(ModelViewSet):
+    http_method_names = ["get"]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = RoundDateHistoryEntrySerializer
+    queryset=RoundDateHistoryEntry.objects.all()
+    ordering_fields = ["modified_by", "created_at"]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+    filterset_fields = {
+        "round__id": ["exact"],
+    }
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
@@ -1754,3 +1770,4 @@ router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
+router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")

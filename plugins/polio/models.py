@@ -76,11 +76,6 @@ PAYMENT = [
 
 DELAY_REASONS = [("INITIAL_DATA", _("initial_data")), ("ENCODING_ERROR", _("encoding_error"))]
 
-START_DATE = "START_DATE"
-END_DATE = "END_DATE"
-
-START_OR_END = [(START_DATE), _("start_date"), (END_DATE), _("end_date")]
-
 
 def make_group_round_scope():
     return Group.objects.create(name="hidden roundScope")
@@ -149,12 +144,15 @@ class RoundVaccine(models.Model):
     wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
-class DateLog(models.Model):
-    previous_value: models.DateTimeField(null=True, blank=True)
-    value: models.DateTimeField(null=True, blank=True)
-    reason = models.CharField(null=True, blank=True, choices=DELAY_REASONS)
-    kind = models.CharField(null=True, blank=True, choices=START_OR_END)
+class RoundDateHistoryEntry(models.Model):
+    previous_started_at = models.DateField(null=True, blank=True)
+    previous_ended_at = models.DateField(null=True, blank=True)
+    started_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateField(null=True, blank=True)
+    reason = models.CharField(null=True, blank=True, choices=DELAY_REASONS, max_length=200)
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
+    modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class Round(models.Model):

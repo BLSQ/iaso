@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
 from .models import (
     Campaign,
+    RoundDateHistoryEntry,
     Surge,
     Round,
     Config,
@@ -128,11 +129,16 @@ class SurgeAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+class RoundDateHistoryEntryAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
 admin.site.register(Surge, SurgeAdmin)
 admin.site.register(Round)
+admin.site.register(RoundDateHistoryEntry, RoundDateHistoryEntryAdmin)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)

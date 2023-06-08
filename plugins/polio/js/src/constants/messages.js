@@ -2149,6 +2149,30 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.INITIAL_DATA',
         defaultMessage: 'Initial data',
     },
+    previousEndDate: {
+        id: 'iaso.polio.label.previousEndDate',
+        defaultMessage: 'Previous end date',
+    },
+    previousStartDate: {
+        id: 'iaso.polio.label.previousStartDate',
+        defaultMessage: 'Previous start date',
+    },
+    dateOfChange: {
+        id: 'iaso.polio.label.dateOfChange',
+        defaultMessage: 'Date of change',
+    },
+    modifiedBy: {
+        id: 'iaso.polio.label.modifiedBy',
+        defaultMessage: 'Modified by',
+    },
+    historyForRound: {
+        id: 'iaso.polio.label.historyForRound',
+        defaultMessage: 'History for round {roundNumber}',
+    },
+    seeHistory: {
+        id: 'iaso.polio.label.seeHistory',
+        defaultMessage: 'See history',
+    },
 });
 
 export default MESSAGES;

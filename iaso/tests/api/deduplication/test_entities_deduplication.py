@@ -1,20 +1,18 @@
 from unittest import mock
 from uuid import uuid4
-from beanstalk_worker.services import TestTaskService
 
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
-
-from iaso import models as m
-from iaso.test import APITestCase
-
-import iaso.models.base as base
-from iaso.tests.api.workflows.base import var_dump
 from django.db import connection
 
+import iaso.models.base as base
+from beanstalk_worker.services import TestTaskService
+from iaso import models as m
+from iaso.test import APITestCase
+from iaso.tests.api.workflows.base import var_dump
 
-def create_instance_and_entity(cls, entity_name, instance_json, orgunit=None, entity_type=None):
 
+def create_instance_and_entity(cls, entity_name, instance_json, form_version, orgunit=None, entity_type=None):
     if orgunit is None:
         orgunit = cls.default_orgunit
 
@@ -29,6 +27,8 @@ def create_instance_and_entity(cls, entity_name, instance_json, orgunit=None, en
         uuid=uuid4,
     )
 
+    instance_json["_version"] = form_version
+
     tmp_inst.json = instance_json
     tmp_inst.save()
 
@@ -41,15 +41,13 @@ def create_instance_and_entity(cls, entity_name, instance_json, orgunit=None, en
 
     setattr(cls, entity_name, same_entity_2)
 
-    print(entity_name, same_entity_2.id)
-
 
 class EntitiesDuplicationAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         # this needs to be run as a new DB is created every time
         with connection.cursor() as cursor:
-            cursor.execute("CREATE EXTENSION fuzzystrmatch;")
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS fuzzystrmatch ;")
 
         default_account = m.Account.objects.create(name="Default account")
 
@@ -125,38 +123,47 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         default_form_file_mock = mock.MagicMock(spec=File)
         default_form_file_mock.name = "test.xml"
+        form_version_id = "2020022401"
         with open("iaso/tests/fixtures/test_form_deduplication.xlsx", "rb") as xls_file:
             cls.default_form.form_versions.create(
-                file=default_form_file_mock, xls_file=UploadedFile(xls_file), version_id="2020022401"
+                file=default_form_file_mock, xls_file=UploadedFile(xls_file), version_id=form_version_id
             )
 
         cls.default_form.update_possible_fields()
         cls.default_form.save()
 
         cls.default_entity_type = m.EntityType.objects.create(
-            name="Default Entity Type", reference_form=cls.default_form
+            name="Default Entity Type", reference_form=cls.default_form, account=default_account
         )
 
         cls.another_entity_type = m.EntityType.objects.create(
-            name="Another Entity Type", reference_form=cls.default_form
+            name="Another Entity Type", reference_form=cls.default_form, account=default_account
         )
 
-        create_instance_and_entity(cls, "same_entity_1", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20})
-        create_instance_and_entity(cls, "same_entity_2", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20})
-        create_instance_and_entity(cls, "close_entity", {"Prenom": "same_instancX", "Nom": "iasX", "Age": 20})
         create_instance_and_entity(
-            cls, "far_entity", {"Prenom": "Far. Ent.", "Nom": "Yeeeeeaaaahhhhhhhhhhh", "Age": 99}
+            cls, "same_entity_1", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20}, form_version_id
+        )
+        create_instance_and_entity(
+            cls, "same_entity_2", {"Prenom": "same_instance", "Nom": "iaso", "Age": 20}, form_version_id
+        )
+        create_instance_and_entity(
+            cls, "close_entity", {"Prenom": "same_instancX", "Nom": "iasX", "Age": 20}, form_version_id
+        )
+        create_instance_and_entity(
+            cls, "far_entity", {"Prenom": "Far. Ent.", "Nom": "Yeeeeeaaaahhhhhhhhhhh", "Age": 99}, form_version_id
         )
         create_instance_and_entity(
             cls,
             "same_entity_in_other_ou",
             {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            form_version_id,
             orgunit=cls.another_orgunit,
         )
         create_instance_and_entity(
             cls,
             "same_entity_other_entity_type",
             {"Prenom": "same_instance", "Nom": "iaso", "Age": 20},
+            form_version_id,
             entity_type=cls.another_entity_type,
         )
 
@@ -245,7 +252,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom"],
+                "fields": ["Prenom", "Nom", "Age"],
                 "algorithm": "levenshtein",
                 "parameters": {},
             },
@@ -262,23 +269,18 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         response_analyze = self.client.get(f"/api/entityduplicates_analyzes/{analyze_id}/")
 
-        # var_dump(response_analyze)
-
         self.assertEqual(response_analyze.status_code, 200)
 
         response_data = response_analyze.data
 
         self.assertEqual(response_data["status"], "SUCCESS")
         self.assertEqual(response_data["entity_type_id"], str(self.default_entity_type.id))
-        self.assertEqual(response_data["fields"], ["Prenom", "Nom"])
+        self.assertEqual(response_data["fields"], ["Prenom", "Nom", "Age"])
         self.assertEqual(response_data["algorithm"], "levenshtein")
         self.assertEqual(response_data["parameters"], {})
         self.assertEqual(response_data["created_by"]["id"], self.user_with_default_ou_rw.id)
 
         response_duplicate = self.client.get(f"/api/entityduplicates/")
-
-        print("response_duplicate data")
-        var_dump(response_duplicate.data)
 
         self.assertEqual(response_duplicate.status_code, 200)
         assert len(response_duplicate.data["results"]) == 6
@@ -287,9 +289,9 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             {"entity1": self.same_entity_2.id, "entity2": self.same_entity_1.id, "similarity_score": 100},
             {"entity1": self.same_entity_in_other_ou.id, "entity2": self.same_entity_1.id, "similarity_score": 100},
             {"entity1": self.same_entity_in_other_ou.id, "entity2": self.same_entity_2.id, "similarity_score": 100},
-            {"entity1": self.close_entity.id, "entity2": self.same_entity_1.id, "similarity_score": 67},
-            {"entity1": self.close_entity.id, "entity2": self.same_entity_2.id, "similarity_score": 67},
-            {"entity1": self.same_entity_in_other_ou.id, "entity2": self.close_entity.id, "similarity_score": 67},
+            {"entity1": self.close_entity.id, "entity2": self.same_entity_1.id, "similarity_score": 78},
+            {"entity1": self.close_entity.id, "entity2": self.same_entity_2.id, "similarity_score": 78},
+            {"entity1": self.same_entity_in_other_ou.id, "entity2": self.close_entity.id, "similarity_score": 78},
         ]
         for idx, datas in enumerate(datas):
             self.assertEqual(response_duplicate.data["results"][idx]["ignored"], False)
@@ -305,7 +307,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
             "/api/entityduplicates_analyzes/",
             {
                 "entity_type_id": self.default_entity_type.id,
-                "fields": ["Prenom", "Nom"],
+                "fields": ["Prenom", "Nom", "Age"],
                 "algorithm": "levenshtein",
                 "parameters": {},
             },
@@ -319,9 +321,51 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         duplicate = m.EntityDuplicate.objects.first()
 
-        resp = self.client.get(f"/api/entityduplicates/{duplicate.id}/detail/")
+        resp = self.client.get(f"/api/entityduplicates/detail/?entities={duplicate.entity1.id},{duplicate.entity2.id}")
 
-        var_dump(resp)
+        self.assertEqual(resp.status_code, 200)  # check if response status is OK
+
+        resp_data = resp.json()
+
+        # verify the response structure
+        self.assertIn("fields", resp_data)
+        self.assertIn("descriptor1", resp_data)
+
+        fields = resp_data["fields"]
+
+        # we know that at least two fields were involved in duplicate detection
+        self.assertGreaterEqual(len(fields), 2)
+
+        for field in fields:
+            self.assertIn("the_field", field)
+            self.assertIn("entity1", field)
+            self.assertIn("entity2", field)
+            self.assertIn("final", field)
+
+            self.assertIn("field", field["the_field"])
+            self.assertIn("label", field["the_field"])
+
+            self.assertIn("value", field["entity1"])
+            self.assertIn("id", field["entity1"])
+
+            self.assertIn("value", field["entity2"])
+            self.assertIn("id", field["entity2"])
+
+            self.assertIn("value", field["final"])
+            self.assertIn("id", field["final"])
+
+        # descriptor1 checking
+        descriptor1 = resp_data["descriptor1"]
+
+        self.assertIn("name", descriptor1)
+        self.assertIn("type", descriptor1)
+        self.assertIn("title", descriptor1)
+        self.assertIn("version", descriptor1)
+        self.assertIn("children", descriptor1)
+
+        for child in descriptor1["children"]:
+            self.assertIn("name", child)
+            self.assertIn("type", child)
 
     def test_partial_update_analyze(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)

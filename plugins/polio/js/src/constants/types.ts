@@ -244,7 +244,7 @@ export type RoundDateHistoryEntry = {
 };
 
 export type Round = {
-    id: string;
+    id: number;
     started_at: string;
     ended_at: string;
     mop_up_started_at: Nullable<string>; // date
@@ -284,7 +284,7 @@ export type Round = {
     forma_usable_vials: Nullable<number>;
     campaign: Nullable<string>; // uuid
     percentage_covered_target_population: Nullable<number>;
-    datelogs: any[];
+    datelogs: RoundDateHistoryEntry[];
 };
 
 export type Campaign = {

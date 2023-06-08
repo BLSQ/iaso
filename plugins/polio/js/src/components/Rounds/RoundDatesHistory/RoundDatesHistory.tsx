@@ -23,6 +23,7 @@ export const RoundDatesHistory: FunctionComponent<Props> = ({ roundId }) => {
     const urlParams: DateLogsUrlParams = useMemo(() => {
         return { ...tableParams, roundId };
     }, [tableParams, roundId]);
+
     const onTableParamsChange = useCallback(
         (newParams: UrlParams) => {
             setTableParams(newParams);

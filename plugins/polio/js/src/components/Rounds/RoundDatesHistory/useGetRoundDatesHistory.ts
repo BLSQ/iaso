@@ -18,7 +18,7 @@ export const useGetRoundDatesHistory = (
     params: DateLogsUrlParams,
 ): UseQueryResult<any> => {
     return useSnackQuery({
-        queryKey: ['datelogs', params.roundId],
+        queryKey: ['datelogs', params],
         queryFn: () => getRoundDatesHistory(params),
         options: { enabled: Boolean(params.roundId) },
     });

@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from django.utils.timezone import now
 
 from beanstalk_worker import task_decorator
-from iaso.api.deduplication.algos import run_algo, POSSIBLE_ALGORITHMS
+from iaso.api.deduplication.algos import run_algo, POSSIBLE_ALGORITHMS  # type: ignore
 
 logger = logging.getLogger(__name__)
 

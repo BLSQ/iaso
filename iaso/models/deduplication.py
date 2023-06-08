@@ -1,7 +1,7 @@
 from django.db import models
 from iaso.models import Entity, EntityType, Task
 import iaso.models.base as base_models
-from iaso.api.deduplication.algos import POSSIBLE_ALGORITHMS, DEFAULT_ALGORITHM
+from iaso.api.deduplication.algos import POSSIBLE_ALGORITHMS, DEFAULT_ALGORITHM  # type: ignore
 from django.utils.timezone import now
 
 PENDING = "PENDING"

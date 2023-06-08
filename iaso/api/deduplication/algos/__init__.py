@@ -3,7 +3,7 @@ from typing import List
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import EntityType, Form
 
-from ..common import PotentialDuplicate
+from ..common import PotentialDuplicate  # type: ignore
 from . import levenshtein
 from .base import DeduplicationAlgorithm
 

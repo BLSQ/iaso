@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers, status, viewsets
 from rest_framework.response import Response
@@ -9,13 +9,13 @@ from iaso.api.common import HasPermission, Paginator
 from iaso.models import Entity, EntityDuplicateAnalyze, EntityType, Form
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
-from .algos import POSSIBLE_ALGORITHMS
+from .algos import POSSIBLE_ALGORITHMS  # type: ignore
 
 
 def field_exists(f: Form, field_name: str) -> bool:
     try:
-        for f in f.possible_fields:
-            if f["name"] == field_name:
+        for field in f.possible_fields:
+            if field["name"] == field_name:
                 return True
 
         return False
@@ -26,7 +26,7 @@ def field_exists(f: Form, field_name: str) -> bool:
 class AnalyzePostBodySerializer(serializers.Serializer):
     algorithm = serializers.ChoiceField(choices=POSSIBLE_ALGORITHMS)
     entity_type_id = serializers.CharField()
-    fields = serializers.ListField(child=serializers.CharField())
+    fields = serializers.ListField(child=serializers.CharField())  # type: ignore
     parameters = serializers.DictField()
 
     def validate(self, data):
@@ -62,7 +62,7 @@ class EntityDuplicateAnalyzeDetailSerializer(serializers.ModelSerializer):
     started_at = serializers.DateTimeField(source="task.started_at")
     created_by = UserNestedSerializer(source="task.launcher")
     entity_type_id = serializers.SerializerMethodField()
-    fields = serializers.SerializerMethodField(method_name="get_the_fields")
+    fields = serializers.SerializerMethodField(method_name="get_the_fields")  # type: ignore
     parameters = serializers.SerializerMethodField()
     created_at = serializers.DateTimeField(source="task.created_at")
 

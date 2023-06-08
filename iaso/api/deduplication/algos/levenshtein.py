@@ -2,7 +2,7 @@ from typing import List
 
 from django.db import connection
 
-from ..common import PotentialDuplicate
+from ..common import PotentialDuplicate  # type: ignore
 from .base import DeduplicationAlgorithm
 from .finalize import finalize_from_task
 
@@ -119,4 +119,6 @@ class InverseAlgorithm(DeduplicationAlgorithm):
 
         finalize_from_task(task, potential_duplicates)
 
-        return f"found duplicates :{len(potential_duplicates)}"
+        print(f"found duplicates :{len(potential_duplicates)}")
+
+        return potential_duplicates

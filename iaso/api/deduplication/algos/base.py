@@ -1,12 +1,12 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Dict, Type
 
-from ..common import PotentialDuplicate
+from ..common import PotentialDuplicate  # type: ignore
 
 
 class DeduplicationAlgorithm(ABC):
     # class variable that maps algorithm names to algorithm classes
-    ALGORITHMS = {}
+    ALGORITHMS: Dict[str, Type["DeduplicationAlgorithm"]] = {}
 
     # other fields as needed
 

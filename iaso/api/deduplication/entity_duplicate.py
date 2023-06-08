@@ -1,14 +1,14 @@
 import math
 import xml.etree.ElementTree as ET
 from copy import deepcopy
-from typing import Dict
+from typing import Dict, Optional
 from uuid import UUID, uuid4
 
 from django.core.files.base import ContentFile
 from django.db.models import Q
 from django.http import JsonResponse
 from django.utils.text import slugify
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import filters, permissions, serializers, status, viewsets
@@ -16,12 +16,12 @@ from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
-import iaso.api.deduplication.filters as dedup_filters
+import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
 from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Instance
-from iaso.models.deduplication import IGNORED, PENDING, VALIDATED
+from iaso.models.deduplication import IGNORED, PENDING, VALIDATED  # type: ignore
 from iaso.tests.api.workflows.base import var_dump
 
 
@@ -152,8 +152,11 @@ class EntityDuplicatePostAnswerSerializer(serializers.Serializer):
 
 def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: Dict):
     new_uuid = uuid4()
-    att1 = e1.attributes
-    att2 = e2.attributes
+    att1: Optional[Instance] = e1.attributes
+    att2: Optional[Instance] = e2.attributes
+
+    if att1 is None or att2 is None or att1.form is None or att2.form is None:
+        raise Exception("One of the entities has no attributes")
 
     lookup = {e1.pk: att1, e2.pk: att2}
 
@@ -172,7 +175,8 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
         the_val = lookup[e_id].json[field_name]
         try:
             the_field = root.find(".//" + field_name)
-            the_field.text = the_val
+            if the_field is not None:
+                the_field.text = the_val
         except Exception as e:
             print(f"Error updating xml field {field_name}")
             print(e)
@@ -190,9 +194,9 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
     new_xml_string = ET.tostring(root, encoding="utf-8", xml_declaration=False)
     new_xml_content = ContentFile(new_xml_string.decode("utf-8"))
 
-    new_file_name = f"{slugify(att1.form.name)}_{new_uuid}_merged_{e1.pk}-{e2.pk}.xml"
+    new_file_name = f"{slugify(att1.form.name)}_{new_uuid}_merged_{e1.pk}-{e2.pk}.xml"  # type: ignore
     new_attributes = deepcopy(att1)
-    new_attributes.uuid = new_uuid
+    new_attributes.uuid = new_uuid  # type: ignore
     new_attributes.file_name = new_file_name
     new_attributes.pk = None
     new_attributes.json = None
@@ -205,6 +209,9 @@ def merge_attributes(e1: Entity, e2: Entity, new_entity_uuid: UUID, merge_def: D
 def copy_instance(inst: Instance, new_entity: Entity):
     new_uuid = uuid4()
     new_inst = deepcopy(inst)
+
+    if inst.form is None:
+        raise Exception("Instance has no form")
 
     try:
         tree = ET.parse(inst.file)
@@ -230,7 +237,7 @@ def copy_instance(inst: Instance, new_entity: Entity):
 
     new_inst.pk = None
     new_inst.entity = new_entity
-    new_inst.uuid = new_uuid
+    new_inst.uuid = new_uuid  # type: ignore
     new_inst.json = None
     new_inst.file_name = f"{slugify(inst.form.name)}_{new_uuid}.xml"
     new_inst.file.save(new_inst.file_name, new_xml_content, save=True)
@@ -254,8 +261,11 @@ def merge_entities(e1: Entity, e2: Entity, merge_def: Dict):
     for inst in e2.instances.all():
         copy_instance(inst, new_entity)
 
-    e1.attributes.soft_delete()
-    e2.attributes.soft_delete()
+    if e1.attributes is not None:
+        e1.attributes.soft_delete()
+
+    if e2.attributes is not None:
+        e2.attributes.soft_delete()
 
     e1.delete()
     e2.delete()

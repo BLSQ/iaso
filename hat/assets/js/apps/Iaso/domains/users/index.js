@@ -6,14 +6,13 @@ import { makeStyles, Box, Grid } from '@material-ui/core';
 import {
     commonStyles,
     Table,
-    LoadingSpinner,
     AddButton as AddButtonComponent,
     useSafeIntl,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-import UsersDialog from './components/UsersDialog';
+import UsersDialog from './components/UsersDialog.tsx';
 
 import { baseUrls } from '../../constants/urls';
 import { useGetProfiles } from './hooks/useGetProfiles';
@@ -50,7 +49,6 @@ const Users = ({ params }) => {
 
     return (
         <>
-            {isLoading && <LoadingSpinner />}
             <TopBar
                 title={formatMessage(MESSAGES.users)}
                 displayBackButton={false}
@@ -75,6 +73,7 @@ const Users = ({ params }) => {
                         params={params}
                         saveProfile={saveProfile}
                         allowSendEmailInvitation
+                        forceRefresh={isLoading}
                     />
                     <Box ml={2}>
                         <BulkImportUsersDialog />
@@ -94,10 +93,10 @@ const Users = ({ params }) => {
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}
-                    // resetPageToOne={resetPageToOne}
                     extraProps={{
                         pageSize: params.pageSize,
                         search: params.search,
+                        loading: isLoading,
                     }}
                     redirectTo={(b, p) => dispatch(redirectTo(b, p))}
                 />

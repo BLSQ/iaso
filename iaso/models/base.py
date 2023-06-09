@@ -1346,6 +1346,7 @@ class InstanceLock(models.Model):
 
 
 class UserRole(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

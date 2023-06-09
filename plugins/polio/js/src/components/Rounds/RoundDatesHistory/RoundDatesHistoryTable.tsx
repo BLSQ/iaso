@@ -5,14 +5,16 @@ import { defaultTableParams } from '../../../../../../../hat/assets/js/apps/Iaso
 import {
     DateLogsUrlParams,
     useGetRoundDatesHistory,
-} from './useGetRoundDatesHistory';
-import { useGetRoundDatesHistoryColumns } from './config';
+} from './hooks/useGetRoundDatesHistory';
+import { useGetRoundDatesHistoryColumns } from './hooks/config';
 
 type Props = {
     roundId?: number;
 };
 
-export const RoundDatesHistory: FunctionComponent<Props> = ({ roundId }) => {
+export const RoundDatesHistoryTable: FunctionComponent<Props> = ({
+    roundId,
+}) => {
     const [tableParams, setTableParams] = useObjectState({
         ...defaultTableParams,
         pageSize: 5,

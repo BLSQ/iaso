@@ -7,7 +7,7 @@ import {
 import { Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import MESSAGES from '../../../constants/messages';
-import { useReasonsForDateChangeOptions } from './reasons';
+import { useReasonsForDateChangeOptions } from './hooks/reasons';
 import { ReasonsForDelayButton } from './ReasonsForDelayButton';
 import { DateInput } from '../../Inputs/DateInput';
 import { SingleSelect } from '../../Inputs/SingleSelect';

@@ -8,7 +8,7 @@ import { DateInput } from '../../Inputs';
 import { Campaign, Round } from '../../../constants/types';
 import { ReasonForDelayModal } from '../ReasonForDelayModal/ReasonForDelayModal';
 import { useRoundDateHistorySchema } from '../ReasonForDelayModal/validation';
-import { RoundDatesHistoryModal } from '../RoundDatesHistory/RoundDatesHistoryModal';
+import { RoundDatesHistoryModal } from '../RoundDatesHistory/RoundDatesHistoryModal/RoundDatesHistoryModal';
 
 type Props = {
     roundIndex: number;

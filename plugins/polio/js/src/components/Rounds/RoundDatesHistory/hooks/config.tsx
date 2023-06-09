@@ -1,8 +1,8 @@
 import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { DateCell } from '../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
-import getDisplayName from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import MESSAGES from '../../../constants/messages';
+import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import getDisplayName from '../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import MESSAGES from '../../../../constants/messages';
 
 export const useGetRoundDatesHistoryColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();

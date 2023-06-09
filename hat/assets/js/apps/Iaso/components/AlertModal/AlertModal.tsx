@@ -1,16 +1,6 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { defineMessages } from 'react-intl';
-import { IntlMessage, SimpleModal, useSafeIntl } from 'bluesquare-components';
-import { Button } from '@material-ui/core';
-
-type ButtonProps = { closeDialog: () => void };
-
-const MESSAGES = defineMessages({
-    close: {
-        defaultMessage: 'Close',
-        id: 'blsq.buttons.label.close',
-    },
-});
+import { IntlMessage, SimpleModal } from 'bluesquare-components';
+import { CloseButton } from './CloseButton';
 
 type Props = {
     children: ReactNode;
@@ -32,15 +22,6 @@ export const AlertModal: FunctionComponent<Props> = ({
     dataTestId = 'alertModal',
     backdropClick = true,
 }) => {
-    const CloseButton: FunctionComponent<ButtonProps> = ({ closeDialog }) => {
-        const { formatMessage } = useSafeIntl();
-        return (
-            <Button onClick={closeDialog} variant="contained" color="primary">
-                {formatMessage(MESSAGES.close)}
-            </Button>
-        );
-    };
-
     return (
         <SimpleModal
             open={isOpen}

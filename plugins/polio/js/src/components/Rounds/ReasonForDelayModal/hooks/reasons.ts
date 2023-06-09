@@ -1,7 +1,7 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
-import MESSAGES from '../../../constants/messages';
-import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import MESSAGES from '../../../../constants/messages';
+import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
 export type ReasonForDelay = 'INITIAL_DATA' | 'ENCODING_ERROR';
 

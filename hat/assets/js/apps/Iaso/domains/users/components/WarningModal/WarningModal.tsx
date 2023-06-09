@@ -1,5 +1,6 @@
 import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
+import { Box, Divider, Typography } from '@material-ui/core';
 import { MESSAGES } from './messages';
 
 type Props = {
@@ -29,9 +30,12 @@ export const WarningModal: FunctionComponent<Props> = ({
             confirmMessage={MESSAGES.confirm}
             cancelMessage={MESSAGES.cancel}
         >
-            You are about to create a user with no permissions. This user will
-            have access to the mobile application but not to the features of the
-            web interface.
+            <Divider />
+            <Box mt={2}>
+                <Typography>
+                    {formatMessage(MESSAGES.warningModalMessage)}
+                </Typography>
+            </Box>
         </ConfirmCancelModal>
     );
 };

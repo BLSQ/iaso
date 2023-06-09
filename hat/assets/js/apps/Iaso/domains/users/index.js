@@ -8,6 +8,7 @@ import {
     Table,
     AddButton as AddButtonComponent,
     useSafeIntl,
+    LoadingSpinner,
 } from 'bluesquare-components';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -49,6 +50,7 @@ const Users = ({ params }) => {
 
     return (
         <>
+            {isLoading && <LoadingSpinner />}
             <TopBar
                 title={formatMessage(MESSAGES.users)}
                 displayBackButton={false}
@@ -96,7 +98,7 @@ const Users = ({ params }) => {
                     extraProps={{
                         pageSize: params.pageSize,
                         search: params.search,
-                        loading: isLoading,
+                        refresh: isLoading,
                     }}
                     redirectTo={(b, p) => dispatch(redirectTo(b, p))}
                 />

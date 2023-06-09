@@ -7,7 +7,7 @@ from .base import DeduplicationAlgorithm
 from .finalize import finalize_from_task
 
 LEVENSHTEIN_MAX_DISTANCE = 3
-ABOVE_SCORE_DISPLAY = 0
+ABOVE_SCORE_DISPLAY = 50
 
 # We need to make sure the extension is loaded in the database
 # CREATE EXTENSION fuzzystrmatch;

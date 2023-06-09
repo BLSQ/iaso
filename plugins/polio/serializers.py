@@ -1107,6 +1107,19 @@ class ExportCampaignSerializer(CampaignSerializer):
                     "doses_per_vial",
                     "wastage_ratio_forecast",
                 ]
+                
+        class NestedRoundDateHistoryEntrySerializer(RoundVaccineSerializer):
+            class Meta:
+                model = RoundDateHistoryEntry
+                fields = [
+                    "previous_started_at",
+                    "previous_ended_at",
+                    "started_at",
+                    "ended_at",
+                    "reason",
+                    "modified_by",
+                    "created_at",
+                ]
 
         class Meta:
             model = Round
@@ -1118,6 +1131,7 @@ class ExportCampaignSerializer(CampaignSerializer):
                 "number",
                 "started_at",
                 "ended_at",
+                "datelogs",
                 "mop_up_started_at",
                 "mop_up_ended_at",
                 "im_started_at",
@@ -1154,6 +1168,8 @@ class ExportCampaignSerializer(CampaignSerializer):
         vaccines = NestedRoundVaccineSerializer(many=True, required=False)
         shipments = NestedShipmentSerializer(many=True, required=False)
         destructions = NestedDestructionSerializer(many=True, required=False)
+        datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
+
 
     class ExportCampaignScopeSerializer(CampaignScopeSerializer):
         class Meta:

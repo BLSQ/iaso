@@ -25,14 +25,39 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class UserRoleSerializer(serializers.ModelSerializer):
-    group = GroupSerializer()
+    permissions = serializers.SerializerMethodField("get_permissions")
 
     class Meta:
         model = UserRole
-        fields = ["id", "group", "created_at", "updated_at"]
+        fields = ["id", "name", "permissions", "created_at", "updated_at"]
 
+    name = serializers.CharField(source="group.name")
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    def get_permissions(self, obj):
+        return PermissionSerializer(obj.group.permissions, many=True).data
+
+    def create(self, validated_data):
+        account = self.context["request"].user.iaso_profile.account
+        request = self.context["request"]
+        groupname = request.data.get("name")
+        permissions = request.data.get("permissions", [])
+        if not groupname:
+            return Response({"error": "User group name is required"}, status=400)
+
+        group = Group(name=groupname)
+        group.save()
+
+        if group.id and len(permissions) > 0:
+            for permission_codename in permissions:
+                permission = get_object_or_404(Permission, codename=permission_codename)
+                group.permissions.add(permission)
+            group.save()
+
+        userRole = UserRole.objects.create(group=group, account=account)
+        userRole.save()
+        return userRole
 
 
 class HasRolesPermission(permissions.BasePermission):
@@ -59,6 +84,7 @@ class UserRolesViewSet(ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
     serializer_class = UserRoleSerializer
+    http_method_names = ["get", "post"]
 
     def get_queryset(self) -> QuerySet[UserRole]:
         queryset = UserRole.objects.all()
@@ -71,61 +97,30 @@ class UserRolesViewSet(ModelViewSet):
 
         return queryset
 
-    def retrieve(self, request: Request, *args, **kwargs) -> Response:
-        pk = kwargs.get("pk")
-        userRole = get_object_or_404(self.get_queryset(), pk=pk)
-        return Response(userRole.as_dict())
-
-    def partial_update(self, request: Request, pk: int = None) -> Response:
-        userRole = get_object_or_404(self.get_queryset(), id=pk)
-        group = userRole.group
-
-        name = request.data.get("name", None)
-        permissions = request.data.get("permissions", [])
-        modified = False
-
-        if name:
-            group.name = name
-            modified = True
-
-        if len(permissions) > 0:
-            group.permissions.clear()
-            for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
-                group.permissions.add(permission)
-            modified = True
-
-        if modified:
-            group.save()
-            userRole.save()
-            return Response(userRole.as_dict())
-        else:
-            return Response({})
-
     def delete(self, request: Request, pk: int = None) -> Response:
         userRole = get_object_or_404(self.get_queryset(), id=pk)
         userRole.delete()
         return Response(True)
 
-    def create(self, request: Request) -> Response:
-        groupname = request.data.get("name")
-        permissions = request.data.get("permissions", [])
+    # def create(self, request: Request) -> Response:
+    #     groupname = request.data.get("name")
+    #     permissions = request.data.get("permissions", [])
 
-        if not groupname:
-            return Response({"error": "User group name is required"}, status=400)
+    #     if not groupname:
+    #         return Response({"error": "User group name is required"}, status=400)
 
-        group = Group(name=groupname)
-        group.save()
+    #     group = Group(name=groupname)
+    #     group.save()
 
-        if group.id and len(permissions) > 0:
-            for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
-                group.permissions.add(permission)
-            group.save()
+    #     if group.id and len(permissions) > 0:
+    #         for permission_codename in permissions:
+    #             permission = get_object_or_404(Permission, codename=permission_codename)
+    #             group.permissions.add(permission)
+    #         group.save()
 
-        userRole = UserRole()
-        userRole.group = group
+    #     userRole = UserRole()
+    #     userRole.group = group
 
-        userRole.save()
+    #     userRole.save()
 
-        return Response(userRole.as_dict())
+    #     return userRole

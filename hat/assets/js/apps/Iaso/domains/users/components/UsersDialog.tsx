@@ -1,9 +1,13 @@
-import React, { useMemo, useState, useEffect } from 'react';
-import get from 'lodash/get';
+/* eslint-disable camelcase */
+import React, {
+    useState,
+    FunctionComponent,
+    useCallback,
+    useEffect,
+} from 'react';
 import { useDispatch } from 'react-redux';
-import PropTypes from 'prop-types';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
@@ -11,8 +15,11 @@ import UsersInfos from './UsersInfos';
 import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
-import PermissionsSwitches from './PermissionsSwitches.tsx';
-import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import PermissionsSwitches from './PermissionsSwitches';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { useInitialUser } from './useInitialUser';
+import { InitialUserData } from '../types';
+import { WarningModal } from './WarningModal/WarningModal';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
@@ -36,100 +43,49 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const UserDialogComponent = ({
+type Props = {
+    titleMessage: IntlMessage;
+    renderTrigger: any;
+    initialData?: InitialUserData;
+    saveProfile: any;
+    allowSendEmailInvitation?: boolean;
+    forceRefresh: boolean;
+};
+// Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
+const defaultData: InitialUserData = {};
+const UserDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
     renderTrigger,
-    initialData = {},
+    initialData = defaultData,
     saveProfile,
-    allowSendEmailInvitation,
+    allowSendEmailInvitation = false,
+    forceRefresh = false,
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const classes = useStyles();
+    const classes: Record<string, string> = useStyles();
 
-    const initialUser = useMemo(() => {
-        const newInitialData = initialData || {};
-        return {
-            id: { value: get(newInitialData, 'id', null), errors: [] },
-            user_name: {
-                value: get(newInitialData, 'user_name', ''),
-                errors: [],
-            },
-            first_name: {
-                value: get(newInitialData, 'first_name', ''),
-                errors: [],
-            },
-            last_name: {
-                value: get(newInitialData, 'last_name', ''),
-                errors: [],
-            },
-            email: { value: get(newInitialData, 'email', ''), errors: [] },
-            password: { value: '', errors: [] },
-            permissions: {
-                value: get(newInitialData, 'permissions', []),
-                errors: [],
-            },
-            org_units: {
-                value: get(newInitialData, 'org_units', []),
-                errors: [],
-            },
-            language: {
-                value: get(newInitialData, 'language', ''),
-                errors: [],
-            },
-            home_page: {
-                value: get(newInitialData, 'home_page', ''),
-                errors: [],
-            },
-            dhis2_id: {
-                value: get(newInitialData, 'dhis2_id', ''),
-                errors: [],
-            },
-            send_email_invitation: {
-                value: get(newInitialData, 'send_email_invitation', false),
-                errors: [],
-            },
-        };
-    }, [initialData]);
-    const [user, setUser] = useState(initialUser);
+    const { user, resetUser, setFieldValue, setFieldErrors } =
+        useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
+    const [openWarning, setOpenWarning] = useState<boolean>(false);
+    const [renderCount, setRenderCount] = useState<number>(0);
     const onClosed = () => {
-        setUser(initialUser);
+        resetUser();
         setTab('infos');
     };
-
-    const setFieldValue = (fieldName, fieldValue) => {
-        setUser({
-            ...user,
-            [fieldName]: {
-                value: fieldValue,
-                errors: [],
-            },
-        });
-    };
-
-    const setFieldErrors = (fieldName, fieldError) => {
-        setUser({
-            ...user,
-            [fieldName]: {
-                value: user[fieldName].value,
-                errors: [fieldError],
-            },
-        });
-    };
-
-    const onConfirm = closeDialog => {
-        const currentUser = {};
+    const saveUser = useCallback(() => {
+        const currentUser: any = {};
         Object.keys(user).forEach(key => {
             currentUser[key] = user[key].value;
         });
 
         saveProfile(currentUser, {
             onSuccess: () => {
-                closeDialog();
+                // closeDialog();
                 setTab('infos');
-                setUser(initialUser);
+                resetUser();
                 if (currentUser.id === connectedUser.id) {
                     dispatch(fetchCurrentUser());
                 }
@@ -143,16 +99,36 @@ const UserDialogComponent = ({
                 }
             },
         });
-    };
+    }, [
+        connectedUser.id,
+        dispatch,
+        resetUser,
+        saveProfile,
+        setFieldErrors,
+        user,
+    ]);
 
+    const onConfirm = useCallback(() => {
+        if ((user?.permissions.value ?? []).length > 0) {
+            saveUser();
+        } else {
+            setOpenWarning(true);
+        }
+    }, [saveUser, user?.permissions.value]);
+    // Workaround to force the modal to close when saving a new user without permissions.
+    // (Because closeDialog cound't be passed to the child WarningModal)
     useEffect(() => {
-        setUser(initialUser);
-    }, [initialData, initialUser]);
+        if (forceRefresh) {
+            setRenderCount(v => v + 1);
+        }
+    }, [forceRefresh]);
 
     return (
+        // @ts-ignore
         <ConfirmCancelDialogComponent
+            key={renderCount}
             titleMessage={titleMessage}
-            onConfirm={closeDialog => onConfirm(closeDialog)}
+            onConfirm={() => onConfirm()}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             onClosed={() => onClosed()}
@@ -162,6 +138,11 @@ const UserDialogComponent = ({
                 classNames: classes.dialog,
             }}
         >
+            <WarningModal
+                open={openWarning}
+                closeDialog={() => setOpenWarning(false)}
+                onConfirm={saveUser}
+            />
             <Tabs
                 id="user-dialog-tabs"
                 value={tab}
@@ -227,19 +208,6 @@ const UserDialogComponent = ({
             </div>
         </ConfirmCancelDialogComponent>
     );
-};
-
-UserDialogComponent.defaultProps = {
-    initialData: null,
-    allowSendEmailInvitation: false,
-};
-
-UserDialogComponent.propTypes = {
-    titleMessage: PropTypes.object.isRequired,
-    renderTrigger: PropTypes.func.isRequired,
-    initialData: PropTypes.object,
-    saveProfile: PropTypes.func.isRequired,
-    allowSendEmailInvitation: PropTypes.bool,
 };
 
 export default UserDialogComponent;

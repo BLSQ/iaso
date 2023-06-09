@@ -9,7 +9,8 @@ import iaso.models.base as base
 from beanstalk_worker.services import TestTaskService
 from iaso import models as m
 from iaso.test import APITestCase
-from iaso.tests.api.workflows.base import var_dump
+
+from iaso.models.deduplication import IGNORED, PENDING, VALIDATED
 
 
 def create_instance_and_entity(cls, entity_name, instance_json, form_version, orgunit=None, entity_type=None):
@@ -415,3 +416,112 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.SUCCESS)
+
+    def test_ignore_entity_duplicate(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        duplicate = m.EntityDuplicate.objects.first()
+
+        self.assertEqual(duplicate.validation_status, PENDING)
+
+        response = self.client.post(
+            f"/api/entityduplicates/",
+            data={
+                "ignore": True,
+                "reason": "test",
+                "entity1_id": duplicate.entity1.id,
+                "entity2_id": duplicate.entity2.id,
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+        self.assertIn("entity1_id", response_data)
+        self.assertIn("entity2_id", response_data)
+        self.assertIn("ignored", response_data)
+
+        # entity1_id should be the same as duplicate.entity1.id
+        self.assertEqual(response_data["entity1_id"], duplicate.entity1.id)
+        # entity2_id should be the same as duplicate.entity2.id
+        self.assertEqual(response_data["entity2_id"], duplicate.entity2.id)
+        # ignore should be True
+        self.assertEqual(response_data["ignored"], True)
+
+        duplicate = m.EntityDuplicate.objects.get(id=duplicate.id)
+        self.assertEqual(duplicate.validation_status, IGNORED)
+        self.assertEqual(duplicate.metadata["ignored_reason"], "test")
+
+        # we cant ignore it again
+        response = self.client.post(
+            f"/api/entityduplicates/",
+            data={"ignore": True, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
+            format="json",
+        )
+
+        self.assertContains(response, "This duplicate has already been validated or ignored", status_code=400)
+
+        # we can't merge it after it was ignored
+        merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
+        response = self.client.post(
+            f"/api/entityduplicates/",
+            data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
+            format="json",
+        )
+
+        self.assertContains(response, "This duplicate has already been validated or ignored", status_code=400)
+
+    def test_merge_entity_duplicate(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        duplicate = m.EntityDuplicate.objects.first()
+
+        self.assertEqual(duplicate.validation_status, PENDING)
+
+        merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
+        response = self.client.post(
+            f"/api/entityduplicates/",
+            data={"merge": merged_data, "entity1_id": duplicate.entity1.id, "entity2_id": duplicate.entity2.id},
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        self.assertIn("entity1_id", response_data)
+        self.assertIn("entity2_id", response_data)
+        self.assertIn("ignored", response_data)
+        self.assertIn("new_entity_id", response_data)
+
+        # entity1_id should be the same as duplicate.entity1.id
+        self.assertEqual(response_data["entity1_id"], duplicate.entity1.id)
+        # entity2_id should be the same as duplicate.entity2.id
+        self.assertEqual(response_data["entity2_id"], duplicate.entity2.id)
+        # ignore should be True
+        self.assertEqual(response_data["ignored"], False)

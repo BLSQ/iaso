@@ -1,33 +1,39 @@
 from typing import Any
 from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
-from rest_framework import viewsets, permissions,serializers
+from rest_framework import viewsets, permissions, serializers
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from rest_framework.response import Response
 from iaso.models import UserRole
 from django.core.paginator import Paginator
-from .common import TimestampField
+from .common import TimestampField, ModelViewSet
+
 
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
-        model= Permission
-        fields = ('id', 'name', 'codename')
+        model = Permission
+        fields = ("id", "name", "codename")
+
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
-        model= Group
-        fields = ('id', 'name', 'permissions')
+        model = Group
+        fields = ("id", "name", "permissions")
+
     permissions = PermissionSerializer(many=True, read_only=True)
+
 
 class UserRoleSerializer(serializers.ModelSerializer):
     group = GroupSerializer()
+
     class Meta:
         model = UserRole
         fields = ["id", "group", "created_at", "updated_at"]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
 
 class HasRolesPermission(permissions.BasePermission):
     def has_permission(self, request: Request, view) -> bool:
@@ -36,8 +42,7 @@ class HasRolesPermission(permissions.BasePermission):
         return True
 
 
-
-class UserRolesViewSet(viewsets.ViewSet):
+class UserRolesViewSet(ModelViewSet):
     """Roles API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_user_roles" permission for write permission
@@ -53,39 +58,18 @@ class UserRolesViewSet(viewsets.ViewSet):
     # FIXME : replace by a model viewset
 
     permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
+    serializer_class = UserRoleSerializer
 
     def get_queryset(self) -> QuerySet[UserRole]:
-        return UserRole.objects.all()
-
-    def list(self, request: Request) -> Response:
-        limit_str = request.GET.get("limit", None)
-        page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "group__name").split(",")
-        search = request.GET.get("search", None)
-        queryset = self.get_queryset()
-        serializer = UserRoleSerializer
+        queryset = UserRole.objects.all()
+        search = self.request.GET.get("search", None)
+        orders = self.request.GET.get("order", "group__name").split(",")
         if search:
             queryset = queryset.filter(Q(group__name__icontains=search)).distinct()
-
-        if limit_str:
+        if orders:
             queryset = queryset.order_by(*orders)
-            limit = int(limit_str)
-            page_offset = int(page_offset)
-            paginator = Paginator(queryset, limit)
-            res: Any = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
 
-            res["results"] = serializer(page.object_list, many=True).data
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            return Response(res)
-        else:
-            return Response({"results": UserRoleSerializer(queryset, many=True).data})
+        return queryset
 
     def retrieve(self, request: Request, *args, **kwargs) -> Response:
         pk = kwargs.get("pk")

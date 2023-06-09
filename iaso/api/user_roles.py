@@ -1,19 +1,40 @@
 from typing import Any
 from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions,serializers
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from rest_framework.response import Response
 from iaso.models import UserRole
 from django.core.paginator import Paginator
+from .common import TimestampField
 
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Permission
+        fields = ('id', 'name', 'codename')
+
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model= Group
+        fields = ('id', 'name', 'permissions')
+    permissions = PermissionSerializer(many=True, read_only=True)
+
+class UserRoleSerializer(serializers.ModelSerializer):
+    group = GroupSerializer()
+    class Meta:
+        model = UserRole
+        fields = ["id", "group", "created_at", "updated_at"]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
 class HasRolesPermission(permissions.BasePermission):
     def has_permission(self, request: Request, view) -> bool:
         if not request.user.has_perm("menupermissions.iaso_user_roles"):
             return False
         return True
+
 
 
 class UserRolesViewSet(viewsets.ViewSet):
@@ -42,7 +63,7 @@ class UserRolesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "group__name").split(",")
         search = request.GET.get("search", None)
         queryset = self.get_queryset()
-
+        serializer = UserRoleSerializer
         if search:
             queryset = queryset.filter(Q(group__name__icontains=search)).distinct()
 
@@ -56,7 +77,7 @@ class UserRolesViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["user_roles"] = map(lambda x: x.as_dict(), page.object_list)
+            res["results"] = serializer(page.object_list, many=True).data
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -64,7 +85,7 @@ class UserRolesViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         else:
-            return Response({"user_roles": [userrole.as_short_dict() for userrole in queryset]})
+            return Response({"results": UserRoleSerializer(queryset, many=True).data})
 
     def retrieve(self, request: Request, *args, **kwargs) -> Response:
         pk = kwargs.get("pk")

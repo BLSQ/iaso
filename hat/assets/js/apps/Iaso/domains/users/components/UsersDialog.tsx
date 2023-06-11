@@ -100,7 +100,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             },
         });
     }, [
-        connectedUser.id,
+        connectedUser?.id,
         dispatch,
         resetUser,
         saveProfile,

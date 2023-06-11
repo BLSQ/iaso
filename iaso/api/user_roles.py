@@ -16,22 +16,14 @@ class PermissionSerializer(serializers.ModelSerializer):
         fields = ("id", "name", "codename")
 
 
-class GroupSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Group
-        fields = ("id", "name", "permissions")
-
-    permissions = PermissionSerializer(many=True, read_only=True)
-
-
 class UserRoleSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField("get_permissions")
+    name = serializers.CharField(source="group.name")
 
     class Meta:
         model = UserRole
         fields = ["id", "name", "permissions", "created_at", "updated_at"]
 
-    name = serializers.CharField(source="group.name")
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
@@ -59,6 +51,21 @@ class UserRoleSerializer(serializers.ModelSerializer):
         userRole.save()
         return userRole
 
+    def update(self, user_role, validated_data):
+        groupname = self.context["request"].data.get("name", None)
+        permissions = self.context["request"].data.get("permissions", None)
+        group = user_role.group
+        if groupname is not None:
+            group.name = groupname
+        if permissions is not None:
+            group.permissions.clear()
+            for permission_codename in permissions:
+                permission = get_object_or_404(Permission, codename=permission_codename)
+                group.permissions.add(permission)
+        group.save()
+        user_role.save()
+        return user_role
+
 
 class HasRolesPermission(permissions.BasePermission):
     def has_permission(self, request: Request, view) -> bool:
@@ -74,17 +81,17 @@ class UserRolesViewSet(ModelViewSet):
     Read access is accessible to any authenticated users as it necessary to list roles or display a particular one in
     the interface.
 
-    GET /api/roles/
-    GET /api/roles/<id>
-    PATCH /api/roles/<id>
-    DELETE /api/roles/<id>
+    GET /api/userroles/
+    GET /api/userroles/<id>
+    UPDATE /api/userroles/<id>
+    DELETE /api/userroles/<id>
     """
 
     # FIXME : replace by a model viewset
 
     permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
     serializer_class = UserRoleSerializer
-    http_method_names = ["get", "post"]
+    http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self) -> QuerySet[UserRole]:
         queryset = UserRole.objects.all()
@@ -96,31 +103,3 @@ class UserRolesViewSet(ModelViewSet):
             queryset = queryset.order_by(*orders)
 
         return queryset
-
-    def delete(self, request: Request, pk: int = None) -> Response:
-        userRole = get_object_or_404(self.get_queryset(), id=pk)
-        userRole.delete()
-        return Response(True)
-
-    # def create(self, request: Request) -> Response:
-    #     groupname = request.data.get("name")
-    #     permissions = request.data.get("permissions", [])
-
-    #     if not groupname:
-    #         return Response({"error": "User group name is required"}, status=400)
-
-    #     group = Group(name=groupname)
-    #     group.save()
-
-    #     if group.id and len(permissions) > 0:
-    #         for permission_codename in permissions:
-    #             permission = get_object_or_404(Permission, codename=permission_codename)
-    #             group.permissions.add(permission)
-    #         group.save()
-
-    #     userRole = UserRole()
-    #     userRole.group = group
-
-    #     userRole.save()
-
-    #     return userRole

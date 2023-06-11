@@ -1752,6 +1752,10 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
         "round__id": ["exact"],
     }
 
+    def get_queryset(self):
+        user = self.request.user
+        return self.queryset.filter_for_user(user)
+
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")

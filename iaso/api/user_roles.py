@@ -1,111 +1,40 @@
 from typing import Any
 from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from rest_framework.response import Response
 from iaso.models import UserRole
 from django.core.paginator import Paginator
+from .common import TimestampField, ModelViewSet
 
 
-class HasRolesPermission(permissions.BasePermission):
-    def has_permission(self, request: Request, view) -> bool:
-        if not request.user.has_perm("menupermissions.iaso_user_roles"):
-            return False
-        return True
+class PermissionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Permission
+        fields = ("id", "name", "codename")
 
 
-class UserRolesViewSet(viewsets.ViewSet):
-    """Roles API
+class UserRoleSerializer(serializers.ModelSerializer):
+    permissions = serializers.SerializerMethodField("get_permissions")
+    name = serializers.CharField(source="group.name")
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_user_roles" permission for write permission
-    Read access is accessible to any authenticated users as it necessary to list roles or display a particular one in
-    the interface.
+    class Meta:
+        model = UserRole
+        fields = ["id", "name", "permissions", "created_at", "updated_at"]
 
-    GET /api/roles/
-    GET /api/roles/<id>
-    PATCH /api/roles/<id>
-    DELETE /api/roles/<id>
-    """
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
-    # FIXME : replace by a model viewset
+    def get_permissions(self, obj):
+        return PermissionSerializer(obj.group.permissions, many=True).data
 
-    permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
-
-    def get_queryset(self) -> QuerySet[UserRole]:
-        return UserRole.objects.all()
-
-    def list(self, request: Request) -> Response:
-        limit_str = request.GET.get("limit", None)
-        page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "group__name").split(",")
-        search = request.GET.get("search", None)
-        queryset = self.get_queryset()
-
-        if search:
-            queryset = queryset.filter(Q(group__name__icontains=search)).distinct()
-
-        if limit_str:
-            queryset = queryset.order_by(*orders)
-            limit = int(limit_str)
-            page_offset = int(page_offset)
-            paginator = Paginator(queryset, limit)
-            res: Any = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
-
-            res["results"] = map(lambda x: x.as_dict(), page.object_list)
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            return Response(res)
-        else:
-            return Response({"results": [userrole.as_short_dict() for userrole in queryset]})
-
-    def retrieve(self, request: Request, *args, **kwargs) -> Response:
-        pk = kwargs.get("pk")
-        userRole = get_object_or_404(self.get_queryset(), pk=pk)
-        return Response(userRole.as_dict())
-
-    def partial_update(self, request: Request, pk: int = None) -> Response:
-        userRole = get_object_or_404(self.get_queryset(), id=pk)
-        group = userRole.group
-
-        name = request.data.get("name", None)
-        permissions = request.data.get("permissions", [])
-        modified = False
-
-        if name:
-            group.name = name
-            modified = True
-
-        if len(permissions) > 0:
-            group.permissions.clear()
-            for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
-                group.permissions.add(permission)
-            modified = True
-
-        if modified:
-            group.save()
-            userRole.save()
-            return Response(userRole.as_dict())
-        else:
-            return Response({})
-
-    def delete(self, request: Request, pk: int = None) -> Response:
-        userRole = get_object_or_404(self.get_queryset(), id=pk)
-        userRole.delete()
-        return Response(True)
-
-    def create(self, request: Request) -> Response:
+    def create(self, validated_data):
+        account = self.context["request"].user.iaso_profile.account
+        request = self.context["request"]
         groupname = request.data.get("name")
         permissions = request.data.get("permissions", [])
-
         if not groupname:
             return Response({"error": "User group name is required"}, status=400)
 
@@ -118,9 +47,59 @@ class UserRolesViewSet(viewsets.ViewSet):
                 group.permissions.add(permission)
             group.save()
 
-        userRole = UserRole()
-        userRole.group = group
-
+        userRole = UserRole.objects.create(group=group, account=account)
         userRole.save()
+        return userRole
 
-        return Response(userRole.as_dict())
+    def update(self, user_role, validated_data):
+        groupname = self.context["request"].data.get("name", None)
+        permissions = self.context["request"].data.get("permissions", None)
+        group = user_role.group
+        if groupname is not None:
+            group.name = groupname
+        if permissions is not None:
+            group.permissions.clear()
+            for permission_codename in permissions:
+                permission = get_object_or_404(Permission, codename=permission_codename)
+                group.permissions.add(permission)
+        group.save()
+        user_role.save()
+        return user_role
+
+
+class HasRolesPermission(permissions.BasePermission):
+    def has_permission(self, request: Request, view) -> bool:
+        if not request.user.has_perm("menupermissions.iaso_user_roles"):
+            return False
+        return True
+
+
+class UserRolesViewSet(ModelViewSet):
+    """Roles API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_user_roles" permission for write permission
+    Read access is accessible to any authenticated users as it necessary to list roles or display a particular one in
+    the interface.
+
+    GET /api/userroles/
+    GET /api/userroles/<id>
+    UPDATE /api/userroles/<id>
+    DELETE /api/userroles/<id>
+    """
+
+    # FIXME : replace by a model viewset
+
+    permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
+    serializer_class = UserRoleSerializer
+    http_method_names = ["get", "post", "put", "delete"]
+
+    def get_queryset(self) -> QuerySet[UserRole]:
+        queryset = UserRole.objects.all()
+        search = self.request.GET.get("search", None)
+        orders = self.request.GET.get("order", "group__name").split(",")
+        if search:
+            queryset = queryset.filter(Q(group__name__icontains=search)).distinct()
+        if orders:
+            queryset = queryset.order_by(*orders)
+
+        return queryset

@@ -810,7 +810,7 @@ class Instance(models.Model):
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
-    name = models.TextField(null=True, blank=True)
+    name = models.TextField(null=True, blank=True)  # form.name
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
@@ -1346,6 +1346,7 @@ class InstanceLock(models.Model):
 
 
 class UserRole(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
     group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

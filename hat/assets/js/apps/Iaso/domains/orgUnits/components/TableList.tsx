@@ -6,7 +6,6 @@ import React, {
 } from 'react';
 import { Box } from '@material-ui/core';
 import EditIcon from '@material-ui/icons/Settings';
-import { UseMutateAsyncFunction } from 'react-query';
 import {
     useSafeIntl,
     // @ts-ignore
@@ -17,6 +16,7 @@ import {
 } from 'bluesquare-components';
 
 // COMPONENTS
+import { UseMutateAsyncFunction } from 'react-query';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { OrgUnitsMultiActionsDialog } from './OrgUnitsMultiActionsDialog';
 // COMPONENTS

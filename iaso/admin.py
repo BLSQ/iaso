@@ -78,7 +78,7 @@ from .models import (
     Report,
     ReportVersion,
     EntityDuplicate,
-    EntityDuplicateAnalyze,
+    EntityDuplicateAnalyzis,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -594,7 +594,7 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
     list_filter = ("validation_status", "entity1__entity_type")
 
 
-class EntityDuplicateAnalyzeAdmin(admin.ModelAdmin):
+class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
@@ -642,4 +642,4 @@ admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
 admin.site.register(EntityDuplicate, EntityDuplicateAdmin)
-admin.site.register(EntityDuplicateAnalyze, EntityDuplicateAnalyzeAdmin)
+admin.site.register(EntityDuplicateAnalyzis, EntityDuplicateAnalyzisAdmin)

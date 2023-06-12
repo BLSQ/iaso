@@ -27,6 +27,7 @@ from iaso.api.common import (
     TimestampField,
 )
 from iaso.models import Entity, EntityType, Instance
+from iaso.models.deduplication import ValidationStatus
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -128,8 +129,8 @@ class EntityTypeViewSet(ModelViewSet):
 
 def get_duplicates(entity):
     results = []
-    e1qs = entity.duplicates1.filter(validation_status="PENDING")
-    e2qs = entity.duplicates2.filter(validation_status="PENDING")
+    e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
+    e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
     if e1qs.count() > 0:
         results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
     elif e2qs.count() > 0:

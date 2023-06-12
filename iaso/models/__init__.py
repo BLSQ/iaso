@@ -11,5 +11,5 @@ from .entity import EntityType, Entity
 from .storage import StorageDevice, StorageLogEntry, StoragePassword
 from .workflow import Workflow, WorkflowVersion, WorkflowFollowup, WorkflowChange
 from .reports import Report, ReportVersion
-from .deduplication import EntityDuplicateAnalyze, EntityDuplicate
+from .deduplication import EntityDuplicateAnalyzis, EntityDuplicate
 from .microplanning import Planning, Team

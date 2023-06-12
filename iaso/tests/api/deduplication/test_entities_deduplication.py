@@ -10,7 +10,7 @@ from beanstalk_worker.services import TestTaskService
 from iaso import models as m
 from iaso.test import APITestCase
 
-from iaso.models.deduplication import IGNORED, PENDING, VALIDATED
+from iaso.models.deduplication import ValidationStatus
 
 
 def create_instance_and_entity(cls, entity_name, instance_json, form_version, orgunit=None, entity_type=None):
@@ -389,32 +389,32 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": base.KILLED})
         self.assertEqual(response.status_code, 200)
 
-        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.KILLED)
 
         task_service = TestTaskService()
         task_service.run_all()  # nothing should run
 
-        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.KILLED)
 
         response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": base.QUEUED})
         self.assertEqual(response.status_code, 200)
 
-        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.QUEUED)
 
         task_service = TestTaskService()
         task_service.run_all()  # Now it should run
 
-        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.SUCCESS)
 
         # this should fail because we cant change status to QUEUED after it was run
         response = self.client.patch(f"/api/entityduplicates_analyzes/{analyze_id}/", data={"status": "QUEUED"})
         self.assertEqual(response.status_code, 400)
 
-        analyze = m.EntityDuplicateAnalyze.objects.get(id=analyze_id)
+        analyze = m.EntityDuplicateAnalyzis.objects.get(id=analyze_id)
         self.assertEqual(analyze.task.status, base.SUCCESS)
 
     def test_ignore_entity_duplicate(self):
@@ -436,7 +436,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         duplicate = m.EntityDuplicate.objects.first()
 
-        self.assertEqual(duplicate.validation_status, PENDING)
+        self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
 
         response = self.client.post(
             f"/api/entityduplicates/",
@@ -462,7 +462,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(response_data["ignored"], True)
 
         duplicate = m.EntityDuplicate.objects.get(id=duplicate.id)
-        self.assertEqual(duplicate.validation_status, IGNORED)
+        self.assertEqual(duplicate.validation_status, ValidationStatus.IGNORED)
         self.assertEqual(duplicate.metadata["ignored_reason"], "test")
 
         # we cant ignore it again
@@ -503,7 +503,7 @@ class EntitiesDuplicationAPITestCase(APITestCase):
 
         duplicate = m.EntityDuplicate.objects.first()
 
-        self.assertEqual(duplicate.validation_status, PENDING)
+        self.assertEqual(duplicate.validation_status, ValidationStatus.PENDING)
 
         merged_data = {i: duplicate.entity1.id for i in duplicate.analyze.metadata["fields"]}
         response = self.client.post(

@@ -6,7 +6,7 @@ from rest_framework.response import Response
 
 import iaso.models.base as base
 from iaso.api.common import HasPermission, Paginator
-from iaso.models import Entity, EntityDuplicateAnalyze, EntityType, Form
+from iaso.models import Entity, EntityDuplicateAnalyzis, EntityType, Form
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
 from .algos import POSSIBLE_ALGORITHMS  # type: ignore
@@ -44,9 +44,9 @@ class AnalyzePostBodySerializer(serializers.Serializer):
         return data
 
 
-class EntityDuplicateAnalyzeSerializer(serializers.ModelSerializer):
+class EntityDuplicateAnalyzisSerializer(serializers.ModelSerializer):
     class Meta:
-        model = EntityDuplicateAnalyze
+        model = EntityDuplicateAnalyzis
         fields = "__all__"
 
 
@@ -57,7 +57,7 @@ class UserNestedSerializer(serializers.ModelSerializer):
         fields = ["id", "username"]
 
 
-class EntityDuplicateAnalyzeDetailSerializer(serializers.ModelSerializer):
+class EntityDuplicateAnalyzisDetailSerializer(serializers.ModelSerializer):
     status = serializers.ChoiceField(source="task.status", choices=base.STATUS_TYPE_CHOICES)
     started_at = serializers.DateTimeField(source="task.started_at")
     created_by = UserNestedSerializer(source="task.launcher")
@@ -76,7 +76,7 @@ class EntityDuplicateAnalyzeDetailSerializer(serializers.ModelSerializer):
         return obj.metadata["fields"]
 
     class Meta:
-        model = EntityDuplicateAnalyze
+        model = EntityDuplicateAnalyzis
         fields = [
             "id",
             "status",
@@ -92,7 +92,7 @@ class EntityDuplicateAnalyzeDetailSerializer(serializers.ModelSerializer):
         ]
 
 
-class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
+class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
     """Entity Duplicates API
     GET /api/entityduplicates/analyzes : Provides an API to retrieve the list of running and finished analyzes
     POST /api/entityduplicates/analyzes : Provides an API to launch a duplicate analyzes
@@ -109,14 +109,14 @@ class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
     ordering_fields = ["created_at", "finished_at", "id"]
     results_key = "results"
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
-    serializer_class = EntityDuplicateAnalyzeSerializer
+    serializer_class = EntityDuplicateAnalyzisSerializer
     pagination_class = Paginator
 
     def get_results_key(self):
         return self.results_key
 
     def get_queryset(self):
-        initial_queryset = EntityDuplicateAnalyze.objects.all()
+        initial_queryset = EntityDuplicateAnalyzis.objects.all()
         return initial_queryset
 
     def list(self, request, *args, **kwargs):
@@ -131,7 +131,7 @@ class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = EntityDuplicateAnalyzeSerializer(queryset, many=True)
+        serializer = EntityDuplicateAnalyzisSerializer(queryset, many=True)
         if not self.remove_results_key_if_paginated:
             return Response(data={self.get_results_key(): serializer.data}, content_type="application/json")
         else:
@@ -177,12 +177,12 @@ class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
 
         """
         try:
-            obj = EntityDuplicateAnalyze.objects.get(pk=pk)
+            obj = EntityDuplicateAnalyzis.objects.get(pk=pk)
 
-        except EntityDuplicateAnalyze.DoesNotExist:
+        except EntityDuplicateAnalyzis.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
-        serializer = EntityDuplicateAnalyzeDetailSerializer(obj)
+        serializer = EntityDuplicateAnalyzisDetailSerializer(obj)
         return Response(serializer.data)
 
     def partial_update(self, request, pk=None, *args, **kwargs):
@@ -198,7 +198,7 @@ class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
-            eda = EntityDuplicateAnalyze.objects.get(pk=pk)
+            eda = EntityDuplicateAnalyzis.objects.get(pk=pk)
         except:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -230,9 +230,9 @@ class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
-            obj = EntityDuplicateAnalyze.objects.get(pk=pk)
+            obj = EntityDuplicateAnalyzis.objects.get(pk=pk)
 
-        except EntityDuplicateAnalyze.DoesNotExist:
+        except EntityDuplicateAnalyzis.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
 
         obj.delete()
@@ -273,8 +273,8 @@ class EntityDuplicateAnalyzeViewSet(viewsets.GenericViewSet):
 
         the_task = run_deduplication_algo(algo_name=algo_name, algo_params=algo_params, user=request.user)
 
-        # Create an EntityDuplicateAnalyze object
-        analyze = EntityDuplicateAnalyze.objects.create(algorithm=algo_name, metadata=algo_params, task=the_task)
+        # Create an EntityDuplicateAnalyzis object
+        analyze = EntityDuplicateAnalyzis.objects.create(algorithm=algo_name, metadata=algo_params, task=the_task)
         analyze.save()
 
         return Response({"analyze_id": analyze.pk}, status=status.HTTP_201_CREATED)

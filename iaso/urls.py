@@ -25,7 +25,7 @@ from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
-from .api.deduplication.entity_duplicate_analyze import EntityDuplicateAnalyzeViewSet  # type: ignore
+from .api.deduplication.entity_duplicate_analyzis import EntityDuplicateAnalyzisViewSet  # type: ignore
 from .api.derived_instances import DerivedInstancesViewSet
 from .api.devices import DevicesViewSet
 from .api.devices_ownership import DevicesOwnershipViewSet
@@ -130,7 +130,7 @@ router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
 router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entityduplicates")
-router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzeViewSet, basename="entityduplicates_analyzes")
+router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")

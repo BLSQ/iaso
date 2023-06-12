@@ -14,7 +14,6 @@ ABOVE_SCORE_DISPLAY = 50
 
 
 def _build_query(params):
-    print("params", params)
     the_fields = params.get("fields", [])
     custom_params = params.get("parameters", {})
     levenshtein_max_distance = custom_params.get("levenshtein_max_distance", LEVENSHTEIN_MAX_DISTANCE)
@@ -88,16 +87,11 @@ class InverseAlgorithm(DeduplicationAlgorithm):
             progress_message=f"Started Levenshtein Algorithm",
         )
 
-        print(f"Received params: {params}")
-
         cursor = connection.cursor()
         potential_duplicates = []
         try:
             the_params, the_query = _build_query(params)
-            print(the_query)
-            print(the_params)
             cursor.execute(the_query, the_params)
-            print(cursor.query)
 
             while True:
                 records = cursor.fetchmany(size=100)

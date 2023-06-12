@@ -8,7 +8,7 @@ from rest_framework import filters
 from iaso.models import OrgUnit
 from datetime import datetime
 from django.utils import timezone
-from iaso.models.deduplication import IGNORED, PENDING, VALIDATED
+from iaso.models.deduplication import ValidationStatus
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):
@@ -194,12 +194,12 @@ class IgnoredMergedFilterBackend(filters.BaseFilterBackend):
         ignored = request.query_params.get("ignored")
         merged = request.query_params.get("merged")
 
-        qs = [Q(validation_status=PENDING)]
+        qs = [Q(validation_status=ValidationStatus.PENDING)]
 
         if ignored == "true":
-            qs.append(Q(validation_status=IGNORED))
+            qs.append(Q(validation_status=ValidationStatus.IGNORED))
         if merged == "true":
-            qs.append(Q(validation_status=VALIDATED))
+            qs.append(Q(validation_status=ValidationStatus.VALIDATED))
 
         if len(qs) > 1:
             q = reduce(operator.or_, qs)

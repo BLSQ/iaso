@@ -7,7 +7,7 @@ from django.apps import apps
 
 
 def finalize_from_task(the_task: Task, potential_duplicates: List[PotentialDuplicate]):
-    eda = the_task.entity_duplicate_analyze.first()
+    eda = the_task.entity_duplicate_analyzis.first()
     if not eda:
         raise Exception("No entity duplicate analyze found for task %s" % the_task)
 

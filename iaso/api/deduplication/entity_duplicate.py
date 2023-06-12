@@ -20,8 +20,8 @@ import iaso.api.deduplication.filters as dedup_filters  # type: ignore
 import iaso.models.base as base
 from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
-from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyze, EntityType, Form, Instance
-from iaso.models.deduplication import IGNORED, PENDING, VALIDATED  # type: ignore
+from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
+from iaso.models.deduplication import ValidationStatus  # type: ignore
 from iaso.tests.api.workflows.base import var_dump
 
 
@@ -61,7 +61,7 @@ class EntityDuplicateNestedAnalyzisSerializer(serializers.ModelSerializer):
         return obj.metadata["fields"]
 
     class Meta:
-        model = EntityDuplicateAnalyze
+        model = EntityDuplicateAnalyzis
         fields = ["analyze_id", "created_at", "finished_at", "the_fields", "type"]
 
 
@@ -93,10 +93,10 @@ class EntityDuplicateSerializer(serializers.ModelSerializer):
         return [EntityDuplicateNestedAnalyzisSerializer(obj.analyze).data]
 
     def get_ignored(self, obj):
-        return obj.validation_status == IGNORED
+        return obj.validation_status == ValidationStatus.IGNORED
 
     def get_merged(self, obj):
-        return obj.validation_status == VALIDATED
+        return obj.validation_status == ValidationStatus.VALIDATED
 
     def get_ignored_reason(self, obj):
         if "ignored_reason" in obj.metadata:
@@ -328,11 +328,11 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
     def create(self, validated_data):
         ed = EntityDuplicate.objects.get(entity1=validated_data["entity1"], entity2=validated_data["entity2"])
 
-        if ed.validation_status != PENDING:
+        if ed.validation_status != ValidationStatus.PENDING:
             raise serializers.ValidationError("This duplicate has already been validated or ignored")
 
         if validated_data["ignore"]:
-            ed.validation_status = IGNORED
+            ed.validation_status = ValidationStatus.IGNORED
             ed.metadata["ignored_reason"] = validated_data["reason"]
             ed.save()
 
@@ -350,7 +350,7 @@ class EntityDuplicatePostSerializer(serializers.Serializer):
 
             # needs to add the id of the new entity as metadata to the entity duplicate
             ed.metadata["new_entity_id"] = new_entity.pk
-            ed.validation_status = VALIDATED
+            ed.validation_status = ValidationStatus.VALIDATED
             ed.save()
 
             return {
@@ -451,7 +451,18 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         So basically it returns an array of those objects
         """
         try:
-            duplicate = self.get_queryset().first()
+            entities = request.GET.get("entities", None)
+            if entities is None:
+                raise ValueError("entities parameter is required")
+            entities = entities.split(",")
+            duplicate = (
+                self.get_queryset()
+                .filter(
+                    Q(entity1__pk=entities[0], entity2__pk=entities[1])
+                    | Q(entity1__pk=entities[1], entity2__pk=entities[0])
+                )
+                .first()
+            )
         except:
             return Response(status=status.HTTP_404_NOT_FOUND, data={"error": "entity duplicate not found"})
 

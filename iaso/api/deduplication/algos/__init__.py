@@ -1,7 +1,7 @@
 from typing import List
 
 from iaso.api.workflows.serializers import find_question_by_name
-from iaso.models import EntityType, Form
+from iaso.models import EntityType
 
 from ..common import PotentialDuplicate  # type: ignore
 from . import levenshtein

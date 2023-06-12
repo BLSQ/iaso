@@ -170,7 +170,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Beneficiary type',
     },
     latestAnalysis: {
-        defaultMessage: 'Latest analysis completed at {finishedAt}',
+        defaultMessage: 'Latest analysis completed: {finishedAt}',
         id: 'iaso.duplicate.latestAnalysis',
     },
     relaunchAnalysis: {

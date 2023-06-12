@@ -651,7 +651,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         show_deleted=None,
         entity_id=None,
         json_content=None,
-        planning_id=None,
+        planning_ids=None,
     ):
         queryset = self
 
@@ -714,8 +714,8 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if entity_id:
             queryset = queryset.filter(entity_id=entity_id)
 
-        if planning_id:
-            queryset = queryset.filter(planning_id=planning_id)
+        if planning_ids:
+            queryset = queryset.filter(planning_id__in=planning_ids.split(","))
 
         if search:
             if search.startswith("ids:"):

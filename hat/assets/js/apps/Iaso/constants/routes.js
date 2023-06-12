@@ -242,6 +242,10 @@ export const instancesPath = {
             isRequired: false,
             key: 'fieldsSearch',
         },
+        {
+            isRequired: false,
+            key: 'planningIds',
+        },
     ],
 };
 

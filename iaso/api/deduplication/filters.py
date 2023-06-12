@@ -97,10 +97,17 @@ class EntityTypeFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         entity_type_id = request.query_params.get("entity_type")
 
-        if entity_type_id:
-            queryset = queryset.filter(
-                Q(entity1__entity_type__pk=entity_type_id) | Q(entity2__entity_type__pk=entity_type_id)
-            )
+        if entity_type_id is None:
+            return queryset
+        elif "," in entity_type_id:
+            entity_type_ids = entity_type_id.split(",")
+        else:
+            entity_type_ids = [int(entity_type_id)]
+
+        entity_type_ids = [int(e) for e in entity_type_ids]
+        queryset = queryset.filter(
+            Q(entity1__entity_type__pk__in=entity_type_ids) | Q(entity2__entity_type__pk__in=entity_type_ids)
+        )
 
         return queryset
 

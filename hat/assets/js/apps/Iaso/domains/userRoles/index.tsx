@@ -11,6 +11,7 @@ import { UserRoleParams } from './types/userRoles';
 import { useGetUserRolesColumns } from './config';
 import { useGetUserRoles } from './hooks/requests/useGetUserRoles';
 import { redirectTo } from '../../routing/actions';
+import { useDeleteUserRole } from './hooks/requests/useDeleteUserRole';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -25,7 +26,8 @@ export const UserRoles: FunctionComponent<Props> = ({ params }) => {
 
     const { data, isFetching } = useGetUserRoles(params);
     const { formatMessage } = useSafeIntl();
-    const columns = useGetUserRolesColumns();
+    const { mutate: deleteUserRole } = useDeleteUserRole();
+    const columns = useGetUserRolesColumns(deleteUserRole);
     return (
         <>
             <TopBar

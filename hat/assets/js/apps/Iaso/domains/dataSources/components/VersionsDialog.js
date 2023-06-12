@@ -26,7 +26,7 @@ import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
-import { AddNewEmptyVersion } from './AddNewEmptyVersion';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { EditSourceVersion } from './EditSourceVersion.tsx';
 

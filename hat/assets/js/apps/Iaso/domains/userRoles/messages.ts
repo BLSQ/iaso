@@ -21,6 +21,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Updated',
         id: 'iaso.label.updated_at',
     },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.label.actions',
+    },
+    delete: {
+        id: 'iaso.userRoles.delete',
+        defaultMessage: 'Are you sure you want to delete this user role?',
+    },
+    deleteError: {
+        id: 'iaso.snackBar.deleteUserRoleError',
+        defaultMessage: 'An error occurred while deleting user role',
+    },
+    deleteSuccess: {
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
+    },
 });
 
 export default MESSAGES;

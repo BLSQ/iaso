@@ -1,13 +1,20 @@
 import React, { FunctionComponent, useRef } from 'react';
 import { Popup, useMap } from 'react-leaflet';
 
-import { Card, CardContent, Box, makeStyles, Divider } from '@material-ui/core';
+import ClearIcon from '@material-ui/icons/Clear';
+import {
+    Card,
+    CardContent,
+    Box,
+    makeStyles,
+    Divider,
+    IconButton,
+} from '@material-ui/core';
 
 import {
     useSafeIntl,
     commonStyles,
     mapPopupStyles,
-    IconButton,
 } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
@@ -66,12 +73,11 @@ export const MapPopUp: FunctionComponent<Props> = ({ orgUnit }) => {
                         />
                     </Box>
                     <IconButton
-                        onClick={() => map.closePopup(popup.current)}
-                        icon="clear"
-                        tooltipMessage={MESSAGES.close}
-                        iconSize="small"
                         size="small"
-                    />
+                        onClick={() => map.closePopup(popup.current)}
+                    >
+                        <ClearIcon />
+                    </IconButton>
                 </Box>
                 <Divider />
                 <CardContent className={classes.popupCardContent}>

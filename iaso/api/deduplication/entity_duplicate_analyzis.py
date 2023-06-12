@@ -132,10 +132,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
             return self.get_paginated_response(serializer.data)
 
         serializer = EntityDuplicateAnalyzisSerializer(queryset, many=True)
-        if not self.remove_results_key_if_paginated:
-            return Response(data={self.get_results_key(): serializer.data}, content_type="application/json")
-        else:
-            return Response(data=serializer.data, content_type="application/json")
+        return Response(data={self.get_results_key(): serializer.data})
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         """

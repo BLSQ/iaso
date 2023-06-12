@@ -455,5 +455,9 @@
     "iaso.polio.title.tryUpdateStep": "Resend data?",
     "iaso.polio.tooltip.label.lqasImDate": "No date found in campaign data, using default value based on round date",
     "iaso.polio.vaccine": "Vaccine",
-    "iaso.polio.vaccines": "Vaccines"
+    "iaso.polio.vaccines": "Vaccines",
+    "iaso.polio.validation.futureDateError": "This date should not be in the future",
+    "iaso.polio.validation.onsetAfterNotificationError": "Date of onset should be before virus notification",
+    "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "Date of onset should be before outbreak declaration",
+    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration"
 }

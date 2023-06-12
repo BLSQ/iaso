@@ -464,5 +464,9 @@
     "iaso.polio.title.tryUpdateStep": "Renvoyer les données?",
     "iaso.polio.tooltip.label.lqasImDate": "Aucune date trouvée dans les données de la campagne, une date par défaut basée sur la date du round est utilisée",
     "iaso.polio.vaccine": "Vaccin",
-    "iaso.polio.vaccines": "Vaccins"
+    "iaso.polio.vaccines": "Vaccins",
+    "iaso.polio.validation.futureDateError": "Cette date ne peut être dans le futur",
+    "iaso.polio.validation.onsetAfterNotificationError": "La date de début doit précéder la date de notification virus",
+    "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "La date de début doit précéder la date de déclaration de l'épidémie",
+    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "La date de notification virus doit précéder la déclaration de l'épidémie"
 }

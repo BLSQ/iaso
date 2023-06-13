@@ -77,6 +77,7 @@ from .models import (
     WorkflowFollowup,
     Report,
     ReportVersion,
+    UserRole,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -613,3 +614,4 @@ admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
+admin.site.register(UserRole)

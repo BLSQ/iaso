@@ -41,6 +41,7 @@ export const recursiveReducer = (state, fieldDict): Record<string, any> => {
  * Example:
  * const [state, setState] = useObjectState(initialState)
  * setState({name: "Bond"})
+ * The `dictReducer` uses immer so it's safe to use with complex objects
  * You can update nested objects as well, but it's not type safe in the sens that you can add fields to the state
  * that didn't previously exist
  */

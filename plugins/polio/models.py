@@ -74,7 +74,10 @@ PAYMENT = [
     ("DFC", _("DFC")),
 ]
 
-DELAY_REASONS = [("INITIAL_DATA", _("initial_data")), ("ENCODING_ERROR", _("encoding_error"))]
+
+class DelayReasons(models.TextChoices):
+    INITIAL_DATA = "INITIAL_DATA", _("initial_data")
+    ENCODING_ERROR = "ENCODING_ERROR", _("encoding_error")
 
 
 def make_group_round_scope():
@@ -157,7 +160,7 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    reason = models.CharField(null=True, blank=True, choices=DELAY_REASONS, max_length=200)
+    reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

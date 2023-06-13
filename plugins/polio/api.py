@@ -1742,7 +1742,6 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = RoundDateHistoryEntrySerializer
-    queryset = RoundDateHistoryEntry.objects.all()
     ordering_fields = ["modified_by", "created_at"]
     filter_backends = [
         filters.OrderingFilter,
@@ -1754,7 +1753,7 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter_for_user(user)
+        return RoundDateHistoryEntry.objects.filter_for_user(user)
 
 
 router = routers.SimpleRouter()

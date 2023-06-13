@@ -147,7 +147,7 @@ class RoundVaccine(models.Model):
     wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
-class RoundDateHistoryQueryset(models.QuerySet):
+class RoundDateHistoryEntryQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         from plugins.polio.models import Campaign
 
@@ -156,6 +156,7 @@ class RoundDateHistoryQueryset(models.QuerySet):
 
 
 class RoundDateHistoryEntry(models.Model):
+    objects = RoundDateHistoryEntryQuerySet.as_manager()
     previous_started_at = models.DateField(null=True, blank=True)
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)

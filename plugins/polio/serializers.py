@@ -368,10 +368,11 @@ class RoundSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user
         updated_datelogs = validated_data.pop("datelogs", [])
-        # from pprint import pprint
-        # print("DATELOGS")
-        # pprint(validated_data)
-        # pprint(self.data)
+        from pprint import pprint
+
+        print("DATELOGS")
+        pprint(validated_data)
+        pprint(self.data)
 
         has_datelog = instance.datelogs.count() > 0
         if updated_datelogs:
@@ -767,7 +768,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 round = Round.objects.get(pk=round_id)
                 if round.campaign != instance:
                     raise serializers.ValidationError({"rounds": "round is attached to a different campaign"})
-            elif round_data.get("number"):
+            elif round_data.get("number", None) is not None:
                 try:
                     round = instance.rounds.get(number=round_data.get("number"))
                 except Round.DoesNotExist:

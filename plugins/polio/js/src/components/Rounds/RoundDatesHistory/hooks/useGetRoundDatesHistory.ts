@@ -10,6 +10,10 @@ const apiUrl = '/api/polio/datelogs/';
 
 const getRoundDatesHistory = params => {
     const urlParams = { ...params, round__id: params.roundId };
+    if (params.pageSize) {
+        urlParams.limit = params.pageSize;
+        delete urlParams.pageSize;
+    }
     delete urlParams.roundId;
     const url = makeUrlWithParams(apiUrl, urlParams);
     return getRequest(url);

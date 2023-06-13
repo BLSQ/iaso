@@ -4,7 +4,6 @@ import get from 'lodash/get';
 
 import { injectIntl } from 'bluesquare-components';
 import InstanceDetailsField from './InstanceDetailsField';
-
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
 
@@ -14,7 +13,9 @@ const InstanceDetailsInfos = ({
     fieldsToHide,
 }) => {
     const fields = INSTANCE_METAS_FIELDS.filter(
-        f => f.type === 'info' && !fieldsToHide.includes(f.key),
+        f =>
+            f.type === 'info' &&
+            !fieldsToHide.includes(f.translationKey ?? f.key),
     );
     return (
         <>
@@ -30,7 +31,11 @@ const InstanceDetailsInfos = ({
                                 : null
                         }
                         label={formatMessage(
-                            MESSAGES['labelKey' in f ? f.labelKey : f.key],
+                            MESSAGES[
+                                'labelKey' in f
+                                    ? f.labelKey
+                                    : f.translationKey ?? f.key
+                            ],
                         )}
                         valueTitle={
                             f.title ? f.title(currentInstance[f.key]) : null

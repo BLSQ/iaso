@@ -903,10 +903,7 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'accountId',
         },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
+
         {
             isRequired: false,
             key: 'search',
@@ -949,8 +946,9 @@ export const entityDuplicatesPath = {
         },
         {
             isRequired: false,
-            key: 'entity',
+            key: 'merged',
         },
+
         {
             isRequired: false,
             key: 'fields',
@@ -959,6 +957,14 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'form',
         },
+        {
+            isRequired: false,
+            key: 'entity_id',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
     ],
 };
 export const entityDuplicatesDetailsPath = {

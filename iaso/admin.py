@@ -77,6 +77,8 @@ from .models import (
     WorkflowFollowup,
     Report,
     ReportVersion,
+    EntityDuplicate,
+    EntityDuplicateAnalyzis,
     UserRole,
 )
 from .models.microplanning import Team, Planning, Assignment
@@ -571,6 +573,32 @@ class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+class EntityDuplicateAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+    @admin_attr_decorator
+    def entity1_desc(self, obj):
+        return f"{obj.entity1.name} ({obj.entity1.id})"
+
+    @admin_attr_decorator
+    def entity2_desc(self, obj):
+        return f"{obj.entity2.name} ({obj.entity2.id})"
+
+    list_display = (
+        "similarity_score",
+        "validation_status",
+        "get_entity_type",
+        "entity1_desc",
+        "entity2_desc",
+        "created_at",
+    )
+    list_filter = ("validation_status", "entity1__entity_type")
+
+
+class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -614,4 +642,6 @@ admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
+admin.site.register(EntityDuplicate, EntityDuplicateAdmin)
+admin.site.register(EntityDuplicateAnalyzis, EntityDuplicateAnalyzisAdmin)
 admin.site.register(UserRole)

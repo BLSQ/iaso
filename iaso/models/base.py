@@ -12,6 +12,7 @@ from io import StringIO
 
 import django_cte
 from django.contrib.auth.models import User
+from django.contrib import auth
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -659,7 +660,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         show_deleted=None,
         entity_id=None,
         json_content=None,
-        planning_id=None,
+        planning_ids=None,
     ):
         queryset = self
 
@@ -722,8 +723,8 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if entity_id:
             queryset = queryset.filter(entity_id=entity_id)
 
-        if planning_id:
-            queryset = queryset.filter(planning_id=planning_id)
+        if planning_ids:
+            queryset = queryset.filter(planning_id__in=planning_ids.split(","))
 
         if search:
             if search.startswith("ids:"):
@@ -1368,3 +1369,34 @@ class InstanceLock(models.Model):
 
     class Meta:
         ordering = ["-locked_at"]
+
+
+class UserRole(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.group.name
+
+    def as_short_dict(self):
+        return {
+            "id": self.id,
+            "name": self.group.name,
+            "group_id": self.group.id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.group.name,
+            "group_id": self.group.id,
+            "permissions": list(
+                self.group.permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
+            ),
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }

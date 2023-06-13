@@ -179,5 +179,6 @@ export const filtersKeys = [
     'search',
     'levels',
     'dateFrom',
+    'planningIds',
     'dateTo',
 ];

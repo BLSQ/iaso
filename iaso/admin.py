@@ -79,6 +79,7 @@ from .models import (
     ReportVersion,
     EntityDuplicate,
     EntityDuplicateAnalyzis,
+    UserRole,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -643,3 +644,4 @@ admin.site.register(Report)
 admin.site.register(ReportVersion)
 admin.site.register(EntityDuplicate, EntityDuplicateAdmin)
 admin.site.register(EntityDuplicateAnalyzis, EntityDuplicateAnalyzisAdmin)
+admin.site.register(UserRole)

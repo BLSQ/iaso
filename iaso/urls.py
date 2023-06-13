@@ -78,6 +78,7 @@ from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
+from .api.user_roles import UserRolesViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -147,6 +148,7 @@ router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowcha
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
+router.register(r"userroles", UserRolesViewSet, basename="userroles")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 

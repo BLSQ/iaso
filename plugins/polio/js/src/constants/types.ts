@@ -1,6 +1,7 @@
 import { Pagination, IntlFormatMessage } from 'bluesquare-components';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { ReasonForDelay } from '../components/Rounds/ReasonForDelayModal/hooks/reasons';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
@@ -232,8 +233,18 @@ export type Destruction = {
     comment: Nullable<string>;
 };
 
+export type RoundDateHistoryEntry = {
+    previous_started_at: string; // DATE
+    previous_ended_at: string; // DATE
+    started_at: string; // DATE
+    ended_at: string; // DATE
+    reason: ReasonForDelay;
+    user: { first_name: string; last_name: string; username: string };
+    created_at: string; // DATE
+};
+
 export type Round = {
-    id: string;
+    id: number;
     started_at: string;
     ended_at: string;
     mop_up_started_at: Nullable<string>; // date
@@ -273,6 +284,7 @@ export type Round = {
     forma_usable_vials: Nullable<number>;
     campaign: Nullable<string>; // uuid
     percentage_covered_target_population: Nullable<number>;
+    datelogs: RoundDateHistoryEntry[];
 };
 
 export type Campaign = {

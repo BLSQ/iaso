@@ -1,6 +1,17 @@
-import React, { FunctionComponent, useState, MouseEvent } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    MouseEvent,
+    ReactNode,
+} from 'react';
 import { makeStyles, Theme } from '@material-ui/core/styles';
-import { Popper, Box, IconButton, Paper } from '@material-ui/core';
+import {
+    Popper,
+    Box,
+    IconButton,
+    Paper,
+    PopperPlacementType,
+} from '@material-ui/core';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import CancelOutlinedIcon from '@material-ui/icons/CancelOutlined';
 
@@ -20,7 +31,15 @@ const useStyles = makeStyles((theme: Theme) => ({
     },
 }));
 
-export const InfoPopper: FunctionComponent = ({ children }) => {
+type Props = {
+    children: ReactNode;
+    placement?: PopperPlacementType;
+};
+
+export const InfoPopper: FunctionComponent<Props> = ({
+    children,
+    placement = 'right-start',
+}) => {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
@@ -45,7 +64,7 @@ export const InfoPopper: FunctionComponent = ({ children }) => {
                 className={classes.popper}
                 open={open}
                 anchorEl={anchorEl}
-                placement="right-start"
+                placement={placement}
             >
                 <IconButton
                     size="small"

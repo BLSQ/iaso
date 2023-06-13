@@ -3,6 +3,8 @@ import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
 import { Box, Divider, Grid, Typography } from '@material-ui/core';
 import { isEqual } from 'lodash';
+import moment from 'moment';
+import { dateFormat } from '../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 import MESSAGES from '../../../constants/messages';
 import { DateInput } from '../../Inputs';
 import { Campaign, Round } from '../../../constants/types';
@@ -115,7 +117,13 @@ export const RoundDates: FunctionComponent<Props> = ({
                                         </Grid>
                                         <Grid item xs={8}>
                                             <Typography variant="button">
-                                                {`${currentStartDate ?? '--'}`}
+                                                {`${
+                                                    currentStartDate
+                                                        ? moment(
+                                                              currentStartDate,
+                                                          ).format(dateFormat)
+                                                        : '--'
+                                                }`}
                                             </Typography>
                                         </Grid>
                                     </Grid>
@@ -132,7 +140,13 @@ export const RoundDates: FunctionComponent<Props> = ({
                                         </Grid>
                                         <Grid item xs={8}>
                                             <Typography variant="button">
-                                                {`${currentEndDate ?? '--'}`}
+                                                {`${
+                                                    currentEndDate
+                                                        ? moment(
+                                                              currentEndDate,
+                                                          ).format(dateFormat)
+                                                        : '--'
+                                                }`}
                                             </Typography>
                                         </Grid>
                                     </Grid>

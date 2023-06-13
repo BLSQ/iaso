@@ -79,14 +79,13 @@ class UserRolesViewSet(ModelViewSet):
     DELETE /api/userroles/<id>
     """
 
-    # FIXME : replace by a model viewset
-
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_user_roles")]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_user_roles")]  # type: ignore
     serializer_class = UserRoleSerializer
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self) -> QuerySet[UserRole]:
-        account = self.request.user.iaso_profile.account
+        if not self.request.user.is_anonymous:
+            account = self.request.user.iaso_profile.account
         queryset = UserRole.objects.filter(account=account)
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "group__name").split(",")

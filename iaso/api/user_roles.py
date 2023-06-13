@@ -65,6 +65,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
         user_role.save()
         return user_role
 
+
 class UserRolesViewSet(ModelViewSet):
     """Roles API
 

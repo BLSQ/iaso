@@ -1,13 +1,12 @@
 from typing import Any
 from django.shortcuts import get_object_or_404
 from rest_framework.request import Request
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import permissions, serializers
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from rest_framework.response import Response
 from iaso.models import UserRole
-from django.core.paginator import Paginator
-from .common import TimestampField, ModelViewSet
+from .common import TimestampField, ModelViewSet, HasPermission
 
 
 class PermissionSerializer(serializers.ModelSerializer):
@@ -66,14 +65,6 @@ class UserRoleSerializer(serializers.ModelSerializer):
         user_role.save()
         return user_role
 
-
-class HasRolesPermission(permissions.BasePermission):
-    def has_permission(self, request: Request, view) -> bool:
-        if not request.user.has_perm("menupermissions.iaso_user_roles"):
-            return False
-        return True
-
-
 class UserRolesViewSet(ModelViewSet):
     """Roles API
 
@@ -89,12 +80,13 @@ class UserRolesViewSet(ModelViewSet):
 
     # FIXME : replace by a model viewset
 
-    permission_classes = [permissions.IsAuthenticated, HasRolesPermission]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_user_roles")]
     serializer_class = UserRoleSerializer
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self) -> QuerySet[UserRole]:
-        queryset = UserRole.objects.all()
+        account = self.request.user.iaso_profile.account
+        queryset = UserRole.objects.filter(account=account)
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "group__name").split(",")
         if search:

@@ -86,3 +86,5 @@ export const fakeResponse =
         await waitFor(200);
         return response;
     };
+
+export const noOp = () => undefined;

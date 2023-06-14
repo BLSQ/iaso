@@ -4,11 +4,13 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    ReactElement,
 } from 'react';
 import { useDispatch } from 'react-redux';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
 import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 
+import { MutateFunction } from 'react-query';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
@@ -16,7 +18,7 @@ import { fetchCurrentUser } from '../actions';
 import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
 import PermissionsSwitches from './PermissionsSwitches';
-import { useCurrentUser } from '../../../utils/usersUtils';
+import { Profile, useCurrentUser } from '../../../utils/usersUtils';
 import { useInitialUser } from './useInitialUser';
 import { InitialUserData } from '../types';
 import { WarningModal } from './WarningModal/WarningModal';
@@ -45,9 +47,9 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     titleMessage: IntlMessage;
-    renderTrigger: any;
+    renderTrigger: ReactElement;
     initialData?: InitialUserData;
-    saveProfile: any;
+    saveProfile: MutateFunction<Profile, any>;
     allowSendEmailInvitation?: boolean;
     forceRefresh: boolean;
 };
@@ -83,7 +85,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
 
         saveProfile(currentUser, {
             onSuccess: () => {
-                // closeDialog();
                 setTab('infos');
                 resetUser();
                 if (currentUser.id === connectedUser.id) {

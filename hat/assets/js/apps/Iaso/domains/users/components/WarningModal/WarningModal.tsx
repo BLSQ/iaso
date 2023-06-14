@@ -2,6 +2,7 @@ import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 import { Box, Divider, Typography } from '@material-ui/core';
 import { MESSAGES } from './messages';
+import { noOp } from '../../../../utils';
 
 type Props = {
     open: boolean;
@@ -21,12 +22,10 @@ export const WarningModal: FunctionComponent<Props> = ({
             id="user-WarningModal"
             dataTestId="user-WarningModal"
             titleMessage={formatMessage(MESSAGES.createUserWithoutPerm)}
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onClose={() => {}}
+            onClose={noOp}
             closeDialog={closeDialog}
             onConfirm={onConfirm}
-            // eslint-disable-next-line @typescript-eslint/no-empty-function
-            onCancel={() => {}}
+            onCancel={noOp}
             confirmMessage={MESSAGES.confirm}
             cancelMessage={MESSAGES.cancel}
         >

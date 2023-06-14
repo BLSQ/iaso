@@ -118,7 +118,6 @@ class PlanningQuerySet(models.QuerySet):
     def filter_for_user(self, user: User):
         return self.filter(project__account=user.iaso_profile.account)
 
-
 class MissionType(models.TextChoices):
     DEFAULT = "DEFAULT", "default"
     FORMS = "MULTIPLE_FORMS", "Multiple Forms"
@@ -141,9 +140,24 @@ one or multiple forms.
 
 class Mission(SoftDeletableModel):
     type = models.CharField(choices=MissionType.choices, max_length=100, null=True, blank=True)
-    task_min_count = models.IntegerField(null=True, blank=True)
+    # org_unit_type ????
+    # type could limit the existence of sub-missions
+    #   org_unit mission could allow form or/and entity or/and org unit  sub-missions
+    #   entity mission could allow form sub_mission
+    #   form mission does not allow sub-missions
+
+    task_min_count = models.IntegerField(null=True, blank=True) # this should always be minimum 1
     task_max_count = models.IntegerField(null=True, blank=True)
     forms = models.ManyToManyField(Form, related_name="teams")
+    parent = models.ForeignKey(Mission, null=True, blank=True)
+    #status = models.CharField(choices=MissionType.choices, max_length=100, null=True, blank=True) to do / finalized to include on mobile?
+
+
+class FormMission(Mission):
+
+class EntityMission(Mission):
+
+class OrgUnitMission(Mission):
 
 
 class Planning(SoftDeletableModel):

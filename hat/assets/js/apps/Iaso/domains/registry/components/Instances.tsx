@@ -7,6 +7,7 @@ import React, {
 import { Box, Tabs, Tab, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
+import { Column } from 'bluesquare-components';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
@@ -19,7 +20,6 @@ import { redirectToReplace } from '../../../routing/actions';
 import { OrgunitType } from '../../orgUnits/types/orgunitTypes';
 import { OrgunitTypeRegistry } from '../types/orgunitTypes';
 import { RegistryDetailParams } from '../types';
-import { Column } from '../../../types/table';
 import { Form } from '../../forms/types/forms';
 
 import { useGetForms } from '../hooks/useGetForms';

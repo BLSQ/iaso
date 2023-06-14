@@ -2,7 +2,6 @@ import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 import isNumber from 'lodash/isNumber';
-import { defineMessages } from 'react-intl';
 import { Theme } from '@material-ui/core/styles';
 import { OrgUnit } from '../../domains/orgUnits/types/orgUnit';
 import { OrgunitTypes } from '../../domains/orgUnits/types/orgunitTypes';
@@ -19,21 +18,6 @@ export const orderOrgUnitsByDepth = (orgUnits: OrgUnit[]): OrgUnit[] =>
 export const orderOrgUnitTypeByDepth = (
     orgUnitTypes: OrgunitTypes,
 ): OrgunitTypes => orderBy(orgUnitTypes, [o => o.depth], ['asc']);
-
-export const MESSAGES = defineMessages({
-    'fit-to-bounds': {
-        defaultMessage: 'Center the map',
-        id: 'map.label.fitToBounds',
-    },
-    'box-zoom-title': {
-        defaultMessage: 'Draw a square on the map to zoom in to an area',
-        id: 'map.label.zoom.box',
-    },
-    'info-zoom-title': {
-        defaultMessage: 'Current zoom level',
-        id: 'map.label.zoom.info',
-    },
-});
 
 export const isValidCoordinate = (
     latitude: number,

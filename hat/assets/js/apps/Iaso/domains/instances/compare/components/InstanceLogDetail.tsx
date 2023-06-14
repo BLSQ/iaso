@@ -1,14 +1,15 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 
 import { Box, Paper } from '@material-ui/core';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';
 
 import { useGetFormDescriptor } from '../hooks/useGetInstanceLogs';
-
-import { IntlFormatMessage } from '../../../../types/intl';
 
 import { InstanceLogContentBasic } from './InstanceLogContentBasic';
 

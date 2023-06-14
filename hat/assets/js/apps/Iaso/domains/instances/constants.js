@@ -95,13 +95,19 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'info',
     },
     {
-        key: 'created_by',
+        key: 'created_by__username',
         accessor: 'created_by__username',
+        translationKey: 'created_by',
         active: false,
         tableOrder: 6,
         type: 'info',
         Cell: settings => {
             const data = settings.row.original;
+            return (
+                <>{data.created_by ? getDisplayName(data.created_by) : '--'}</>
+            );
+        },
+        renderValue: data => {
             return (
                 <>{data.created_by ? getDisplayName(data.created_by) : '--'}</>
             );
@@ -173,5 +179,6 @@ export const filtersKeys = [
     'search',
     'levels',
     'dateFrom',
+    'planningIds',
     'dateTo',
 ];

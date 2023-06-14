@@ -36,7 +36,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
 
     const classes: Record<string, string> = useStyles();
 
-    const boundsOptions: Record<string, any> = {
+    const boundsOptions: Record<string, [number, number] | number> = {
         padding: [500, 500],
         maxZoom: currentTile.maxZoom,
     };

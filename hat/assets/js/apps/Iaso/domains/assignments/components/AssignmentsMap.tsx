@@ -361,7 +361,9 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                                 fillOpacity: '0',
                                             }}
                                         >
-                                            <Tooltip>{shape.name}</Tooltip>
+                                            <Tooltip pane="popupPane">
+                                                {shape.name}
+                                            </Tooltip>
                                         </GeoJSON>
                                     ))}
                                 </Pane>

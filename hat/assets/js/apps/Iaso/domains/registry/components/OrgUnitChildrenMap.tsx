@@ -258,13 +258,17 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                     orgUnit={childrenOrgUnit}
                                                 />
                                                 {showTooltip && (
-                                                    // @ts-ignore TODO: fix this type problem
-                                                    <Tooltip permanent>
+                                                    <Tooltip
+                                                        // @ts-ignore TODO: fix this type problem
+                                                        permanent
+                                                        pane="popupPane"
+                                                    >
                                                         {childrenOrgUnit.name}
                                                     </Tooltip>
                                                 )}
                                                 {!showTooltip && (
-                                                    <Tooltip>
+                                                    // @ts-ignore TODO: fix this type problem
+                                                    <Tooltip pane="popupPane">
                                                         {childrenOrgUnit.name}
                                                     </Tooltip>
                                                 )}
@@ -303,15 +307,19 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                 TooltipComponent={() => (
                                                     <>
                                                         {showTooltip && (
-                                                            // @ts-ignore TODO: fix this type problem
-                                                            <Tooltip permanent>
+                                                            <Tooltip
+                                                                // @ts-ignore TODO: fix this type problem
+                                                                permanent
+                                                                pane="popupPane"
+                                                            >
                                                                 {
                                                                     childrenOrgUnit.name
                                                                 }
                                                             </Tooltip>
                                                         )}
                                                         {!showTooltip && (
-                                                            <Tooltip>
+                                                            // @ts-ignore TODO: fix this type problem
+                                                            <Tooltip pane="popupPane">
                                                                 {
                                                                     childrenOrgUnit.name
                                                                 }

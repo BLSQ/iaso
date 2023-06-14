@@ -75,6 +75,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             },
             onError: error => {
                 helpers.setErrors(error.details);
+                helpers.setSubmitting(false);
             },
         });
     };
@@ -107,7 +108,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: handleSubmit,
+        onSubmit: (values, helpers) => {
+            helpers.setSubmitting(true);
+            handleSubmit(values, helpers);
+        },
     });
     const { touched } = formik;
 
@@ -196,10 +200,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         setSelectedTab(0);
     }, [isOpen]);
 
-    const [isFormChanged, setIsFormChanged] = useState(false);
-    useEffect(() => {
-        setIsFormChanged(!isEqual(formik.values, formik.initialValues));
-    }, [formik]);
+    const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||

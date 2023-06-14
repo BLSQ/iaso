@@ -7,6 +7,7 @@ import {
     useSafeIntl,
     DynamicTabs,
     useSkipEffectOnMount,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 import React, {
     FunctionComponent,
@@ -28,7 +29,6 @@ import { OrgUnitParams } from '../types/orgUnit';
 import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
 
-import { IntlFormatMessage } from '../../../types/intl';
 import { Search } from '../types/search';
 import { DropdownOptions } from '../../../types/utils';
 import { Count } from '../hooks/requests/useGetOrgUnits';
@@ -174,10 +174,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                     }}
                     paramKey="searches"
                     tabParamKey="searchTabIndex"
-                    baseUrl={baseUrl}
-                    redirectTo={(path, newParams) =>
-                        dispatch(redirectTo(path, newParams))
-                    }
                     onTabChange={newParams => {
                         dispatch(redirectTo(baseUrl, newParams));
                     }}

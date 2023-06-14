@@ -4,6 +4,7 @@ import moment from 'moment';
 
 // @ts-ignore
 import { apiDateFormat } from 'Iaso/utils/dates.ts';
+import { Pagination, UrlParams } from 'bluesquare-components';
 import { useSnackMutation, useSnackQuery } from '../../../libs/apiHooks';
 import {
     deleteRequest,
@@ -16,7 +17,6 @@ import MESSAGES from '../messages';
 import { makeUrlWithParams } from '../../../libs/utils';
 
 import { Beneficiary } from '../types/beneficiary';
-import { Pagination, UrlParams } from '../../../types/table';
 import { Instance, PaginatedInstances } from '../../instances/types/instance';
 import { DropdownOptions } from '../../../types/utils';
 import getDisplayName, { Profile } from '../../../utils/usersUtils';
@@ -104,6 +104,8 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
         queryKey: ['beneficiaryTypes'],
         queryFn: () => getRequest('/api/entitytypes/'),
         options: {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             select: data =>
                 data?.map(
                     type =>

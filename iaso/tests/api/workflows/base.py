@@ -15,13 +15,14 @@ from iaso.test import APITestCase
 def var_dump(what):
     if type(what) is dict:
         pprint(what)
-    elif hasattr(what, "__dict__"):
-        pprint(what.__dict__)
     elif type(what) is list:
-        for item in what:
-            var_dump(item)
+        for t in what:
+            pprint(t)
     else:
-        pprint(what)
+        try:
+            pprint(what.__dict__)
+        except:
+            pprint(what)
 
 
 class BaseWorkflowsAPITestCase(APITestCase):

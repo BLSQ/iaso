@@ -1,17 +1,13 @@
 import { Grid, Button, Box } from '@material-ui/core';
 import React, { FunctionComponent, useState } from 'react';
 import FiltersIcon from '@material-ui/icons/FilterList';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { baseUrls } from '../../../constants/urls';
-
 import { useFilterState } from '../../../hooks/useFilterState';
-
 import { AssignmentParams } from '../types/assigment';
 import { DropdownTeamsOptions } from '../types/team';
 import { DropdownOptions } from '../../../types/utils';
-import { IntlFormatMessage } from '../../../types/intl';
 
 import MESSAGES from '../messages';
 
@@ -34,7 +30,12 @@ export const AssignmentsFilters: FunctionComponent<Props> = ({
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, withPagination: false });
+        useFilterState({
+            baseUrl,
+            params,
+            withPagination: false,
+            saveSearchInHistory: false,
+        });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
         <Grid container spacing={2}>

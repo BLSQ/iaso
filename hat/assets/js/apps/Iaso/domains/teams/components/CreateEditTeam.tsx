@@ -1,6 +1,10 @@
 import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
-// @ts-ignore
-import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
+import {
+    AddButton,
+    useSafeIntl,
+    IconButton,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 // @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
 import { useFormik, FormikProvider } from 'formik';
@@ -11,7 +15,6 @@ import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCan
 
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useTeamValidation } from '../validation';
-import { IntlFormatMessage } from '../../../types/intl';
 import { DropdownTeamsOptions } from '../types/team';
 
 import {

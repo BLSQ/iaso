@@ -216,6 +216,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_org_unit_types',
         defaultMessage: 'Org unit types',
     },
+    iaso_org_unit_groups: {
+        id: 'iaso.permissions.iaso_org_unit_groups',
+        defaultMessage: 'Org unit groups',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',
@@ -305,6 +309,10 @@ const MESSAGES = defineMessages({
     close: {
         id: 'iaso.label.close',
         defaultMessage: 'Close',
+    },
+    noTypeAssigned: {
+        id: 'iaso.users.label.noTypeAssigned',
+        defaultMessage: 'No org unit type assigned',
     },
 });
 

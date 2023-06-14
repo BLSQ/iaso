@@ -7,8 +7,12 @@ import {
     Tooltip,
     ScaleControl,
 } from 'react-leaflet';
-import { Grid, makeStyles, Box } from '@material-ui/core';
-import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import { Grid, makeStyles,Box } from '@material-ui/core';
+import {
+    useSafeIntl,
+    commonStyles,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 
 // COMPONENTS
 import InnerDrawer from '../../../components/nav/InnerDrawer';
@@ -34,7 +38,6 @@ import {
 // UTILS
 
 // TYPES
-import { IntlFormatMessage } from '../../../types/intl';
 import { OrgUnit } from '../types/orgUnit';
 import { DropdownOptions } from '../../../types/utils';
 // TYPES
@@ -48,9 +51,13 @@ import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer'
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
 
+type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
+    search_index: number;
+};
+
 export type Locations = {
-    locations: Array<OrgUnit[]>;
-    shapes: OrgUnit[];
+    locations: Array<OrgUnitWithSearchIndex[]>;
+    shapes: OrgUnitWithSearchIndex[];
 };
 type Props = {
     // eslint-disable-next-line no-unused-vars
@@ -91,15 +98,16 @@ const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
             : null;
     const shapeBounds =
         orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
-    let bounds: Bounds | undefined;
     if (locationsBounds && shapeBounds) {
-        bounds = locationsBounds.extend(shapeBounds);
-    } else if (locationsBounds) {
-        bounds = locationsBounds;
-    } else if (shapeBounds) {
-        bounds = shapeBounds;
+        return locationsBounds.extend(shapeBounds);
     }
-    return bounds;
+    if (locationsBounds) {
+        return locationsBounds;
+    }
+    if (shapeBounds) {
+        return shapeBounds;
+    }
+    return undefined;
 };
 export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,
@@ -271,7 +279,10 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                         <OrgUnitPopupComponent
                                             currentOrgUnit={currentOrgUnit}
                                         />
-                                        <Tooltip>{o.name}</Tooltip>
+                                        {/* @ts-ignore TODO: fix this type problem */}
+                                        <Tooltip pane="popupPane">
+                                            {o.name}
+                                        </Tooltip>
                                     </GeoJSON>
                                 </Pane>
                             ))}
@@ -307,7 +318,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                             <OrgUnitPopupComponent
                                                 currentOrgUnit={currentOrgUnit}
                                             />
-                                            <Tooltip>{o.name}</Tooltip>
+                                            <Tooltip pane="popupPane">
+                                                {o.name}
+                                            </Tooltip>
                                         </GeoJSON>
                                     ))}
                             </Pane>

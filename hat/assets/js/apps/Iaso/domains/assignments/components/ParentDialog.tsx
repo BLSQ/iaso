@@ -22,8 +22,7 @@ import React, {
     useMemo,
 } from 'react';
 
-import { OrgUnitShape } from '../types/locations';
-import { ChildrenOrgUnits } from '../types/orgUnit';
+import { ChildrenOrgUnits, ParentOrgUnit } from '../types/orgUnit';
 import { SubTeam, User, DropdownTeamsOptions, Team } from '../types/team';
 import { SaveAssignmentQuery } from '../types/assigment';
 import { Profile } from '../../../utils/usersUtils';
@@ -40,9 +39,9 @@ type Props = {
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     childrenOrgunits: ChildrenOrgUnits | undefined;
-    parentSelected: OrgUnitShape | undefined;
+    parentSelected: ParentOrgUnit | undefined;
     // eslint-disable-next-line no-unused-vars
-    setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
+    setParentSelected: (orgUnit: ParentOrgUnit | undefined) => void;
     selectedItem: SubTeam | User | undefined;
     planning: Planning | undefined;
     isFetchingChildrenOrgunits: boolean;
@@ -195,7 +194,7 @@ export const ParentDialog: FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.cancel)}
                 </Button>
                 <Button
-                    onClick={() => handleSave()}
+                    onClick={handleSave}
                     color="primary"
                     data-test="save-button"
                     disabled={orgUnitsToUpdate.length === 0}

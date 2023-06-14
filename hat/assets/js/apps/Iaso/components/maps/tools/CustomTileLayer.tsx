@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useRef, useEffect } from 'react';
+import React, { FunctionComponent, useRef, useEffect, RefObject } from 'react';
 import { TileLayer, useMap } from 'react-leaflet';
 import { Tile } from './TilesSwitchDialog';
 
@@ -7,7 +7,7 @@ type Props = {
 };
 
 export const CustomTileLayer: FunctionComponent<Props> = ({ currentTile }) => {
-    const ref: any = useRef(null);
+    const ref: RefObject<any> = useRef(null);
     const map: any = useMap();
     useEffect(() => {
         if (ref.current && ref.current.url !== currentTile.url) {

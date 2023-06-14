@@ -2137,6 +2137,82 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_line_list.successMessage',
         defaultMessage: 'Imported successfully {amount} campaign(s)',
     },
+    reasonForDateChange: {
+        id: 'iaso.polio.label.reasonForDateChange',
+        defaultMessage: 'Reason for date change',
+    },
+    editRoundDates: {
+        id: 'iaso.polio.label.editRoundDates',
+        defaultMessage: 'Edit round dates',
+    },
+    ENCODING_ERROR: {
+        id: 'iaso.polio.label.ENCODING_ERROR',
+        defaultMessage: 'Encoding error',
+    },
+    INITIAL_DATA: {
+        id: 'iaso.polio.label.INITIAL_DATA',
+        defaultMessage: 'Initial data',
+    },
+    VACCINES_NOT_ARRIVED_IN_COUNTRY: {
+        id: 'iaso.polio.label.VACCINES_NOT_ARRIVED_IN_COUNTRY',
+        defaultMessage: 'Vaccines not arrived in country',
+    },
+    VACCINES_NOT_DELIVERED_OPS_LEVEL: {
+        id: 'iaso.polio.label.VACCINES_NOT_DELIVERED_OPS_LEVEL',
+        defaultMessage: 'Vaccines not delivered at operational level',
+    },
+    FUNDS_NOT_ARRIVED_IN_COUNTRY: {
+        id: 'iaso.polio.label.FUNDS_NOT_ARRIVED_IN_COUNTRY',
+        defaultMessage: 'Funds not arrived in country',
+    },
+    FUNDS_NOT_RECEIVED_OPS_LEVEL: {
+        id: 'iaso.polio.label.FUNDS_NOT_RECEIVED_OPS_LEVEL',
+        defaultMessage: 'Funds not received at operational level',
+    },
+    PREPAREDNESS_LEVEL_NOT_REACHED: {
+        id: 'iaso.polio.label.PREPAREDNESS_LEVEL_NOT_REACHED',
+        defaultMessage: 'Preparedness level no reached',
+    },
+    CAMPAIGN_SYNCHRONIZATION: {
+        id: 'iaso.polio.label.CAMPAIGN_SYNCHRONIZATION',
+        defaultMessage: 'Campaigns synchronization',
+    },
+    MOH_DECISION: {
+        id: 'iaso.polio.label.MOH_DECISION',
+        defaultMessage: 'Decision from MOH',
+    },
+    OTHER_ACTIVITIES: {
+        id: 'iaso.polio.label.OTHER_ACTIVITIES',
+        defaultMessage: 'Integrate with other vaccination activities',
+    },
+    PUBLIC_HOLIDAY: {
+        id: 'iaso.polio.label.PUBLIC_HOLIDAY',
+        defaultMessage: 'Delayed to observe public holiday',
+    },
+    previousEndDate: {
+        id: 'iaso.polio.label.previousEndDate',
+        defaultMessage: 'Previous end date',
+    },
+    previousStartDate: {
+        id: 'iaso.polio.label.previousStartDate',
+        defaultMessage: 'Previous start date',
+    },
+    dateOfChange: {
+        id: 'iaso.polio.label.dateOfChange',
+        defaultMessage: 'Date of change',
+    },
+    modifiedBy: {
+        id: 'iaso.polio.label.modifiedBy',
+        defaultMessage: 'Modified by',
+    },
+    historyForRound: {
+        id: 'iaso.polio.label.historyForRound',
+        defaultMessage: 'History for round {roundNumber}',
+    },
+    seeHistory: {
+        id: 'iaso.polio.label.seeHistory',
+        defaultMessage: 'See history',
+    },
 });
 
 export default MESSAGES;

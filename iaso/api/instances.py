@@ -303,6 +303,7 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
         org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
+        with_descriptor = request.GET.get("with_descriptor", "false")
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -345,7 +346,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 page = paginator.page(page_offset)
 
                 def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
-                    d = instance.as_dict()
+                    d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
                     reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None  # type: ignore
@@ -372,7 +373,14 @@ class InstancesViewSet(viewsets.ViewSet):
                 )
                 return Response([instance.as_small_dict() for instance in queryset])
             else:
-                return Response({"instances": [instance.as_dict() for instance in queryset]})
+                return Response(
+                    {
+                        "instances": [
+                            instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
+                            for instance in queryset
+                        ]
+                    }
+                )
         else:  # This is a CSV/XLSX file export
             return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 

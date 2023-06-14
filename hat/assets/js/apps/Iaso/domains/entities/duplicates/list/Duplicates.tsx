@@ -16,6 +16,7 @@ import { DuplicatesFilters } from './DuplicatesFilters';
 import { starsStyleForTable } from '../../../../components/stars/StarsComponent';
 import { useDuplicationTableColumns } from './useDuplicationTableColumns';
 import { DuplicatesList } from '../types';
+import { AnalyseAction } from './AnalyseAction';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -52,6 +53,7 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <AnalyseAction />
                 <DuplicatesFilters params={params} />
                 <Box className={classes.table}>
                     <TableWithDeepLink

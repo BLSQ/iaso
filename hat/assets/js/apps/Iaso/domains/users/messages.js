@@ -310,6 +310,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.close',
         defaultMessage: 'Close',
     },
+    noTypeAssigned: {
+        id: 'iaso.users.label.noTypeAssigned',
+        defaultMessage: 'No org unit type assigned',
+    },
 });
 
 export default MESSAGES;

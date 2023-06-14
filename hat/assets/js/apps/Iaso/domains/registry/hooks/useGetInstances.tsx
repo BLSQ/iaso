@@ -21,6 +21,7 @@ type ApiParams = {
     showDeleted: false;
     orgUnitParentId: string;
     org_unit_status?: 'VALID' | 'NEW' | 'REJECTED';
+    planning_ids?: string;
 };
 
 type InstanceApi = {
@@ -42,6 +43,7 @@ export const useGetInstanceApi = (
         showDeleted: false,
         orgUnitParentId: params.orgUnitId,
         org_unit_status: orgUnitStatus,
+        planning_ids: params.planningIds,
     };
     const url = makeUrlWithParams(
         '/api/instances/',

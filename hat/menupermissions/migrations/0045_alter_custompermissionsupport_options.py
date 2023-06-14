@@ -44,6 +44,7 @@ class Migration(migrations.Migration):
                     ("iaso_polio_budget_admin", "Budget Polio Admin"),
                     ("iaso_entity_duplicates_read", "Read Entity duplicates"),
                     ("iaso_entity_duplicates_write", "Write Entity duplicates"),
+                    ("iaso_user_roles", "User roles management"),
                 ),
             },
         ),

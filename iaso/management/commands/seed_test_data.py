@@ -55,7 +55,7 @@ seed_test_data --mode=export --force
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
-        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default="2.31.8")
+        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default="2.38.3")
         parser.add_argument("-f", "--force", action="store_true", help="Force the re-export of exported submissions")
 
     def handle(self, *args, **options):

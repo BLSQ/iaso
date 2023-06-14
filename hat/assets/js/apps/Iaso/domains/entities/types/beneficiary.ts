@@ -33,4 +33,5 @@ export type Beneficiary = {
     submitter: string;
     instances: Record<string, any>[];
     program?: string;
+    duplicates: number[];
 };

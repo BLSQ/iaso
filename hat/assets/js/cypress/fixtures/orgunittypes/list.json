@@ -21,6 +21,7 @@
                 "created_at": 1561062550.993334,
                 "updated_at": 1632133245.216007
             }],
+            "allow_creating_sub_unit_types": [],
             "created_at": 1633954017.101693,
             "updated_at": 1633954017.101713,
             "units_count": 2665
@@ -155,6 +156,7 @@
                 }
             ],
             "sub_unit_types": [],
+            "allow_creating_sub_unit_types": [],
             "created_at": 1561062550.993334,
             "updated_at": 1632133245.216007,
             "units_count": 121

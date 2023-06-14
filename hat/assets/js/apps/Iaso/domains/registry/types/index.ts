@@ -6,6 +6,7 @@ export type RegistryDetailParams = UrlParams & {
     orgUnitId: string;
     accountId: string;
     formIds?: string;
+    planningIds?: string;
     columns?: string;
     tab?: string;
     orgUnitListTab?: OrgUnitListTab;

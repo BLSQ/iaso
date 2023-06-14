@@ -3,7 +3,13 @@ name: Iaso Cypress manual testing
 on:
   issue_comment:
     types: [created]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        description: 'Branch to test'
+        required: true  
+  
 
 concurrency:
   group: ${{ github.head_ref || github.run_id }}
@@ -24,10 +30,17 @@ jobs:
 
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (dispatch)
         uses: actions/checkout@v3
+        if: github.event_name == 'workflow_dispatch'
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.inputs.ref }}
+      
+      - name: Checkout repository (comment)
+        uses: actions/checkout@v3
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          ref: ${{ github.sha }}
 
       - name: Mark comment as seen
         if: github.event_name != 'workflow_dispatch'
@@ -50,7 +63,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ghcr.io/blsq/iaso:${{github.sha}}
+          tags: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
           target: dev
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
@@ -92,7 +105,7 @@ jobs:
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       iaso:
-        image: ghcr.io/blsq/iaso:${{ github.sha }}
+        image: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development
@@ -110,10 +123,17 @@ jobs:
         ports:
           - 8081:8081
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (dispatch)
         uses: actions/checkout@v3
+        if: github.event_name == 'workflow_dispatch'
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.inputs.ref }}
+      
+      - name: Checkout repository (comment)
+        uses: actions/checkout@v3
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          ref: ${{ github.sha }}
 
       - name: Use node.js 14
         uses: actions/setup-node@v2

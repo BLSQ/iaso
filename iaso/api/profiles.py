@@ -130,7 +130,10 @@ class ProfilesViewSet(viewsets.ViewSet):
                 queryset = queryset_current | queryset_parent | queryset_children
 
         if org_unit_type:
-            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
+            if org_unit_type == "unassigned":
+                queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
+            else:
+                queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 
         if limit:
             queryset = queryset.order_by(*orders)

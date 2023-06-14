@@ -105,7 +105,10 @@ class WFP2Adapter(Auth0OAuth2Adapter):
         extra_data_get = requests.get(self.profile_url, params={"access_token": token})
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
-        email = extra_data["email"].lower().strip()
+        try:
+            email = extra_data["email"].lower().strip()
+        except KeyError:
+            email = extra_data["sub"].lower().strip()
         # the sub is the email, wfp verify it so let's trust this
         uid = extra_data["sub"].lower().strip()
         account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])

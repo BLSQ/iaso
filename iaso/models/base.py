@@ -274,6 +274,14 @@ class Task(models.Model):
             self.end_value = end_value
         self.save()
 
+    def report_success_with_result(self, message=None, result_data=None):
+        logger.info(f"Task {self} reported success with message {message}")
+        self.progress_message = message
+        self.status = SUCCESS
+        self.ended_at = timezone.now()
+        self.result = {"result": SUCCESS, "data": result_data}
+        self.save()
+
     def report_success(self, message=None):
         logger.info(f"Task {self} reported success with message {message}")
         self.progress_message = message
@@ -652,7 +660,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         show_deleted=None,
         entity_id=None,
         json_content=None,
-        planning_id=None,
+        planning_ids=None,
     ):
         queryset = self
 
@@ -715,8 +723,8 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if entity_id:
             queryset = queryset.filter(entity_id=entity_id)
 
-        if planning_id:
-            queryset = queryset.filter(planning_id=planning_id)
+        if planning_ids:
+            queryset = queryset.filter(planning_id__in=planning_ids.split(","))
 
         if search:
             if search.startswith("ids:"):
@@ -968,6 +976,10 @@ class Instance(models.Model):
 
     def as_dict(self):
         file_content = self.get_and_save_json_of_xml()
+        last_modified_by = None
+
+        if self.last_modified_by is not None:
+            last_modified_by = self.last_modified_by.username
 
         return {
             "uuid": self.uuid,
@@ -994,7 +1006,14 @@ class Instance(models.Model):
             }
             if self.created_by
             else None,
+            "last_modified_by": last_modified_by,
         }
+
+    def as_dict_with_descriptor(self):
+        dict = self.as_dict()
+        form_version = self.get_form_version()
+        dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
+        return dict
 
     def as_dict_with_parents(self):
         file_content = self.get_and_save_json_of_xml()
@@ -1073,6 +1092,13 @@ class Instance(models.Model):
                 for export_status in Paginator(self.exportstatus_set.order_by("-id"), 3).object_list
             ],
             "deleted": self.deleted,
+            "created_by": {
+                "first_name": self.created_by.first_name,
+                "user_name": self.created_by.username,
+                "last_name": self.created_by.last_name,
+            }
+            if self.created_by
+            else None,
         }
 
     def as_small_dict(self):

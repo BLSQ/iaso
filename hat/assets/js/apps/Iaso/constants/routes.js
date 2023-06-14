@@ -41,7 +41,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { Registry } from '../domains/registry/index.tsx';
 import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
-import { paginationPathParams } from '../routing/common';
+import { paginationPathParams } from '../routing/common.ts';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
@@ -243,6 +243,10 @@ export const instancesPath = {
         {
             isRequired: false,
             key: 'fieldsSearch',
+        },
+        {
+            isRequired: false,
+            key: 'planningIds',
         },
     ],
 };
@@ -920,10 +924,7 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'accountId',
         },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
+
         {
             isRequired: false,
             key: 'search',
@@ -966,8 +967,9 @@ export const entityDuplicatesPath = {
         },
         {
             isRequired: false,
-            key: 'entity',
+            key: 'merged',
         },
+
         {
             isRequired: false,
             key: 'fields',
@@ -976,6 +978,14 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'form',
         },
+        {
+            isRequired: false,
+            key: 'entity_id',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
     ],
 };
 export const entityDuplicatesDetailsPath = {

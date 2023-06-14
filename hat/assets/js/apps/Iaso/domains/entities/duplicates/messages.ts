@@ -17,6 +17,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',
     },
+    alreadyMerged: {
+        id: 'iaso.label.alreadyMerged',
+        defaultMessage: 'Already merged',
+    },
+    alreadyIgnored: {
+        id: 'iaso.label.alreadyIgnored',
+        defaultMessage: 'Already ignored',
+    },
     seeDetails: {
         id: 'iaso.label.seeDetails',
         defaultMessage: 'See details',
@@ -72,6 +80,10 @@ const MESSAGES = defineMessages({
     showIgnored: {
         id: 'iaso.label.showIgnored',
         defaultMessage: 'Show ignored',
+    },
+    showMerged: {
+        id: 'iaso.label.showMerged',
+        defaultMessage: 'Show merged',
     },
     algorithm: {
         id: 'iaso.label.algorithm',
@@ -140,6 +152,38 @@ const MESSAGES = defineMessages({
     submissionsForEntity: {
         defaultMessage: 'Submissions for Beneficiary {entity}',
         id: 'iaso.entity.label.submissionsForEntity',
+    },
+    created_at: {
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created',
+    },
+    finished_at: {
+        id: 'iaso.label.finished_at',
+        defaultMessage: 'Finished at',
+    },
+    parameters: {
+        id: 'iaso.label.parameters',
+        defaultMessage: 'Parameters',
+    },
+    entityType: {
+        id: 'iaso.entityTypes.label',
+        defaultMessage: 'Beneficiary type',
+    },
+    latestAnalysis: {
+        defaultMessage: 'Latest analysis completed: {finishedAt}',
+        id: 'iaso.duplicate.latestAnalysis',
+    },
+    relaunchAnalysis: {
+        defaultMessage: 'Relaunch Analysis',
+        id: 'iaso.duplicate.relaunchAnalysis',
+    },
+    noAnalysis: {
+        defaultMessage: 'No analysis found',
+        id: 'iaso.duplicate.noAnalysis',
+    },
+    analysisBusy: {
+        defaultMessage: 'Analysis in progress',
+        id: 'iaso.duplicate.analysisBusy',
     },
 });
 

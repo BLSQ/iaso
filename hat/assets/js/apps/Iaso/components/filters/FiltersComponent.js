@@ -87,6 +87,9 @@ class FiltersComponent extends React.Component {
                     if (!filterValue && filter.defaultValue) {
                         filterValue = filter.defaultValue;
                     }
+                    if (filter.loading) {
+                        filterValue = undefined;
+                    }
                     if (
                         !filter.hideEmpty ||
                         (filter.hideEmpty && filter.options.length !== 0)

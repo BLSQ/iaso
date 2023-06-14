@@ -5,6 +5,7 @@ import { useSafeIntl, Pagination } from 'bluesquare-components';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { DropdownOptions } from '../../../types/utils';
+import { OrgUnitStatus } from '../../orgUnits/types/orgUnit';
 
 const MESSAGES = defineMessages({
     all: {
@@ -25,12 +26,6 @@ const MESSAGES = defineMessages({
     },
 });
 
-type Status = [string, string];
-
-export interface ValidationStatusApiResult extends Pagination {
-    results: Status[];
-}
-
 export const useGetValidationStatus = (
     includeAll = false,
 ): UseQueryResult<DropdownOptions<string>[], Error> => {
@@ -42,13 +37,13 @@ export const useGetValidationStatus = (
         options: {
             retry: false,
             keepPreviousData: true,
-            select: (data: ValidationStatusApiResult) => {
-                const options: DropdownOptions<string>[] = data.results.map(
-                    (status: Status) => ({
-                        value: status[0],
-                        label: MESSAGES[status[0]]
-                            ? formatMessage(MESSAGES[status[0]])
-                            : status[0],
+            select: (data: OrgUnitStatus[]) => {
+                const options: DropdownOptions<string>[] = data.map(
+                    (status: OrgUnitStatus) => ({
+                        value: status,
+                        label: MESSAGES[status]
+                            ? formatMessage(MESSAGES[status])
+                            : status,
                     }),
                 );
                 if (includeAll) {

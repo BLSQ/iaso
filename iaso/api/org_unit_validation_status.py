@@ -16,4 +16,4 @@ class ValidationStatusViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     def list(self, _):
-        return Response({"results": OrgUnit.VALIDATION_STATUS_CHOICES})
+        return Response([status[0] for status in OrgUnit.VALIDATION_STATUS_CHOICES])

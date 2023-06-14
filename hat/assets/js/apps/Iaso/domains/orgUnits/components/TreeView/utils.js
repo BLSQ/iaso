@@ -92,14 +92,6 @@ const makeOrgUnistStatusIcon = (classes, orgUnit, formatMessage) => {
                 </div>
             </Tooltip>
         );
-    if (orgUnit?.validation_status === 'CLOSED')
-        return (
-            <Tooltip title={formatMessage(MESSAGES.statusClosed)} size="small">
-                <div style={style}>
-                    <CloseIcon fontSize="small" className={classes.rejected} />
-                </div>
-            </Tooltip>
-        );
     return null;
 };
 

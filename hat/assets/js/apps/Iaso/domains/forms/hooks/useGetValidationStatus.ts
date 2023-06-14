@@ -23,10 +23,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validated',
         id: 'iaso.forms.validated',
     },
-    CLOSED: {
-        defaultMessage: 'Closed',
-        id: 'iaso.forms.closed',
-    },
 });
 
 type Status = [string, string];

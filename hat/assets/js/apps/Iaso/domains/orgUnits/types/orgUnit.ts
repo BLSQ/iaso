@@ -34,7 +34,7 @@ export type OrgunitInititialState = {
     reference_instance_id?: Nullable<number>;
 };
 
-export type OrgUnitStatus = 'VALID' | 'NEW' | 'REJECTED' | 'CLOSED';
+export type OrgUnitStatus = 'VALID' | 'NEW' | 'REJECTED';
 
 export type OrgUnit = {
     name: string;

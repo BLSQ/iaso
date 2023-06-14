@@ -302,7 +302,7 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
-        org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED", "CLOSED"
+        org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:

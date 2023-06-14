@@ -4,9 +4,9 @@ import { convertValueIfDate } from '../../../../components/Cells/DateTimeCell';
 import { DuplicationAlgorithm } from '../types';
 
 const getFields = (settings: any): string[] => {
-    const { algorithms }: { algorithms: DuplicationAlgorithm[] } =
+    const { analyzis }: { analyzis: DuplicationAlgorithm[] } =
         settings.row.original;
-    const allFields = algorithms.map(algo => algo.fields).flat();
+    const allFields = analyzis.map(algo => algo.the_fields).flat();
     return [...new Set(allFields)];
 };
 

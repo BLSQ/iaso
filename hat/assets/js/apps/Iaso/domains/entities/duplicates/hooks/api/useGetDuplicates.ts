@@ -2,33 +2,18 @@
 import { UseQueryResult } from 'react-query';
 import { useSnackQuery } from '../../../../../libs/apiHooks';
 import { PaginationParams } from '../../../../../types/general';
-import { waitFor } from '../../../../../utils';
-import {
-    mockDuplicatesDetailsResponse,
-    mockDuplicatesDetailsTableData,
-    mockDuplicatesTableResponse,
-} from '../../mockDuplicationData';
 import {
     DuplicateData,
-    DuplicateEntityForTable,
+    DuplicateDetailData,
     DuplicatesList,
 } from '../../types';
+import { getRequest } from '../../../../../libs/Api';
 
 const apiUrl = '/api/entityduplicates';
 
 const getDuplicates = async (queryString: string) => {
-    const url = `${apiUrl}/${queryString}`;
-    console.log('GET', url);
-    waitFor(1000);
-    if (!queryString.includes('limit')) {
-        return mockDuplicatesDetailsResponse();
-    }
-    return mockDuplicatesTableResponse({
-        count: 5,
-        has_next: true,
-        has_previous: false,
-        limit: 20,
-    });
+    const url = `${apiUrl}/?${queryString}`;
+    return getRequest(url);
 };
 
 const formatParams = (params: Record<string, any>) => {
@@ -63,6 +48,8 @@ export type DuplicatesGETParams = {
         form?: any;
         fields?: any;
         ignored?: boolean;
+        merged?: boolean;
+        entity?: string;
     };
 };
 
@@ -80,12 +67,8 @@ export const useGetDuplicates = ({
 };
 
 const getDuplicatesDetails = async (queryString: string) => {
-    const url = `${apiUrl}/details/${queryString}`;
-    const result = mockDuplicatesDetailsTableData();
-    console.log('details url', url);
-    console.log('details', result);
-    waitFor(1500);
-    return result;
+    const url = `${apiUrl}/detail/?${queryString}`;
+    return getRequest(url);
 };
 
 type DuplicatesDetailsGETParams = {
@@ -106,20 +89,23 @@ const getMergedEntityStatus = (final): 'dropped' | 'identical' => {
 export const useGetDuplicateDetails = ({
     params,
 }: DuplicatesDetailsGETParams): UseQueryResult<
-    DuplicateEntityForTable[],
+    DuplicateDetailData,
     unknown
 > => {
     // TODO see with backend exact api
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({
-        queryKey: ['entityDuplicateDetails'],
+        queryKey: ['entityDuplicateDetails', params],
         queryFn: () => getDuplicatesDetails(queryString),
         options: {
             select: data => {
-                if (!data) return [];
-                const result = data.map(row => {
+                if (!data)
+                    return { fields: [], descriptor1: {}, descriptor2: {} };
+
+                const fields_result = data?.fields?.map(row => {
                     return {
-                        field: row.field,
+                        // We keep "field" i.o "the_field" as key to avoid a bug with the table
+                        field: row.the_field,
                         entity1: {
                             value: row.entity1.value,
                             id: row.entity1.id,
@@ -143,7 +129,12 @@ export const useGetDuplicateDetails = ({
                         },
                     };
                 });
-                return result;
+
+                return {
+                    fields: fields_result ?? [],
+                    descriptor1: data.descriptor1,
+                    descriptor2: data.descriptor2,
+                };
             },
         },
     });

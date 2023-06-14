@@ -24,6 +24,8 @@ from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
 from .api.completeness_stats import CompletenessStatsV2ViewSet
 from .api.data_sources import DataSourceViewSet
+from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
+from .api.deduplication.entity_duplicate_analyzis import EntityDuplicateAnalyzisViewSet  # type: ignore
 from .api.derived_instances import DerivedInstancesViewSet
 from .api.devices import DevicesViewSet
 from .api.devices_ownership import DevicesOwnershipViewSet
@@ -76,6 +78,7 @@ from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
+from .api.user_roles import UserRolesViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -127,6 +130,8 @@ router.register(r"entities", EntityViewSet, basename="entity")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
+router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entityduplicates")
+router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
@@ -143,6 +148,7 @@ router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowcha
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
+router.register(r"userroles", UserRolesViewSet, basename="userroles")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 

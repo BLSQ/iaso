@@ -1,17 +1,19 @@
 import React, { ReactElement, useMemo } from 'react';
 import { Link } from 'react-router';
-import { useSafeIntl, IconButton } from 'bluesquare-components';
+import { useSafeIntl, IconButton, Column } from 'bluesquare-components';
 import GetAppIcon from '@material-ui/icons/GetApp';
 
-import { Column } from '../../../types/table';
 import MESSAGES from '../messages';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { useDeleteAttachment } from '../hooks/useDeleteAttachment';
 
-export const useGetColumns = (): Column[] => {
+export const useGetColumns = (params, count): Column[] => {
     const { formatMessage } = useSafeIntl();
-    const { mutateAsync: deleteAttachment } = useDeleteAttachment();
+    const { mutateAsync: deleteAttachment } = useDeleteAttachment(
+        params,
+        count,
+    );
     return useMemo(
         () => [
             {

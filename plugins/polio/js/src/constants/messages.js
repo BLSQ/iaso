@@ -2133,6 +2133,23 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_line_list.successMessage',
         defaultMessage: 'Imported successfully {amount} campaign(s)',
     },
+    futureDateError: {
+        id: 'iaso.polio.validation.futureDateError',
+        defaultMessage: 'This date should not be in the future',
+    },
+    onsetAfterNotificationError: {
+        id: 'iaso.polio.validation.onsetAfterNotificationError',
+        defaultMessage: 'Date of onset should be before virus notification',
+    },
+    onsetAfterOutbreakDeclarationError: {
+        id: 'iaso.polio.validation.onsetAfterOutbreakDeclarationError',
+        defaultMessage: 'Date of onset should be before outbreak declaration',
+    },
+    virusNotificationAfterOutbreakDeclarationError: {
+        id: 'iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError',
+        defaultMessage:
+            'Virus notification should be before outbreak declaration',
+    },
     reasonForDateChange: {
         id: 'iaso.polio.label.reasonForDateChange',
         defaultMessage: 'Reason for date change',

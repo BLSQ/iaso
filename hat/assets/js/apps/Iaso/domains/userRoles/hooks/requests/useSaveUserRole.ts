@@ -3,18 +3,16 @@ import { UseMutationResult } from 'react-query';
 import { patchRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
-type TeamType = 'TEAM_OF_TEAMS' | 'TEAM_OF_USERS';
+type Permission = {
+    id: number;
+    name: string;
+    codename: string;
+};
 
-export type SaveTeamQuery = {
+export type SaveUserRoleQuery = {
     id?: number;
     name: string;
-    description?: string;
-    manager: number;
-    subTeams: Array<number>;
-    project: number;
-    type?: TeamType;
-    users: Array<number>;
-    parent?: number;
+    permissions?: Array<Permission>;
 };
 
 const convertToApi = data => {
@@ -33,35 +31,35 @@ export const convertAPIErrorsToState = data => {
     return converted;
 };
 
-const endpoint = '/api/microplanning/teams/';
+const endpoint = '/api//userroles/';
 
-const patchTeam = async (body: Partial<SaveTeamQuery>) => {
+const patchUserRole = async (body: Partial<SaveUserRoleQuery>) => {
     const url = `${endpoint}${body.id}/`;
     return patchRequest(url, convertToApi(body));
 };
 
-const postTeam = async (body: SaveTeamQuery) => {
+const postUserRole = async (body: SaveUserRoleQuery) => {
     return postRequest(endpoint, convertToApi(body));
 };
 
-export const useSaveTeam = (type: 'create' | 'edit'): UseMutationResult => {
+export const useSaveUserRole = (type: 'create' | 'edit'): UseMutationResult => {
     const ignoreErrorCodes = [400];
-    const editTeam = useSnackMutation({
-        mutationFn: (data: Partial<SaveTeamQuery>) => patchTeam(data),
-        invalidateQueryKey: ['teamsList'],
+    const editUserRole = useSnackMutation({
+        mutationFn: (data: Partial<SaveUserRoleQuery>) => patchUserRole(data),
+        invalidateQueryKey: ['userRolesList'],
         ignoreErrorCodes,
     });
-    const createTeam = useSnackMutation({
-        mutationFn: (data: SaveTeamQuery) => postTeam(data),
-        invalidateQueryKey: ['teamsList'],
+    const createUserRole = useSnackMutation({
+        mutationFn: (data: SaveUserRoleQuery) => postUserRole(data),
+        invalidateQueryKey: ['userRolesList'],
         ignoreErrorCodes,
     });
 
     switch (type) {
         case 'create':
-            return createTeam;
+            return createUserRole;
         case 'edit':
-            return editTeam;
+            return editUserRole;
         default:
             throw new Error(
                 `wrong type expected: create, copy or edit, got:  ${type} `,

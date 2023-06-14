@@ -7,6 +7,7 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import { UserRole } from './types/userRoles';
 
 export const useGetUserRolesColumns = (
+    // eslint-disable-next-line no-unused-vars
     deleteUserRole: (userRole: UserRole) => void,
 ): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
@@ -38,7 +39,12 @@ export const useGetUserRolesColumns = (
             Cell: (settings): ReactElement => {
                 return (
                     <>
-                        {/* <CreateEditUserRole dialogType="edit" /> */}
+                        <CreateEditUserRole
+                            dialogType="edit"
+                            id={settings.row.original.id}
+                            name={settings.row.original.name}
+                            permissions={settings.row.original.permissions}
+                        />
                         <DeleteDialog
                             keyName="userRole"
                             titleMessage={MESSAGES.delete}

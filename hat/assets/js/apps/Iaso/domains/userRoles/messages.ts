@@ -37,6 +37,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
+    editUserRole: {
+        id: 'iaso.userRoles.edit',
+        defaultMessage: 'Edit user role',
+    },
+    createUserRole: {
+        id: 'iaso.userRoles.create',
+        defaultMessage: 'Create user role',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
 });
 
 export default MESSAGES;

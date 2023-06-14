@@ -173,12 +173,7 @@ class ParamSerializer(serializers.Serializer):
         statuses = statuses.split(",")
         for status in statuses:
             # TODO: this should come from , OrgUnit.VALIDATION_STATUS_CHOICES
-            if status not in (
-                OrgUnit.VALIDATION_VALID,
-                OrgUnit.VALIDATION_NEW,
-                OrgUnit.VALIDATION_REJECTED,
-                OrgUnit.VALIDATION_CLOSED,
-            ):
+            if status not in (OrgUnit.VALIDATION_VALID, OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_REJECTED):
                 raise serializers.ValidationError("Invalid status")
         return statuses
 

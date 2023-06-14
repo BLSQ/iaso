@@ -4,15 +4,16 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0209_alter_orgunit_validation_status'),
+        ("iaso", "0209_alter_orgunit_validation_status"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='orgunit',
-            name='validation_status',
-            field=models.CharField(choices=[('NEW', 'new'), ('VALID', 'valid'), ('REJECTED', 'rejected')], default='NEW', max_length=25),
+            model_name="orgunit",
+            name="validation_status",
+            field=models.CharField(
+                choices=[("NEW", "new"), ("VALID", "valid"), ("REJECTED", "rejected")], default="NEW", max_length=25
+            ),
         ),
     ]

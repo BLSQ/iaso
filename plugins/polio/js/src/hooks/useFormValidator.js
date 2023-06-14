@@ -94,9 +94,6 @@ yup.addMethod(yup.date, 'isValidOnset', function isValidOnset(formatMessage) {
         const { path, createError, parent } = context;
         const newDate = value ? moment(value) : null;
         const today = moment().endOf('day');
-        // console.log('new date', newDate, value);
-        // console.log('today', today);
-        // console.log('check', newDate.isAfter(today));
 
         if (newDate === null) return true;
         if (newDate.isAfter(today)) {

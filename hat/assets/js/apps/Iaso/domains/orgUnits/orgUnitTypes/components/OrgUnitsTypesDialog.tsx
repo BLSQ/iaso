@@ -15,6 +15,8 @@ import {
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import { isUndefined, mapValues } from 'lodash';
+import { Tooltip, Grid, Box } from '@material-ui/core';
+import InfoIcon from '@material-ui/icons/Info';
 
 import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -44,6 +46,8 @@ const mapOrgUnitType = orgUnitType => {
         project_ids: orgUnitType.projects.map(project => project.id),
         depth: orgUnitType.depth,
         sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
+        allow_creating_sub_unit_type_ids:
+            orgUnitType.allow_creating_sub_unit_types.map(unit => unit.id),
         reference_form_id: orgUnitType?.reference_form?.id,
     };
 };
@@ -68,6 +72,7 @@ const defaultOrgUnitType: Omit<
     depth: 0,
     sub_unit_types: [],
     reference_form: null,
+    allow_creating_sub_unit_types: [],
 };
 export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     orgUnitType = defaultOrgUnitType,
@@ -96,7 +101,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     );
 
     const { data: allProjects } = useGetProjectsDropdownOptions();
-    const { data: allOrgUnitTypes } = useGetOrgUnitTypesDropdownOptions();
+    const { data: allOrgUnitTypes, isLoading: isLoadingOrgUitTypes } =
+        useGetOrgUnitTypesDropdownOptions();
     const { mutateAsync: saveType } = useSaveOrgUnitType();
 
     const getFilteredForms = (projects, forms) => {
@@ -163,6 +169,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         (keyValue, value) => {
             if (
                 keyValue === 'sub_unit_type_ids' ||
+                keyValue === 'allow_creating_sub_unit_type_ids' ||
                 keyValue === 'project_ids'
             ) {
                 setFieldValue(keyValue, commaSeparatedIdsToArray(value));
@@ -185,28 +192,35 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         [setFieldValue, setFieldErrors, formatMessage, getFormPerProjects],
     );
 
-    const onConfirm = useCallback(async () => {
-        try {
-            await saveType(mapValues(formState, v => v.value));
-        } catch (error) {
-            if (error.status === 400) {
-                Object.entries(error.details).forEach(entry => {
-                    if (entry[0] === 'sub_unit_type_ids') {
-                        const typeName = (entry[1] as number[]).join(', ');
-                        const errorText: string = formatMessage(
-                            MESSAGES.subTypesErrors,
-                            {
-                                typeName,
-                            },
-                        );
-                        setFieldErrors(entry[0], [errorText]);
-                    } else {
-                        setFieldErrors(entry[0], entry[1]);
-                    }
-                });
+    const onConfirm = useCallback(
+        async (closeDialog: () => void) => {
+            try {
+                await saveType(mapValues(formState, v => v.value));
+                closeDialog();
+            } catch (error) {
+                if (error.status === 400) {
+                    Object.entries(error.details).forEach(entry => {
+                        if (
+                            entry[0] === 'sub_unit_type_ids' ||
+                            entry[0] === 'allow_creating_sub_unit_type_ids'
+                        ) {
+                            const typeName = (entry[1] as number[]).join(', ');
+                            const errorText: string = formatMessage(
+                                MESSAGES.subTypesErrors,
+                                {
+                                    typeName,
+                                },
+                            );
+                            setFieldErrors(entry[0], [errorText]);
+                        } else {
+                            setFieldErrors(entry[0], entry[1]);
+                        }
+                    });
+                }
             }
-        }
-    }, [formState, formatMessage, saveType, setFieldErrors]);
+        },
+        [formState, formatMessage, saveType, setFieldErrors],
+    );
     const hasPermission =
         userHasPermission('iaso_org_units', currentUser) &&
         userHasPermission('iaso_forms', currentUser);
@@ -238,13 +252,12 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
 
         return allProjects?.concat(orgUnitypeProjects) ?? [];
     }, [allProjects, orgUnitType.projects]);
-
     return (
         //  @ts-ignore
         <ConfirmCancelDialogComponent
             id="OuTypes-modal"
             titleMessage={titleMessage}
-            onConfirm={onConfirm}
+            onConfirm={closeDialog => onConfirm(closeDialog)}
             onCancel={closeDialog => {
                 closeDialog();
                 resetForm();
@@ -252,7 +265,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             allowConfirm={isFormValid(requiredFields, formState)}
-            maxWidth="xs"
+            maxWidth="sm"
             renderTrigger={renderTrigger}
             dataTestId="OuTypes-modal"
         >
@@ -297,18 +310,58 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 type="number"
                 label={MESSAGES.depth}
             />
-
             <InputComponent
                 multi
                 clearable
                 keyValue="sub_unit_type_ids"
                 onChange={onChange}
-                value={formState.sub_unit_type_ids.value}
+                loading={isLoadingOrgUitTypes}
+                value={allOrgUnitTypes && formState.sub_unit_type_ids.value}
                 errors={formState.sub_unit_type_ids.errors}
                 type="select"
                 options={subUnitTypes}
                 label={MESSAGES.subUnitTypes}
             />
+
+            <Grid container spacing={1}>
+                <Grid item xs={11}>
+                    <InputComponent
+                        multi
+                        clearable
+                        keyValue="allow_creating_sub_unit_type_ids"
+                        onChange={onChange}
+                        loading={isLoadingOrgUitTypes}
+                        value={
+                            allOrgUnitTypes &&
+                            formState.allow_creating_sub_unit_type_ids.value
+                        }
+                        errors={
+                            formState.allow_creating_sub_unit_type_ids.errors
+                        }
+                        type="select"
+                        options={subUnitTypes}
+                        label={MESSAGES.createSubUnitTypes}
+                    />
+                </Grid>
+                <Grid item xs={1}>
+                    <Tooltip
+                        title={formatMessage(MESSAGES.createSubUnitTypesInfos)}
+                        arrow
+                    >
+                        <Box
+                            position="relative"
+                            top={32}
+                            display="flex"
+                            justifyContent="center"
+                        >
+                            <InfoIcon
+                                color="primary"
+                                style={{ cursor: 'pointer' }}
+                            />
+                        </Box>
+                    </Tooltip>
+                </Grid>
+            </Grid>
             {hasPermission && (
                 <InputComponent
                     clearable

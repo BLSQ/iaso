@@ -12,6 +12,7 @@ from io import StringIO
 
 import django_cte
 from django.contrib.auth.models import User
+from django.contrib import auth
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -271,6 +272,14 @@ class Task(models.Model):
             self.progress_message = progress_message
         if end_value:
             self.end_value = end_value
+        self.save()
+
+    def report_success_with_result(self, message=None, result_data=None):
+        logger.info(f"Task {self} reported success with message {message}")
+        self.progress_message = message
+        self.status = SUCCESS
+        self.ended_at = timezone.now()
+        self.result = {"result": SUCCESS, "data": result_data}
         self.save()
 
     def report_success(self, message=None):
@@ -651,7 +660,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         show_deleted=None,
         entity_id=None,
         json_content=None,
-        planning_id=None,
+        planning_ids=None,
     ):
         queryset = self
 
@@ -714,8 +723,8 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if entity_id:
             queryset = queryset.filter(entity_id=entity_id)
 
-        if planning_id:
-            queryset = queryset.filter(planning_id=planning_id)
+        if planning_ids:
+            queryset = queryset.filter(planning_id__in=planning_ids.split(","))
 
         if search:
             if search.startswith("ids:"):
@@ -809,7 +818,7 @@ class Instance(models.Model):
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     correlation_id = models.BigIntegerField(null=True, blank=True)
-    name = models.TextField(null=True, blank=True)
+    name = models.TextField(null=True, blank=True)  # form.name
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
@@ -967,6 +976,10 @@ class Instance(models.Model):
 
     def as_dict(self):
         file_content = self.get_and_save_json_of_xml()
+        last_modified_by = None
+
+        if self.last_modified_by is not None:
+            last_modified_by = self.last_modified_by.username
 
         return {
             "uuid": self.uuid,
@@ -993,7 +1006,14 @@ class Instance(models.Model):
             }
             if self.created_by
             else None,
+            "last_modified_by": last_modified_by,
         }
+
+    def as_dict_with_descriptor(self):
+        dict = self.as_dict()
+        form_version = self.get_form_version()
+        dict["form_descriptor"] = form_version.get_or_save_form_descriptor() if form_version is not None else None
+        return dict
 
     def as_dict_with_parents(self):
         file_content = self.get_and_save_json_of_xml()
@@ -1072,6 +1092,13 @@ class Instance(models.Model):
                 for export_status in Paginator(self.exportstatus_set.order_by("-id"), 3).object_list
             ],
             "deleted": self.deleted,
+            "created_by": {
+                "first_name": self.created_by.first_name,
+                "user_name": self.created_by.username,
+                "last_name": self.created_by.last_name,
+            }
+            if self.created_by
+            else None,
         }
 
     def as_small_dict(self):
@@ -1342,3 +1369,34 @@ class InstanceLock(models.Model):
 
     class Meta:
         ordering = ["-locked_at"]
+
+
+class UserRole(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    group = models.OneToOneField(auth.models.Group, on_delete=models.CASCADE, related_name="iaso_user_role")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.group.name
+
+    def as_short_dict(self):
+        return {
+            "id": self.id,
+            "name": self.group.name,
+            "group_id": self.group.id,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.group.name,
+            "group_id": self.group.id,
+            "permissions": list(
+                self.group.permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
+            ),
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+        }

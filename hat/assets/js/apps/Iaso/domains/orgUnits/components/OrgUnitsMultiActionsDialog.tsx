@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import { UseMutateAsyncFunction } from 'react-query';
 
 import {
     Dialog,
@@ -10,6 +9,8 @@ import {
     makeStyles,
     Box,
     Typography,
+    useTheme,
+    Tooltip,
 } from '@material-ui/core';
 import {
     // @ts-ignore
@@ -22,6 +23,8 @@ import {
 import ReportIcon from '@material-ui/icons/Report';
 // @ts-ignore
 import { useCurrentUser } from 'Iaso/utils/usersUtils';
+import { UseMutateAsyncFunction } from 'react-query';
+import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 import MESSAGES from '../messages';
@@ -89,6 +92,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const theme = useTheme();
     const { data: orgUnitTypes } = useGetOrgUnitTypes();
     const [editGroups, setEditGroups] = useState<boolean>(false);
     const [groupsAdded, setGroupsAdded] = useState<Group[]>([]);
@@ -98,6 +102,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         undefined,
     );
     const [editValidation, setEditValidation] = useState<boolean>(false);
+    const [updateGPS, setUpdateGPS] = useState<boolean>(false);
     const [validationStatus, setValidationStatus] = useState<
         string | undefined
     >(undefined);
@@ -108,12 +113,14 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         sourceVersionId: currentUser?.account?.default_version?.id,
     });
     const isSaveDisabled = () =>
-        (editGroups &&
+        ((editGroups &&
             groupsAdded.length === 0 &&
             groupsRemoved.length === 0) ||
-        (editOrgUnitType && !orgUnitType) ||
-        (editValidation && validationStatus === null) ||
-        (!editGroups && !editOrgUnitType && !editValidation);
+            (editOrgUnitType && !orgUnitType) ||
+            (editValidation && validationStatus === null) ||
+            (!editGroups && !editOrgUnitType && !editValidation)) &&
+        updateGPS === false;
+
     const groupsWithoutAdded = [...groups].filter(
         g => groupsAdded.indexOf(g.id) === -1,
     );
@@ -141,6 +148,12 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         }
         setEditValidation(editEnabled);
     };
+    const handleSetUpdateGPS = editEnabled => {
+        if (!editEnabled) {
+            setUpdateGPS(false);
+        }
+        setUpdateGPS(editEnabled);
+    };
     const closeAndReset = () => {
         setEditGroups(false);
         setGroupsAdded([]);
@@ -148,6 +161,7 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
         setEditOrgUnitType(false);
         setOrgUnitType(undefined);
         setEditValidation(false);
+        setUpdateGPS(false);
         setValidationStatus(undefined);
         closeDialog();
     };
@@ -182,7 +196,11 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
             });
             data.searches = searches;
         }
-        saveMulti(data).then(() => closeAndReset());
+        saveMulti({
+            ...data,
+            saveGPS: updateGPS,
+            saveOtherField: editValidation || editOrgUnitType || editGroups,
+        }).then(() => closeAndReset());
     };
     return (
         <>
@@ -316,6 +334,31 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                             </div>
                         )}
                     </div>
+                    <Box style={{ display: 'flex' }}>
+                        <InputComponent
+                            keyValue="updateGPS"
+                            onChange={(key, checked) =>
+                                handleSetUpdateGPS(checked)
+                            }
+                            value={updateGPS}
+                            type="checkbox"
+                            label={MESSAGES.useGPSFromSubmission}
+                        />
+                        <Box position="relative">
+                            <Box
+                                position="absolute"
+                                top={theme.spacing(3)}
+                                left={theme.spacing(-1)}
+                            >
+                                <Tooltip
+                                    arrow
+                                    title={formatMessage(MESSAGES.GPSWarning)}
+                                >
+                                    <InfoOutlinedIcon />
+                                </Tooltip>
+                            </Box>
+                        </Box>
+                    </Box>
                 </DialogContent>
                 <DialogActions className={classes.action}>
                     <Button onClick={closeAndReset} color="primary">
@@ -325,18 +368,6 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                     <ConfirmDialog
                         withDivider
                         btnMessage={formatMessage(MESSAGES.validate)}
-                        message={
-                            <Typography
-                                variant="body2"
-                                color="error"
-                                component="span"
-                                className={classes.warningMessage}
-                            >
-                                {formatMessage(MESSAGES.bulkChangeCount, {
-                                    count: `${formatThousand(selectCount)}`,
-                                })}
-                            </Typography>
-                        }
                         question={
                             <Box className={classes.warningTitle}>
                                 <ReportIcon
@@ -351,6 +382,18 @@ export const OrgUnitsMultiActionsDialog: FunctionComponent<Props> = ({
                                     fontSize="large"
                                 />
                             </Box>
+                        }
+                        message={
+                            <Typography
+                                variant="body2"
+                                color="error"
+                                component="span"
+                                className={classes.warningMessage}
+                            >
+                                {formatMessage(MESSAGES.bulkChangeCount, {
+                                    count: `${formatThousand(selectCount)}`,
+                                })}
+                            </Typography>
                         }
                         confirm={() => saveAndReset()}
                         btnDisabled={isSaveDisabled()}

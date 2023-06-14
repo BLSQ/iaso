@@ -23,10 +23,12 @@ import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { Sidebar } from './components/AssignmentsSidebar';
+import { ParentDialog } from './components/ParentDialog';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
-import { OrgUnitShape, AssignmentUnit } from './types/locations';
+import { AssignmentUnit } from './types/locations';
+import { ParentOrgUnit } from './types/orgUnit';
 
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 
@@ -58,7 +60,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
     const [parentSelected, setParentSelected] = useState<
-        OrgUnitShape | undefined
+        ParentOrgUnit | undefined
     >();
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
@@ -255,6 +257,18 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     <Tab value="list" label={formatMessage(MESSAGES.list)} />
                 </Tabs>
             </TopBar>
+            <ParentDialog
+                childrenOrgunits={childrenOrgunits}
+                parentSelected={parentSelected}
+                setParentSelected={setParentSelected}
+                selectedItem={selectedItem}
+                currentTeam={currentTeam}
+                teams={teams || []}
+                profiles={profiles}
+                planning={planning}
+                saveMultiAssignments={saveMultiAssignments}
+                isFetchingChildrenOrgunits={isFetchingChildrenOrgunits}
+            />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
                 <AssignmentsFilters
@@ -282,7 +296,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     isFetchingOrgUnitTypes={
                                         isFetchingOrgunitTypes
                                     }
-                                    showMapSelector={tab === 'map'}
                                 />
                             </Grid>
                             <Grid item xs={7}>
@@ -306,14 +319,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 setParentSelected={
                                                     setParentSelected
                                                 }
-                                                childrenOrgunits={
-                                                    childrenOrgunits
-                                                }
-                                                parentSelected={parentSelected}
-                                                saveMultiAssignments={
-                                                    saveMultiAssignments
-                                                }
-                                                selectedItem={selectedItem}
                                                 locations={orgUnits}
                                                 isFetchingLocations={
                                                     isFetchingOrgUnits
@@ -323,9 +328,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 }
                                                 isLoadingAssignments={
                                                     isLoadingAssignments
-                                                }
-                                                isFetchingChildrenOrgunits={
-                                                    isFetchingChildrenOrgunits
                                                 }
                                             />
                                         )}
@@ -346,6 +348,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 isFetchingOrgUnitsList
                                             }
                                             selectedItem={selectedItem}
+                                            setParentSelected={
+                                                setParentSelected
+                                            }
                                         />
                                     )}
                                 </Box>

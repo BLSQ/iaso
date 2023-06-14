@@ -16,10 +16,13 @@ from django.contrib.auth.models import User
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django.core.mail import EmailMultiAlternatives
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.template import loader
+from django.views.decorators.csrf import csrf_exempt
 from oauthlib.oauth2 import OAuth2Error
-from requests import RequestException
+from requests import RequestException, HTTPError
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework_simplejwt.tokens import RefreshToken  # type: ignore
 
 from iaso.models import Account, Profile
 from .provider import WFPProvider
@@ -93,16 +96,19 @@ class WFP2Adapter(Auth0OAuth2Adapter):
                 context=context,
             )
 
-    def complete_login(self, request, app, token, response):
+    def complete_login(self, request, app, token: str, response) -> SocialAccount:
         # simplify the logic from django-allauth a lot so the flow is less flexible but more followable
         # search if we have a SocialAccount linked to this user
         # if not create one and connect it to an existing user if there is already one with this email
         # contrary to the all auth version it return a SocialAccount
         # Call the userinfo url with the identifying token to get more data on the user
-        extra_data_get = requests.get(self.profile_url, params={"access_token": token.token})
+        extra_data_get = requests.get(self.profile_url, params={"access_token": token})
         extra_data_get.raise_for_status()
         extra_data: ExtraData = extra_data_get.json()
-        email = extra_data["email"].lower().strip()
+        try:
+            email = extra_data["email"].lower().strip()
+        except KeyError:
+            email = extra_data["sub"].lower().strip()
         # the sub is the email, wfp verify it so let's trust this
         uid = extra_data["sub"].lower().strip()
         account = Account.objects.get(name=self.settings["IASO_ACCOUNT_NAME"])
@@ -139,7 +145,6 @@ class WFP2Adapter(Auth0OAuth2Adapter):
 
 class WFPCallbackView(OAuth2View):
     adapter: WFP2Adapter
-    # request: Request
 
     def dispatch(self, request, *args, **kwargs):
         if "error" in request.GET or "code" not in request.GET:
@@ -157,7 +162,7 @@ class WFPCallbackView(OAuth2View):
             access_token = self.adapter.get_access_token_data(request, app, client)
             token = self.adapter.parse_token(access_token)
             token.app = app
-            social_account = self.adapter.complete_login(request, app, token, response=access_token)
+            social_account = self.adapter.complete_login(request, app, token=token.token, response=access_token)
             return perform_login(
                 request,
                 social_account.user,
@@ -175,3 +180,56 @@ class WFPCallbackView(OAuth2View):
 
 oauth2_login = OAuth2LoginView.adapter_view(WFP2Adapter)
 oauth2_callback = WFPCallbackView.adapter_view(WFP2Adapter)
+
+
+@csrf_exempt
+@api_view(http_method_names=["POST", "GET"])
+@authentication_classes([])
+@permission_classes([])
+def token_view(request):
+    """Login workflow via the Mobile Application
+
+    1. User clicks on Login via WFP button in app
+    2. Browser opens, user authenticates
+    3. App is called as callback, receives token
+    4. App calls this view with WFP token
+    5. We call the /userinfo/ endpoint on WFP auth server using this token to retrieve user info (email, full name)
+    6. We do reconciliation, user creation, sending of email, etc...
+    7. Iaso token representing the user connection is created and returned (using DRF simple-jwt like in regular workflow)
+    """
+    token = request.data.get("token")
+    if not token:
+        return JsonResponse(
+            {
+                "result": "error",
+                "message": "missing token",
+            },
+            status=400,
+        )
+    adapter = WFP2Adapter(request)
+    try:
+        social_account = adapter.complete_login(request, app=None, token=token, response=None)
+
+    except HTTPError as e:
+        logger.exception(str(e))
+        if e.response.status_code == 401 and e.response.json()["error"] == "invalid_token":
+            return JsonResponse(
+                {"message": "Access token validation failed", "result": "error", "error": "invalid_token"}, status=401
+            )
+        return JsonResponse(
+            {"result": "error", "message": "error login to auth server", "details": e.response.text}, status=500
+        )
+    except Exception as e:
+        logger.exception(str(e))
+        return JsonResponse({"result": "error", "message": "error login account"})
+    user = social_account.user
+
+    # from https://django-rest-framework-simplejwt.readthedocs.io/en/latest/creating_tokens_manually.html
+    refresh = RefreshToken.for_user(user)
+    return JsonResponse(
+        {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        },
+        status=200,
+    )

@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "baseUrl": ".",
         "moduleResolution": "node",               // enable import syntax
         "outDir": "./hat/assets/ts",              // path to output directory (tsc compiler)
         "sourceMap": true,                        // enable sourcemap support

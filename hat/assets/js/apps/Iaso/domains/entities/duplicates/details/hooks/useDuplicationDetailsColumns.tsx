@@ -6,6 +6,7 @@ import { formatLabel } from '../../../../instances/utils';
 import { convertValueIfDate } from '../../../../../components/Cells/DateTimeCell';
 import { DuplicateEntityForTable } from '../../types';
 import { useEntityCell } from './useEntityCell';
+import { findDescriptorInChildren } from '../../../../../utils';
 
 type UseDuplicationDetailsColumnsArgs = {
     state: DuplicateEntityForTable[];
@@ -16,12 +17,14 @@ type UseDuplicationDetailsColumnsArgs = {
         value: DuplicateEntityForTable,
     ) => void;
     setQuery: React.Dispatch<any>;
+    descriptors: { descriptor1: any; descriptor2: any };
 };
 
 export const useDuplicationDetailsColumns = ({
     state,
     updateCellState,
     setQuery,
+    descriptors,
 }: UseDuplicationDetailsColumnsArgs): Column[] => {
     const { formatMessage } = useSafeIntl();
 
@@ -54,11 +57,20 @@ export const useDuplicationDetailsColumns = ({
                         state,
                         updateCellState,
                     });
+
+                    const descr = findDescriptorInChildren(
+                        settings.row.original.entity1.value,
+                        descriptors.descriptor1,
+                    );
+                    const result = convertValueIfDate(
+                        descr
+                            ? formatLabel(descr)
+                            : settings.row.original.entity1.value,
+                    );
+
                     return (
                         <Box onClick={onClick} role="button" tabIndex={0}>
-                            {convertValueIfDate(
-                                settings.row.original.entity1.value,
-                            )}
+                            {result}
                         </Box>
                     );
                 },
@@ -79,12 +91,19 @@ export const useDuplicationDetailsColumns = ({
                         state,
                         updateCellState,
                     });
+                    const descr = findDescriptorInChildren(
+                        settings.row.original.entity2.value,
+                        descriptors.descriptor2,
+                    );
+                    const result = convertValueIfDate(
+                        descr
+                            ? formatLabel(descr)
+                            : settings.row.original.entity2.value,
+                    );
 
                     return (
                         <div onClick={onClick} role="button" tabIndex={0}>
-                            {convertValueIfDate(
-                                settings.row.original.entity2.value,
-                            )}
+                            {result}
                         </div>
                     );
                 },
@@ -96,9 +115,23 @@ export const useDuplicationDetailsColumns = ({
                 sortable: false,
                 Cell: settings => {
                     const { final } = settings.row.original;
-                    return <div>{convertValueIfDate(final.value)}</div>;
+                    const descr = findDescriptorInChildren(
+                        final.value,
+                        descriptors.descriptor1,
+                    );
+                    const result = convertValueIfDate(
+                        descr ? formatLabel(descr) : final.value,
+                    );
+                    return <div>{result}</div>;
                 },
             },
         ];
-    }, [formatMessage, setQuery, updateCellState, state]);
+    }, [
+        formatMessage,
+        setQuery,
+        state,
+        updateCellState,
+        descriptors.descriptor1,
+        descriptors.descriptor2,
+    ]);
 };

@@ -3,6 +3,7 @@ import nock from 'nock';
 import { AddButton as AddButtonComponent } from 'bluesquare-components';
 
 import { expect } from 'chai';
+import { withQueryClientProvider } from '../../../../test/utils';
 import Forms from './index';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -53,9 +54,11 @@ const userWithFormPermission = {
 
 const forms = ({ withPermissions, showOnlyDeleted = false }) =>
     mount(
-        renderWithStore(
-            <Forms params={{}} showOnlyDeleted={showOnlyDeleted} />,
-            withPermissions ? userWithFormPermission : null,
+        withQueryClientProvider(
+            renderWithStore(
+                <Forms params={{}} showOnlyDeleted={showOnlyDeleted} />,
+                withPermissions ? userWithFormPermission : null,
+            ),
         ),
     );
 

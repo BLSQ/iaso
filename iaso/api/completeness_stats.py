@@ -300,6 +300,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # Transform the order parameter to handle the json properly
         converted_orders: List[Union[str, OrderBy]] = []
         for order in orders:
+            # There is an issue with using orgunit__name as it does a supplementary outer join that duplicate lines
+            # and break pagination
+            if order == "orgunit__name" or order == "-orgunit__name":
+                raise serializers.ValidationError(
+                    {"order": ["Sorting by `orgunit__name` is not supported, please use `name` instead"]}
+                )
             if not (order.startswith("form_stats") or order.startswith("-form_stats")):
                 converted_orders.append(order)
             else:

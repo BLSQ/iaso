@@ -12,7 +12,7 @@ class OrgUnitsBulkUpdate(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasOrgUnitPermission]
 
     def create(self, request):
-        select_all = request.data.get("select_all", None)
+        select_all = request.data.get("select_all", False)
         validation_status = request.data.get("validation_status", None)
         org_unit_type_id = request.data.get("org_unit_type", None)
         groups_ids_added = request.data.get("groups_added", None)

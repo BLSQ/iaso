@@ -55,6 +55,14 @@ class WorkflowChangeSerializer(serializers.ModelSerializer):
         fields = ["id", "form", "mapping", "created_at", "updated_at"]
 
 
+def find_question_by_name(name, questions):
+    if questions is not None:
+        for q in questions:
+            if q["name"] == name:
+                return q
+    return None
+
+
 class WorkflowChangeCreateSerializer(serializers.Serializer):
     form = serializers.IntegerField()
     mapping = serializers.JSONField()
@@ -102,13 +110,6 @@ class WorkflowChangeCreateSerializer(serializers.Serializer):
 
         # We cannot have two identical keys mapping to the same value because it's a dictionary
         # But we can have two different keys mapping to the same value, we need to check for it
-
-        def find_question_by_name(name, questions):
-            if questions is not None:
-                for q in questions:
-                    if q["name"] == name:
-                        return q
-            return None
 
         if len(mapping.values()) != len(list(set(mapping.values()))):
             raise serializers.ValidationError(f"Mapping cannot have two identical values")

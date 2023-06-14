@@ -88,3 +88,13 @@ export const fakeResponse =
     };
 
 export const noOp = () => undefined;
+
+export const findDescriptorInChildren = (field, descriptor) => {
+    const fieldName = typeof field === 'string' ? field : field.name;
+    return descriptor?.children?.reduce((a, child) => {
+        if (a) return a;
+        if (child.name === fieldName) return child;
+        if (child.children) return findDescriptorInChildren(field, child);
+        return undefined;
+    }, null);
+};

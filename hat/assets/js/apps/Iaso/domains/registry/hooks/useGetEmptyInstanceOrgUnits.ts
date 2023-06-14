@@ -20,7 +20,7 @@ type ApiParams = {
     parent_org_unit_id: string;
     without_submissions: boolean;
 };
-export const defaultSorted = [{ id: 'orgunit__name', desc: false }];
+export const defaultSorted = [{ id: 'name', desc: false }];
 
 export const useGetEmptyInstanceOrgUnits = (
     params: RegistryDetailParams,

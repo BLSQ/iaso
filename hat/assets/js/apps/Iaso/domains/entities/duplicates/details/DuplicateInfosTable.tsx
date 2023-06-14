@@ -30,7 +30,14 @@ export const DuplicateInfosTable: FunctionComponent<Props> = ({
                         {formatMessage(MESSAGES.similarityScore)}
                     </TableCell>
                     <TableCell>
-                        {isLoading && <LoadingSpinner />}
+                        {isLoading && (
+                            <LoadingSpinner
+                                fixed={false}
+                                transparent
+                                padding={4}
+                                size={25}
+                            />
+                        )}
                         <StarsComponent
                             starCount={5}
                             fullStars={similarityScore ?? 5}

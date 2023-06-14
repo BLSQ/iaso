@@ -75,6 +75,20 @@ PAYMENT = [
 ]
 
 
+class DelayReasons(models.TextChoices):
+    INITIAL_DATA = "INITIAL_DATA", _("initial_data")
+    ENCODING_ERROR = "ENCODING_ERROR", _("encoding_error")
+    PUBLIC_HOLIDAY = "PUBLIC_HOLIDAY", _("public_holday")
+    OTHER_ACTIVITIES = "OTHER_ACTIVITIES", _("other_activities")
+    MOH_DECISION = "MOH_DECISION", _("moh_decision")
+    CAMPAIGN_SYNCHRONIZATION = "CAMPAIGN_SYNCHRONIZATION", _("campaign_synchronization")
+    PREPAREDNESS_LEVEL_NOT_REACHED = "PREPAREDNESS_LEVEL_NOT_REACHED", _("preparedness_level_not_reached")
+    FUNDS_NOT_RECEIVED_OPS_LEVEL = "FUNDS_NOT_RECEIVED_OPS_LEVEL", _("funds_not_received_ops_level")
+    FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _("funds_not_arrived_in_country")
+    VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
+    VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
+
+
 def make_group_round_scope():
     return Group.objects.create(name="hidden roundScope")
 
@@ -142,6 +156,26 @@ class RoundVaccine(models.Model):
     wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
+class RoundDateHistoryEntryQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
+        from plugins.polio.models import Campaign
+
+        campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
+        return self.filter(round__campaign__in=campaigns)
+
+
+class RoundDateHistoryEntry(models.Model):
+    objects = RoundDateHistoryEntryQuerySet.as_manager()
+    previous_started_at = models.DateField(null=True, blank=True)
+    previous_ended_at = models.DateField(null=True, blank=True)
+    started_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateField(null=True, blank=True)
+    reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
+    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
+    modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
@@ -154,6 +188,7 @@ class Round(models.Model):
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)
+
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)
     im_started_at = models.DateField(null=True, blank=True)

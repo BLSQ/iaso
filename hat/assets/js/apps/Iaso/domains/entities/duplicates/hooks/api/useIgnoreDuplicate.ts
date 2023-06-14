@@ -1,7 +1,7 @@
 /* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
-import { waitFor } from '../../../../../utils';
+import { postRequest } from '../../../../../libs/Api';
 
 type IgnoreDuplicateArgs = {
     entity1_id: number;
@@ -9,13 +9,10 @@ type IgnoreDuplicateArgs = {
     reason?: string;
 };
 
-const apiUrl = '/api/entityduplicates';
+const apiUrl = '/api/entityduplicates/';
 
-const ignoreDuplicate = async (args: IgnoreDuplicateArgs) => {
-    const query = { ...args, ignore: true };
-
-    waitFor(2000);
-    console.log('PATCH', apiUrl, query);
+const ignoreDuplicate = (query: IgnoreDuplicateArgs) => {
+    return postRequest({ url: apiUrl, data: { ...query, ignore: true } });
 };
 
 export const useIgnoreDuplicate = (

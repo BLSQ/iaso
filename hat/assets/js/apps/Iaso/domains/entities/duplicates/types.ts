@@ -1,3 +1,6 @@
+import { type } from 'cypress/types/jquery';
+import { FormDescriptor } from '../../forms/types/forms';
+
 /* eslint-disable camelcase */
 export type DuplicateEntity = {
     id: number;
@@ -11,8 +14,8 @@ export type DuplicateEntity = {
 
 export type DuplicationAlgorithm = {
     analyze_id: string;
-    type: 'namesim' | 'invert';
-    fields: string[];
+    type: 'namesim' | 'inverse' | 'levenshtein';
+    the_fields: string[];
     similarity: number;
     similarity_star: number;
 };
@@ -20,15 +23,16 @@ export type DuplicationAlgorithm = {
 export type DuplicateData = {
     entity_type: { id: number; name: string };
     form: { id: number; name: string };
-    fields: {
+    the_fields: {
         field: string;
         label: string | Record<string, string>;
     }[];
     entity1: DuplicateEntity;
     entity2: DuplicateEntity;
-    algorithms: DuplicationAlgorithm[];
+    analyzis: DuplicationAlgorithm[];
     ignored: boolean;
     ignored_reason?: string;
+    merged: boolean;
     similarity: number;
     similarity_star: number;
 };
@@ -56,4 +60,23 @@ export type DuplicateEntityForTable = {
     entity1: EntityForTableData;
     entity2: EntityForTableData;
     final: EntityForTableData;
+};
+
+export type DuplicateDetailData = {
+    fields: DuplicateEntityForTable[];
+    descriptor1: FormDescriptor;
+    descriptor2: FormDescriptor;
+};
+
+export type Analysis = {
+    id: number;
+    algorithm: string;
+    created_at?: string; // DateTime
+    finished_at?: string; // DateTime
+    metadata: {
+        fields: string[];
+        parameters: Record<string, string>;
+        entity_type_id: string;
+    };
+    task: number;
 };

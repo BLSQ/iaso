@@ -25,6 +25,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.pages.errors.name',
         defaultMessage: 'Name is required',
     },
+    seeDuplicate: {
+        id: 'iaso.entities.seeDuplicate',
+        defaultMessage: 'See duplicate',
+    },
+    seeDuplicates: {
+        id: 'iaso.entities.seeDuplicates',
+        defaultMessage: 'See duplicates',
+    },
     cancel: {
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',

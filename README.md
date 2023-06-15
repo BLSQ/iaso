@@ -613,6 +613,11 @@ SHOW_NAME_WITH_LOGO="<'yes' or 'no'>"
 Contributing
 ============
 
+If you are not using the Docker container for development, please ensure that
+you are using the supported Python version on your local machine. At the time of
+writing, the supported version is 3.8, but it's always a good idea to check the
+system requirements section for the most up-to-date information.
+
 Code formatting
 ---------------
 
@@ -734,6 +739,7 @@ External service dependencies:
 * Enketo > 4.0
 * Access to an SMTP server to send e-mail.
 
+Currently supported version of Python is 3.8.
 
 The PostgreSQL database server and Enketo server can both be deployed in Docker on the same physical machine, it is advised to double the recommended values in that case.
 

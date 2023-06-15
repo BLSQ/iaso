@@ -1,3 +1,7 @@
+# Iaso requires Python 3.8 to ensure compatibility with the server environment.
+# Please take note of this requirement when updating or upgrading dependencies.
+# (Please update this notice if the required Python version changes.)
+
 # django
 django==3.2.15
 django-cors-headers==3.2.1
@@ -51,7 +55,7 @@ dhis2.py==2.0.2
 pyxform==1.1.0
 
 
-ipython==7.12.0
+ipython==8.12.2
 django-extensions==2.2.8
 lxml==4.9.1
 xlrd==1.2.0

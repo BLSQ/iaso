@@ -18,6 +18,7 @@ import {
     useTranslatedErrors,
 } from '../../../libs/validation';
 import InputComponent from '../../../components/forms/InputComponent';
+import PermissionsSwitches from './PermissionsSwitches';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {
@@ -57,8 +58,9 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     dialogType,
     id,
     name,
-    permissions,
+    permissions = [],
 }) => {
+    const userRolePermissions = permissions;
     const { formatMessage } = useSafeIntl();
     const [closeModal, setCloseModal] = useState<any>();
     const renderTrigger = useMemo(
@@ -126,6 +128,12 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                     type="text"
                     label={MESSAGES.name}
                     required
+                />
+                <PermissionsSwitches
+                    userRolePermissions={userRolePermissions}
+                    handleChange={() =>
+                        setFieldValue('permissions', userRolePermissions)
+                    }
                 />
             </ConfirmCancelDialogComponent>
         </FormikProvider>

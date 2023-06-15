@@ -57,6 +57,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.save',
         defaultMessage: 'Save',
     },
+    fetchPermissionsError: {
+        defaultMessage: 'An error occurred while fetching permissions list',
+        id: 'iaso.snackBar.fetchPermissions',
+    },
 });
 
 export default MESSAGES;

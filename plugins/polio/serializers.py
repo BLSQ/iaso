@@ -1298,11 +1298,13 @@ class LQASIMDataStoreSerializer(serializers.ModelSerializer):
         org_unit = OrgUnit.objects.get(pk=country_id).as_dict()
         shapes = None
         if org_unit["has_geo_json"] == True:
-            shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(request.user, request.query_params.get("app_id", None)).filter(id=org_unit["id"])
+            shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
+                request.user, request.query_params.get("app_id", None)
+            ).filter(id=org_unit["id"])
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
         # org_unit.is_valid(raise_exception=True)
         # org_unit=org_unit.data
-        
+
         # Probably not necessary as long as we only have AFRO in the platform
         campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
         finished_campaigns = [
@@ -1327,5 +1329,5 @@ class LQASIMDataStoreSerializer(serializers.ModelSerializer):
         # if stats:
         #     data_for_country["stats"] = {latest_campaign.obr_name: stats}
         if stats:
-            return {"id":int(country_id), "data":{"campaign":latest_campaign.obr_name,**stats},"shapes":shapes}
-        return {"id":int(country_id), "data": {"campaign":latest_campaign.obr_name},"shapes":shapes}
+            return {"id": int(country_id), "data": {"campaign": latest_campaign.obr_name, **stats}, "shapes": shapes}
+        return {"id": int(country_id), "data": {"campaign": latest_campaign.obr_name}, "shapes": shapes}

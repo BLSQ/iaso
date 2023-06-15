@@ -27,6 +27,8 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
+from iaso.api.data_store import DataStorePermission, DataStoreSerializer
+from iaso.models.data_store import JsonDataStore
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -43,6 +45,7 @@ from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
+    LQASIMDataStoreSerializer,
     RoundDateHistoryEntrySerializer,
 )
 from plugins.polio.serializers import (
@@ -1756,6 +1759,30 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
         return RoundDateHistoryEntry.objects.filter_for_user(user)
 
 
+# TODO see if this shouldn't a static method somewhere (like in campaigns)
+
+
+@swagger_auto_schema(tags=["lqas-global"])
+class LQASIMGlobalMapViewSet(ModelViewSet):
+    http_method_names = ["get"]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = LQASIMDataStoreSerializer
+    results_key = "results"
+    # TODO configure filters
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+
+    def get_queryset(self):
+        # TODO see if we need to filter per user as with Campaign
+        category = self.request.GET.get("category")
+        countries = [
+            f"{category}_{org_unit.id}" for org_unit in list(OrgUnit.objects.filter(org_unit_type__category="COUNTRY"))
+        ]
+        return JsonDataStore.objects.filter(slug__in=countries)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -1776,3 +1803,4 @@ router.register(r"polio/linelistimport", LineListImportViewSet, basename="lineli
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
 router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
+router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmap")

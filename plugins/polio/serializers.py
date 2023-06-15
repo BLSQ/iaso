@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import date, datetime
 
 import pandas as pd
 from django.db import transaction
@@ -8,6 +8,7 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from gspread.exceptions import APIError  # type: ignore
 from gspread.exceptions import NoValidUrlKeyFound
+from iaso.utils import geojson_queryset
 from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.validators import UniqueValidator
@@ -15,6 +16,7 @@ from rest_framework.validators import UniqueValidator
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
 from iaso.models import Group
+from iaso.models.data_store import JsonDataStore
 from .models import (
     Config,
     Round,
@@ -38,6 +40,7 @@ from .preparedness.parser import (
 from .preparedness.spreadsheet_manager import *
 from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
 from .preparedness.summary import preparedness_summary, set_preparedness_cache_for_round
+from iaso.api.serializers import OrgUnitSerializer as OUSerializer
 
 logger = getLogger(__name__)
 
@@ -1262,3 +1265,67 @@ class ConfigSerializer(serializers.ModelSerializer):
 
     data = serializers.JSONField(source="content")  # type: ignore
     key = serializers.CharField(source="slug")
+
+
+def is_round_over(round):
+    if not round.ended_at:
+        return False
+    return round.ended_at > date.today()
+
+
+def sort_campaigns_by_last_round_end_date(campaign):
+    sorted_rounds = sorted(
+        list(campaign.rounds.all()),
+        key=lambda round: round.ended_at if round.ended_at else date.max,
+        reverse=True,
+    )
+    return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.max
+
+
+class LQASIMDataStoreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = JsonDataStore
+        fields = ["created_at", "updated_at", "key", "data"]
+
+    data = serializers.JSONField(source="content")  # type: ignore
+    key = serializers.CharField(source="slug")
+
+    def to_representation(self, instance):
+        request = self.context["request"]
+        print("REQUEST", request.query_params)
+        representation = super().to_representation(instance)
+        country_id = int(representation["key"].split("_")[1])
+        org_unit = OrgUnit.objects.get(pk=country_id).as_dict()
+        shapes = None
+        if org_unit["has_geo_json"] == True:
+            shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(request.user, request.query_params.get("app_id", None)).filter(id=org_unit["id"])
+            shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+        # org_unit.is_valid(raise_exception=True)
+        # org_unit=org_unit.data
+        
+        # Probably not necessary as long as we only have AFRO in the platform
+        campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
+        finished_campaigns = [
+            campaign
+            for campaign in campaigns
+            if len([round for round in campaign.rounds.all() if is_round_over(round)]) == 0
+        ]
+
+        # TODO make this null safe
+        latest_campaign = sorted(
+            finished_campaigns,
+            key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
+            reverse=True,
+        )[0]
+
+        # TODO make null safe
+        data_for_country = representation["data"]
+        # remove data from all campaigns but latest
+        stats = data_for_country.get("stats", None)
+        if stats:
+            stats = stats.get(latest_campaign.obr_name, None)
+        # if stats:
+        #     data_for_country["stats"] = {latest_campaign.obr_name: stats}
+        if stats:
+            return {"id":int(country_id), "data":{"campaign":latest_campaign.obr_name,**stats},"shapes":shapes}
+        return {"id":int(country_id), "data": {"campaign":latest_campaign.obr_name},"shapes":shapes}

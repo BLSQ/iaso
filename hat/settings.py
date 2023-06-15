@@ -24,7 +24,7 @@ from urllib.parse import urlparse
 
 import sentry_sdk
 from django.core.exceptions import ImproperlyConfigured
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from sentry_sdk.integrations.django import DjangoIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce

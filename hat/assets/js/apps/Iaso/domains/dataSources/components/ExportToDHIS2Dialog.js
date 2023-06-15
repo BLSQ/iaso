@@ -334,7 +334,7 @@ export const ExportToDHIS2Dialog = ({
                             value={exportData.source_status?.value}
                             errors={exportData.source_status.errors}
                             onChange={setExportDataField}
-                            options={orgUnitStatusAsOptions(formatMessage)}
+                            options={orgUnitStatusAsOptions}
                             required
                         />
                     </Grid>

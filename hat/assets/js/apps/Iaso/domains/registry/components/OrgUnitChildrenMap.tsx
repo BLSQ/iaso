@@ -15,8 +15,15 @@ import {
 import { LoadingSpinner } from 'bluesquare-components';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import classNames from 'classnames';
-
 import { keyBy } from 'lodash';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+import {
+    circleColorMarkerOptions,
+    getOrgUnitBounds,
+    getOrgUnitsBounds,
+    mergeBounds,
+    clusterCustomMarker,
+} from '../../../utils/map/mapUtils';
 
 import {
     Tile,
@@ -32,20 +39,17 @@ import { Legend, useGetlegendOptions } from '../hooks/useGetLegendOptions';
 
 import { MapToggleTooltips } from './MapToggleTooltips';
 import { MapToggleFullscreen } from './MapToggleFullscreen';
+import { PopupComponent as Popup } from '../../entities/components/Popup';
 
 import TILES from '../../../constants/mapTiles';
-import {
-    circleColorMarkerOptions,
-    getOrgUnitBounds,
-    getOrgUnitsBounds,
-    mergeBounds,
-} from '../../../utils/map/mapUtils';
 import { MapPopUp } from './MapPopUp';
 import { RegistryDetailParams } from '../types';
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
+import { ExtraColumn } from '../../entities/types/fields';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -216,17 +220,29 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                             </Pane>
                         )}
                         {orgUnit.latitude && orgUnit.longitude && (
-                            <CircleMarkerComponent
-                                item={{
-                                    latitude: orgUnit.latitude,
-                                    longitude: orgUnit.longitude,
-                                }}
-                                markerProps={() => ({
-                                    ...circleColorMarkerOptions(
-                                        theme.palette.secondary.main,
-                                    ),
-                                })}
-                            />
+                            <>
+                                <Pane name="markers">
+                                    <MarkerClusterGroup
+                                        iconCreateFunction={clusterCustomMarker}
+                                    >
+                                        <MarkersListComponent
+                                            items={orgUnitChildren || []}
+                                            markerProps={() => ({
+                                                ...circleColorMarkerOptions(
+                                                    theme.palette.primary.main,
+                                                ),
+                                                radius: 12,
+                                            })}
+                                            popupProps={location => ({
+                                                location,
+                                                extraColumns,
+                                            })}
+                                            PopupComponent={Popup}
+                                            isCircle
+                                        />
+                                    </MarkerClusterGroup>
+                                </Pane>
+                            </>
                         )}
                     </>
                 )}

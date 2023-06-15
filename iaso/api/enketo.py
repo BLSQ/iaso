@@ -2,7 +2,7 @@ from logging import getLogger
 from uuid import uuid4
 
 from bs4 import BeautifulSoup as Soup  # type: ignore
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpRequest
 from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext as _
 from rest_framework import permissions
@@ -30,7 +30,7 @@ from iaso.models import User
 logger = getLogger(__name__)
 
 
-def public_url_for_enketo(request, path):
+def public_url_for_enketo(request: HttpRequest, path):
     """Utility function, used for giving Enketo an url by which they can contact our Iaso server,
     so they can download form definitions"""
 
@@ -256,6 +256,8 @@ def enketo_edit_url(request, instance_uuid):
 def enketo_form_list(request):
     """Called by Enketo to get the list of form.
 
+    Implement https://docs.getodk.org/openrosa-form-list/#the-manifest-document
+
     Require a param `formID` which is actually an Instance UUID"""
     form_id_str = request.GET["formID"]
     try:
@@ -264,16 +266,22 @@ def enketo_form_list(request):
         logger.exception("Instance duplicate  uuid when editing")
         # Prioritize instance with a json content, and then the more recently updated
         i = Instance.objects.exclude(deleted=True).filter(uuid=form_id_str).order_by("json", "-updated_at").first()
+    assert i is not None
 
     latest_form_version = i.form.latest_version
-    # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
+    # Only add a manifest if we actually have attachment so it doesn't make more unecessary request
+    if i.form.attachments.exists():
+        manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/")
+    else:
+        manifest_url = None
 
     if request.method == "GET":
         xforms = to_xforms_xml(
             i.form,
             download_url=downloadurl,
             version=latest_form_version.version_id,
+            manifest_url=manifest_url,
             md5checksum=calculate_file_md5(latest_form_version.file),
             new_form_id=form_id_str,
         )

@@ -2133,6 +2133,23 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.import_line_list.successMessage',
         defaultMessage: 'Imported successfully {amount} campaign(s)',
     },
+    futureDateError: {
+        id: 'iaso.polio.validation.futureDateError',
+        defaultMessage: 'This date should not be in the future',
+    },
+    onsetAfterNotificationError: {
+        id: 'iaso.polio.validation.onsetAfterNotificationError',
+        defaultMessage: 'Date of onset should be before virus notification',
+    },
+    onsetAfterOutbreakDeclarationError: {
+        id: 'iaso.polio.validation.onsetAfterOutbreakDeclarationError',
+        defaultMessage: 'Date of onset should be before outbreak declaration',
+    },
+    virusNotificationAfterOutbreakDeclarationError: {
+        id: 'iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError',
+        defaultMessage:
+            'Virus notification should be before outbreak declaration',
+    },
     reasonForDateChange: {
         id: 'iaso.polio.label.reasonForDateChange',
         defaultMessage: 'Reason for date change',
@@ -2148,6 +2165,42 @@ const MESSAGES = defineMessages({
     INITIAL_DATA: {
         id: 'iaso.polio.label.INITIAL_DATA',
         defaultMessage: 'Initial data',
+    },
+    VACCINES_NOT_ARRIVED_IN_COUNTRY: {
+        id: 'iaso.polio.label.VACCINES_NOT_ARRIVED_IN_COUNTRY',
+        defaultMessage: 'Vaccines not arrived in country',
+    },
+    VACCINES_NOT_DELIVERED_OPS_LEVEL: {
+        id: 'iaso.polio.label.VACCINES_NOT_DELIVERED_OPS_LEVEL',
+        defaultMessage: 'Vaccines not delivered at operational level',
+    },
+    FUNDS_NOT_ARRIVED_IN_COUNTRY: {
+        id: 'iaso.polio.label.FUNDS_NOT_ARRIVED_IN_COUNTRY',
+        defaultMessage: 'Funds not arrived in country',
+    },
+    FUNDS_NOT_RECEIVED_OPS_LEVEL: {
+        id: 'iaso.polio.label.FUNDS_NOT_RECEIVED_OPS_LEVEL',
+        defaultMessage: 'Funds not received at operational level',
+    },
+    PREPAREDNESS_LEVEL_NOT_REACHED: {
+        id: 'iaso.polio.label.PREPAREDNESS_LEVEL_NOT_REACHED',
+        defaultMessage: 'Preparedness level no reached',
+    },
+    CAMPAIGN_SYNCHRONIZATION: {
+        id: 'iaso.polio.label.CAMPAIGN_SYNCHRONIZATION',
+        defaultMessage: 'Campaigns synchronization',
+    },
+    MOH_DECISION: {
+        id: 'iaso.polio.label.MOH_DECISION',
+        defaultMessage: 'Decision from MOH',
+    },
+    OTHER_ACTIVITIES: {
+        id: 'iaso.polio.label.OTHER_ACTIVITIES',
+        defaultMessage: 'Integrate with other vaccination activities',
+    },
+    PUBLIC_HOLIDAY: {
+        id: 'iaso.polio.label.PUBLIC_HOLIDAY',
+        defaultMessage: 'Delayed to observe public holiday',
     },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',

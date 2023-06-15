@@ -26,7 +26,7 @@ export const FormAttachments: FunctionComponent<Props> = ({ params }) => {
         params.formId,
     );
     const dispatch = useDispatch();
-    const columns = useGetColumns();
+    const columns = useGetColumns(params, attachments?.count ?? 0);
     return (
         <Box>
             <Box

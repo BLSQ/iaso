@@ -28,6 +28,7 @@ import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlanni
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 
 type Props = {
     params: UrlParams & any;
@@ -113,22 +114,10 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
-    const orgUnitStatusOptions = useMemo(() => {
-        return [
-            {
-                label: formatMessage(MESSAGES.new),
-                value: 'NEW',
-            },
-            {
-                label: formatMessage(MESSAGES.validated),
-                value: 'VALID',
-            },
-            {
-                label: formatMessage(MESSAGES.rejected),
-                value: 'REJECTED',
-            },
-        ];
-    }, [formatMessage]);
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
 
     return (
         <>
@@ -197,9 +186,10 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         multi
                         keyValue="orgunitValidationStatus"
                         onChange={handleChange}
+                        loading={isLoadingValidationStatusOptions}
                         value={filters.orgunitValidationStatus}
                         label={MESSAGES.validationStatus}
-                        options={orgUnitStatusOptions}
+                        options={validationStatusOptions || []}
                     />
                 </Grid>
 

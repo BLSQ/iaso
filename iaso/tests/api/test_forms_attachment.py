@@ -231,15 +231,19 @@ class FormAttachmentsAPITestCase(APITestCase):
         response = self.client.get(MANIFEST_URL.format(form_id=self.form_2.id))
         content = self.assertXMLResponse(response, 200)
         self.assertEqual(
-            b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
-            b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>first '
-            b"attachment</filename>\n    <hash>md5:test1</hash>\n    "
-            b"<downloadUrl>"
-            + self.attachment1.file.url.encode("ascii")
-            + b"</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
-            b"<filename>second attachment</filename>\n    <hash>md5:test2</hash>\n    "
-            b"<downloadUrl>" + self.attachment2.file.url.encode("ascii") + b"</downloadUrl>\n</mediaFile>\n</manifest>",
-            content,
+            str(
+                b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
+                b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>first '
+                b"attachment</filename>\n    <hash>md5:test1</hash>\n    "
+                b"<downloadUrl>http://testserver"
+                + self.attachment1.file.url.encode("ascii")
+                + b"</downloadUrl>\n</mediaFile>\n<mediaFile>\n    "
+                b"<filename>second attachment</filename>\n    <hash>md5:test2</hash>\n    "
+                b"<downloadUrl>http://testserver"
+                + self.attachment2.file.url.encode("ascii")
+                + b"</downloadUrl>\n</mediaFile>\n</manifest>"
+            ),
+            str(content),
         )
 
     def test_form_attachments_with_invalid_character(self):
@@ -260,7 +264,7 @@ class FormAttachmentsAPITestCase(APITestCase):
             b'<?xml version="1.0" encoding="UTF-8"?>\n<manifest '
             b'xmlns="http://openrosa.org/xforms/xformsManifest">\n<mediaFile>\n    <filename>&lt;&amp;&gt;.png'
             b"</filename>\n    <hash>md5:test1</hash>\n    "
-            b"<downloadUrl>"
+            b"<downloadUrl>http://testserver"
             + escape(attachment.file.url).encode("ascii")
             + b"</downloadUrl>\n</mediaFile>\n</manifest>",
             content,

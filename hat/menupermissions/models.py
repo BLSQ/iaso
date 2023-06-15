@@ -56,6 +56,7 @@ USER_ROLES = _("Manage user roles")
 DATASTORE_READ = _("Read data store")
 DATASTORE_WRITE = _("Write data store")
 ORG_UNIT_TYPES = _("Org unit types")
+ORG_UNIT_GROUPS = _("Org unit groups")
 
 
 class CustomPermissionSupport(models.Model):
@@ -117,4 +118,5 @@ class CustomPermissionSupport(models.Model):
             ("iaso_datastore_read", DATASTORE_READ),
             ("iaso_datastore_write", DATASTORE_WRITE),
             ("iaso_org_unit_types", ORG_UNIT_TYPES),
+            ("iaso_org_unit_groups", ORG_UNIT_GROUPS),
         )

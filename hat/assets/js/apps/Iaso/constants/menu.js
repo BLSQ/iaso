@@ -134,7 +134,7 @@ const menuItems = defaultSourceId => [
                         icon: props => <Link {...props} />,
                         subMenu: [
                             {
-                                label: MESSAGES.dataSourceList,
+                                label: MESSAGES.linksList,
                                 permissions: paths.linksPath.permissions,
                                 key: 'list',
                                 icon: props => (

@@ -78,6 +78,15 @@ PAYMENT = [
 class DelayReasons(models.TextChoices):
     INITIAL_DATA = "INITIAL_DATA", _("initial_data")
     ENCODING_ERROR = "ENCODING_ERROR", _("encoding_error")
+    PUBLIC_HOLIDAY = "PUBLIC_HOLIDAY", _("public_holday")
+    OTHER_ACTIVITIES = "OTHER_ACTIVITIES", _("other_activities")
+    MOH_DECISION = "MOH_DECISION", _("moh_decision")
+    CAMPAIGN_SYNCHRONIZATION = "CAMPAIGN_SYNCHRONIZATION", _("campaign_synchronization")
+    PREPAREDNESS_LEVEL_NOT_REACHED = "PREPAREDNESS_LEVEL_NOT_REACHED", _("preparedness_level_not_reached")
+    FUNDS_NOT_RECEIVED_OPS_LEVEL = "FUNDS_NOT_RECEIVED_OPS_LEVEL", _("funds_not_received_ops_level")
+    FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _("funds_not_arrived_in_country")
+    VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
+    VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
 
 
 def make_group_round_scope():

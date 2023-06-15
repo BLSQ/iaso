@@ -18,7 +18,7 @@ import classNames from 'classnames';
 
 import { keyBy } from 'lodash';
 
-import { Tile } from '../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 

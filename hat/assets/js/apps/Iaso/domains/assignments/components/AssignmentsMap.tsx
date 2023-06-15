@@ -12,7 +12,7 @@ import { LoadingSpinner } from 'bluesquare-components';
 
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
-import { Tile } from '../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
 import { MapInfo } from './MapInfo';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';

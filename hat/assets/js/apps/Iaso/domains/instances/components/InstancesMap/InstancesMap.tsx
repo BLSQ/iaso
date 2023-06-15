@@ -23,7 +23,7 @@ import { setCurrentInstance } from '../../actions';
 import { fetchInstanceDetail } from '../../../../utils/requests';
 import { Instance } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
-import { Tile } from '../../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
 import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../../components/maps/tools/MapToggleCluster';

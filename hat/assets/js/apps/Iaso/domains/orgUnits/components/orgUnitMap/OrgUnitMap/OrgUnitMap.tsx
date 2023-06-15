@@ -43,7 +43,7 @@ import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { SelectedMarkers } from './SelectedMarkers';
 import { buttonsInitialState } from './constants';
 import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
-import { Tile } from '../../../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
 import tiles from '../../../../../constants/mapTiles';
 import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
 

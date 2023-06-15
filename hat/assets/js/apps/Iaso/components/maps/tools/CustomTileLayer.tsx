@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useRef, useEffect, RefObject } from 'react';
 import { TileLayer, useMap } from 'react-leaflet';
-import { Tile, TilesSwitchDialog } from './TilesSwitchDialog';
+import { Tile, TilesSwitchControl } from './TilesSwitchControl';
 
 type Props = {
     currentTile: Tile;
@@ -31,7 +31,7 @@ export const CustomTileLayer: FunctionComponent<Props> = ({
                 // @ts-ignore TODO: fix this type problem
                 attribution={currentTile.attribution || ''}
             />
-            <TilesSwitchDialog
+            <TilesSwitchControl
                 currentTile={currentTile}
                 setCurrentTile={setCurrentTile}
             />

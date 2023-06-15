@@ -18,7 +18,7 @@ import {
 import InnerDrawer from '../../../components/nav/InnerDrawer';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import { Tile } from '../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';

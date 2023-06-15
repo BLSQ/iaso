@@ -10,7 +10,7 @@ import { CustomTileLayer } from './tools/CustomTileLayer';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
-import { Tile } from './tools/TilesSwitchDialog';
+import { Tile } from './tools/TilesSwitchControl';
 import { CustomZoomControl } from './tools/CustomZoomControl';
 
 const useStyles = makeStyles(theme => ({

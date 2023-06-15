@@ -8,7 +8,7 @@ import { commonStyles } from 'bluesquare-components';
 import tiles from '../../constants/mapTiles';
 
 import { GeoJson } from './types';
-import { Tile } from './tools/TilesSwitchDialog';
+import { Tile } from './tools/TilesSwitchControl';
 import { CustomZoomControl } from './tools/CustomZoomControl';
 import { CustomTileLayer } from './tools/CustomTileLayer';
 import { Bounds } from '../../utils/map/mapUtils';

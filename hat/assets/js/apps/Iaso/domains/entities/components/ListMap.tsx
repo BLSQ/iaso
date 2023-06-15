@@ -3,7 +3,7 @@ import { MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
-import { Tile } from '../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
 
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';

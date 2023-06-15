@@ -71,7 +71,7 @@ type Props = {
     setCurrentTile: (newTile: Tile) => void;
 };
 
-export const TilesSwitchDialog: FunctionComponent<Props> = ({
+export const TilesSwitchControl: FunctionComponent<Props> = ({
     currentTile,
     setCurrentTile,
 }) => {

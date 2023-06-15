@@ -12,6 +12,7 @@ from iaso.utils import geojson_queryset
 from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.validators import UniqueValidator
+from functools import reduce
 
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
@@ -371,11 +372,11 @@ class RoundSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user
         updated_datelogs = validated_data.pop("datelogs", [])
-        from pprint import pprint
+        # from pprint import pprint
 
-        print("DATELOGS")
-        pprint(validated_data)
-        pprint(self.data)
+        # print("DATELOGS")
+        # pprint(validated_data)
+        # pprint(self.data)
 
         has_datelog = instance.datelogs.count() > 0
         if updated_datelogs:
@@ -1282,6 +1283,53 @@ def sort_campaigns_by_last_round_end_date(campaign):
     return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.max
 
 
+def determine_status_for_district(district_data):
+    if not district_data:
+        return "0"
+    checked = district_data["total_child_checked"]
+    marked = district_data["total_child_fmd"]
+    if checked == 60:
+        if marked > 56:
+            return "1lqasOK"
+        return "3lqasFail"
+    return "2lqasDisqualified"
+
+
+def reduce_to_country_status(total, current):
+    if not total.get("passed", None):
+        total["passed"] = 0
+    if not total.get("total", None):
+        total["total"] = 0
+    if int(current[0]) == 1:
+        total["passed"] = total["passed"] + 1
+    total["total"] = total["total"] + 1
+    return total
+
+
+def calculate_country_status(country_data, roundNumber="latest"):
+    if len(country_data.get("rounds", [])) == 0:
+        # TODO put in an enum
+        return "inScope"
+    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
+    if roundNumber == "latest":
+        data_for_round = data_for_all_rounds[0]
+    else:
+        data_for_round = next((round for round in data_for_all_rounds if round["number"] == int(roundNumber)), None)
+
+    district_statuses = [
+        determine_status_for_district(district_data) for district_data in data_for_round["data"].values()
+    ]
+    aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
+    if aggregated_statuses.get("total", 0) == 0:
+        return "inScope"
+    passing_ratio = round((aggregated_statuses["passed"] * 100) / aggregated_statuses["total"])
+    if passing_ratio >= 80:
+        return "1lqasOK"
+    if passing_ratio >= 50:
+        return "2lqasDisqualified"
+    return "3lqasFail"
+
+
 class LQASIMDataStoreSerializer(serializers.ModelSerializer):
     class Meta:
         model = JsonDataStore
@@ -1292,7 +1340,6 @@ class LQASIMDataStoreSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         request = self.context["request"]
-        print("REQUEST", request.query_params)
         representation = super().to_representation(instance)
         country_id = int(representation["key"].split("_")[1])
         org_unit = OrgUnit.objects.get(pk=country_id).as_dict()
@@ -1302,8 +1349,6 @@ class LQASIMDataStoreSerializer(serializers.ModelSerializer):
                 request.user, request.query_params.get("app_id", None)
             ).filter(id=org_unit["id"])
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
-        # org_unit.is_valid(raise_exception=True)
-        # org_unit=org_unit.data
 
         # Probably not necessary as long as we only have AFRO in the platform
         campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
@@ -1326,8 +1371,16 @@ class LQASIMDataStoreSerializer(serializers.ModelSerializer):
         stats = data_for_country.get("stats", None)
         if stats:
             stats = stats.get(latest_campaign.obr_name, None)
-        # if stats:
-        #     data_for_country["stats"] = {latest_campaign.obr_name: stats}
         if stats:
-            return {"id": int(country_id), "data": {"campaign": latest_campaign.obr_name, **stats}, "shapes": shapes}
-        return {"id": int(country_id), "data": {"campaign": latest_campaign.obr_name}, "shapes": shapes}
+            return {
+                "id": int(country_id),
+                "data": {"campaign": latest_campaign.obr_name, **stats},
+                "shapes": shapes,
+                "status": calculate_country_status(stats),
+            }
+        return {
+            "id": int(country_id),
+            "data": {"campaign": latest_campaign.obr_name},
+            "shapes": shapes,
+            "status": calculate_country_status({}),
+        }

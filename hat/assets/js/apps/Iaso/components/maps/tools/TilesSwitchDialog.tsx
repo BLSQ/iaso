@@ -1,17 +1,14 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Dialog, DialogActions, Button, makeStyles } from '@material-ui/core';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { Box, makeStyles, Typography } from '@material-ui/core';
+import { IconButton, useSafeIntl } from 'bluesquare-components';
 import Layers from '@material-ui/icons/Layers';
 
+import classNames from 'classnames';
 import TileSwitch from './TileSwitchComponent';
 
 import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
-    tileSwitchContainer: {
-        marginBottom: -theme.spacing(4),
-    },
     legendLayers: {
         position: 'absolute',
         right: theme.spacing(1),
@@ -19,18 +16,48 @@ const useStyles = makeStyles(theme => ({
         zIndex: 500,
         borderRadius: 4,
         border: '2px solid rgba(0,0,0,0.2)',
+        minHeight: 28,
+        minWidth: 28,
+    },
+    iconContainer: {
+        position: 'absolute',
+        paddingRight: theme.spacing(0.5),
+        paddingTop: theme.spacing(1),
+        top: 0,
+        right: 0,
+        backgroundColor: 'white',
     },
     barButton: {
         display: 'flex',
-        position: 'relative',
+        position: 'absolute',
         backgroundColor: 'white',
         borderRadius: '4px',
         padding: '2px',
         cursor: 'pointer',
         outline: 'none',
+        top: 0,
+        right: 0,
         boxShadow: 'none',
         // @ts-ignore
         color: `${theme.textColor}! important`,
+    },
+    container: {
+        backgroundColor: 'white',
+        position: 'relative',
+        transition: 'width .1s ease-in-out, height .1s ease-in-out',
+        overflow: 'hidden',
+    },
+    open: {
+        width: 235,
+        height: 240,
+    },
+    closed: {
+        width: 0,
+        height: 0,
+    },
+    title: {
+        paddingLeft: theme.spacing(1),
+        paddingTop: theme.spacing(1),
     },
 }));
 export type Tile = {
@@ -59,35 +86,49 @@ export const TilesSwitchDialog: FunctionComponent<Props> = ({
 
     return (
         <>
-            <Dialog
-                open={tilePopup}
-                onClose={(_, reason) => {
-                    if (reason === 'backdropClick') {
-                        toggleTilePopup();
-                    }
-                }}
-            >
-                <div className={classes.tileSwitchContainer}>
-                    <TileSwitch
-                        setCurrentTile={newtile => setCurrentTile(newtile)}
-                        currentTile={currentTile}
-                    />
-                </div>
-                <DialogActions>
-                    <Button onClick={() => toggleTilePopup()} color="primary">
-                        {formatMessage(MESSAGES.close)}
-                    </Button>
-                </DialogActions>
-            </Dialog>
             <div className={classes.legendLayers}>
-                <span
-                    className={classes.barButton}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => toggleTilePopup()}
+                {!tilePopup && (
+                    <span
+                        className={classes.barButton}
+                        role="button"
+                        tabIndex={0}
+                        onClick={() => toggleTilePopup()}
+                    >
+                        <Layers fontSize="small" />
+                    </span>
+                )}
+
+                <Box
+                    className={classNames(
+                        tilePopup ? classes.open : classes.closed,
+                        classes.container,
+                    )}
                 >
-                    <Layers fontSize="small" />
-                </span>
+                    {tilePopup && (
+                        <Box width={235}>
+                            <Typography
+                                variant="subtitle1"
+                                className={classes.title}
+                            >
+                                {formatMessage(MESSAGES.layersTitle)}
+                            </Typography>
+                            <Box className={classes.iconContainer}>
+                                <IconButton
+                                    size="small"
+                                    onClick={() => toggleTilePopup()}
+                                    icon="clear"
+                                    tooltipMessage={MESSAGES.close}
+                                />
+                            </Box>
+                            <TileSwitch
+                                setCurrentTile={newtile =>
+                                    setCurrentTile(newtile)
+                                }
+                                currentTile={currentTile}
+                            />
+                        </Box>
+                    )}
+                </Box>
             </div>
         </>
     );

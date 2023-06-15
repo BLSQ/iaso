@@ -1,12 +1,17 @@
 import React, { FunctionComponent, useRef, useEffect, RefObject } from 'react';
 import { TileLayer, useMap } from 'react-leaflet';
-import { Tile } from './TilesSwitchDialog';
+import { Tile, TilesSwitchDialog } from './TilesSwitchDialog';
 
 type Props = {
     currentTile: Tile;
+    // eslint-disable-next-line no-unused-vars
+    setCurrentTile: (newTile: Tile) => void;
 };
 
-export const CustomTileLayer: FunctionComponent<Props> = ({ currentTile }) => {
+export const CustomTileLayer: FunctionComponent<Props> = ({
+    currentTile,
+    setCurrentTile,
+}) => {
     const ref: RefObject<any> = useRef(null);
     const map: any = useMap();
     useEffect(() => {
@@ -19,11 +24,17 @@ export const CustomTileLayer: FunctionComponent<Props> = ({ currentTile }) => {
         }
     }, [currentTile, map]);
     return (
-        <TileLayer
-            ref={ref}
-            url={currentTile.url}
-            // @ts-ignore TODO: fix this type problem
-            attribution={currentTile.attribution || ''}
-        />
+        <>
+            <TileLayer
+                ref={ref}
+                url={currentTile.url}
+                // @ts-ignore TODO: fix this type problem
+                attribution={currentTile.attribution || ''}
+            />
+            <TilesSwitchDialog
+                currentTile={currentTile}
+                setCurrentTile={setCurrentTile}
+            />
+        </>
     );
 };

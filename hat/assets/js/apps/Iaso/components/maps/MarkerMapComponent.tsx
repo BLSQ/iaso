@@ -10,7 +10,7 @@ import { CustomTileLayer } from './tools/CustomTileLayer';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
-import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
+import { Tile } from './tools/TilesSwitchDialog';
 import { CustomZoomControl } from './tools/CustomZoomControl';
 
 const useStyles = makeStyles(theme => ({
@@ -49,10 +49,6 @@ export const MarkerMap: FunctionComponent<Props> = ({
     if (!latitude || !longitude) return null;
     return (
         <div className={classes.mapContainer}>
-            <TilesSwitchDialog
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
             <MapContainer
                 doubleClickZoom={false}
                 scrollWheelZoom={false}
@@ -69,7 +65,10 @@ export const MarkerMap: FunctionComponent<Props> = ({
                     boundsOptions={boundsOptions}
                 />
                 <ScaleControl imperial={false} />
-                <CustomTileLayer currentTile={currentTile} />
+                <CustomTileLayer
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
+                />
                 <MarkerComponent
                     item={{
                         latitude,

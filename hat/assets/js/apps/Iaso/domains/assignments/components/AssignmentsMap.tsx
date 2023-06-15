@@ -8,17 +8,11 @@ import {
 } from 'react-leaflet';
 
 import { Box } from '@material-ui/core';
-import {
-    // @ts-ignore
-    LoadingSpinner,
-} from 'bluesquare-components';
+import { LoadingSpinner } from 'bluesquare-components';
 
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
-import {
-    Tile,
-    TilesSwitchDialog,
-} from '../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../components/maps/tools/TilesSwitchDialog';
 import { MapLegend } from './MapLegend';
 import { MapInfo } from './MapInfo';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
@@ -176,10 +170,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     return (
         <section ref={mapContainer}>
             <Box position="relative">
-                <TilesSwitchDialog
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
-                />
                 <MapLegend />
                 <MapInfo />
                 {selectedLocation && (
@@ -216,7 +206,10 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         fitOnLoad
                     />
                     <ScaleControl imperial={false} />
-                    <CustomTileLayer currentTile={currentTile} />
+                    <CustomTileLayer
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
+                    />
                     {locations && (
                         <>
                             <Pane name="shapes-unselected-already-assigned">

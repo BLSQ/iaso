@@ -2,6 +2,7 @@ import React from 'react';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import FlareIcon from '@material-ui/icons/Flare';
+import CloseIcon from '@material-ui/icons/Close';
 // import FiberNewIcon from '@material-ui/icons/FiberNew';
 import { Tooltip } from '@material-ui/core';
 import { useIntl } from 'react-intl';

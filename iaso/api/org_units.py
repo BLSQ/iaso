@@ -364,7 +364,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.source = request.data["source"]
         if "validation_status" in request.data:
             validation_status = request.data["validation_status"]
-            valid_validations_status = ["NEW", "VALID", "REJECTED"]
+            # TODO: this should come from , OrgUnit.VALIDATION_STATUS_CHOICES
+            valid_validations_status = ["NEW", "VALID", "REJECTED", "CLOSED"]
 
             org_unit.validation_status = validation_status
 
@@ -434,7 +435,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     errors.append(
                         {
                             "errorKey": "reference_form",
-                            "errorMessage": _("Form of submssion is not allowed on this type of org unit"),
+                            "errorMessage": _("Form of subimssion is not allowed on this type of org unit"),
                         }
                     )
                 else:

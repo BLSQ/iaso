@@ -45,22 +45,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Type',
         id: 'iaso.entities.type',
     },
-    NEW: {
-        id: 'iaso.forms.new',
-        defaultMessage: 'new',
-    },
-    REJECTED: {
-        id: 'iaso.forms.rejected',
-        defaultMessage: 'rejected',
-    },
-    VALID: {
-        defaultMessage: 'Valid',
-        id: 'iaso.label.valid',
-    },
-    status: {
-        id: 'iaso.forms.status',
-        defaultMessage: 'Status',
-    },
     seeRegistry: {
         id: 'iaso.registry.seeRegistry',
         defaultMessage: 'See registry',

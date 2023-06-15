@@ -13,7 +13,6 @@ import {
     csvPreview,
     useDataSourceForVersion,
 } from '../requests';
-import { orgUnitStatusAsOptions } from '../../../constants/filters';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
@@ -28,6 +27,7 @@ import {
     versionsAsOptionsWithSourceName,
 } from '../utils';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus.ts';
 
 const style = theme => ({
     noCreds: {
@@ -64,6 +64,10 @@ export const ExportToDHIS2Dialog = ({
     versions,
     defaultVersionId,
 }) => {
+    const {
+        data: orgUnitStatusAsOptions,
+        isLoading: isLoadingOrgUnitStatusAsOptions,
+    } = useGetValidationStatus(true);
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const fieldsToExport = useFieldsToExport();
@@ -229,7 +233,8 @@ export const ExportToDHIS2Dialog = ({
                             value={exportData.ref_status?.value}
                             errors={exportData.ref_status.errors}
                             onChange={setExportDataField}
-                            options={orgUnitStatusAsOptions(formatMessage)}
+                            loading={isLoadingOrgUnitStatusAsOptions}
+                            options={orgUnitStatusAsOptions}
                             required
                         />
                     </Grid>

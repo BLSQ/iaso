@@ -23,7 +23,7 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -187,7 +187,7 @@ const Filters = ({ baseUrl, params }) => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
-                        keyValue="projects"
+                        keyValue="projectsIds"
                         onChange={handleChange}
                         value={filters.projects}
                         type="select"

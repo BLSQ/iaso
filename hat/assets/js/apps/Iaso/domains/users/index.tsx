@@ -20,7 +20,7 @@ import {
 import EditIcon from '@material-ui/icons/Settings';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-import UsersDialog from './components/UsersDialog';
+import  { AddUsersDialog } from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
 import { useGetProfiles } from './hooks/useGetProfiles';
@@ -114,15 +114,9 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <UsersDialog
+                    {/* @ts-ignore */}
+                    <AddUsersDialog
                         titleMessage={MESSAGES.create}
-                        //  @ts-ignore
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
-                                dataTestId="add-user-button"
-                                onClick={openDialog}
-                            />
-                        )}
                         saveProfile={saveProfile}
                         allowSendEmailInvitation
                         forceRefresh={isLoading}

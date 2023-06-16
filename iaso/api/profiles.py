@@ -217,7 +217,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         projects = request.data.get("projects", [])
         profile.projects.clear()
         for project in projects:
-            item = get_object_or_404(Project, pk=project.get("id"))
+            item = get_object_or_404(Project, pk=project)
             profile.projects.add(item)
         profile.save()
 
@@ -303,7 +303,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         projects = request.data.get("projects", [])
         profile.projects.clear()
         for project in projects:
-            item = get_object_or_404(Project, pk=project.get("id"))
+            item = get_object_or_404(Project, pk=project)
             profile.projects.add(item)
         dhis2_id = request.data.get("dhis2_id", None)
         if dhis2_id == "":

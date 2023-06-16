@@ -55,6 +55,12 @@ export const useInitialUser = (
                 value: get(initialData, 'send_email_invitation', false),
                 errors: [],
             },
+            projects: {
+                value: get(initialData, 'projects', []).map(
+                    project => project.id,
+                ),
+                errors: [],
+            },
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);

@@ -4,7 +4,7 @@ import functools
 import json
 from collections import defaultdict
 from datetime import date, timedelta, datetime
-from functools import lru_cache
+from functools import lru_cache, reduce
 from logging import getLogger
 from typing import Any, List, Optional, Union
 from django.db.models.query import QuerySet

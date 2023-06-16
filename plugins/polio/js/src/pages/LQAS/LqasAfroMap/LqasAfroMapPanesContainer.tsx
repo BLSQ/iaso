@@ -24,10 +24,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent = () => {
     const { data: mapShapes, isFetching: isAfroShapesLoading } =
         useAfroMapShapes('lqas');
 
-    const { data: zoominShapes, isFetching: isLoadingZoomin } =
-        useGetZoomedInShapes(boundsString, 'lqas');
-
     const showCountries = zoom <= 5;
+    const { data: zoominShapes, isFetching: isLoadingZoomin } =
+        useGetZoomedInShapes(boundsString, 'lqas', !showCountries);
 
     const mainLayer = useMemo(() => {
         if (showCountries) return mapShapes;

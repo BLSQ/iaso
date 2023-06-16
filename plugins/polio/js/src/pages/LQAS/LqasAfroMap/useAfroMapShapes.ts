@@ -32,6 +32,7 @@ const getZoomedInShapes = (bounds: string, category: string) => {
 export const useGetZoomedInShapes = (
     bounds: string,
     category: string,
+    enabled: boolean,
 ): UseQueryResult<any, any> => {
     return useSnackQuery({
         queryFn: () => getZoomedInShapes(bounds, category),
@@ -41,6 +42,7 @@ export const useGetZoomedInShapes = (
                 if (!data) return [];
                 return data.results;
             },
+            enabled,
         },
     });
 };

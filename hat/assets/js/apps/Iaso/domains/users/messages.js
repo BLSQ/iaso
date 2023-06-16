@@ -310,6 +310,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.label.noTypeAssigned',
         defaultMessage: 'No org unit type assigned',
     },
+
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected users',
+        id: 'iaso.users.multiSelectionAction',
+    },
 });
 
 export default MESSAGES;

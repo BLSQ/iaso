@@ -16,7 +16,7 @@ from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from iaso.models import Profile, OrgUnit
+from iaso.models import Profile, OrgUnit, Project
 
 
 class HasProfilePermission(permissions.BasePermission):
@@ -210,6 +210,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.org_units.add(org_unit_item)
         if profile.dhis2_id == "":
             profile.dhis2_id = None
+
+        projects = request.data.get("projects", [])
+        profile.projects.clear()
+        for project in projects:
+            item = get_object_or_404(Project, pk=project.get("id"))
+            profile.projects.add(item)
         profile.save()
 
         return Response(profile.as_dict())
@@ -291,6 +297,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+        projects = request.data.get("projects", [])
+        profile.projects.clear()
+        for project in projects:
+            item = get_object_or_404(Project, pk=project.get("id"))
+            profile.projects.add(item)
         dhis2_id = request.data.get("dhis2_id", None)
         if dhis2_id == "":
             dhis2_id = None

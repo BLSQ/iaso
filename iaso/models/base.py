@@ -1182,6 +1182,7 @@ class Profile(models.Model):
     language = models.CharField(max_length=512, null=True, blank=True)
     dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")
     home_page = models.CharField(max_length=512, null=True, blank=True)
+    projects = models.ManyToManyField("Project", related_name="profile", blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1206,6 +1207,7 @@ class Profile(models.Model):
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,
             "home_page": self.home_page,
+            "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 
     def as_short_dict(self):
@@ -1217,6 +1219,7 @@ class Profile(models.Model):
             "email": self.user.email,
             "language": self.language,
             "user_id": self.user.id,
+            "projects": [p.as_dict() for p in self.projects.all().order_by("name")],
         }
 
     def has_a_team(self):

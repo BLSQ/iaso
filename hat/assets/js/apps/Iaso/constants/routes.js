@@ -13,7 +13,7 @@ import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details.tsx';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
-import Users from '../domains/users';
+import { Users } from '../domains/users/index.tsx';
 import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';

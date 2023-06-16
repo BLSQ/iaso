@@ -1,29 +1,15 @@
-import React, { FunctionComponent, useMemo, useRef, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 
 import { Box } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-import { isEqual } from 'lodash';
-import { MapContainer, useMapEvent } from 'react-leaflet';
-import { makePopup } from '../../../components/LQAS-IM/LqasImPopUp';
-import {
-    determineStatusForDistrict as lqasDistrictStatus,
-    makeLqasMapLegendItems,
-} from '../utils';
-import { lqasDistrictColors, IN_SCOPE } from '../../IM/constants';
-import {
-    findDataForShape,
-    findScopeIds,
-    defaultShapeStyle,
-} from '../../../utils/index';
+import { MapContainer } from 'react-leaflet';
+
+import { defaultShapeStyle } from '../../../utils/index';
 import MESSAGES from '../../../constants/messages';
-import {
-    useGetCountriesGeoJson,
-    useGetGeoJson,
-} from '../../../hooks/useGetGeoJson';
+import { useGetCountriesGeoJson } from '../../../hooks/useGetGeoJson';
 import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
 import { defaultViewport } from '../../../components/campaignCalendar/map/constants';
-import { MapPanes } from '../../../components/MapComponent/MapPanes';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useGetCountriesLqasStatus } from './useGetCountriesLqasStatus';
 import { CustomTileLayer } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
@@ -32,8 +18,9 @@ import {
     TilesSwitchDialog,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchDialog';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
+import { useAfroMapShapes } from './useAfroMapShapes';
 
-const defaultShapes = [];
+// const defaultShapes = [];
 
 type Props = {
     round: 'latest' | string;
@@ -44,18 +31,9 @@ const getBackgroundLayerStyle = _shape => defaultShapeStyle;
 
 export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
     const { formatMessage } = useSafeIntl();
-    // Get all countries shapes
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-
-    // This may be grouped with the statuses hook
-    const { data: countries, isFetching: isFetchingCountries } =
-        useGetCountriesGeoJson(true);
-
-    const { countriesWithStatus, isFetching } = useGetCountriesLqasStatus({
-        countries,
-    });
-    // console.log('countries', countries);
-    // console.log('countriesWithStatus', countriesWithStatus);
+    const { data: mapShapes, isFetching: isAfroShapesLoading } =
+        useAfroMapShapes('lqas');
 
     return (
         <>
@@ -64,8 +42,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                 displayBackButton={false}
             />
             <Box position="relative">
-                {/* Showing spinner on isFetching alone would make the map seem like it's loading before the user has chosen a country and campaign */}
-                {(isFetchingCountries || isFetching) && (
+                {isAfroShapesLoading && (
                     <LoadingSpinner fixed={false} absolute />
                 )}
                 <TilesSwitchDialog
@@ -83,7 +60,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                     <CustomTileLayer currentTile={currentTile} />
 
                     <LqasAfroMapPanesContainer
-                        countriesWithStatus={countriesWithStatus}
+                        countriesWithStatus={mapShapes}
                     />
                 </MapContainer>
             </Box>

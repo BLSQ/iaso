@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Data Sources List',
         id: 'iaso.label.dataSourceList',
     },
+    linksList: {
+        defaultMessage: 'Links List',
+        id: 'iaso.label.linksList',
+    },
     beneficiariesList: {
         defaultMessage: 'Beneficiaries List',
         id: 'iaso.label.beneficiariesList',

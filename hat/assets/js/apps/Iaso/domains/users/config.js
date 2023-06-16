@@ -3,7 +3,7 @@ import {
     IconButton as IconButtonComponent,
     textPlaceholder,
 } from 'bluesquare-components';
-import UsersDialog from './components/UsersDialog';
+import UsersDialog from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
 import MESSAGES from './messages';

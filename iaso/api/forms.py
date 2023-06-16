@@ -17,6 +17,7 @@ from hat.audit.models import log_modification, FORM_API
 from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilter
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
 from .query_params import APP_ID
 
@@ -346,7 +347,7 @@ class FormsViewSet(ModelViewSet):
     FORM_PK = "form_pk"
 
     @action(detail=True, methods=["get"])
-    def manifest(self, *args, **kwargs):
+    def manifest(self, request, *args, **kwargs):
         """Returns a xml manifest file in the openrosa format for the Form
 
         This is used for the mobile app and Enketo to fetch the list of file attached to the Form
@@ -356,11 +357,16 @@ class FormsViewSet(ModelViewSet):
         attachments = form.attachments.all()
         media_files = []
         for attachment in attachments:
+            attachment_file_url: str = attachment.file.url
+            if not attachment_file_url.startswith("http"):
+                # Needed for local dev
+                attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+
             media_files.append(
                 f"""<mediaFile>
     <filename>{escape(attachment.name)}</filename>
     <hash>md5:{attachment.md5}</hash>
-    <downloadUrl>{escape(attachment.file.url)}</downloadUrl>
+    <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
 </mediaFile>"""
             )
 

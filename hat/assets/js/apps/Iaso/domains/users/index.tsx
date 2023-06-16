@@ -10,17 +10,20 @@ import { makeStyles, Box, Grid } from '@material-ui/core';
 import {
     commonStyles,
     Table,
-    LoadingSpinner,
     AddButton as AddButtonComponent,
     useSafeIntl,
+<<<<<<< HEAD:hat/assets/js/apps/Iaso/domains/users/index.tsx
     selectionInitialState,
     setTableSelection,
+=======
+    LoadingSpinner,
+>>>>>>> main:hat/assets/js/apps/Iaso/domains/users/index.js
 } from 'bluesquare-components';
 
 import EditIcon from '@material-ui/icons/Settings';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-import UsersDialog from './components/UsersDialog';
+import UsersDialog from './components/UsersDialog.tsx';
 
 import { baseUrls } from '../../constants/urls';
 import { useGetProfiles } from './hooks/useGetProfiles';
@@ -124,6 +127,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         )}
                         saveProfile={saveProfile}
                         allowSendEmailInvitation
+                        forceRefresh={isLoading}
                     />
                     <Box ml={2}>
                         {/* @ts-ignore */}
@@ -147,6 +151,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                     extraProps={{
                         pageSize: params.pageSize,
                         search: params.search,
+                        refresh: isLoading,
                     }}
                     redirectTo={(b, p) => dispatch(redirectTo(b, p))}
                     multiSelect

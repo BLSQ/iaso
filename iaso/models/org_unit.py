@@ -10,7 +10,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 

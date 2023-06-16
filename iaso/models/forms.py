@@ -7,7 +7,7 @@ from django.contrib.postgres.fields import ArrayField, CITextField
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.utils.html import strip_tags
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .project import Project
 from .. import periods

@@ -77,6 +77,7 @@ from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
+from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from .api.user_roles import UserRolesViewSet
 
@@ -151,6 +152,7 @@ router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
 router.register(r"userroles", UserRolesViewSet, basename="userroles")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
+router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
 
 router.registry.extend(plugins_router.registry)
 

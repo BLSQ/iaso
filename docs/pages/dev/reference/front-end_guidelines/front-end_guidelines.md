@@ -175,11 +175,51 @@ Props:
 - `isCircle`: not required, display marker as a circle or not
 - `onContextmenu`: not required, method applied while right clicking on the marker on the map
 
+
+### Tables
+
+Most tables we use need to support filters and deep linking. We have a `TableWithDeepLinking` component for that purpose, which is a wrapper on the `Table` from Bluesuare-components.
+
+The typical props to pass are:
+- `data`: the table data. Usually originate s from a `react-query` hook
+- `page`: the current page. Usually returned by the API
+- `pageSize`: the amount of rows to display on each page. Also comes from the API
+- `count`: the total amount of items in the page. From the API
+- `pages: total number of pages. From the API
+- `baseUrl`: the baseUrl the table will redirect to 
+- `params`: the params of the current location. `TableWithDeepLink` will combine them with `baseUrl`to redirect to the correct location
+- `extraProps`: an object. The `loading` key will be used to manage the table's loading state. Other values will force a table re-render when they change (similar to `useEffect` deps array), which can be useful in some situations
+- `columns`: an array of objects of type `Column` (imported from bluesquare-components). It's usually defined in a custom hook in order to easily handle translations.
+
+**Note: `useDeleteTableRow`** 
+When performing `DELETE` operations from the table that will reduce the amount of table rows, we can run into a pagination bug. To avoid it, use `useDeleteTableRow` in the `useDelete<whatever>` hook that will return the delete function:
+
+```javascript
+export const useDeleteWhatever = (
+    params: Record<string, any>,
+    count: number,
+): UseMutationResult => {
+    const onSuccess = useDeleteTableRow({
+        params,
+        pageKey: 'whateverPage', // optional, will default to "page"
+        pageSizeKey: 'whateverPageSize', //optional, will default to "pageSize"
+        count,
+        invalidateQueries: ['whatever'], // optional
+        baseUrl: baseUrls.whatever,
+    });
+    return useSnackMutation({
+        mutationFn: deleteWhatever,
+        options: { onSuccess },
+    });
+};
+```
+
+
 ## Remarks
 
 - order translations by alphanumeric
 - spacing is by default theme.spacing(2)
 - do not use Grid everywhere or too much
-- all tha call to the api without query params should end by '/'
+- all the calls to the api without query params should end by '/'
 - prefer `type?:string` to `type: string | undefined`
 - prefer `const myVar = otherValue??"placeholder` to `let myVar = "placeholder" if(otherVAlue){myVar = otherValue}`

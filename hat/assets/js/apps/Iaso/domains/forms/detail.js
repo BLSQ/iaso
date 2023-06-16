@@ -13,7 +13,7 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { redirectToReplace } from '../../routing/actions';
+import { redirectToReplace } from '../../routing/actions.ts';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';

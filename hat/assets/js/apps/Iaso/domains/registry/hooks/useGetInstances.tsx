@@ -11,6 +11,7 @@ import { makeUrlWithParams } from '../../../libs/utils';
 
 import { RegistryDetailParams } from '../types';
 import { defaultSorted } from '../config';
+import { OrgUnitStatus } from '../../orgUnits/types/orgUnit';
 
 type ApiParams = {
     orgUnitTypeId?: number;
@@ -20,7 +21,7 @@ type ApiParams = {
     page: string;
     showDeleted: false;
     orgUnitParentId: string;
-    org_unit_status?: 'VALID' | 'NEW' | 'REJECTED';
+    org_unit_status?: OrgUnitStatus;
     planning_ids?: string;
 };
 
@@ -32,7 +33,7 @@ type InstanceApi = {
 export const useGetInstanceApi = (
     params: RegistryDetailParams,
     orgUnitTypeId?: number,
-    orgUnitStatus?: 'VALID' | 'NEW' | 'REJECTED',
+    orgUnitStatus?: OrgUnitStatus,
 ): InstanceApi => {
     const apiParams: ApiParams = {
         orgUnitTypeId,

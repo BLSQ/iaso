@@ -19,8 +19,8 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
+import { redirectTo, redirectToReplace } from '../../routing/actions.ts';
 import { baseUrls } from '../../constants/urls';
-import { redirectTo, redirectToReplace } from '../../routing/actions';
 import {
     deleteForm,
     fetchAssociatedOrgUnits,
@@ -36,12 +36,13 @@ import { resetOrgUnits } from './actions';
 import { OrgUnitForm } from './components/OrgUnitForm.tsx';
 import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { orgUnitsTableColumns } from './config';
+import { useOrgUnitsTableColumns } from './config';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
     useSaveOrgUnit,
 } from './hooks';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
 import MESSAGES from './messages';
 import {
     getAliasesArrayFromString,
@@ -113,7 +114,7 @@ const OrgUnitDetail = ({ params, router }) => {
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
-
+    const childrenColumns = useOrgUnitsTableColumns(classes);
     const prevPathname =
         useSelector(state => state.routerCustom.prevPathname) || null;
     const currentUser = useCurrentUser();
@@ -132,6 +133,11 @@ const OrgUnitDetail = ({ params, router }) => {
         () => params.orgUnitId === '0',
         [params.orgUnitId],
     );
+
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus(true);
 
     const title = useMemo(() => {
         if (isNewOrgunit) {
@@ -554,16 +560,15 @@ const OrgUnitDetail = ({ params, router }) => {
                                         formatMessage,
                                         groups,
                                         orgUnitTypes,
+                                        validationStatusOptions,
+                                        isLoadingValidationStatusOptions,
                                     )}
                                     params={params}
                                     paramsPrefix="childrenParams"
                                     baseUrl={baseUrl}
                                     endPointPath="orgunits"
                                     fetchItems={fetchOrgUnitsList}
-                                    columns={orgUnitsTableColumns(
-                                        formatMessage,
-                                        classes,
-                                    )}
+                                    columns={childrenColumns}
                                 />
                             </div>
                             <div

@@ -1,4 +1,4 @@
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { postRequest, patchRequest } from 'Iaso/libs/Api';
 
 export const useSaveProfile = () =>

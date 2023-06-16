@@ -4,7 +4,6 @@ import { InitialUserData, UserDialogData } from '../types';
 
 export type InitialUserUtils = {
     user: UserDialogData;
-    resetUser: () => void;
     // eslint-disable-next-line no-unused-vars
     setFieldErrors: (fieldName, fieldError) => void;
     // eslint-disable-next-line no-unused-vars
@@ -64,7 +63,6 @@ export const useInitialUser = (
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);
-    const resetUser = useCallback(() => setUser(initialUser), [initialUser]);
     const setFieldErrors = useCallback(
         (fieldName, fieldError) => {
             setUser({
@@ -95,6 +93,6 @@ export const useInitialUser = (
     }, [initialUser]);
 
     return useMemo(() => {
-        return { user, resetUser, setFieldValue, setFieldErrors };
-    }, [resetUser, setFieldErrors, setFieldValue, user]);
+        return { user, setFieldValue, setFieldErrors };
+    }, [setFieldErrors, setFieldValue, user]);
 };

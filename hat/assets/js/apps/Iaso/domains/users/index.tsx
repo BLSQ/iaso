@@ -119,7 +119,6 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         titleMessage={MESSAGES.create}
                         saveProfile={saveProfile}
                         allowSendEmailInvitation
-                        forceRefresh={isLoading}
                     />
                     <Box ml={2}>
                         {/* @ts-ignore */}
@@ -143,7 +142,6 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                     extraProps={{
                         pageSize: params.pageSize,
                         search: params.search,
-                        refresh: isLoading,
                     }}
                     redirectTo={(b, p) => dispatch(redirectTo(b, p))}
                     multiSelect

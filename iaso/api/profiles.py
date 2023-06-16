@@ -181,8 +181,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile = get_object_or_404(self.get_queryset(), id=pk)
         username = request.data.get("user_name")
         password = request.data.get("password", "")
+
         if not username:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"}, status=400)
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
+        existing_user = User.objects.filter(username__iexact=username)
+        if existing_user:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+
         user = profile.user
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")
@@ -214,6 +219,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         if profile.dhis2_id == "":
             profile.dhis2_id = None
 
+        # Check if project are part of user account
         projects = request.data.get("projects", [])
         profile.projects.clear()
         for project in projects:
@@ -302,6 +308,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.org_units.add(org_unit_item)
         projects = request.data.get("projects", [])
         profile.projects.clear()
+        # Check if project are part of user account
         for project in projects:
             item = get_object_or_404(Project, pk=project)
             profile.projects.add(item)

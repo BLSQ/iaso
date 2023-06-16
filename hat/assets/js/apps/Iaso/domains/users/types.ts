@@ -18,6 +18,7 @@ export type UserDialogData = {
     org_units?: ValueAndErrors<number[]>;
     permissions: ValueAndErrors<string[]>;
     language: ValueAndErrors<string | null>;
+    password: ValueAndErrors<string | null>;
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };

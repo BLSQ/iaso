@@ -1,10 +1,5 @@
 /* eslint-disable camelcase */
-import React, {
-    useState,
-    FunctionComponent,
-    useCallback,
-    useEffect,
-} from 'react';
+import React, { useState, FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
 import {
@@ -55,7 +50,6 @@ type Props = {
     initialData?: InitialUserData;
     saveProfile: MutateFunction<Profile, any>;
     allowSendEmailInvitation?: boolean;
-    forceRefresh: boolean;
     isOpen: boolean;
     closeDialog: () => void;
 };
@@ -67,7 +61,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     initialData = defaultData,
     saveProfile,
     allowSendEmailInvitation = false,
-    forceRefresh = false,
     closeDialog,
 }) => {
     const connectedUser = useCurrentUser();
@@ -75,15 +68,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
-    const { user, resetUser, setFieldValue, setFieldErrors } =
-        useInitialUser(initialData);
+    const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
-    const [renderCount, setRenderCount] = useState<number>(0);
-    const onClosed = () => {
-        resetUser();
-        setTab('infos');
-    };
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
@@ -91,12 +78,10 @@ const UserDialogComponent: FunctionComponent<Props> = ({
         });
         saveProfile(currentUser, {
             onSuccess: () => {
-                setTab('infos');
-                closeDialog();
-                resetUser();
                 if (currentUser.id === connectedUser.id) {
                     dispatch(fetchCurrentUser());
                 }
+                closeDialog();
             },
             onError: error => {
                 if (error.status === 400) {
@@ -108,13 +93,12 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             },
         });
     }, [
-        connectedUser?.id,
+        closeDialog,
+        connectedUser.id,
         dispatch,
-        resetUser,
         saveProfile,
         setFieldErrors,
         user,
-        closeDialog,
     ]);
 
     const onConfirm = useCallback(() => {
@@ -127,13 +111,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             setOpenWarning(true);
         }
     }, [initialData?.is_superuser, saveUser, user?.permissions.value]);
-    // Workaround to force the modal to close when saving a new user without permissions.
-    // (Because closeDialog cound't be passed to the child WarningModal)
-    useEffect(() => {
-        if (forceRefresh) {
-            setRenderCount(v => v + 1);
-        }
-    }, [forceRefresh]);
     return (
         <>
             <WarningModal
@@ -143,7 +120,6 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             />
 
             <ConfirmCancelModal
-                key={renderCount}
                 titleMessage={titleMessage}
                 onConfirm={onConfirm}
                 cancelMessage={MESSAGES.cancel}
@@ -151,7 +127,13 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 maxWidth="sm"
                 open={isOpen}
                 closeDialog={() => null}
-                onClose={() => onClosed()}
+                allowConfirm={
+                    !(
+                        user.user_name.value === '' ||
+                        (!user.id?.value && user.password.value === '')
+                    )
+                }
+                onClose={() => null}
                 onCancel={() => {
                     closeDialog();
                 }}

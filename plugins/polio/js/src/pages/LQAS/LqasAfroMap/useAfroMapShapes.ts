@@ -7,7 +7,8 @@ const getAfroMapData = category => {
 };
 
 export const useAfroMapShapes = (
-    category = 'lqas',
+    category,
+    enabled,
 ): UseQueryResult<any, any> => {
     return useSnackQuery({
         queryFn: () => getAfroMapData(category),
@@ -17,16 +18,15 @@ export const useAfroMapShapes = (
                 if (!data) return [];
                 return data.results;
             },
+            enabled,
         },
     });
 };
 
 const getZoomedInShapes = (bounds: string, category: string) => {
-    // return getRequest(
-    //     `/api/polio/lqasmap/zoomin/?category=${category}&bounds=${bounds}`,
-    // );
-    console.log('SEND BOUNDS', bounds);
-    return getRequest(`/api/polio/lqasmap/global/?category=${category}`);
+    return getRequest(
+        `/api/polio/lqasmap/zoomin/?category=${category}&bounds=${bounds}`,
+    );
 };
 
 export const useGetZoomedInShapes = (

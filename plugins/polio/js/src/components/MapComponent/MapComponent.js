@@ -12,7 +12,6 @@ import {
     number,
     bool,
 } from 'prop-types';
-import { MapPanes } from './MapPanes.tsx';
 
 import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
 
@@ -53,13 +52,10 @@ export const MapComponent = ({
         if (bounds_list.length === 0) {
             return null;
         }
-        console.log('bounds_list', bounds_list);
         const newBounds = bounds_list[0];
         newBounds.extend(bounds_list);
         return newBounds;
     }, [mainLayer, fitBoundsToBackground, backgroundLayer]);
-    console.log('bounds', bounds);
-    console.log('map bounds', map.current?.leafletElement.getBounds());
 
     return (
         <MapContainer

@@ -23,6 +23,8 @@ import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnit
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
@@ -44,12 +46,15 @@ const Filters = ({ baseUrl, params }) => {
         orgUnitTypes: params.orgUnitTypes,
         ouParent: params.ouParent,
         ouChildren: params.ouParent,
+        projects: params.projects,
     });
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypes();
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
 
     const orgUnitTypeDropdown = useMemo(() => {
         if (!orgUnitTypes?.length) return orgUnitTypes;
@@ -180,7 +185,21 @@ const Filters = ({ baseUrl, params }) => {
                         label={MESSAGES.ouChildrenCheckbox}
                     />
                 </Grid>
-                <Grid container item xs={12} md={3} justifyContent="flex-end">
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="projects"
+                        onChange={handleChange}
+                        value={filters.projects}
+                        type="select"
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
+                        onEnterPressed={handleSearchPerms}
+                        clearable
+                        multi
+                    />
+                </Grid>
+                <Grid container item xs={12} md={12} justifyContent="flex-end">
                     <Box mt={2}>
                         <Button
                             data-test="search-button"

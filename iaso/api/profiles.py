@@ -65,6 +65,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         org_unit_type = request.GET.get("orgUnitTypes", None)
         parent_ou = True if request.GET.get("ouParent", None) == "true" else False
         children_ou = True if request.GET.get("ouChildren", None) == "true" else False
+        projects = request.GET.get("projects", None)
 
         queryset = self.get_queryset()
         if search:
@@ -135,6 +136,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             else:
                 queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 
+        if projects:
+            queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects.split(","))
         if limit:
             queryset = queryset.order_by(*orders)
             limit = int(limit)

@@ -12,18 +12,15 @@ import {
     Table,
     AddButton as AddButtonComponent,
     useSafeIntl,
-<<<<<<< HEAD:hat/assets/js/apps/Iaso/domains/users/index.tsx
     selectionInitialState,
     setTableSelection,
-=======
     LoadingSpinner,
->>>>>>> main:hat/assets/js/apps/Iaso/domains/users/index.js
 } from 'bluesquare-components';
 
 import EditIcon from '@material-ui/icons/Settings';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-import UsersDialog from './components/UsersDialog.tsx';
+import UsersDialog from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
 import { useGetProfiles } from './hooks/useGetProfiles';
@@ -119,6 +116,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                 >
                     <UsersDialog
                         titleMessage={MESSAGES.create}
+                        //  @ts-ignore
                         renderTrigger={({ openDialog }) => (
                             <AddButtonComponent
                                 dataTestId="add-user-button"

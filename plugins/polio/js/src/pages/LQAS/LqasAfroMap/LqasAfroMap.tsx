@@ -1,24 +1,21 @@
 import React, { FunctionComponent, useState } from 'react';
 
 import { Box } from '@material-ui/core';
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { MapContainer } from 'react-leaflet';
 
 import { defaultShapeStyle } from '../../../utils/index';
 import MESSAGES from '../../../constants/messages';
-import { useGetCountriesGeoJson } from '../../../hooks/useGetGeoJson';
 import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
 import { defaultViewport } from '../../../components/campaignCalendar/map/constants';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { useGetCountriesLqasStatus } from './useGetCountriesLqasStatus';
 import { CustomTileLayer } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import {
     Tile,
     TilesSwitchDialog,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchDialog';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
-import { useAfroMapShapes } from './useAfroMapShapes';
 
 // const defaultShapes = [];
 
@@ -32,8 +29,6 @@ const getBackgroundLayerStyle = _shape => defaultShapeStyle;
 export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
     const { formatMessage } = useSafeIntl();
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
-    const { data: mapShapes, isFetching: isAfroShapesLoading } =
-        useAfroMapShapes('lqas');
 
     return (
         <>
@@ -42,9 +37,6 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                 displayBackButton={false}
             />
             <Box position="relative">
-                {isAfroShapesLoading && (
-                    <LoadingSpinner fixed={false} absolute />
-                )}
                 <TilesSwitchDialog
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}
@@ -58,10 +50,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                     scrollWheelZoom={false}
                 >
                     <CustomTileLayer currentTile={currentTile} />
-
-                    <LqasAfroMapPanesContainer
-                        countriesWithStatus={mapShapes}
-                    />
+                    <LqasAfroMapPanesContainer />
                 </MapContainer>
             </Box>
         </>

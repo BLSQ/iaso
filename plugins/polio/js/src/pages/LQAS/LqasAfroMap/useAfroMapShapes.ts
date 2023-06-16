@@ -20,3 +20,27 @@ export const useAfroMapShapes = (
         },
     });
 };
+
+const getZoomedInShapes = (bounds: string, category: string) => {
+    // return getRequest(
+    //     `/api/polio/lqasmap/zoomin/?category=${category}&bounds=${bounds}`,
+    // );
+    console.log('SEND BOUNDS', bounds);
+    return getRequest(`/api/polio/lqasmap/global/?category=${category}`);
+};
+
+export const useGetZoomedInShapes = (
+    bounds: string,
+    category: string,
+): UseQueryResult<any, any> => {
+    return useSnackQuery({
+        queryFn: () => getZoomedInShapes(bounds, category),
+        queryKey: ['lqasim-zoomin-map', bounds, category],
+        options: {
+            select: data => {
+                if (!data) return [];
+                return data.results;
+            },
+        },
+    });
+};

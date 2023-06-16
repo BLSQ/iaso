@@ -11,3 +11,12 @@ exclude = '''
   | src/django-webpack-loader
 )/
 '''
+
+
+[project]
+name= "Iaso"
+readme = "README.md"
+requires-python = "~=3.8"
+
+[project.urls]
+Repository = "https://github.com/BLSQ/"

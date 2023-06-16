@@ -12,39 +12,46 @@ const getMainLayerStyle = shape => {
 export const LqasAfroMapPanesContainer: FunctionComponent = () => {
     const map = useMapEvents({
         zoomend: () => {
-            setZoom(map.getZoom());
             setBounds(map.getBounds());
         },
-        dragend: () => setBounds(map.getBounds()),
+        dragend: () => {
+            setBounds(map.getBounds());
+        },
     });
-    const [zoom, setZoom] = useState<number>(map.getZoom());
     const [bounds, setBounds] = useState<number>(map.getBounds());
-    const boundsString = JSON.stringify(bounds);
 
+    const showCountries = map.getZoom() <= 5;
     const { data: mapShapes, isFetching: isAfroShapesLoading } =
-        useAfroMapShapes('lqas');
+        useAfroMapShapes('lqas', showCountries);
 
-    const showCountries = zoom <= 5;
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
-        useGetZoomedInShapes(boundsString, 'lqas', !showCountries);
+        useGetZoomedInShapes(JSON.stringify(bounds), 'lqas', !showCountries);
 
-    const mainLayer = useMemo(() => {
-        if (showCountries) return mapShapes;
-        return zoominShapes;
-    }, [mapShapes, showCountries, zoominShapes]);
     return (
         <>
             {' '}
             {(isAfroShapesLoading || (isLoadingZoomin && !showCountries)) && (
                 <LoadingSpinner fixed={false} absolute />
             )}
-            <MapPanes
-                mainLayer={mainLayer}
-                // backgroundLayer={}
-                getMainLayerStyle={getMainLayerStyle}
-                // getBackgroundLayerStyle={}
-                name="LQAS-Map-country-view"
-            />
+            {showCountries && (
+                <MapPanes
+                    mainLayer={mapShapes}
+                    // backgroundLayer={}
+                    getMainLayerStyle={getMainLayerStyle}
+                    // getBackgroundLayerStyle={}
+                    name="LQAS-Map-country-view"
+                />
+            )}
+            {!showCountries && (
+                <MapPanes
+                    key={JSON.stringify(bounds)}
+                    mainLayer={zoominShapes}
+                    // backgroundLayer={}
+                    getMainLayerStyle={getMainLayerStyle}
+                    // getBackgroundLayerStyle={}
+                    name="LQAS-Map-zoomin-view-"
+                />
+            )}
         </>
     );
 };

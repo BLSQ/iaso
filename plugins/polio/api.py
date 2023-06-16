@@ -3,7 +3,7 @@ import datetime as dt
 import functools
 import json
 from collections import defaultdict
-from datetime import timedelta, datetime
+from datetime import date, timedelta, datetime
 from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
@@ -27,8 +27,8 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
-from iaso.api.data_store import DataStorePermission, DataStoreSerializer
 from iaso.models.data_store import JsonDataStore
+from iaso.utils import geojson_queryset
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -45,7 +45,6 @@ from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
-    LQASIMDataStoreSerializer,
     RoundDateHistoryEntrySerializer,
 )
 from plugins.polio.serializers import (
@@ -1759,14 +1758,74 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
         return RoundDateHistoryEntry.objects.filter_for_user(user)
 
 
-# TODO see if this shouldn't a static method somewhere (like in campaigns)
+# TODO see if this shouldn't a static method somewhere
+def is_round_over(round):
+    if not round.ended_at:
+        return False
+    return round.ended_at > date.today()
+
+
+def sort_campaigns_by_last_round_end_date(campaign):
+    sorted_rounds = sorted(
+        list(campaign.rounds.all()),
+        key=lambda round: round.ended_at if round.ended_at else date.max,
+        reverse=True,
+    )
+    return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.max
+
+
+def determine_status_for_district(district_data):
+    if not district_data:
+        return "0"
+    checked = district_data["total_child_checked"]
+    marked = district_data["total_child_fmd"]
+    if checked == 60:
+        if marked > 56:
+            return "1lqasOK"
+        return "3lqasFail"
+    return "2lqasDisqualified"
+
+
+def reduce_to_country_status(total, current):
+    if not total.get("passed", None):
+        total["passed"] = 0
+    if not total.get("total", None):
+        total["total"] = 0
+    if int(current[0]) == 1:
+        total["passed"] = total["passed"] + 1
+    total["total"] = total["total"] + 1
+    return total
+
+
+def calculate_country_status(country_data, roundNumber="latest"):
+    if len(country_data.get("rounds", [])) == 0:
+        # TODO put in an enum
+        return "inScope"
+    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
+    if roundNumber == "latest":
+        data_for_round = data_for_all_rounds[0]
+    else:
+        data_for_round = next((round for round in data_for_all_rounds if round["number"] == int(roundNumber)), None)
+
+    district_statuses = [
+        determine_status_for_district(district_data) for district_data in data_for_round["data"].values()
+    ]
+    aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
+    if aggregated_statuses.get("total", 0) == 0:
+        return "inScope"
+    passing_ratio = round((aggregated_statuses["passed"] * 100) / aggregated_statuses["total"])
+    if passing_ratio >= 80:
+        return "1lqasOK"
+    if passing_ratio >= 50:
+        return "2lqasDisqualified"
+    return "3lqasFail"
 
 
 @swagger_auto_schema(tags=["lqas-global"])
 class LQASIMGlobalMapViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    serializer_class = LQASIMDataStoreSerializer
+    # serializer_class = LQASIMAfroMapSerializer
     results_key = "results"
     # TODO configure filters
     filter_backends = [
@@ -1775,12 +1834,84 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
+        # category = self.request.GET.get("category")
         # TODO see if we need to filter per user as with Campaign
-        category = self.request.GET.get("category")
-        countries = [
-            f"{category}_{org_unit.id}" for org_unit in list(OrgUnit.objects.filter(org_unit_type__category="COUNTRY"))
-        ]
-        return JsonDataStore.objects.filter(slug__in=countries)
+        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+        # countries = [
+        #     f"{category}_{org_unit.id}" for org_unit in list(OrgUnit.objects.filter(org_unit_type__category="COUNTRY"))
+        # ]
+        # print("NUMBER OF COUNTRIES", len(countries))
+        # return JsonDataStore.objects.filter(slug__in=countries)
+
+    def list(self, request):
+        results = []
+        category = self.request.GET.get("category", None)
+        queryset = self.get_queryset()
+        countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
+        data_stores = JsonDataStore.objects.filter(slug__in=countries)
+        for org_unit in queryset:
+            country_id = org_unit.id
+            try:
+                data_store = data_stores.get(slug__contains=str(country_id))
+            except JsonDataStore.DoesNotExist:
+                data_store = None
+            shapes = None
+            if org_unit.simplified_geom is not None:
+                shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
+                    request.user, request.query_params.get("app_id", None)
+                ).filter(id=org_unit.id)
+                shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+            # Probably not necessary as long as we only have AFRO in the platform
+            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
+            finished_campaigns = [
+                campaign
+                for campaign in campaigns
+                if len([round for round in campaign.rounds.all() if is_round_over(round)]) == 0
+            ]
+
+            # TODO make this null safe
+            latest_campaign = (
+                sorted(
+                    finished_campaigns,
+                    key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
+                    reverse=True,
+                )[0]
+                if data_store
+                else None
+            )
+
+            # print("DATASTORE", data_store)
+            # TODO make null safe
+            data_for_country = data_store.content if data_store else None
+            # data_for_country = representation["data"]
+            # remove data from all campaigns but latest
+            stats = data_for_country.get("stats", None) if data_for_country else None
+            result = None
+            if stats and latest_campaign:
+                stats = stats.get(latest_campaign.obr_name, None)
+            if stats and latest_campaign:
+                result = {
+                    "id": int(country_id),
+                    "data": {"campaign": latest_campaign.obr_name, **stats},
+                    "geo_json": shapes,
+                    "status": calculate_country_status(stats),
+                }
+            elif latest_campaign:
+                result = {
+                    "id": int(country_id),
+                    "data": {"campaign": latest_campaign.obr_name},
+                    "geo_json": shapes,
+                    "status": calculate_country_status({}),
+                }
+            else:
+                result = {
+                    "id": int(country_id),
+                    "data": None,
+                    "geo_json": shapes,
+                    "status": calculate_country_status({}),
+                }
+            results.append(result)
+        return Response({"results": results})
 
 
 router = routers.SimpleRouter()

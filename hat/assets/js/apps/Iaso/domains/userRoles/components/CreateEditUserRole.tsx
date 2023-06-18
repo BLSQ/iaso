@@ -60,7 +60,8 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     name,
     permissions = [],
 }) => {
-    const userRolePermissions = permissions;
+    const [userRolePermissions, setUserRolePermissoins] =
+        useState<Array<any>>(permissions);
     const { formatMessage } = useSafeIntl();
     const [closeModal, setCloseModal] = useState<any>();
     const renderTrigger = useMemo(
@@ -92,7 +93,14 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         onSubmit: save,
     });
 
-    const { values, setFieldValue, setFieldTouched, errors, touched } = formik;
+    const {
+        values,
+        setFieldValue,
+        setFieldTouched,
+        errors,
+        touched,
+        handleSubmit,
+    } = formik;
     const getErrors = useTranslatedErrors({
         errors,
         formatMessage,
@@ -103,6 +111,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
+
     const titleMessage = formatTitle(dialogType, formatMessage);
     return (
         <FormikProvider value={formik}>
@@ -112,7 +121,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
                     setCloseModal({ closeDialog });
-                    closeDialog();
+                    handleSubmit();
                 }}
                 onCancel={closeDialog => {
                     closeDialog();
@@ -131,9 +140,10 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                 />
                 <PermissionsSwitches
                     userRolePermissions={userRolePermissions}
-                    handleChange={() =>
-                        setFieldValue('permissions', userRolePermissions)
-                    }
+                    handleChange={newPermissions => {
+                        setUserRolePermissoins(newPermissions);
+                        setFieldValue('permissions', newPermissions);
+                    }}
                 />
             </ConfirmCancelDialogComponent>
         </FormikProvider>

@@ -31,7 +31,7 @@ export const convertAPIErrorsToState = data => {
     return converted;
 };
 
-const endpoint = '/api//userroles/';
+const endpoint = '/api/userroles/';
 
 const patchUserRole = async (body: Partial<SaveUserRoleQuery>) => {
     const url = `${endpoint}${body.id}/`;

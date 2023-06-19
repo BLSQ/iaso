@@ -46,7 +46,7 @@ const Filters = ({ baseUrl, params }) => {
         orgUnitTypes: params.orgUnitTypes,
         ouParent: params.ouParent,
         ouChildren: params.ouParent,
-        projects: params.projects,
+        projectsIds: params.projectsIds,
     });
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
@@ -189,7 +189,7 @@ const Filters = ({ baseUrl, params }) => {
                     <InputComponent
                         keyValue="projectsIds"
                         onChange={handleChange}
-                        value={filters.projects}
+                        value={filters.projectsIds}
                         type="select"
                         options={allProjects}
                         label={MESSAGES.projects}

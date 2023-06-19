@@ -184,11 +184,13 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        existing_user = User.objects.filter(username__iexact=username)
-        if existing_user:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+        existing_user = User.objects.get(username__iexact=username)
 
+        if existing_user and not existing_user.id == user.id:
+            # Prevent from username change with existing username
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
         user = profile.user
+
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")
         user.username = username
@@ -219,11 +221,12 @@ class ProfilesViewSet(viewsets.ViewSet):
         if profile.dhis2_id == "":
             profile.dhis2_id = None
 
-        # Check if project are part of user account
         projects = request.data.get("projects", [])
         profile.projects.clear()
         for project in projects:
             item = get_object_or_404(Project, pk=project)
+            if profile.account_id != item.account_id:
+                return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
             profile.projects.add(item)
         profile.save()
 
@@ -308,9 +311,10 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.org_units.add(org_unit_item)
         projects = request.data.get("projects", [])
         profile.projects.clear()
-        # Check if project are part of user account
         for project in projects:
             item = get_object_or_404(Project, pk=project)
+            if profile.account_id != item.account_id:
+                return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
             profile.projects.add(item)
         dhis2_id = request.data.get("dhis2_id", None)
         if dhis2_id == "":

@@ -1776,7 +1776,10 @@ def sort_campaigns_by_last_round_end_date(campaign):
     return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.max
 
 
-def determine_status_for_district(district_data):
+def determine_status_for_district(district_data, district_is_in_scope):
+    if district_is_in_scope and not district_data:
+        # Fine tune to return either 0 or "InScope"
+        return "inScope"
     if not district_data:
         return "0"
     checked = district_data["total_child_checked"]
@@ -1822,7 +1825,7 @@ def calculate_country_status(country_data, scope, roundNumber="latest"):
     data_for_round = get_data_for_round(country_data, roundNumber)
 
     district_statuses = [
-        determine_status_for_district(district_data) for district_data in data_for_round["data"].values()
+        determine_status_for_district(district_data, True) for district_data in data_for_round["data"].values()
     ]
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
@@ -1906,11 +1909,9 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
 
                 if latest_campaign:
                     if latest_campaign.separate_scopes_per_round:
-                        print("ROUND SCOPE", latest_campaign.obr_name)
                         scope = latest_campaign.get_districts_for_round(latest_round)
 
                     else:
-                        print("CAMPAIGN SCOPE", latest_campaign.obr_name)
                         scope = latest_campaign.get_all_districts()
 
                 result = {
@@ -2008,7 +2009,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 if latest_campaign
                 else None
             )
-            last_round_number = 2
+            # last_round_number = 2
             districts = (
                 OrgUnit.objects.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
@@ -2022,7 +2023,6 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 stats = stats.get(latest_campaign.obr_name, None)
             else:
                 stats = None
-            print(districts.count(), org_unit.name, org_unit.id, country_id)
             for district in districts:
                 result = None
                 district_stats = stats
@@ -2041,6 +2041,16 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     )
                     if district_stats:
                         district_stats["district_name"] = district.name
+                # Get districts in scope
+                if latest_campaign:
+                    if latest_campaign.separate_scopes_per_round:
+                        scope = latest_campaign.get_districts_for_round_number(last_round_number)
+
+                    else:
+                        scope = latest_campaign.get_all_districts()
+                district_is_in_scope = False
+                if scope:
+                    district_is_in_scope = scope.filter(id=district.id) is not None and scope.count() > 0
                 shapes = None
                 # Probably can remove this check as it's filtered in get_queryset
                 if district.simplified_geom is not None:
@@ -2049,17 +2059,12 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     ).filter(id=district.id)
                     shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
 
-                if org_unit.id == 29703:
-                    print(district.name, district.id, district_stats)
-
-                if district_stats is not None and latest_campaign is not None:
-                    if org_unit.id == 29703:
-                        print("GETTING THROUGH", district.name, district.id)
+                if latest_campaign and district_stats:
                     result = {
                         "id": district.id,
                         "data": {"campaign": latest_campaign.obr_name, **district_stats},
                         "geo_json": shapes,
-                        "status": determine_status_for_district(district_stats),
+                        "status": determine_status_for_district(district_stats, district_is_in_scope),
                     }
 
                 elif latest_campaign:
@@ -2067,7 +2072,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                         "id": district.id,
                         "data": {"campaign": latest_campaign.obr_name},
                         "geo_json": shapes,
-                        "status": determine_status_for_district({}),
+                        "status": determine_status_for_district({}, district_is_in_scope),
                     }
 
                 else:
@@ -2075,7 +2080,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                         "id": district.id,
                         "data": None,
                         "geo_json": shapes,
-                        "status": determine_status_for_district({}),
+                        "status": determine_status_for_district({}, district_is_in_scope),
                     }
                 results.append(result)
         return Response({"results": results})

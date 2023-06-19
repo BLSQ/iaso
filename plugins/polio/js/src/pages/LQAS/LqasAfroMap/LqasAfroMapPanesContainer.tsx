@@ -1,12 +1,13 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
-import { IN_SCOPE, lqasDistrictColors } from '../../IM/constants';
+import { lqasDistrictColors } from '../../IM/constants';
 import { MapPanes } from '../../../components/MapComponent/MapPanes';
 import { useAfroMapShapes, useGetZoomedInShapes } from './useAfroMapShapes';
+import { defaultShapeStyle } from '../../../utils';
 
 const getMainLayerStyle = shape => {
-    return lqasDistrictColors[shape.status] ?? lqasDistrictColors[IN_SCOPE];
+    return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
 };
 
 export const LqasAfroMapPanesContainer: FunctionComponent = () => {
@@ -29,7 +30,6 @@ export const LqasAfroMapPanesContainer: FunctionComponent = () => {
 
     return (
         <>
-            {' '}
             {(isAfroShapesLoading || (isLoadingZoomin && !showCountries)) && (
                 <LoadingSpinner fixed={false} absolute />
             )}

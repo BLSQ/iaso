@@ -9,6 +9,7 @@ import {
     UserRolesFilterParams,
     UserRole,
 } from '../../types/userRoles';
+import { DropdownOptions } from '../../../../types/utils';
 
 type UserRolesList = Pagination & {
     results: UserRole[];
@@ -28,7 +29,9 @@ const getUserRoles = async (
     const url = makeUrlWithParams('/api/userroles', params);
     return getRequest(url) as Promise<UserRolesList>;
 };
-
+type UserRolesOptions = {
+    results: UserRole[];
+};
 export const useGetUserRoles = (
     options: UserRoleParams | UserRolesFilterParams,
 ): UseQueryResult<UserRolesList, Error> => {
@@ -37,5 +40,26 @@ export const useGetUserRoles = (
     // @ts-ignore
     return useSnackQuery(queryKey, () => getUserRoles(options), undefined, {
         select,
+    });
+};
+
+const getUserRolesOptions = async (): Promise<UserRolesOptions> => {
+    const url = makeUrlWithParams('/api/userroles', { order: 'group__name' });
+    return getRequest(url) as Promise<UserRolesOptions>;
+};
+export const useGetUserRolesOptions = (): UseQueryResult<
+    DropdownOptions<string>[],
+    Error
+> => {
+    return useSnackQuery({
+        queryKey: ['userRolesListOptions'],
+        queryFn: () => getUserRolesOptions(),
+        options: {
+            select: data =>
+                data?.results.map(role => ({
+                    value: `${role.id}`,
+                    label: role.name,
+                })) || [],
+        },
     });
 };

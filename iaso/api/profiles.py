@@ -185,11 +185,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
         existing_user = User.objects.get(username__iexact=username)
-
+        user = profile.user
         if existing_user and not existing_user.id == user.id:
             # Prevent from username change with existing username
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
-        user = profile.user
 
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")

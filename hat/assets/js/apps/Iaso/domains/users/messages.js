@@ -338,6 +338,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.bulkChangeCount',
         defaultMessage: 'You are about to change {count} user(s)',
     },
+    addProjects: {
+        id: 'iaso.users.addProjects',
+        defaultMessage: 'Add to project(s)',
+    },
+    removeProjects: {
+        id: 'iaso.users.removeProjects',
+        defaultMessage: 'Remove from project(s)',
+    },
+    addRole: {
+        id: 'iaso.users.addRole',
+        defaultMessage: 'Add user role',
+    },
+    removeRole: {
+        id: 'iaso.users.removeRole',
+        defaultMessage: 'Remove user role',
+    },
 });
 
 export default MESSAGES;

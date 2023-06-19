@@ -10,7 +10,6 @@ import { makeStyles, Box, Grid } from '@material-ui/core';
 import {
     commonStyles,
     Table,
-    AddButton as AddButtonComponent,
     useSafeIntl,
     selectionInitialState,
     setTableSelection,
@@ -37,6 +36,7 @@ import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportD
 import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
 import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
+import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
 
 const baseUrl = baseUrls.users;
 
@@ -95,8 +95,9 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
         useDeleteProfile();
 
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
+    const { mutateAsync: bulkSave, isLoading: savingProfiles } = useBulkSaveProfiles();
 
-    const isLoading = fetchingProfiles || deletingProfile || savingProfile;
+    const isLoading = fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
     return (
         <>
@@ -106,7 +107,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
                 selection={selection}
-                saveMulti={new Promise(resolve => resolve())}
+                saveMulti={bulkSave}
             />
             <TopBar
                 title={formatMessage(MESSAGES.users)}

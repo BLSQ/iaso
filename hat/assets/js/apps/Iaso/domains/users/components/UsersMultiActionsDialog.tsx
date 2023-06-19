@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback, useState } from 'react';
 
 import {
     Dialog,
@@ -18,16 +18,21 @@ import {
 import ReportIcon from '@material-ui/icons/Report';
 import { UseMutateAsyncFunction } from 'react-query';
 
+import { isEqual } from 'lodash';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 
+import { APP_LOCALES } from '../../app/constants';
+
 import { Selection } from '../../orgUnits/types/selection';
 import { Profile } from '../../teams/types/profile';
 
-type SaveData = {
-    role?: string;
-};
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
+import { useGetUserRolesOptions } from '../../userRoles/hooks/requests/useGetUserRoles';
+
 type Props = {
     open: boolean;
     closeDialog: () => void;
@@ -66,87 +71,190 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
+type BulkState = {
+    addRole?: string;
+    removeRole?: string;
+    addProjects: string[];
+    removeProjects: string[];
+    language?: 'en' | 'fr';
+    locations: OrgUnit[];
+};
+
+const initialState: BulkState = {
+    addRole: undefined,
+    removeRole: undefined,
+    addProjects: [],
+    removeProjects: [],
+    language: undefined,
+    locations: [],
+};
+
 export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     open,
     closeDialog,
-    selection: { selectCount, selectedItems, unSelectedItems, selectAll },
+    selection,
     saveMulti,
 }) => {
+    const [bulkState, setBulkState] = useState<BulkState>(initialState);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
 
+    const { data: userRoles, isFetching: isFetchingUserRoles } =
+        useGetUserRolesOptions();
+    const handleChange = useCallback(
+        (key, value) => {
+            setBulkState({
+                ...bulkState,
+                [key]: value || initialState[key],
+            });
+        },
+        [bulkState],
+    );
     const closeAndReset = () => {
         closeDialog();
+        setBulkState(initialState);
     };
     const saveAndReset = () => {
-        const data: SaveData = {};
-        saveMulti(data).then(() => closeAndReset());
+        saveMulti({ ...bulkState, selection }).then(() => closeAndReset());
     };
     return (
-        <>
-            <Dialog
-                fullWidth
-                maxWidth="xs"
-                open={open}
-                classes={{
-                    paper: classes.paper,
-                }}
-                onClose={(event, reason) => {
-                    if (reason === 'backdropClick') {
-                        closeAndReset();
-                    }
-                }}
-                scroll="body"
-            >
-                <DialogTitle className={classes.title}>
-                    {formatMessage(MESSAGES.multiEditTitle, {
-                        count: formatThousand(selectCount),
-                    })}
-                </DialogTitle>
-                <DialogContent className={classes.content}>
-                    INPUTs
-                </DialogContent>
-                <DialogActions className={classes.action}>
-                    <Button onClick={closeAndReset} color="primary">
-                        {formatMessage(MESSAGES.cancel)}
-                    </Button>
+        <Dialog
+            fullWidth
+            maxWidth="xs"
+            open={open}
+            classes={{
+                paper: classes.paper,
+            }}
+            onClose={(_, reason) => {
+                if (reason === 'backdropClick') {
+                    closeAndReset();
+                }
+            }}
+            scroll="body"
+        >
+            <DialogTitle className={classes.title}>
+                {formatMessage(MESSAGES.multiEditTitle, {
+                    count: formatThousand(selection.selectCount),
+                })}
+            </DialogTitle>
+            <DialogContent className={classes.content}>
+                <InputComponent
+                    keyValue="addRole"
+                    onChange={handleChange}
+                    value={bulkState.addRole}
+                    type="select"
+                    multi={false}
+                    label={MESSAGES.addRole}
+                    options={userRoles}
+                    loading={isFetchingUserRoles}
+                />
+                <InputComponent
+                    keyValue="removeRole"
+                    onChange={handleChange}
+                    value={bulkState.removeRole}
+                    type="select"
+                    multi={false}
+                    label={MESSAGES.removeRole}
+                    options={userRoles}
+                    loading={isFetchingUserRoles}
+                />
 
-                    <ConfirmDialog
-                        withDivider
-                        btnMessage={formatMessage(MESSAGES.validate)}
-                        question={
-                            <Box className={classes.warningTitle}>
-                                <ReportIcon
-                                    className={classes.warningIcon}
-                                    color="error"
-                                    fontSize="large"
-                                />
-                                {formatMessage(MESSAGES.confirmMultiChange)}
-                                <ReportIcon
-                                    className={classes.warningIcon}
-                                    color="error"
-                                    fontSize="large"
-                                />
-                            </Box>
+                <InputComponent
+                    keyValue="addProjects"
+                    onChange={(key, value) =>
+                        handleChange(key, value ? value.split(',') : value)
+                    }
+                    value={bulkState.addProjects}
+                    type="select"
+                    multi
+                    label={MESSAGES.addProjects}
+                    options={allProjects}
+                    loading={isFetchingProjects}
+                />
+                <InputComponent
+                    keyValue="removeProjects"
+                    onChange={(key, value) =>
+                        handleChange(key, value ? value.split(',') : value)
+                    }
+                    value={bulkState.removeProjects}
+                    type="select"
+                    multi
+                    label={MESSAGES.removeProjects}
+                    options={allProjects}
+                    loading={isFetchingProjects}
+                />
+
+                <InputComponent
+                    keyValue="language"
+                    onChange={handleChange}
+                    value={bulkState.language}
+                    type="select"
+                    multi={false}
+                    label={MESSAGES.locale}
+                    options={APP_LOCALES.map(locale => {
+                        return {
+                            value: locale.code,
+                            label: locale.label,
+                        };
+                    })}
+                />
+                <OrgUnitTreeviewModal
+                    toggleOnLabelClick={false}
+                    titleMessage={MESSAGES.chooseLocation}
+                    onConfirm={orgUnitsList => {
+                        if (!orgUnitsList) {
+                            handleChange('locations', []);
+                            return;
                         }
-                        message={
-                            <Typography
-                                variant="body2"
+                        handleChange('locations', orgUnitsList);
+                    }}
+                    multiselect
+                    initialSelection={bulkState.locations}
+                />
+            </DialogContent>
+            <DialogActions className={classes.action}>
+                <Button onClick={closeAndReset} color="primary">
+                    {formatMessage(MESSAGES.cancel)}
+                </Button>
+                <ConfirmDialog
+                    withDivider
+                    btnMessage={formatMessage(MESSAGES.validate)}
+                    question={
+                        <Box className={classes.warningTitle}>
+                            <ReportIcon
+                                className={classes.warningIcon}
                                 color="error"
-                                component="span"
-                                className={classes.warningMessage}
-                            >
-                                {formatMessage(MESSAGES.bulkChangeCount, {
-                                    count: `${formatThousand(selectCount)}`,
-                                })}
-                            </Typography>
-                        }
-                        confirm={() => saveAndReset()}
-                        btnDisabled
-                        btnVariant="text"
-                    />
-                </DialogActions>
-            </Dialog>
-        </>
+                                fontSize="large"
+                            />
+                            {formatMessage(MESSAGES.confirmMultiChange)}
+                            <ReportIcon
+                                className={classes.warningIcon}
+                                color="error"
+                                fontSize="large"
+                            />
+                        </Box>
+                    }
+                    message={
+                        <Typography
+                            variant="body2"
+                            color="error"
+                            component="span"
+                            className={classes.warningMessage}
+                        >
+                            {formatMessage(MESSAGES.bulkChangeCount, {
+                                count: `${formatThousand(
+                                    selection.selectCount,
+                                )}`,
+                            })}
+                        </Typography>
+                    }
+                    confirm={() => saveAndReset()}
+                    btnDisabled={isEqual(initialState, bulkState)}
+                    btnVariant="text"
+                />
+            </DialogActions>
+        </Dialog>
     );
 };

@@ -6,6 +6,7 @@ import {
     IntlFormatMessage,
     useSafeIntl,
 } from 'bluesquare-components';
+import { isEqual } from 'lodash';
 import {
     SaveUserRoleQuery,
     useSaveUserRole,
@@ -96,27 +97,33 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     const {
         values,
         setFieldValue,
+        touched,
         setFieldTouched,
         errors,
-        touched,
+        isValid,
+        initialValues,
         handleSubmit,
     } = formik;
+
     const getErrors = useTranslatedErrors({
         errors,
         formatMessage,
         touched,
         messages: MESSAGES,
     });
+
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
     };
 
     const titleMessage = formatTitle(dialogType, formatMessage);
+
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
             <ConfirmCancelDialogComponent
+                allowConfirm={isValid && !isEqual(values, initialValues)}
                 renderTrigger={renderTrigger}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {

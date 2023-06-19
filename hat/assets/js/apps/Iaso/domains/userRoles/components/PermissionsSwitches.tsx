@@ -20,7 +20,7 @@ type Props = {
 };
 
 type PermissionResult = {
-    permissions: Permission[];
+    permissions: Array<Permission>;
 };
 
 const PermissionsSwitches: React.FunctionComponent<Props> = ({
@@ -34,19 +34,17 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         MESSAGES.fetchPermissionsError,
     );
 
-    const setPermissions = (codeName: Permission, isChecked: boolean) => {
+    const setPermissions = (permission: Permission, isChecked: boolean) => {
         const newUserPerms = [...userRolePermissions];
         if (!isChecked) {
-            const permIndex = newUserPerms.indexOf(codeName);
+            const permIndex = newUserPerms.indexOf(permission);
             newUserPerms.splice(permIndex, 1);
         } else {
-            newUserPerms.push(codeName);
+            newUserPerms.push(permission);
         }
         handleChange(newUserPerms);
     };
 
-    // Get the translated label for the permission.
-    // or permission's codename if not translation exist
     const permissionLabel = permissionCodeName => {
         return MESSAGES[permissionCodeName]
             ? formatMessage(MESSAGES[permissionCodeName])

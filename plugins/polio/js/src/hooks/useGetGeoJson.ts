@@ -8,8 +8,7 @@ import { UseQueryResult } from 'react-query';
 type Params = {
     // eslint-disable-next-line camelcase
     validation_status: string;
-    asLocation: string;
-    limit: string;
+    withShapes: 'true' | 'false';
     order: string;
     orgUnitTypeCategory: string;
     orgUnitParentId?: string;
@@ -21,8 +20,7 @@ export const useGetGeoJson = (
 ): UseQueryResult<any> => {
     const params: Params = {
         validation_status: 'all',
-        asLocation: 'true',
-        limit: '3000',
+        withShapes: 'true',
         order: 'id',
         orgUnitTypeCategory: orgUnitCategory,
     };

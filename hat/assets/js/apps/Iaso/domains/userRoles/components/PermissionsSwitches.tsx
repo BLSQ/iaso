@@ -27,7 +27,6 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     userRolePermissions,
     handleChange,
 }) => {
-    console.log('Kabisa', userRolePermissions);
     const { formatMessage } = useSafeIntl();
     const { data, isLoading } = useSnackQuery<PermissionResult>(
         ['permissions'],
@@ -35,15 +34,15 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         MESSAGES.fetchPermissionsError,
     );
 
-    const setPermissions = (codeName: string, isChecked: boolean) => {
-        const newUserRolePerms = userRolePermissions;
+    const setPermissions = (codeName: Permission, isChecked: boolean) => {
+        const newUserPerms = [...userRolePermissions];
         if (!isChecked) {
-            const permIndex = newUserRolePerms.indexOf(codeName);
-            newUserRolePerms.splice(permIndex, 1);
+            const permIndex = newUserPerms.indexOf(codeName);
+            newUserPerms.splice(permIndex, 1);
         } else {
-            newUserRolePerms.push(codeName);
+            newUserPerms.push(codeName);
         }
-        handleChange(newUserRolePerms);
+        handleChange(newUserPerms);
     };
 
     // Get the translated label for the permission.
@@ -78,14 +77,11 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                                     id={`permission-checkbox-${p.codename}`}
                                     checked={Boolean(
                                         userRolePermissions.find(
-                                            up => up === p.codename,
+                                            up => up.codename === p.codename,
                                         ),
                                     )}
                                     onChange={e =>
-                                        setPermissions(
-                                            p.codename,
-                                            e.target.checked,
-                                        )
+                                        setPermissions(p, e.target.checked)
                                     }
                                     name={p.codename}
                                     color="primary"
@@ -98,5 +94,5 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         </>
     );
 };
-PermissionsSwitches.defaultProps = {};
+
 export default PermissionsSwitches;

@@ -69,10 +69,7 @@ PREPAREDNESS_SYNC_STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
-PAYMENT = [
-    ("DIRECT", _("Direct")),
-    ("DFC", _("DFC")),
-]
+PAYMENT = [("DIRECT", _("Direct")), ("DFC", _("DFC")), ("MOBILE_PAYMENT", _("Mobile Payment"))]
 
 
 class DelayReasons(models.TextChoices):
@@ -490,7 +487,7 @@ class Campaign(SoftDeletableModel):
         null=True,
         blank=True,
     )
-    payment_mode = models.CharField(max_length=10, choices=PAYMENT, null=True, blank=True)
+    payment_mode = models.CharField(max_length=30, choices=PAYMENT, null=True, blank=True)
     # DEPRECATED. moved to Rounds
     round_one = models.OneToOneField(
         Round, on_delete=models.PROTECT, related_name="campaign_round_one", null=True, blank=True

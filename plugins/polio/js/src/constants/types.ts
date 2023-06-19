@@ -193,7 +193,7 @@ export type BudgetStatusDeprecated =
     | 'SUBMITTED'
     | 'REVIEWED';
 
-export type PaymentMode = 'DIRECT' | 'DFC';
+export type PaymentMode = 'DIRECT' | 'DFC' | 'MOBILE_PAYMENT';
 
 export type Translations = {
     messages: Record<

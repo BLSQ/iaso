@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
-import { patchRequest, postRequest } from '../../../../libs/Api';
+import { isEmpty } from 'lodash';
+import { putRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
 type Permission = {
@@ -16,26 +17,28 @@ export type SaveUserRoleQuery = {
 };
 
 const convertToApi = data => {
-    const { subTeams, ...converted } = data;
-    if (subTeams !== undefined) {
-        converted.sub_teams = subTeams;
+    const { permissions, ...converted } = data;
+    if (!isEmpty(permissions)) {
+        converted.permissions = permissions.map(
+            permission => permission.codename,
+        );
     }
     return converted;
 };
 
-export const convertAPIErrorsToState = data => {
-    const { sub_teams, ...converted } = data;
-    if (sub_teams !== undefined) {
-        converted.subTeams = sub_teams;
-    }
-    return converted;
-};
+// export const convertAPIErrorsToState = data => {
+//     const { sub_teams, ...converted } = data;
+//     if (sub_teams !== undefined) {
+//         converted.subTeams = sub_teams;
+//     }
+//     return converted;
+// };
 
 const endpoint = '/api/userroles/';
 
-const patchUserRole = async (body: Partial<SaveUserRoleQuery>) => {
+const putUserRole = async (body: Partial<SaveUserRoleQuery>) => {
     const url = `${endpoint}${body.id}/`;
-    return patchRequest(url, convertToApi(body));
+    return putRequest(url, convertToApi(body));
 };
 
 const postUserRole = async (body: SaveUserRoleQuery) => {
@@ -45,7 +48,7 @@ const postUserRole = async (body: SaveUserRoleQuery) => {
 export const useSaveUserRole = (type: 'create' | 'edit'): UseMutationResult => {
     const ignoreErrorCodes = [400];
     const editUserRole = useSnackMutation({
-        mutationFn: (data: Partial<SaveUserRoleQuery>) => patchUserRole(data),
+        mutationFn: (data: Partial<SaveUserRoleQuery>) => putUserRole(data),
         invalidateQueryKey: ['userRolesList'],
         ignoreErrorCodes,
     });

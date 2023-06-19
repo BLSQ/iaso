@@ -6,12 +6,10 @@ import { MapContainer } from 'react-leaflet';
 
 import { defaultShapeStyle } from '../../../utils/index';
 import MESSAGES from '../../../constants/messages';
-import { useGetCountriesGeoJson } from '../../../hooks/useGetGeoJson';
 import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
 import { defaultViewport } from '../../../components/campaignCalendar/map/constants';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { useGetCountriesLqasStatus } from './useGetCountriesLqasStatus';
 import { CustomTileLayer } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import {
     Tile,

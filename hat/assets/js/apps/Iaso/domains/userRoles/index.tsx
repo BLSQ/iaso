@@ -12,6 +12,7 @@ import { useGetUserRolesColumns } from './config';
 import { useGetUserRoles } from './hooks/requests/useGetUserRoles';
 import { redirectTo } from '../../routing/actions';
 import { useDeleteUserRole } from './hooks/requests/useDeleteUserRole';
+import { CreateEditUserRole } from './components/CreateEditUserRole';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -36,6 +37,9 @@ export const UserRoles: FunctionComponent<Props> = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <UserRolesFilters params={params} />
+                <Box display="flex" justifyContent="flex-end">
+                    <CreateEditUserRole dialogType="create" />
+                </Box>
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}

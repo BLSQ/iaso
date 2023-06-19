@@ -174,7 +174,6 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [sortBy, setSortBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState('number');
-    const [resetPageToOne, setResetPageToOne] = useState(`${rowsPerPage}`);
     const dataForTable = useMemo(
         () => source?.versions ?? [],
         [source?.versions],
@@ -198,7 +197,6 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
             handleSort(params.order.replace('-', ''));
         }
         if (params.pageSize) {
-            setResetPageToOne(`${params.pageSize}`);
             setRowsPerPage(parseInt(params.pageSize, 10));
         }
         if (params.page) {
@@ -242,7 +240,7 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
     const params = useMemo(
         () => ({
             pageSize: rowsPerPage,
-            page,
+            page: page + 1,
         }),
         [rowsPerPage, page],
     );
@@ -276,7 +274,7 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
                 data={sortedData}
                 columns={tableColumns(source, forceRefreshParent)}
                 params={params}
-                resetPageToOne={resetPageToOne}
+                page={page}
                 pages={pages}
                 elevation={0}
                 count={source?.versions.length ?? 0}

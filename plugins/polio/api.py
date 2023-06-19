@@ -2,6 +2,7 @@ import csv
 import datetime as dt
 import functools
 import json
+import numpy as np
 from collections import defaultdict
 from datetime import date, timedelta, datetime
 from functools import lru_cache, reduce
@@ -1797,15 +1798,27 @@ def reduce_to_country_status(total, current):
     return total
 
 
-def calculate_country_status(country_data, roundNumber="latest"):
-    if len(country_data.get("rounds", [])) == 0:
-        # TODO put in an enum
-        return "inScope"
+def get_latest_round_number(country_data):
+    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
+    return data_for_all_rounds[0]["number"] if data_for_all_rounds else None
+
+
+def get_data_for_round(country_data, roundNumber="latest"):
     data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
     if roundNumber == "latest":
         data_for_round = data_for_all_rounds[0]
     else:
         data_for_round = next((round for round in data_for_all_rounds if round["number"] == int(roundNumber)), None)
+    return data_for_round
+
+
+def calculate_country_status(country_data, scope, roundNumber="latest"):
+    if len(country_data.get("rounds", [])) == 0:
+        # TODO put in an enum
+        return "inScope"
+    if scope.count() == 0:
+        return "inScope"
+    data_for_round = get_data_for_round(country_data, roundNumber)
 
     district_statuses = [
         determine_status_for_district(district_data) for district_data in data_for_round["data"].values()
@@ -1813,7 +1826,8 @@ def calculate_country_status(country_data, roundNumber="latest"):
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
         return "inScope"
-    passing_ratio = round((aggregated_statuses["passed"] * 100) / aggregated_statuses["total"])
+    # What if scope length is 0, but we have data anyway?
+    passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
     if passing_ratio >= 80:
         return "1lqasOK"
     if passing_ratio >= 50:
@@ -1890,25 +1904,39 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
             if stats and latest_campaign:
                 stats = stats.get(latest_campaign.obr_name, None)
             if stats and latest_campaign:
+                latest_round_number = get_latest_round_number(stats)
+                latest_round = next(
+                    (round for round in latest_campaign.rounds.all() if round.number == latest_round_number), None
+                )
+
+                if latest_campaign:
+                    if latest_campaign.separate_scopes_per_round:
+                        print("ROUND SCOPE", latest_campaign.obr_name)
+                        scope = latest_campaign.get_districts_for_round(latest_round)
+
+                    else:
+                        print("CAMPAIGN SCOPE", latest_campaign.obr_name)
+                        scope = latest_campaign.get_all_districts()
+
                 result = {
                     "id": int(country_id),
                     "data": {"campaign": latest_campaign.obr_name, **stats},
                     "geo_json": shapes,
-                    "status": calculate_country_status(stats),
+                    "status": calculate_country_status(stats, scope),
                 }
             elif latest_campaign:
                 result = {
                     "id": int(country_id),
                     "data": {"campaign": latest_campaign.obr_name},
                     "geo_json": shapes,
-                    "status": calculate_country_status({}),
+                    "status": calculate_country_status({}, []),
                 }
             else:
                 result = {
                     "id": int(country_id),
                     "data": None,
                     "geo_json": shapes,
-                    "status": calculate_country_status({}),
+                    "status": calculate_country_status({}, []),
                 }
             results.append(result)
         return Response({"results": results})

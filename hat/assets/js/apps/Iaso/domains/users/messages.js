@@ -322,6 +322,22 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Projects',
         id: 'iaso.label.projects',
     },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
+    validate: {
+        defaultMessage: 'Validate',
+        id: 'iaso.label.validate',
+    },
+    multiEditTitle: {
+        defaultMessage: 'Edit selection: {count} user(s)',
+        id: 'iaso.users.multiEditTitle',
+    },
+    bulkChangeCount: {
+        id: 'iaso.users.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} user(s)',
+    },
 });
 
 export default MESSAGES;

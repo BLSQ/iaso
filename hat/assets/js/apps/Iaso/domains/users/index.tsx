@@ -36,6 +36,7 @@ import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportD
 
 import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
+import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 
 const baseUrl = baseUrls.users;
 
@@ -100,6 +101,13 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             {isLoading && <LoadingSpinner />}
+
+            <UsersMultiActionsDialog
+                open={multiActionPopupOpen}
+                closeDialog={() => setMultiActionPopupOpen(false)}
+                selection={selection}
+                saveMulti={new Promise(resolve => resolve())}
+            />
             <TopBar
                 title={formatMessage(MESSAGES.users)}
                 displayBackButton={false}

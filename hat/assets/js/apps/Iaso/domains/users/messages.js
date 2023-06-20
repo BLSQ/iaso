@@ -354,6 +354,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.removeRole',
         defaultMessage: 'Remove user role',
     },
+    taskLaunched: {
+        id: 'iaso.snackBar.copyVersionSuccessMessage',
+        defaultMessage: 'The task has been created"',
+    },
 });
 
 export default MESSAGES;

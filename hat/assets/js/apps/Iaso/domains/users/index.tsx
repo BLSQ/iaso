@@ -95,7 +95,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
         useDeleteProfile();
 
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
-    const { mutateAsync: bulkSave, isLoading: savingProfiles } = useBulkSaveProfiles();
+    const { mutateAsync: bulkSave, isLoading: savingProfiles } = useBulkSaveProfiles(setSelection);
 
     const isLoading = fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 

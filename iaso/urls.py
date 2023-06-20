@@ -12,6 +12,7 @@ from iaso.api.data_store import DataStoreViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
+from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
 from .api.accounts import AccountViewSet
@@ -123,6 +124,7 @@ router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
+router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename="profilesbulkupdate")
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")

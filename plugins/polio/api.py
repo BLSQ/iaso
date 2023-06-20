@@ -1804,16 +1804,12 @@ def get_latest_round_number(country_data):
     return data_for_all_rounds[0]["number"] if data_for_all_rounds else None
 
 
-def get_data_for_round(country_data, roundNumber="latest"):
+def get_data_for_round(country_data, roundNumber):
     data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
-    if roundNumber == "latest":
-        data_for_round = data_for_all_rounds[0]
-    else:
-        data_for_round = next((round for round in data_for_all_rounds if round["number"] == int(roundNumber)), None)
-    return data_for_round
+    return next((round for round in data_for_all_rounds if round["number"] == roundNumber), None)
 
 
-def calculate_country_status(country_data, scope, roundNumber="latest"):
+def calculate_country_status(country_data, scope, roundNumber):
     if len(country_data.get("rounds", [])) == 0:
         # TODO put in an enum
         return "inScope"
@@ -1840,13 +1836,12 @@ def calculate_country_status(country_data, scope, roundNumber="latest"):
 class LQASIMGlobalMapViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    # serializer_class = LQASIMAfroMapSerializer
     results_key = "results"
     # TODO configure filters
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-    ]
+    # filter_backends = [
+    #     filters.OrderingFilter,
+    #     DjangoFilterBackend,
+    # ]
 
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
@@ -1855,6 +1850,7 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
     def list(self, request):
         results = []
         category = self.request.GET.get("category", None)
+        requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
         data_stores = JsonDataStore.objects.filter(slug__in=countries)
@@ -1889,24 +1885,24 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
                 else None
             )
 
-            # print("DATASTORE", data_store)
             # TODO make null safe
             data_for_country = data_store.content if data_store else None
-            # data_for_country = representation["data"]
             # remove data from all campaigns but latest
             stats = data_for_country.get("stats", None) if data_for_country else None
             result = None
             if stats and latest_campaign:
                 stats = stats.get(latest_campaign.obr_name, None)
             if stats and latest_campaign:
-                latest_round_number = get_latest_round_number(stats)
-                latest_round = next(
-                    (round for round in latest_campaign.rounds.all() if round.number == latest_round_number), None
-                )
+                round_number = requested_round
+                if round_number == "latest":
+                    latest_round_number = get_latest_round_number(stats)
+                    round_number = latest_round_number
+                else:
+                    round_number = int(round_number)
 
                 if latest_campaign:
                     if latest_campaign.separate_scopes_per_round:
-                        scope = latest_campaign.get_districts_for_round(latest_round)
+                        scope = latest_campaign.get_districts_for_round_number(round_number)
 
                     else:
                         scope = latest_campaign.get_all_districts()
@@ -1915,21 +1911,21 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
                     "id": int(country_id),
                     "data": {"campaign": latest_campaign.obr_name, **stats},
                     "geo_json": shapes,
-                    "status": calculate_country_status(stats, scope),
+                    "status": calculate_country_status(stats, scope, round_number),
                 }
             elif latest_campaign:
                 result = {
                     "id": int(country_id),
                     "data": {"campaign": latest_campaign.obr_name},
                     "geo_json": shapes,
-                    "status": calculate_country_status({}, []),
+                    "status": calculate_country_status({}, [], round_number),
                 }
             else:
                 result = {
                     "id": int(country_id),
                     "data": None,
                     "geo_json": shapes,
-                    "status": calculate_country_status({}, []),
+                    "status": calculate_country_status({}, [], round_number),
                 }
             results.append(result)
         return Response({"results": results})
@@ -1965,6 +1961,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
 
     def list(self, request):
         category = self.request.GET.get("category", None)
+        requested_round = self.request.GET.get("round", "latest")
         bounds = json.loads(request.GET.get("bounds", None))
         bounds_as_polygon = Polygon.from_bbox(
             (
@@ -2004,11 +2001,14 @@ class LQASIMZoominMapViewSet(ModelViewSet):
             )
             if latest_campaign is None:
                 continue
-            last_round_number = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)[
-                0
-            ].number
+            if requested_round == "latest":
+                round_number = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)[
+                    0
+                ].number
+            else:
+                round_number = int(requested_round)
             if latest_campaign.separate_scopes_per_round:
-                scope = latest_campaign.get_districts_for_round_number(last_round_number)
+                scope = latest_campaign.get_districts_for_round_number(round_number)
 
             else:
                 scope = latest_campaign.get_all_districts()
@@ -2028,7 +2028,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 district_stats = dict(stats) if stats else None
                 if district_stats:
                     district_stats = next(
-                        (round for round in district_stats["rounds"] if round["number"] == last_round_number), None
+                        (round for round in district_stats["rounds"] if round["number"] == round_number), None
                     )
                 if district_stats:
                     district_stats = next(
@@ -2097,16 +2097,6 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
         )
 
     def list(self, request):
-        category = self.request.GET.get("category", None)
-        bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
-                bounds["_southWest"]["lng"],
-                bounds["_southWest"]["lat"],
-                bounds["_northEast"]["lng"],
-                bounds["_northEast"]["lat"],
-            )
-        )
         org_units = self.get_queryset()
         results = []
         for org_unit in org_units:
@@ -2116,19 +2106,6 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
 
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
             results.append({"id": org_unit.id, "geo_json": shapes})
-            # districts = (
-            #     OrgUnit.objects.filter(org_unit_type__category="DISTRICT")
-            #     .filter(parent__parent=org_unit.id)
-            #     .exclude(simplified_geom=None)
-            #     .filter(simplified_geom__intersects=bounds_as_polygon)
-            # )
-            # for district in districts:
-            #     shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
-            #             request.user, request.query_params.get("app_id", None)
-            #         ).filter(id=district.id)
-
-            #     shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
-            #     results.append({"id": district.id, "geo_json":shapes})
         return Response({"results": results})
 
 

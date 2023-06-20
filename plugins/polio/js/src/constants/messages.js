@@ -2230,6 +2230,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.seeHistory',
         defaultMessage: 'See history',
     },
+    mobilePayment: {
+        id: 'iaso.polio.campaign.mobilePayment',
+        defaultMessage: 'Mobile Payment',
+    },
 });
 
 export default MESSAGES;

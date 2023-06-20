@@ -8,7 +8,7 @@ import { commonStyles } from 'bluesquare-components';
 import tiles from '../../constants/mapTiles';
 
 import { GeoJson } from './types';
-import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
+import { Tile } from './tools/TilesSwitchControl';
 import { CustomZoomControl } from './tools/CustomZoomControl';
 import { CustomTileLayer } from './tools/CustomTileLayer';
 import { Bounds } from '../../utils/map/mapUtils';
@@ -42,10 +42,6 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
 
     return (
         <div className={classes.mapContainer}>
-            <TilesSwitchDialog
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
             <MapContainer
                 doubleClickZoom
                 scrollWheelZoom={false}
@@ -62,7 +58,10 @@ export const GeoJsonMap: FunctionComponent<Props> = ({ geoJson }) => {
                     boundsOptions={boundsOptions}
                 />
                 <ScaleControl imperial={false} />
-                <CustomTileLayer currentTile={currentTile} />
+                <CustomTileLayer
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
+                />
 
                 <GeoJSON
                     // @ts-ignore TODO: fix this type problem

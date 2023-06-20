@@ -18,10 +18,7 @@ import classNames from 'classnames';
 
 import { keyBy } from 'lodash';
 
-import {
-    Tile,
-    TilesSwitchDialog,
-} from '../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 
@@ -166,10 +163,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             )}
         >
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
-            <TilesSwitchDialog
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
+
             <MapContainer
                 maxZoom={currentTile.maxZoom}
                 style={{
@@ -199,7 +193,10 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                     fitOnLoad
                 />
                 <ScaleControl imperial={false} />
-                <CustomTileLayer currentTile={currentTile} />
+                <CustomTileLayer
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
+                />
 
                 {isOrgUnitActive && (
                     <>

@@ -28,6 +28,7 @@
     "iaso.polio.campaign.id": "Id",
     "iaso.polio.campaign.initial_org_unit": "Org Unit",
     "iaso.polio.campaign.key": "Clé",
+    "iaso.polio.campaign.mobilePayment": "Paiement mobile",
     "iaso.polio.campaign.restoreError": "Erreur lors de la restauration de la campagne",
     "iaso.polio.campaign.restoreSuccess": "Campagne restaurée",
     "iaso.polio.campaign.seeLogDetail": "Voir plus de détails",

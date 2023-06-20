@@ -15,25 +15,31 @@ export const IN_SCOPE = 'inScope';
 
 export const imDistrictColors = {
     [IM_PASS]: {
-        color: OK_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: OK_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [IM_WARNING]: {
-        color: WARNING_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: WARNING_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [IM_FAIL]: {
-        color: FAIL_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: FAIL_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [IN_SCOPE]: {
-        color: 'grey',
+        color: '#5e5e5e',
         opacity: '1',
         fillColor: 'grey',
         weight: '2',
@@ -43,28 +49,31 @@ export const imDistrictColors = {
 
 export const lqasDistrictColors = {
     [LQAS_PASS]: {
-        color: OK_COLOR,
-        fillColor: OK_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: OK_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [LQAS_DISQUALIFIED]: {
-        color: WARNING_COLOR,
+        color: '#5e5e5e',
         fillColor: WARNING_COLOR,
+        fillOpacity: 0.8,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [LQAS_FAIL]: {
-        color: FAIL_COLOR,
+        color: '#5e5e5e',
         fillColor: FAIL_COLOR,
+        fillOpacity: 0.8,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [IN_SCOPE]: {
-        color: 'grey',
+        color: '#5e5e5e',
         opacity: '1',
         fillColor: 'grey',
         weight: '2',

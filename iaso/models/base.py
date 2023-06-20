@@ -1182,6 +1182,7 @@ class Profile(models.Model):
     language = models.CharField(max_length=512, null=True, blank=True)
     dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")
     home_page = models.CharField(max_length=512, null=True, blank=True)
+    user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1202,6 +1203,7 @@ class Profile(models.Model):
             ),
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+            "user_roles": list(role.id for role in self.user_roles.all()),
             "language": self.language,
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,

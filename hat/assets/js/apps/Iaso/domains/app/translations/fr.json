@@ -995,6 +995,7 @@
     "iaso.users.dialog.deleteUserText": "Etes-vous certain de vouloir effacer cet utilisateur ?",
     "iaso.users.dialog.deleteUserTitle": "Cette opération est définitive.",
     "iaso.users.dialog.locale": "Langue",
+    "iaso.users.dialog.userRoles": "Rôles d'utilisateur",
     "iaso.users.filter.searchUser": "Rechercher un utilisateur",
     "iaso.users.isSuperUser": "L'utilisateur est administrateur et a tous les droits.",
     "iaso.users.label.homePage": "Page d'accueil",

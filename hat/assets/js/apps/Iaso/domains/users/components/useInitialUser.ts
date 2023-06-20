@@ -51,6 +51,10 @@ export const useInitialUser = (
                 value: get(initialData, 'dhis2_id', ''),
                 errors: [],
             },
+            user_roles: {
+                value: get(initialData, 'user_roles', []),
+                errors: [],
+            },
             send_email_invitation: {
                 value: get(initialData, 'send_email_invitation', false),
                 errors: [],

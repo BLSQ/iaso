@@ -1832,6 +1832,14 @@ def calculate_country_status(country_data, scope, roundNumber):
     return "3lqasFail"
 
 
+def find_campaign_last_round_with_date(campaign, date_type="start"):
+    rounds = campaign.rounds.all()
+    if date_type == "start":
+        return rounds.exclude(started_at=None).order_by("-started_at").first()
+    if date_type == "end":
+        return rounds.exclude(ended_at=None).order_by("-ended_at").first()
+
+
 @swagger_auto_schema(tags=["lqasglobal"])
 class LQASIMGlobalMapViewSet(ModelViewSet):
     http_method_names = ["get"]
@@ -1850,6 +1858,8 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
     def list(self, request):
         results = []
         category = self.request.GET.get("category", None)
+        start_date_after = self.request.GET.get("startDate", None)
+        end_date_before = self.request.GET.get("endDate", None)
         requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
@@ -1874,16 +1884,27 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
                 if len([round for round in campaign.rounds.all() if is_round_over(round)]) == 0
             ]
 
-            # TODO make this null safe
-            latest_campaign = (
-                sorted(
-                    finished_campaigns,
-                    key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
-                    reverse=True,
-                )[0]
-                if data_store
-                else None
+            sorted_campaigns = sorted(
+                finished_campaigns,
+                key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
+                reverse=True,
             )
+            if start_date_after is not None:
+                start_date_after = datetime.strptime(start_date_after, "%Y-%m-%d").date()
+                sorted_campaigns = [
+                    campaign
+                    for campaign in sorted_campaigns
+                    if find_campaign_last_round_with_date(campaign).started_at >= start_date_after
+                ]
+            if end_date_before is not None:
+                end_date_before = datetime.strptime(end_date_before, "%Y-%m-%d").date()
+                sorted_campaigns = [
+                    campaign
+                    for campaign in sorted_campaigns
+                    if find_campaign_last_round_with_date(campaign, "end").ended_at <= end_date_before
+                ]
+
+            latest_campaign = sorted_campaigns[0] if data_store else None
 
             # TODO make null safe
             data_for_country = data_store.content if data_store else None
@@ -1962,6 +1983,8 @@ class LQASIMZoominMapViewSet(ModelViewSet):
     def list(self, request):
         category = self.request.GET.get("category", None)
         requested_round = self.request.GET.get("round", "latest")
+        start_date_after = self.request.GET.get("startDate", None)
+        end_date_before = self.request.GET.get("endDate", None)
         bounds = json.loads(request.GET.get("bounds", None))
         bounds_as_polygon = Polygon.from_bbox(
             (
@@ -1990,15 +2013,29 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 if len([round for round in campaign.rounds.all() if is_round_over(round)]) == 0
             ]
 
-            latest_campaign = (
-                sorted(
-                    finished_campaigns,
-                    key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
-                    reverse=True,
-                )[0]
-                if len(finished_campaigns) > 0
-                else None
+            sorted_campaigns = sorted(
+                finished_campaigns,
+                key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
+                reverse=True,
             )
+
+            if start_date_after is not None:
+                start_date_after = datetime.strptime(start_date_after, "%Y-%m-%d").date()
+                sorted_campaigns = [
+                    campaign
+                    for campaign in sorted_campaigns
+                    if find_campaign_last_round_with_date(campaign, "start").started_at >= start_date_after
+                ]
+            if end_date_before is not None:
+                end_date_before = datetime.strptime(end_date_before, "%Y-%m-%d").date()
+                sorted_campaigns = [
+                    campaign
+                    for campaign in sorted_campaigns
+                    if find_campaign_last_round_with_date(campaign, "end").ended_at <= end_date_before
+                ]
+
+            latest_campaign = sorted_campaigns[0] if len(finished_campaigns) > 0 else None
+
             if latest_campaign is None:
                 continue
             if requested_round == "latest":

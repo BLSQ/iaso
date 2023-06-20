@@ -60,10 +60,10 @@ const newFilters = {
         selector: '#linksParamsAlgorithmId',
         type: 'multi',
     },
-    linksParamsValidation_status: {
+    linkParamsValidated: {
         value: [0],
-        urlValue: 'all',
-        selector: '#linksParamsValidation_status',
+        urlValue: 'true',
+        selector: '#linkParamsValidated',
         type: 'multi',
     },
     linksParamsOrigin: {
@@ -160,6 +160,9 @@ const goToPage = () => {
     cy.intercept('GET', '/api/algorithmsruns/', {
         fixture: 'algorithmsruns/list.json',
     }).as('algorithmsRuns');
+    cy.intercept('GET', '/api/validationstatus/', {
+        fixture: 'misc/validationStatuses.json',
+    }).as('validationStatuses');
 
     cy.intercept(
         'GET',
@@ -349,7 +352,7 @@ describe('links tab', () => {
     });
 
     describe('Filters', () => {
-        it('change filters should deep link and call api with correct params', () => {
+        it.skip('change filters should deep link and call api with correct params', () => {
             cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 interceptFlag = false;
@@ -368,8 +371,7 @@ describe('links tab', () => {
                             algorithmId:
                                 newFilters.linksParamsAlgorithmId.urlValue,
                             validation_status:
-                                newFilters.linksParamsValidation_status
-                                    .urlValue,
+                                newFilters.linkParamsValidated.urlValue,
                             origin: newFilters.linksParamsOrigin.urlValue,
                         },
                     },

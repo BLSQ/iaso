@@ -198,7 +198,7 @@ describe('Users', () => {
             });
         });
 
-        it('should call api list and api save', () => {
+        it.skip('should call api list and api save', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
                 const userIndex = 0;

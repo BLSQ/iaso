@@ -1772,7 +1772,6 @@ def sort_campaigns_by_last_round_end_date(campaign):
         list(campaign.rounds.all()),
         key=lambda round: round.ended_at if round.ended_at else date.max,
         reverse=True,
-        
     )
     return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.max
 
@@ -1979,7 +1978,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
         category = self.request.GET.get("category", None)
         queryset = self.get_queryset()
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
-        #TODO filter data store by type eg "lqas"
+        # TODO filter data store by type eg "lqas"
         data_stores = JsonDataStore.objects.filter(slug__in=countries)
         for org_unit in queryset:
             country_id = org_unit.id
@@ -1999,13 +1998,15 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     finished_campaigns,
                     key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
                     reverse=True,
-                )[0] if len(finished_campaigns) > 0 else None
+                )[0]
+                if len(finished_campaigns) > 0
+                else None
             )
             if latest_campaign is None:
                 continue
-            last_round_number = (
-                sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)[0].number
-            )
+            last_round_number = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)[
+                0
+            ].number
             if latest_campaign.separate_scopes_per_round:
                 scope = latest_campaign.get_districts_for_round_number(last_round_number)
 
@@ -2040,11 +2041,11 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     )
                     if district_stats:
                         district_stats["district_name"] = district.name
-                
+
                 shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
                     request.user, request.query_params.get("app_id", None)
                 ).filter(id=district.id)
-                
+
                 shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
 
                 if district_stats:
@@ -2107,14 +2108,14 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
             )
         )
         org_units = self.get_queryset()
-        results=[]
+        results = []
         for org_unit in org_units:
             shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
-                        request.user, request.query_params.get("app_id", None)
-                    ).filter(id=org_unit.id)
-                    
+                request.user, request.query_params.get("app_id", None)
+            ).filter(id=org_unit.id)
+
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
-            results.append({"id": org_unit.id, "geo_json":shapes})
+            results.append({"id": org_unit.id, "geo_json": shapes})
             # districts = (
             #     OrgUnit.objects.filter(org_unit_type__category="DISTRICT")
             #     .filter(parent__parent=org_unit.id)
@@ -2125,10 +2126,11 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
             #     shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
             #             request.user, request.query_params.get("app_id", None)
             #         ).filter(id=district.id)
-                    
+
             #     shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
             #     results.append({"id": district.id, "geo_json":shapes})
         return Response({"results": results})
+
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")

@@ -46,3 +46,27 @@ export const useGetZoomedInShapes = (
         },
     });
 };
+
+const getZoomedInBackgoundShapes = (bounds: string, category: string) => {
+    return getRequest(
+        `/api/polio/lqasmap/zoominbackground/?category=${category}&bounds=${bounds}`,
+    );
+};
+
+export const useGetZoomedInBackgroundShapes = (
+    bounds: string,
+    category: string,
+    enabled: boolean,
+): UseQueryResult<any, any> => {
+    return useSnackQuery({
+        queryFn: () => getZoomedInBackgoundShapes(bounds, category),
+        queryKey: ['lqasim-zoomin-map-bckgnd', bounds, category],
+        options: {
+            select: data => {
+                if (!data) return [];
+                return data.results;
+            },
+            enabled,
+        },
+    });
+};

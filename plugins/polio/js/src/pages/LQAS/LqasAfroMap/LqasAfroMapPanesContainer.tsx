@@ -3,11 +3,25 @@ import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
 import { lqasDistrictColors } from '../../IM/constants';
 import { MapPanes } from '../../../components/MapComponent/MapPanes';
-import { useAfroMapShapes, useGetZoomedInShapes } from './useAfroMapShapes';
+import {
+    useAfroMapShapes,
+    useGetZoomedInBackgroundShapes,
+    useGetZoomedInShapes,
+} from './useAfroMapShapes';
 import { defaultShapeStyle } from '../../../utils';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
+};
+const getBackgroundLayerStyle = () => {
+    return {
+        color: '#5e5e5e',
+        opacity: '1',
+        fillColor: 'lightGrey',
+        weight: '2',
+        zIndex: 1,
+    };
+    // return defaultShapeStyle;
 };
 
 export const LqasAfroMapPanesContainer: FunctionComponent = () => {
@@ -28,15 +42,26 @@ export const LqasAfroMapPanesContainer: FunctionComponent = () => {
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
         useGetZoomedInShapes(JSON.stringify(bounds), 'lqas', !showCountries);
 
+    const {
+        data: zoominbackgroundShapes,
+        isFetching: isLoadingZoominbackground,
+    } = useGetZoomedInBackgroundShapes(
+        JSON.stringify(bounds),
+        'lqas',
+        !showCountries,
+    );
+
     return (
         <>
-            {(isAfroShapesLoading || (isLoadingZoomin && !showCountries)) && (
+            {(isAfroShapesLoading ||
+                (isLoadingZoomin && !showCountries) ||
+                (isLoadingZoominbackground && !showCountries)) && (
                 <LoadingSpinner fixed={false} absolute />
             )}
             {showCountries && (
                 <MapPanes
                     mainLayer={mapShapes}
-                    // backgroundLayer={}
+                    // backgroundLayer={zoominbackgroundShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     // getBackgroundLayerStyle={}
                     name="LQAS-Map-country-view"
@@ -46,9 +71,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent = () => {
                 <MapPanes
                     key={JSON.stringify(bounds)}
                     mainLayer={zoominShapes}
-                    // backgroundLayer={}
+                    backgroundLayer={zoominbackgroundShapes}
                     getMainLayerStyle={getMainLayerStyle}
-                    // getBackgroundLayerStyle={}
+                    getBackgroundLayerStyle={getBackgroundLayerStyle}
                     name="LQAS-Map-zoomin-view-"
                 />
             )}

@@ -1772,16 +1772,14 @@ def sort_campaigns_by_last_round_end_date(campaign):
         list(campaign.rounds.all()),
         key=lambda round: round.ended_at if round.ended_at else date.max,
         reverse=True,
+        
     )
     return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.max
 
 
-def determine_status_for_district(district_data, district_is_in_scope):
-    if district_is_in_scope and not district_data:
-        # Fine tune to return either 0 or "InScope"
-        return "inScope"
+def determine_status_for_district(district_data):
     if not district_data:
-        return "0"
+        return "inScope"
     checked = district_data["total_child_checked"]
     marked = district_data["total_child_fmd"]
     if checked == 60:
@@ -1825,7 +1823,7 @@ def calculate_country_status(country_data, scope, roundNumber="latest"):
     data_for_round = get_data_for_round(country_data, roundNumber)
 
     district_statuses = [
-        determine_status_for_district(district_data, True) for district_data in data_for_round["data"].values()
+        determine_status_for_district(district_data) for district_data in data_for_round["data"].values()
     ]
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
@@ -1839,7 +1837,7 @@ def calculate_country_status(country_data, scope, roundNumber="latest"):
     return "3lqasFail"
 
 
-@swagger_auto_schema(tags=["lqas-global"])
+@swagger_auto_schema(tags=["lqasglobal"])
 class LQASIMGlobalMapViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -1938,7 +1936,7 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
         return Response({"results": results})
 
 
-@swagger_auto_schema(tags=["lqas-global"])
+@swagger_auto_schema(tags=["lqaszoomin"])
 class LQASIMZoominMapViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -1967,6 +1965,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
         )
 
     def list(self, request):
+        category = self.request.GET.get("category", None)
         bounds = json.loads(request.GET.get("bounds", None))
         bounds_as_polygon = Polygon.from_bbox(
             (
@@ -1980,13 +1979,14 @@ class LQASIMZoominMapViewSet(ModelViewSet):
         category = self.request.GET.get("category", None)
         queryset = self.get_queryset()
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
+        #TODO filter data store by type eg "lqas"
         data_stores = JsonDataStore.objects.filter(slug__in=countries)
         for org_unit in queryset:
             country_id = org_unit.id
             try:
                 data_store = data_stores.get(slug__contains=str(country_id))
             except JsonDataStore.DoesNotExist:
-                data_store = None
+                continue
             campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
             finished_campaigns = [
                 campaign
@@ -1994,38 +1994,37 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 if len([round for round in campaign.rounds.all() if is_round_over(round)]) == 0
             ]
 
-            # TODO make this null safe
             latest_campaign = (
                 sorted(
                     finished_campaigns,
                     key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
                     reverse=True,
-                )[0]
-                if data_store
-                else None
+                )[0] if len(finished_campaigns) > 0 else None
             )
+            if latest_campaign is None:
+                continue
             last_round_number = (
                 sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)[0].number
-                if latest_campaign
-                else None
             )
-            # last_round_number = 2
+            if latest_campaign.separate_scopes_per_round:
+                scope = latest_campaign.get_districts_for_round_number(last_round_number)
+
+            else:
+                scope = latest_campaign.get_all_districts()
+            # Visible districts in scope
             districts = (
-                OrgUnit.objects.filter(org_unit_type__category="DISTRICT")
+                scope.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
                 .exclude(simplified_geom=None)
                 .filter(simplified_geom__intersects=bounds_as_polygon)
             )
-            # TODO make null safe
-            data_for_country = data_store.content if data_store else None
-            stats = data_for_country.get("stats", None) if data_for_country else None
-            if stats and latest_campaign:
+            data_for_country = data_store.content
+            stats = data_for_country.get("stats", None)
+            if stats:
                 stats = stats.get(latest_campaign.obr_name, None)
-            else:
-                stats = None
             for district in districts:
                 result = None
-                district_stats = stats
+                district_stats = dict(stats) if stats else None
                 if district_stats:
                     district_stats = next(
                         (round for round in district_stats["rounds"] if round["number"] == last_round_number), None
@@ -2041,50 +2040,95 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     )
                     if district_stats:
                         district_stats["district_name"] = district.name
-                # Get districts in scope
-                if latest_campaign:
-                    if latest_campaign.separate_scopes_per_round:
-                        scope = latest_campaign.get_districts_for_round_number(last_round_number)
+                
+                shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
+                    request.user, request.query_params.get("app_id", None)
+                ).filter(id=district.id)
+                
+                shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
 
-                    else:
-                        scope = latest_campaign.get_all_districts()
-                district_is_in_scope = False
-                if scope:
-                    district_is_in_scope = scope.filter(id=district.id) is not None and scope.count() > 0
-                shapes = None
-                # Probably can remove this check as it's filtered in get_queryset
-                if district.simplified_geom is not None:
-                    shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
-                        request.user, request.query_params.get("app_id", None)
-                    ).filter(id=district.id)
-                    shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
-
-                if latest_campaign and district_stats:
+                if district_stats:
                     result = {
                         "id": district.id,
                         "data": {"campaign": latest_campaign.obr_name, **district_stats},
                         "geo_json": shapes,
-                        "status": determine_status_for_district(district_stats, district_is_in_scope),
-                    }
-
-                elif latest_campaign:
-                    result = {
-                        "id": district.id,
-                        "data": {"campaign": latest_campaign.obr_name},
-                        "geo_json": shapes,
-                        "status": determine_status_for_district({}, district_is_in_scope),
+                        "status": determine_status_for_district(district_stats),
                     }
 
                 else:
                     result = {
                         "id": district.id,
-                        "data": None,
+                        "data": {"campaign": latest_campaign.obr_name},
                         "geo_json": shapes,
-                        "status": determine_status_for_district({}, district_is_in_scope),
+                        # "status": determine_status_for_district({}, district_is_in_scope),
+                        "status": "inScope",
                     }
                 results.append(result)
         return Response({"results": results})
 
+
+@swagger_auto_schema(tags=["lqaszoominbackground"])
+class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
+    http_method_names = ["get"]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    results_key = "results"
+    # TODO configure filters
+    # filter_backends = [
+    #     filters.OrderingFilter,
+    #     DjangoFilterBackend,
+    # ]
+
+    def get_queryset(self):
+        bounds = json.loads(self.request.GET.get("bounds", None))
+        bounds_as_polygon = Polygon.from_bbox(
+            (
+                bounds["_southWest"]["lng"],
+                bounds["_southWest"]["lat"],
+                bounds["_northEast"]["lng"],
+                bounds["_northEast"]["lat"],
+            )
+        )
+        # TODO see if we need to filter per user as with Campaign
+        return (
+            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            .exclude(simplified_geom=None)
+            .filter(simplified_geom__intersects=bounds_as_polygon)
+        )
+
+    def list(self, request):
+        category = self.request.GET.get("category", None)
+        bounds = json.loads(self.request.GET.get("bounds", None))
+        bounds_as_polygon = Polygon.from_bbox(
+            (
+                bounds["_southWest"]["lng"],
+                bounds["_southWest"]["lat"],
+                bounds["_northEast"]["lng"],
+                bounds["_northEast"]["lat"],
+            )
+        )
+        org_units = self.get_queryset()
+        results=[]
+        for org_unit in org_units:
+            shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
+                        request.user, request.query_params.get("app_id", None)
+                    ).filter(id=org_unit.id)
+                    
+            shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+            results.append({"id": org_unit.id, "geo_json":shapes})
+            # districts = (
+            #     OrgUnit.objects.filter(org_unit_type__category="DISTRICT")
+            #     .filter(parent__parent=org_unit.id)
+            #     .exclude(simplified_geom=None)
+            #     .filter(simplified_geom__intersects=bounds_as_polygon)
+            # )
+            # for district in districts:
+            #     shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
+            #             request.user, request.query_params.get("app_id", None)
+            #         ).filter(id=district.id)
+                    
+            #     shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+            #     results.append({"id": district.id, "geo_json":shapes})
+        return Response({"results": results})
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
@@ -2106,5 +2150,6 @@ router.register(r"polio/linelistimport", LineListImportViewSet, basename="lineli
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
 router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")
-router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmap")
+router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
+router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")

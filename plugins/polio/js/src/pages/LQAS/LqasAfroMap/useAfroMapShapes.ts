@@ -2,17 +2,20 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 
-const getAfroMapData = category => {
-    return getRequest(`/api/polio/lqasmap/global/?category=${category}`);
+const getAfroMapData = ({ category, round }) => {
+    return getRequest(
+        `/api/polio/lqasmap/global/?category=${category}&round=${round}`,
+    );
 };
 
-export const useAfroMapShapes = (
+export const useAfroMapShapes = ({
     category,
     enabled,
-): UseQueryResult<any, any> => {
+    round,
+}): UseQueryResult<any, any> => {
     return useSnackQuery({
-        queryFn: () => getAfroMapData(category),
-        queryKey: ['lqasim-afro-map', category],
+        queryFn: () => getAfroMapData({ category, round }),
+        queryKey: ['lqasim-afro-map', category, round],
         options: {
             select: data => {
                 if (!data) return [];
@@ -23,19 +26,20 @@ export const useAfroMapShapes = (
     });
 };
 
-const getZoomedInShapes = (bounds: string, category: string) => {
+const getZoomedInShapes = ({ bounds, category, round }) => {
     return getRequest(
-        `/api/polio/lqasmap/zoomin/?category=${category}&bounds=${bounds}`,
+        `/api/polio/lqasmap/zoomin/?category=${category}&bounds=${bounds}&round=${round}`,
     );
 };
 
-export const useGetZoomedInShapes = (
-    bounds: string,
-    category: string,
-    enabled: boolean,
-): UseQueryResult<any, any> => {
+export const useGetZoomedInShapes = ({
+    bounds,
+    category,
+    enabled,
+    round,
+}): UseQueryResult<any, any> => {
     return useSnackQuery({
-        queryFn: () => getZoomedInShapes(bounds, category),
+        queryFn: () => getZoomedInShapes({ bounds, category, round }),
         queryKey: ['lqasim-zoomin-map', bounds, category],
         options: {
             select: data => {
@@ -47,20 +51,17 @@ export const useGetZoomedInShapes = (
     });
 };
 
-const getZoomedInBackgoundShapes = (bounds: string, category: string) => {
-    return getRequest(
-        `/api/polio/lqasmap/zoominbackground/?category=${category}&bounds=${bounds}`,
-    );
+const getZoomedInBackgoundShapes = ({ bounds }) => {
+    return getRequest(`/api/polio/lqasmap/zoominbackground/?bounds=${bounds}`);
 };
 
-export const useGetZoomedInBackgroundShapes = (
-    bounds: string,
-    category: string,
-    enabled: boolean,
-): UseQueryResult<any, any> => {
+export const useGetZoomedInBackgroundShapes = ({
+    bounds,
+    enabled,
+}): UseQueryResult<any, any> => {
     return useSnackQuery({
-        queryFn: () => getZoomedInBackgoundShapes(bounds, category),
-        queryKey: ['lqasim-zoomin-map-bckgnd', bounds, category],
+        queryFn: () => getZoomedInBackgoundShapes({ bounds }),
+        queryKey: ['lqasim-zoomin-map-bckgnd', bounds],
         options: {
             select: data => {
                 if (!data) return [];

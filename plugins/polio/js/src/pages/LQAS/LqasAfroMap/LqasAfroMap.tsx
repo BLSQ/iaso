@@ -4,7 +4,6 @@ import { Box } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { MapContainer } from 'react-leaflet';
 
-import { defaultShapeStyle } from '../../../utils/index';
 import MESSAGES from '../../../constants/messages';
 import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
@@ -13,18 +12,13 @@ import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/
 import { CustomTileLayer } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
 import {
     Tile,
-    TilesSwitchDialog,
-} from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchDialog';
+    TilesSwitchControl,
+} from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
-
-// const defaultShapes = [];
 
 type Props = {
     round: 'latest' | string;
 };
-
-// eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-const getBackgroundLayerStyle = _shape => defaultShapeStyle;
 
 export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
     const { formatMessage } = useSafeIntl();
@@ -37,7 +31,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                 displayBackButton={false}
             />
             <Box position="relative">
-                <TilesSwitchDialog
+                <TilesSwitchControl
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}
                 />
@@ -49,8 +43,11 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
                 >
-                    <CustomTileLayer currentTile={currentTile} />
-                    <LqasAfroMapPanesContainer />
+                    <CustomTileLayer
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
+                    />
+                    <LqasAfroMapPanesContainer round="2" />
                 </MapContainer>
             </Box>
         </>

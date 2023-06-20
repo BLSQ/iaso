@@ -21,10 +21,15 @@ const getBackgroundLayerStyle = () => {
         weight: '2',
         zIndex: 1,
     };
-    // return defaultShapeStyle;
 };
 
-export const LqasAfroMapPanesContainer: FunctionComponent = () => {
+type Props = {
+    round: 'latest' | string;
+};
+
+export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
+    round,
+}) => {
     const map = useMapEvents({
         zoomend: () => {
             setBounds(map.getBounds());
@@ -37,19 +42,23 @@ export const LqasAfroMapPanesContainer: FunctionComponent = () => {
 
     const showCountries = map.getZoom() <= 5;
     const { data: mapShapes, isFetching: isAfroShapesLoading } =
-        useAfroMapShapes('lqas', showCountries);
+        useAfroMapShapes({ category: 'lqas', enabled: showCountries, round });
 
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
-        useGetZoomedInShapes(JSON.stringify(bounds), 'lqas', !showCountries);
+        useGetZoomedInShapes({
+            bounds: JSON.stringify(bounds),
+            category: 'lqas',
+            enabled: !showCountries,
+            round,
+        });
 
     const {
         data: zoominbackgroundShapes,
         isFetching: isLoadingZoominbackground,
-    } = useGetZoomedInBackgroundShapes(
-        JSON.stringify(bounds),
-        'lqas',
-        !showCountries,
-    );
+    } = useGetZoomedInBackgroundShapes({
+        bounds: JSON.stringify(bounds),
+        enabled: !showCountries,
+    });
 
     return (
         <>

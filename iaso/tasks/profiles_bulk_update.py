@@ -1,13 +1,13 @@
 from copy import deepcopy
 from time import time
 from typing import Optional, List
-from django.contrib.auth.models import User
 
 from django.db import transaction
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
-from iaso.models import Task, Project, Profile
+from iaso.models import Task, Profile, Project
+from iaso.api.profiles import get_filtered_profiles
 
 
 def update_single_profile_from_bulk(
@@ -15,15 +15,15 @@ def update_single_profile_from_bulk(
 ):
     """Used within the context of a bulk operation"""
     original_copy = deepcopy(profile)
-    # if projects_ids_added is not None:
-    #     for project_id in projects_ids_added:
-    #         project = Project.objects.get(pk=project_id)
-    #         project.iaso_profile.add(profile)
+    if projects_ids_added is not None:
+        for project_id in projects_ids_added:
+            project = Project.objects.get(pk=project_id)
+            project.iaso_profile.add(profile)
 
-    # if projects_ids_removed is not None:
-    #     for project_id in projects_ids_removed:
-    #         project = Project.objects.get(pk=project_id)
-    #         project.iaso_profile.remove(profile)
+    if projects_ids_removed is not None:
+        for project_id in projects_ids_removed:
+            project = Project.objects.get(pk=project_id)
+            project.iaso_profile.remove(profile)
 
     if language is not None:
         profile.language = language
@@ -43,15 +43,21 @@ def profiles_bulk_update(
     role_id_removed: Optional[int],
     location_ids: Optional[List[int]],
     language: Optional[str],
+    search: Optional[str],
+    perms: Optional[List[str]],
+    location: Optional[str],
+    org_unit_type: Optional[str],
+    parent_ou: Optional[str],
+    children_ou: Optional[str],
+    projects: Optional[List[str]],
     task: Task,
-    user: User,
 ):
     """Background Task to bulk update profiles."""
     start = time()
     task.report_progress_and_stop_if_killed(progress_message="Searching for Profiles to modify")
 
     # Restrict qs to profiles accessible to the user
-    # user = task.launcher
+    user = task.launcher
 
     queryset = Profile.objects.filter(account=user.iaso_profile.account)
 
@@ -59,6 +65,12 @@ def profiles_bulk_update(
         queryset = queryset.filter(pk__in=selected_ids)
     else:
         queryset = queryset.exclude(pk__in=unselected_ids)
+        base_queryset = queryset
+        queryset = Profile.objects.none()  # type: ignore
+        search_queryset = get_filtered_profiles(
+            base_queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects
+        )
+        queryset = queryset.union(search_queryset)
 
     if not queryset:
         raise Exception("No matching profile found")

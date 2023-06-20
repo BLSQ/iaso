@@ -20,6 +20,13 @@ export type BulkSaveQuery = {
     language?: 'en' | 'fr';
     locations: OrgUnit[];
     selection: Selection<Profile>;
+    search?: string;
+    permissions?: string;
+    location?: string;
+    orgUnitTypes?: string;
+    ouParent?: string;
+    ouChildren?: string;
+    projectsIds?: string;
 };
 
 const bulkSaveProfiles = (data: BulkSaveQuery) => {
@@ -32,6 +39,13 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         language,
         locations,
         selection: { selectAll, selectedItems, unSelectedItems },
+        search,
+        permissions,
+        location,
+        orgUnitTypes,
+        ouParent,
+        ouChildren,
+        projectsIds,
     } = data;
     return postRequest(url, {
         role_id_added: addRole ? parseInt(addRole, 10) : undefined,
@@ -42,11 +56,18 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         projects_ids_removed: removeProjects.map(projectId =>
             parseInt(projectId, 10),
         ),
-        location_ids: locations.map(location => parseInt(location.id, 10)),
+        location_ids: locations.map(loc => parseInt(loc.id, 10)),
         language,
         select_all: selectAll,
-        selected_ids: selectedItems,
-        unselected_ids: unSelectedItems,
+        selected_ids: selectedItems.map(item => item.id),
+        unselected_ids: unSelectedItems.map(item => item.id),
+        search,
+        permissions,
+        location,
+        orgUnitTypes,
+        ouParent,
+        ouChildren,
+        projects: projectsIds,
     });
 };
 

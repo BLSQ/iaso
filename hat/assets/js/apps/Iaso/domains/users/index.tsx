@@ -102,12 +102,11 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
     return (
         <>
             {isLoading && <LoadingSpinner />}
-
             <UsersMultiActionsDialog
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
                 selection={selection}
-                saveMulti={bulkSave}
+                saveMulti={(saveData: Record<string, any>) => bulkSave({...saveData, ...params})}
             />
             <TopBar
                 title={formatMessage(MESSAGES.users)}

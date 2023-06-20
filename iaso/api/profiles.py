@@ -28,6 +28,82 @@ class HasProfilePermission(permissions.BasePermission):
         return True
 
 
+def get_filtered_profiles(queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects):
+    original_queryset = queryset
+    if search:
+        queryset = queryset.filter(
+            Q(user__username__icontains=search)
+            | Q(user__first_name__icontains=search)
+            | Q(user__last_name__icontains=search)
+        ).distinct()
+
+    if perms:
+        queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
+
+    if location:
+        queryset = queryset.filter(
+            user__iaso_profile__org_units__pk=location,
+        ).distinct()
+
+    no_parent_ou = False
+
+    if parent_ou and location or children_ou and location:
+        ou = get_object_or_404(OrgUnit, pk=location)
+        if parent_ou and ou.parent is None:
+            no_parent_ou = True
+
+        if parent_ou and not children_ou:
+            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+
+            if no_parent_ou:
+                queryset = queryset_current
+
+            else:
+                queryset = (
+                    original_queryset.filter(
+                        user__iaso_profile__org_units__pk=ou.parent.pk,
+                    )
+                ) | queryset_current
+
+                queryset = queryset.distinct()
+
+        if children_ou and not parent_ou:
+            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+            children_ou = OrgUnit.objects.filter(parent__pk=location)
+            queryset = (
+                original_queryset.filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                | queryset_current
+            )
+
+        if parent_ou and children_ou:
+            if no_parent_ou:
+                queryset_parent = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+            else:
+                queryset_parent = original_queryset.filter(
+                    user__iaso_profile__org_units__pk=ou.parent.pk,
+                )
+
+            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+
+            children_ou = OrgUnit.objects.filter(parent__pk=location)
+            queryset_children = original_queryset.filter(
+                user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
+            )
+
+            queryset = queryset_current | queryset_parent | queryset_children
+
+    if org_unit_type:
+        if org_unit_type == "unassigned":
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
+        else:
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
+
+    if projects:
+        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects.split(","))
+
+    return queryset
+
+
 class ProfilesViewSet(viewsets.ViewSet):
     """Profiles API
 
@@ -67,77 +143,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         children_ou = True if request.GET.get("ouChildren", None) == "true" else False
         projects = request.GET.get("projects", None)
 
-        queryset = self.get_queryset()
-        if search:
-            queryset = queryset.filter(
-                Q(user__username__icontains=search)
-                | Q(user__first_name__icontains=search)
-                | Q(user__last_name__icontains=search)
-            ).distinct()
+        queryset = get_filtered_profiles(
+            self.get_queryset(), search, perms, location, org_unit_type, parent_ou, children_ou, projects
+        )
 
-        if perms:
-            queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
-
-        if location:
-            queryset = queryset.filter(
-                user__iaso_profile__org_units__pk=location,
-            ).distinct()
-
-        no_parent_ou = False
-
-        if parent_ou and location or children_ou and location:
-            ou = get_object_or_404(OrgUnit, pk=location)
-            if parent_ou and ou.parent is None:
-                no_parent_ou = True
-
-            if parent_ou and not children_ou:
-                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-
-                if no_parent_ou:
-                    queryset = queryset_current
-
-                else:
-                    queryset = (
-                        self.get_queryset().filter(
-                            user__iaso_profile__org_units__pk=ou.parent.pk,
-                        )
-                    ) | queryset_current
-
-                    queryset = queryset.distinct()
-
-            if children_ou and not parent_ou:
-                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-                children_ou = OrgUnit.objects.filter(parent__pk=location)
-                queryset = (
-                    self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
-                    | queryset_current
-                )
-
-            if parent_ou and children_ou:
-                if no_parent_ou:
-                    queryset_parent = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-                else:
-                    queryset_parent = self.get_queryset().filter(
-                        user__iaso_profile__org_units__pk=ou.parent.pk,
-                    )
-
-                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-
-                children_ou = OrgUnit.objects.filter(parent__pk=location)
-                queryset_children = self.get_queryset().filter(
-                    user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
-                )
-
-                queryset = queryset_current | queryset_parent | queryset_children
-
-        if org_unit_type:
-            if org_unit_type == "unassigned":
-                queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
-            else:
-                queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
-
-        if projects:
-            queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects.split(","))
         if limit:
             queryset = queryset.order_by(*orders)
             limit = int(limit)

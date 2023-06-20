@@ -22,6 +22,14 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
         location_ids = request.data.get("location_ids", None)
         language = request.data.get("language", None)
 
+        search = request.data.get("search", None)
+        perms = request.data.get("permissions", None)
+        location = request.data.get("location", None)
+        org_unit_type = request.data.get("orgUnitTypes", None)
+        parent_ou = True if request.data.get("ouParent", None) == "true" else False
+        children_ou = True if request.data.get("ouChildren", None) == "true" else False
+        projects = request.data.get("projects", None)
+
         user = self.request.user
 
         task = profiles_bulk_update(
@@ -34,6 +42,13 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
             role_id_removed=role_id_removed,
             location_ids=location_ids,
             language=language,
+            search=search,
+            perms=perms,
+            location=location,
+            org_unit_type=org_unit_type,
+            parent_ou=parent_ou,
+            children_ou=children_ou,
+            projects=projects,
             user=user,
         )
         return Response(

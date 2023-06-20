@@ -15,6 +15,11 @@ def update_single_profile_from_bulk(
 ):
     """Used within the context of a bulk operation"""
     original_copy = deepcopy(profile)
+    # TODO:
+    # role_id_added
+    # role_id_removed
+    # location_ids
+
     if projects_ids_added is not None:
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)

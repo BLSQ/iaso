@@ -43,11 +43,13 @@ export const MESSAGES = defineMessages({
 });
 
 export const CustomZoomControl: FunctionComponent<Props> = ({
-    bounds,
+    bounds: boundsProp,
     boundsOptions = { padding: [10, 10], maxZoom: tiles.osm.maxZoom },
     fitOnLoad = false,
 }) => {
     const map: any = useMap();
+    const mapBounds = map.getBounds();
+    const bounds = boundsProp ?? mapBounds;
     const [mapFitted, setMapFitted] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
     const fitToBounds = useCallback(() => {

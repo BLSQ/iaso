@@ -35,6 +35,9 @@ export const useAfroMapShapes = ({
                 return data.results;
             },
             enabled,
+            keepPreviousData: true,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };
@@ -81,6 +84,8 @@ export const useGetZoomedInShapes = ({
             },
             enabled,
             keepPreviousData: true,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };

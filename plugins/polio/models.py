@@ -1,3 +1,4 @@
+from datetime import date
 import json
 from typing import Union
 from uuid import uuid4
@@ -230,6 +231,12 @@ class Round(models.Model):
 
     def get_item_by_key(self, key):
         return getattr(self, key)
+
+    @staticmethod
+    def is_round_over(round):
+        if not round.ended_at:
+            return False
+        return round.ended_at > date.today()
 
 
 class CampaignQuerySet(models.QuerySet):
@@ -564,6 +571,15 @@ class Campaign(SoftDeletableModel):
         response = surge_indicator_for_country(cs, surge_country_name)
         response["created_at"] = ssi.created_at
         return response
+
+    # To use in with sorted. returning date.min if ended_at has no value so the method can be used with `sorted`
+    def get_last_round_end_date(self):
+        sorted_rounds = sorted(
+            list(self.rounds.all()),
+            key=lambda round: round.ended_at if round.ended_at else date.min,
+            reverse=True,
+        )
+        return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.min
 
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:

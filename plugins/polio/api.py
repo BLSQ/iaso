@@ -1761,19 +1761,6 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
 
 
 # TODO see if this shouldn't a static method somewhere
-def is_round_over(round):
-    if not round.ended_at:
-        return False
-    return round.ended_at > date.today()
-
-
-def sort_campaigns_by_last_round_end_date(campaign):
-    sorted_rounds = sorted(
-        list(campaign.rounds.all()),
-        key=lambda round: round.ended_at if round.ended_at else date.max,
-        reverse=True,
-    )
-    return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.max
 
 
 def determine_status_for_district(district_data):
@@ -1845,11 +1832,6 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     results_key = "results"
-    # TODO configure filters
-    # filter_backends = [
-    #     filters.OrderingFilter,
-    #     DjangoFilterBackend,
-    # ]
 
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
@@ -1883,13 +1865,13 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
             finished_campaigns = [
                 campaign
                 for campaign in campaigns
-                if len([round for round in campaign.rounds.all() if is_round_over(round)]) == 0
+                if len([round for round in campaign.rounds.all() if Round.is_round_over(round)]) == 0
             ]
 
             sorted_campaigns = (
                 sorted(
                     finished_campaigns,
-                    key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
+                    key=lambda campaign: campaign.get_last_round_end_date(),
                     reverse=True,
                 )
                 if data_store
@@ -1964,11 +1946,6 @@ class LQASIMZoominMapViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     results_key = "results"
-    # TODO configure filters
-    # filter_backends = [
-    #     filters.OrderingFilter,
-    #     DjangoFilterBackend,
-    # ]
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
@@ -2017,12 +1994,12 @@ class LQASIMZoominMapViewSet(ModelViewSet):
             finished_campaigns = [
                 campaign
                 for campaign in campaigns
-                if len([round for round in campaign.rounds.all() if is_round_over(round)]) == 0
+                if len([round for round in campaign.rounds.all() if Round.is_round_over(round)]) == 0
             ]
 
             sorted_campaigns = sorted(
                 finished_campaigns,
-                key=lambda campaign: sort_campaigns_by_last_round_end_date(campaign),
+                key=lambda campaign: campaign.get_last_round_end_date(),
                 reverse=True,
             )
 

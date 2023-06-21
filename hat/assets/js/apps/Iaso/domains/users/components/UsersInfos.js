@@ -3,6 +3,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
+import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 import InputComponent from '../../../components/forms/InputComponent';
 import { APP_LOCALES } from '../../app/constants';
 
@@ -22,7 +23,6 @@ const UsersInfos = ({
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
     let passwordDisabled = false;
-
     if (currentUser.send_email_invitation) {
         if (sendUserEmailInvitation) {
             // eslint-disable-next-line no-param-reassign
@@ -34,6 +34,7 @@ const UsersInfos = ({
             passwordDisabled = true;
         }
     }
+    const { data: userRoles, isFetching } = useGetUserRolesDropDown({});
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
 
@@ -135,6 +136,20 @@ const UsersInfos = ({
                     };
                 })}
             />
+            <InputComponent
+                keyValue="user_roles"
+                onChange={(key, value) =>
+                    setFieldValue(key, value ? value.split(',') : [])
+                }
+                value={currentUser.user_roles.value}
+                type="select"
+                multi
+                label={MESSAGES.userRoles}
+                options={userRoles}
+                loading={isFetching}
+                clearable
+            />
+
             {allowSendEmailInvitation && (
                 <InputComponent
                     keyValue="send_email_invitation"

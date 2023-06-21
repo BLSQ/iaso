@@ -101,6 +101,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Language',
         id: 'iaso.users.dialog.locale',
     },
+    userRoles: {
+        defaultMessage: 'User roles',
+        id: 'iaso.users.dialog.userRoles',
+    },
     searchUser: {
         id: 'iaso.users.filter.searchUser',
         defaultMessage: 'Search user',
@@ -243,6 +247,10 @@ const MESSAGES = defineMessages({
     },
     fetchPermissionsError: {
         defaultMessage: 'An error occurred while fetching permissions list',
+        id: 'iaso.snackBar.fetchPermissions',
+    },
+    userRolesDropDownError: {
+        defaultMessage: 'Error while making user roles drop down',
         id: 'iaso.snackBar.fetchPermissions',
     },
     homePage: {

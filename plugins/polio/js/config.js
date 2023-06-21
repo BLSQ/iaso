@@ -5,9 +5,11 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
 import AssessmentIcon from '@material-ui/icons/Assessment';
+import PublicIcon from '@material-ui/icons/Public';
 import DonutSmallIcon from '@material-ui/icons/DonutSmall';
 import GroupWork from '@material-ui/icons/GroupWork';
 import HomeWorkIcon from '@material-ui/icons/HomeWork';
+import PhotoSizeSelectActualIcon from '@material-ui/icons/PhotoSizeSelectActual';
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
@@ -393,16 +395,16 @@ const menu = [
                 icon: props => <AssessmentIcon {...props} />,
                 subMenu: [
                     {
-                        label: MESSAGES.campaigns,
+                        label: MESSAGES.byCountry,
                         key: 'lqas',
                         permissions: ['iaso_polio'],
-                        icon: props => <AssessmentIcon {...props} />,
+                        icon: props => <PhotoSizeSelectActualIcon {...props} />,
                     },
                     {
                         label: MESSAGES.map,
                         key: 'lqas-map',
                         permissions: ['iaso_polio'],
-                        icon: props => <AssessmentIcon {...props} />,
+                        icon: props => <PublicIcon {...props} />,
                     },
                 ],
             },

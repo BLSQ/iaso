@@ -2234,6 +2234,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.campaign.mobilePayment',
         defaultMessage: 'Mobile Payment',
     },
+    lqasMap: {
+        id: 'iaso.polio.campaign.lqasMap',
+        defaultMessage: 'LQAS map',
+    },
+    byCountry: {
+        id: 'iaso.polio.campaign.byCountry',
+        defaultMessage: 'By country',
+    },
 });
 
 export default MESSAGES;

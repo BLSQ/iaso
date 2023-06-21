@@ -9,6 +9,7 @@ import {
     useGetZoomedInShapes,
 } from './useAfroMapShapes';
 import { defaultShapeStyle } from '../../../utils';
+import { AfroMapParams } from './types';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -24,7 +25,7 @@ const getBackgroundLayerStyle = () => {
 };
 
 type Props = {
-    params: { startDate?: string; endDate?: string; round?: string };
+    params: AfroMapParams;
 };
 
 export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({

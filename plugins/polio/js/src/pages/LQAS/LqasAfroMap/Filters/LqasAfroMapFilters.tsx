@@ -7,15 +7,11 @@ import DatesRange from '../../../../../../../../hat/assets/js/apps/Iaso/componen
 import MESSAGES from '../../../../constants/messages';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
+import { AfroMapParams } from '../types';
 
 const baseUrl = LQAS_AFRO_MAP_URL;
 type Props = {
-    params: {
-        accountId: string;
-        startDate?: string;
-        endDate?: string;
-        round: string; // 'latest' or a number in string form
-    };
+    params: AfroMapParams;
 };
 
 const useOptions = () => {
@@ -93,7 +89,6 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
                         <FilterButton
                             disabled={!filtersUpdated}
                             onFilter={handleSearch}
-                            // size={buttonSize}
                         />
                     </Box>
                 </Grid>

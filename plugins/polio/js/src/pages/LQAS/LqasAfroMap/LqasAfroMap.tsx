@@ -17,9 +17,11 @@ import {
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
 import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
 import { useStyles } from '../../../styles/theme';
+import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { AfroMapParams } from './types';
 
 type Props = {
-    router: any;
+    router: Router;
 };
 export const LqasAfroMap: FunctionComponent<Props> = ({ router }) => {
     const classes: Record<string, string> = useStyles();
@@ -32,7 +34,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ router }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <LqasAfroMapFilters params={router.params} />
+                <LqasAfroMapFilters params={router.params as AfroMapParams} />
                 <Box position="relative" mt={2}>
                     <TilesSwitchControl
                         currentTile={currentTile}
@@ -54,7 +56,9 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ router }) => {
                         <CustomZoomControl
                             boundsOptions={{ maxZoom: TILES.osm.maxZoom }}
                         />
-                        <LqasAfroMapPanesContainer params={router.params} />
+                        <LqasAfroMapPanesContainer
+                            params={router.params as AfroMapParams}
+                        />
                     </MapContainer>
                 </Box>
             </Box>

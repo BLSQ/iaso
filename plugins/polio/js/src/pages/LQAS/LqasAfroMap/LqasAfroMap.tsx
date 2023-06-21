@@ -1,5 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import L from 'leaflet';
 import { Box } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { MapContainer } from 'react-leaflet';

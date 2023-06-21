@@ -82,8 +82,9 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
                         multi={false}
                         keyValue="round"
                         onChange={handleChange}
-                        value={filters.round}
+                        value={filters.round ?? 'latest'}
                         options={options}
+                        clearable={false}
                         label={MESSAGES.round}
                     />
                 </Grid>

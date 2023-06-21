@@ -15,12 +15,15 @@ import {
     TilesSwitchControl,
 } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
+import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
+import { useStyles } from '../../../styles/theme';
 
 type Props = {
-    round: 'latest' | string;
+    router: any;
 };
 
-export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
+export const LqasAfroMap: FunctionComponent<Props> = ({ router }) => {
+    const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
 
@@ -30,25 +33,28 @@ export const LqasAfroMap: FunctionComponent<Props> = ({ round = 'latest' }) => {
                 title={formatMessage(MESSAGES.calendar)}
                 displayBackButton={false}
             />
-            <Box position="relative">
-                <TilesSwitchControl
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
-                />
-                <MapContainer
-                    style={{
-                        height: '72vh',
-                    }}
-                    center={defaultViewport.center}
-                    zoom={defaultViewport.zoom}
-                    scrollWheelZoom={false}
-                >
-                    <CustomTileLayer
+            <Box className={classes.containerFullHeightNoTabPadded}>
+                <LqasAfroMapFilters params={router.params} />
+                <Box position="relative" mt={2}>
+                    <TilesSwitchControl
                         currentTile={currentTile}
                         setCurrentTile={setCurrentTile}
                     />
-                    <LqasAfroMapPanesContainer round="2" />
-                </MapContainer>
+                    <MapContainer
+                        style={{
+                            height: '72vh',
+                        }}
+                        center={defaultViewport.center}
+                        zoom={defaultViewport.zoom}
+                        scrollWheelZoom={false}
+                    >
+                        <CustomTileLayer
+                            currentTile={currentTile}
+                            setCurrentTile={setCurrentTile}
+                        />
+                        <LqasAfroMapPanesContainer params={router.params} />
+                    </MapContainer>
+                </Box>
             </Box>
         </>
     );

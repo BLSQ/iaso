@@ -28,16 +28,17 @@ import {
     IM_OHH,
     BUDGET,
     BUDGET_DETAILS,
+    LQAS_AFRO_MAP_URL,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
-import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
+import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common.ts';
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
 import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
 import { BudgetList } from './src/pages/Budget/index.tsx';
-import { LqasAfroMap } from './src/pages/LQAS/LqasAfroMap/LqasAfroMap';
+import { LqasAfroMap } from './src/pages/LQAS/LqasAfroMap/LqasAfroMap.tsx';
 
 const campaignsFilters = [
     {
@@ -167,13 +168,21 @@ const routes = [
         ],
     },
     {
-        baseUrl: `${LQAS_BASE_URL}/lqas-map`,
-        component: props => <LqasAfroMap {...props} round="latest" />,
+        baseUrl: `${LQAS_AFRO_MAP_URL}`,
+        component: props => <LqasAfroMap {...props} />,
         permissions: ['iaso_polio'],
         params: [
             {
                 isRequired: false,
                 key: 'round',
+            },
+            {
+                isRequired: false,
+                key: 'startDate',
+            },
+            {
+                isRequired: false,
+                key: 'endDate',
             },
         ],
     },

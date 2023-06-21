@@ -24,11 +24,11 @@ const getBackgroundLayerStyle = () => {
 };
 
 type Props = {
-    round: 'latest' | string;
+    params: { startDate?: string; endDate?: string; round?: string };
 };
 
 export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
-    round,
+    params,
 }) => {
     const map = useMapEvents({
         zoomend: () => {
@@ -42,14 +42,14 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
 
     const showCountries = map.getZoom() <= 5;
     const { data: mapShapes, isFetching: isAfroShapesLoading } =
-        useAfroMapShapes({ category: 'lqas', enabled: showCountries, round });
+        useAfroMapShapes({ category: 'lqas', enabled: showCountries, params });
 
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
         useGetZoomedInShapes({
             bounds: JSON.stringify(bounds),
             category: 'lqas',
             enabled: !showCountries,
-            round,
+            params,
         });
 
     const {
@@ -67,6 +67,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                 (isLoadingZoominbackground && !showCountries)) && (
                 <LoadingSpinner fixed={false} absolute />
             )}
+
             {showCountries && (
                 <MapPanes
                     mainLayer={mapShapes}

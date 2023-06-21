@@ -1003,7 +1003,9 @@
     "iaso.userRoles.delete": "Are you sure you want to delete this user role?",
     "iaso.userRoles.edit": "Edit user role",
     "iaso.userRoles.title": "User roles",
+    "iaso.users.addLocations": "Add location(s)",
     "iaso.users.addProjects": "Add to project(s)",
+    "iaso.users.addRole": "Add user role",
     "iaso.users.bulkChangeCount": "You are about to change {count} user(s)",
     "iaso.users.create": "Create user",
     "iaso.users.dialog.chooseLocation": "Select location(s)",
@@ -1023,7 +1025,9 @@
     "iaso.users.ouParentCheckbox": "Users with access to parent org unit",
     "iaso.users.password": "Password",
     "iaso.users.permissions": "Permissions",
+    "iaso.users.removeLocations": "Remove location(s)",
     "iaso.users.removeProjects": "Remove from project(s)",
+    "iaso.users.removeRole": "Remove user role",
     "iaso.users.selectedOrgUnits": "Org units selected",
     "iaso.users.update": "Update user",
     "iaso.users.warningModalMessage": "You are about to save a user with no permissions. This user will have access to the mobile application but not to the features of the web interface.",
@@ -1092,8 +1096,6 @@
     "map.draw.label.undo": "Undo",
     "map.label.fitToBounds": "Center the map",
     "map.label.zoom.box": "Draw a square to zoom",
-    "iaso.users.addRole": "Add user role",
-    "iaso.users.removeRole": "Remove user role",
     "map.label.zoom.info": "Current zoom level",
     "PeriodSelectorComponent.label.apply": "Apply"
 }

@@ -95,7 +95,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
         useDeleteProfile();
 
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
-    const { mutateAsync: bulkSave, isLoading: savingProfiles } = useBulkSaveProfiles(setSelection);
+    const { mutateAsync: bulkSave, isLoading: savingProfiles } = useBulkSaveProfiles();
 
     const isLoading = fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
@@ -106,6 +106,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                 open={multiActionPopupOpen}
                 closeDialog={() => setMultiActionPopupOpen(false)}
                 selection={selection}
+                setSelection={setSelection}
                 saveMulti={(saveData: Record<string, any>) => bulkSave({...saveData, ...params})}
             />
             <TopBar

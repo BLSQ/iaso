@@ -6,25 +6,36 @@ from django.db import transaction
 
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
-from iaso.models import Task, Profile, Project
+from iaso.models import Task, Profile, Project, UserRole, OrgUnit
 from iaso.api.profiles import get_filtered_profiles
 
 
 def update_single_profile_from_bulk(
-    user, profile, *, projects_ids_added, projects_ids_removed, role_id_added, role_id_removed, location_ids, language
+    user,
+    profile,
+    *,
+    projects_ids_added,
+    projects_ids_removed,
+    role_id_added,
+    role_id_removed,
+    location_ids_added,
+    location_ids_removed,
+    language,
 ):
     """Used within the context of a bulk operation"""
     original_copy = deepcopy(profile)
-    # TODO:
-    # role_id_added
-    # role_id_removed
-    # location_ids
+
+    if role_id_added is not None:
+        role = UserRole.objects.get(id=role_id_added)
+        role.iaso_profile.add(profile)
+    if role_id_removed is not None:
+        role = UserRole.objects.get(id=role_id_removed)
+        role.iaso_profile.remove(profile)
 
     if projects_ids_added is not None:
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)
             project.iaso_profile.add(profile)
-
     if projects_ids_removed is not None:
         for project_id in projects_ids_removed:
             project = Project.objects.get(pk=project_id)
@@ -32,6 +43,16 @@ def update_single_profile_from_bulk(
 
     if language is not None:
         profile.language = language
+
+    if location_ids_added is not None:
+        for location_id in location_ids_added:
+            org_unit = OrgUnit.objects.get(pk=location_id)
+            org_unit.iaso_profile.add(profile)
+    if location_ids_removed is not None:
+        for location_id in location_ids_removed:
+            org_unit = OrgUnit.objects.get(pk=location_id)
+            org_unit.iaso_profile.remove(profile)
+
     profile.save()
 
     audit_models.log_modification(original_copy, profile, source=audit_models.PROFILE_API_BULK, user=user)
@@ -46,7 +67,8 @@ def profiles_bulk_update(
     projects_ids_removed: Optional[List[int]],
     role_id_added: Optional[int],
     role_id_removed: Optional[int],
-    location_ids: Optional[List[int]],
+    location_ids_added: Optional[List[int]],
+    location_ids_removed: Optional[List[int]],
     language: Optional[str],
     search: Optional[str],
     perms: Optional[List[str]],
@@ -94,7 +116,8 @@ def profiles_bulk_update(
                 projects_ids_removed=projects_ids_removed,
                 role_id_added=role_id_added,
                 role_id_removed=role_id_removed,
-                location_ids=location_ids,
+                location_ids_added=location_ids_added,
+                location_ids_removed=location_ids_removed,
                 language=language,
             )
 

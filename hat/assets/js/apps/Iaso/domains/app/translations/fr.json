@@ -17,6 +17,8 @@
     "iaso.algo.addRun": "Exécuter un algorithme",
     "iaso.archived.title": "Archives",
     "iaso.area": "Aire de santé",
+    "iaso.users.addLocations": "Ajouter la(les) localisation(s)",
+    "iaso.users.removeLocations": "Retirer la(les) localisation(s)",
     "iaso.assignment.alreadyAssigned": "Déjà assigné",
     "iaso.assignment.alreadyAssignedTo": "Déjà assigné à",
     "iaso.assignment.assignationsCount": "Nombre d'assignations",

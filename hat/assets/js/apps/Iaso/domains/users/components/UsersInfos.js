@@ -109,7 +109,7 @@ const UsersInfos = ({
                     setFieldValue(
                         key,
                         value
-                            .split(',')
+                            ?.split(',')
                             .map(projectId => parseInt(projectId, 10)),
                     )
                 }

@@ -366,6 +366,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.copyVersionSuccessMessage',
         defaultMessage: 'The task has been created"',
     },
+    addLocations: {
+        id: 'iaso.users.addLocations',
+        defaultMessage: 'Add location(s)',
+    },
+    removeLocations: {
+        id: 'iaso.users.removeLocations',
+        defaultMessage: 'Remove location(s)',
+    },
 });
 
 export default MESSAGES;

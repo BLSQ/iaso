@@ -1,4 +1,10 @@
-import React, { FunctionComponent, useCallback, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useState,
+    Dispatch,
+    SetStateAction,
+} from 'react';
 
 import {
     Dialog,
@@ -14,6 +20,7 @@ import {
     commonStyles,
     formatThousand,
     useSafeIntl,
+    selectionInitialState,
 } from 'bluesquare-components';
 import ReportIcon from '@material-ui/icons/Report';
 import { UseMutateAsyncFunction } from 'react-query';
@@ -37,6 +44,7 @@ type Props = {
     open: boolean;
     closeDialog: () => void;
     selection: Selection<Profile>;
+    setSelection: Dispatch<SetStateAction<Selection<Profile>>>;
     saveMulti: UseMutateAsyncFunction<unknown, unknown, unknown, unknown>;
 };
 
@@ -77,7 +85,8 @@ type BulkState = {
     addProjects: string[];
     removeProjects: string[];
     language?: 'en' | 'fr';
-    locations: OrgUnit[];
+    addLocations: OrgUnit[];
+    removeLocations: OrgUnit[];
 };
 
 const initialState: BulkState = {
@@ -86,13 +95,15 @@ const initialState: BulkState = {
     addProjects: [],
     removeProjects: [],
     language: undefined,
-    locations: [],
+    addLocations: [],
+    removeLocations: [],
 };
 
 export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     open,
     closeDialog,
     selection,
+    setSelection,
     saveMulti,
 }) => {
     const [bulkState, setBulkState] = useState<BulkState>(initialState);
@@ -115,6 +126,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     const closeAndReset = () => {
         closeDialog();
         setBulkState(initialState);
+        setSelection(selectionInitialState);
     };
     const saveAndReset = () => {
         saveMulti({ ...bulkState, selection }).then(() => closeAndReset());
@@ -202,16 +214,29 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                 />
                 <OrgUnitTreeviewModal
                     toggleOnLabelClick={false}
-                    titleMessage={MESSAGES.chooseLocation}
+                    titleMessage={MESSAGES.addLocations}
                     onConfirm={orgUnitsList => {
                         if (!orgUnitsList) {
-                            handleChange('locations', []);
+                            handleChange('addLocations', []);
                             return;
                         }
-                        handleChange('locations', orgUnitsList);
+                        handleChange('addLocations', orgUnitsList);
                     }}
                     multiselect
-                    initialSelection={bulkState.locations}
+                    initialSelection={bulkState.addLocations}
+                />
+                <OrgUnitTreeviewModal
+                    toggleOnLabelClick={false}
+                    titleMessage={MESSAGES.removeLocations}
+                    onConfirm={orgUnitsList => {
+                        if (!orgUnitsList) {
+                            handleChange('removeLocations', []);
+                            return;
+                        }
+                        handleChange('removeLocations', orgUnitsList);
+                    }}
+                    multiselect
+                    initialSelection={bulkState.removeLocations}
                 />
             </DialogContent>
             <DialogActions className={classes.action}>

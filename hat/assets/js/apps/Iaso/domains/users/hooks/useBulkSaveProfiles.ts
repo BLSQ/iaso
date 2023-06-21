@@ -1,6 +1,4 @@
 import { UseMutationResult } from 'react-query';
-import { selectionInitialState } from 'bluesquare-components';
-import { Dispatch, SetStateAction } from 'react';
 import { postRequest } from '../../../libs/Api';
 import { useSnackMutation } from '../../../libs/apiHooks';
 
@@ -18,7 +16,8 @@ export type BulkSaveQuery = {
     addProjects: string[];
     removeProjects: string[];
     language?: 'en' | 'fr';
-    locations: OrgUnit[];
+    addLocations: OrgUnit[];
+    removeLocations: OrgUnit[];
     selection: Selection<Profile>;
     search?: string;
     permissions?: string;
@@ -37,7 +36,8 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         addProjects,
         removeProjects,
         language,
-        locations,
+        addLocations,
+        removeLocations,
         selection: { selectAll, selectedItems, unSelectedItems },
         search,
         permissions,
@@ -56,7 +56,8 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         projects_ids_removed: removeProjects.map(projectId =>
             parseInt(projectId, 10),
         ),
-        location_ids: locations.map(loc => parseInt(loc.id, 10)),
+        location_ids_added: addLocations.map(loc => parseInt(loc.id, 10)),
+        location_ids_removed: removeLocations.map(loc => parseInt(loc.id, 10)),
         language,
         select_all: selectAll,
         selected_ids: selectedItems.map(item => item.id),
@@ -71,15 +72,9 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
     });
 };
 
-export const useBulkSaveProfiles = (
-    setSelection: Dispatch<SetStateAction<Selection<Profile>>>,
-): UseMutationResult => {
+export const useBulkSaveProfiles = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: bulkSaveProfiles,
         snackSuccessMessage: MESSAGES.taskLaunched,
-        invalidateQueryKey: ['profiles'],
-        options: {
-            onSuccess: () => setSelection(selectionInitialState),
-        },
     });
 };

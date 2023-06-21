@@ -123,11 +123,13 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    {/* @ts-ignore */}
                     <AddUsersDialog
                         titleMessage={MESSAGES.create}
                         saveProfile={saveProfile}
                         allowSendEmailInvitation
+                        iconProps={{
+                            dataTestId: 'add-user-button'
+                        }}
                     />
                     <Box ml={2}>
                         {/* @ts-ignore */}

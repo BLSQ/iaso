@@ -191,7 +191,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.select_related("org_unit_type")
                 return Response({"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]})
         elif gpkg_format:
-            return self.list_to_gpkg(queryset)
+            user_account_name = profile.account.name if profile else ""
+            environment = settings.ENVIRONMENT
+            filename = "org_units"
+            filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+            return self.list_to_gpkg(queryset, filename)
         else:
             # When filtering the org units by group, the values_list will return the groups also filtered.
             #  In order to get the all groups independently of filters, we should get the groups
@@ -287,9 +291,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
-    def list_to_gpkg(self, queryset):
+    def list_to_gpkg(self, queryset, filename):
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
-        filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
+        filename = f"{filename}-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
 
         return response

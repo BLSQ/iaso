@@ -43,10 +43,7 @@ import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { SelectedMarkers } from './SelectedMarkers';
 import { buttonsInitialState } from './constants';
 import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
-import {
-    Tile,
-    TilesSwitchDialog,
-} from '../../../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
 import tiles from '../../../../../constants/mapTiles';
 import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
 
@@ -469,10 +466,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
-                <TilesSwitchDialog
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
-                />
                 <MapContainer
                     key={currentOrgUnit.id}
                     // @ts-ignore TODO: fix this type problem
@@ -494,7 +487,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         fitOnLoad
                     />
                     <ScaleControl imperial={false} />
-                    <CustomTileLayer currentTile={currentTile} />
+                    <CustomTileLayer
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
+                    />
                     {!state.location.value.edit &&
                         state.ancestorWithGeoJson.value && (
                             <Pane

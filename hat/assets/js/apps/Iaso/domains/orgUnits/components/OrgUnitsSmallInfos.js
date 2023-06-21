@@ -12,7 +12,7 @@ import {
 import OrgUnitsSmallInfosRow from './OrgUnitsSmallInfosRow';
 
 const OrgUnitsSmallInfos = ({ orgUnit }) => {
-    const { formatMessage } = useSafeIntl;
+    const { formatMessage } = useSafeIntl();
     const getStatusMessage = useGetStatusMessage();
     return (
         <>

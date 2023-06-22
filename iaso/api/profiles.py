@@ -298,14 +298,14 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
-        
+
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
         for user_role_id in user_roles:
             user_role_item = get_object_or_404(UserRole, pk=user_role_id)
             profile.user_roles.add(user_role_item)
-            
+
         dhis2_id = request.data.get("dhis2_id", None)
         if dhis2_id == "":
             dhis2_id = None

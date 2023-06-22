@@ -2,6 +2,7 @@
 
 from django.db import migrations
 
+
 def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
     FeatureFlag.objects.create(
@@ -14,12 +15,10 @@ def destroy_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
     FeatureFlag.objects.filter(code="MOBILE_CHECK_OU_UPDATE").delete()
 
+
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0217_add_feature_flag_MOBILE_CHECK_FORMS_UPDATE'),
+        ("iaso", "0217_add_feature_flag_MOBILE_CHECK_FORMS_UPDATE"),
     ]
 
-    operations = [
-        migrations.RunPython(create_feature_flags, destroy_feature_flags)
-    ]
+    operations = [migrations.RunPython(create_feature_flags, destroy_feature_flags)]

@@ -86,7 +86,7 @@ def profiles_bulk_update(
     # Restrict qs to profiles accessible to the user
     user = task.launcher
 
-    queryset = Profile.objects.filter(account=user.iaso_profile.account)
+    queryset = Profile.objects.filter(account=user.iaso_profile.account)  # type: ignore
 
     if not select_all:
         queryset = queryset.filter(pk__in=selected_ids)

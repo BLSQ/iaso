@@ -55,6 +55,10 @@ export const useInitialUser = (
                 value: get(initialData, 'user_roles', []),
                 errors: [],
             },
+            user_roles_permissions: {
+                value: get(initialData, 'user_roles_permissions', []),
+                errors: [],
+            },
             send_email_invitation: {
                 value: get(initialData, 'send_email_invitation', false),
                 errors: [],

@@ -2,12 +2,17 @@ import React from 'react';
 import {
     FormControlLabel,
     Switch,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
     Typography,
     makeStyles,
 } from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-
+import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
@@ -19,17 +24,15 @@ const styles = theme => ({
 });
 
 const useStyles = makeStyles(styles);
-
+type Permission = {
+    id: number;
+    codename: string;
+};
 type Props = {
     isSuperUser?: boolean;
     currentUser: any;
     // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
-};
-
-type Permission = {
-    id: number;
-    codename: string;
 };
 
 type PermissionResult = {
@@ -70,7 +73,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
             : permissionCodeName;
     };
     const permissions = data?.permissions ?? [];
-
+    const userRoles = currentUser.user_roles_permissions.value;
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -83,43 +86,87 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.isSuperUser)}
                 </Typography>
             )}
-            {!isSuperUser &&
-                permissions
-                    .sort((a, b) =>
-                        permissionLabel(a.codename).localeCompare(
-                            permissionLabel(b.codename),
-                            undefined,
-                            {
-                                sensitivity: 'accent',
-                            },
-                        ),
-                    )
-                    .map(p => (
-                        <div key={p.id}>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        className="permission-checkbox"
-                                        id={`permission-checkbox-${p.codename}`}
-                                        checked={Boolean(
-                                            currentUser.permissions.value.find(
-                                                up => up === p.codename,
-                                            ),
-                                        )}
-                                        onChange={e =>
-                                            setPermissions(
-                                                p.codename,
-                                                e.target.checked,
-                                            )
-                                        }
-                                        name={p.codename}
-                                        color="primary"
-                                    />
-                                }
-                                label={permissionLabel(p.codename)}
-                            />
-                        </div>
-                    ))}
+
+            {!isSuperUser && (
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>User permissions</TableCell>
+                            {userRoles &&
+                                userRoles.map(role => {
+                                    return (
+                                        <TableCell key={role.id}>
+                                            {role.name}
+                                        </TableCell>
+                                    );
+                                })}
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {permissions
+                            .sort((a, b) =>
+                                permissionLabel(a.codename).localeCompare(
+                                    permissionLabel(b.codename),
+                                    undefined,
+                                    {
+                                        sensitivity: 'accent',
+                                    },
+                                ),
+                            )
+                            .map(p => (
+                                <TableRow>
+                                    <TableCell key={p.id}>
+                                        <FormControlLabel
+                                            control={
+                                                <Switch
+                                                    className="permission-checkbox"
+                                                    id={`permission-checkbox-${p.codename}`}
+                                                    checked={Boolean(
+                                                        currentUser.permissions.value.find(
+                                                            up =>
+                                                                up ===
+                                                                p.codename,
+                                                        ),
+                                                    )}
+                                                    onChange={e =>
+                                                        setPermissions(
+                                                            p.codename,
+                                                            e.target.checked,
+                                                        )
+                                                    }
+                                                    name={p.codename}
+                                                    color="primary"
+                                                />
+                                            }
+                                            label={permissionLabel(p.codename)}
+                                        />
+                                    </TableCell>
+                                    {userRoles &&
+                                        userRoles.map(role => {
+                                            if (
+                                                role.permissions.find(
+                                                    permission =>
+                                                        permission ===
+                                                        p.codename,
+                                                )
+                                            ) {
+                                                return (
+                                                    <TableCell key={p.codename}>
+                                                        <InputComponent
+                                                            disabled
+                                                            type="checkbox"
+                                                            value
+                                                        />
+                                                    </TableCell>
+                                                );
+                                            }
+                                            return <TableCell />;
+                                        })}
+                                </TableRow>
+                            ))}
+                    </TableBody>
+                </Table>
+            )}
         </>
     );
 };

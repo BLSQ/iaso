@@ -840,6 +840,7 @@
     "iaso.snackBar.deleteRun": "Une erreur est survenue en effaçant l'exécution d'un algorithme",
     "iaso.snackBar.deleteTeamError": "Une erreur est survenue en effaçant une équipe",
     "iaso.snackBar.deleteUserError": "Une erreur est survenue en effaçant un groupe",
+    "iaso.snackBar.deleteUserRoleError": "Une erreur s'est produite lors de la suppression du rôle d'utilisateur",
     "iaso.snackBar.deleteUserSuccessful": "Profil effacé avec succès",
     "iaso.snackBar.error": "Impossible de sauvegarder",
     "iaso.snackBar.exportToDhis2Error": "Une erreur s'est produite lors de l'export vers DHIS2",

@@ -853,6 +853,7 @@
     "iaso.snackBar.deleteRun": "An error occurred while deleting algorithms run",
     "iaso.snackBar.deleteTeamError": "An error occurred while deleting team",
     "iaso.snackBar.deleteUserError": "An error occurred while deleting user profile",
+    "iaso.snackBar.deleteUserRoleError": "An error occurred while deleting user role",
     "iaso.snackBar.deleteUserSuccessful": "User deleted",
     "iaso.snackBar.error": "An error occurred while saving",
     "iaso.snackBar.exportToDhis2Error": "An error occurred while exporting to DHIS2",

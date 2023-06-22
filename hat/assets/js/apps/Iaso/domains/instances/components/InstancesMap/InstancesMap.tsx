@@ -23,10 +23,7 @@ import { setCurrentInstance } from '../../actions';
 import { fetchInstanceDetail } from '../../../../utils/requests';
 import { Instance } from '../../types/instance';
 import { InstancePopup } from '../InstancePopUp/InstancePopUp';
-import {
-    TilesSwitchDialog,
-    Tile,
-} from '../../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../../components/maps/tools/TilesSwitchControl';
 import { CustomTileLayer } from '../../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../../components/maps/tools/MapToggleCluster';
@@ -96,10 +93,6 @@ export const InstancesMap: FunctionComponent<Props> = ({
                 isClusterActive={isClusterActive}
                 setIsClusterActive={setIsClusterActive}
             />
-            <TilesSwitchDialog
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
             <MapContainer
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
@@ -112,7 +105,10 @@ export const InstancesMap: FunctionComponent<Props> = ({
                 keyboard={false}
             >
                 <ScaleControl imperial={false} />
-                <CustomTileLayer currentTile={currentTile} />
+                <CustomTileLayer
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
+                />
                 <CustomZoomControl
                     bounds={bounds}
                     boundsOptions={boundsOptions}

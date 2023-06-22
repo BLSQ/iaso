@@ -7,7 +7,7 @@ import {
     Tooltip,
     ScaleControl,
 } from 'react-leaflet';
-import { Grid, makeStyles,Box } from '@material-ui/core';
+import { Grid, makeStyles, Box } from '@material-ui/core';
 import {
     useSafeIntl,
     commonStyles,
@@ -18,10 +18,7 @@ import {
 import InnerDrawer from '../../../components/nav/InnerDrawer';
 import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import {
-    Tile,
-    TilesSwitchDialog,
-} from '../../../components/maps/tools/TilesSwitchDialog';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import { OrgUnitsMapComments } from './orgUnitMap/OrgUnitsMapComments';
 import { innerDrawerStyles } from '../../../components/nav/InnerDrawer/styles';
@@ -234,10 +231,6 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         isClusterActive={isClusterActive}
                         setIsClusterActive={setIsClusterActive}
                     />
-                    <TilesSwitchDialog
-                        currentTile={currentTile}
-                        setCurrentTile={setCurrentTile}
-                    />
                     <MapContainer
                         doubleClickZoom={false}
                         scrollWheelZoom={false}
@@ -252,7 +245,10 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                         trackResize
                     >
                         <ScaleControl imperial={false} />
-                        <CustomTileLayer currentTile={currentTile} />
+                        <CustomTileLayer
+                            currentTile={currentTile}
+                            setCurrentTile={setCurrentTile}
+                        />
                         <CustomZoomControl
                             bounds={bounds}
                             boundsOptions={boundsOptions}

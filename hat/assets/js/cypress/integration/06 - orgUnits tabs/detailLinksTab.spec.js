@@ -60,10 +60,10 @@ const newFilters = {
         selector: '#linksParamsAlgorithmId',
         type: 'multi',
     },
-    linkParamsValidated: {
+    linksParamsValidated: {
         value: [0],
         urlValue: 'true',
-        selector: '#linkParamsValidated',
+        selector: '#linksParamsValidated',
         type: 'multi',
     },
     linksParamsOrigin: {
@@ -352,7 +352,7 @@ describe('links tab', () => {
     });
 
     describe('Filters', () => {
-        it.skip('change filters should deep link and call api with correct params', () => {
+        it('change filters should deep link and call api with correct params', () => {
             cy.visit(baseUrl);
             cy.wait('@getOuDetail').then(() => {
                 interceptFlag = false;
@@ -370,8 +370,7 @@ describe('links tab', () => {
                                 newFilters.linksParamsValidatorId.urlValue,
                             algorithmId:
                                 newFilters.linksParamsAlgorithmId.urlValue,
-                            validation_status:
-                                newFilters.linkParamsValidated.urlValue,
+                            validated: newFilters.linksParamsValidated.urlValue,
                             origin: newFilters.linksParamsOrigin.urlValue,
                         },
                     },

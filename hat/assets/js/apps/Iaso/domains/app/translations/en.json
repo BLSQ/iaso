@@ -1006,7 +1006,7 @@
     "iaso.userRoles.title": "User roles",
     "iaso.users.addLocations": "Add location(s)",
     "iaso.users.addProjects": "Add to project(s)",
-    "iaso.users.addRolse": "Add user role(s)",
+    "iaso.users.addRoles": "Add user role(s)",
     "iaso.users.bulkChangeCount": "You are about to change {count} user(s)",
     "iaso.users.create": "Create user",
     "iaso.users.dialog.chooseLocation": "Select location(s)",

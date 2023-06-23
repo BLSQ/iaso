@@ -17,6 +17,6 @@
         "lib":["ES2021", "DOM"]                   // prevent some linter errors
 
     },
-    "exclude":["node_modules"],
+    "exclude":["node_modules", "**/users/components/*.spec.js"],
     "include":["assets/js/apps/Iaso/**/*","assets/js/apps/Iaso/*","hat/assets/js/apps/Iaso/**/*","hat/assets/js/apps/Iaso/*","plugins/polio/js/**/*"],
 }

@@ -8,7 +8,7 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
 import MESSAGES from './messages';
 
-const usersTableColumns = ({
+export const usersTableColumns = ({
     formatMessage,
     deleteProfile,
     params,
@@ -73,4 +73,30 @@ const usersTableColumns = ({
         ),
     },
 ];
-export default usersTableColumns;
+
+export const userPermissionColumns = ({ formatMessage, currentUser }) => {
+    const columns = [
+        {
+            Header: formatMessage(MESSAGES.permissions),
+            id: 'permission',
+            accessor: 'permission',
+            sortable: false,
+        },
+        {
+            Header: formatMessage(MESSAGES.userPermissions),
+            id: 'userPermission',
+            accessor: 'userPermission',
+            sortable: false,
+        },
+    ];
+
+    currentUser.user_roles_permissions.value.forEach(role => {
+        columns.push({
+            Header: role.name,
+            id: role.id.toString(),
+            accessor: role.id.toString(),
+            sortable: false,
+        });
+    });
+    return columns;
+};

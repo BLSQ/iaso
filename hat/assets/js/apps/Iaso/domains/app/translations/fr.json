@@ -785,6 +785,7 @@
     "iaso.permissions.submissions": "Soumissions de formulaire",
     "iaso.permissions.teams": "Equipes",
     "iaso.permissions.update_submission": "Editer soumissions",
+    "iaso.permissions.userRoles": "Rôles de l'utilisateur",
     "iaso.permissions.users": "Utilisateurs",
     "iaso.permissions.workflows": "Workflows",
     "iaso.planning.title": "Planning",

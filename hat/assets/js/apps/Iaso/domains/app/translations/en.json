@@ -790,6 +790,7 @@
     "iaso.permissions.submissions": "Form submissions",
     "iaso.permissions.teams": "Teams",
     "iaso.permissions.update_submission": "Update submissions",
+    "iaso.permissions.userRoles": "User roles",
     "iaso.permissions.users": "Users",
     "iaso.permissions.workflows": "Workflows",
     "iaso.planning.title": "Planning",

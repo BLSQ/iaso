@@ -75,7 +75,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     // backgroundLayer={zoominbackgroundShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     // getBackgroundLayerStyle={}
-                    name="LQAS-Map-country-view"
+                    name={`LQAS-Map-country-view-${JSON.stringify(params)}`}
                 />
             )}
             {!showCountries && (

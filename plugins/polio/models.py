@@ -581,6 +581,13 @@ class Campaign(SoftDeletableModel):
         )
         return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.min
 
+    def find_last_round_with_date(self, date_type="start"):
+        rounds = self.rounds.all()
+        if date_type == "start":
+            return rounds.exclude(started_at=None).order_by("-started_at").first()
+        if date_type == "end":
+            return rounds.exclude(ended_at=None).order_by("-ended_at").first()
+
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:
             try:

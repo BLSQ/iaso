@@ -1780,7 +1780,11 @@ def reduce_to_country_status(total, current):
         total["passed"] = 0
     if not total.get("total", None):
         total["total"] = 0
-    if int(current[0]) == 1:
+    try:
+        index = int(current[0])
+    except:
+        index = 0
+    if index == 1:
         total["passed"] = total["passed"] + 1
     total["total"] = total["total"] + 1
     return total
@@ -1819,14 +1823,6 @@ def calculate_country_status(country_data, scope, roundNumber):
     return "3lqasFail"
 
 
-def find_campaign_last_round_with_date(campaign, date_type="start"):
-    rounds = campaign.rounds.all()
-    if date_type == "start":
-        return rounds.exclude(started_at=None).order_by("-started_at").first()
-    if date_type == "end":
-        return rounds.exclude(ended_at=None).order_by("-ended_at").first()
-
-
 @swagger_auto_schema(tags=["lqasglobal"])
 class LQASIMGlobalMapViewSet(ModelViewSet):
     http_method_names = ["get"]
@@ -1835,39 +1831,42 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
 
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
-        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom=None)
 
     def list(self, request):
         results = []
+        # Should be "lqas", "im_OHH", "im_HH"
         category = self.request.GET.get("category", None)
-
         requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
+        # Construct the slug of the datastore endpoint for each country
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
         data_stores = JsonDataStore.objects.filter(slug__in=countries)
         for org_unit in queryset:
             start_date_after = self.request.GET.get("startDate", None)
             end_date_before = self.request.GET.get("endDate", None)
             country_id = org_unit.id
+
             try:
                 data_store = data_stores.get(slug__contains=str(country_id))
             except JsonDataStore.DoesNotExist:
                 data_store = None
-                # continue
-            shapes = None
-            if org_unit.simplified_geom is not None:
-                shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
-                    request.user, request.query_params.get("app_id", None)
-                ).filter(id=org_unit.id)
-                shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+            # Get shapes
+            shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
+                request.user, request.query_params.get("app_id", None)
+            ).filter(id=org_unit.id)
+            shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+
             # Probably not necessary as long as we only have AFRO in the platform
             campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
+            # Since LQAS/IM are being performed after campaigns end, we filter out future and current campaigns
             finished_campaigns = [
                 campaign
                 for campaign in campaigns
                 if len([round for round in campaign.rounds.all() if Round.is_round_over(round)]) == 0
             ]
 
+            # By default, we want the last campaign that ended, so we sort them by descending round end date
             sorted_campaigns = (
                 sorted(
                     finished_campaigns,
@@ -1877,25 +1876,24 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
                 if data_store
                 else []
             )
-
+            # We apply the date filters if any
             if start_date_after is not None:
                 start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns
-                    if find_campaign_last_round_with_date(campaign).started_at >= start_date_after
+                    if campaign.find_last_round_with_date(campaign).started_at >= start_date_after
                 ]
             if end_date_before is not None:
                 end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns
-                    if find_campaign_last_round_with_date(campaign, "end").ended_at <= end_date_before
+                    if campaign.find_last_round_with_date(campaign, "end").ended_at <= end_date_before
                 ]
-
+            # And we pick the first one from our sorted list
             latest_campaign = sorted_campaigns[0] if data_store and sorted_campaigns else None
-
-            # TODO make null safe
+            # Get data from json datastore
             data_for_country = data_store.content if data_store else None
             # remove data from all campaigns but latest
             stats = data_for_country.get("stats", None) if data_for_country else None
@@ -2008,14 +2006,14 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns
-                    if find_campaign_last_round_with_date(campaign, "start").started_at >= start_date_after
+                    if campaign.find_last_round_with_date(campaign, "start").started_at >= start_date_after
                 ]
             if end_date_before is not None:
                 end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns
-                    if find_campaign_last_round_with_date(campaign, "end").ended_at <= end_date_before
+                    if campaign.find_last_round_with_date(campaign, "end").ended_at <= end_date_before
                 ]
 
             latest_campaign = sorted_campaigns[0] if len(finished_campaigns) > 0 and sorted_campaigns else None

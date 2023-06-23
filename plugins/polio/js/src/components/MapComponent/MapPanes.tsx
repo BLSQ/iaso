@@ -46,13 +46,19 @@ export const MapPanes: FunctionComponent<Props> = ({
                 {(mainLayer?.length ?? 0) > 0 &&
                     mainLayer?.map(shape => (
                         <GeoJSON
-                            key={shape.id}
+                            // TODO better parametrize this
+                            key={
+                                shape?.status
+                                    ? `${shape.status}-${shape.id}`
+                                    : shape.id
+                            }
                             data={shape.geo_json}
                             style={() => getMainLayerStyle(shape)}
                             onClick={() => onSelectShape(shape)}
                         >
                             {makePopup && makePopup(shape)}
-                            <Tooltip title={shape.name}>
+                            {/* @ts-ignore */}
+                            <Tooltip title={shape.name} pane="popupPane">
                                 {(backgroundLayer?.length ?? 0) > 0 && (
                                     <span>
                                         {tooltipLabels &&
@@ -67,9 +73,10 @@ export const MapPanes: FunctionComponent<Props> = ({
                                     </span>
                                 )}
                                 <span>
-                                    {tooltipLabels &&
+                                    {/* {tooltipLabels &&
                                         `${tooltipLabels.main}: ${shape.name}`}
-                                    {!tooltipLabels && `${shape.name}`}
+                                    {!tooltipLabels && `${shape.name}`} */}
+                                    CACA
                                 </span>
                             </Tooltip>
                         </GeoJSON>

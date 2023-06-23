@@ -7,7 +7,7 @@ def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
     FeatureFlag.objects.create(
         code="MOBILE_CHECK_FORMS_UPDATE",
-        name="Mobile: Check if the user can update a form.",
+        name="Mobile: Warn the user when forms have been updated.",
     )
 
 

@@ -7,7 +7,7 @@ def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
     FeatureFlag.objects.create(
         code="MOBILE_FORCE_OU_UPDATE",
-        name="Mobile: Check if the user can force update an orgUnit.",
+        name="Mobile: Warn the user when the Org Units have been updated and force them to update.",
     )
 
 

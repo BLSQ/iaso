@@ -7,7 +7,7 @@ def create_feature_flags(apps, schema_editor):
     FeatureFlag = apps.get_model("iaso", "FeatureFlag")
     FeatureFlag.objects.create(
         code="MOBILE_CHECK_OU_UPDATE",
-        name="Mobile: Check if the user can update an orgUnit.",
+        name="Mobile: Warn the user when the Org Units have been updated.",
     )
 
 

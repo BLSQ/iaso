@@ -98,6 +98,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     };
 
     return (
+        // @ts-ignore
         <ConfirmCancelModal
             titleMessage={titleMessage}
             onConfirm={onConfirm}

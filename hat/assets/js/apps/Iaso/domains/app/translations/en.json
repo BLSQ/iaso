@@ -198,6 +198,7 @@
     "iaso.form.label.sourceVersion": "Source version",
     "iaso.form.stats.allSubmissionsTitle": "All Submissions",
     "iaso.form.stats.submissionsPerMonthTitle": "New submissions per month",
+    "iaso.forms.addSubmissionForForm": "Add a submission for this form",
     "iaso.forms.aliases": "Aliases",
     "iaso.forms.all": "All",
     "iaso.forms.both": "Validated and not validated",

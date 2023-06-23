@@ -195,6 +195,7 @@
     "iaso.form.label.sourceVersion": "Version de la source",
     "iaso.form.stats.allSubmissionsTitle": "Nombre total de soumissions",
     "iaso.form.stats.submissionsPerMonthTitle": "Nouvelles soumissions par mois",
+    "iaso.forms.addSubmissionForForm": "Créer une soumission pour ce formulaire",
     "iaso.forms.aliases": "Alias",
     "iaso.forms.all": "Tous",
     "iaso.forms.both": "Validées et non-validées",

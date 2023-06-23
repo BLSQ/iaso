@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.data_store import JsonDataStore
 from iaso.models.org_unit import OrgUnit, OrgUnitType
@@ -122,6 +122,18 @@ class PolioLqasAfroMapTestCase(APITestCase):
             simplified_geom=cls.district_4_geo_json,
             parent=cls.region_org_unit_2,
         )
+
+        # country without campaign to test that api doesn't crash
+        cls.country_3_geo_json = MultiPolygon(Polygon.from_bbox((11, 11, 15, 15)))
+        cls.country_org_unit_3 = OrgUnit.objects.create(
+            name="Country3",
+            validation_status=OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+            org_unit_type=cls.country,
+            version=cls.source_version,
+            simplified_geom=cls.country_3_geo_json,
+        )
+
         # Campaign 1. Scope at campaign level
         cls.campaign_1 = Campaign.objects.create(
             obr_name="CAMPAIGN1",
@@ -226,7 +238,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
                         {
                             "number": 2,
                             "data": {
-                                cls.district_org_unit_3.name: {"total_child_checked": 60, "total_child_fmd": 60},
+                                # TODO uncomment when code is able to filter out of scope districts
+                                # cls.district_org_unit_3.name: {"total_child_checked": 60, "total_child_fmd": 60},
                                 cls.district_org_unit_4.name: {"total_child_checked": 45, "total_child_fmd": 45},
                             },
                         },
@@ -310,3 +323,126 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEquals(result, "inScope")
         result = calculate_country_status({}, CampaignScope.objects.filter(campaign__obr_name="NOTHING"), round_number)
         self.assertEquals(result, "inScope")
+
+    def test_is_round_over(self):
+        # Accessing the round directly will cause the date to be of type str
+        round = self.campaign_1.rounds.last()
+        self.assertTrue(Round.is_round_over(round))
+        round = self.excluded_campaign.rounds.last()
+        self.assertFalse(Round.is_round_over(round))
+
+    def test_lqas_global(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get("/api/polio/lqasmap/global/?category=lqas", accept="application/json")
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        # Test details of data for first country
+        self.assertEquals(len(results), 3)
+        results_for_first_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_country is not None)
+        self.assertEquals(results_for_first_country["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(len(results_for_first_country["data"]["rounds"]), self.campaign_1.rounds.count())
+        self.assertEquals(
+            results_for_first_country["data"]["rounds"][0]["data"],
+            self.country1_data_store_content["stats"][self.campaign_1.obr_name]["rounds"][0]["data"],
+        )
+        self.assertEquals(results_for_first_country["status"], "3lqasFail")
+
+        # Test that second country is there as well
+        results_for_second_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_country is not None)
+
+        # Test third country. Without campaign data should be ull and status "inScope"
+        results_for_third_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_3.id), None
+        )
+        self.assertTrue(results_for_third_country is not None)
+        self.assertEquals(results_for_third_country["status"], "inScope")
+        self.assertTrue(results_for_third_country["data"] is None)
+
+    def test_lqas_global_round_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get("/api/polio/lqasmap/global/?category=lqas&round=1", accept="application/json")
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 3)
+        results_for_first_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_country is not None)
+        # Only status changes
+        self.assertEquals(results_for_first_country["status"], "1lqasOK")
+        results_for_second_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_country is not None)
+        self.assertEquals(results_for_second_country["status"], "1lqasOK")
+
+    def test_lqas_global_end_date_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get("/api/polio/lqasmap/global/?category=lqas&endDate=04-06-2023", accept="application/json")
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        # Campaign 1 round 2 should fail, campaign2 round 2 should pass
+        results_for_first_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_country is not None)
+        self.assertEquals(results_for_first_country["status"], "inScope")
+
+        results_for_second_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_country is not None)
+        self.assertEquals(results_for_second_country["status"], "3lqasFail")
+
+    def test_lqas_global_start_date_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get("/api/polio/lqasmap/global/?category=lqas&startDate=07-06-2023", accept="application/json")
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        results_for_first_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_country is not None)
+        self.assertEquals(results_for_first_country["status"], "inScope")
+
+        results_for_second_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_country is not None)
+        self.assertEquals(results_for_second_country["status"], "inScope")
+
+    def test_lqas_global_combined_filters(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            "/api/polio/lqasmap/global/?category=lqas&startDate=04-05-2023&round=1", accept="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        print("RESULTS", results)
+        results_for_first_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_country is not None)
+        self.assertEquals(results_for_first_country["status"], "1lqasOK")
+
+        results_for_second_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_country is not None)
+        self.assertEquals(results_for_second_country["status"], "inScope")

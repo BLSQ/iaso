@@ -236,7 +236,7 @@ class Round(models.Model):
     def is_round_over(round):
         if not round.ended_at:
             return False
-        return round.ended_at > date.today()
+        return round.ended_at < date.today()
 
 
 class CampaignQuerySet(models.QuerySet):
@@ -581,8 +581,10 @@ class Campaign(SoftDeletableModel):
         )
         return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.min
 
-    def find_last_round_with_date(self, date_type="start"):
+    def find_last_round_with_date(self, date_type="start", round_number=None):
         rounds = self.rounds.all()
+        if round_number is not None:
+            rounds = rounds.filter(number=round_number)
         if date_type == "start":
             return rounds.exclude(started_at=None).order_by("-started_at").first()
         if date_type == "end":

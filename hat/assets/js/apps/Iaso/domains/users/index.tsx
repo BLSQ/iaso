@@ -19,7 +19,7 @@ import {
 import EditIcon from '@material-ui/icons/Settings';
 import TopBar from '../../components/nav/TopBarComponent';
 import Filters from './components/Filters';
-import  { AddUsersDialog } from './components/UsersDialog';
+import { AddUsersDialog } from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
 import { useGetProfiles } from './hooks/useGetProfiles';
@@ -95,9 +95,11 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
         useDeleteProfile();
 
     const { mutate: saveProfile, isLoading: savingProfile } = useSaveProfile();
-    const { mutateAsync: bulkSave, isLoading: savingProfiles } = useBulkSaveProfiles();
+    const { mutateAsync: bulkSave, isLoading: savingProfiles } =
+        useBulkSaveProfiles();
 
-    const isLoading = fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
+    const isLoading =
+        fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
     return (
         <>
@@ -107,7 +109,9 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                 closeDialog={() => setMultiActionPopupOpen(false)}
                 selection={selection}
                 setSelection={setSelection}
-                saveMulti={(saveData: Record<string, any>) => bulkSave({...saveData, ...params})}
+                saveMulti={(saveData: Record<string, any>) =>
+                    bulkSave({ ...saveData, ...params })
+                }
             />
             <TopBar
                 title={formatMessage(MESSAGES.users)}
@@ -128,7 +132,7 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                         saveProfile={saveProfile}
                         allowSendEmailInvitation
                         iconProps={{
-                            dataTestId: 'add-user-button'
+                            dataTestId: 'add-user-button',
                         }}
                     />
                     <Box ml={2}>

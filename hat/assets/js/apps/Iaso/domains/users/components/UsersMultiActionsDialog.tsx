@@ -80,8 +80,8 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type BulkState = {
-    addRole?: string;
-    removeRole?: string;
+    addRoles: string[];
+    removeRoles: string[];
     addProjects: string[];
     removeProjects: string[];
     language?: 'en' | 'fr';
@@ -90,8 +90,8 @@ type BulkState = {
 };
 
 const initialState: BulkState = {
-    addRole: undefined,
-    removeRole: undefined,
+    addRoles: [],
+    removeRoles: [],
     addProjects: [],
     removeProjects: [],
     language: undefined,
@@ -153,22 +153,26 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
             </DialogTitle>
             <DialogContent className={classes.content}>
                 <InputComponent
-                    keyValue="addRole"
-                    onChange={handleChange}
-                    value={bulkState.addRole}
+                    keyValue="addRoles"
+                    onChange={(key, value) =>
+                        handleChange(key, value ? value.split(',') : value)
+                    }
+                    value={bulkState.addRoles}
                     type="select"
-                    multi={false}
-                    label={MESSAGES.addRole}
+                    multi
+                    label={MESSAGES.addRoles}
                     options={userRoles}
                     loading={isFetchingUserRoles}
                 />
                 <InputComponent
-                    keyValue="removeRole"
-                    onChange={handleChange}
-                    value={bulkState.removeRole}
+                    keyValue="removeRoles"
+                    onChange={(key, value) =>
+                        handleChange(key, value ? value.split(',') : value)
+                    }
+                    value={bulkState.removeRoles}
                     type="select"
-                    multi={false}
-                    label={MESSAGES.removeRole}
+                    multi
+                    label={MESSAGES.removeRoles}
                     options={userRoles}
                     loading={isFetchingUserRoles}
                 />

@@ -11,8 +11,8 @@ type OrgUnit = {
 };
 
 export type BulkSaveQuery = {
-    addRole?: string;
-    removeRole?: string;
+    addRoles: string[];
+    removeRoles: string[];
     addProjects: string[];
     removeProjects: string[];
     language?: 'en' | 'fr';
@@ -31,8 +31,8 @@ export type BulkSaveQuery = {
 const bulkSaveProfiles = (data: BulkSaveQuery) => {
     const url = `/api/tasks/create/profilesbulkupdate/`;
     const {
-        addRole,
-        removeRole,
+        addRoles,
+        removeRoles,
         addProjects,
         removeProjects,
         language,
@@ -48,8 +48,8 @@ const bulkSaveProfiles = (data: BulkSaveQuery) => {
         projectsIds,
     } = data;
     return postRequest(url, {
-        role_id_added: addRole ? parseInt(addRole, 10) : undefined,
-        role_id_removed: removeRole ? parseInt(removeRole, 10) : undefined,
+        roles_id_added: addRoles.map(roleId => parseInt(roleId, 10)),
+        roles_id_removed: removeRoles.map(roleId => parseInt(roleId, 10)),
         projects_ids_added: addProjects.map(projectId =>
             parseInt(projectId, 10),
         ),

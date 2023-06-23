@@ -354,13 +354,13 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.removeProjects',
         defaultMessage: 'Remove from project(s)',
     },
-    addRole: {
-        id: 'iaso.users.addRole',
-        defaultMessage: 'Add user role',
+    addRoles: {
+        id: 'iaso.users.addRoles',
+        defaultMessage: 'Add user role(s)',
     },
-    removeRole: {
-        id: 'iaso.users.removeRole',
-        defaultMessage: 'Remove user role',
+    removeRoles: {
+        id: 'iaso.users.removeRoles',
+        defaultMessage: 'Remove user role(s)',
     },
     taskLaunched: {
         id: 'iaso.snackBar.copyVersionSuccessMessage',

@@ -16,8 +16,8 @@ def update_single_profile_from_bulk(
     *,
     projects_ids_added,
     projects_ids_removed,
-    role_id_added,
-    role_id_removed,
+    roles_id_added,
+    roles_id_removed,
     location_ids_added,
     location_ids_removed,
     language,
@@ -25,21 +25,27 @@ def update_single_profile_from_bulk(
     """Used within the context of a bulk operation"""
     original_copy = deepcopy(profile)
 
-    if role_id_added is not None:
-        role = UserRole.objects.get(id=role_id_added)
-        role.iaso_profile.add(profile)
-    if role_id_removed is not None:
-        role = UserRole.objects.get(id=role_id_removed)
-        role.iaso_profile.remove(profile)
+    if roles_id_added is not None:
+        for role_id in roles_id_added:
+            role = UserRole.objects.get(id=role_id)
+            if role.account.id == user.iaso_profile.account.id:
+                role.iaso_profile.add(profile)
+    if roles_id_removed is not None:
+        for role_id in roles_id_removed:
+            role = UserRole.objects.get(id=role_id)
+            if role.account.id == user.iaso_profile.account.id:
+                role.iaso_profile.remove(profile)
 
     if projects_ids_added is not None:
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)
-            project.iaso_profile.add(profile)
+            if project.account.id == user.iaso_profile.account.id:
+                project.iaso_profile.add(profile)
     if projects_ids_removed is not None:
         for project_id in projects_ids_removed:
             project = Project.objects.get(pk=project_id)
-            project.iaso_profile.remove(profile)
+            if project.account.id == user.iaso_profile.account.id:
+                project.iaso_profile.remove(profile)
 
     if language is not None:
         profile.language = language
@@ -65,8 +71,8 @@ def profiles_bulk_update(
     unselected_ids: List[int],
     projects_ids_added: Optional[List[int]],
     projects_ids_removed: Optional[List[int]],
-    role_id_added: Optional[int],
-    role_id_removed: Optional[int],
+    roles_id_added: Optional[List[int]],
+    roles_id_removed: Optional[List[int]],
     location_ids_added: Optional[List[int]],
     location_ids_removed: Optional[List[int]],
     language: Optional[str],
@@ -114,8 +120,8 @@ def profiles_bulk_update(
                 profile,
                 projects_ids_added=projects_ids_added,
                 projects_ids_removed=projects_ids_removed,
-                role_id_added=role_id_added,
-                role_id_removed=role_id_removed,
+                roles_id_added=roles_id_added,
+                roles_id_removed=roles_id_removed,
                 location_ids_added=location_ids_added,
                 location_ids_removed=location_ids_removed,
                 language=language,

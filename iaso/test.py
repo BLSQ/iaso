@@ -17,7 +17,15 @@ from iaso import models as m
 class IasoTestCaseMixin:
     @staticmethod
     def create_user_with_profile(
-        *, username: str, account: m.Account, permissions=None, org_units: typing.Sequence[m.OrgUnit] = None, **kwargs
+        *,
+        username: str,
+        account: m.Account,
+        permissions=None,
+        org_units: typing.Sequence[m.OrgUnit] = None,
+        language: str = None,
+        projects: typing.Sequence[m.Project] = None,
+        user_roles: typing.Sequence[m.UserRole] = None,
+        **kwargs,
     ):
         User = get_user_model()
 
@@ -30,6 +38,15 @@ class IasoTestCaseMixin:
 
         if org_units is not None:
             user.iaso_profile.org_units.set(org_units)
+
+        if language is not None:
+            user.iaso_profile.language = language
+
+        if projects is not None:
+            user.iaso_profile.projects.set(projects)
+
+        if user_roles is not None:
+            user.iaso_profile.user_roles.set(user_roles)
 
         return user
 

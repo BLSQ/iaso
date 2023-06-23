@@ -17,8 +17,8 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
         unselected_ids = request.data.get("unselected_ids", [])
         projects_ids_added = request.data.get("projects_ids_added", None)
         projects_ids_removed = request.data.get("projects_ids_removed", None)
-        role_id_added = request.data.get("role_id_added", None)
-        role_id_removed = request.data.get("role_id_removed", None)
+        roles_id_added = request.data.get("roles_id_added", None)
+        roles_id_removed = request.data.get("roles_id_removed", None)
         location_ids_added = request.data.get("location_ids_added", None)
         location_ids_removed = request.data.get("location_ids_removed", None)
         language = request.data.get("language", None)
@@ -39,8 +39,8 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
             unselected_ids=unselected_ids,
             projects_ids_added=projects_ids_added,
             projects_ids_removed=projects_ids_removed,
-            role_id_added=role_id_added,
-            role_id_removed=role_id_removed,
+            roles_id_added=roles_id_added,
+            roles_id_removed=roles_id_removed,
             location_ids_added=location_ids_added,
             location_ids_removed=location_ids_removed,
             language=language,

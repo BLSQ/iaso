@@ -26,7 +26,7 @@ import { useGetProfiles } from './hooks/useGetProfiles';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
 
-import usersTableColumns from './config';
+import { usersTableColumns } from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../routing/actions';

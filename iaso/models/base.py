@@ -1192,6 +1192,7 @@ class Profile(models.Model):
         return "%s -- %s" % (self.user, self.account)
 
     def as_dict(self):
+        user_roles = self.user_roles.all()
         return {
             "id": self.id,
             "first_name": self.user.first_name,
@@ -1204,7 +1205,8 @@ class Profile(models.Model):
             ),
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
-            "user_roles": list(role.id for role in self.user_roles.all()),
+            "user_roles": list(role.id for role in user_roles),
+            "user_roles_permissions": list(role.as_dict() for role in user_roles),
             "language": self.language,
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,

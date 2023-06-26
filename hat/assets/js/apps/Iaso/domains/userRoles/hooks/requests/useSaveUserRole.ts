@@ -26,14 +26,6 @@ const convertToApi = data => {
     return converted;
 };
 
-// export const convertAPIErrorsToState = data => {
-//     const { sub_teams, ...converted } = data;
-//     if (sub_teams !== undefined) {
-//         converted.subTeams = sub_teams;
-//     }
-//     return converted;
-// };
-
 const endpoint = '/api/userroles/';
 
 const putUserRole = async (body: Partial<SaveUserRoleQuery>) => {

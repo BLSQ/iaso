@@ -261,6 +261,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Users with access to children org unit',
         id: 'iaso.users.ouChildrenCheckbox',
     },
+    userPermissions: {
+        defaultMessage: 'User permissions',
+        id: 'iaso.users.userPermissions',
+    },
     ouParentCheckbox: {
         defaultMessage: 'Users with access to parent org unit',
         id: 'iaso.users.ouParentCheckbox',

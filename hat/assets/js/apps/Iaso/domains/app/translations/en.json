@@ -1024,6 +1024,7 @@
     "iaso.users.multiSelectionAction": "Edit selected users",
     "iaso.users.newPassword": "New password",
     "iaso.users.ouChildrenCheckbox": "Users with access to children org unit",
+    "iaso.users.userPermissions": "User permissions",
     "iaso.users.ouParentCheckbox": "Users with access to parent org unit",
     "iaso.users.password": "Password",
     "iaso.users.permissions": "Permissions",

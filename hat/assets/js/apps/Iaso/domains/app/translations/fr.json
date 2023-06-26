@@ -1019,6 +1019,7 @@
     "iaso.users.removeRoles": "Retirer le(s) rôle(s)",
     "iaso.users.selectedOrgUnits": "Unité d'organisation sélectionnées",
     "iaso.users.update": "Mettre l'utilisateur à jour",
+    "iaso.users.userPermissions": "Permissions d'utilisateur",
     "iaso.users.warningModalMessage": "Vous êtes sur le point de sauvegarder un utilisateur sans permissions. Cet utilisateur aura accès à l'application mobile mais pas aux fonctionnalités de l'interface web.",
     "iaso.versionsDialog.label.createdAt": "Création",
     "iaso.versionsDialog.label.datasource.noVersion": "Cette source est vide, veuillez créer une version avec l'un des boutons ci-dessous",

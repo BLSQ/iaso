@@ -17,6 +17,9 @@ def _(parser):
     parser.add_argument(
         "--max-instances", type=int, default="10", help="Maximum number of instances to send during the upload"
     )
+    parser.add_argument("--org-unit-id", type=int, default="1", help="Org Unit id")
+    parser.add_argument("--org-unit-type-id", type=int, default="1", help="Org Unit type id (for creations)")
+    parser.add_argument("--form-id", type=int, default="1", help="Form id (for creations)")
 
 
 class IasoUser(HttpUser):
@@ -65,7 +68,7 @@ class IasoUser(HttpUser):
                 {
                     "id": "fake",
                     "name": "Fake OU",
-                    "org_unit_type_id": 1,
+                    "org_unit_type_id": self.environment.parsed_options.org_unit_type_id,
                     "time": 0,
                     "created_at": 123.0,
                     "updated_at": 123.0,
@@ -79,6 +82,7 @@ class IasoUser(HttpUser):
 
     def post_instance(self, app_id):
         _id = uuid.uuid4()
+
         self.client.post(
             url=f"/api/instances/?app_id={app_id}",
             headers={"Content-Type": "application/json; charset=utf-8"},
@@ -87,21 +91,15 @@ class IasoUser(HttpUser):
                     "id": f"fake_{_id}",
                     "name": "Fake Instance",
                     "file": f"{_id}.xml",
-                    "formId": "1",
-                    "orgUnitId": "1",
+                    "formId": self.environment.parsed_options.form_id,
+                    "orgUnitId": self.environment.parsed_options.org_unit_id,
                     "created_at": 123.0,
                     "updated_at": 123.0,
                 }
             ],
         )
-        self.client.head(
-            url="/sync/form_upload/",
-            headers={
-                "Accept-Encoding": "gzip,deflate",
-                "X-OpenRosa-Version": "1.0",
-            },
-        )
-        shutil.copy("instance.xml", f"{_id}.xml")
+
+        shutil.copy("/mnt/locust/instance.xml", f"{_id}.xml")
         with open(f"{_id}.xml", "rb") as file:
             self.client.post(
                 url="/sync/form_upload/",
@@ -109,7 +107,7 @@ class IasoUser(HttpUser):
                     "Accept-Encoding": "gzip,deflate",
                     "X-OpenRosa-Version": "1.0",
                 },
-                file={"xml_submission_file": file},
+                files={"xml_submission_file": file},
             )
         os.remove(f"{_id}.xml")
 
@@ -117,7 +115,7 @@ class IasoUser(HttpUser):
         username = self.environment.parsed_options.username
         password = self.environment.parsed_options.password
         if username and username != "" and password and password != "":
-            with self.client.post("/api/token/", json={"username": "foo", "password": "bar"}) as response:
+            with self.client.post("/api/token/", json={"username": username, "password": password}) as response:
                 if response.status_code == 200:
                     token = response.json()["access"]
                     self.client.headers = {"Authorization": f"Bearer {token}"}

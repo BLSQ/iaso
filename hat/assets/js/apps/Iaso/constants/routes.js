@@ -712,9 +712,7 @@ export const userRolesPath = {
             isRequired: false,
             key: 'search',
         },
-        ...paginationPathParams.map(p => ({
-            ...p,
-        })),
+        paginationPathParams,
     ],
 };
 

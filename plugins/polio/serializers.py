@@ -368,23 +368,31 @@ class RoundSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user
         updated_datelogs = validated_data.pop("datelogs", [])
-        from pprint import pprint
+        # from pprint import pprint
 
-        print("DATELOGS")
-        pprint(validated_data)
-        pprint(self.data)
+        # print("DATELOGS")
+        # pprint(validated_data)
+        # pprint(self.data)
 
         has_datelog = instance.datelogs.count() > 0
         if updated_datelogs:
+            datelog = None
             if has_datelog:
-                datelog = RoundDateHistoryEntry.objects.create(round=instance, modified_by=user)
+                last_entry = instance.datelogs.order_by("-created_at").last()
+                if (
+                    new_datelog["reason"] != last_entry.reason
+                    or new_datelog["started_at"] != last_entry.started_at
+                    or new_datelog["ended_at"] != last_entry.ended_at
+                ) and new_datelog["reason"] != "INITIAL_DATA":
+                    datelog = RoundDateHistoryEntry.objects.create(round=instance, modified_by=user)
             else:
                 datelog = RoundDateHistoryEntry.objects.create(round=instance, reason="INITIAL_DATA", modified_by=user)
-            new_datelog = updated_datelogs[-1]
-            datelog_serializer = RoundDateHistoryEntrySerializer(instance=datelog, data=new_datelog)
-            datelog_serializer.is_valid(raise_exception=True)
-            datelog_instance = datelog_serializer.save()
-            instance.datelogs.add(datelog_instance)
+            if datelog is not None:
+                new_datelog = updated_datelogs[-1]
+                datelog_serializer = RoundDateHistoryEntrySerializer(instance=datelog, data=new_datelog)
+                datelog_serializer.is_valid(raise_exception=True)
+                datelog_instance = datelog_serializer.save()
+                instance.datelogs.add(datelog_instance)
 
         # VACCINE STOCK
         vaccines = validated_data.pop("vaccines", [])

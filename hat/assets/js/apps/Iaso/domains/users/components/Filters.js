@@ -22,6 +22,7 @@ import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitT
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { stringToBoolean } from '../../../utils/dataManipulation.ts';
+import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -44,9 +45,13 @@ const Filters = ({ baseUrl, params }) => {
         orgUnitTypes: params.orgUnitTypes,
         ouParent: params.ouParent,
         ouChildren: params.ouParent,
+        userRoles: params.userRoles,
     });
+
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
     const { data: dropdown, isFetching } = useGetPermissionsDropDown();
+    const { data: userRoles, isFetching: isFetchingUserRoles } =
+        useGetUserRolesDropDown({});
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
     const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
         useGetOrgUnitTypes();
@@ -102,6 +107,18 @@ const Filters = ({ baseUrl, params }) => {
         }
     }, [baseUrl, dispatch, filters, filtersUpdated, params]);
 
+    const handleSearchUserRoles = useCallback(() => {
+        if (filtersUpdated) {
+            setFiltersUpdated(false);
+            const tempParams = {
+                ...params,
+                ...filters,
+            };
+            tempParams.page = 1;
+            dispatch(redirectTo(baseUrl, tempParams));
+        }
+    }, [baseUrl, dispatch, filters, filtersUpdated, params]);
+
     return (
         <>
             <Grid container spacing={2}>
@@ -129,6 +146,18 @@ const Filters = ({ baseUrl, params }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                    <InputComponent
+                        keyValue="ouChildren"
+                        type="checkbox"
+                        checked={ouChildren}
+                        onChange={(key, value) => {
+                            handleChange('ouChildren', !ouChildren);
+                            setOuChildren(value);
+                        }}
+                        disabled={!initialOrgUnit}
+                        value={ouChildren}
+                        label={MESSAGES.ouChildrenCheckbox}
+                    />
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -143,16 +172,15 @@ const Filters = ({ baseUrl, params }) => {
                         onEnterPressed={handleSearchPerms}
                     />
                     <InputComponent
-                        keyValue="ouParent"
-                        type="checkbox"
-                        checked={ouParent}
-                        onChange={(key, value) => {
-                            handleChange('ouParent', value);
-                            setOuParent(value);
-                        }}
-                        disabled={!initialOrgUnit}
-                        value={ouParent}
-                        label={MESSAGES.ouParentCheckbox}
+                        keyValue="userRoles"
+                        onChange={handleChange}
+                        value={filters.userRoles}
+                        type="select"
+                        multi
+                        options={userRoles ?? []}
+                        label={MESSAGES.userRoles}
+                        loading={isFetchingUserRoles}
+                        onEnterPressed={handleSearchUserRoles}
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>
@@ -168,16 +196,16 @@ const Filters = ({ baseUrl, params }) => {
                         clearable
                     />
                     <InputComponent
-                        keyValue="ouChildren"
+                        keyValue="ouParent"
                         type="checkbox"
-                        checked={ouChildren}
+                        checked={ouParent}
                         onChange={(key, value) => {
-                            handleChange('ouChildren', !ouChildren);
-                            setOuChildren(value);
+                            handleChange('ouParent', value);
+                            setOuParent(value);
                         }}
                         disabled={!initialOrgUnit}
-                        value={ouChildren}
-                        label={MESSAGES.ouChildrenCheckbox}
+                        value={ouParent}
+                        label={MESSAGES.ouParentCheckbox}
                     />
                 </Grid>
                 <Grid container item xs={12} md={3} justifyContent="flex-end">

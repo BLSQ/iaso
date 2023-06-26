@@ -66,6 +66,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         parent_ou = True if request.GET.get("ouParent", None) == "true" else False
         children_ou = True if request.GET.get("ouChildren", None) == "true" else False
 
+        userRoles = request.GET.get("userRoles", None)
         queryset = self.get_queryset()
         if search:
             queryset = queryset.filter(
@@ -134,6 +135,9 @@ class ProfilesViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
             else:
                 queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
+
+        if userRoles:
+            queryset = queryset.filter(user__iaso_profile__user_roles__in=userRoles.split(","))
 
         if limit:
             queryset = queryset.order_by(*orders)

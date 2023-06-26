@@ -8,8 +8,12 @@ from ..common import ModelViewSet
 
 
 class OrgUnitTypeViewSet(ModelViewSet):
-    """Org unit types API
+    """Org unit types API (deprecated)
 
+    This endpoint it deprecated, Use /v2/orgunittypes/ instead, this is kept only  for compatiblity with the mobile
+    application
+
+    Confusingly in this version  `sub_unit_types` map to allow_creating_sub_unit_types.
     This API is open to anonymous users.
 
     GET /api/orgunittypes/
@@ -45,7 +49,7 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
     This API is open to anonymous users.
 
-    GET /api/orgunittypes/
+    GET /api/v2/orgunittypes/
     """
 
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]

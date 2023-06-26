@@ -207,15 +207,31 @@ class PolioLqasAfroMapTestCase(APITestCase):
                         {
                             "number": 1,
                             "data": {
-                                cls.district_org_unit_1.name: {"total_child_checked": 60, "total_child_fmd": 60},
-                                cls.district_org_unit_2.name: {"total_child_checked": 60, "total_child_fmd": 58},
+                                cls.district_org_unit_1.name: {
+                                    "total_child_checked": 60,
+                                    "total_child_fmd": 60,
+                                    "district": cls.district_org_unit_1.id,
+                                },
+                                cls.district_org_unit_2.name: {
+                                    "total_child_checked": 60,
+                                    "total_child_fmd": 58,
+                                    "district": cls.district_org_unit_2.id,
+                                },
                             },
                         },
                         {
                             "number": 2,
                             "data": {
-                                cls.district_org_unit_1.name: {"total_child_checked": 60, "total_child_fmd": 40},
-                                cls.district_org_unit_2.name: {"total_child_checked": 55, "total_child_fmd": 55},
+                                cls.district_org_unit_1.name: {
+                                    "total_child_checked": 60,
+                                    "total_child_fmd": 40,
+                                    "district": cls.district_org_unit_1.id,
+                                },
+                                cls.district_org_unit_2.name: {
+                                    "total_child_checked": 55,
+                                    "total_child_fmd": 55,
+                                    "district": cls.district_org_unit_2.id,
+                                },
                             },
                         },
                     ],
@@ -231,8 +247,16 @@ class PolioLqasAfroMapTestCase(APITestCase):
                         {
                             "number": 1,
                             "data": {
-                                cls.district_org_unit_3.name: {"total_child_checked": 60, "total_child_fmd": 58},
-                                cls.district_org_unit_4.name: {"total_child_checked": 60, "total_child_fmd": 59},
+                                cls.district_org_unit_3.name: {
+                                    "total_child_checked": 60,
+                                    "total_child_fmd": 58,
+                                    "district": cls.district_org_unit_3.id,
+                                },
+                                cls.district_org_unit_4.name: {
+                                    "total_child_checked": 60,
+                                    "total_child_fmd": 59,
+                                    "district": cls.district_org_unit_4.id,
+                                },
                             },
                         },
                         {
@@ -240,7 +264,11 @@ class PolioLqasAfroMapTestCase(APITestCase):
                             "data": {
                                 # TODO uncomment when code is able to filter out of scope districts
                                 # cls.district_org_unit_3.name: {"total_child_checked": 60, "total_child_fmd": 60},
-                                cls.district_org_unit_4.name: {"total_child_checked": 45, "total_child_fmd": 45},
+                                cls.district_org_unit_4.name: {
+                                    "total_child_checked": 45,
+                                    "total_child_fmd": 45,
+                                    "district": cls.district_org_unit_4.id,
+                                },
                             },
                         },
                     ],
@@ -253,6 +281,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         cls.datastore_country2 = JsonDataStore.objects.create(
             content=cls.country2_data_store_content, slug=f"lqas_{cls.country_org_unit_2.id}", account=cls.account
         )
+        cls.url_bounds = json.dumps({"_southWest": {"lat": 1, "lng": 1}, "_northEast": {"lat": 10, "lng": 10}})
 
     def test_authorized_user(self):
         c = APIClient()
@@ -307,7 +336,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
         data_for_round_1 = get_data_for_round(country_data, 1)
         self.assertEqual(data_for_round_1["number"], 1)
         self.assertEqual(
-            data_for_round_1["data"][self.district_org_unit_1.name], {"total_child_checked": 60, "total_child_fmd": 60}
+            data_for_round_1["data"][self.district_org_unit_1.name],
+            {"total_child_checked": 60, "total_child_fmd": 60, "district": self.district_org_unit_1.id},
         )
         country_data = {"rounds": []}
         result = get_data_for_round(country_data, 1)
@@ -425,7 +455,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertTrue(results_for_second_country is not None)
         self.assertEquals(results_for_second_country["status"], "inScope")
 
-    def test_lqas_global_combined_filters(self):
+    def test_lqas_global_round_with_start_date_filters(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
         response = c.get(
@@ -434,7 +464,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        print("RESULTS", results)
+
         results_for_first_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
@@ -446,3 +476,149 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
         self.assertTrue(results_for_second_country is not None)
         self.assertEquals(results_for_second_country["status"], "inScope")
+
+    def test_lqas_zoomed_in(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}", accept="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 3)
+        results_for_first_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_district is not None)
+        self.assertEquals(results_for_first_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(
+            results_for_first_district["data"]["district_name"],
+            self.district_org_unit_1.name,
+        )
+        self.assertEquals(results_for_first_district["status"], "3lqasFail")
+
+        results_for_second_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_district is not None)
+        self.assertEquals(results_for_second_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(
+            results_for_second_district["data"]["district_name"],
+            self.district_org_unit_2.name,
+        )
+        self.assertEquals(results_for_second_district["status"], "2lqasDisqualified")
+
+        # Third district has no data for latest round, ie round 2
+        results_for_third_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_3.id), None
+        )
+        self.assertTrue(results_for_third_district is None)
+
+        results_for_fourth_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_4.id), None
+        )
+        self.assertTrue(results_for_fourth_district is not None)
+        self.assertEquals(results_for_fourth_district["data"]["campaign"], self.campaign_2.obr_name)
+        self.assertEquals(
+            results_for_fourth_district["data"]["district_name"],
+            self.district_org_unit_4.name,
+        )
+        self.assertEquals(results_for_fourth_district["status"], "2lqasDisqualified")
+
+    def test_lqas_zoomin_round_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&round=1&bounds={self.url_bounds}", accept="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 3)
+        results_for_first_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_district is not None)
+        self.assertEquals(results_for_first_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(
+            results_for_first_district["data"]["district_name"],
+            self.district_org_unit_1.name,
+        )
+        self.assertEquals(results_for_first_district["status"], "1lqasOK")
+
+        results_for_second_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_district is not None)
+        self.assertEquals(results_for_second_district["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(
+            results_for_second_district["data"]["district_name"],
+            self.district_org_unit_2.name,
+        )
+        self.assertEquals(results_for_second_district["status"], "1lqasOK")
+
+        results_for_third_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_3.id), None
+        )
+        self.assertTrue(results_for_third_district is not None)
+        self.assertEquals(results_for_third_district["data"]["campaign"], self.campaign_2.obr_name)
+        self.assertEquals(
+            results_for_third_district["data"]["district_name"],
+            self.district_org_unit_3.name,
+        )
+        self.assertEquals(results_for_third_district["status"], "1lqasOK")
+
+        # fourth district is out of scope for round 1
+        results_for_fourth_district = next(
+            (district_data for district_data in results if district_data["id"] == self.district_org_unit_4.id), None
+        )
+        self.assertTrue(results_for_fourth_district is None)
+
+    def test_lqas_zoomedin_end_date_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate=04-06-2023",
+            accept="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]["data"]["campaign"], self.campaign_2.obr_name)
+        self.assertEquals(results[0]["data"]["district_name"], self.district_org_unit_4.name)
+        self.assertEquals(results[0]["status"], "2lqasDisqualified")
+
+    def test_lqas_zoomedin_start_date_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&startDate=07-06-2023",
+            accept="application/json",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        # There's no round date that starts after 07-06-2023
+        self.assertEquals(len(results), 0)
+
+    def test_lqas_zoomin_round_with_start_date_filters(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&startDate=04-05-2023&round=1",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 2)
+        self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(results[0]["data"]["district_name"], self.district_org_unit_1.name)
+        self.assertEquals(results[0]["status"], "1lqasOK")
+        self.assertEquals(results[1]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(results[1]["data"]["district_name"], self.district_org_unit_2.name)
+        self.assertEquals(results[1]["status"], "1lqasOK")

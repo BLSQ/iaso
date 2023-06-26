@@ -2056,6 +2056,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
             for district in districts:
                 result = None
                 district_stats = dict(stats) if stats else None
+
                 if district_stats:
                     district_stats = next(
                         (round for round in district_stats["rounds"] if round["number"] == round_number), None
@@ -2071,7 +2072,6 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     )
                     if district_stats:
                         district_stats["district_name"] = district.name
-
                 shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
                     request.user, request.query_params.get("app_id", None)
                 ).filter(id=district.id)

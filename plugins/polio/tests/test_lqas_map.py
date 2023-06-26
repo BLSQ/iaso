@@ -477,6 +477,50 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertTrue(results_for_second_country is not None)
         self.assertEquals(results_for_second_country["status"], "inScope")
 
+    def test_lqas_global_round_with_end_date_filters(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            "/api/polio/lqasmap/global/?category=lqas&endDate=10-04-2023&round=1", accept="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+
+        results_for_first_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_country is not None)
+        self.assertEquals(results_for_first_country["status"], "inScope")
+
+        results_for_second_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_country is not None)
+        self.assertEquals(results_for_second_country["status"], "1lqasOK")
+
+    def lqas_global_start_and_end_date_filters(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            "/api/polio/lqasmap/global/?category=lqas&endDate=10-04-2023&startDate=06-04-2023",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        results_for_first_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
+        )
+        self.assertTrue(results_for_first_country is not None)
+        self.assertEquals(results_for_first_country["status"], "inScope")
+
+        results_for_second_country = next(
+            (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
+        )
+        self.assertTrue(results_for_second_country is not None)
+        self.assertEquals(results_for_second_country["status"], "inScope")
+
     def test_lqas_zoomed_in(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
@@ -622,3 +666,30 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEquals(results[1]["data"]["campaign"], self.campaign_1.obr_name)
         self.assertEquals(results[1]["data"]["district_name"], self.district_org_unit_2.name)
         self.assertEquals(results[1]["status"], "1lqasOK")
+
+    def test_lqas_zoomin_round_with_end_date_filters(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate=10-04-2023&round=1",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 1)
+        self.assertEquals(results[0]["data"]["campaign"], self.campaign_2.obr_name)
+        self.assertEquals(results[0]["data"]["district_name"], self.district_org_unit_3.name)
+        self.assertEquals(results[0]["status"], "1lqasOK")
+
+    def test_lqas_zoomin_start_and_end_date_filters(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate=10-04-2023&startDate=06-04-2023",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 0)

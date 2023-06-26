@@ -257,7 +257,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                 />
                                                 {showTooltip && (
                                                     <MapToolTip
-                                                        // @ts-ignore TODO: fix this type problem
                                                         permanent
                                                         pane="popupPane"
                                                         label={
@@ -266,9 +265,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                     />
                                                 )}
                                                 {!showTooltip && (
-                                                    // @ts-ignore TODO: fix this type problem
                                                     <MapToolTip
-                                                        // @ts-ignore TODO: fix this type problem
                                                         pane="popupPane"
                                                         label={
                                                             childrenOrgUnit.name

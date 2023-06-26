@@ -4,7 +4,7 @@ import { Tooltip } from 'react-leaflet';
 type Props = {
     label: string;
     pane: string;
-    permanent: boolean;
+    permanent?: boolean;
 };
 
 export const MapToolTip: FunctionComponent<Props> = ({
@@ -13,11 +13,12 @@ export const MapToolTip: FunctionComponent<Props> = ({
     pane,
 }) => {
     return (
-        <>
-            {/* @ts-ignore TODO: fix this type problem */}
-            <Tooltip permanent={permanent} pane={pane}>
-                {label}
-            </Tooltip>
-        </>
+        <Tooltip
+            // @ts-ignore TODO: fix this type problem
+            permanent={permanent}
+            pane={pane}
+        >
+            {label}
+        </Tooltip>
     );
 };

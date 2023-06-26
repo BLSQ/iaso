@@ -376,6 +376,7 @@ class RoundSerializer(serializers.ModelSerializer):
 
         has_datelog = instance.datelogs.count() > 0
         if updated_datelogs:
+            new_datelog = updated_datelogs[-1]
             datelog = None
             if has_datelog:
                 last_entry = instance.datelogs.order_by("-created_at").last()
@@ -388,7 +389,6 @@ class RoundSerializer(serializers.ModelSerializer):
             else:
                 datelog = RoundDateHistoryEntry.objects.create(round=instance, reason="INITIAL_DATA", modified_by=user)
             if datelog is not None:
-                new_datelog = updated_datelogs[-1]
                 datelog_serializer = RoundDateHistoryEntrySerializer(instance=datelog, data=new_datelog)
                 datelog_serializer.is_valid(raise_exception=True)
                 datelog_instance = datelog_serializer.save()

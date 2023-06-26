@@ -316,10 +316,10 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                     popupProps={location => ({
                                                         orgUnit: location,
                                                     })}
-                                                    tooltipProps={() => ({
+                                                    tooltipProps={e => ({
                                                         permanent: showTooltip,
                                                         pane: 'popupPane',
-                                                        label: childrenOrgUnit.name,
+                                                        label: e.name,
                                                     })}
                                                     PopupComponent={MapPopUp}
                                                     TooltipComponent={

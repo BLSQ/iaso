@@ -43,7 +43,7 @@ const goToPage = (
         }).as('getForms');
     }
 
-    cy.intercept('GET', '/api/orgunittypes/**', {
+    cy.intercept('GET', '/api/v2/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
     }).as('getTypes');
     cy.intercept('GET', '/api/projects/**', {

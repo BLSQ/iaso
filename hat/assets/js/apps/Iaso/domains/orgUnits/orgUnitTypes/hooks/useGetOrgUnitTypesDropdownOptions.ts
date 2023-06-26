@@ -8,7 +8,7 @@ import { DropdownOptions } from '../../../../types/utils';
 import { OrgunitTypesApi } from '../../types/orgunitTypes';
 
 const getOrgunitTypes = (): Promise<OrgunitTypesApi> => {
-    return getRequest('/api/orgunittypes/');
+    return getRequest('/api/v2/orgunittypes/');
 };
 
 export const useGetOrgUnitTypesDropdownOptions = (): UseQueryResult<

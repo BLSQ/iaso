@@ -19,7 +19,7 @@ describe('Org unit types', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');
-        cy.intercept('GET', '/api/orgunittypes/', outypesList);
+        cy.intercept('GET', '/api/v2/orgunittypes/', outypesList);
         interceptList.forEach(i => {
             cy.intercept('GET', `/api/${i}/**`, {
                 fixture: `${i}/list.json`,
@@ -27,7 +27,7 @@ describe('Org unit types', () => {
         });
         cy.intercept(
             {
-                pathname: '/api/orgunittypes/**',
+                pathname: '/api/v2/orgunittypes/**',
                 query: {
                     order: 'name',
                     limit: '20',
@@ -40,7 +40,7 @@ describe('Org unit types', () => {
         ).as('getOrgUnitTypes');
         cy.intercept(
             {
-                pathname: '/api/orgunittypes/**',
+                pathname: '/api/v2/orgunittypes/**',
                 query: {
                     order: 'name',
                     limit: '20',
@@ -73,7 +73,7 @@ describe('Org unit types', () => {
             });
             testPagination({
                 baseUrl,
-                apiPath: '/api/orgunittypes/**',
+                apiPath: '/api/v2/orgunittypes/**',
                 apiKey: 'orgUnitTypes',
                 withSearch: false,
                 fixture: orgUnitTypes,

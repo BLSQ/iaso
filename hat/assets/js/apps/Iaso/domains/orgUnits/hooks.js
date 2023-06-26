@@ -77,7 +77,7 @@ export const useOrgUnitDetailData = (
         },
         {
             queryKey: ['orgUnitTypes'],
-            queryFn: () => getRequest('/api/orgunittypes/'),
+            queryFn: () => getRequest('/api/v2/orgunittypes/'),
             snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
             options: {
                 select: data =>

@@ -21,7 +21,7 @@ const requests = [
         },
     },
     {
-        url: '/api/orgunittypes/',
+        url: '/api/v2/orgunittypes/',
         body: {
             orgUnitTypes: [],
         },

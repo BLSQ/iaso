@@ -379,7 +379,12 @@ class RoundSerializer(serializers.ModelSerializer):
             new_datelog = updated_datelogs[-1]
             datelog = None
             if has_datelog:
-                last_entry = instance.datelogs.order_by("-created_at").last()
+                last_entry = instance.datelogs.order_by("-created_at").first()
+                # if instance.datelogs.count() >= len(updated_datelogs) it means there was an update that was missed between input and confirmation
+                # This could lead to errors in the log with the previous_started_at and previous_ended_at fields
+                if len(updated_datelogs) >= instance.datelogs.count():
+                    new_datelog["previous_started_at"] = last_entry.started_at
+                    new_datelog["previous_ended_at"] = last_entry.ended_at
                 if (
                     new_datelog["reason"] != last_entry.reason
                     or new_datelog["started_at"] != last_entry.started_at

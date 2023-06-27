@@ -582,6 +582,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.attachments.uploadSuccess',
         defaultMessage: 'File uploaded successfully',
     },
+    addSubmissionForForm: {
+        id: 'iaso.forms.addSubmissionForForm',
+        defaultMessage: 'Add a submission for this form',
+    },
+    instanceCreationDialogTitle: {
+        defaultMessage: 'Create submission',
+        id: 'iaso.instance.instanceCreationDialogTitle',
+    },
 });
 
 export default MESSAGES;

@@ -12,7 +12,7 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'orgunittypes',
+    // 'orgunittypes',
 ];
 
 /**
@@ -36,6 +36,9 @@ describe('map tab', () => {
             cy.intercept('GET', `/api/${i}/`, {
                 fixture: `${i}/list.json`,
             });
+        });
+        cy.intercept('GET', '/api/v2/orgunittypes/', {
+            fixture: `orgunittypes/list.json`,
         });
         cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
             fixture: `groups/list.json`,

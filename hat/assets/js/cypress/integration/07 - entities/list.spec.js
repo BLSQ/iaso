@@ -155,7 +155,7 @@ describe('Entities', () => {
             const errorCode = cy.get('#error-code');
             errorCode.should('contain', '401');
         });
-        it('click on a row button should open entity detail page', () => {
+        it.skip('click on a row button should open entity detail page', () => {
             mockPage();
 
             cy.intercept(

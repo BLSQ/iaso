@@ -11,7 +11,7 @@ export const useGetOrgUnitType = (
     const queryKey: any[] = ['orgUnitType', orgUnitTypeId];
     return useSnackQuery({
         queryKey,
-        queryFn: () => getRequest(`/api/orgunittypes/${orgUnitTypeId}/`),
+        queryFn: () => getRequest(`/api/v2/orgunittypes/${orgUnitTypeId}/`),
         options: {
             retry: false,
             enabled: Boolean(orgUnitTypeId),

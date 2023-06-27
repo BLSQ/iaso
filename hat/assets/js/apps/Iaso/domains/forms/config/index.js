@@ -11,6 +11,8 @@ import MESSAGES from '../messages';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../../components/Cells/YesNoCell';
+import { CreateSubmissionModal } from '../components/CreateSubmissionModal/CreateSubmissionModal.tsx';
+import { createInstance } from '../../instances/actions';
 
 export const baseUrl = baseUrls.forms;
 
@@ -82,6 +84,7 @@ const formsTableColumns = ({
     orgUnitId,
     restoreForm = () => null,
     showDeleted,
+    dispatch,
 }) => {
     const getActionsColWidth = () => {
         const baseWidth = 50;
@@ -214,6 +217,39 @@ const formsTableColumns = ({
                                         url={`${urlToInstances}`}
                                         tooltipMessage={MESSAGES.viewInstances}
                                         overrideIcon={FormatListBulleted}
+                                    />
+                                )}
+                                {userHasPermission(
+                                    'iaso_submissions',
+                                    user,
+                                ) && (
+                                    <CreateSubmissionModal
+                                        titleMessage={
+                                            MESSAGES.instanceCreationDialogTitle
+                                        }
+                                        confirmMessage={MESSAGES.ok}
+                                        cancelMessage={MESSAGES.cancel}
+                                        formType={{
+                                            id: settings.row.original.id,
+                                            periodType:
+                                                settings.row.original
+                                                    .period_type,
+                                        }}
+                                        onCreateOrReAssign={(
+                                            currentForm,
+                                            payload,
+                                        ) =>
+                                            dispatch(
+                                                createInstance(
+                                                    currentForm,
+                                                    payload,
+                                                ),
+                                            )
+                                        }
+                                        orgUnitTypes={
+                                            settings.row.original
+                                                .org_unit_type_ids
+                                        }
                                     />
                                 )}
                                 {userHasPermission('iaso_forms', user) && (

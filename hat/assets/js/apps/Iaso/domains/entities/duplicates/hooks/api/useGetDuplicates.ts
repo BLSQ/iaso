@@ -81,8 +81,11 @@ const getFieldStatus = (base, compare): 'diff' | 'identical' => {
     if (base !== compare) return 'diff';
     return 'identical';
 };
-const getMergedEntityStatus = (final): 'dropped' | 'identical' => {
-    if (!final) return 'dropped';
+const getMergedEntityStatus = (
+    final: 'dropped' | 'identical',
+    fieldsEmpty: boolean,
+) => {
+    if (!final && !fieldsEmpty) return 'dropped';
     return 'identical';
 };
 
@@ -125,7 +128,10 @@ export const useGetDuplicateDetails = ({
                         final: {
                             value: row.final.value,
                             id: row.final.id,
-                            status: getMergedEntityStatus(row.final.value),
+                            status: getMergedEntityStatus(
+                                row.final.value,
+                                !row.entity1.value && !row.entity2.value,
+                            ),
                         },
                     };
                 });

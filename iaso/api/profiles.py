@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.auth import models
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -215,8 +216,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
+        profile.user.groups.clear()
         for user_role_id in user_roles:
             user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)
 
         if profile.dhis2_id == "":
@@ -306,8 +310,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
+        profile.user.groups.clear()
         for user_role_id in user_roles:
             user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
+            profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)
 
         dhis2_id = request.data.get("dhis2_id", None)

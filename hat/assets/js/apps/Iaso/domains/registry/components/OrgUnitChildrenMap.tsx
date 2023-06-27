@@ -5,18 +5,19 @@ import React, {
     useCallback,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-    MapContainer,
-    GeoJSON,
-    Pane,
-    ScaleControl,
-    Tooltip,
-} from 'react-leaflet';
-import { LoadingSpinner } from 'bluesquare-components';
+import { MapContainer, GeoJSON, Pane, ScaleControl } from 'react-leaflet';
+import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import classNames from 'classnames';
-
 import { keyBy } from 'lodash';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+import {
+    circleColorMarkerOptions,
+    getOrgUnitBounds,
+    getOrgUnitsBounds,
+    mergeBounds,
+    clusterCustomMarker,
+} from '../../../utils/map/mapUtils';
 
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
@@ -31,18 +32,14 @@ import { MapToggleTooltips } from './MapToggleTooltips';
 import { MapToggleFullscreen } from './MapToggleFullscreen';
 
 import TILES from '../../../constants/mapTiles';
-import {
-    circleColorMarkerOptions,
-    getOrgUnitBounds,
-    getOrgUnitsBounds,
-    mergeBounds,
-} from '../../../utils/map/mapUtils';
 import { MapPopUp } from './MapPopUp';
 import { RegistryDetailParams } from '../types';
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import { MapToolTip } from './MapTooltip';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -56,8 +53,9 @@ const boundsOptions = {
     padding: [50, 50],
 };
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles(theme => ({
     mapContainer: {
+        ...commonStyles(theme).mapContainer,
         height: '542px',
         position: 'relative',
         '& .leaflet-control-zoom': {
@@ -255,19 +253,21 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                     orgUnit={childrenOrgUnit}
                                                 />
                                                 {showTooltip && (
-                                                    <Tooltip
-                                                        // @ts-ignore TODO: fix this type problem
+                                                    <MapToolTip
                                                         permanent
                                                         pane="popupPane"
-                                                    >
-                                                        {childrenOrgUnit.name}
-                                                    </Tooltip>
+                                                        label={
+                                                            childrenOrgUnit.name
+                                                        }
+                                                    />
                                                 )}
                                                 {!showTooltip && (
-                                                    // @ts-ignore TODO: fix this type problem
-                                                    <Tooltip pane="popupPane">
-                                                        {childrenOrgUnit.name}
-                                                    </Tooltip>
+                                                    <MapToolTip
+                                                        pane="popupPane"
+                                                        label={
+                                                            childrenOrgUnit.name
+                                                        }
+                                                    />
                                                 )}
                                             </GeoJSON>
                                         );
@@ -292,48 +292,39 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                         childrenOrgUnit.org_unit_type_id ===
                                         subType.id
                                     ) {
-                                        const { latitude, longitude } =
-                                            childrenOrgUnit;
                                         return (
-                                            <CircleMarkerComponent
-                                                PopupComponent={MapPopUp}
-                                                popupProps={() => ({
-                                                    orgUnit: childrenOrgUnit,
-                                                })}
+                                            <MarkerClusterGroup
                                                 key={childrenOrgUnit.id}
-                                                TooltipComponent={() => (
-                                                    <>
-                                                        {showTooltip && (
-                                                            <Tooltip
-                                                                // @ts-ignore TODO: fix this type problem
-                                                                permanent
-                                                                pane="popupPane"
-                                                            >
-                                                                {
-                                                                    childrenOrgUnit.name
-                                                                }
-                                                            </Tooltip>
-                                                        )}
-                                                        {!showTooltip && (
-                                                            // @ts-ignore TODO: fix this type problem
-                                                            <Tooltip pane="popupPane">
-                                                                {
-                                                                    childrenOrgUnit.name
-                                                                }
-                                                            </Tooltip>
-                                                        )}
-                                                    </>
-                                                )}
-                                                markerProps={() => ({
-                                                    ...circleColorMarkerOptions(
-                                                        subType.color || '',
-                                                    ),
-                                                })}
-                                                item={{
-                                                    latitude,
-                                                    longitude,
-                                                }}
-                                            />
+                                                iconCreateFunction={
+                                                    clusterCustomMarker
+                                                }
+                                            >
+                                                <MarkersListComponent
+                                                    items={
+                                                        orgUnitChildren || []
+                                                    }
+                                                    markerProps={() => ({
+                                                        ...circleColorMarkerOptions(
+                                                            theme.palette
+                                                                .primary.main,
+                                                        ),
+                                                        radius: 12,
+                                                    })}
+                                                    popupProps={location => ({
+                                                        orgUnit: location,
+                                                    })}
+                                                    tooltipProps={e => ({
+                                                        permanent: showTooltip,
+                                                        pane: 'popupPane',
+                                                        label: e.name,
+                                                    })}
+                                                    PopupComponent={MapPopUp}
+                                                    TooltipComponent={
+                                                        MapToolTip
+                                                    }
+                                                    isCircle
+                                                />
+                                            </MarkerClusterGroup>
                                         );
                                     }
                                     return null;

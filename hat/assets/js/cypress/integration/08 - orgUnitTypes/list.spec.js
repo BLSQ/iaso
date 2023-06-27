@@ -67,7 +67,7 @@ describe('Org unit types', () => {
                 baseUrl,
                 rows: 20,
                 columns: 9,
-                apiKey: 'orgunittypes',
+                apiKey: 'v2/orgunittypes',
                 responseKey: 'orgUnitTypes',
                 withVisit: false,
             });

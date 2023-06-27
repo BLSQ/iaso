@@ -19,7 +19,7 @@ const interceptList = [
     'algorithms',
     // 'algorithmsruns',
     // 'groups',
-    'orgunittypes',
+    // 'orgunittypes',
 ];
 
 const defaultQuery = {
@@ -149,6 +149,9 @@ const goToPage = () => {
     cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     }).as('groupList');
+    cy.intercept('GET', '/api/v2/orgunittypes/', {
+        fixture: `orgunittypes/list.json`,
+    }).as('orgunittypesList');
     cy.intercept(
         'GET',
         `/api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,

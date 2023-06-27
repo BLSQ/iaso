@@ -18,7 +18,7 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'orgunittypes',
+    // 'orgunittypes',
 ];
 const defaultQuery = {
     parent_id: '2',
@@ -155,6 +155,9 @@ const goToPage = () => {
         });
     });
 
+    cy.intercept('GET', '/api/v2/orgunittypes/', {
+        fixture: `orgunittypes/list.json`,
+    });
     cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     });

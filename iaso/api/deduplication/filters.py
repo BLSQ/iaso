@@ -1,14 +1,17 @@
 import operator
+from datetime import datetime
 from functools import reduce
 from itertools import combinations
 
 from django.db.models import Q
+from django.db.models.expressions import RawSQL
+from django.utils import timezone
 from rest_framework import filters
 
 from iaso.models import OrgUnit
-from datetime import datetime
-from django.utils import timezone
 from iaso.models.deduplication import ValidationStatus
+from django.db.models import TextField
+from django.db.models.functions import Cast
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):
@@ -26,9 +29,19 @@ class EntitySearchFilterBackend(filters.BaseFilterBackend):
         search = request.query_params.get("search")
 
         if search:
-            queryset = queryset.filter(
-                Q(entity1__name__icontains=search) | Q(entity2__name__icontains=search)
-            ).distinct()
+            queryset = (
+                queryset.select_related("entity1")
+                .select_related("entity2")
+                .annotate(entity1_json_as_text=Cast("entity1__attributes__json", TextField()))
+                .annotate(entity2_json_as_text=Cast("entity2__attributes__json", TextField()))
+                .filter(
+                    Q(entity1__name__icontains=search)
+                    | Q(entity2__name__icontains=search)
+                    | Q(entity1_json_as_text__icontains=search)
+                    | Q(entity2_json_as_text__icontains=search)
+                )
+                .distinct()
+            )
 
         return queryset
 

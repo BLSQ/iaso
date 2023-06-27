@@ -528,6 +528,18 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         version1 = duplicate.entity1.attributes.get_form_version()
         version2 = duplicate.entity2.attributes.get_form_version()
 
+        if version1 is None:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": f"No form version for attibutes of entity {duplicate.entity1.pk}"},
+            )
+
+        if version2 is None:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": f"No form version for attibutes of entity {duplicate.entity2.pk}"},
+            )
+
         return_data = {
             "fields": fields_data,
             "descriptor1": version1.get_or_save_form_descriptor(),

@@ -428,7 +428,7 @@ if SENTRY_URL:
     except ValueError:
         raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate_str}, should be float")
 
-    # from openhexa
+    # from OpenHexa
     # Exclude /_health/ from sentry  as it fill the quota
     def sentry_tracer_sampler(sampling_context):
         transaction_context = sampling_context.get("transaction_context")

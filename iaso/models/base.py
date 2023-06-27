@@ -1209,6 +1209,7 @@ class Profile(models.Model):
             "email": self.user.email,
             "account": self.account.as_dict(),
             "permissions": permissions,
+            "user_permissions": user_permissions,
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             "user_roles": list(role.id for role in user_roles),

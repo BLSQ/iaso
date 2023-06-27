@@ -196,7 +196,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.save()
         if password != "":
             user.set_password(password)
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         user.user_permissions.clear()
         for permission_codename in permissions:
             permission = get_object_or_404(Permission, codename=permission_codename)
@@ -280,7 +280,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         if password != "":
             user.set_password(password)
         user.save()

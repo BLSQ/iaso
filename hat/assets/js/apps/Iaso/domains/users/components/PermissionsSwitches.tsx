@@ -48,7 +48,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 
     const setPermissions = (codeName: string, isChecked: boolean) => {
-        const newUserPerms = [...currentUser.permissions.value];
+        const newUserPerms = [...currentUser.user_permissions.value];
         if (!isChecked) {
             const permIndex = newUserPerms.indexOf(codeName);
             newUserPerms.splice(permIndex, 1);
@@ -59,7 +59,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     };
 
     const allPermissions = data?.permissions ?? [];
-    const userPermissions = currentUser.permissions.value;
+    const userPermissions = currentUser.user_permissions.value;
     const userRoles = currentUser.user_roles_permissions.value;
 
     const permissionsData = useGetUserPermissions(

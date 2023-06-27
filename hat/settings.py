@@ -440,7 +440,7 @@ if SENTRY_URL:
         if op == "http.server":
             path = sampling_context.get("wsgi_environ", {}).get("PATH_INFO")
             # Monitoring endpoints
-            if path.startswith("/ready"):
+            if path.startswith("/_health"):
                 return 0
 
     sentry_sdk.init(

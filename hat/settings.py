@@ -428,21 +428,25 @@ if SENTRY_URL:
     except ValueError:
         raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate_str}, should be float")
 
-    # fill the /_health/ endpoint in sentry as it fill the quota
-    def filter_transactions(event, hint):
-        # https://docs.sentry.io/platforms/python/guides/django/configuration/filtering/#using-platformidentifier-namebefore-send-transaction-
-        url_string = event["request"]["url"]
-        parsed_url = urlparse(url_string)
+    # from openhexa
+    # Exclude /_health/ from sentry  as it fill the quota
+    def sentry_tracer_sampler(sampling_context):
+        transaction_context = sampling_context.get("transaction_context")
+        if transaction_context is None:
+            return 0
 
-        if parsed_url.path == "/_health/":
-            return None
+        op = transaction_context.get("op")
 
-        return event
+        if op == "http.server":
+            path = sampling_context.get("wsgi_environ", {}).get("PATH_INFO")
+            # Monitoring endpoints
+            if path.startswith("/ready"):
+                return 0
 
     sentry_sdk.init(
         SENTRY_URL,
-        before_send_transaction=filter_transactions,
         traces_sample_rate=traces_sample_rate,
+        traces_sampler=sentry_tracer_sampler,
         integrations=[DjangoIntegration()],
         send_default_pii=True,
         release=VERSION,

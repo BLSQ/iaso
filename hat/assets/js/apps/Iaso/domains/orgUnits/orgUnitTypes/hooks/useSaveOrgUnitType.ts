@@ -5,13 +5,13 @@ import { useSnackMutation } from '../../../../libs/apiHooks';
 import { OrgunitType } from '../../types/orgunitTypes';
 
 const patchOrgUniType = async (body: Partial<OrgunitType>) => {
-    const url = `/api/orgunittypes/${body.id}/`;
+    const url = `/api/v2/orgunittypes/${body.id}/`;
     return patchRequest(url, body);
 };
 
 const postOrgUnitType = async (body: OrgunitType) => {
     return postRequest({
-        url: '/api/orgunittypes/',
+        url: '/api/v2/orgunittypes/',
         data: body,
     });
 };

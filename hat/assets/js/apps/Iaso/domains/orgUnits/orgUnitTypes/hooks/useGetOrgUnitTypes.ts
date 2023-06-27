@@ -15,7 +15,7 @@ const getOrgUnitTypes = async (
     if (pageSize) {
         params.limit = pageSize;
     }
-    const url = makeUrlWithParams('/api/orgunittypes/', params);
+    const url = makeUrlWithParams('/api/v2/orgunittypes/', params);
     return getRequest(url) as Promise<PaginatedOrgUnitTypes>;
 };
 

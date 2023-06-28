@@ -8,9 +8,8 @@ from django.db import connection
 import iaso.models.base as base
 from beanstalk_worker.services import TestTaskService
 from iaso import models as m
-from iaso.test import APITestCase
-
 from iaso.models.deduplication import ValidationStatus
+from iaso.test import APITestCase
 
 
 def create_instance_and_entity(cls, entity_name, instance_json, form_version, orgunit=None, entity_type=None):
@@ -543,15 +542,12 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         task_service = TestTaskService()
         task_service.run_all()
 
-        
         resp = self.client.get(f"/api/entityduplicates/?search=iaso")
 
         resp_json = resp.json()
 
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(len(resp_json["results"]), 6)
-
-
 
     def test_detail_empty_form_version_correct_error(self):
         self.client.force_authenticate(self.user_with_default_ou_rw)
@@ -573,14 +569,13 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         # we need to have some duplicates in DB
 
         duplicate = m.EntityDuplicate.objects.first()
-       
+
         # we need to remove the version from the json to test this case
         orig_json = duplicate.entity1.attributes.json
         orig_version_id = orig_json["_version"]
         del orig_json["_version"]
         duplicate.entity1.attributes.json = orig_json
         duplicate.entity1.attributes.save()
-
 
         resp = self.client.get(f"/api/entityduplicates/detail/?entities={duplicate.entity1.id},{duplicate.entity2.id}")
 
@@ -590,5 +585,3 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         orig_json["_version"] = orig_version_id
         duplicate.entity1.attributes.json = orig_json
         duplicate.entity1.attributes.save()
-
-        

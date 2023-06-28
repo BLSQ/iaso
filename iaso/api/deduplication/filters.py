@@ -3,15 +3,14 @@ from datetime import datetime
 from functools import reduce
 from itertools import combinations
 
-from django.db.models import Q
+from django.db.models import Q, TextField
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Cast
 from django.utils import timezone
 from rest_framework import filters
 
 from iaso.models import OrgUnit
 from iaso.models.deduplication import ValidationStatus
-from django.db.models import TextField
-from django.db.models.functions import Cast
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):

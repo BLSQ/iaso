@@ -529,6 +529,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                             user: currentUser,
                                             deleteForm: handleDeleteForm,
                                             orgUnitId: params.orgUnitId,
+                                            dispatch,
                                         })}
                                         forceRefresh={forceSingleTableRefresh}
                                         onForceRefreshDone={() =>

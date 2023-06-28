@@ -334,6 +334,7 @@ class Command(BaseCommand):
                 event_tracker_form_version,
                 fixed_instance_count=1,
             )
+            print("generated", event_tracker_form.name, event_tracker_form.instances.count(), "instances")
 
             self.seed_instances(
                 dhis2_version,
@@ -527,13 +528,22 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def seed_instances(self, dhis2_version, source_version, form, periods, mapping_version, fixed_instance_count=None):
+        out = OrgUnitType.objects.filter(orgunit__version=source_version).distinct()
+        form.org_unit_types.set(out)
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:
                 if fixed_instance_count and "Clinic" in org_unit.name:
                     instance_by_ou_periods = randint(1, fixed_instance_count)
                 else:
-                    instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
+                    rand = randint(1, 100)
+                    # Randomise the number of submissions for this period and ou
+                    if rand == 1:
+                        instance_by_ou_periods = 2
+                    elif 2 <= rand < 6:
+                        instance_by_ou_periods = 0
+                    else:
+                        instance_by_ou_periods = 1
 
                 with_location = randint(1, 3) == 2
                 # print("generating", form.name, org_unit.name, instance_by_ou_periods)

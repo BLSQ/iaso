@@ -85,7 +85,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     );
     const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate(onSuccess);
     return (
-        <>
+        <Box data-test="duplicate-infos">
             <Grid container>
                 <Grid item xs={12} md={4}>
                     <WidgetPaper
@@ -147,6 +147,6 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                     </Grid>
                 )}
             </Grid>
-        </>
+        </Box>
     );
 };

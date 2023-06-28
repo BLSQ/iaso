@@ -1,6 +1,7 @@
 /// <reference types="cypress" />
 
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import duplicatesInfos from '../../fixtures/duplicates/list-details.json';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/entities/duplicates/details/accountId/1/entities/883,163`;
@@ -53,6 +54,14 @@ describe('Workflows details', () => {
 
         cy.wait(['@getDetails', '@getDetailsDuplicate']).then(() => {
             cy.url().should('eq', baseUrl);
+            cy.get('[data-test="duplicate-infos"]').as('infos');
+            cy.get('@infos')
+                .find('h5')
+                .should('contain', duplicatesInfos.results[0].form.name);
+            // cy.get('@infos')
+            //     .find('table').as('infoTable');
+
+            // cy.get('@infoTable').find()
         });
     });
 });

@@ -1,0 +1,76 @@
+{
+    "results": [
+        {
+            "id": 65,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 883,
+                "created_at": "2023-03-31T08:08:04.480850Z",
+                "updated_at": "2023-03-31T08:08:04.484138Z",
+                "org_unit": {
+                    "id": 883,
+                    "name": "Laleihun CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "d204ce94-b97d-487b-9a72-a4125a89ffcd",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Côté",
+                    "What_is_the_father_s_name": "Lauzon"
+                }
+            },
+            "entity2": {
+                "id": 163,
+                "created_at": "2023-03-31T08:07:53.120429Z",
+                "updated_at": "2023-03-31T08:07:53.124252Z",
+                "org_unit": {
+                    "id": 163,
+                    "name": "Mathuraneh MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "cd2ef0e6-e914-43f7-9c5f-85ee9663def1",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Côté",
+                    "What_is_the_father_s_name": "Gagnon"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        }
+    ]
+}

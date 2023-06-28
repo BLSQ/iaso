@@ -696,6 +696,10 @@ export const usersPath = {
             isRequired: false,
             key: 'projectsIds',
         },
+        {
+            isRequired: false,
+            key: 'userRoles',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,
@@ -716,9 +720,7 @@ export const userRolesPath = {
             isRequired: false,
             key: 'search',
         },
-        ...paginationPathParams.map(p => ({
-            ...p,
-        })),
+        paginationPathParams,
     ],
 };
 

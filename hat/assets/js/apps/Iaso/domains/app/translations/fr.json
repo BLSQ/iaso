@@ -1,4 +1,5 @@
 {
+    "blsq.buttons.label.close": "Fermer",
     "blsq.label.clickOrDragFile": "Déposez des fichiers ou cliquez pour ouvrir la sélection de fichiers",
     "blsq.label.clicktoOpenFileSelect": "Cliquer pour sélectionner des fichiers",
     "blsq.label.dropHere": "Déposez les fichiers ici",
@@ -786,6 +787,7 @@
     "iaso.permissions.submissions": "Soumissions de formulaire",
     "iaso.permissions.teams": "Equipes",
     "iaso.permissions.update_submission": "Editer soumissions",
+    "iaso.permissions.userRoles": "Rôles de l'utilisateur",
     "iaso.permissions.users": "Utilisateurs",
     "iaso.permissions.workflows": "Workflows",
     "iaso.planning.title": "Planning",

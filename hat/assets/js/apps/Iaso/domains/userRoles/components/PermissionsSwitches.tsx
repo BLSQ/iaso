@@ -37,7 +37,9 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     const setPermissions = (permission: Permission, isChecked: boolean) => {
         const newUserPerms = [...userRolePermissions];
         if (!isChecked) {
-            const permIndex = newUserPerms.indexOf(permission);
+            const permIndex = newUserPerms.findIndex(item => {
+                return item.codename === permission.codename;
+            });
             newUserPerms.splice(permIndex, 1);
         } else {
             newUserPerms.push(permission);

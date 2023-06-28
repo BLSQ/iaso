@@ -21,3 +21,5 @@ openpyxl-stubs==0.1.22
 
 black==23.3.0
 pre-commit==2.9.2
+
+locust==2.15.1

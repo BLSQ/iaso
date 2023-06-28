@@ -30,6 +30,7 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
         parent_ou = True if request.data.get("ouParent", None) == "true" else False
         children_ou = True if request.data.get("ouChildren", None) == "true" else False
         projects = request.data.get("projects", None)
+        userRoles = request.data.get("userRoles", None)
 
         user = self.request.user
 
@@ -52,6 +53,7 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
             children_ou=children_ou,
             projects=projects,
             user=user,
+            userRoles=userRoles,
         )
         return Response(
             {"task": TaskSerializer(instance=task).data},

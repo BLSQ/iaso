@@ -83,6 +83,7 @@ def profiles_bulk_update(
     parent_ou: Optional[str],
     children_ou: Optional[str],
     projects: Optional[List[str]],
+    userRoles: Optional[List[str]],
     task: Task,
 ):
     """Background Task to bulk update profiles."""
@@ -101,7 +102,7 @@ def profiles_bulk_update(
         base_queryset = queryset
         queryset = Profile.objects.none()  # type: ignore
         search_queryset = get_filtered_profiles(
-            base_queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects
+            base_queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
         )
         queryset = queryset.union(search_queryset)
 

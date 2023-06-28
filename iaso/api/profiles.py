@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.auth import models
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -28,7 +29,9 @@ class HasProfilePermission(permissions.BasePermission):
         return True
 
 
-def get_filtered_profiles(queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects):
+def get_filtered_profiles(
+    queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
+):
     original_queryset = queryset
     if search:
         queryset = queryset.filter(
@@ -101,6 +104,8 @@ def get_filtered_profiles(queryset, search, perms, location, org_unit_type, pare
     if projects:
         queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects.split(","))
 
+    if userRoles:
+        queryset = queryset.filter(user__iaso_profile__user_roles__in=userRoles.split(","))
     return queryset
 
 
@@ -142,9 +147,9 @@ class ProfilesViewSet(viewsets.ViewSet):
         parent_ou = True if request.GET.get("ouParent", None) == "true" else False
         children_ou = True if request.GET.get("ouChildren", None) == "true" else False
         projects = request.GET.get("projects", None)
-
+        userRoles = request.GET.get("userRoles", None)
         queryset = get_filtered_profiles(
-            self.get_queryset(), search, perms, location, org_unit_type, parent_ou, children_ou, projects
+            self.get_queryset(), search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
         )
 
         if limit:
@@ -209,7 +214,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.save()
         if password != "":
             user.set_password(password)
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         user.user_permissions.clear()
         for permission_codename in permissions:
             permission = get_object_or_404(Permission, codename=permission_codename)
@@ -229,8 +234,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
+        profile.user.groups.clear()
         for user_role_id in user_roles:
             user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)
 
         if profile.dhis2_id == "":
@@ -298,7 +306,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         if password != "":
             user.set_password(password)
         user.save()
@@ -328,8 +336,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
+        profile.user.groups.clear()
         for user_role_id in user_roles:
             user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
+            profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)
 
         projects = request.data.get("projects", [])

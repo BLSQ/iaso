@@ -17,7 +17,7 @@ export type ReasonForDelay =
     | 'VACCINES_NOT_ARRIVED_IN_COUNTRY';
 
 export const reasonsForDateChange: ReasonForDelay[] = [
-    'INITIAL_DATA',
+    // 'INITIAL_DATA', // users should not have access to that option in the dropdown
     'ENCODING_ERROR',
     'PUBLIC_HOLIDAY',
     'OTHER_ACTIVITIES',

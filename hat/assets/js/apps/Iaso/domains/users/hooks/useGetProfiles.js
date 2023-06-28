@@ -15,6 +15,7 @@ export const useGetProfiles = params => {
               ouParent: params.ouParent,
               ouChildren: params.ouChildren,
               projects: params.projectsIds,
+              userRoles: params.userRoles,
           }
         : {};
 

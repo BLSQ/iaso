@@ -58,7 +58,7 @@ const sourcesPage2 = makePaginatedResponse({
 describe('Data sources', () => {
     beforeEach(() => {
         cy.login();
-        cy.intercept('GET', '/api/orgunittypes/', orgUnitTypes).as(
+        cy.intercept('GET', '/api/v2/orgunittypes/', orgUnitTypes).as(
             'orgUnitTypes',
         );
         cy.intercept('GET', '/api/projects/', projects).as('projects');

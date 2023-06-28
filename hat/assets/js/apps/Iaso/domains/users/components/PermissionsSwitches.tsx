@@ -1,15 +1,11 @@
-import React, { useMemo } from 'react';
-import { Switch, Typography, makeStyles } from '@material-ui/core';
-// @ts-ignore
+import React from 'react';
+import { Typography, makeStyles } from '@material-ui/core';
 import { useSafeIntl, LoadingSpinner, Table } from 'bluesquare-components';
-import {
-    CheckCircleOutlineOutlined as CheckedIcon,
-    HighlightOffOutlined as NotCheckedIcon,
-} from '@material-ui/icons';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { userPermissionColumns } from '../config';
+import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
 
 const styles = theme => ({
     admin: {
@@ -36,80 +32,6 @@ type PermissionResult = {
     permissions: Permission[];
 };
 
-type Row = {
-    permission: string;
-    userPermission: any;
-};
-
-const useGetPermissionData = (
-    allPermissions,
-    userPermissions,
-    rolePermissions,
-    setPermissions,
-) => {
-    const { formatMessage } = useSafeIntl();
-    return useMemo(() => {
-        const data: Array<Row> = [];
-        const permissionLabel = permissionCodeName => {
-            return MESSAGES[permissionCodeName]
-                ? formatMessage(MESSAGES[permissionCodeName])
-                : permissionCodeName;
-        };
-
-        allPermissions
-            .sort((a, b) =>
-                permissionLabel(a.codename).localeCompare(
-                    permissionLabel(b.codename),
-                    undefined,
-                    {
-                        sensitivity: 'accent',
-                    },
-                ),
-            )
-            .forEach(p => {
-                const row: any = {};
-                row.permission = permissionLabel(p.codename);
-                row.userPermission = (
-                    <Switch
-                        className="permission-checkbox"
-                        id={`permission-checkbox-${p.codename}`}
-                        checked={Boolean(
-                            userPermissions.find(up => up === p.codename),
-                        )}
-                        onChange={e =>
-                            setPermissions(p.codename, e.target.checked)
-                        }
-                        name={p.codename}
-                        color="primary"
-                    />
-                );
-                rolePermissions.forEach(role => {
-                    if (
-                        role.permissions.find(
-                            permission => permission === p.codename,
-                        )
-                    ) {
-                        row[role.id.toString()] = (
-                            <CheckedIcon style={{ color: 'green' }} />
-                        );
-                    } else {
-                        row[role.id.toString()] = (
-                            <NotCheckedIcon color="disabled" />
-                        );
-                    }
-                });
-                data.push(row);
-            });
-        return data;
-    }, [
-        allPermissions,
-        formatMessage,
-        rolePermissions,
-        setPermissions,
-        userPermissions,
-    ]);
-};
-
 const PermissionsSwitches: React.FunctionComponent<Props> = ({
     isSuperUser,
     currentUser,
@@ -126,7 +48,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 
     const setPermissions = (codeName: string, isChecked: boolean) => {
-        const newUserPerms = [...currentUser.permissions.value];
+        const newUserPerms = [...currentUser.user_permissions.value];
         if (!isChecked) {
             const permIndex = newUserPerms.indexOf(codeName);
             newUserPerms.splice(permIndex, 1);
@@ -137,9 +59,10 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     };
 
     const allPermissions = data?.permissions ?? [];
-    const userPermissions = currentUser.permissions.value;
+    const userPermissions = currentUser.user_permissions.value;
     const userRoles = currentUser.user_roles_permissions.value;
-    const permissionsData = useGetPermissionData(
+
+    const permissionsData = useGetUserPermissions(
         allPermissions,
         userPermissions,
         userRoles,

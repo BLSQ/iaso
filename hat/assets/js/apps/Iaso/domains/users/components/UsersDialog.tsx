@@ -190,7 +190,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             isSuperUser={initialData?.is_superuser}
                             currentUser={user}
                             handleChange={permissions =>
-                                setFieldValue('permissions', permissions)
+                                setFieldValue('user_permissions', permissions)
                             }
                         />
                     </div>

@@ -20,6 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.contrib.auth import models as authModels
 from django.db.models import Q, FilteredRelation, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1193,6 +1194,14 @@ class Profile(models.Model):
 
     def as_dict(self):
         user_roles = self.user_roles.all()
+        user_group_permissions = list(
+            map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
+        )
+        user_permissions = list(
+            self.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
+        )
+        all_permissions = user_group_permissions + user_permissions
+        permissions = list(set(all_permissions))
         return {
             "id": self.id,
             "first_name": self.user.first_name,
@@ -1200,9 +1209,8 @@ class Profile(models.Model):
             "last_name": self.user.last_name,
             "email": self.user.email,
             "account": self.account.as_dict(),
-            "permissions": list(
-                self.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
-            ),
+            "permissions": permissions,
+            "user_permissions": user_permissions,
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
             "user_roles": list(role.id for role in user_roles),

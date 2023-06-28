@@ -525,3 +525,70 @@ class EntitiesDuplicationAPITestCase(APITestCase):
         self.assertEqual(response_data["entity2_id"], duplicate.entity2.id)
         # ignore should be True
         self.assertEqual(response_data["ignored"], False)
+
+    def test_filter_search_term_ok(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom"],
+                "algorithm": "levenshtein",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        
+        resp = self.client.get(f"/api/entityduplicates/?search=iaso")
+
+        resp_json = resp.json()
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(len(resp_json["results"]), 6)
+
+
+
+    def test_detail_empty_form_version_correct_error(self):
+        self.client.force_authenticate(self.user_with_default_ou_rw)
+
+        response = self.client.post(
+            "/api/entityduplicates_analyzes/",
+            {
+                "entity_type_id": self.default_entity_type.id,
+                "fields": ["Prenom", "Nom", "Age"],
+                "algorithm": "levenshtein",
+                "parameters": {},
+            },
+            format="json",
+        )
+
+        task_service = TestTaskService()
+        task_service.run_all()
+
+        # we need to have some duplicates in DB
+
+        duplicate = m.EntityDuplicate.objects.first()
+       
+        # we need to remove the version from the json to test this case
+        orig_json = duplicate.entity1.attributes.json
+        orig_version_id = orig_json["_version"]
+        del orig_json["_version"]
+        duplicate.entity1.attributes.json = orig_json
+        duplicate.entity1.attributes.save()
+
+
+        resp = self.client.get(f"/api/entityduplicates/detail/?entities={duplicate.entity1.id},{duplicate.entity2.id}")
+
+        self.assertContains(resp, "No form version for attibutes of entity", status_code=404)
+
+        orig_json = duplicate.entity1.attributes.json
+        orig_json["_version"] = orig_version_id
+        duplicate.entity1.attributes.json = orig_json
+        duplicate.entity1.attributes.save()
+
+        

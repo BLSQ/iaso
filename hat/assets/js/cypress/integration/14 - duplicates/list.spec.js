@@ -187,7 +187,7 @@ describe('Duplicate entities list', () => {
         });
     });
 
-    describe.only('Api', () => {
+    describe('Api', () => {
         it('should be called with base params', () => {
             goToPage(superUser);
             interceptFlag = false;
@@ -196,7 +196,7 @@ describe('Duplicate entities list', () => {
                 cy.wrap(interceptFlag).should('eq', true);
             });
         });
-        it.only('should be called with search params', () => {
+        it('should be called with search params', () => {
             goToPage(superUser);
             cy.visit(baseUrl);
             cy.wait('@getDuplicates').then(() => {

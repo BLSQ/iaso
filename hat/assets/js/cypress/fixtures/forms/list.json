@@ -3,6 +3,23 @@
     "forms": [
         {
             "id": 1,
+            "possible_fields": [
+                {
+                    "name": "first_name",
+                    "type": "text",
+                    "label": "First Name"
+                },
+                {
+                    "name": "middle_name",
+                    "type": "text",
+                    "label": "Middle Name"
+                },
+                {
+                    "name": "last_name",
+                    "type": "text",
+                    "label": "Last Name"
+                }
+            ],
             "name": "FORM_A",
             "form_id": "form_1",
             "device_field": "",
@@ -119,6 +136,23 @@
         },
         {
             "id": 2,
+            "possible_fields": [
+                {
+                    "name": "first_name",
+                    "type": "text",
+                    "label": "First Name"
+                },
+                {
+                    "name": "middle_name",
+                    "type": "text",
+                    "label": "Middle Name"
+                },
+                {
+                    "name": "last_name",
+                    "type": "text",
+                    "label": "Last Name"
+                }
+            ],
             "name": "FORM 1",
             "form_id": "form_1",
             "device_field": "",
@@ -228,6 +262,23 @@
         },
         {
             "id": 3,
+            "possible_fields": [
+                {
+                    "name": "first_name",
+                    "type": "text",
+                    "label": "First Name"
+                },
+                {
+                    "name": "middle_name",
+                    "type": "text",
+                    "label": "Middle Name"
+                },
+                {
+                    "name": "last_name",
+                    "type": "text",
+                    "label": "Last Name"
+                }
+            ],
             "name": "FORM 3",
             "form_id": "form_1",
             "device_field": "",
@@ -337,6 +388,23 @@
         },
         {
             "id": 4,
+            "possible_fields": [
+                {
+                    "name": "first_name",
+                    "type": "text",
+                    "label": "First Name"
+                },
+                {
+                    "name": "middle_name",
+                    "type": "text",
+                    "label": "Middle Name"
+                },
+                {
+                    "name": "last_name",
+                    "type": "text",
+                    "label": "Last Name"
+                }
+            ],
             "name": "FORM 4",
             "form_id": "form_1",
             "device_field": "",

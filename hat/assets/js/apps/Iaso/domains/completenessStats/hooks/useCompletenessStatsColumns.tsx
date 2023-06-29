@@ -210,9 +210,11 @@ export const useCompletenessStatsColumns = (
                 );
                 const childrenPageUrl = genUrl(router, {
                     parentId: settings.row.original.org_unit?.id,
+                    page: null,
                 });
                 const parentPageUrl = genUrl(router, {
                     parentId: settings.row.original.parent_org_unit?.id,
+                    page: null,
                 });
 
                 return (

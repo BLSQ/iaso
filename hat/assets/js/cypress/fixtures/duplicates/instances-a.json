@@ -9,7 +9,8 @@
                 "entityUuid": "cd2ef0e6-e914-43f7-9c5f-85ee9663def1",
                 "entityTypeId": 2,
                 "What_is_the_child_s_name": "Côté",
-                "What_is_the_father_s_name": "Gagnon"
+                "What_is_the_father_s_name": "Gagnon",
+                "What_is_the_mother_s_name": ""
             },
             "file_url": "/media/instances/entity_form2.38.3_93e4ede0-1bc7-4ae0-ac9d-421e309686f2",
             "id": 163,
@@ -83,6 +84,16 @@
                         "type": "text",
                         "label": {
                             "English (en)": "What is the father's name?"
+                        }
+                    },
+                    {
+                        "bind": {
+                            "required": "true"
+                        },
+                        "name": "What_is_the_mother_s_name",
+                        "type": "text",
+                        "label": {
+                            "English (en)": "What is the mother's name?"
                         }
                     },
                     {

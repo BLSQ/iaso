@@ -20,6 +20,11 @@
                     "field": "What_is_the_child_s_name",
                     "label": "Prénom",
                     "type": "text"
+                },
+                {
+                    "field": "What_is_the_mother_s_name",
+                    "label": "Mother's name",
+                    "type": "text"
                 }
             ],
             "entity1": {
@@ -35,7 +40,8 @@
                     "entityUuid": "d204ce94-b97d-487b-9a72-a4125a89ffcd",
                     "entityTypeId": 2,
                     "What_is_the_child_s_name": "Côté",
-                    "What_is_the_father_s_name": "Lauzon"
+                    "What_is_the_father_s_name": "Lauzon",
+                    "What_is_the_mother_s_name": ""
                 }
             },
             "entity2": {
@@ -51,7 +57,8 @@
                     "entityUuid": "cd2ef0e6-e914-43f7-9c5f-85ee9663def1",
                     "entityTypeId": 2,
                     "What_is_the_child_s_name": "Côté",
-                    "What_is_the_father_s_name": "Gagnon"
+                    "What_is_the_father_s_name": "Gagnon",
+                    "What_is_the_mother_s_name": ""
                 }
             },
             "analyzis": [
@@ -61,7 +68,8 @@
                     "finished_at": "2023-06-09T10:17:07.825139Z",
                     "the_fields": [
                         "What_is_the_father_s_name",
-                        "What_is_the_child_s_name"
+                        "What_is_the_child_s_name",
+                        "What_is_the_mother_s_name"
                     ],
                     "type": "levenshtein"
                 }

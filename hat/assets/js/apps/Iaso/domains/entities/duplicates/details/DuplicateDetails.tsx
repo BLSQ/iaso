@@ -238,9 +238,14 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                 row.original.final.status === 'identical' &&
                 onlyShowUnmatched
             ) {
-                return { className: `${classes.hidden}` };
+                return {
+                    className: `${classes.hidden}`,
+                    'data-test': 'hidden-row',
+                };
             }
-            return {};
+            return {
+                'data-test': 'visible-row',
+            };
         },
         [classes.hidden, onlyShowUnmatched],
     );
@@ -255,6 +260,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                     classes[cell.value.status],
                     classes.pointer,
                 ),
+                'data-test': cell.value.status,
             };
         },
         [classes],

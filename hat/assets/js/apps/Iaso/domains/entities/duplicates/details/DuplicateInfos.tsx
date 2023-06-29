@@ -118,6 +118,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             <Button
                                 color="primary"
                                 variant="outlined"
+                                data-test="ignore-button"
                                 onClick={() => {
                                     ignoreDuplicate({
                                         entity1_id: entityIds[0],
@@ -132,6 +133,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             <Button
                                 variant="contained"
                                 color="primary"
+                                data-test="merge-button"
                                 onClick={() => {
                                     mergeEntities({
                                         entity1_id: entityIds[0],

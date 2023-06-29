@@ -35,6 +35,24 @@
                 "value": "C\u00f4t\u00e9",
                 "id": 883
             }
+        },
+        {
+            "the_field": {
+                "field": "What_is_the_mother_s_name",
+                "label": "Mother's name"
+            },
+            "entity1": {
+                "value": "",
+                "id": 883
+            },
+            "entity2": {
+                "value": "",
+                "id": 163
+            },
+            "final": {
+                "value": "",
+                "id": 883
+            }
         }
     ],
     "descriptor1": {
@@ -69,6 +87,16 @@
                 "type": "text",
                 "label": {
                     "English (en)": "What is the father's name?"
+                }
+            },
+            {
+                "bind": {
+                    "required": "true"
+                },
+                "name": "What_is_the_mother_s_name",
+                "type": "text",
+                "label": {
+                    "English (en)": "What is the mother's name?"
                 }
             },
             {
@@ -562,6 +590,16 @@
                 "type": "text",
                 "label": {
                     "English (en)": "What is the father's name?"
+                }
+            },
+            {
+                "bind": {
+                    "required": "true"
+                },
+                "name": "What_is_the_mother_s_name",
+                "type": "text",
+                "label": {
+                    "English (en)": "What is the mother's name?"
                 }
             },
             {

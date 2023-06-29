@@ -74,7 +74,7 @@ describe('Duplicate details', () => {
         errorCode.should('contain', '401');
     });
 
-    it.only('should show correct infos', () => {
+    it('should show correct infos', () => {
         mockPage();
         cy.visit(baseUrl);
 

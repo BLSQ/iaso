@@ -188,7 +188,7 @@ class CommandTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
-                m.OrgUnitType: 5,
+                m.OrgUnitType: 4,
                 m.Group: 2,  # there is 2 group on OrgUnit C
             }
         )
@@ -400,7 +400,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 4,
-                m.OrgUnitType: 5,
+                m.OrgUnitType: 4,
                 m.Group: 3,  # there are 2 groups on OrgUnit C
             }
         )
@@ -467,7 +467,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 0,
-                m.OrgUnitType: 5,
+                m.OrgUnitType: 4,
                 m.Group: 0,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
             }
         )

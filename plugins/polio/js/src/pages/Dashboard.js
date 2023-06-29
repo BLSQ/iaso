@@ -28,7 +28,7 @@ import { useRemoveCampaign } from '../hooks/useRemoveCampaign';
 import { useRestoreCampaign } from '../hooks/useRestoreCampaign';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
-import { genUrl } from '../utils/routing';
+import { genUrl } from '../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { convertObjectToString } from '../utils';
 import { DASHBOARD_BASE_URL } from '../constants/routes';
 import { useSingleTableParams } from '../../../../../hat/assets/js/apps/Iaso/components/tables/SingleTable';

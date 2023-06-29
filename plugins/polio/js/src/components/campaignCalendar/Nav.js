@@ -23,7 +23,7 @@ import { Link, withRouter } from 'react-router';
 import { useStyles } from './Styles';
 import { dateFormat } from './constants';
 
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../constants/messages';
 
 const Nav = ({ currentMonday, router, currentDate }) => {

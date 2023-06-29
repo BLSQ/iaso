@@ -17,7 +17,7 @@ import { withRouter } from 'react-router';
 import { colSpanTitle, defaultStaticColWidth } from '../constants';
 import { useStyles } from '../Styles';
 import MESSAGES from '../../../constants/messages';
-import { genUrl } from '../../../utils/routing';
+import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useStaticFields } from '../../../hooks/useStaticFields';
 
 const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {

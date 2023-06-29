@@ -13,7 +13,7 @@ import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 
 import { makeCampaignsDropDown } from '../../utils/index';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 
 type Params = {
     campaign: string | undefined;

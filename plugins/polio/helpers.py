@@ -38,7 +38,7 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
             logger.info(f"fetched {len(response.content)} bytes")
             cached_response.save()
             content = response.json()
-            empty = (len(content) == 0)
+            empty = len(content) == 0
             j.extend(response.json())
             page = page + 1
     else:

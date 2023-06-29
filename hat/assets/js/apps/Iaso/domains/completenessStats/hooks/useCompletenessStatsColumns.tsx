@@ -4,14 +4,11 @@ import {
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { cloneDeep } from 'lodash';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import { Box, LinearProgress } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import { ArrowUpward } from '@material-ui/icons';
 import { Router } from 'react-router';
-import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -50,12 +47,6 @@ export const useCompletenessStatsColumns = (
         currentUser,
     );
     const { formatMessage } = useSafeIntl();
-    const redirectionParams: CompletenessRouterParams = useMemo(() => {
-        const clonedParams = cloneDeep(params);
-        delete clonedParams.parentId;
-        return clonedParams;
-    }, [params]);
-    const dispatch = useDispatch();
     return useMemo(() => {
         let columns: Column[] = [
             {
@@ -217,33 +208,25 @@ export const useCompletenessStatsColumns = (
                 const hasFormSubmissions = Object.values(formStats).some(
                     (stat: any) => stat.itself_has_instances > 0,
                 );
+                const childrenPageUrl = genUrl(router, {
+                    parentId: settings.row.original.org_unit?.id,
+                });
+                const parentPageUrl = genUrl(router, {
+                    parentId: settings.row.original.parent_org_unit?.id,
+                });
 
                 return (
                     <>
                         {!settings.row.original.is_root && (
                             <IconButtonComponent
-                                onClick={() => {
-                                    const newUrl = genUrl(router, {
-                                        parentId:
-                                            settings.row.original.org_unit?.id,
-                                    });
-
-                                    dispatch(redirectTo(newUrl));
-                                }}
+                                url={childrenPageUrl}
                                 tooltipMessage={MESSAGES.seeChildren}
                                 overrideIcon={AccountTreeIcon}
                             />
                         )}
                         {settings.row.original.is_root && (
                             <IconButtonComponent
-                                onClick={() => {
-                                    const newUrl = genUrl(router, {
-                                        parentId:
-                                            settings.row.original
-                                                .parent_org_unit?.id,
-                                    });
-                                    dispatch(redirectTo(newUrl));
-                                }}
+                                url={parentPageUrl}
                                 tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
                             />
@@ -262,10 +245,8 @@ export const useCompletenessStatsColumns = (
         });
         return columns;
     }, [
-        dispatch,
         router,
         formatMessage,
-        redirectionParams,
         completenessStats,
         params,
         hasSubmissionPermission,

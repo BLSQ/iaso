@@ -4,6 +4,7 @@ import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Box, Grid, makeStyles, useTheme } from '@material-ui/core';
 import Color from 'color';
 
+import { Router } from 'react-router';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
@@ -18,7 +19,6 @@ import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import { CompletenessRouterParams } from './types';
-import { Router } from 'react-router';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({

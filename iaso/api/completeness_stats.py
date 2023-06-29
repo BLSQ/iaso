@@ -229,8 +229,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             instance_qs = instance_qs.filter(period=period)
         if planning:
             instance_qs = instance_qs.filter(planning_id=planning.id)
-            # the current planning filter has limitation as it filter the submissiosn but not the org unit
-            #  that need filing according to the planing. so the percentage are wrong.
+            form_qs = form_qs.filter(plannings=planning)
 
         profile = request.user.iaso_profile  # type: ignore
 
@@ -276,16 +275,27 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         else:
             top_ous = org_units.filter(org_unit_type__in=group_per_types)
 
-        # End calculation of top ous
         top_ous = top_ous.prefetch_related("org_unit_type", "parent")
+        # End calculation of top ous
 
         # Orgunit on which we count the Submissions
         orgunit_qs: OrgUnitQuerySet
         orgunit_qs = OrgUnit.objects.filter(validation_status__in=org_unit_validation_status)  # type: ignore
+
         org_unit_group = params.get("org_unit_group")
         if org_unit_group:
             orgunit_qs = orgunit_qs.filter(groups__id=org_unit_group.id)
         orgunit_qs = orgunit_qs.hierarchy(top_ous)
+        if planning:
+            # Only keep OrgUnit assigned on planning. For now They are considered to be filled if a user is directly
+            #  on them (not a team)
+            assigned_orgunits = OrgUnit.objects.filter(
+                assignment__in=planning.assignment_set.filter(user__isnull=False)
+            )
+
+            # Pass by the ids to avoid strange effects.
+            planning_orgunit_ids = list(assigned_orgunits.distinct().values_list("id", flat=True))
+            orgunit_qs = orgunit_qs.filter(id__in=planning_orgunit_ids)
         # Annotate the query with the form info
         ou_with_stats = get_annotated_queryset(
             root_qs=top_ous, form_qs=form_qs, instance_qs=instance_qs, orgunit_qs=orgunit_qs

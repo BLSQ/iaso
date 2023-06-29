@@ -342,9 +342,14 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                         />
                     </Paper>
                 </Box>
-                <Box data-test="duplicate-submissions">
+                <Box>
                     <Grid container item spacing={2}>
-                        <Grid item xs={12} sm={6}>
+                        <Grid
+                            item
+                            xs={12}
+                            sm={6}
+                            data-test="duplicate-submissions-a"
+                        >
                             <SubmissionsForEntity
                                 entityId={entityIdA}
                                 title={formatMessage(
@@ -353,7 +358,12 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                                 )}
                             />
                         </Grid>
-                        <Grid item xs={12} sm={6}>
+                        <Grid
+                            item
+                            xs={12}
+                            sm={6}
+                            data-test="duplicate-submissions-b"
+                        >
                             <SubmissionsForEntity
                                 entityId={entityIdB}
                                 title={formatMessage(

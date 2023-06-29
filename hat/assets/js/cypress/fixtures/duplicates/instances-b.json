@@ -10,7 +10,8 @@
                 "entityTypeId": 2,
                 "What_is_the_child_s_name": "Côté",
                 "What_is_the_father_s_name": "Lauzon",
-                "What_is_the_mother_s_name": ""
+                "What_is_the_mother_s_name": "",
+                "caretaker_Last_name": "Morcel"
             },
             "file_url": "/media/instances/entity_form2.38.3_8a557e3c-d1ea-4700-bc3e-8c6a230626bc",
             "id": 883,
@@ -94,6 +95,16 @@
                         "type": "text",
                         "label": {
                             "English (en)": "What is the mother's name?"
+                        }
+                    },
+                    {
+                        "bind": {
+                            "required": "true"
+                        },
+                        "name": "caretaker_Last_name",
+                        "type": "text",
+                        "label": {
+                            "English (en)": "Caretaker first name:"
                         }
                     },
                     {

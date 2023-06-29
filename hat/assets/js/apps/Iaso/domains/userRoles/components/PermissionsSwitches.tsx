@@ -23,7 +23,7 @@ type PermissionResult = {
     permissions: Array<Permission>;
 };
 
-const PermissionsSwitches: React.FunctionComponent<Props> = ({
+export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     userRolePermissions,
     handleChange,
 }) => {
@@ -87,12 +87,10 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                                     color="primary"
                                 />
                             }
-                            label={permissionLabel(p.name)}
+                            label={permissionLabel(p.codename)}
                         />
                     </div>
                 ))}
         </>
     );
 };
-
-export default PermissionsSwitches;

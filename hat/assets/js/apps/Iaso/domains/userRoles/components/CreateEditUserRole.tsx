@@ -1,11 +1,6 @@
 import React, { FunctionComponent, useMemo, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
-import {
-    AddButton,
-    IconButton,
-    IntlFormatMessage,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { AddButton, IconButton, useSafeIntl } from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import {
     SaveUserRoleQuery,
@@ -19,7 +14,7 @@ import {
     useTranslatedErrors,
 } from '../../../libs/validation';
 import InputComponent from '../../../components/forms/InputComponent';
-import PermissionsSwitches from './PermissionsSwitches';
+import { PermissionsSwitches } from './PermissionsSwitches';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {
@@ -42,21 +37,9 @@ const makeRenderTrigger = (dialogType: 'create' | 'edit') => {
         />
     );
 };
-const formatTitle = (
-    dialogType: ModalMode,
-    formatMessage: IntlFormatMessage,
-) => {
-    switch (dialogType) {
-        case 'create':
-            return formatMessage(MESSAGES.createUserRole);
-        case 'edit':
-            return formatMessage(MESSAGES.editUserRole);
-        default:
-            return formatMessage(MESSAGES.createUserRole);
-    }
-};
+
 export const CreateEditUserRole: FunctionComponent<Props> = ({
-    dialogType,
+    dialogType = 'create',
     id,
     name,
     permissions = [],
@@ -78,7 +61,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         mutationFn: saveUserRole,
         onSuccess: () => {
             closeModal.closeDialog();
-            formik.resetForm();
+            setUserRolePermissoins([]);
         },
     });
     const schema = useUserRoleValidation(apiErrors, payload);
@@ -117,8 +100,10 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         setFieldValue(keyValue, value);
     };
 
-    const titleMessage = formatTitle(dialogType, formatMessage);
-
+    const titleMessage =
+        dialogType === 'create'
+            ? formatMessage(MESSAGES.createUserRole)
+            : formatMessage(MESSAGES.editUserRole);
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -127,11 +112,12 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                 renderTrigger={renderTrigger}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
-                    setCloseModal({ closeDialog });
                     handleSubmit();
+                    setCloseModal({ closeDialog });
                 }}
                 onCancel={closeDialog => {
                     closeDialog();
+                    setUserRolePermissoins([]);
                 }}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}

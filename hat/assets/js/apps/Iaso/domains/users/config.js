@@ -81,6 +81,7 @@ export const userPermissionColumns = ({ formatMessage, currentUser }) => {
             id: 'permission',
             accessor: 'permission',
             sortable: false,
+            align: 'left',
         },
         {
             Header: formatMessage(MESSAGES.userPermissions),

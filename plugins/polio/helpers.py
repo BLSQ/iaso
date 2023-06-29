@@ -26,12 +26,21 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
     use_cache = delta < timedelta(minutes=minutes) or prefer_cache
     if not (has_cache and use_cache):
         logger.info(f"fetching from {url}")
-        response = requests.get(url, auth=(login, password))
-        response.raise_for_status()
-        cached_response.content = response.text
-        logger.info(f"fetched {len(response.content)} bytes")
-        cached_response.save()
-        j = response.json()
+        page = 1
+        empty = False
+        j = []
+        while not empty:
+            paginated_url = url + ("&page=%d&page_size=10000" % page)
+            logger.info("paginated_url: " + paginated_url)
+            response = requests.get(paginated_url, auth=(login, password))
+            response.raise_for_status()
+            cached_response.content = response.text
+            logger.info(f"fetched {len(response.content)} bytes")
+            cached_response.save()
+            content = response.json()
+            empty = (len(content) == 0)
+            j.extend(response.json())
+            page = page + 1
     else:
         logger.info(f"using cache for {url}")
         j = json.loads(cached_response.content)

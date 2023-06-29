@@ -18,6 +18,7 @@ import { MENU_HEIGHT_WITHOUT_TABS } from '../../constants/uiConstants';
 import { CompletenessStatsFilters } from './CompletenessStatsFilters';
 import { CsvButton } from '../../components/Buttons/CsvButton';
 import { CompletenessRouterParams } from './types';
+import { Router } from 'react-router';
 
 const baseUrl = baseUrls.completenessStats;
 const useStyles = makeStyles(theme => ({
@@ -30,15 +31,23 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     params: CompletenessRouterParams;
+    router: Router;
 };
 
-export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
+export const CompletenessStats: FunctionComponent<Props> = ({
+    params,
+    router,
+}) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
     const { data: completenessStats, isFetching } =
         useGetCompletenessStats(params);
-    const columns = useCompletenessStatsColumns(params, completenessStats);
+    const columns = useCompletenessStatsColumns(
+        router,
+        params,
+        completenessStats,
+    );
     const csvUrl = useMemo(
         () => `/api/v2/completeness_stats.csv?${buildQueryString(params)}`,
         [params],

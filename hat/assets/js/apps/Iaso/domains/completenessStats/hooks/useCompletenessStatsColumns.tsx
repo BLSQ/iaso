@@ -10,6 +10,7 @@ import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import { Box, LinearProgress } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import { ArrowUpward } from '@material-ui/icons';
+import { Router } from 'react-router';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../../users/utils';
@@ -21,8 +22,7 @@ import {
     FormDesc,
     FormStatRow,
 } from '../types';
-
-const baseUrl = `${baseUrls.completenessStats}`;
+import { genUrl } from '../../../routing/routing';
 
 // From https://v4.mui.com/components/progress/
 const LinearProgressWithLabel = props => (
@@ -40,6 +40,7 @@ const LinearProgressWithLabel = props => (
 );
 
 export const useCompletenessStatsColumns = (
+    router: Router,
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
@@ -222,14 +223,12 @@ export const useCompletenessStatsColumns = (
                         {!settings.row.original.is_root && (
                             <IconButtonComponent
                                 onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original.org_unit
-                                                    ?.id,
-                                        }),
-                                    );
+                                    const newUrl = genUrl(router, {
+                                        parentId:
+                                            settings.row.original.org_unit?.id,
+                                    });
+
+                                    dispatch(redirectTo(newUrl));
                                 }}
                                 tooltipMessage={MESSAGES.seeChildren}
                                 overrideIcon={AccountTreeIcon}
@@ -238,14 +237,12 @@ export const useCompletenessStatsColumns = (
                         {settings.row.original.is_root && (
                             <IconButtonComponent
                                 onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original
-                                                    .parent_org_unit?.id,
-                                        }),
-                                    );
+                                    const newUrl = genUrl(router, {
+                                        parentId:
+                                            settings.row.original
+                                                .parent_org_unit?.id,
+                                    });
+                                    dispatch(redirectTo(newUrl));
                                 }}
                                 tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
@@ -266,6 +263,7 @@ export const useCompletenessStatsColumns = (
         return columns;
     }, [
         dispatch,
+        router,
         formatMessage,
         redirectionParams,
         completenessStats,

@@ -301,6 +301,11 @@ class Command(BaseCommand):
         print("********* FORM seed done")
         if mode == "seed":
             print("******** delete previous instances and plannings")
+            print(
+                Instance.objects.filter(org_unit__in=source_version.orgunit_set.all(), planning__isnull=False).update(
+                    planning=None
+                )
+            )
             print(Planning.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
             print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).update(entity=None))
             print(Entity.objects.filter(account=account).delete())
@@ -321,8 +326,6 @@ class Command(BaseCommand):
             )
 
             self.seed_entities(source_version, entity_form, entity_form_version, account, project, entity_type, user)
-
-            self.seed_micro_planning(source_version, project, user)
 
             print("********* generating instances")
 
@@ -349,7 +352,8 @@ class Command(BaseCommand):
             print("generated", quantity_form.name, quantity_form.instances.count(), "instances")
             self.seed_instances(dhis2_version, source_version, quality_form, quarter_periods, quality_form_version)
             print("generated", quality_form.name, quality_form.instances.count(), "instances")
-
+            # move after seed index so we  have submissions for the cvs_form
+            self.seed_micro_planning(source_version, project, user)
         if mode == "derived":
             period = "2018Q1"
             for i in cvs_stat_form.instances.filter(period=period).all():
@@ -725,13 +729,21 @@ class Command(BaseCommand):
         print("country ", country.name)
 
         p = Planning.objects.create(project=project, name="planning-cvs", team=team_main, org_unit=country)
+        form_cvs = Form.objects.filter(name__startswith="Community Verification Satisfaction")
+        p.forms.set(form_cvs)
 
         child_index = 0
         for region in country.children():
             assigned_team = basic_teams[child_index % len(basic_teams)]
             print(" assigning", region.name, assigned_team.name)
-            for child_org_unit in region.descendants():
-                p.assignment_set.get_or_create(org_unit=child_org_unit, team=assigned_team, user=user)
+            p.assignment_set.get_or_create(org_unit=region, team=assigned_team)
+            for child_org_unit in region.children():
+                p.assignment_set.get_or_create(org_unit=child_org_unit, user=user)
+                if randint(0, 2) == 2:
+                    # randomly assign a submission to the planning, so we have some data for the
+                    # completeness stat
+                    Instance.objects.filter(org_unit=child_org_unit, form__in=form_cvs).update(planning_id=p.id)
+
             child_index += 1
 
         Planning.objects.get_or_create(

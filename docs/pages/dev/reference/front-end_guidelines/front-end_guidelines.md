@@ -214,6 +214,20 @@ export const useDeleteWhatever = (
 };
 ```
 
+## Code style
+
+- prefer `type?:string` to `type: string | undefined`
+- prefer `const myVar = otherValue??"placeholder` to `let myVar = "placeholder" if(otherVAlue){myVar = otherValue}`
+- function names should include a verb:
+```javascript
+// BAD
+const username = user => user.firstname + user.lastname
+
+// GOOD
+const makeUsername = user => user.firstname + user.lastname
+```
+
+
 
 ## Remarks
 
@@ -221,5 +235,4 @@ export const useDeleteWhatever = (
 - spacing is by default theme.spacing(2)
 - do not use Grid everywhere or too much
 - all the calls to the api without query params should end by '/'
-- prefer `type?:string` to `type: string | undefined`
-- prefer `const myVar = otherValue??"placeholder` to `let myVar = "placeholder" if(otherVAlue){myVar = otherValue}`
+- in routes.js, the `params` listed are ordered, meaning you can get a 404 when they are not in the right order. Related to this, teh `paginationPathParams` taht we spread in most routes should come first, right after the `accountId` to avoid getting 404 because of automatic redirections

@@ -5,9 +5,9 @@ import { deleteRequest } from '../../../../libs/Api';
 import MESSAGES from '../../messages';
 
 export const useDeleteUserRole = (): UseMutationResult =>
-    useSnackMutation(
-        body => deleteRequest(`/api/userroles/${body.id}/`),
-        MESSAGES.deleteSuccess,
-        MESSAGES.deleteError,
-        ['userRolesList'],
-    );
+    useSnackMutation({
+        mutationFn: body => deleteRequest(`/api/userroles/${body.id}/`),
+        snackSuccessMessage: MESSAGES.deleteSuccess,
+        snackErrorMsg: MESSAGES.deleteError,
+        invalidateQueryKey: ['userRolesList'],
+    });

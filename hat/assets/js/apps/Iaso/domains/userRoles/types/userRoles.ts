@@ -18,3 +18,9 @@ export type UserRoleParams = UrlParams &
             data: Array<UserRole>,
         ) => Array<any>;
     };
+
+export type Permission = {
+    id: number;
+    name: string;
+    codename: string;
+};

@@ -3,12 +3,7 @@ import { UseMutationResult } from 'react-query';
 import { isEmpty } from 'lodash';
 import { putRequest, postRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
-
-type Permission = {
-    id: number;
-    name: string;
-    codename: string;
-};
+import { Permission } from '../../types/userRoles';
 
 export type SaveUserRoleQuery = {
     id?: number;

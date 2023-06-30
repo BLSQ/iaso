@@ -32,10 +32,13 @@ const getUserRoles = async (
 export const useGetUserRoles = (
     options: UserRoleParams | UserRolesFilterParams,
 ): UseQueryResult<UserRolesList, Error> => {
-    const queryKey: any[] = ['userRolesList', options];
     const { select } = options as Record<string, any>;
-    // @ts-ignore
-    return useSnackQuery(queryKey, () => getUserRoles(options), undefined, {
-        select,
+    return useSnackQuery({
+        queryKey: ['userRolesList', options],
+        queryFn: () => getUserRoles(options),
+        snackErrorMsg: undefined,
+        options: {
+            select,
+        },
     });
 };

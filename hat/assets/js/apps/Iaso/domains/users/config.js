@@ -78,7 +78,7 @@ export const usersTableColumns = ({
     },
 ];
 
-export const userPermissionColumns = ({
+export const useUserPermissionColumns = ({
     formatMessage,
     currentUser,
     setPermissions,

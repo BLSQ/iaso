@@ -4,8 +4,9 @@ import { useSafeIntl, LoadingSpinner, Table } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
-import { userPermissionColumns } from '../config';
+import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
+import { Permission } from '../../userRoles/types/userRoles';
 
 const styles = theme => ({
     admin: {
@@ -17,10 +18,7 @@ const styles = theme => ({
 });
 
 const useStyles = makeStyles(styles);
-type Permission = {
-    id: number;
-    codename: string;
-};
+
 type Props = {
     isSuperUser?: boolean;
     currentUser: any;
@@ -39,13 +37,13 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data, isLoading } = useSnackQuery<PermissionResult>(
-        ['permissions'],
-        () => getRequest('/api/permissions/'),
-        MESSAGES.fetchPermissionsError,
+    const { data, isLoading } = useSnackQuery<PermissionResult>({
+        queryKey: ['permissions'],
+        queryFn: () => getRequest('/api/permissions/'),
+        snackErrorMsg: MESSAGES.fetchPermissionsError,
         // Permission list is not displayed for superuser, no need to fetch it from server
-        { enabled: !isSuperUser },
-    );
+        options: { enabled: !isSuperUser },
+    });
 
     const setPermissions = (codeName: string, isChecked: boolean) => {
         const newUserPerms = [...currentUser.user_permissions.value];
@@ -65,7 +63,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         allPermissions,
         userPermissions,
     );
-    const columns: any = userPermissionColumns({
+    const columns: any = useUserPermissionColumns({
         formatMessage,
         currentUser,
         setPermissions,

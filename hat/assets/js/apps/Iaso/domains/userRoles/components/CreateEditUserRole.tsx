@@ -15,6 +15,7 @@ import {
 } from '../../../libs/validation';
 import InputComponent from '../../../components/forms/InputComponent';
 import { PermissionsSwitches } from './PermissionsSwitches';
+import { Permission } from '../types/userRoles';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {
@@ -45,7 +46,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     permissions = [],
 }) => {
     const [userRolePermissions, setUserRolePermissoins] =
-        useState<Array<any>>(permissions);
+        useState<Permission[]>(permissions);
     const { formatMessage } = useSafeIntl();
     const [closeModal, setCloseModal] = useState<any>();
     const renderTrigger = useMemo(
@@ -61,7 +62,6 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         mutationFn: saveUserRole,
         onSuccess: () => {
             closeModal.closeDialog();
-            setUserRolePermissoins([]);
         },
     });
     const schema = useUserRoleValidation(apiErrors, payload);
@@ -86,6 +86,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
         isValid,
         initialValues,
         handleSubmit,
+        resetForm,
     } = formik;
 
     const getErrors = useTranslatedErrors({
@@ -117,7 +118,8 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                 }}
                 onCancel={closeDialog => {
                     closeDialog();
-                    setUserRolePermissoins([]);
+                    setUserRolePermissoins(permissions);
+                    resetForm();
                 }}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}

@@ -9,11 +9,11 @@ export const useGetUserRolesDropDown = (): UseQueryResult<
     DropdownOptions<number>,
     Error
 > => {
-    return useSnackQuery(
-        ['user_roles'],
-        () => getRequest('/api/userroles'),
-        MESSAGES.userRolesDropDownError,
-        {
+    return useSnackQuery({
+        queryKey: ['user_roles'],
+        queryFn: () => getRequest('/api/userroles'),
+        snackErrorMsg: MESSAGES.userRolesDropDownError,
+        options: {
             select: data => {
                 return (
                     data?.results?.map((userRole: UserRole) => {
@@ -25,5 +25,5 @@ export const useGetUserRolesDropDown = (): UseQueryResult<
                 );
             },
         },
-    );
+    });
 };

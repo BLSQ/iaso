@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { FormControlLabel, Switch } from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
@@ -6,21 +6,12 @@ import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
-
-type Permission = {
-    id: number;
-    name: string;
-    codename: string;
-};
+import { Permission } from '../types/userRoles';
 
 type Props = {
-    userRolePermissions: Array<Permission>;
+    userRolePermissions: Permission[];
     // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
-};
-
-type PermissionResult = {
-    permissions: Array<Permission>;
 };
 
 export const PermissionsSwitches: React.FunctionComponent<Props> = ({
@@ -28,31 +19,37 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     handleChange,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { data, isLoading } = useSnackQuery<PermissionResult>(
+    const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
         ['permissions'],
         () => getRequest('/api/permissions/'),
         MESSAGES.fetchPermissionsError,
     );
 
-    const setPermissions = (permission: Permission, isChecked: boolean) => {
-        const newUserPerms = [...userRolePermissions];
-        if (!isChecked) {
-            const permIndex = newUserPerms.findIndex(item => {
-                return item.codename === permission.codename;
-            });
-            newUserPerms.splice(permIndex, 1);
-        } else {
-            newUserPerms.push(permission);
-        }
-        handleChange(newUserPerms);
-    };
+    const setPermissions = useCallback(
+        (permission: Permission, isChecked: boolean) => {
+            const newUserPerms = [...userRolePermissions];
+            if (!isChecked) {
+                const permIndex = newUserPerms.findIndex(item => {
+                    return item.codename === permission.codename;
+                });
+                newUserPerms.splice(permIndex, 1);
+            } else {
+                newUserPerms.push(permission);
+            }
+            handleChange(newUserPerms);
+        },
+        [handleChange, userRolePermissions],
+    );
 
-    const permissionLabel = permissionCodeName => {
+    const getPermissionLabel = permissionCodeName => {
         return MESSAGES[permissionCodeName]
             ? formatMessage(MESSAGES[permissionCodeName])
             : permissionCodeName;
     };
-    const permissions = data?.permissions ?? [];
+    const permissions = useMemo(
+        () => data?.permissions ?? [],
+        [data?.permissions],
+    );
 
     return (
         <>
@@ -60,8 +57,8 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
 
             {permissions
                 .sort((a, b) =>
-                    permissionLabel(a.codename).localeCompare(
-                        permissionLabel(b.codename),
+                    getPermissionLabel(a.codename).localeCompare(
+                        getPermissionLabel(b.codename),
                         undefined,
                         {
                             sensitivity: 'accent',
@@ -87,7 +84,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                                     color="primary"
                                 />
                             }
-                            label={permissionLabel(p.codename)}
+                            label={getPermissionLabel(p.codename)}
                         />
                     </div>
                 ))}

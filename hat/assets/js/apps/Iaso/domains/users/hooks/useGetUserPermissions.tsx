@@ -1,16 +1,11 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useCallback, useMemo } from 'react';
-
+import { Permission } from '../../userRoles/types/userRoles';
 import MESSAGES from '../messages';
 
 type Row = {
     permission: string;
     userPermission: any;
-};
-
-type Permission = {
-    id: number;
-    codename: string;
 };
 
 export const useGetUserPermissions = (

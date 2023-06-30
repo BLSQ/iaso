@@ -6,10 +6,10 @@ import {
 } from 'bluesquare-components';
 import { Switch } from '@material-ui/core';
 import {
-    CheckCircleOutlineOutlined as CheckedIcon,
     HighlightOffOutlined as NotCheckedIcon,
+    CheckCircleOutlineOutlined as CheckedIcon,
 } from '@material-ui/icons';
-import UsersDialog from './components/UsersDialog.tsx';
+import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
 
@@ -53,14 +53,7 @@ export const usersTableColumns = ({
         sortable: false,
         Cell: settings => (
             <section>
-                <UsersDialog
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
+                <EditUsersDialog
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.updateUser}
                     params={params}

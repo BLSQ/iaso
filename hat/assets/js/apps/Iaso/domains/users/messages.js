@@ -330,6 +330,58 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.label.noTypeAssigned',
         defaultMessage: 'No org unit type assigned',
     },
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected users',
+        id: 'iaso.users.multiSelectionAction',
+    },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
+    },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
+    validate: {
+        defaultMessage: 'Validate',
+        id: 'iaso.label.validate',
+    },
+    multiEditTitle: {
+        defaultMessage: 'Edit selection: {count} user(s)',
+        id: 'iaso.users.multiEditTitle',
+    },
+    bulkChangeCount: {
+        id: 'iaso.users.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} user(s)',
+    },
+    addProjects: {
+        id: 'iaso.users.addProjects',
+        defaultMessage: 'Add to project(s)',
+    },
+    removeProjects: {
+        id: 'iaso.users.removeProjects',
+        defaultMessage: 'Remove from project(s)',
+    },
+    addRoles: {
+        id: 'iaso.users.addRoles',
+        defaultMessage: 'Add user role(s)',
+    },
+    removeRoles: {
+        id: 'iaso.users.removeRoles',
+        defaultMessage: 'Remove user role(s)',
+    },
+    taskLaunched: {
+        id: 'iaso.snackBar.copyVersionSuccessMessage',
+        defaultMessage: 'The task has been created"',
+    },
+    addLocations: {
+        id: 'iaso.users.addLocations',
+        defaultMessage: 'Add location(s)',
+    },
+    removeLocations: {
+        id: 'iaso.users.removeLocations',
+        defaultMessage: 'Remove location(s)',
+    },
 });
 
 export default MESSAGES;

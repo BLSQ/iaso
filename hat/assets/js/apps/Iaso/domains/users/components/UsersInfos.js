@@ -6,6 +6,9 @@ import isEmpty from 'lodash/isEmpty';
 import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 import InputComponent from '../../../components/forms/InputComponent';
 import { APP_LOCALES } from '../../app/constants';
+
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+
 import MESSAGES from '../messages';
 
 const UsersInfos = ({
@@ -32,12 +35,15 @@ const UsersInfos = ({
         }
     }
     const { data: userRoles, isFetching } = useGetUserRolesDropDown({});
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+
     const isInitialDataEmpty = isEmpty(initialData)
         ? MESSAGES.password
         : MESSAGES.newPassword;
 
     return (
-        <>
+        <form>
             <InputComponent
                 keyValue="user_name"
                 onChange={(key, value) => setFieldValue(key, value.trim())}
@@ -98,6 +104,24 @@ const UsersInfos = ({
                 label={MESSAGES.homePage}
             />
             <InputComponent
+                keyValue="projects"
+                onChange={(key, value) =>
+                    setFieldValue(
+                        key,
+                        value
+                            ?.split(',')
+                            .map(projectId => parseInt(projectId, 10)),
+                    )
+                }
+                value={currentUser.projects.value}
+                errors={currentUser.projects.errors}
+                type="select"
+                multi
+                label={MESSAGES.projects}
+                options={allProjects}
+                loading={isFetchingProjects}
+            />
+            <InputComponent
                 keyValue="language"
                 onChange={(key, value) => setFieldValue(key, value)}
                 value={currentUser.language.value}
@@ -136,7 +160,7 @@ const UsersInfos = ({
                     label={sendUserIEmailnvitationLabel}
                 />
             )}
-        </>
+        </form>
     );
 };
 

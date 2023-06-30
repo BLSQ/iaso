@@ -21,6 +21,8 @@ export const useGetProjectsDropdownOptions = (): UseQueryResult<
 > => {
     const queryKey: any[] = ['projects-dropdown'];
     return useSnackQuery(queryKey, () => getProjects(), undefined, {
+        staleTime: 1000 * 60 * 15, // in MS
+        cacheTime: 1000 * 60 * 5,
         select: data => {
             if (!data) return [];
             return data.projects.map(project => {

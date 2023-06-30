@@ -347,7 +347,7 @@ class TaskTests(TestCase, DHIS2TestMixin):
         self.assertCreated(
             {
                 m.OrgUnit: 2,
-                m.OrgUnitType: 5,
+                m.OrgUnitType: 4,
                 m.Group: 1,  # there is 2 group on OrgUnit C, they are skipped since we skipped C
             }
         )

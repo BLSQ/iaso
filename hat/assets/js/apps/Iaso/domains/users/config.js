@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
     IconButton as IconButtonComponent,
     textPlaceholder,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { Switch } from '@material-ui/core';
 import {
@@ -78,69 +79,73 @@ export const usersTableColumns = ({
     },
 ];
 
-export const useUserPermissionColumns = ({
-    formatMessage,
-    currentUser,
-    setPermissions,
-}) => {
-    const columns = [
-        {
-            Header: formatMessage(MESSAGES.permissions),
-            id: 'permission',
-            accessor: 'permission',
-            sortable: false,
-            align: 'left',
-        },
-        {
-            Header: formatMessage(MESSAGES.userPermissions),
-            id: 'userPermission',
-            accessor: 'userPermission',
-            sortable: false,
-            Cell: settings => {
-                return (
-                    <Switch
-                        className="permission-checkbox"
-                        id={`permission-checkbox-${settings.row.original.permissionCodeName}`}
-                        checked={Boolean(
-                            settings.row.original.userPermissions.find(
-                                up =>
-                                    up ===
+export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        const columns = [
+            {
+                Header: formatMessage(MESSAGES.permissions),
+                id: 'permission',
+                accessor: 'permission',
+                sortable: false,
+                align: 'left',
+            },
+            {
+                Header: formatMessage(MESSAGES.userPermissions),
+                id: 'userPermission',
+                accessor: 'userPermission',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <Switch
+                            className="permission-checkbox"
+                            id={`permission-checkbox-${settings.row.original.permissionCodeName}`}
+                            checked={Boolean(
+                                settings.row.original.userPermissions.find(
+                                    up =>
+                                        up ===
+                                        settings.row.original
+                                            .permissionCodeName,
+                                ),
+                            )}
+                            onChange={e =>
+                                setPermissions(
                                     settings.row.original.permissionCodeName,
-                            ),
-                        )}
-                        onChange={e =>
-                            setPermissions(
-                                settings.row.original.permissionCodeName,
-                                e.target.checked,
-                            )
-                        }
-                        name={settings.row.original.permissionCodeName}
-                        color="primary"
-                    />
-                );
+                                    e.target.checked,
+                                )
+                            }
+                            name={settings.row.original.permissionCodeName}
+                            color="primary"
+                        />
+                    );
+                },
             },
-        },
-    ];
+        ];
 
-    currentUser.user_roles_permissions.value.forEach(role => {
-        columns.push({
-            Header: role.name,
-            id: role.id.toString(),
-            accessor: role.id.toString(),
-            sortable: false,
-            Cell: settings => {
-                if (
-                    role.permissions.find(
-                        permission =>
-                            permission ===
-                            settings.row.original.permissionCodeName,
-                    )
-                ) {
-                    return <CheckedIcon style={{ color: 'green' }} />;
-                }
-                return <NotCheckedIcon color="disabled" />;
-            },
+        currentUser.user_roles_permissions.value.forEach(role => {
+            columns.push({
+                Header: role.name,
+                id: role.id.toString(),
+                accessor: role.id.toString(),
+                sortable: false,
+                Cell: settings => {
+                    if (
+                        role.permissions.find(
+                            permission =>
+                                permission ===
+                                settings.row.original.permissionCodeName,
+                        )
+                    ) {
+                        return <CheckedIcon style={{ color: 'green' }} />;
+                    }
+                    return <NotCheckedIcon color="disabled" />;
+                },
+            });
         });
-    });
-    return columns;
+        return columns;
+    }, [
+        currentUser.user_roles_permissions.value,
+        formatMessage,
+        setPermissions,
+    ]);
 };

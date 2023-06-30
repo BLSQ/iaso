@@ -1,6 +1,11 @@
 import React from 'react';
 import { Typography, makeStyles } from '@material-ui/core';
-import { useSafeIntl, LoadingSpinner, Table } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    LoadingSpinner,
+    Table,
+    Column,
+} from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
@@ -63,10 +68,11 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         allPermissions,
         userPermissions,
     );
-    const columns: any = useUserPermissionColumns({
-        formatMessage,
-        currentUser,
+    // This is a problem with the type definition of Column is bluesquare-components
+    // @ts-ignore
+    const columns: Column[] = useUserPermissionColumns({
         setPermissions,
+        currentUser,
     });
 
     return (

@@ -16,7 +16,7 @@ const search = 'mario';
 const baseUrl = `${siteBaseUrl}/dashboard/entities/duplicates`;
 
 let interceptFlag = false;
-const goToPage = (fakeUser = superUser, fixture = listFixture) => {
+const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     cy.login();
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
@@ -56,7 +56,7 @@ const goToPage = (fakeUser = superUser, fixture = listFixture) => {
 describe('Duplicate entities list', () => {
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {
-            goToPage();
+            mockPage();
             cy.visit(baseUrl);
 
             cy.wait('@getDuplicates').then(() => {
@@ -67,7 +67,7 @@ describe('Duplicate entities list', () => {
             });
         });
         it('should not be accessible if user does not have permission', () => {
-            goToPage({
+            mockPage({
                 ...superUser,
                 permissions: [],
                 is_superuser: false,
@@ -80,7 +80,7 @@ describe('Duplicate entities list', () => {
 
     describe('Search field', () => {
         beforeEach(() => {
-            goToPage();
+            mockPage();
             cy.visit(baseUrl);
         });
         it('should enabled search button', () => {
@@ -95,7 +95,7 @@ describe('Duplicate entities list', () => {
 
     describe('Search button', () => {
         beforeEach(() => {
-            goToPage();
+            mockPage();
             cy.visit(baseUrl);
         });
         it('should be disabled', () => {
@@ -125,7 +125,7 @@ describe('Duplicate entities list', () => {
 
     describe('Table', () => {
         beforeEach(() => {
-            goToPage();
+            mockPage();
         });
         testTablerender({
             baseUrl,
@@ -189,7 +189,7 @@ describe('Duplicate entities list', () => {
 
     describe('Api', () => {
         it('should be called with base params', () => {
-            goToPage(superUser);
+            mockPage(superUser);
             interceptFlag = false;
             cy.visit(baseUrl);
             cy.wait('@getDuplicates').then(() => {
@@ -197,7 +197,7 @@ describe('Duplicate entities list', () => {
             });
         });
         it('should be called with search params', () => {
-            goToPage(superUser);
+            mockPage(superUser);
             cy.visit(baseUrl);
             cy.wait('@getDuplicates').then(() => {
                 interceptFlag = false;

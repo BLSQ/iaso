@@ -22,7 +22,7 @@ export const CalendarMapPanesMerged: FunctionComponent<Props> = ({
             {mergedShapes?.map(mergedShape => {
                 return (
                     <GeoJSON
-                        key={`${mergedShape.properties.id}-${mergedShape.cache}`}
+                        key={`${mergedShape.properties.id}-${mergedShape.properties.vaccine}-${mergedShape.cache}`}
                         data={mergedShape}
                         style={() =>
                             getGeoJsonStyle(

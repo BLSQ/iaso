@@ -272,7 +272,10 @@ def enketo_form_list(request):
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
     # Only add a manifest if we actually have attachment so it doesn't make more unecessary request
     if i.form.attachments.exists():
-        manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/")
+        # pass the app_id so it can be accessed anonymously from Enketo
+        project = i.form.projects.first()
+        app_id = project.app_id if project else ""
+        manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/?app_id={app_id}")
     else:
         manifest_url = None
 

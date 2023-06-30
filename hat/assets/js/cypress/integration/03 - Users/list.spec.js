@@ -201,7 +201,7 @@ describe('Users', () => {
         it('should call api list and api save', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
-                const userIndex = 0;
+                const userIndex = 2;
                 openDialogForUserIndex(userIndex);
                 const userName = 'superman';
                 cy.get('#input-text-user_name').clear().type(userName);

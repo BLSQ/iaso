@@ -67,9 +67,9 @@ module.exports = {
         },
         host: '0.0.0.0',
         port: 3000,
-        // It suppress error shown in console, so it has to be set to false.
+        // It suppresses error shown in console, so it has to be set to false.
         quiet: false,
-        // It suppress everything except error, so it has to be set to false as well
+        // It suppresses everything except error, so it has to be set to false as well
         // to see success build.
         stats: {
             // Config for minimal console.log mess.

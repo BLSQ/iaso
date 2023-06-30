@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-
 import base64
 import hashlib
 import html
@@ -116,10 +115,8 @@ LOGGING: Dict[str, Any] = {
     },
 }
 
-
 if os.getenv("DEBUG_SQL") == "true":
     LOGGING["loggers"]["django.db.backends"] = {"level": "DEBUG"}
-
 
 # AWS expects python logs to be stored in this folder
 AWS_LOG_FOLDER = "/var/app/log"
@@ -277,7 +274,6 @@ elif os.environ.get("DB_READONLY_USERNAME"):
     # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
     DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
 
-
 DATABASES["worker"] = DATABASES["default"].copy()
 DATABASE_ROUTERS = [
     "hat.common.dbrouter.DbRouter",
@@ -432,9 +428,25 @@ if SENTRY_URL:
     except ValueError:
         raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate_str}, should be float")
 
+    # from OpenHexa
+    # Exclude /_health/ from sentry  as it fill the quota
+    def sentry_tracer_sampler(sampling_context):
+        transaction_context = sampling_context.get("transaction_context")
+        if transaction_context is None:
+            return 0
+
+        op = transaction_context.get("op")
+
+        if op == "http.server":
+            path = sampling_context.get("wsgi_environ", {}).get("PATH_INFO")
+            # Monitoring endpoints
+            if path.startswith("/_health"):
+                return 0
+
     sentry_sdk.init(
         SENTRY_URL,
         traces_sample_rate=traces_sample_rate,
+        traces_sampler=sentry_tracer_sampler,
         integrations=[DjangoIntegration()],
         send_default_pii=True,
         release=VERSION,
@@ -524,6 +536,5 @@ if os.environ.get("WFP_AUTH_CLIENT_ID"):
         "IASO_ACCOUNT_NAME": iaso_account,
         "EMAIL_RECIPIENTS_NEW_ACCOUNT": os.environ.get("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
-
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}

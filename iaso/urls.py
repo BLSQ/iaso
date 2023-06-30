@@ -60,6 +60,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
+from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.periods import PeriodsViewSet
@@ -88,6 +89,7 @@ router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
+router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"instances", InstancesViewSet, basename="instances")

@@ -235,4 +235,4 @@ const makeUsername = user => user.firstname + user.lastname
 - spacing is by default theme.spacing(2)
 - do not use Grid everywhere or too much
 - all the calls to the api without query params should end by '/'
-- in routes.js, the `params` listed are ordered, meaning you can get a 404 when they are not in the right order. Related to this, teh `paginationPathParams` taht we spread in most routes should come first, right after the `accountId` to avoid getting 404 because of automatic redirections
+- in routes.js, the `params` listed are ordered, meaning you can get a 404 when they are not in the right order. Related to this, the `paginationPathParams` that we spread in most routes should come first, right after the `accountId` to avoid getting 404 because of automatic redirections

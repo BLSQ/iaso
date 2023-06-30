@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.auth import models
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -16,7 +17,7 @@ from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from iaso.models import Profile, OrgUnit
+from iaso.models import Profile, OrgUnit, UserRole
 
 
 class HasProfilePermission(permissions.BasePermission):
@@ -66,6 +67,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         parent_ou = True if request.GET.get("ouParent", None) == "true" else False
         children_ou = True if request.GET.get("ouChildren", None) == "true" else False
 
+        userRoles = request.GET.get("userRoles", None)
         queryset = self.get_queryset()
         if search:
             queryset = queryset.filter(
@@ -135,6 +137,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             else:
                 queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 
+        if userRoles:
+            queryset = queryset.filter(user__iaso_profile__user_roles__in=userRoles.split(","))
+
         if limit:
             queryset = queryset.order_by(*orders)
             limit = int(limit)
@@ -191,7 +196,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.save()
         if password != "":
             user.set_password(password)
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         user.user_permissions.clear()
         for permission_codename in permissions:
             permission = get_object_or_404(Permission, codename=permission_codename)
@@ -208,6 +213,16 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+        # link the profile to user roles
+        user_roles = request.data.get("user_roles", [])
+        profile.user_roles.clear()
+        profile.user.groups.clear()
+        for user_role_id in user_roles:
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            profile.user.groups.add(user_group_item)
+            profile.user_roles.add(user_role_item)
+
         if profile.dhis2_id == "":
             profile.dhis2_id = None
         profile.save()
@@ -265,7 +280,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         if password != "":
             user.set_password(password)
         user.save()
@@ -291,6 +306,15 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+
+        # link the profile to user roles
+        user_roles = request.data.get("user_roles", [])
+        for user_role_id in user_roles:
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
+            profile.user.groups.add(user_group_item)
+            profile.user_roles.add(user_role_item)
+
         dhis2_id = request.data.get("dhis2_id", None)
         if dhis2_id == "":
             dhis2_id = None

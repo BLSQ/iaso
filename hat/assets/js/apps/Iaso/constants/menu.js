@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import Link from '@material-ui/icons/Link';
@@ -5,6 +6,7 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import Input from '@material-ui/icons/Input';
 import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
+import GroupsIcon from '@mui/icons-material/Groups';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
 import DoneAll from '@material-ui/icons/DoneAll';
@@ -223,6 +225,12 @@ const menuItems = defaultSourceId => [
                 key: 'users',
                 permissions: paths.usersPath.permissions,
                 icon: props => <SupervisorAccount {...props} />,
+            },
+            {
+                label: MESSAGES.userRoles,
+                key: 'userRoles',
+                permissions: paths.userRolesPath.permissions,
+                icon: props => <GroupsIcon {...props} />,
             },
             {
                 label: MESSAGES.teams,

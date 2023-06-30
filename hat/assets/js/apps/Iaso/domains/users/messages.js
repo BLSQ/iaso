@@ -101,6 +101,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Language',
         id: 'iaso.users.dialog.locale',
     },
+    userRoles: {
+        defaultMessage: 'User roles',
+        id: 'iaso.users.dialog.userRoles',
+    },
     searchUser: {
         id: 'iaso.users.filter.searchUser',
         defaultMessage: 'Search user',
@@ -249,6 +253,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',
     },
+    userRolesDropDownError: {
+        defaultMessage: 'Error while making user roles drop down',
+        id: 'iaso.snackBar.fetchPermissions',
+    },
     homePage: {
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
@@ -256,6 +264,10 @@ const MESSAGES = defineMessages({
     ouChildrenCheckbox: {
         defaultMessage: 'Users with access to children org unit',
         id: 'iaso.users.ouChildrenCheckbox',
+    },
+    userPermissions: {
+        defaultMessage: 'User permissions',
+        id: 'iaso.users.userPermissions',
     },
     ouParentCheckbox: {
         defaultMessage: 'Users with access to parent org unit',

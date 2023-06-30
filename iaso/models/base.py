@@ -20,6 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
+from django.contrib.auth import models as authModels
 from django.db.models import Q, FilteredRelation, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -1182,6 +1183,7 @@ class Profile(models.Model):
     language = models.CharField(max_length=512, null=True, blank=True)
     dhis2_id = models.CharField(max_length=128, null=True, blank=True, help_text="Dhis2 user ID for SSO Auth")
     home_page = models.CharField(max_length=512, null=True, blank=True)
+    user_roles = models.ManyToManyField("UserRole", related_name="iaso_profile", blank=True)
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=["dhis2_id", "account"], name="dhis2_id_constraint")]
@@ -1190,6 +1192,15 @@ class Profile(models.Model):
         return "%s -- %s" % (self.user, self.account)
 
     def as_dict(self):
+        user_roles = self.user_roles.all()
+        user_group_permissions = list(
+            map(lambda permission: permission.split(".")[1], list(self.user.get_group_permissions()))
+        )
+        user_permissions = list(
+            self.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
+        )
+        all_permissions = user_group_permissions + user_permissions
+        permissions = list(set(all_permissions))
         return {
             "id": self.id,
             "first_name": self.user.first_name,
@@ -1197,11 +1208,12 @@ class Profile(models.Model):
             "last_name": self.user.last_name,
             "email": self.user.email,
             "account": self.account.as_dict(),
-            "permissions": list(
-                self.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
-            ),
+            "permissions": permissions,
+            "user_permissions": user_permissions,
             "is_superuser": self.user.is_superuser,
             "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+            "user_roles": list(role.id for role in user_roles),
+            "user_roles_permissions": list(role.as_dict() for role in user_roles),
             "language": self.language,
             "user_id": self.user.id,
             "dhis2_id": self.dhis2_id,

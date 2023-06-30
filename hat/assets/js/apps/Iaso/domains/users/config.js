@@ -1,8 +1,15 @@
 import React from 'react';
-import { textPlaceholder } from 'bluesquare-components';
+import {
+    IconButton as IconButtonComponent,
+    textPlaceholder,
+} from 'bluesquare-components';
+import { Switch } from '@material-ui/core';
+import {
+    HighlightOffOutlined as NotCheckedIcon,
+    CheckCircleOutlineOutlined as CheckedIcon,
+} from '@material-ui/icons';
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-
 import MESSAGES from './messages';
 
 export const usersTableColumns = ({
@@ -64,19 +71,47 @@ export const usersTableColumns = ({
     },
 ];
 
-export const userPermissionColumns = ({ formatMessage, currentUser }) => {
+export const userPermissionColumns = ({
+    formatMessage,
+    currentUser,
+    setPermissions,
+}) => {
     const columns = [
         {
             Header: formatMessage(MESSAGES.permissions),
             id: 'permission',
             accessor: 'permission',
             sortable: false,
+            align: 'left',
         },
         {
             Header: formatMessage(MESSAGES.userPermissions),
             id: 'userPermission',
             accessor: 'userPermission',
             sortable: false,
+            Cell: settings => {
+                return (
+                    <Switch
+                        className="permission-checkbox"
+                        id={`permission-checkbox-${settings.row.original.permissionCodeName}`}
+                        checked={Boolean(
+                            settings.row.original.userPermissions.find(
+                                up =>
+                                    up ===
+                                    settings.row.original.permissionCodeName,
+                            ),
+                        )}
+                        onChange={e =>
+                            setPermissions(
+                                settings.row.original.permissionCodeName,
+                                e.target.checked,
+                            )
+                        }
+                        name={settings.row.original.permissionCodeName}
+                        color="primary"
+                    />
+                );
+            },
         },
     ];
 
@@ -86,6 +121,18 @@ export const userPermissionColumns = ({ formatMessage, currentUser }) => {
             id: role.id.toString(),
             accessor: role.id.toString(),
             sortable: false,
+            Cell: settings => {
+                if (
+                    role.permissions.find(
+                        permission =>
+                            permission ===
+                            settings.row.original.permissionCodeName,
+                    )
+                ) {
+                    return <CheckedIcon style={{ color: 'green' }} />;
+                }
+                return <NotCheckedIcon color="disabled" />;
+            },
         });
     });
     return columns;

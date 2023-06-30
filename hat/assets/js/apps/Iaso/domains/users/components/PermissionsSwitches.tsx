@@ -60,14 +60,16 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 
     const allPermissions = data?.permissions ?? [];
     const userPermissions = currentUser.user_permissions.value;
-    const userRoles = currentUser.user_roles_permissions.value;
 
     const permissionsData = useGetUserPermissions(
         allPermissions,
         userPermissions,
-        userRoles,
-        setPermissions,
     );
+    const columns: any = userPermissionColumns({
+        formatMessage,
+        currentUser,
+        setPermissions,
+    });
 
     return (
         <>
@@ -84,10 +86,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 
             {!isSuperUser && (
                 <Table
-                    columns={userPermissionColumns({
-                        formatMessage,
-                        currentUser,
-                    })}
+                    columns={columns}
                     data={permissionsData}
                     showPagination={false}
                 />

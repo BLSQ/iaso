@@ -336,7 +336,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
-        profile.user.groups.clear()
         for user_role_id in user_roles:
             user_role_item = get_object_or_404(UserRole, pk=user_role_id)
             user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)

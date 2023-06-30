@@ -138,6 +138,30 @@ const Filters = ({ baseUrl, params }) => {
                         onErrorChange={setTextSearchError}
                         blockForbiddenChars
                     />
+                    <InputComponent
+                        keyValue="userRoles"
+                        onChange={handleChange}
+                        value={filters.userRoles}
+                        type="select"
+                        multi
+                        options={userRoles ?? []}
+                        label={MESSAGES.userRoles}
+                        loading={isFetchingUserRoles}
+                        onEnterPressed={handleSearchUserRoles}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="permissions"
+                        onChange={handleChange}
+                        value={filters.permissions}
+                        type="select"
+                        multi
+                        options={dropdown ?? []}
+                        label={MESSAGES.permissions}
+                        loading={isFetching}
+                        onEnterPressed={handleSearchPerms}
+                    />
                     <Box id="ou-tree-input" mb={isLargeLayout ? 0 : -2}>
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}
@@ -151,6 +175,19 @@ const Filters = ({ baseUrl, params }) => {
                             initialSelection={initialOrgUnit}
                         />
                     </Box>
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="orgUnitTypes"
+                        onChange={handleChange}
+                        value={filters.orgUnitTypes}
+                        type="select"
+                        options={orgUnitTypeDropdown}
+                        label={MESSAGES.orgUnitTypesDropdown}
+                        loading={isFetchingOuTypes}
+                        onEnterPressed={handleSearchPerms}
+                        clearable
+                    />
                     <InputComponent
                         keyValue="ouChildren"
                         type="checkbox"
@@ -166,39 +203,16 @@ const Filters = ({ baseUrl, params }) => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
-                        keyValue="permissions"
+                        keyValue="projectsIds"
                         onChange={handleChange}
-                        value={filters.permissions}
+                        value={filters.projectsIds}
                         type="select"
-                        multi
-                        options={dropdown ?? []}
-                        label={MESSAGES.permissions}
-                        loading={isFetching}
-                        onEnterPressed={handleSearchPerms}
-                    />
-                    <InputComponent
-                        keyValue="userRoles"
-                        onChange={handleChange}
-                        value={filters.userRoles}
-                        type="select"
-                        multi
-                        options={userRoles ?? []}
-                        label={MESSAGES.userRoles}
-                        loading={isFetchingUserRoles}
-                        onEnterPressed={handleSearchUserRoles}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="orgUnitTypes"
-                        onChange={handleChange}
-                        value={filters.orgUnitTypes}
-                        type="select"
-                        options={orgUnitTypeDropdown}
-                        label={MESSAGES.orgUnitTypesDropdown}
-                        loading={isFetchingOuTypes}
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
                         onEnterPressed={handleSearchPerms}
                         clearable
+                        multi
                     />
                     <InputComponent
                         keyValue="ouParent"
@@ -211,20 +225,6 @@ const Filters = ({ baseUrl, params }) => {
                         disabled={!initialOrgUnit}
                         value={ouParent}
                         label={MESSAGES.ouParentCheckbox}
-                    />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="projectsIds"
-                        onChange={handleChange}
-                        value={filters.projectsIds}
-                        type="select"
-                        options={allProjects}
-                        label={MESSAGES.projects}
-                        loading={isFetchingProjects}
-                        onEnterPressed={handleSearchPerms}
-                        clearable
-                        multi
                     />
                 </Grid>
                 <Grid container item xs={12} md={12} justifyContent="flex-end">

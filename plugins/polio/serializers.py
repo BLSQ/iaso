@@ -337,6 +337,7 @@ class RoundSerializer(serializers.ModelSerializer):
     shipments = ShipmentSerializer(many=True, required=False)
     destructions = DestructionSerializer(many=True, required=False)
     datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
+    districts_count_calculated = serializers.IntegerField(read_only=True)
 
     @atomic
     def create(self, validated_data):

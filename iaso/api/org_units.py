@@ -293,7 +293,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def list_to_gpkg(self, queryset, filename):
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
-        filename = f"{filename}-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
+        filename = f"{filename}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
 
         return response

@@ -283,3 +283,26 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 
         self.assertEqual(response.status_code, 400)
+
+    def test_upload_semicolon_separated_csv(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_semicolon.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        users = User.objects.all()
+        profiles = Profile.objects.all()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(users), 4)
+        self.assertEqual(len(profiles), 4)
+        new_user_1 = users.get(username="broly")
+        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
+        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_1.first_name, "broly")
+        self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_1.iaso_profile.language, "fr")
+        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(org_unit_ids, [9999])
+        self.assertEqual(response.data, {"Accounts created": 1})

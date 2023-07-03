@@ -88,17 +88,24 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             try:
                 user_csv = request.FILES["file"]
                 user_csv_decoded = user_csv.read().decode("utf-8")
+
+                try:
+                    dialect = csv.Sniffer().sniff(user_csv_decoded)
+                    delimiter = dialect.delimiter
+                except csv.Error:
+                    delimiter = ";" if ";" in user_csv.decoded else ","
+
                 csv_str = io.StringIO(user_csv_decoded)
-                reader = csv.reader(csv_str)
+
+                reader = csv.reader(csv_str, delimiter=delimiter)
             except UnicodeDecodeError as e:
                 raise serializers.ValidationError({"error": "Operation aborted. Error: {}".format(e)})
-            i = 0
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
-            for row in reader:
+            for i, row in enumerate(reader):
                 org_units_list = []
                 if i > 0:
                     email_address = True if row[csv_indexes.index("email")] else None

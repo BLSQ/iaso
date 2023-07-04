@@ -196,7 +196,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         j = self.assertJSONResponse(response, 200)
 
         bbox = j["results"][0]
-        self.assertEqual(bbox, {"east": -5.0, "northern": 1.0, "south": -4.0, "west": 6.0})
+        self.assertEqual(bbox, {"east": -5.024, "northern": 1.0, "south": -3.976, "west": 6.0})
 
     def test_boundingbox_with_user_limit(self):
         ff, _created = FeatureFlag.objects.get_or_create(
@@ -210,4 +210,4 @@ class MobileOrgUnitAPITestCase(APITestCase):
         j = self.assertJSONResponse(response, 200)
         # set limit on user
         bbox = j["results"][0]
-        self.assertEqual(bbox, {"east": -5.0, "northern": -4.0, "south": -4.0, "west": -5.0})
+        self.assertEqual(bbox, {"east": -5.024, "northern": -4.024, "south": -3.976, "west": -4.976})

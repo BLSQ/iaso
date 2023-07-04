@@ -2,6 +2,7 @@ from typing import Dict, Any
 
 from django.contrib.gis.db.models import GeometryField
 from django.contrib.gis.db.models.aggregates import Extent
+from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
@@ -109,6 +110,24 @@ class HasOrgUnitPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
+BUFFER_FOR_POINT = 0.008 * 3  # 0.008 degrees is around 3km at the equator
+
+
+# Define a GIS function, GeoDjango will map it to ST_BUFFER in postgis (using the class name)
+class Buffer(GeomOutputGeoFunc):
+    """Computes a POLYGON or MULTIPOLYGON that represents all points whose distance from a geometry/geography is less
+    than or equal to a given distance.
+
+    https://postgis.net/docs/ST_Buffer.html
+
+    arguments are:
+        - geography g1 or geometry g1
+        - float radius_of_buffer
+    """
+
+    arity = 2
+
+
 class MobileOrgUnitViewSet(ModelViewSet):
     f"""Org units API used by the mobile application
 
@@ -203,8 +222,9 @@ class MobileOrgUnitViewSet(ModelViewSet):
     @action(detail=False, methods=["GET"])
     def boundingbox(self, request):
         qs = self.get_queryset()
+
         aggregate = qs.aggregate(
-            bbox_location=Extent(Cast("location", GeometryField(dim=3))),
+            bbox_location=Extent(Buffer(Cast("location", GeometryField(dim=3)), BUFFER_FOR_POINT)),
             bbox_geom=Extent(Cast("simplified_geom", GeometryField())),
         )
         bbox_location = aggregate["bbox_location"]

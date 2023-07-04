@@ -1,6 +1,7 @@
 import React, { FunctionComponent, ReactNode } from 'react';
 import { GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { get } from 'lodash';
 import { MapColor, Shape } from '../../constants/types';
 import { findBackgroundShape } from './utils';
 
@@ -17,6 +18,7 @@ type Props = {
     makePopup?: (shape: Shape) => ReactNode;
     // eslint-disable-next-line no-unused-vars
     onSelectShape?: (shape: Shape) => void;
+    tooltipFieldKey?: string;
 };
 
 export const MapPanes: FunctionComponent<Props> = ({
@@ -28,7 +30,9 @@ export const MapPanes: FunctionComponent<Props> = ({
     name = 'Map',
     makePopup,
     onSelectShape = () => null,
+    tooltipFieldKey = 'name',
 }) => {
+    console.log('SHAPES', mainLayer);
     return (
         <>
             <Pane name={`BackgroundLayer-${name}`}>
@@ -70,13 +74,18 @@ export const MapPanes: FunctionComponent<Props> = ({
                                                 // @ts-ignore
                                                 backgroundLayer,
                                             )} > `}
+                                        {/* {!tooltipLabels &&
+                                            `${get(shape, tooltipFieldKey)}`} */}
                                     </span>
                                 )}
                                 <span>
-                                    {/* {tooltipLabels &&
-                                        `${tooltipLabels.main}: ${shape.name}`}
-                                    {!tooltipLabels && `${shape.name}`} */}
-                                    CACA
+                                    {tooltipLabels &&
+                                        `${tooltipLabels.main}: ${get(
+                                            shape,
+                                            tooltipFieldKey,
+                                        )}`}
+                                    {!tooltipLabels &&
+                                        `${get(shape, tooltipFieldKey)}`}
                                 </span>
                             </Tooltip>
                         </GeoJSON>

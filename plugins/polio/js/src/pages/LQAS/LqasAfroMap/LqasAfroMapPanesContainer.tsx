@@ -76,6 +76,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     getMainLayerStyle={getMainLayerStyle}
                     // getBackgroundLayerStyle={}
                     name={`LQAS-Map-country-view-${JSON.stringify(params)}`}
+                    tooltipFieldKey="data.country_name"
                 />
             )}
             {!showCountries && (
@@ -86,6 +87,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     getMainLayerStyle={getMainLayerStyle}
                     getBackgroundLayerStyle={getBackgroundLayerStyle}
                     name="LQAS-Map-zoomin-view-"
+                    tooltipFieldKey="data.district_name"
                 />
             )}
         </>

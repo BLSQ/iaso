@@ -1924,21 +1924,21 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
 
                 result = {
                     "id": int(country_id),
-                    "data": {"campaign": latest_campaign.obr_name, **stats},
+                    "data": {"campaign": latest_campaign.obr_name, **stats, "country_name": org_unit.name},
                     "geo_json": shapes,
                     "status": calculate_country_status(stats, scope, round_number),
                 }
             elif latest_campaign:
                 result = {
                     "id": int(country_id),
-                    "data": {"campaign": latest_campaign.obr_name},
+                    "data": {"campaign": latest_campaign.obr_name, "country_name": org_unit.name},
                     "geo_json": shapes,
                     "status": "inScope",
                 }
             else:
                 result = {
                     "id": int(country_id),
-                    "data": None,
+                    "data": {"country_name": org_unit.name},
                     "geo_json": shapes,
                     "status": "inScope",
                 }
@@ -2081,7 +2081,11 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 if district_stats:
                     result = {
                         "id": district.id,
-                        "data": {"campaign": latest_campaign.obr_name, **district_stats},
+                        "data": {
+                            "campaign": latest_campaign.obr_name,
+                            **district_stats,
+                            "district_name": district.name,
+                        },
                         "geo_json": shapes,
                         "status": determine_status_for_district(district_stats),
                     }
@@ -2089,7 +2093,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 else:
                     result = {
                         "id": district.id,
-                        "data": {"campaign": latest_campaign.obr_name},
+                        "data": {"campaign": latest_campaign.obr_name, "district_name": district.name},
                         "geo_json": shapes,
                         # "status": determine_status_for_district({}, district_is_in_scope),
                         "status": "inScope",

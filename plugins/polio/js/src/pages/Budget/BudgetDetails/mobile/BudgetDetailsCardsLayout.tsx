@@ -1,7 +1,7 @@
 import { Box, makeStyles } from '@material-ui/core';
 import { Pagination } from '@material-ui/lab';
 import React, { FunctionComponent } from 'react';
-import { Paginated } from '../../../../../../../../hat/assets/js/apps/Iaso/types/table';
+import { Paginated } from 'bluesquare-components';
 import { BudgetEventCard } from '../../cards/BudgetEventCard';
 import { BudgetStep } from '../../types';
 

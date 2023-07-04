@@ -70,9 +70,6 @@ export const BudgetTimeline: FunctionComponent<Props> = ({
                             classes.step,
                         )}
                         key={category.key}
-                        // The widget automatically recalculate it so not needed
-                        // completed={category.completed}
-                        // active={category.active}
                     >
                         <StepLabel>
                             <Box>

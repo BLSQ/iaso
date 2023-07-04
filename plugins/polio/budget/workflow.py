@@ -92,6 +92,10 @@ class Workflow:
         nodes = [node for node in self.nodes if node.category_key == category_key]
         return nodes
 
+    def get_nodes_after(self, order):
+        nodes = [node for node in self.nodes if node.order > order]
+        return nodes
+
     def __init__(self, transitions, nodes, categories):
         self.nodes = nodes
         self.categories = categories

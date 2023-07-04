@@ -12,6 +12,7 @@ services:
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
       - ./beanstalk_worker:/opt/app/beanstalk_worker
+      - ./django_sql_dashboard_export:/opt/app/django_sql_dashboard_export
       - ./media:/opt/app/media
       - ./plugins:/opt/app/plugins
       - ./scripts:/opt/app/scripts
@@ -60,6 +61,9 @@ services:
       ENKETO_URL: http://enketo:8005/
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
       LIVE_COMPONENTS:
+      WFP_AUTH_CLIENT_ID:
+      WFP_AUTH_ACCOUNT:
+      WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"

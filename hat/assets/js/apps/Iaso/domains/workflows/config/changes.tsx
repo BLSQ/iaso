@@ -1,6 +1,11 @@
 /* eslint-disable camelcase */
 import React from 'react';
-import { useSafeIntl, IconButton } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    IconButton,
+    IntlFormatMessage,
+    Column,
+} from 'bluesquare-components';
 
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
@@ -9,23 +14,33 @@ import { ChangesActionCell } from '../components/changes/ActionCell';
 import { TargetCell } from '../components/changes/TargetCell';
 import { SourceCell } from '../components/changes/SourceCell';
 import { MappingCell } from '../components/changes/MappingCell';
+import { HeadTargetCell } from '../components/changes/HeadTargetCell';
+import { HeadSourceCell } from '../components/changes/HeadSourceCell';
 
-import { IntlFormatMessage } from '../../../types/intl';
-import { Column } from '../../../types/table';
-import { WorkflowVersionDetail, ChangesOption, Mapping } from '../types';
+import {
+    WorkflowVersionDetail,
+    ChangesOption,
+    Mapping,
+    Change,
+    ReferenceForm,
+} from '../types';
 import { PossibleField } from '../../forms/types/forms';
+import { FormVersion } from '../../forms/hooks/useGetPossibleFields';
+import { DropdownOptions } from '../../../types/utils';
 
 export const useGetChangesColumns = (
     versionId: string,
-    targetPossibleFields: PossibleField[],
+    targetPossibleFields?: PossibleField[],
+    targetPossibleFieldsByVersion?: FormVersion[],
     workflowVersion?: WorkflowVersionDetail,
+    changes?: Change[],
 ): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const columns: Array<Column> = [
         {
             Header: formatMessage(MESSAGES.form),
-            id: 'form_name',
+            id: 'form__name',
             accessor: 'form__name',
             Cell: settings => {
                 return (
@@ -40,7 +55,6 @@ export const useGetChangesColumns = (
             Header: formatMessage(MESSAGES.mapping),
             id: 'mapping',
             accessor: 'mapping',
-            sortable: false,
             Cell: settings => (
                 <MappingCell mapping={settings.row.original.mapping} />
             ),
@@ -65,18 +79,19 @@ export const useGetChangesColumns = (
             sortable: false,
             accessor: 'id',
             Cell: settings => {
-                const change = workflowVersion?.changes.find(
-                    ch => ch.id === settings.value,
-                );
+                const change = changes?.find(ch => ch.id === settings.value);
                 return (
                     <>
-                        {workflowVersion && change && (
+                        {change && (
                             <ChangesActionCell
                                 change={change}
                                 versionId={versionId}
                                 targetPossibleFields={targetPossibleFields}
+                                targetPossibleFieldsByVersion={
+                                    targetPossibleFieldsByVersion
+                                }
                                 referenceForm={workflowVersion?.reference_form}
-                                workflowVersion={workflowVersion}
+                                changes={changes}
                             />
                         )}
                     </>
@@ -102,6 +117,20 @@ type Params = {
     handleDelete: (index: number) => void;
     mappingArray: Mapping[];
     isFetchingSourcePossibleFields: boolean;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeForm: (_, value: string) => void;
+    changes?: Change[];
+    change?: Change;
+    form?: number;
+    // eslint-disable-next-line no-unused-vars
+    handleChangeSourceVersion: (_, value: string) => void;
+    sourceVersion: string;
+    sourceVersionsDropdownOptions: DropdownOptions<string>[];
+    // eslint-disable-next-line no-unused-vars
+    handleChangeTargetVersion: (_, value: string) => void;
+    targetVersion: string;
+    targetVersionsDropdownOptions: DropdownOptions<string>[];
+    referenceForm?: ReferenceForm;
 };
 
 export const useGetChangesModalColumns = ({
@@ -111,12 +140,35 @@ export const useGetChangesModalColumns = ({
     handleDelete,
     mappingArray,
     isFetchingSourcePossibleFields,
+    handleChangeForm,
+    changes,
+    change,
+    form,
+    handleChangeSourceVersion,
+    sourceVersion,
+    sourceVersionsDropdownOptions,
+    handleChangeTargetVersion,
+    targetVersion,
+    targetVersionsDropdownOptions,
+    referenceForm,
 }: Params): Array<Column> => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return [
         {
-            Header: formatMessage(MESSAGES.source),
+            Header: (
+                <HeadSourceCell
+                    handleChangeForm={handleChangeForm}
+                    changes={changes}
+                    change={change}
+                    form={form}
+                    handleChangeSourceVersion={handleChangeSourceVersion}
+                    sourceVersion={sourceVersion}
+                    sourceVersionsDropdownOptions={
+                        sourceVersionsDropdownOptions
+                    }
+                />
+            ),
             sortable: false,
             accessor: 'source',
             width: 400,
@@ -137,7 +189,16 @@ export const useGetChangesModalColumns = ({
             },
         },
         {
-            Header: formatMessage(MESSAGES.target),
+            Header: (
+                <HeadTargetCell
+                    handleChangeTargetVersion={handleChangeTargetVersion}
+                    targetVersion={targetVersion}
+                    targetVersionsDropdownOptions={
+                        targetVersionsDropdownOptions
+                    }
+                    referenceForm={referenceForm}
+                />
+            ),
             sortable: false,
             accessor: 'target',
             width: 400,

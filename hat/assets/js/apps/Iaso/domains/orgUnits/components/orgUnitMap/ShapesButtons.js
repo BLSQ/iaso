@@ -2,7 +2,7 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import { Button, Box, makeStyles } from '@material-ui/core';
 
-import Edit from '@material-ui/icons/Edit';
+import Edit from '@material-ui/icons/Settings';
 import DeleteIcon from '@material-ui/icons/Delete';
 
 import PropTypes from 'prop-types';

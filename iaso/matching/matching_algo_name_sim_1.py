@@ -71,7 +71,6 @@ class Algorithm:
         return links
 
     def match(self, version_1, version_2, user=None):
-
         algo, created = MatchingAlgorithm.objects.get_or_create(
             name=__name__, defaults={"description": self.description}
         )

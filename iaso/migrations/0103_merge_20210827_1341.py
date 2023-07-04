@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0102_auto_20210802_1612"),
         ("iaso", "0102_page_type"),

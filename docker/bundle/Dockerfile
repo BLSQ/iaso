@@ -2,7 +2,7 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:14.19.1-stretch-slim as npmbuilder
+FROM node:14-bullseye-slim as npmbuilder
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app

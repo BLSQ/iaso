@@ -254,7 +254,6 @@ class FormsVersionAPITestCase(APITestCase):
         return m.FormVersion.objects.all()[0]
 
     def create_mapping_version(self, form_version, source):
-
         resp = self.client.post(
             f"/api/mappingversions/",
             data={

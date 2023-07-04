@@ -233,7 +233,6 @@ def get_content_for_config(config, prefer_cache):
 
 
 def fetch_and_match_forma_data(country_id=None):
-
     conf = Config.objects.get(slug="forma")
     campaign_qs = Campaign.objects.filter(deleted_at=None).all().prefetch_related("rounds").prefetch_related("country")
 
@@ -274,9 +273,13 @@ def get_forma_scope_df(campaigns):
             if districts.count() == 0:
                 logger.info(f"skipping {campaign}, no scope")
                 continue
-            facilities = OrgUnit.objects.filter(parent__in=districts)
-            regions = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2)
-            countries = OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1)
+            facilities = OrgUnit.objects.filter(parent__in=districts).filter(validation_status="VALID")
+            regions = (
+                OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=2).filter(validation_status="VALID")
+            )
+            countries = (
+                OrgUnit.objects.filter(parents_q(districts)).filter(path__depth=1).filter(validation_status="VALID")
+            )
 
             for ous in [districts, facilities, regions, countries]:
                 scope_df = DataFrame.from_records(

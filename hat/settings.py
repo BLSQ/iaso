@@ -10,19 +10,20 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
-
 import base64
 import hashlib
 import html
 import os
 import re
+import sys
 import urllib.parse
 from datetime import timedelta
-from typing import Dict, Any
+from typing import Any, Dict
 from urllib.parse import urlparse
 
 import sentry_sdk
-from django.utils.translation import ugettext_lazy as _
+from django.core.exceptions import ImproperlyConfigured
+from django.utils.translation import gettext_lazy as _
 from sentry_sdk.integrations.django import DjangoIntegration
 
 from plugins.wfp.wfp_pkce_generator import generate_pkce
@@ -34,6 +35,7 @@ from plugins.wfp.wfp_pkce_generator import generate_pkce
 # This should be the same as the one set on: `/admin/sites/site/1/change/`
 DNS_DOMAIN = os.environ.get("DNS_DOMAIN", "localhost:8081")
 TESTING = os.environ.get("TESTING", "").lower() == "true"
+IN_TESTS = len(sys.argv) > 1 and sys.argv[1] == "test"
 PLUGINS = os.environ["PLUGINS"].split(",") if os.environ.get("PLUGINS", "") else []
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -113,10 +115,8 @@ LOGGING: Dict[str, Any] = {
     },
 }
 
-
 if os.getenv("DEBUG_SQL") == "true":
     LOGGING["loggers"]["django.db.backends"] = {"level": "DEBUG"}
-
 
 # AWS expects python logs to be stored in this folder
 AWS_LOG_FOLDER = "/var/app/log"
@@ -149,7 +149,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "allauth.socialaccount.providers.auth0",
     "storages",
     "corsheaders",
     "rest_framework",
@@ -199,7 +198,7 @@ CORS_ALLOW_CREDENTIALS = False
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["./hat/templates"],
+        "DIRS": ["./hat/templates", "./django_sql_dashboard_export/templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -250,7 +249,16 @@ see docs/SQL Dashboard feature.md
 
 [SQL Dashboard feature.md](docs%2FSQL%20Dashboard%20feature.md)
 """
-if os.environ.get("DB_READONLY_USERNAME"):
+
+if "test" in sys.argv and DEBUG:
+    # For when running unit test
+    DATABASES["dashboard"] = DATABASES["default"]
+
+    INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
+    # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
+    DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
+elif os.environ.get("DB_READONLY_USERNAME"):
     DATABASES["dashboard"] = {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": DB_NAME,
@@ -262,6 +270,7 @@ if os.environ.get("DB_READONLY_USERNAME"):
     }
 
     INSTALLED_APPS.append("django_sql_dashboard")
+    INSTALLED_APPS.append("django_sql_dashboard_export")
     # https://django-sql-dashboard.datasette.io/en/stable/setup.html#additional-settings
     DASHBOARD_ENABLE_FULL_EXPORT = True  # allow csv export on /explore
 
@@ -413,8 +422,34 @@ except Exception as e:
     VERSION = "undetected_version"
 
 if SENTRY_URL:
+    traces_sample_rate_str: str = os.environ.get("SENTRY_TRACES_SAMPLE_RATE", "0.1")
+    try:
+        traces_sample_rate = float(traces_sample_rate_str)
+    except ValueError:
+        raise Exception(f"Error wrong SENTRY_TRACES_SAMPLE_RATE value {traces_sample_rate_str}, should be float")
+
+    # from OpenHexa
+    # Exclude /_health/ from sentry  as it fill the quota
+    def sentry_tracer_sampler(sampling_context):
+        transaction_context = sampling_context.get("transaction_context")
+        if transaction_context is None:
+            return 0
+
+        op = transaction_context.get("op")
+
+        if op == "http.server":
+            path = sampling_context.get("wsgi_environ", {}).get("PATH_INFO")
+            # Monitoring endpoints
+            if path.startswith("/_health"):
+                return 0
+
     sentry_sdk.init(
-        SENTRY_URL, traces_sample_rate=0.1, integrations=[DjangoIntegration()], send_default_pii=True, release=VERSION
+        SENTRY_URL,
+        traces_sample_rate=traces_sample_rate,
+        traces_sampler=sentry_tracer_sampler,
+        integrations=[DjangoIntegration()],
+        send_default_pii=True,
+        release=VERSION,
     )
 
 # Workers configuration
@@ -481,16 +516,25 @@ ACCOUNT_EMAIL_VERIFICATION = "none"
 
 CODE_CHALLENGE = generate_pkce()
 
-# handle wfp login
-SOCIALACCOUNT_PROVIDERS = {
-    "auth0": {
+SOCIALACCOUNT_PROVIDERS = {}
+if os.environ.get("WFP_AUTH_CLIENT_ID"):
+    # Activate WFP login
+    # activate the wfp_auth plugin only if needed
+    index = INSTALLED_APPS.index("allauth.socialaccount")
+    INSTALLED_APPS.insert(index + 1, "plugins.wfp_auth")
+    iaso_account = os.environ.get("WFP_AUTH_ACCOUNT", "")
+    if not iaso_account:
+        raise ImproperlyConfigured("need a WFP_AUTH_ACCOUNT to associate a tenant to the auth server")
+    SOCIALACCOUNT_PROVIDERS["wfp"] = {
         "AUTH0_URL": "https://ciam.auth.wfp.org/oauth2",
         "APP": {
-            "client_id": os.environ.get("IASO_WFP_ID"),
-            "secret": os.environ.get("WFP_SECRET_KEY"),
+            "client_id": os.environ.get("WFP_AUTH_CLIENT_ID"),
+            "secret": None,  # Secret is not accepted since we use PKCE
         },
-        "AUTH_PARAMS": {"code_challenge": CODE_CHALLENGE},
+        "OAUTH_PKCE_ENABLED": True,
+        # To which tenant this is linked
+        "IASO_ACCOUNT_NAME": iaso_account,
+        "EMAIL_RECIPIENTS_NEW_ACCOUNT": os.environ.get("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
-}
 
 CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}

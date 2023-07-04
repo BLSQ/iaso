@@ -69,10 +69,21 @@ PREPAREDNESS_SYNC_STATUS = [
     ("FINISHED", _("Finished")),
 ]
 
-PAYMENT = [
-    ("DIRECT", _("Direct")),
-    ("DFC", _("DFC")),
-]
+PAYMENT = [("DIRECT", _("Direct")), ("DFC", _("DFC")), ("MOBILE_PAYMENT", _("Mobile Payment"))]
+
+
+class DelayReasons(models.TextChoices):
+    INITIAL_DATA = "INITIAL_DATA", _("initial_data")
+    ENCODING_ERROR = "ENCODING_ERROR", _("encoding_error")
+    PUBLIC_HOLIDAY = "PUBLIC_HOLIDAY", _("public_holday")
+    OTHER_ACTIVITIES = "OTHER_ACTIVITIES", _("other_activities")
+    MOH_DECISION = "MOH_DECISION", _("moh_decision")
+    CAMPAIGN_SYNCHRONIZATION = "CAMPAIGN_SYNCHRONIZATION", _("campaign_synchronization")
+    PREPAREDNESS_LEVEL_NOT_REACHED = "PREPAREDNESS_LEVEL_NOT_REACHED", _("preparedness_level_not_reached")
+    FUNDS_NOT_RECEIVED_OPS_LEVEL = "FUNDS_NOT_RECEIVED_OPS_LEVEL", _("funds_not_received_ops_level")
+    FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _("funds_not_arrived_in_country")
+    VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
+    VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
 
 
 def make_group_round_scope():
@@ -142,6 +153,26 @@ class RoundVaccine(models.Model):
     wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
 
 
+class RoundDateHistoryEntryQuerySet(models.QuerySet):
+    def filter_for_user(self, user: Union[User, AnonymousUser]):
+        from plugins.polio.models import Campaign
+
+        campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
+        return self.filter(round__campaign__in=campaigns)
+
+
+class RoundDateHistoryEntry(models.Model):
+    objects = RoundDateHistoryEntryQuerySet.as_manager()
+    previous_started_at = models.DateField(null=True, blank=True)
+    previous_ended_at = models.DateField(null=True, blank=True)
+    started_at = models.DateField(null=True, blank=True)
+    ended_at = models.DateField(null=True, blank=True)
+    reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
+    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
+    modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class Round(models.Model):
     class Meta:
         ordering = ["number", "started_at"]
@@ -154,6 +185,7 @@ class Round(models.Model):
     # With the current situation/UI, all rounds must have an end date. However, there might be legacy campaigns/rounds
     # floating around in production, and therefore consumer code must assume that this field might be NULL
     ended_at = models.DateField(null=True, blank=True)
+
     mop_up_started_at = models.DateField(null=True, blank=True)
     mop_up_ended_at = models.DateField(null=True, blank=True)
     im_started_at = models.DateField(null=True, blank=True)
@@ -193,6 +225,8 @@ class Round(models.Model):
     forma_unusable_vials = models.IntegerField(null=True, blank=True)
     forma_date = models.DateField(null=True, blank=True)
     forma_comment = models.TextField(blank=True, null=True)
+    percentage_covered_target_population = models.IntegerField(null=True, blank=True)
+    # End of vaccine management
 
     def get_item_by_key(self, key):
         return getattr(self, key)
@@ -227,12 +261,22 @@ class Campaign(SoftDeletableModel):
     account = models.ForeignKey("iaso.account", on_delete=models.CASCADE, related_name="campaigns")
     epid = models.CharField(default=None, max_length=255, null=True, blank=True)
     obr_name = models.CharField(max_length=255, unique=True)
+    is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
+    # campaign used for training and testing purpose
+    is_test = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     gpei_coordinator = models.CharField(max_length=255, null=True, blank=True)
     gpei_email = models.EmailField(max_length=254, null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     separate_scopes_per_round = models.BooleanField(default=False)
     initial_org_unit = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="campaigns"
+    )
+
+    enable_send_weekly_email = models.BooleanField(
+        default=False, help_text="Activate the sending of a reminder email every week."
     )
 
     country = models.ForeignKey(
@@ -257,6 +301,7 @@ class Campaign(SoftDeletableModel):
         null=True, blank=True, help_text="When and if we sent an email for creation"
     )
 
+    # Campaign group
     group = models.ForeignKey(
         Group,
         null=True,
@@ -273,17 +318,19 @@ class Campaign(SoftDeletableModel):
         blank=True,
     )
 
-    three_level_call_at = models.DateField(
+    outbreak_declaration_date = models.DateField(
         null=True,
         blank=True,
-        verbose_name=_("3 level call"),
+        verbose_name=_("Outbreak declaration date"),
     )
 
+    # Deprecated
     cvdpv_notified_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("cVDPV Notification"),
     )
+    # This is considered The "first" date
     cvdpv2_notified_at = models.DateField(
         null=True,
         blank=True,
@@ -303,7 +350,7 @@ class Campaign(SoftDeletableModel):
     )
 
     virus = models.CharField(max_length=6, choices=VIRUSES, null=True, blank=True)
-    # Deprecated
+    # Deprecated. replaced by the vaccines property
     vacine = models.CharField(max_length=5, choices=VACCINES, null=True, blank=True)
 
     # Detection
@@ -314,6 +361,7 @@ class Campaign(SoftDeletableModel):
         blank=True,
         verbose_name=_("1st Draft Submission"),
     )
+    # Deprecated
     detection_rrt_oprtt_approval_at = models.DateField(
         null=True,
         blank=True,
@@ -349,50 +397,60 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("DG Authorization"),
     )
     verification_score = models.IntegerField(null=True, blank=True)
+    # DEPRECATED -> Moved to round.
     doses_requested = models.IntegerField(null=True, blank=True)
+    # END OF Risk assessment field
     # Preparedness DEPRECATED -> Moved to round
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
+    # DEPRECATED -> Moved to round.
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
-    # Surge recruitment
+    # Surge recruitment. Not really used anymore
     surge_spreadsheet_url = models.URLField(null=True, blank=True)
     country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
+    # Deprecated
     budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
-    is_test = models.BooleanField(default=False)
 
     # Deprecated
     last_budget_event = models.ForeignKey(
         "BudgetEvent", null=True, blank=True, on_delete=models.SET_NULL, related_name="lastbudgetevent"
     )
 
-    # For budget worflow
+    # For budget workflow
     budget_current_state_key = models.CharField(max_length=100, default="-")
     budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
 
     # Budget tab
-    budget_requested_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    # These fields can be either filled manually or via the budget workflow when a step is done.
+    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
     who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
     unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    gpei_consolidation_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
     submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
     re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submission_to_orpg_operations_1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submission_to_orpg_operations_2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt3_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submission_to_orpg_operations_2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
     submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
     approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    # LEGACY deprecated fields
+    budget_requested_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt3_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_at_WFEDITABLE_old = models.DateField(null=True, blank=True)
+    # END Deprecated
 
+    # Fund release part of the budget form. Will be migrated to workflow fields later.
     who_disbursed_to_co_at = models.DateField(
         null=True,
         blank=True,
@@ -417,6 +475,7 @@ class Campaign(SoftDeletableModel):
         verbose_name=_("Disbursed to MOH (UNICEF)"),
     )
 
+    # DEPRECATED was removed in PR POLIO-614
     eomg = models.DateField(
         null=True,
         blank=True,
@@ -428,34 +487,31 @@ class Campaign(SoftDeletableModel):
         null=True,
         blank=True,
     )
-    payment_mode = models.CharField(max_length=10, choices=PAYMENT, null=True, blank=True)
-    # Rounds
+    payment_mode = models.CharField(max_length=30, choices=PAYMENT, null=True, blank=True)
+    # DEPRECATED. moved to Rounds
     round_one = models.OneToOneField(
         Round, on_delete=models.PROTECT, related_name="campaign_round_one", null=True, blank=True
     )
+    # DEPRECATED
     round_two = models.OneToOneField(
         Round, on_delete=models.PROTECT, related_name="campaign_round_two", null=True, blank=True
     )
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
     # Additional fields
     district_count = models.IntegerField(null=True, blank=True)
+    # budget form, DEPRECATED
     budget_rrt_oprtt_approval_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("Budget Approval"),
     )
+    # budget form, DEPRECATED.
     budget_submitted_at = models.DateField(
         null=True,
         blank=True,
         verbose_name=_("Budget Submission"),
     )
-
-    is_preventive = models.BooleanField(default=False, help_text="Preventive campaign")
-    enable_send_weekly_email = models.BooleanField(
-        default=False, help_text="Activate the sending of a reminder email every week."
-    )
+    ## End of budget form
 
     def __str__(self):
         return f"{self.epid} {self.obr_name}"
@@ -474,19 +530,25 @@ class Campaign(SoftDeletableModel):
 
     def get_districts_for_round(self, round):
         if self.separate_scopes_per_round:
-            districts = OrgUnit.objects.filter(groups__roundScope__round=round).distinct()
+            districts = (
+                OrgUnit.objects.filter(groups__roundScope__round=round).filter(validation_status="VALID").distinct()
+            )
         else:
             districts = self.get_campaign_scope_districts()
         return districts
 
     def get_campaign_scope_districts(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
-        return OrgUnit.objects.filter(groups__campaignScope__campaign=self)
+        return OrgUnit.objects.filter(groups__campaignScope__campaign=self).filter(validation_status="VALID")
 
     def get_all_districts(self):
         """District from all round merged as one"""
         if self.separate_scopes_per_round:
-            return OrgUnit.objects.filter(groups__roundScope__round__campaign=self).distinct()
+            return (
+                OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
+                .filter(validation_status="VALID")
+                .distinct()
+            )
         return self.get_campaign_scope_districts()
 
     def last_surge(self):
@@ -654,6 +716,7 @@ class Config(models.Model):
     content = models.JSONField()
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+    users = models.ManyToManyField(User, related_name="polioconfigs", blank=True)
 
     def __str__(self):
         return self.slug
@@ -739,7 +802,6 @@ class CampaignGroup(SoftDeletableModel):
 
 # Deprecated
 class BudgetEvent(SoftDeletableModel):
-
     TYPES = (
         ("submission", "Budget Submission"),
         ("comments", "Comments"),

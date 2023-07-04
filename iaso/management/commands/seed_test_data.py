@@ -55,7 +55,7 @@ seed_test_data --mode=export --force
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
-        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default="2.31.8")
+        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default="2.38.3")
         parser.add_argument("-f", "--force", action="store_true", help="Force the re-export of exported submissions")
 
     def handle(self, *args, **options):
@@ -350,7 +350,6 @@ class Command(BaseCommand):
             print("generated", quality_form.name, quality_form.instances.count(), "instances")
 
         if mode == "derived":
-
             period = "2018Q1"
             for i in cvs_stat_form.instances.filter(period=period).all():
                 i.delete()
@@ -681,7 +680,6 @@ class Command(BaseCommand):
             return json.load(json_file)
 
     def seed_micro_planning(self, source_version, project, user):
-
         print("********* seed_micro_planning")
         team1, _ignore1 = Team.objects.get_or_create(
             project=project, name="team 1", description="team 1", type="TEAM_OF_USERS", manager=user

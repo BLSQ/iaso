@@ -1,32 +1,62 @@
-import React, { useMemo } from 'react';
+import React, { ReactElement, useMemo } from 'react';
 import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
     IconButton as IconButtonComponent,
+    useSafeIntl,
+    Column,
 } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { cloneDeep } from 'lodash';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
-import AddCircleOutlineIcon from '@material-ui/icons/AddCircleOutline';
-import Tooltip from '@material-ui/core/Tooltip';
-import { Box } from '@material-ui/core';
+import { Box, LinearProgress } from '@material-ui/core';
+import Typography from '@material-ui/core/Typography';
+import { ArrowUpward } from '@material-ui/icons';
 import { redirectTo } from '../../../routing/actions';
 import MESSAGES from '../messages';
+import { userHasPermission } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
 import { baseUrls } from '../../../constants/urls';
+import {
+    CompletenessApiResponse,
+    CompletenessRouterParams,
+    FormDesc,
+    FormStatRow,
+} from '../types';
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
-export const useCompletenessStatsColumns = (params: any) => {
+// From https://v4.mui.com/components/progress/
+const LinearProgressWithLabel = props => (
+    <Box display="flex" alignItems="center" flexDirection="column">
+        <Box minWidth={35}>
+            <Typography variant="body2" color="textSecondary">
+                {`${Math.round(props.value)}%`}
+            </Typography>
+        </Box>
+        <Box width="100%" mr={1}>
+            {/* eslint-disable-next-line react/jsx-props-no-spreading */}
+            <LinearProgress variant="determinate" {...props} />
+        </Box>
+    </Box>
+);
+
+export const useCompletenessStatsColumns = (
+    params: CompletenessRouterParams,
+    completenessStats?: CompletenessApiResponse,
+): Column[] => {
+    const currentUser = useCurrentUser();
+    const hasSubmissionPermission = userHasPermission(
+        'iaso_submissions',
+        currentUser,
+    );
     const { formatMessage } = useSafeIntl();
-    const redirectionParams: Record<string, any> = useMemo(() => {
+    const redirectionParams: CompletenessRouterParams = useMemo(() => {
         const clonedParams = cloneDeep(params);
         delete clonedParams.parentId;
         return clonedParams;
     }, [params]);
     const dispatch = useDispatch();
-    return useMemo(
-        () => [
+    return useMemo(() => {
+        let columns: Column[] = [
             {
                 Header: formatMessage(MESSAGES.orgUnit),
                 id: 'name',
@@ -56,107 +86,140 @@ export const useCompletenessStatsColumns = (params: any) => {
             },
             {
                 Header: formatMessage(MESSAGES.parent),
-                id: 'parent_org_unit__name',
-                accessor: 'parent_org_unit__name',
-                sortable: false,
+                id: 'parent__name',
+                accessor: 'parent__org_unit__name',
+                sortable: true,
                 Cell: settings => (
                     <span>
-                        {settings.row.original.parent_org_unit?.[0].name ??
-                            '--'}
+                        {settings.row.original.parent_org_unit?.name ?? '--'}
                     </span>
                 ),
             },
-            {
-                Header: formatMessage(MESSAGES.form),
-                id: 'form__name',
-                accessor: 'form__name',
-                sortable: false,
-                Cell: settings => (
-                    <span>{settings.row.original.form?.name ?? '--'}</span>
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.formsFilledDirect),
-                id: 'forms_filled_direct',
-                accessor: 'forms_filled_direct',
-                sortable: false,
-                Cell: settings => (
-                    <Box>
-                        <Box
-                            style={{
-                                // marginTop: '2px', // The margin will align the icon in FF but misalign it in Chrome
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                            }}
-                        >
-                            {`${
-                                settings.row.original.forms_filled_direct ??
-                                '--'
-                            }/
-                            ${
-                                settings.row.original.forms_to_fill_direct ??
-                                '--'
-                            }`}
-                        </Box>
-                        {settings.row.original
-                            .has_multiple_direct_submissions && (
-                            <Tooltip
-                                title={formatMessage(
-                                    MESSAGES.orgUnitHasMultipleSubmissions,
-                                )}
-                            >
-                                <Box
-                                    style={{
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        verticalAlign: 'middle',
-                                    }}
-                                >
-                                    <AddCircleOutlineIcon
+            // {
+            //     // Uncomment for debug
+            //     Header: 'DEBUG',
+            //     id: 'form_stats',
+            //     accessor: 'form_stats',
+            //     sortable: false,
+            //     Cell: settings => JSON.stringify(settings.value),
+            // },
+        ];
+        // Add column and sub columns per form
+        // console.dir(completenessStats);
+        if (completenessStats?.forms) {
+            columns = columns.concat(
+                completenessStats.forms.map((form: FormDesc): Column => {
+                    return {
+                        Header: form.name,
+                        id: `form_stats[${form.slug}]`,
+                        accessor: `form_stats[${form.slug}]`,
+                        sortable: false,
+                        Cell: settings => JSON.stringify(settings.value) ?? '',
+                        columns: [
+                            {
+                                Header: (
+                                    <div
+                                        title={formatMessage(
+                                            MESSAGES.itselfColumnTitle,
+                                        )}
                                         style={{
-                                            fontSize: '16px',
-                                            marginLeft: '4px',
+                                            textDecoration: 'underline dotted',
                                         }}
-                                        color="action"
-                                    />
-                                </Box>
-                            </Tooltip>
-                        )}
-                    </Box>
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.completenessDirect),
-                id: 'completeness_ratio_direct',
-                accessor: 'completeness_ratio_direct',
-                sortable: false,
-            },
-            {
-                Header: formatMessage(MESSAGES.formsFilledWithDescendants),
-                id: 'forms_filled',
-                accessor: 'forms_filled',
-                sortable: false,
-                Cell: settings => (
-                    <span>
-                        {settings.row.original.forms_filled ?? '--'}/
-                        {settings.row.original.forms_to_fill ?? '--'}
-                    </span>
-                ),
-            },
-            {
-                Header: formatMessage(MESSAGES.completenessWithDescendants),
-                id: 'completeness_ratio',
-                accessor: 'completeness_ratio',
-                sortable: false,
-            },
-            {
-                Header: formatMessage(MESSAGES.actions),
-                id: 'bleh',
-                accessor: 'blej',
-                sortable: false,
-                Cell: settings => {
-                    return (
-                        <>
+                                    >
+                                        {formatMessage(
+                                            MESSAGES.itselfColumnLabel,
+                                        )}
+                                    </div>
+                                ),
+                                id: `form_stats__${form.slug}__itself_has_instances`,
+                                accessor: `form_stats[${form.slug}]`,
+                                Cell: ({
+                                    value,
+                                }: FormStatRow): ReactElement => {
+                                    return value.itself_target > 0 ? (
+                                        <>
+                                            {value.itself_has_instances ? (
+                                                <span
+                                                    title={formatMessage(
+                                                        MESSAGES.itselfSubmissionCount,
+                                                        {
+                                                            value: value.itself_instances_count,
+                                                        },
+                                                    )}
+                                                >
+                                                    ✅
+                                                </span>
+                                            ) : (
+                                                <>❌</>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div
+                                            title={formatMessage(
+                                                MESSAGES.itselfNoSubmissionExpected,
+                                            )}
+                                            style={{
+                                                textDecoration:
+                                                    'underline dotted',
+                                            }}
+                                        >
+                                            N/A
+                                        </div>
+                                    );
+                                },
+                                sortable: true,
+                            },
+                            {
+                                Header: formatMessage(MESSAGES.descendants),
+                                id: `form_stats__${form.slug}__percent`,
+                                accessor: `form_stats[${form.slug}]`,
+                                Cell: ({
+                                    value,
+                                }: FormStatRow): ReactElement => {
+                                    return value.descendants > 0 ? (
+                                        <>
+                                            <LinearProgressWithLabel
+                                                value={value.percent}
+                                            />
+                                            {value.descendants_ok} /
+                                            {value.descendants}
+                                        </>
+                                    ) : (
+                                        <div
+                                            title={formatMessage(
+                                                MESSAGES.descendantsNoSubmissionExpected,
+                                            )}
+                                            style={{
+                                                textDecoration:
+                                                    'underline dotted',
+                                            }}
+                                        >
+                                            N/A
+                                        </div>
+                                    );
+                                },
+                                sortable: true,
+                            },
+                        ],
+                    };
+                }),
+            );
+        }
+        columns.push({
+            Header: formatMessage(MESSAGES.actions),
+            id: 'actions',
+            accessor: 'actions',
+            sortable: false,
+            Cell: settings => {
+                const formStats = settings.row.original.form_stats;
+                const orgunitId = settings.row.original.org_unit.id;
+                const hasFormSubmissions = Object.values(formStats).some(
+                    (stat: any) => stat.itself_has_instances > 0,
+                );
+
+                return (
+                    <>
+                        {!settings.row.original.is_root && (
                             <IconButtonComponent
                                 onClick={() => {
                                     dispatch(
@@ -171,11 +234,42 @@ export const useCompletenessStatsColumns = (params: any) => {
                                 tooltipMessage={MESSAGES.seeChildren}
                                 overrideIcon={AccountTreeIcon}
                             />
-                        </>
-                    );
-                },
+                        )}
+                        {settings.row.original.is_root && (
+                            <IconButtonComponent
+                                onClick={() => {
+                                    dispatch(
+                                        redirectTo(baseUrl, {
+                                            ...redirectionParams,
+                                            parentId:
+                                                settings.row.original
+                                                    .parent_org_unit?.id,
+                                        }),
+                                    );
+                                }}
+                                tooltipMessage={MESSAGES.seeParent}
+                                overrideIcon={ArrowUpward}
+                            />
+                        )}
+                        {hasSubmissionPermission && hasFormSubmissions && (
+                            <IconButtonComponent
+                                id={`form-link-${settings.row.original.id}`}
+                                url={`/${baseUrls.instances}/accountId/${params.accountId}/page/1/levels/${orgunitId}`}
+                                icon="remove-red-eye"
+                                tooltipMessage={MESSAGES.viewInstances}
+                            />
+                        )}
+                    </>
+                );
             },
-        ],
-        [dispatch, formatMessage, redirectionParams],
-    );
+        });
+        return columns;
+    }, [
+        dispatch,
+        formatMessage,
+        redirectionParams,
+        completenessStats,
+        params,
+        hasSubmissionPermission,
+    ]);
 };

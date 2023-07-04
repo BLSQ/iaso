@@ -168,3 +168,17 @@ requirements_3_8.txt
 .python-version
 hat/settings_local.py
 runpycharmdev.sh
+runmypydev.sh
+mypydev.ini
+
+venv
+
+
+#mkdocs
+/bin/**/*
+/include/**/*
+/lib/**/*
+pyvenv.cfg
+originals
+
+*.code-workspace

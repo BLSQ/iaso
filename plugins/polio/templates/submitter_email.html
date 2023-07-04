@@ -1,0 +1,71 @@
+{% comment %}
+Base file to be reused in the MailTemplate for the budget workflow engine
+{% endcomment %}
+<!DOCTYPE HTML>
+<html lang={{ LANGUAGE_CODE }} xmlns="http://www.w3.org/1999/xhtml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta http-equiv="Content-Type" content="text/html charset=UTF-8" />
+  <title></title>
+  <!--[if mso]>
+  <noscript>
+    <xml>
+      <o:OfficeDocumentSettings>
+        <o:PixelsPerInch>96</o:PixelsPerInch>
+      </o:OfficeDocumentSettings>
+    </xml>
+  </noscript>
+  <![endif]-->
+  <style>
+      table, td, div, h1, p {
+          font-family: Arial, sans-serif;
+      }
+
+      {% comment %} table, td {border:2px solid #000000 !important;} {% endcomment %}
+  </style>
+</head>
+<body style="margin:0;padding:0;width:100%;max-width:800px">
+{% block content %}
+  <table role="presentation"
+         style="width:100%;max-width:600px;border-collapse:collapse;border:0;border-spacing:0;background:#ffffff;">
+
+  <tr>
+    <td align="left" style="padding:5px;">
+        Thank you for your submission.
+    </td>
+  </tr>
+  <tr>
+    <td align="left" style="padding:5px;">
+      The NEW status of the POLIO campaign <strong>{{ campaign.obr_name }}</strong> has been updated to:  <strong>{{ node.label }}</strong> 
+    </td>
+  </tr>
+   <tr>
+    <td style="height:20px;padding:5px;font-size:0;line-height:0;">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left" style="padding:5px;">
+        For additional information, please, consult the <a href="{{ budget_url }}">campaign page</a>.
+    </td>
+  <tr>
+ 
+{% endblock content %}
+<table role="presentation" style="width:100%;max-width:600px;">
+  <tr>
+    <td style="height:20px;padding:0;font-size:0;line-height:0;">&nbsp;</td>
+  </tr>
+  <tr>
+    <td align="left" style="padding:5px;">
+      <hr>
+    </td>
+  </tr>
+  <tr>
+    <td align="left" style="padding:5px;">
+      This is an automated email from <a href="{{ site_url }}">{{ site_name }}</a>
+    </td>
+  </tr>
+</table>
+</table>
+</body>
+</html>

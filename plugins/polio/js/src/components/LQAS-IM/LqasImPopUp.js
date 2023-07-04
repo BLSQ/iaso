@@ -30,7 +30,7 @@ export const LqasImPopup = ({ shape, data, round, campaign }) => {
     return (
         <>
             {dataForShape && (
-                <Popup className={classes.popup} ref={ref}>
+                <Popup className={classes.popup} ref={ref} pane="popupPane">
                     <Card className={classes.popupCard}>
                         <CardContent className={classes.popupCardContent}>
                             <PopupItemComponent

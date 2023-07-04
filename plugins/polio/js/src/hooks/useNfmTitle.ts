@@ -1,7 +1,7 @@
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import { useMemo } from 'react';
 import MESSAGES from '../constants/messages';
-import { IntlFormatMessage, LqasImCampaign } from '../constants/types';
+import { LqasImCampaign } from '../constants/types';
 import { makeRatioUnmarked } from '../utils/LqasIm';
 
 type Params = {

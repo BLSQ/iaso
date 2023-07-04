@@ -54,6 +54,7 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
         Header: formatMessage(MESSAGES.message),
         sortable: false,
         align: 'left',
+        width: 550,
         accessor: 'progress_message',
         Cell: settings => {
             if (!settings.value) return null;
@@ -63,7 +64,9 @@ const tasksTableColumns = (formatMessage, killTaskAction) => [
                 <details>
                     <summary>{settings.value.slice(0, 99)}...</summary>
                     <i>Open for more details</i>
-                    <pre>{settings.value}</pre>
+                    <pre style={{ maxWidth: '550px', textWrap: 'wrap' }}>
+                        {settings.value}
+                    </pre>
                 </details>
             );
         },

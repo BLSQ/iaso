@@ -24,14 +24,10 @@ import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstan
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
 import { Actions } from './OrgUnitActions';
 
-import {
-    OrgUnitState,
-    OrgUnitType,
-    Group,
-    OrgUnit,
-    Action,
-} from '../types/orgUnit';
+import { OrgUnitState, Group, OrgUnit, Action } from '../types/orgUnit';
+import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -53,6 +49,7 @@ const getParentOrgUnit = (orgUnit: OrgUnit): Partial<OrgUnit> =>
         source_id: orgUnit.parent.source_id,
         parent: orgUnit.parent.parent,
         parent_name: orgUnit.parent.parent_name,
+        validation_status: orgUnit.parent.validation_status,
     };
 
 type Props = {
@@ -63,7 +60,7 @@ type Props = {
         // eslint-disable-next-line no-unused-vars
         value: string | number | string[] | number[],
     ) => void;
-    orgUnitTypes: OrgUnitType[];
+    orgUnitTypes: OrgunitType[];
     groups: Group[];
     resetTrigger: boolean;
     params: Record<string, string>;
@@ -119,6 +116,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
             dispatch(fetchEditUrl(instance, window.location));
         }
     };
+
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
 
     return (
         <Grid container spacing={2}>
@@ -203,20 +205,8 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.validation_status.value}
                     type="select"
                     label={MESSAGES.status}
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.new),
-                            value: 'NEW',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.validated),
-                            value: 'VALID',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.rejected),
-                            value: 'REJECTED',
-                        },
-                    ]}
+                    loading={isLoadingValidationStatusOptions}
+                    options={validationStatusOptions || []}
                 />
                 <InputComponent
                     keyValue="source_ref"
@@ -255,17 +245,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     alignItems="center"
                 >
                     <Box mt={1}>
-                        <Button
-                            id="save-ou"
-                            disabled={isSaveDisabled}
-                            variant="contained"
-                            className={classes.marginLeft}
-                            color="primary"
-                            onClick={handleSave}
-                        >
-                            {formatMessage(MESSAGES.save)}
-                        </Button>
-
                         {!isNewOrgunit && (
                             <Button
                                 className={classes.marginLeft}
@@ -276,6 +255,16 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                                 {formatMessage(MESSAGES.cancel)}
                             </Button>
                         )}
+                        <Button
+                            id="save-ou"
+                            disabled={isSaveDisabled}
+                            variant="contained"
+                            className={classes.marginLeft}
+                            color="primary"
+                            onClick={handleSave}
+                        >
+                            {formatMessage(MESSAGES.save)}
+                        </Button>
                     </Box>
                 </Grid>
             </Grid>

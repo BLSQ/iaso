@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { UseQueryResult } from 'react-query';
 // @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
@@ -7,7 +7,7 @@ import { useSnackQuery } from 'Iaso/libs/apiHooks';
 
 import { makeUrlWithParams } from '../../../../libs/utils';
 
-import { OrgUnit } from '../../../orgUnits/types/orgUnit';
+import { OrgUnit, PaginatedOrgUnits } from '../../../orgUnits/types/orgUnit';
 
 import { BaseLocation, Locations } from '../../types/locations';
 import { Profile } from '../../../../utils/usersUtils';
@@ -48,7 +48,6 @@ const mapLocation = ({
             selected: [],
             unselected: [],
         },
-        all: [],
     };
     if (!orgUnits) return locations;
     orgUnits.forEach((orgUnit: OrgUnit) => {
@@ -63,7 +62,6 @@ const mapLocation = ({
                         ...baseLocation,
                         geoJson: orgUnit.geo_json,
                     };
-                    locations.all.push(shape);
                     locations.shapes.all.push(shape);
                     const orgUnitAssignation = getOrgUnitAssignation(
                         assignments,
@@ -105,7 +103,6 @@ const mapLocation = ({
                         latitude: orgUnit.latitude,
                         longitude: orgUnit.longitude,
                     };
-                    locations.all.push(marker);
                     locations.markers.all.push(marker);
                     const orgUnitAssignation = getOrgUnitAssignation(
                         assignments,
@@ -171,21 +168,22 @@ export const useGetOrgUnits = ({
     order,
     search,
 }: Props): UseQueryResult<Locations, Error> => {
-    const params: Record<string, any> = {
-        validation_status: 'VALID',
-        asLocation: true,
-        limit: 5000,
-        geography: 'any',
-        onlyDirectChildren: false,
-        page: 1,
-        withParents: true,
-        order,
-        orgUnitParentIds: orgUnitParentIds?.join(','),
-        orgUnitTypeId: baseOrgunitType,
-        search,
-    };
-
-    const url = makeUrlWithParams('/api/orgunits/', params);
+    const params: Record<string, any> = useMemo(
+        () => ({
+            validation_status: 'VALID',
+            asLocation: true,
+            limit: 5000,
+            geography: 'any',
+            onlyDirectChildren: false,
+            page: 1,
+            withParents: true,
+            order,
+            orgUnitParentIds: orgUnitParentIds?.join(','),
+            orgUnitTypeId: baseOrgunitType,
+            search,
+        }),
+        [baseOrgunitType, order, orgUnitParentIds, search],
+    );
 
     const select = useCallback(
         (orgUnits: OrgUnit[]) => {
@@ -213,16 +211,76 @@ export const useGetOrgUnits = ({
             currentType,
         ],
     );
-    return useSnackQuery(
-        ['orgUnits', params, baseOrgunitType],
-        () => getRequest(url),
-        undefined,
-        {
+    return useSnackQuery({
+        queryKey: ['orgUnits', params, baseOrgunitType],
+        queryFn: () => getRequest(makeUrlWithParams('/api/orgunits/', params)),
+        options: {
             enabled:
                 Boolean(params.orgUnitParentIds) && Boolean(baseOrgunitType),
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select,
         },
+    });
+};
+
+type ListProps = {
+    orgUnitParentIds: number[] | undefined;
+    baseOrgunitType: string | undefined;
+    order?: string;
+    search?: string;
+};
+
+export const useGetOrgUnitsList = ({
+    orgUnitParentIds,
+    baseOrgunitType,
+    order,
+    search,
+}: ListProps): UseQueryResult<OrgUnit[], Error> => {
+    const params: Record<string, any> = useMemo(
+        () => ({
+            validation_status: 'VALID',
+            limit: 5000,
+            onlyDirectChildren: false,
+            page: 1,
+            withParents: true,
+            order,
+            orgUnitParentIds: orgUnitParentIds?.join(','),
+            orgUnitTypeId: baseOrgunitType,
+            search,
+        }),
+        [baseOrgunitType, order, orgUnitParentIds, search],
     );
+
+    const select = useCallback(
+        (data: PaginatedOrgUnits) => {
+            if (baseOrgunitType && orgUnitParentIds) {
+                const list: OrgUnit[] = [];
+                data.orgunits.forEach((orgUnit: OrgUnit) => {
+                    if (!orgUnitParentIds.find(ou => ou === orgUnit.id)) {
+                        if (
+                            parseInt(baseOrgunitType, 10) ===
+                            orgUnit.org_unit_type_id
+                        ) {
+                            list.push(orgUnit);
+                        }
+                    }
+                });
+                return list;
+            }
+            return [];
+        },
+        [baseOrgunitType, orgUnitParentIds],
+    );
+    return useSnackQuery({
+        queryKey: ['orgUnitsList', params, baseOrgunitType],
+        queryFn: () => getRequest(makeUrlWithParams('/api/orgunits/', params)),
+        options: {
+            enabled:
+                Boolean(params.orgUnitParentIds) && Boolean(baseOrgunitType),
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            select,
+        },
+    });
 };

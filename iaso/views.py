@@ -1,10 +1,11 @@
 from django.conf import settings
+from django.contrib.auth.models import User
 from django.contrib.auth.views import redirect_to_login
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
 
-from hat.__version__ import DEPLOYED_ON, DEPLOYED_BY, VERSION
-from iaso.models import Page, Account, TEXT, IFRAME, POWERBI
+from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
+from iaso.models import IFRAME, POWERBI, TEXT, Account, Page
 from iaso.utils.powerbi import get_powerbi_report_token
 
 

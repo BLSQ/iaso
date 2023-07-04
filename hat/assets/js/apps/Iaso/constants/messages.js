@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Data Sources List',
         id: 'iaso.label.dataSourceList',
     },
+    linksList: {
+        defaultMessage: 'Links List',
+        id: 'iaso.label.linksList',
+    },
     beneficiariesList: {
         defaultMessage: 'Beneficiaries List',
         id: 'iaso.label.beneficiariesList',
@@ -92,6 +96,10 @@ const MESSAGES = defineMessages({
     users: {
         defaultMessage: 'Users',
         id: 'iaso.label.users',
+    },
+    userRoles: {
+        defaultMessage: 'User roles',
+        id: 'iaso.label.userRoles',
     },
     projects: {
         defaultMessage: 'Projects',
@@ -156,6 +164,14 @@ const MESSAGES = defineMessages({
     storages: {
         defaultMessage: 'Storages',
         id: 'iaso.label.storages',
+    },
+    registry: {
+        defaultMessage: 'Registry',
+        id: 'iaso.registry.title',
+    },
+    entityDuplicatesTitle: {
+        defaultMessage: 'Duplicates',
+        id: 'iaso.label.duplicates',
     },
 });
 

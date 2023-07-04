@@ -6,7 +6,7 @@ import React, {
     useRef,
     useState,
 } from 'react';
-import { Map, TileLayer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
+import { MapContainer, GeoJSON, ScaleControl, Pane } from 'react-leaflet';
 import 'leaflet-draw';
 import pink from '@material-ui/core/colors/pink';
 import { Grid, makeStyles, useTheme } from '@material-ui/core';
@@ -15,9 +15,7 @@ import {
     mapOrgUnitByLocation,
     getleafletGeoJson,
     orderOrgUnitTypeByDepth,
-    ZoomControl,
-} from '../../../../../utils/mapUtils';
-import TileSwitch from '../../../../../components/maps/tools/TileSwitchComponent';
+} from '../../../../../utils/map/mapUtils';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
 import FormsFilterComponent from '../../../../forms/components/FormsFilterComponent';
@@ -31,7 +29,7 @@ import { OrgUnitsMapComments } from '../OrgUnitsMapComments';
 import MESSAGES from '../../../messages';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
-import fitToBoundsFn from '../fitToBounds';
+import { useGetBounds } from './useGetBounds';
 import { userHasPermission } from '../../../../users/utils';
 import { useCurrentUser } from '../../../../../utils/usersUtils';
 import { useFormState } from '../../../../../hooks/form';
@@ -44,6 +42,10 @@ import { FormsMarkers } from './FormsMarkers';
 import { CurrentOrgUnitMarker } from './CurrentOrgUnitMarker';
 import { SelectedMarkers } from './SelectedMarkers';
 import { buttonsInitialState } from './constants';
+import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTileLayer';
+import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
+import tiles from '../../../../../constants/mapTiles';
+import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -98,18 +100,14 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     // and we can't predict exactly how many renders that will require
     const didLocationInitialize = useRef(false);
     const didCatchmentInitialize = useRef(false);
+    const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isCreatingMarker, setIsCreatingMarker] = useState<boolean>(false);
     // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const [state, setStateField, _, setState] = useFormState(
         initialState(currentUser),
     );
-    const {
-        currentTile,
-        resetMapReducer,
-        fetchInstanceDetail,
-        fetchSubOrgUnitDetail,
-    } = useRedux();
-
+    const { fetchInstanceDetail, fetchSubOrgUnitDetail } = useRedux();
+    // console.log('state', state);
     const setAncestor = useCallback(() => {
         const ancestor = getAncestorWithGeojson(currentOrgUnit);
         if (ancestor) {
@@ -125,7 +123,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const handleReset = useCallback(() => {
-        const mapToReset = map.current.leafletElement;
+        const mapToReset = map.current;
         state.locationGroup.value.reset(mapToReset);
         state.catchmentGroup.value.reset(mapToReset);
         setIsCreatingMarker(false);
@@ -140,36 +138,17 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.locationGroup.value,
         state.catchmentGroup.value,
     ]);
-    const fitToBounds = useCallback(() => {
-        fitToBoundsFn({
-            padding,
-            currentTile,
-            orgUnit: currentOrgUnit,
-            orgUnitTypesSelected: state.orgUnitTypesSelected.value,
-            sourcesSelected,
-            formsSelected: state.formsSelected.value,
-            editLocationEnabled: state.location.value.edit,
-            locationGroup: state.locationGroup.value,
-            catchmentGroup: state.catchmentGroup.value,
-            map: map.current.leafletElement,
-            ancestorWithGeoJson: state.ancestorWithGeoJson.value,
-        });
-    }, [
-        currentTile,
-        currentOrgUnit,
-        state.orgUnitTypesSelected.value,
-        state.formsSelected.value,
-        state.location.value.edit,
-        state.locationGroup.value,
-        state.catchmentGroup.value,
-        state.ancestorWithGeoJson.value,
-        sourcesSelected,
-    ]);
+    const bounds = useGetBounds({
+        orgUnit: currentOrgUnit,
+        locationGroup: state.locationGroup.value,
+        catchmentGroup: state.catchmentGroup.value,
+        ancestorWithGeoJson: state.ancestorWithGeoJson.value,
+    });
 
     const toggleEditShape = useCallback(
         keyName => {
             const editEnabled = state[keyName].value.edit;
-            const leafletMap = map.current.leafletElement;
+            const leafletMap = map.current;
             const group =
                 keyName === 'location'
                     ? state.locationGroup.value
@@ -204,7 +183,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     const toggleDeleteShape = useCallback(
         keyName => {
             const deleteEnabled = state[keyName].value.delete;
-            const leafletMap = map.current.leafletElement;
+            const leafletMap = map.current;
             const group =
                 keyName === 'location'
                     ? state.locationGroup.value
@@ -220,7 +199,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const addShape = useCallback(
         keyName => {
-            const leafletMap = map.current.leafletElement;
+            const leafletMap = map.current;
             if (keyName === 'location') {
                 state.locationGroup.value.addShape(
                     leafletMap,
@@ -272,7 +251,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         Boolean(currentOrgUnit.latitude) && Boolean(currentOrgUnit.longitude);
 
     if (map.current) {
-        map.current.leafletElement.options.maxZoom = currentTile.maxZoom;
+        map.current.options.maxZoom = currentTile.maxZoom;
     }
     const mappedOrgUnitTypesSelected: MappedOrgUnit[] = useMemo(
         () =>
@@ -315,11 +294,11 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     useEffect(() => {
         if (
             !didLocationInitialize.current &&
-            map.current?.leafletElement &&
+            map.current &&
             state.locationGroup.value
         ) {
             state.locationGroup.value.initialize({
-                map: map.current.leafletElement,
+                map: map.current,
                 groupKey: 'location',
                 onChangeShape: shape => onChangeShape('geo_json', shape),
                 onChangeLocation,
@@ -334,11 +313,11 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     useEffect(() => {
         if (
             !didCatchmentInitialize.current &&
-            map.current?.leafletElement &&
+            map.current &&
             state.catchmentGroup.value
         ) {
             state.catchmentGroup.value.initialize({
-                map: map.current.leafletElement,
+                map: map.current,
                 groupKey: 'catchment',
                 onChangeShape: shape => onChangeShape('catchment', shape),
                 onChangeLocation,
@@ -350,7 +329,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
             didCatchmentInitialize.current = true;
         }
     });
-
     useSkipEffectOnMount(() => {
         state.catchmentGroup.value.updateShape(
             getleafletGeoJson(currentOrgUnit.catchment),
@@ -372,14 +350,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     });
 
     useSkipEffectOnMount(() => {
-        fitToBounds();
-    }, [
-        sourcesSelected,
-        state.orgUnitTypesSelected.value,
-        state.formsSelected.value,
-    ]);
-
-    useSkipEffectOnMount(() => {
         state.locationGroup.value.updateShape(
             getleafletGeoJson(currentOrgUnit.geo_json),
             'primary',
@@ -388,21 +358,20 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     // ComponentWillUnmount
     useEffect(() => {
-        const currentMap = map.current.leafletElement;
+        const currentMap = map.current;
         return () => {
-            resetMapReducer();
-            state.locationGroup.value.reset(currentMap);
-            state.catchmentGroup.value.reset(currentMap);
-            setState(initialState(currentUser));
+            if (currentMap) {
+                state.locationGroup.value.reset(currentMap);
+                state.catchmentGroup.value.reset(currentMap);
+                setState(initialState(currentUser));
+            }
         };
     }, [
         currentUser,
-        resetMapReducer,
         setState,
         state.catchmentGroup.value,
         state.locationGroup.value,
     ]);
-
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -425,14 +394,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             loadingSelectedSources={loadingSelectedSources}
                             currentOrgUnit={currentOrgUnit}
                             currentSources={sources}
-                            fitToBounds={fitToBounds}
                             sourcesSelected={sourcesSelected}
                             setSourcesSelected={setSourcesSelected}
                         />
                         <OrgUnitTypeFilterComponent
                             currentOrgUnit={currentOrgUnit}
                             orgUnitTypes={orgUnitTypes}
-                            fitToBounds={fitToBounds}
                             orgUnitTypesSelected={
                                 state.orgUnitTypesSelected.value
                             }
@@ -475,11 +442,6 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         }}
                     />
                 }
-                settingsOptionComponent={
-                    <>
-                        <TileSwitch />
-                    </>
-                }
                 commentsOptionComponent={
                     <OrgUnitsMapComments
                         orgUnit={currentOrgUnit}
@@ -489,6 +451,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                 }
             >
                 <MapLegend
+                    bottom={24}
+                    top="auto"
                     options={[
                         {
                             value: 'ouCurrent',
@@ -502,28 +466,30 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         },
                     ]}
                 />
-                <Map
+                <MapContainer
                     key={currentOrgUnit.id}
-                    scrollWheelZoom={false}
+                    // @ts-ignore TODO: fix this type problem
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '100%' }}
-                    ref={map}
                     center={[0, 0]}
                     boundsOptions={{ padding }}
+                    bounds={bounds}
                     zoom={zoom}
                     zoomControl={false}
                     keyboard={false}
+                    whenCreated={mapInstance => {
+                        map.current = mapInstance;
+                    }}
                 >
-                    <ZoomControl fitToBounds={fitToBounds} />
-
+                    <CustomZoomControl
+                        bounds={bounds}
+                        boundsOptions={{ padding }}
+                        fitOnLoad
+                    />
                     <ScaleControl imperial={false} />
-                    <TileLayer
-                        attribution={
-                            currentTile.attribution
-                                ? currentTile.attribution
-                                : ''
-                        }
-                        url={currentTile.url}
+                    <CustomTileLayer
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
                     />
                     {!state.location.value.edit &&
                         state.ancestorWithGeoJson.value && (
@@ -537,6 +503,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                     data={
                                         state.ancestorWithGeoJson.value.geo_json
                                     }
+                                    // @ts-ignore TODO: fix this type problem
                                     style={() => ({
                                         color: pink['300'],
                                     })}
@@ -597,7 +564,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                             currentOrgUnit={currentOrgUnit}
                         />
                     )}
-                </Map>
+                </MapContainer>
             </InnerDrawer>
         </Grid>
     );

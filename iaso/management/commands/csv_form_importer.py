@@ -117,7 +117,6 @@ class Command(BaseCommand):
 
                                     # print(formula)
                                 elif t == "select":
-
                                     value = row[col_indices[key]]
                                     if value:
                                         value = value.strip()

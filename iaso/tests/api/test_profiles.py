@@ -251,7 +251,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
             "org_units": [{"id": self.jedi_council_corruscant.id}],
-            "permissions": ["iaso_forms"],
+            "user_permissions": ["iaso_forms"],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 200)

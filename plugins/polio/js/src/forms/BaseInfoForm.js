@@ -34,8 +34,7 @@ export const baseInfoFormFields = [
     'enable_send_weekly_email',
     'onset_at',
     'cvdpv2_notified_at',
-    'pv_notified_at',
-    'three_level_call_at',
+    'outbreak_declaration_date',
 ];
 
 export const BaseInfoForm = () => {
@@ -126,6 +125,7 @@ export const BaseInfoForm = () => {
                             label={formatMessage(MESSAGES.selectOrgUnit)}
                             component={OrgUnitsLevels}
                             clearable={false}
+                            required
                         />
                     </Box>
                 </Grid>
@@ -173,16 +173,10 @@ export const BaseInfoForm = () => {
                     <Grid item xs={12} md={6}>
                         <Field
                             label={formatMessage(
-                                MESSAGES.pv2_notification_date,
+                                MESSAGES.outbreakdeclarationdate,
                             )}
                             fullWidth
-                            name="pv_notified_at"
-                            component={DateInput}
-                        />
-                        <Field
-                            label={formatMessage(MESSAGES.threelevelCall)}
-                            fullWidth
-                            name="three_level_call_at"
+                            name="outbreak_declaration_date"
                             component={DateInput}
                         />
                     </Grid>

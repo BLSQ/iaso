@@ -79,7 +79,6 @@ class AppSerializer(ProjectSerializer):
         return new_app
 
     def update(self, instance, validated_data):
-
         feature_flags = validated_data.pop("feature_flags", None)
         needs_authentication = validated_data.pop("needs_authentication", None)
         forms = validated_data.pop("forms", None)

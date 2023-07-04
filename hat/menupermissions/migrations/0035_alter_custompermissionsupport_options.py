@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("menupermissions", "0034_add-entities_perm_to-users_with_beneficairies_perm"),
     ]

@@ -21,21 +21,18 @@ import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
+    BackdropClickModal,
 } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../hooks/useFormValidator';
 import { BaseInfoForm, baseInfoFormFields } from '../forms/BaseInfoForm';
-import { DetectionForm, detectionFormFields } from '../forms/DetectionForm';
 import {
     RiskAssessmentForm,
     riskAssessmentFormFields,
 } from '../forms/RiskAssessmentForm';
 import { ScopeForm, scopeFormFields } from '../forms/ScopeForm.tsx';
-import { BudgetForm, budgetFormFields } from '../forms/BudgetForm';
-import {
-    PreparednessForm,
-    preparednessFormFields,
-} from '../forms/PreparednessForm';
+import { BudgetForm, budgetFormFields } from '../forms/BudgetForm.tsx';
+import { PreparednessForm } from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
 import { RoundsForm, roundFormFields } from '../forms/RoundsForm';
 import {
@@ -64,7 +61,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         selectedCampaign?.id,
         isOpen,
     );
-
+    const [isBackdropOpen, setIsBackdropOpen] = useState(false);
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
 
@@ -78,6 +75,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             },
             onError: error => {
                 helpers.setErrors(error.details);
+                helpers.setSubmitting(false);
             },
         });
     };
@@ -93,6 +91,9 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         is_test: false,
         enable_send_weekly_email: true,
         has_data_in_budget_tool: false,
+        budget_current_state_key: '-',
+        detection_status: 'PENDING',
+        risk_assessment_status: 'TO_SUBMIT',
     };
 
     // Merge inplace default values with the one we get from the campaign.
@@ -107,8 +108,12 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: handleSubmit,
+        onSubmit: (values, helpers) => {
+            helpers.setSubmitting(true);
+            handleSubmit(values, helpers);
+        },
     });
+    const { touched } = formik;
 
     const handleClose = () => {
         formik.resetForm();
@@ -126,13 +131,13 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 key: 'baseInfo',
             },
             {
-                title: formatMessage(MESSAGES.detection),
-                form: DetectionForm,
+                title: formatMessage(MESSAGES.rounds),
+                form: RoundsForm,
+                key: 'rounds',
                 hasTabError: compareArraysValues(
-                    detectionFormFields,
+                    roundFormFields(selectedCampaign?.rounds ?? []),
                     formik.errors,
                 ),
-                key: 'detection',
             },
             {
                 title: formatMessage(MESSAGES.riskAssessment),
@@ -167,20 +172,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             {
                 title: formatMessage(MESSAGES.preparedness),
                 form: PreparednessForm,
-                hasTabError: compareArraysValues(
-                    preparednessFormFields,
-                    formik.errors,
-                ),
                 key: 'preparedness',
-            },
-            {
-                title: formatMessage(MESSAGES.rounds),
-                form: RoundsForm,
-                key: 'rounds',
-                hasTabError: compareArraysValues(
-                    roundFormFields(selectedCampaign?.rounds ?? []),
-                    formik.errors,
-                ),
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
@@ -208,10 +200,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         setSelectedTab(0);
     }, [isOpen]);
 
-    const [isFormChanged, setIsFormChanged] = useState(false);
-    useEffect(() => {
-        setIsFormChanged(!isEqual(formik.values, formik.initialValues));
-    }, [formik]);
+    const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
@@ -223,7 +212,9 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
-                if (reason === 'backdropClick') {
+                if (reason === 'backdropClick' && !isEqual(touched, {})) {
+                    setIsBackdropOpen(true);
+                } else if (reason === 'backdropClick' && isEqual(touched, {})) {
                     handleClose();
                 }
             }}
@@ -231,6 +222,11 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             className={classes.mainModal}
         >
             {isFetching && <LoadingSpinner absolute />}
+            <BackdropClickModal
+                open={isBackdropOpen}
+                closeDialog={() => setIsBackdropOpen(false)}
+                onConfirm={() => handleClose()}
+            />
 
             <Grid container>
                 <Grid item xs={12} md={6}>
@@ -314,7 +310,6 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
 };
 
 CreateEditDialog.defaultProps = {
-    selectedCampaign: undefined,
     campaignId: undefined,
 };
 
@@ -322,7 +317,6 @@ CreateEditDialog.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     onClose: PropTypes.func.isRequired,
     campaignId: PropTypes.string,
-    selectedCampaign: PropTypes.object,
 };
 
 // There's naming conflict with component in Iaso

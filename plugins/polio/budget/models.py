@@ -10,7 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db import models
 from django.template import Engine, TemplateSyntaxError, Context
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.utils.models.soft_deletable import SoftDeletableModel
@@ -30,6 +30,12 @@ class BudgetStepQuerySet(models.QuerySet):
 # workaround for MyPy
 # noinspection PyTypeChecker
 BudgetManager = models.Manager.from_queryset(BudgetStepQuerySet)
+
+
+# source : https://stackoverflow.com/questions/29034721/check-if-model-field-exists-in-django
+def model_field_exists(campaign, field):
+    campaign_fields = dir(campaign)
+    return True if field in campaign_fields else False
 
 
 class BudgetStep(SoftDeletableModel):
@@ -140,12 +146,15 @@ class MailTemplate(models.Model):
         campaign_url = (
             f"{base_url}/dashboard/polio/budget/details/campaignName/{campaign.obr_name}/campaignId/{campaign.id}"
         )
+        self_auth_campaign_url = generate_auto_authentication_link(campaign_url, receiver)
 
         workflow = get_workflow()
         transitions = next_transitions(workflow.transitions, campaign.budget_current_state_key)
+        # filter out repeat steps. I do it here so it's easy to remove
+        filtered_transitions = [transition for transition in transitions if "repeat" not in transition.key.split("_")]
 
         buttons = []
-        for transition in transitions:
+        for transition in filtered_transitions:
             transition_url_template = "/quickTransition/{transition_key}/previousStep/{step_id}"
             button_url = campaign_url + transition_url_template.format(transition_key=transition.key, step_id=step.id)
             # link that will auto auth
@@ -159,6 +168,9 @@ class MailTemplate(models.Model):
                     "allowed": can_user_transition(transition, receiver, campaign),
                 }
             )
+        # buttons is never empty, so the text accompanying the buttons in the email would always show, even when no buttons are displayed
+        # So we check if there are allowed buttons
+        show_buttons = list(filter(lambda x: x["allowed"], buttons))
         transition = workflow.get_transition_by_key(step.transition_key)
         if transition.key != "override":
             node = workflow.get_node_by_key(transition.to_node)
@@ -190,12 +202,12 @@ class MailTemplate(models.Model):
             {
                 "author": step.created_by,
                 "author_name": step.created_by.get_full_name() or step.created_by.username,
-                "buttons": buttons,
+                "buttons": buttons if show_buttons else None,
                 "node": node,
                 "team": step.created_by_team,
                 "step": step,
                 "campaign": campaign,
-                "budget_url": campaign_url,
+                "budget_url": self_auth_campaign_url,
                 "site_url": base_url,
                 "site_name": site.name,
                 "comment": step.comment,

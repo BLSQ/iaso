@@ -12,8 +12,8 @@ import MESSAGES from '../../messages';
 import { BulkImportButton } from './BulkImportButton';
 import { useBulkUserValidation } from './hooks/useBulkUserValidation';
 import { useApiErrorValidation } from '../../../../libs/validation';
-import { BulkDialogButtons } from './BulkDialogButtons';
 import { useUploadCsv } from './hooks/useUploadCsv';
+import { FileUploadButtons } from '../../../../components/Buttons/FileUploadButtons';
 
 type Props = {
     closeDialog: () => void;
@@ -85,13 +85,14 @@ export const BulkImportDialogModal: FunctionComponent<Props> = ({
     const allowConfirm = isValid && Boolean(touched.file) && !isLoading;
     const Buttons = ({ closeDialog: close }) => {
         return (
-            <BulkDialogButtons
+            <FileUploadButtons
                 allowConfirm={allowConfirm}
                 isLoading={isLoading}
                 closeDialog={close}
                 onConfirm={() => {
                     handleSubmit();
                 }}
+                url="/api/bulkcreateuser/getsample/"
             />
         );
     };

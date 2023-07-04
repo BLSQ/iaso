@@ -1,7 +1,6 @@
 /* eslint-disable camelcase */
-import { Pagination, UrlParams } from '../../../types/table';
+import { Pagination, UrlParams } from 'bluesquare-components';
 
-import { Entity } from '../../entities/types/entity';
 import { ShortOrgUnit } from '../../orgUnits/types/orgUnit';
 import { Profile } from '../../../utils/usersUtils';
 
@@ -33,7 +32,7 @@ type Log = {
     storage_status: StorageStatus;
     forms: Array<number>; // array of instances ids
     org_unit: ShortOrgUnit;
-    entity: Entity;
+    entity: any;
     performed_at: number;
     performed_by: Profile;
 };
@@ -44,7 +43,7 @@ export type Storage = {
     created_at: number;
     storage_type: 'NFC' | 'USB' | 'SD';
     storage_status: StorageStatus;
-    entity: Entity;
+    entity: any;
     logs?: Array<Log>;
     org_unit: ShortOrgUnit;
 };

@@ -1,49 +1,47 @@
 export const BUDGET_STATES = [
-    'budget_requested',
+    'ra_completed',
     'who_sent_budget',
     'unicef_sent_budget',
-    'gpei_consolidation',
+    'gpei_consolidated_budgets',
     'submitted_to_rrt',
     'feedback_sent_to_gpei',
     're_submitted_to_rrt',
-    'submission_to_orpg_operations_1',
+    'submitted_to_orpg_operations1',
+    're_submitted_to_orpg_operations1',
     'feedback_sent_to_rrt1',
-    'submitted_to_orpg',
-    'feedback_sent_to_rrt2',
-    're_submitted_to_orpg',
-    'submission_to_orpg_operations_2',
-    'feedback_sent_to_rrt3',
-    're_submission_to_orpg_operations_2',
+    'submitted_to_orpg_wider',
+    'submitted_to_orpg_operations2',
+    're_submitted_to_orpg_operations2',
     'submitted_for_approval',
     'feedback_sent_to_orpg_operations_unicef',
     'feedback_sent_to_orpg_operations_who',
     'approved_by_who',
     'approved_by_unicef',
     'approved',
+    'approval_confirmed',
 ];
 
 export const BUDGET_REQUEST = [
-    'budget_requested',
+    'ra_completed',
     'who_sent_budget',
     'unicef_sent_budget',
-    'gpei_consolidation',
+    'gpei_consolidated_budgets',
 ];
 
 export const RRT_REVIEW = [
     'submitted_to_rrt',
     'feedback_sent_to_gpei',
     're_submitted_to_rrt',
-    'submission_to_orpg_operations_1',
 ];
 
 export const ORPG_REVIEW = [
+    'submitted_to_orpg_operations1',
     'feedback_sent_to_rrt1',
-    'submitted_to_orpg',
+    're_submitted_to_orpg_operations1',
+    'submitted_to_orpg_wider',
+    'submitted_to_orpg_operations2',
     'feedback_sent_to_rrt2',
-    're_submitted_to_orpg',
-    'submission_to_orpg_operations_2',
-    'feedback_sent_to_rrt3',
-    're_submission_to_orpg_operations_2',
+    're_submitted_to_orpg_operations2',
 ];
 
 export const REVIEW_FOR_APPROVAL = [
@@ -53,6 +51,7 @@ export const REVIEW_FOR_APPROVAL = [
     'approved_by_who',
     'approved_by_unicef',
     'approved',
+    'approval_confirmed',
 ];
 
 export const WORKFLOW_SUFFIX = '_at_WFEDITABLE';

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import Link from '@material-ui/icons/Link';
@@ -5,6 +6,7 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import Input from '@material-ui/icons/Input';
 import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
+import GroupsIcon from '@mui/icons-material/Groups';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
 import DoneAll from '@material-ui/icons/DoneAll';
@@ -18,6 +20,8 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
+import MenuBookIcon from '@material-ui/icons/MenuBook';
+import FileCopyIcon from '@material-ui/icons/FileCopy';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import BeneficiarySvg from '../components/svg/Beneficiary';
@@ -96,6 +100,12 @@ const menuItems = defaultSourceId => [
                 icon: props => <FormatListBulleted {...props} />,
             },
             {
+                label: MESSAGES.registry,
+                permissions: paths.registryPath.permissions,
+                key: 'registry',
+                icon: props => <MenuBookIcon {...props} />,
+            },
+            {
                 label: MESSAGES.groups,
                 permissions: paths.groupsPath.permissions,
                 key: 'groups',
@@ -124,7 +134,7 @@ const menuItems = defaultSourceId => [
                         icon: props => <Link {...props} />,
                         subMenu: [
                             {
-                                label: MESSAGES.dataSourceList,
+                                label: MESSAGES.linksList,
                                 permissions: paths.linksPath.permissions,
                                 key: 'list',
                                 icon: props => (
@@ -159,6 +169,12 @@ const menuItems = defaultSourceId => [
                 permissions: paths.entityTypesPath.permissions,
                 key: 'types',
                 icon: props => <CategoryIcon {...props} />,
+            },
+            {
+                label: MESSAGES.entityDuplicatesTitle,
+                permissions: paths.entityDuplicatesPath.permissions,
+                key: 'duplicates',
+                icon: props => <FileCopyIcon {...props} />,
             },
         ],
     },
@@ -209,6 +225,12 @@ const menuItems = defaultSourceId => [
                 key: 'users',
                 permissions: paths.usersPath.permissions,
                 icon: props => <SupervisorAccount {...props} />,
+            },
+            {
+                label: MESSAGES.userRoles,
+                key: 'userRoles',
+                permissions: paths.userRolesPath.permissions,
+                icon: props => <GroupsIcon {...props} />,
             },
             {
                 label: MESSAGES.teams,

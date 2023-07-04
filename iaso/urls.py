@@ -1,18 +1,18 @@
 import pkgutil
 from typing import Union, List
 
-from django.conf.urls import url
 from django.contrib import auth
 from django.urls import path, include, URLPattern, URLResolver
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView  # type: ignore
 
-from hat.api.authentication import WfpLogin, wfp_callback
 from hat.api.token_authentication import token_auth
 from iaso import matching
+from iaso.api.data_store import DataStoreViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
+from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
 from .api.accounts import AccountViewSet
@@ -23,8 +23,10 @@ from .api.bulk_create_users import BulkCreateUserFromCsvViewSet
 from .api.check_version import CheckVersionViewSet
 from .api.comment import CommentViewSet
 from .api.completeness import CompletenessViewSet
-from .api.completeness_stats import CompletenessStatsViewSet
+from .api.completeness_stats import CompletenessStatsV2ViewSet
 from .api.data_sources import DataSourceViewSet
+from .api.deduplication.entity_duplicate import EntityDuplicateViewSet  # type: ignore
+from .api.deduplication.entity_duplicate_analyzis import EntityDuplicateAnalyzisViewSet  # type: ignore
 from .api.derived_instances import DerivedInstancesViewSet
 from .api.devices import DevicesViewSet
 from .api.devices_ownership import DevicesOwnershipViewSet
@@ -42,6 +44,7 @@ from .api.enketo import (
 from .api.entity import EntityViewSet, EntityTypeViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.feature_flags import FeatureFlagViewSet
+from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.groups import GroupsViewSet
@@ -58,6 +61,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
+from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.periods import PeriodsViewSet
@@ -70,11 +74,14 @@ from .api.source_versions import SourceVersionViewSet
 from .api.storage import StorageLogViewSet, StorageViewSet, logs_per_device, StorageBlacklistedViewSet
 from .api.tasks import TaskSourceViewSet
 from .api.tasks.create.import_gpkg import ImportGPKGViewSet
+from .api.tasks.create.org_unit_bulk_location_set import OrgUnitsBulkLocationSet
 from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
+from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
+from .api.user_roles import UserRolesViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -83,6 +90,7 @@ router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
+router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"instances", InstancesViewSet, basename="instances")
@@ -90,6 +98,7 @@ router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"mobile/forms", MobileFormViewSet, basename="formsmobile")
 router.register(r"pages", PagesViewSet, basename="pages")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
+router.register(r"formattachments", FormAttachmentsViewSet, basename="formattachments")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
 router.register(r"devicesownerships", DevicesOwnershipViewSet, basename="devicesownership")
@@ -104,7 +113,7 @@ router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
-router.register(r"completeness_stats", CompletenessStatsViewSet, basename="completeness_stats")
+router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
 router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
@@ -117,6 +126,8 @@ router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
+router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename="profilesbulkupdate")
+router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 router.register(r"comments", CommentViewSet, basename="comments")
@@ -124,6 +135,8 @@ router.register(r"entities", EntityViewSet, basename="entity")
 router.register(r"mobile/entities", MobileEntityViewSet, basename="entities")
 router.register(r"entitytypes", EntityTypeViewSet, basename="entitytype")
 router.register(r"mobile/entitytypes?", MobileEntityTypesViewSet, basename="entitytype")
+router.register(r"entityduplicates", EntityDuplicateViewSet, basename="entityduplicates")
+router.register(r"entityduplicates_analyzes", EntityDuplicateAnalyzisViewSet, basename="entityduplicates_analyzes")
 router.register(r"bulkcreateuser", BulkCreateUserFromCsvViewSet, basename="bulkcreateuser")
 router.register(r"microplanning/teams", TeamViewSet, basename="teams")
 router.register(r"microplanning/plannings", PlanningViewSet, basename="planning")
@@ -140,6 +153,10 @@ router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowcha
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
 router.register(r"reports", ReportsViewSet, basename="report")
 router.register(r"mobile/reports", MobileReportsViewSet, basename="report")
+router.register(r"userroles", UserRolesViewSet, basename="userroles")
+
+router.register(r"datastore", DataStoreViewSet, basename="datastore")
+router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
 
 router.registry.extend(plugins_router.registry)
 
@@ -184,9 +201,6 @@ urlpatterns = urlpatterns + [
 ]
 # External Auth
 urlpatterns = urlpatterns + [
-    url("auth0/login/callback/", wfp_callback, name="callback"),
-    path("", include("allauth.urls")),
-    path("auth0/login/", WfpLogin.as_view(), name="openid"),
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
 ]

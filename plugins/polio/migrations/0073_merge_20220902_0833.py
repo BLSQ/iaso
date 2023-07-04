@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0071_alter_budgetfiles_event"),
         ("polio", "0072_merge_0070_alter_budgetevent_type_0071_multi_scope"),

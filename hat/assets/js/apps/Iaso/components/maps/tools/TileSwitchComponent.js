@@ -1,29 +1,26 @@
-import React, { Fragment } from 'react';
-import { connect } from 'react-redux';
+import React from 'react';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
-import { withStyles } from '@material-ui/core';
+import { makeStyles } from '@material-ui/core';
 import RadioButtonChecked from '@material-ui/icons/RadioButtonChecked';
 import RadioButtonUnchecked from '@material-ui/icons/RadioButtonUnchecked';
 import Box from '@material-ui/core/Box';
-import Typography from '@material-ui/core/Typography';
 
 import PropTypes from 'prop-types';
-import { injectIntl, commonStyles } from 'bluesquare-components';
+import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { innerDrawerStyles } from '../../nav/InnerDrawer/styles';
-import { setCurrentTile } from '../../../redux/mapReducer';
 
 import tiles from '../../../constants/mapTiles';
 
 import MESSAGES from '../messages';
 
-const styles = theme => ({
+const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
     ...innerDrawerStyles(theme),
     list: {
-        padding: theme.spacing(0, 0, 2, 0),
+        padding: 0,
     },
     icon: {
         marginRight: theme.spacing(1),
@@ -43,82 +40,54 @@ const styles = theme => ({
     item: {
         fontSize: 14,
     },
-});
+}));
 
 function TileSwitchComponent(props) {
-    const {
-        currentTile,
-        classes,
-        intl: { formatMessage },
-    } = props;
+    const { currentTile } = props;
+    const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     return (
-        <>
-            <Box px={2} className={classes.innerDrawerToolbar} component="div">
-                <Typography variant="subtitle1">
-                    {formatMessage(MESSAGES.layersTitle)}
-                </Typography>
-            </Box>
-            <Box py={2} component="div">
-                <List className={classes.list}>
-                    {Object.keys(tiles).map(key => {
-                        const tile = tiles[key];
-                        const isCurrentTile = currentTile.url === tile.url;
-                        return (
-                            <ListItem
-                                selected={isCurrentTile}
-                                className={classes.listItem}
-                                key={key}
-                                button
-                                onClick={() => props.setCurrentTile(tile)}
-                            >
-                                {isCurrentTile && (
-                                    <RadioButtonChecked
-                                        color="primary"
-                                        className={classes.icon}
-                                    />
-                                )}
-                                {!isCurrentTile && (
-                                    <RadioButtonUnchecked
-                                        className={classes.icon}
-                                    />
-                                )}
-                                <ListItemText
-                                    primary={formatMessage(MESSAGES[key])}
-                                    classes={{
-                                        primary: classes.item,
-                                    }}
+        <Box py={2} component="div">
+            <List className={classes.list}>
+                {Object.keys(tiles).map(key => {
+                    const tile = tiles[key];
+                    const isCurrentTile = currentTile.url === tile.url;
+                    return (
+                        <ListItem
+                            selected={isCurrentTile}
+                            className={classes.listItem}
+                            key={key}
+                            button
+                            onClick={() => props.setCurrentTile(tile)}
+                        >
+                            {isCurrentTile && (
+                                <RadioButtonChecked
+                                    color="primary"
+                                    className={classes.icon}
                                 />
-                            </ListItem>
-                        );
-                    })}
-                </List>
-            </Box>
-        </>
+                            )}
+                            {!isCurrentTile && (
+                                <RadioButtonUnchecked
+                                    className={classes.icon}
+                                />
+                            )}
+                            <ListItemText
+                                primary={formatMessage(MESSAGES[key])}
+                                classes={{
+                                    primary: classes.item,
+                                }}
+                            />
+                        </ListItem>
+                    );
+                })}
+            </List>
+        </Box>
     );
 }
 
 TileSwitchComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
     currentTile: PropTypes.object.isRequired,
     setCurrentTile: PropTypes.func.isRequired,
-    classes: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = (state, props) => ({
-    currentTile: props.currentTile || state.map.currentTile,
-});
-
-const MapDispatchToProps = (dispatch, props) => ({
-    dispatch,
-    setCurrentTile: currentTile =>
-        props.setCurrentTile
-            ? props.setCurrentTile(currentTile)
-            : dispatch(setCurrentTile(currentTile)),
-});
-
-export default withStyles(styles)(
-    connect(
-        MapStateToProps,
-        MapDispatchToProps,
-    )(injectIntl(TileSwitchComponent)),
-);
+export default TileSwitchComponent;

@@ -1,3 +1,23 @@
+"""Permissions list
+
+These permissions are used and not the django built in one on each model.
+They are used for API access but also to see which page a user has access
+in the frontend.
+
+To add a new permission:
+1. Add a constant to hold its label
+2. Add it to the CustomPermissionSupport.Meta.permissions tuple bellow
+3. Generate a migration via makemigrations (and run the mirgation locally)
+4. Add it in hat/assets/js/apps/Iaso/domains/users/messages.js
+5. add it to en.json and fr.json
+
+If you don't follow these steps you will break the frontend !
+
+The frontend is getting the list of existing permission from the
+`/api/permissions/` endpoint
+"""
+
+
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
@@ -8,6 +28,7 @@ FORMS = _("Formulaires")
 MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
+REGISTRY = _("Registre")
 LINKS = _("Correspondances sources")
 PAGES = _("Pages")
 PROJECTS = _("Projets")
@@ -29,16 +50,20 @@ STORAGES = _("Storages")
 COMPLETENESS_STATS = _("Completeness stats")
 WORKFLOWS = _("Workflows")
 REPORTS = _("Reports")
-
-
-# When adding a new permission, it also needs to be added in
-# hat/assets/js/apps/Iaso/domains/users/messages.js
-# so that it display properly in both lang
-#
-# Also, don't forget to generate a migration
+ENTITY_DUPLICATES_READ = _("Read Entity duplicates")
+ENTITY_DUPLICATES_WRITE = _("Write Entity duplicates")
+USER_ROLES = _("Manage user roles")
+DATASTORE_READ = _("Read data store")
+DATASTORE_WRITE = _("Write data store")
+ORG_UNIT_TYPES = _("Org unit types")
+ORG_UNIT_GROUPS = _("Org unit groups")
 
 
 class CustomPermissionSupport(models.Model):
+    """Model used to hold our custom permission.
+
+    This is not a true model that generate a table hence the managed=False"""
+
     # Used in setup_account api
     DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
         "iaso_forms",
@@ -66,6 +91,7 @@ class CustomPermissionSupport(models.Model):
             ("iaso_mappings", MAPPINGS),
             ("iaso_completeness", COMPLETENESS),
             ("iaso_org_units", ORG_UNITS),
+            ("iaso_registry", REGISTRY),
             ("iaso_links", LINKS),
             ("iaso_users", USERS),
             ("iaso_pages", PAGES),
@@ -86,4 +112,11 @@ class CustomPermissionSupport(models.Model):
             ("iaso_completeness_stats", COMPLETENESS_STATS),
             ("iaso_workflows", WORKFLOWS),
             ("iaso_polio_budget_admin", POLIO_BUDGET_ADMIN),
+            ("iaso_entity_duplicates_read", ENTITY_DUPLICATES_READ),
+            ("iaso_entity_duplicates_write", ENTITY_DUPLICATES_WRITE),
+            ("iaso_user_roles", USER_ROLES),
+            ("iaso_datastore_read", DATASTORE_READ),
+            ("iaso_datastore_write", DATASTORE_WRITE),
+            ("iaso_org_unit_types", ORG_UNIT_TYPES),
+            ("iaso_org_unit_groups", ORG_UNIT_GROUPS),
         )

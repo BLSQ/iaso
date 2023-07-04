@@ -15,6 +15,7 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import InstanceLock
 from iaso.models.microplanning import Planning, Team
+from iaso.models import OrgUnit, Instance, InstanceLock, FormVersion
 from iaso.test import APITestCase
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
@@ -42,16 +43,27 @@ class InstancesAPITestCase(APITestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="Coruscant Jedi Council",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
+            validation_status="VALID",
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
-            name="ou_top_1", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="ou_top_1",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
         )
         cls.ou_top_2 = m.OrgUnit.objects.create(
-            name="ou_top_2", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_1, version=sw_version
+            name="ou_top_2",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_1,
+            version=sw_version,
         )
         cls.ou_top_3 = m.OrgUnit.objects.create(
-            name="ou_top_3", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_2, version=sw_version
+            name="ou_top_3",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_2,
+            version=sw_version,
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council", source_ref="jedi_council_endor_ref"
@@ -431,6 +443,21 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 4)
+
+    def test_instance_filter_by_org_unit_status(self):
+        """GET /instances/?org_unit_status={status}"""
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=VALID")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 6)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=REJECTED")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 0)
 
     def test_instance_list_by_form_id_ok_soft_deleted(self):
         """GET /instances/?form_id=form_id"""
@@ -1325,3 +1352,99 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(instance.entity, entity)
         self.assertEqual(entity.entity_type, entity_type)
         self.assertEqual(entity.account, self.star_wars)
+
+    def test_assign_form_version_id_on_save(self):
+        instance_uuid = str(uuid4())
+        entity_uuid = str(uuid4())
+        entity_type = m.EntityType.objects.create(account=self.star_wars)
+
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "entityUuid": entity_uuid,
+                "entityTypeId": entity_type.id,
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check if the instance created without FormVersion has form_version = None
+
+        self.client.force_authenticate(self.yoda)
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        response = self.client.get(f"/api/instances/{instance.pk}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["form_version_id"], None)
+
+        # Check that once the FormVersion is created and instance.json updated with a "_version" instance.form_version_id is properly updated
+
+        form_version = FormVersion.objects.create(version_id="2022112301", form_id=instance.form.id)
+
+        instance.json = {
+            "end": "2022-11-23T12:12:45.803+01:00",
+            "start": "2022-11-23T12:12:25.930+01:00",
+            "_version": "2022112301",
+            "ou_region": "30015",
+            "instanceID": "uuid:381e988e-87b5-4758-b31a-eb1dac1430a7",
+            "ou_country": "29694",
+            "admin_doses": "66",
+            "ou_district": "32128",
+            "insert_obr_name": "",
+            "insert_doses_requested": "",
+        }
+        instance.save()
+
+    def test_instances_list_planning(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/", headers={"Content-Type": "application/json"})
+        self.assertEqual(response.status_code, 200)
+        self.assertValidInstanceListData(response.json(), 6)
+
+        team = Team.objects.create(project=self.project, manager=self.yoda)
+        orgunit = m.OrgUnit.objects.create(name="Org Unit 1")
+        instance_1 = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=orgunit, project=self.project
+        )
+        instance_2 = self.create_form_instance(
+            form=self.form_1, period="202002", org_unit=orgunit, project=self.project
+        )
+        planning_1 = Planning.objects.create(name="Planning 1", org_unit=orgunit, project=self.project, team=team)
+        planning_2 = Planning.objects.create(name="Planning 2", org_unit=orgunit, project=self.project, team=team)
+
+        instance_1.planning = planning_1
+        instance_1.save()
+
+        # it should return only instance_1
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/", {"planningIds": planning_1.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 1)
+        self.assertEqual(response.json()["instances"][0]["id"], instance_1.id)
+        # it should return all of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/?order=-id", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 8)
+
+        self.assertEqual(response.json()["instances"][0]["id"], instance_2.id)
+        self.assertEqual(response.json()["instances"][1]["id"], instance_1.id)
+        # it should return none of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/", {"planningIds": planning_2.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 0)

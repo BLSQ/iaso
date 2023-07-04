@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0035_form_and_versions_fine_tuning")]
 
     operations = [migrations.RenameModel(old_name="Mapping", new_name="MappingVersion")]

@@ -19,7 +19,7 @@ const interceptList = [
     'algorithms',
     // 'algorithmsruns',
     // 'groups',
-    'orgunittypes',
+    // 'orgunittypes',
 ];
 
 const defaultQuery = {
@@ -60,10 +60,10 @@ const newFilters = {
         selector: '#linksParamsAlgorithmId',
         type: 'multi',
     },
-    linksParamsValidation_status: {
+    linksParamsValidated: {
         value: [0],
-        urlValue: 'all',
-        selector: '#linksParamsValidation_status',
+        urlValue: 'true',
+        selector: '#linksParamsValidated',
         type: 'multi',
     },
     linksParamsOrigin: {
@@ -149,6 +149,9 @@ const goToPage = () => {
     cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     }).as('groupList');
+    cy.intercept('GET', '/api/v2/orgunittypes/', {
+        fixture: `orgunittypes/list.json`,
+    }).as('orgunittypesList');
     cy.intercept(
         'GET',
         `/api/forms/?&orgUnitId=${orgUnit.id}&limit=10&order=name`,
@@ -160,6 +163,9 @@ const goToPage = () => {
     cy.intercept('GET', '/api/algorithmsruns/', {
         fixture: 'algorithmsruns/list.json',
     }).as('algorithmsRuns');
+    cy.intercept('GET', '/api/validationstatus/', {
+        fixture: 'misc/validationStatuses.json',
+    }).as('validationStatuses');
 
     cy.intercept(
         'GET',
@@ -367,9 +373,7 @@ describe('links tab', () => {
                                 newFilters.linksParamsValidatorId.urlValue,
                             algorithmId:
                                 newFilters.linksParamsAlgorithmId.urlValue,
-                            validation_status:
-                                newFilters.linksParamsValidation_status
-                                    .urlValue,
+                            validated: newFilters.linksParamsValidated.urlValue,
                             origin: newFilters.linksParamsOrigin.urlValue,
                         },
                     },

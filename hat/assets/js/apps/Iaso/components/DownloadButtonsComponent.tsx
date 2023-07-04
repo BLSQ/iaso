@@ -55,7 +55,7 @@ const DownloadButtonsComponent: FunctionComponent<Props> = ({
                 <ExcellSvg className={classes.icon} />
                 XLSX
             </Button>
-            {gpkgUrl !== null && (
+            {gpkgUrl && typeof gpkgUrl === 'string' && (
                 <Button
                     data-test="gpkg-export-button"
                     variant="contained"

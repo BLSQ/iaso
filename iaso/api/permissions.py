@@ -29,7 +29,13 @@ class PermissionsViewSet(viewsets.ViewSet):
         else:
             perms = request.user.user_permissions
 
-        perms = perms.filter(content_type=content_type).filter(codename__startswith="iaso_").order_by("id")
+        perms = (
+            perms.filter(content_type=content_type)
+            .filter(codename__startswith="iaso_")
+            .exclude(codename__contains="datastore")
+            .exclude(codename__contains="iaso_beneficiaries")
+            .order_by("id")
+        )
         #  in future filter this on a feature flags, so we can disable it by account
         if "polio" not in settings.PLUGINS:
             perms = perms.exclude(codename__startswith="iaso_polio")

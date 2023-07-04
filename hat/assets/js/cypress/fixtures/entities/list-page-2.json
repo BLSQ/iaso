@@ -1,0 +1,76 @@
+{
+    "count": 22,
+    "has_next": false,
+    "has_previous": true,
+    "page": 2,
+    "pages": 2,
+    "limit": 10,
+    "columns": [],
+    "result": [{
+            "id": 23,
+            "duplicates": [],
+            "uuid": "6c25b7e1-2a95-4046-bfdc-cf75039006b1",
+            "name": null,
+            "created_at": "2022-08-22T09:17:55.921383Z",
+            "updated_at": "2022-08-22T09:21:37.458996Z",
+            "attributes": 9794,
+            "entity_type": "Entity type 2",
+            "last_saved_instance": "2022-10-25T11:05:51.866320Z",
+            "org_unit": {
+                "id": 2,
+                "name": "Bo",
+                "short_name": "Bo",
+                "parent_id": 1,
+                "parent_name": "Sierra Leone",
+                "latitude": 2.6574998,
+                "longitude": 23.798786,
+                "altitude": 0.0,
+                "has_geo_json": false,
+                "org_unit_type": "org unit type",
+                "org_unit_type_id": 1,
+                "org_unit_type_depth": 2,
+                "source_id": 2,
+                "source_name": "source_name",
+                "parent": {
+                    "id": 1,
+                    "name": "Sierra Leone",
+                    "parent": null
+                }
+            },
+            "program": null
+        },
+        {
+            "id": 24,
+            "duplicates": [],
+            "uuid": "d47e5e36-1c87-4e47-afb3-3812da8b0df8",
+            "name": null,
+            "created_at": "2022-09-21T10:28:11.357217Z",
+            "updated_at": "2022-09-21T10:28:12.788770Z",
+            "attributes": 9803,
+            "entity_type": "Entity type 2",
+            "last_saved_instance": null,
+            "org_unit": {
+                "id": 2,
+                "name": "Bo",
+                "short_name": "Bo",
+                "parent_id": 1,
+                "parent_name": "Sierra Leone",
+                "latitude": 2.6574998,
+                "longitude": 23.798786,
+                "altitude": 0.0,
+                "has_geo_json": false,
+                "org_unit_type": "org unit type",
+                "org_unit_type_id": 1,
+                "org_unit_type_depth": 2,
+                "source_id": 2,
+                "source_name": "source_name",
+                "parent": {
+                    "id": 1,
+                    "name": "Sierra Leone",
+                    "parent": null
+                }
+            },
+            "program": null
+        }
+    ]
+}

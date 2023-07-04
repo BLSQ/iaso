@@ -13,7 +13,6 @@ import uuid
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("polio", "0001_initial"),
         ("polio", "0002_auto_20210505_0952"),

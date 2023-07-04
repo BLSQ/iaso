@@ -5,24 +5,18 @@ import { formatLabel } from '../../../instances/utils';
 import { FormDescriptor, PossibleField } from '../../types/forms';
 
 import { iasoFields, Field } from '../constants';
-
-const findDescriptorInChildren = (field, descriptor) =>
-    descriptor?.children?.reduce((a, child) => {
-        if (a) return a;
-        if (child.name === field.name) return child;
-        if (child.children) return findDescriptorInChildren(field, child);
-        return undefined;
-    }, null);
+import { findDescriptorInChildren } from '../../../../utils';
 
 export const useGetQueryBuildersFields = (
     formDescriptors?: FormDescriptor[],
     possibleFields?: PossibleField[],
+    configFields: Field[] = iasoFields,
 ): QueryBuilderFields => {
     if (!possibleFields || !formDescriptors) return {};
     // you can fields examples here: https://codesandbox.io/s/github/ukrbublik/react-awesome-query-builder/tree/master/sandbox?file=/src/demo/config.tsx:1444-1464
     const fields: QueryBuilderFields = {};
     possibleFields.forEach(field => {
-        const currentField: Field | undefined = iasoFields.find(
+        const currentField: Field | undefined = configFields.find(
             iasoField =>
                 iasoField.type === field.type || iasoField.alias === field.type,
         );
@@ -49,6 +43,7 @@ export const useGetQueryBuildersFields = (
                                 value: child.name,
                                 title: formatLabel(child),
                             })) || [];
+                        // @ts-ignore
                         fields[field.fieldKey].fieldSettings = {
                             listValues,
                         };

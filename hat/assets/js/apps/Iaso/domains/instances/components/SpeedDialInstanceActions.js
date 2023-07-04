@@ -3,7 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import SpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
 import PropTypes from 'prop-types';
-import EditIcon from '@material-ui/icons/Edit';
+import EditIcon from '@material-ui/icons/Settings';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import MESSAGES from '../messages';
@@ -11,8 +11,7 @@ import MESSAGES from '../messages';
 const useStyles = makeStyles(theme => ({
     speedDial: {
         position: 'absolute',
-        zIndex: 1000000,
-        top: theme.spacing(6.5),
+        bottom: theme.spacing(2),
         right: theme.spacing(2),
     },
     fab: {
@@ -48,7 +47,7 @@ const SpeedDialInstanceActions = props => {
                 onClose={handleClose}
                 onOpen={handleOpen}
                 open={open}
-                direction="left"
+                direction="up"
                 FabProps={{ className: classes.fab }}
             >
                 {actions.map(action => (

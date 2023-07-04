@@ -6,12 +6,12 @@ import {
     formatThousand,
     Table,
     useSafeIntl,
+    Column,
 } from 'bluesquare-components';
 
 import { WorkflowParams, WorkflowVersionDetail } from '../../types';
 import MESSAGES from '../../messages';
 import { baseUrls } from '../../../../constants/urls';
-import { Column } from '../../../../types/table';
 
 type Props = {
     params: WorkflowParams;
@@ -49,6 +49,7 @@ export const FollowUpsTable: FunctionComponent<Props> = ({
                 params={params}
                 extraProps={{
                     isLoading,
+                    followUpsColumns,
                 }}
             />
             <Box display="flex" justifyContent="flex-end" pr={2} pb={2} mt={-2}>

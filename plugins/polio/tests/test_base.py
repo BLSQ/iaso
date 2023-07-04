@@ -16,7 +16,7 @@ from rest_framework.test import APIClient
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase, TestCase
-from plugins.polio.management.commands.weekly_email import send_notification_email
+from plugins.polio.tasks.weekly_email import send_notification_email
 from ..api import CACHE_VERSION
 from ..export_utils import format_date
 from ..models import Config, Round
@@ -319,7 +319,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(send_notification_email(campaign_active), True)
 
     def test_weekly_mail_content_active_campaign(self):
-
         round = Round.objects.create(
             started_at=datetime.date(2022, 9, 12),
             number=1,
@@ -361,7 +360,6 @@ class PolioAPITestCase(APITestCase):
             self.client.post("/api/polio/campaigns/", payload, format="json")
 
     def test_return_only_deleted_campaigns(self):
-
         self.create_multiple_campaigns(10)
 
         campaigns = Campaign.objects.all()
@@ -393,7 +391,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(response.json()), 2)
 
     def test_return_only_active_campaigns(self):
-
         self.create_multiple_campaigns(3)
 
         campaigns = Campaign.objects.all()
@@ -505,6 +502,7 @@ class PolioAPITestCase(APITestCase):
         c = Campaign.objects.create(
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
+
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -550,7 +548,8 @@ class PolioAPITestCase(APITestCase):
             + " - "
             + ended_at
             + "\n"
-            + campaign.vacine
+            + campaign.vaccines
+            + "\n"
         )
 
     def test_handle_restore_active_campaign(self):
@@ -564,7 +563,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_handle_non_existant_campaign(self):
-
         payload = {"id": "bd656a6b-f67e-4a1e-95ee-1bef8f36239a"}
         response = self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
         self.assertEqual(response.status_code, 404)
@@ -699,7 +697,6 @@ class LQASIMPolioTestCase(APITestCase):
         )
 
     def test_lqas_stats_response(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -722,7 +719,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_lqas_stats_response_is_cached(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -748,7 +744,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(is_cached, True)
 
     def test_IM_stats_response(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -771,7 +766,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_IM_stats_response_is_cached(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -797,7 +791,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(is_cached, True)
 
     def test_shapes_resp_is_cached(self):
-
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/polio/campaigns/merged_shapes.geojson/")

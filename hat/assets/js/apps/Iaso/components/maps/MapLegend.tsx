@@ -1,10 +1,7 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { Grid, Paper, Typography, makeStyles, Box } from '@material-ui/core';
+import { Paper, Typography, makeStyles, Box } from '@material-ui/core';
 
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-
-import { IntlMessage } from '../../types/intl';
+import { useSafeIntl, IntlMessage } from 'bluesquare-components';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -19,16 +16,17 @@ const useStyles = makeStyles(theme => ({
         borderRadius: theme.spacing(2),
         height: theme.spacing(2),
         width: theme.spacing(2),
+        display: 'inline-block',
+        marginRight: theme.spacing(1),
     },
     mapLegendLabel: {
         textAlign: 'right',
-    },
-    mapLegendText: {
-        fontWeight: 'bold',
+        display: 'inline-block',
+        verticalAlign: 'top',
     },
 }));
 
-type Legend = {
+export type Legend = {
     value: string;
     label: string;
     color: string; // has to be an hexa color
@@ -75,39 +73,22 @@ export const MapLegend: FunctionComponent<Props> = ({
                     </Typography>
                 )}
                 {content}
-                {options && (
-                    <Grid container spacing={1}>
-                        {options.map((o, i) => (
-                            <Box
-                                key={o.value}
-                                mb={i + 1 === options.length ? 0 : 1}
-                                width="100%"
-                                display="flex"
-                                justifyContent="flex-start"
-                            >
-                                <Grid
-                                    item
-                                    sm={2}
-                                    container
-                                    justifyContent="flex-start"
-                                >
-                                    <span
-                                        className={classes.roundColor}
-                                        style={{ backgroundColor: o.color }}
-                                    />
-                                </Grid>
-                                <Grid
-                                    item
-                                    sm={10}
-                                    container
-                                    alignItems="center"
-                                >
-                                    {o.label}
-                                </Grid>
-                            </Box>
-                        ))}
-                    </Grid>
-                )}
+                {options &&
+                    options.map((o, i) => (
+                        <Box
+                            key={o.value}
+                            mb={i + 1 === options.length ? 0 : 1}
+                        >
+                            <span
+                                className={classes.roundColor}
+                                style={{ backgroundColor: o.color }}
+                            />
+
+                            <span className={classes.mapLegendLabel}>
+                                {o.label}
+                            </span>
+                        </Box>
+                    ))}
             </Box>
         </Paper>
     );

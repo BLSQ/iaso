@@ -2,6 +2,7 @@ import operator
 import typing
 from functools import reduce
 
+import django_cte
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
@@ -9,7 +10,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
@@ -65,7 +66,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
     def countries(self):
         return self.filter(category="COUNTRY")
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -102,6 +105,8 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
+    # Allow the creation of these sub org unit types only for mobile (IA-2153)"
+    allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
     reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -150,7 +155,7 @@ class OrgUnitType(models.Model):
 
 
 # noinspection PyTypeChecker
-class OrgUnitQuerySet(models.QuerySet):
+class OrgUnitQuerySet(django_cte.CTEQuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
@@ -292,6 +297,11 @@ class OrgUnit(TreeModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        # work around https://code.djangoproject.com/ticket/33787
+        # where we had empty Z point in the database but couldn't save the OrgUnit back.
+        # because it was missing a dimension
+        if self.location is not None and self.location.empty:
+            self.location = None
 
         if skip_calculate_path:
             super().save(*args, **kwargs)

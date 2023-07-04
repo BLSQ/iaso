@@ -8,7 +8,16 @@ import { apiDateFormat } from 'Iaso/utils/dates.ts';
 import MESSAGES from '../../constants/messages';
 import { isTouched } from '../../utils';
 
-export const DateInput = ({ field, form, label, required, disabled }) => {
+export const DateInput = ({
+    field,
+    form,
+    label,
+    required,
+    disabled,
+    onChange = () => {},
+    onBlur,
+    clearable = true,
+}) => {
     const hasError =
         form.errors &&
         Boolean(get(form.errors, field.name) && isTouched(form.touched));
@@ -22,12 +31,15 @@ export const DateInput = ({ field, form, label, required, disabled }) => {
                 currentDate={field.value || null}
                 errors={hasError ? [get(form.errors, field.name)] : []}
                 onChange={date => {
+                    onChange(field.name, date);
                     form.setFieldTouched(field.name, true);
                     form.setFieldValue(
                         field.name,
                         date ? date.format(apiDateFormat) : null,
                     );
                 }}
+                onBlur={onBlur}
+                clearable={clearable}
             />
         </Box>
     );
@@ -35,6 +47,9 @@ export const DateInput = ({ field, form, label, required, disabled }) => {
 DateInput.defaultProps = {
     required: false,
     disabled: false,
+    onChange: () => {},
+    onBlur: undefined,
+    clearable: true,
 };
 
 DateInput.propTypes = {
@@ -43,4 +58,7 @@ DateInput.propTypes = {
     label: PropTypes.string.isRequired,
     required: PropTypes.bool,
     disabled: PropTypes.bool,
+    clearable: PropTypes.bool,
+    onChange: PropTypes.func,
+    onBlur: PropTypes.func,
 };

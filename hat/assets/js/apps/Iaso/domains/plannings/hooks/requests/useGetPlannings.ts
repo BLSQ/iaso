@@ -1,9 +1,9 @@
 /* eslint-disable camelcase */
 import { UseQueryResult } from 'react-query';
+import { Pagination } from 'bluesquare-components';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../../libs/utils';
-import { Pagination } from '../../../../types/table';
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
@@ -78,6 +78,29 @@ export const useGetPlannings = (
                         };
                     }),
                 };
+            },
+        },
+    });
+};
+
+const getPlanningsOptions = async (): Promise<PlanningApi[]> => {
+    const url = makeUrlWithParams(endpoint, {});
+    return getRequest(url) as Promise<PlanningApi[]>;
+};
+export const useGetPlanningsOptions = (): UseQueryResult<Planning[], Error> => {
+    const queryKey: any[] = ['planningsList'];
+    // @ts-ignore
+    return useSnackQuery({
+        queryKey,
+        queryFn: () => getPlanningsOptions(),
+        options: {
+            select: (data: Planning[]) => {
+                return data?.map(planning => {
+                    return {
+                        value: planning.id,
+                        label: planning.name,
+                    };
+                });
             },
         },
     });

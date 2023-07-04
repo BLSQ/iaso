@@ -5,7 +5,6 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("vector_control", "0020_vector_refactor")]
 
     operations = [

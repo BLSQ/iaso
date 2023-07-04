@@ -21,6 +21,7 @@ export const useSaveAssignment = (): UseMutationResult => {
     const onSuccess = () => {
         queryClient.invalidateQueries('orgUnits');
         queryClient.invalidateQueries('assignmentsList');
+        queryClient.invalidateQueries('orgUnitsList');
     };
     return useSnackMutation({
         mutationFn: (data: SaveAssignmentQuery) => saveAssignment(data),
@@ -39,6 +40,7 @@ export const useBulkSaveAssignments = (): UseMutationResult => {
     const onSuccess = () => {
         queryClient.invalidateQueries('orgUnits');
         queryClient.invalidateQueries('assignmentsList');
+        queryClient.invalidateQueries('orgUnitsList');
     };
     return useSnackMutation({
         mutationFn: saveBulkAssignments,

@@ -11,21 +11,46 @@ import {
 } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Budget, Workflow } from '../../types';
 
+type Option = {
+    budget_current_state_key__in: [number | string];
+    country__id__in: [number | string];
+    order?: string;
+    orgUnitGroups: [number | string];
+    page?: number;
+    pageSize?: number;
+    roundStartFrom?: string;
+    roundStartTo?: string;
+    search?: string;
+};
+
+type Param = {
+    accountId: string;
+    budget_current_state_key__in: [number | string];
+    country__id__in: [number | string];
+    order: string;
+    orgUnitGroups: [number | string];
+    page: number | string;
+    pageSize: number | string;
+    roundStartFrom: string;
+    roundStartTo: string;
+    search: string;
+};
 const getBudgets = (params: any) => {
     const filteredParams = Object.entries(params).filter(
         // eslint-disable-next-line no-unused-vars
-        ([_key, value]) => value !== undefined,
+        ([, value]) => value !== undefined,
     );
     if (!params.order) {
         filteredParams.push(['order', '-cvdpv2_notified_at']);
     }
+
     const queryString = new URLSearchParams(
         Object.fromEntries(filteredParams) as Record<string, any>,
     ).toString();
     return getRequest(`/api/polio/budget/?${queryString}`);
 };
 
-export const useGetBudgets = (options: any): any => {
+export const useGetBudgets = (options: Option): any => {
     const params = {
         limit: options.pageSize,
         page: options.page,
@@ -33,6 +58,7 @@ export const useGetBudgets = (options: any): any => {
         search: options.search,
         budget_current_state_key__in: options.budget_current_state_key__in,
         country__id__in: options.country__id__in,
+        orgUnitGroups: options.orgUnitGroups,
         fields: 'id,obr_name,country_name,current_state,cvdpv2_notified_at,possible_states,budget_last_updated_at',
     };
 
@@ -42,7 +68,7 @@ export const useGetBudgets = (options: any): any => {
     });
 };
 
-export const useBudgetParams = params => {
+export const useBudgetParams = (params: Param): any => {
     return useMemo(() => {
         return {
             order: params?.order ?? '-cvdpv2_notified_at',
@@ -51,18 +77,20 @@ export const useBudgetParams = params => {
             search: params.search,
             roundStartFrom: getApiParamDateString(params.roundStartFrom),
             roundStartTo: getApiParamDateString(params.roundStartTo),
-            budget_current_state_key__in: params.current_state__key,
-            country__id__in: params?.countries,
+            budget_current_state_key__in: params.budget_current_state_key__in,
+            country__id__in: params?.country__id__in,
+            orgUnitGroups: params?.orgUnitGroups,
         };
     }, [
-        params.current_state__key,
         params?.order,
-        params?.page,
         params?.pageSize,
-        params?.countries,
+        params?.page,
+        params.search,
         params.roundStartFrom,
         params.roundStartTo,
-        params.search,
+        params.budget_current_state_key__in,
+        params?.country__id__in,
+        params?.orgUnitGroups,
     ]);
 };
 

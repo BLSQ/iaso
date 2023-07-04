@@ -5,12 +5,12 @@ import ClearIcon from '@material-ui/icons/Clear';
 import { useSafeIntl } from 'bluesquare-components';
 import classnames from 'classnames';
 import { Tooltip } from '@material-ui/core';
-import { BudgetCategoryItem } from '../types';
+import { Item } from '../types';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from './styles';
 
 type Props = {
-    item: BudgetCategoryItem;
+    item: Item;
 };
 
 export const TimelineStepIcon: FunctionComponent<Props> = ({ item }) => {

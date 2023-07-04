@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Button, makeStyles } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
+import EditIcon from '@material-ui/icons/Settings';
 import classnames from 'classnames';
 import { useIconLabel } from './hooks';
 import { useStyles } from '../Styles';
@@ -27,13 +27,13 @@ type MapRoundButton = {
     onClick: () => void;
     disabled?: boolean;
     selection: string;
-    viewport: ViewPort;
+    zoom: number;
 };
 
 export const MapRoundButton: FunctionComponent<MapRoundButton> = ({
     onClick,
     selection,
-    viewport,
+    zoom,
     disabled = false,
 }: MapRoundButton) => {
     const classes = useButtonStyles();
@@ -47,7 +47,7 @@ export const MapRoundButton: FunctionComponent<MapRoundButton> = ({
             component="button"
             className={classnames(
                 classes.blackOnWhite,
-                viewport.zoom >= 6 && styles.mapLegendCampaigns,
+                zoom >= 6 && styles.mapLegendCampaigns,
             )}
             disabled={disabled}
         >

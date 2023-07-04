@@ -14,6 +14,8 @@ from plugins.polio.preparedness.summary import get_or_set_preparedness_cache_for
 
 
 def valid_indicator(x):
+    if x is None:
+        return True
     if isinstance(x, str):
         return x.strip() in ["NA", "N/A"]
     if not isinstance(x, (int, float)):

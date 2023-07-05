@@ -3,6 +3,7 @@ from django.shortcuts import get_object_or_404
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import status, permissions
+from rest_framework.exceptions import ValidationError
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
@@ -36,12 +37,15 @@ class LastUpdatesViewSet(ViewSet):
     @swagger_auto_schema(
         responses={
             200: "provides the latest updated dates",
+            400: f"parameter '{APP_ID}' was not provided",
             404: "project for given app id doesn't exist",
         },
         manual_parameters=[app_id_param],
     )
     def list(self, request: Request):
         app_id = request.query_params.get(APP_ID)
+        if app_id is None or app_id == "":
+            raise ValidationError(f"parameters '{APP_ID}' is required")
 
         forms = Form.objects
         form_versions = FormVersion.objects

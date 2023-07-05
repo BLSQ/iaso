@@ -874,7 +874,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
             class NestedGroupSerializer(GroupSerializer):
                 class Meta:
                     model = Group
-                    fields = ["id","org_units"]
+                    fields = ["id", "org_units"]
 
             class Meta:
                 model = RoundScope
@@ -896,7 +896,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
         class NestedGroupSerializer(GroupSerializer):
             class Meta:
                 model = Group
-                fields = ["id","org_units"]
+                fields = ["id", "org_units"]
 
         class Meta:
             model = CampaignScope

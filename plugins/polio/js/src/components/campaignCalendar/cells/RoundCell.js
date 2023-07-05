@@ -44,8 +44,12 @@ const RoundCell = ({ colSpan, campaign, round }) => {
         () =>
             uniq(
                 campaign.separateScopesPerRound
-                    ? round.scopes.map(scope => scope.vaccine)
-                    : campaign.scopes.map(scope => scope.vaccine),
+                    ? round.scopes
+                          .filter(scope => scope.group.org_units.length > 0)
+                          .map(scope => scope.vaccine)
+                    : campaign.scopes
+                          .filter(scope => scope.group.org_units.length > 0)
+                          .map(scope => scope.vaccine),
             ),
         [campaign.scopes, campaign.separateScopesPerRound, round.scopes],
     );

@@ -332,7 +332,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         search = params.get("search")
         org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
 
-        rounds = Round.objects.filter(started_at__year=year)
+        rounds = Round.objects.filter(started_at__year=year).filter(campaign__scopes__isnull=False)
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
         if countries:

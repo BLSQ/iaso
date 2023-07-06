@@ -440,15 +440,28 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
+        org_units_group_1 = m.Group.objects.create(name="group_1")
+        org_units_group_1.org_units.add(org_unit)
+        org_units_group_1.save()
+
         c = Campaign.objects.create(
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
+
+        c.scopes.create(vaccine="mOPV2", group=org_units_group_1)
+
         c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
         c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
+
+        org_units_group_2 = m.Group.objects.create(name="group_2")
+        org_units_group_2.org_units.add(org_unit_2)
+        org_units_group_2.save()
 
         c2 = Campaign.objects.create(
             country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account
         )
+
+        c2.scopes.create(vaccine="mOPV2", group=org_units_group_2)
         c2_round_1 = c2.rounds.create(
             number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
         )
@@ -499,10 +512,14 @@ class PolioAPITestCase(APITestCase):
             version=self.star_wars.default_version,
         )
 
+        org_units_group = m.Group.objects.create(name="group")
+        org_units_group.org_units.add(org_unit)
+        org_units_group.save()
+
         c = Campaign.objects.create(
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
-
+        c.scopes.create(vaccine="mOPV2", group=org_units_group)
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})

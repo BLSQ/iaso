@@ -106,6 +106,41 @@ inside the content field.
 For the generation of Preparedness template you will also need a
 Config `preparedness_template_id` with keys `fr` and `en`.
 
+
+## Generation procedure
+The file is generated for a campaign's round in particular.
+1. Find the template according to the lang of the country where the Campaign occur
+2. Make a copy of it in a new file
+3. Share readable to all
+4. Change the title and meta data according to the campaign
+5. Make a copy of the Regional sheet per region in the scope
+6. Add a column per district in the region.
+7. Update the named ranges and protected ranges
+``
+Organizatin wise we save the templates on a folder in the Google drive.
+
+## Configuration
+
+Configuration, in Polio config `/admin/polio/config/`:
+1. `google_api_key` A google api key with access to the drive api that the backend can use to read and create google sheet
+2. `emails_for_preparedness_alert` List of Email to send alert when a google sheet don't parse properly
+3. `preparedness_template_id` Template per language used in the generation of the Google sheet. It is versionned so we can configure new version on the server before the code is deployed.  Redacted example:
+```json
+{
+    "v2": {
+        "en": "1qUTT4nWvKWxDvAbw....",
+        "fr": "1lQzK8o9gDuCrUAuP...."
+    },
+    "v3": {
+        "en": "1WS6hEtNdZ_nLjDV3azU0...",
+        "fr": "1nh4sKKwtoaphSEs0bdaf...."
+    }
+}
+```
+
+
+
+
 ## Procedure for updating the preparedness template sheets
 
 1. Make a copy of the last template file in the folder for each language
@@ -147,8 +182,13 @@ An e-mail is sent if value are found outside the range.
 To control who receive the e-mail create/edit a polio.Config object with the slug `emails_for_preparedness_alert` and containing a list of e-mail as json. 
 e.g. `['test@bluesquarehub.com']`
 
+The file need to be readable to all.
 
 Note that the timeout in the AWS task system needed to be increased because the import take around an hour, otherwise the task got run in a loop. The EBS cron job is defined by a `cron.yaml` in root of project.
+
+
+# Cron task
+This is now implemented via the background task system. See cron.yaml https://aws.amazon.com/premiumsupport/knowledge-center/elastic-beanstalk-cron-job-worker-tier/
 
 - To create a `/launch_task/<task_name>/<user_name>/` url that will be called by EBS native cron job management, where : 
 - `task_name` is a fully qualified task_name = module path + task fn name, example : 'plugins.polio.tasks.refresh_preparedness_data.refresh_data' 
@@ -157,6 +197,8 @@ Note that the timeout in the AWS task system needed to be increased because the 
 
 
 ## How to test
+
+For testing locally, generate your own google api key ! don't use the one in prod or bad things will happen to you.  See above on how to generate one.
 
 ### Test via the interface
 
@@ -170,6 +212,6 @@ This way doesn't require the task worker to be running.
 - Create a campaign with round dates in the future
 - Either use the preparedness sheet linked in the ticket, or generate a new one
 - If generating a new one: delete data in several cells
-- Call the url  `/launch_task/<task_name>/<user_name>/ `
+- Call the url  `/tasks/launch_task/plugins.polio.tasks.weekly_email.send_email/polio_cron_task_user/`
 - in the terminal launch the task worker **tasks_worker**, run`docker-compose run iaso manage tasks_worker`
 - The output should show you an email with no errors (see screenshot). Such emails are printed out in the console, but not sent. If the list of errors is not empty, there's a bug in this PR.

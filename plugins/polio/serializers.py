@@ -887,14 +887,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         class Meta:
             model = Round
-            fields = [
-                "id",
-                "number",
-                "started_at",
-                "ended_at",
-                "scopes",
-                "vaccine_names"
-            ]
+            fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names"]
 
     class NestedScopeSerializer(CampaignScopeSerializer):
         class NestedGroupSerializer(GroupSerializer):

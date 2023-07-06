@@ -33,14 +33,17 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
             paginated_url = url + ("&page=%d&page_size=10000" % page)
             logger.info("paginated_url: " + paginated_url)
             response = requests.get(paginated_url, auth=(login, password))
-            response.raise_for_status()
 
-            content = response.json()
-            empty = len(content) == 0
-            j.extend(response.json())
-            page = page + 1
+            empty = response.status_code == 404
+            if not empty:
+                response.raise_for_status()
+
+                content = response.json()
+                empty = len(content) == 0
+                j.extend(response.json())
+                page = page + 1
         cached_response.content = json.dumps(j)
-        logger.info(f"fetched {len(response.content)} bytes")
+        logger.info(f"fetched {len(cached_response.content)} bytes")
         cached_response.save()
     else:
         logger.info(f"using cache for {url}")

@@ -231,6 +231,10 @@ class Round(models.Model):
     def get_item_by_key(self, key):
         return getattr(self, key)
 
+    @property
+    def districts_count_calculated(self):
+        return self.campaign.get_districts_for_round(self).count()
+
 
 class CampaignQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):

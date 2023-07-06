@@ -355,6 +355,7 @@ AWS_S3_REGION_NAME = os.getenv("AWS_S3_REGION_NAME", "eu-central-1")
 AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
 
+MEDIA_URL_PREFIX = "/media/"
 if USE_S3:
     # https://django-storages.readthedocs.io/en/latest/backends/amazon-S3.html
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
@@ -389,7 +390,8 @@ if USE_S3:
 
     DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
 else:
-    MEDIA_URL = "/media/"
+    SERVER_URL = os.environ.get("SERVER_URL", "")
+    MEDIA_URL = SERVER_URL + MEDIA_URL_PREFIX
     STATIC_URL = "/static/"
     STATIC_ROOT = os.path.join(BASE_DIR, "static")
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")

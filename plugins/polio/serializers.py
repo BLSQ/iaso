@@ -338,6 +338,9 @@ class RoundSerializer(serializers.ModelSerializer):
     destructions = DestructionSerializer(many=True, required=False)
     datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
 
+    # Vaccines from real scopes, from property, separated by ,
+    vaccine_names = serializers.CharField(read_only=True)
+
     @atomic
     def create(self, validated_data):
         request = self.context.get("request")

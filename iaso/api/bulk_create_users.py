@@ -60,7 +60,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     result_key = "file"
     remove_results_key_if_paginated = True
-    permission_classes = [HasUserPermission]
+    permission_classes = [HasUserPermission, permissions.IsAuthenticated]
 
     def get_serializer_class(self):
         return BulkCreateUserSerializer
@@ -74,6 +74,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         user = request.user
         file = request.FILES["file"]
-        task = bulk_create_users_task(file=file, user=user, launch_task=True)  # type: ignore
+        file_instance = BulkCreateUserCsvFile.objects.create(
+            file=file, created_by=user, account=user.iaso_profile.account
+        )
+        task = bulk_create_users_task(user.id, file_id=file_instance.id, launch_task=True, user=user)  # type: ignore
 
         return Response({"task": TaskSerializer(instance=task).data})

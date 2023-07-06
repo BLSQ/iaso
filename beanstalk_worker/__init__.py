@@ -60,8 +60,7 @@ def task_decorator(task_name=""):
                 task.account = user.iaso_profile.account
                 task.launcher = user
                 task.name = task_name
-                kwargs_value = kwargs if is_json_serializable(kwargs) else None
-                task.params = {"args": args, "kwargs": kwargs_value, "module": func.__module__, "method": func.__name__}
+                task.params = {"args": args, "kwargs": kwargs, "module": func.__module__, "method": func.__name__}
                 # Save it here so we can have the id
                 task.save()
                 task.queue_answer = task_service.enqueue(func.__module__, func.__name__, args, kwargs, task_id=task.id)

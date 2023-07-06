@@ -14,21 +14,23 @@ from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, ERRORED
 
 
 @task_decorator(task_name="bulk_create_users")
-def bulk_create_users_task(file, user, launch_task):
-    request_user = user
+def bulk_create_users_task(user_id, file_id=None, launch_task=None, user=None, task=None):
+    request_user = User.objects.get(pk=user_id)
     user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request_user, None)
     user_created_count = 0
-    running_task = request_user
+    file_instance = BulkCreateUserCsvFile.objects.get(pk=file_id)
+    file = file_instance.file
+    the_task = task
 
     if launch_task:
         try:
-            running_task.report_progress_and_stop_if_killed(
+            the_task.running_task.report_progress_and_stop_if_killed(
                 progress_value=user_created_count, progress_message=_("Starting")
             )
         except UnicodeDecodeError as e:
-            running_task.status = ERRORED
-            running_task.result = {"message": e}
-            running_task.save()
+            the_task.running_task.status = ERRORED
+            the_task.running_task.result = {"message": e}
+            the_task.running_task.save()
             raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
     user_csv = file
     user_csv_decoded = user_csv.read().decode("utf-8")
@@ -36,13 +38,13 @@ def bulk_create_users_task(file, user, launch_task):
     reader = csv.reader(csv_str)
     i = 0
     csv_indexes = []
-    file_instance = BulkCreateUserCsvFile.objects.create(
-        file=user_csv, created_by=request_user, account=request_user.iaso_profile.account
-    )
-    file_instance.save()
+    # file_instance = BulkCreateUserCsvFile.objects.create(
+    #     file=user_csv, created_by=request_user, account=request_user.iaso_profile.account
+    # )
+    # file_instance.save()
     for row in reader:
         if launch_task:
-            running_task.report_progress_and_stop_if_killed(progress_message=_("Creating users"))
+            the_task.running_task.report_progress_and_stop_if_killed(progress_message=_("Creating users"))
         org_units_list = []
         if i > 0:
             email_address = True if row[csv_indexes.index("email")] else None
@@ -168,6 +170,6 @@ def bulk_create_users_task(file, user, launch_task):
         i += 1
 
     if launch_task:
-        running_task.report_success(message="%d user created." % user_created_count)
+        the_task.running_task.report_success(message="%d user created." % user_created_count)
 
-    return {"Accounts created": user_created_count}
+    return the_task

@@ -4,7 +4,7 @@ import classnames from 'classnames';
 
 import { TableCell, Box } from '@material-ui/core';
 
-import { isEqual, uniq } from 'lodash';
+import { isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
 import { RoundPopper } from '../popper/RoundPopper';
@@ -40,19 +40,16 @@ const RoundCell = ({ colSpan, campaign, round }) => {
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
     const isLogged = useSelector(state => Boolean(state.users.current));
-    const vaccinesList = useMemo(
-        () =>
-            uniq(
-                campaign.separateScopesPerRound
-                    ? round.scopes
-                          .filter(scope => scope.group.org_units.length > 0)
-                          .map(scope => scope.vaccine)
-                    : campaign.scopes
-                          .filter(scope => scope.group.org_units.length > 0)
-                          .map(scope => scope.vaccine),
-            ),
-        [campaign.scopes, campaign.separateScopesPerRound, round.scopes],
-    );
+    const vaccinesList = useMemo(() => {
+        const list = campaign.separateScopesPerRound
+            ? round.vaccine_names?.split(',') ?? []
+            : campaign.vaccines?.split(',') ?? [];
+        return list.map(vaccineName => vaccineName.trim());
+    }, [
+        campaign.separateScopesPerRound,
+        campaign.vaccines,
+        round.vaccine_names,
+    ]);
     const getVaccineColor = useCallback(
         vaccine =>
             polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)

@@ -295,14 +295,20 @@ class BulkCreateCsvTestCase(APITestCase):
         profiles = Profile.objects.all()
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(users), 4)
-        self.assertEqual(len(profiles), 4)
+        self.assertEqual(len(users), 5)
+        self.assertEqual(len(profiles), 5)
         new_user_1 = users.get(username="broly")
+        new_user_2 = users.get(username="cyrus")
         org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
         self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_2.email, "cyruswashington@bluesquarehub.com")
         self.assertEqual(new_user_1.first_name, "broly")
         self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_2.first_name, "cyrus")
+        self.assertEqual(new_user_2.last_name, "washington")
         self.assertEqual(new_user_1.iaso_profile.language, "fr")
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
-        self.assertEqual(response.data, {"Accounts created": 1})
+
+        self.assertEqual(response.data, {"Accounts created": 2})

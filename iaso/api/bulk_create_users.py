@@ -93,7 +93,10 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     dialect = csv.Sniffer().sniff(user_csv_decoded)
                     delimiter = dialect.delimiter
                 except csv.Error:
-                    delimiter = ";" if ";" in user_csv.decoded else ","
+                    try:
+                        delimiter = ";" if ";" in user_csv.decoded else ","
+                    except Exception:
+                        raise serializers.ValidationError({"error": "Error : CSV File incorrectly formatted."})
 
                 csv_str = io.StringIO(user_csv_decoded)
 
@@ -105,6 +108,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
+
             for i, row in enumerate(reader):
                 org_units_list = []
                 if i > 0:
@@ -119,7 +123,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     "again.".format(i)
                                 }
                             )
-
                     try:
                         try:
                             user = User.objects.create(
@@ -203,6 +206,17 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except ValueError:
                         dhis2_id = None
                     if dhis2_id:
+                        # check if a profile with the same dhis_id already exists
+                        if Profile.objects.filter(dhis2_id=dhis2_id).count() > 0:
+                            raise serializers.ValidationError(
+                                {
+                                    "error": f"Operation aborted. User with same dhis_2 id already exists at row : { i + 1}. Fix "
+                                    "the error "
+                                    "and try "
+                                    "again"
+                                }
+                            )
+
                         profile.dhis2_id = dhis2_id
                     try:
                         user_permissions = row[csv_indexes.index("permissions")].split(",")
@@ -230,8 +244,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     else:
                         profile.language = "fr"
                     profile.org_units.set(org_units_list)
-                    csv_file = pd.read_csv(io.StringIO(file_instance.file.read().decode("utf-8")), delimiter=",")
-                    csv_file.at[i - 1, "password"] = ""
+                    csv_file = pd.read_csv(io.StringIO(file_instance.file.read().decode("utf-8")), delimiter=delimiter)
+                    csv_file.at[i - 1, "password"] = None
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)
                     content_file = ContentFile(csv_file.encode("utf-8"))
                     file_instance.file.save(f"{file_instance.id}.csv", content_file)

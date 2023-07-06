@@ -81,7 +81,6 @@ export const useStyles = makeStyles(theme => ({
         borderBottom: `1px solid ${theme.palette.ligthGray.border}`,
     },
     round: {
-        color: theme.palette.common.white,
         fontSize: 12,
     },
     campaign: {
@@ -192,5 +191,13 @@ export const useStyles = makeStyles(theme => ({
     },
     mapLegendText: {
         fontWeight: 'bold',
+    },
+    coloredBox: {
+        position: 'absolute',
+        zIndex: 0,
+        height: '100%',
+        width: '100%',
+        top: 0,
+        left: 0,
     },
 }));

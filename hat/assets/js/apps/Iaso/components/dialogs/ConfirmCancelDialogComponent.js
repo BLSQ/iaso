@@ -84,7 +84,8 @@ RawConfirmCancelActions.propTypes = {
 export const ConfirmCancelActions = withStyles(actionStyles)(
     RawConfirmCancelActions,
 );
-
+/** @deprecated */
+/** Use `ConfirmCancelModal` from bluesquare-components instead */
 const ConfirmCancelDialogComponent = ({
     allowConfirm,
     onConfirm,

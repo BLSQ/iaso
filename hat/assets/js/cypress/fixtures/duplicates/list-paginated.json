@@ -1,0 +1,1445 @@
+{
+    "count": 2791,
+    "results": [
+        {
+            "id": 64,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 587,
+                "created_at": "2023-03-31T08:07:59.670737Z",
+                "updated_at": "2023-06-27T11:56:51.732191Z",
+                "org_unit": {
+                    "id": 1000,
+                    "name": "Mabang MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "instanceID": "uuid:30b9abfa-82da-4c91-acb4-d9125aebb74e"
+                }
+            },
+            "entity2": {
+                "id": 110,
+                "created_at": "2023-03-31T08:07:52.341321Z",
+                "updated_at": "2023-06-27T11:56:57.767973Z",
+                "org_unit": {
+                    "id": 1000,
+                    "name": "Mabang MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "instanceID": "uuid:b87641ec-1100-44b6-b079-b6c521307a15"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+
+        {
+            "id": 46,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 889,
+                "created_at": "2023-03-31T08:08:04.595723Z",
+                "updated_at": "2023-05-22T09:01:05.455553Z",
+                "org_unit": {
+                    "id": 889,
+                    "name": "Bandajuma Yawei CHC"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "d8da4b53-c598-4eec-b4f0-bee29b8afd2e",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Tardif",
+                    "What_is_the_father_s_name": "Joly"
+                }
+            },
+            "entity2": {
+                "id": 881,
+                "created_at": "2023-03-31T08:08:04.450683Z",
+                "updated_at": "2023-05-22T09:01:05.458416Z",
+                "org_unit": {
+                    "id": 881,
+                    "name": "Penguia"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "2a7f7d51-22be-45b5-b8a9-efb8d6d2d59c",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Tardif",
+                    "What_is_the_father_s_name": "Joly"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 30,
+                    "created_at": "2023-03-31T10:27:35.480353Z",
+                    "finished_at": "2023-03-31T10:27:36Z",
+                    "the_fields": [
+                        "What_is_the_child_s_name",
+                        "What_is_the_father_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 100,
+            "similarity_star": 5,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": true
+        },
+        {
+            "id": 66,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 576,
+                "created_at": "2023-03-31T08:07:59.494423Z",
+                "updated_at": "2023-03-31T08:07:59.497885Z",
+                "org_unit": {
+                    "id": 576,
+                    "name": "Salima MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "ee6167aa-a318-4b74-8b7a-5f6d835ce2e3",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Castonguay",
+                    "What_is_the_father_s_name": "Paquin"
+                }
+            },
+            "entity2": {
+                "id": 384,
+                "created_at": "2023-03-31T08:07:56.601742Z",
+                "updated_at": "2023-03-31T08:07:56.605505Z",
+                "org_unit": {
+                    "id": 384,
+                    "name": "Baiama CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "4ecdbf7a-0cf1-487d-a408-61eccd7f57a9",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Castonguay",
+                    "What_is_the_father_s_name": "Martin"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 67,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 473,
+                "created_at": "2023-03-31T08:07:57.966442Z",
+                "updated_at": "2023-03-31T08:07:57.970239Z",
+                "org_unit": {
+                    "id": 473,
+                    "name": "PMO Clinetown"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "f9019d1e-e73e-4ea0-ae2b-9bff8fed7cd3",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Guérin",
+                    "What_is_the_father_s_name": "Boivin"
+                }
+            },
+            "entity2": {
+                "id": 247,
+                "created_at": "2023-03-31T08:07:54.405783Z",
+                "updated_at": "2023-03-31T08:07:54.410048Z",
+                "org_unit": {
+                    "id": 247,
+                    "name": "Buya Romende"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "41c389ea-5df2-4238-9218-1ab60e8628e6",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Guérin",
+                    "What_is_the_father_s_name": "Gauvin"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 68,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 613,
+                "created_at": "2023-03-31T08:08:00.093520Z",
+                "updated_at": "2023-03-31T08:08:00.097343Z",
+                "org_unit": {
+                    "id": 613,
+                    "name": "Mano Gbonjeima CHC"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "5c89d461-d32f-48f2-916f-691698945fbb",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Hébert",
+                    "What_is_the_father_s_name": "Goulet"
+                }
+            },
+            "entity2": {
+                "id": 582,
+                "created_at": "2023-03-31T08:07:59.606153Z",
+                "updated_at": "2023-03-31T08:07:59.610759Z",
+                "org_unit": {
+                    "id": 582,
+                    "name": "Saahun (barri) MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "c7d6d2fe-8002-4351-8656-6a688e340d1d",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Hébert",
+                    "What_is_the_father_s_name": "Audet"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 69,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 335,
+                "created_at": "2023-03-31T08:07:55.724486Z",
+                "updated_at": "2023-03-31T08:07:55.728382Z",
+                "org_unit": {
+                    "id": 335,
+                    "name": "Gbaneh Lol MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "5f031103-8b12-44ce-a661-0ed1ba4a1039",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Fortin",
+                    "What_is_the_father_s_name": "Proulx"
+                }
+            },
+            "entity2": {
+                "id": 202,
+                "created_at": "2023-03-31T08:07:53.716424Z",
+                "updated_at": "2023-03-31T08:07:53.719386Z",
+                "org_unit": {
+                    "id": 202,
+                    "name": "Tonko Limba"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "27c766a9-5850-49cf-a8d7-0ee77474aa0b",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Godin",
+                    "What_is_the_father_s_name": "Proulx"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 70,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 328,
+                "created_at": "2023-03-31T08:07:55.607109Z",
+                "updated_at": "2023-03-31T08:07:55.611064Z",
+                "org_unit": {
+                    "id": 328,
+                    "name": "Kasongha MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "5c4b7990-863a-4288-b647-34aba510fcf5",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Leduc",
+                    "What_is_the_father_s_name": "Robert"
+                }
+            },
+            "entity2": {
+                "id": 275,
+                "created_at": "2023-03-31T08:07:54.812908Z",
+                "updated_at": "2023-03-31T08:07:54.817447Z",
+                "org_unit": {
+                    "id": 275,
+                    "name": "Barmoi CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "6ef1fb8b-4ad2-47c7-851b-4db5e93e9df5",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Leroux",
+                    "What_is_the_father_s_name": "Robert"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 71,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 855,
+                "created_at": "2023-03-31T08:08:04.011822Z",
+                "updated_at": "2023-03-31T08:08:04.015324Z",
+                "org_unit": {
+                    "id": 855,
+                    "name": "Pendembu Njeigbla MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "9d9ca845-eeb2-4a59-a80c-9eda688b0251",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Lacroix",
+                    "What_is_the_father_s_name": "Robert"
+                }
+            },
+            "entity2": {
+                "id": 275,
+                "created_at": "2023-03-31T08:07:54.812908Z",
+                "updated_at": "2023-03-31T08:07:54.817447Z",
+                "org_unit": {
+                    "id": 275,
+                    "name": "Barmoi CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "6ef1fb8b-4ad2-47c7-851b-4db5e93e9df5",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Leroux",
+                    "What_is_the_father_s_name": "Robert"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 72,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 875,
+                "created_at": "2023-03-31T08:08:04.357810Z",
+                "updated_at": "2023-03-31T08:08:04.361192Z",
+                "org_unit": {
+                    "id": 875,
+                    "name": "Upper Bambara"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "3ae049af-769e-4057-b54a-e86a9648e06c",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Bissonnette",
+                    "What_is_the_father_s_name": "Gagné"
+                }
+            },
+            "entity2": {
+                "id": 205,
+                "created_at": "2023-03-31T08:07:53.786386Z",
+                "updated_at": "2023-03-31T08:07:53.790673Z",
+                "org_unit": {
+                    "id": 205,
+                    "name": "Numea CHC"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "7578d73b-3eb8-4ac2-990a-655c4a146993",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Bissonnette",
+                    "What_is_the_father_s_name": "Massé"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 73,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 100,
+                "created_at": "2023-03-31T08:07:52.172495Z",
+                "updated_at": "2023-03-31T08:07:52.177573Z",
+                "org_unit": {
+                    "id": 100,
+                    "name": "Upper Saama MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "afaf11cb-2259-4333-8e14-e5886283ce5a",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Poirier",
+                    "What_is_the_father_s_name": "Cadieux"
+                }
+            },
+            "entity2": {
+                "id": 56,
+                "created_at": "2023-03-31T08:07:51.535586Z",
+                "updated_at": "2023-03-31T08:07:51.539579Z",
+                "org_unit": {
+                    "id": 56,
+                    "name": "St Monica's Clinic"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "f761fa05-b23e-4555-bc15-ea1eacb49ac2",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Carrier",
+                    "What_is_the_father_s_name": "Cadieux"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 74,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 463,
+                "created_at": "2023-03-31T08:07:57.795228Z",
+                "updated_at": "2023-03-31T08:07:57.798737Z",
+                "org_unit": {
+                    "id": 463,
+                    "name": "St. Joseph CHC"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "b9a815da-2ab9-4edf-84bb-b816bc1e0cf0",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Cloutier",
+                    "What_is_the_father_s_name": "Brault"
+                }
+            },
+            "entity2": {
+                "id": 201,
+                "created_at": "2023-03-31T08:07:53.693403Z",
+                "updated_at": "2023-03-31T08:07:53.708863Z",
+                "org_unit": {
+                    "id": 201,
+                    "name": "Rokel MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "8f46b1d2-4b25-4fae-808e-b6d27274fae6",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Trottier",
+                    "What_is_the_father_s_name": "Brault"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 75,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 957,
+                "created_at": "2023-03-31T08:08:05.687170Z",
+                "updated_at": "2023-03-31T08:08:05.692785Z",
+                "org_unit": {
+                    "id": 957,
+                    "name": "Mogbasske CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "571c3765-6511-477a-844f-966522b78fea",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Boulanger",
+                    "What_is_the_father_s_name": "Godin"
+                }
+            },
+            "entity2": {
+                "id": 231,
+                "created_at": "2023-03-31T08:07:54.165025Z",
+                "updated_at": "2023-03-31T08:07:54.170366Z",
+                "org_unit": {
+                    "id": 231,
+                    "name": "Komneh CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "80ba9469-2de3-4201-b2fb-f36082eddef4",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Boulanger",
+                    "What_is_the_father_s_name": "Bégin"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 76,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 624,
+                "created_at": "2023-03-31T08:08:00.226085Z",
+                "updated_at": "2023-03-31T08:08:00.229795Z",
+                "org_unit": {
+                    "id": 624,
+                    "name": "Massam MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "dc3c6dc1-7e07-4d3f-ab33-82780c6f776d",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Huard",
+                    "What_is_the_father_s_name": "Gauvin"
+                }
+            },
+            "entity2": {
+                "id": 207,
+                "created_at": "2023-03-31T08:07:53.840774Z",
+                "updated_at": "2023-03-31T08:07:53.844191Z",
+                "org_unit": {
+                    "id": 207,
+                    "name": "Masselleh MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "1ee1a014-badc-4110-9ea9-978b085007f0",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Huard",
+                    "What_is_the_father_s_name": "Godin"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 77,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 931,
+                "created_at": "2023-03-31T08:08:05.255354Z",
+                "updated_at": "2023-03-31T08:08:05.291342Z",
+                "org_unit": {
+                    "id": 931,
+                    "name": "Levuma CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "6a39f860-7d8b-40a1-b9af-481164879a45",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Sauvé",
+                    "What_is_the_father_s_name": "Dumas"
+                }
+            },
+            "entity2": {
+                "id": 310,
+                "created_at": "2023-03-31T08:07:55.329308Z",
+                "updated_at": "2023-03-31T08:07:55.334917Z",
+                "org_unit": {
+                    "id": 310,
+                    "name": "Masiaka CHC"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "d14b2a84-6edb-4244-addb-f0b4ecfcfde0",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Sauvé",
+                    "What_is_the_father_s_name": "Dubois"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 78,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 788,
+                "created_at": "2023-03-31T08:08:02.810165Z",
+                "updated_at": "2023-03-31T08:08:02.813591Z",
+                "org_unit": {
+                    "id": 788,
+                    "name": "Gbonkobana CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "d86d8b32-25ca-47c1-817a-1789cee94eef",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Caron",
+                    "What_is_the_father_s_name": "Deslauriers"
+                }
+            },
+            "entity2": {
+                "id": 60,
+                "created_at": "2023-03-31T08:07:51.595053Z",
+                "updated_at": "2023-03-31T08:07:51.598425Z",
+                "org_unit": {
+                    "id": 60,
+                    "name": "Marie Stopes (Kakua) Clinic"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "00edf073-b40d-427b-bcba-3248d12ae35d",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Baril",
+                    "What_is_the_father_s_name": "Deslauriers"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 79,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 187,
+                "created_at": "2023-03-31T08:07:53.490933Z",
+                "updated_at": "2023-03-31T08:07:53.495866Z",
+                "org_unit": {
+                    "id": 187,
+                    "name": "Koya MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "3a4ce5c3-2318-43c1-a64c-231e258f3240",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Vallières",
+                    "What_is_the_father_s_name": "Lamothe"
+                }
+            },
+            "entity2": {
+                "id": 94,
+                "created_at": "2023-03-31T08:07:52.097399Z",
+                "updated_at": "2023-03-31T08:07:52.101172Z",
+                "org_unit": {
+                    "id": 94,
+                    "name": "Mamboma MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "4a563606-acbf-4b3e-bdc3-48430d14eae5",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Vallières",
+                    "What_is_the_father_s_name": "Gamache"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 80,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 567,
+                "created_at": "2023-03-31T08:07:59.367328Z",
+                "updated_at": "2023-03-31T08:07:59.377688Z",
+                "org_unit": {
+                    "id": 567,
+                    "name": "Kpanga Kabonde"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "c60f7459-714b-4cc7-9cdb-e8b18a9629be",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Forget",
+                    "What_is_the_father_s_name": "Dion"
+                }
+            },
+            "entity2": {
+                "id": 156,
+                "created_at": "2023-03-31T08:07:53.002892Z",
+                "updated_at": "2023-03-31T08:07:53.009281Z",
+                "org_unit": {
+                    "id": 156,
+                    "name": "Rokupr CHC"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "16754304-d014-4600-ae29-1ff5bee7048d",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Forget",
+                    "What_is_the_father_s_name": "Viens"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 81,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 560,
+                "created_at": "2023-03-31T08:07:59.253172Z",
+                "updated_at": "2023-03-31T08:07:59.256712Z",
+                "org_unit": {
+                    "id": 560,
+                    "name": "Pejewa MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "1b1a2972-a70a-49fa-919a-1e05a2535947",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Bégin",
+                    "What_is_the_father_s_name": "Fillion"
+                }
+            },
+            "entity2": {
+                "id": 135,
+                "created_at": "2023-03-31T08:07:52.707762Z",
+                "updated_at": "2023-03-31T08:07:52.710209Z",
+                "org_unit": {
+                    "id": 135,
+                    "name": "Bargbo"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "8d60a3c4-56ae-4d93-8396-c457d9894378",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Guérin",
+                    "What_is_the_father_s_name": "Fillion"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 82,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 171,
+                "created_at": "2023-03-31T08:07:53.235496Z",
+                "updated_at": "2023-03-31T08:07:53.239579Z",
+                "org_unit": {
+                    "id": 171,
+                    "name": "Kanku Bramaia MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "4545778f-f751-4623-a5ba-fdc82e4f0d62",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Gauvin",
+                    "What_is_the_father_s_name": "Fillion"
+                }
+            },
+            "entity2": {
+                "id": 135,
+                "created_at": "2023-03-31T08:07:52.707762Z",
+                "updated_at": "2023-03-31T08:07:52.710209Z",
+                "org_unit": {
+                    "id": 135,
+                    "name": "Bargbo"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "8d60a3c4-56ae-4d93-8396-c457d9894378",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Guérin",
+                    "What_is_the_father_s_name": "Fillion"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        },
+        {
+            "id": 83,
+            "entity_type": {
+                "id": 2,
+                "name": "Child"
+            },
+            "form": {
+                "id": 12,
+                "name": "Entity form 2.38.3"
+            },
+            "the_fields": [
+                {
+                    "field": "What_is_the_father_s_name",
+                    "label": "Father's name",
+                    "type": "text"
+                },
+                {
+                    "field": "What_is_the_child_s_name",
+                    "label": "Prénom",
+                    "type": "text"
+                }
+            ],
+            "entity1": {
+                "id": 786,
+                "created_at": "2023-03-31T08:08:02.782737Z",
+                "updated_at": "2023-03-31T08:08:02.788277Z",
+                "org_unit": {
+                    "id": 786,
+                    "name": "Kabonka MCHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "8bcb7103-b8c9-44a0-8648-c8182df0a272",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Larose",
+                    "What_is_the_father_s_name": "Cormier"
+                }
+            },
+            "entity2": {
+                "id": 226,
+                "created_at": "2023-03-31T08:07:54.095323Z",
+                "updated_at": "2023-03-31T08:07:54.105849Z",
+                "org_unit": {
+                    "id": 226,
+                    "name": "Kantia CHP"
+                },
+                "json": {
+                    "_version": "1",
+                    "entityUuid": "3ec25c38-0095-404e-ad29-d7a03191d303",
+                    "entityTypeId": 2,
+                    "What_is_the_child_s_name": "Larose",
+                    "What_is_the_father_s_name": "Poirier"
+                }
+            },
+            "analyzis": [
+                {
+                    "analyze_id": 35,
+                    "created_at": "2023-06-09T10:16:10.733995Z",
+                    "finished_at": "2023-06-09T10:17:07.825139Z",
+                    "the_fields": [
+                        "What_is_the_father_s_name",
+                        "What_is_the_child_s_name"
+                    ],
+                    "type": "levenshtein"
+                }
+            ],
+            "similarity": 50,
+            "similarity_star": 2,
+            "ignored": false,
+            "ignored_reason": "",
+            "merged": false
+        }
+    ],
+    "has_next": true,
+    "has_previous": false,
+    "page": 1,
+    "pages": 140,
+    "limit": 20
+}

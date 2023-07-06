@@ -3,8 +3,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
+import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 import InputComponent from '../../../components/forms/InputComponent';
 import { APP_LOCALES } from '../../app/constants';
+
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 import MESSAGES from '../messages';
 
@@ -20,7 +23,6 @@ const UsersInfos = ({
         ? MESSAGES.sentEmailInvitationWhenAdresseExist
         : MESSAGES.sentEmailInvitation;
     let passwordDisabled = false;
-
     if (currentUser.send_email_invitation) {
         if (sendUserEmailInvitation) {
             // eslint-disable-next-line no-param-reassign
@@ -32,13 +34,16 @@ const UsersInfos = ({
             passwordDisabled = true;
         }
     }
+    const { data: userRoles, isFetching } = useGetUserRolesDropDown({});
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
 
     const isInitialDataEmpty = isEmpty(initialData)
         ? MESSAGES.password
         : MESSAGES.newPassword;
 
     return (
-        <>
+        <form>
             <InputComponent
                 keyValue="user_name"
                 onChange={(key, value) => setFieldValue(key, value.trim())}
@@ -99,6 +104,24 @@ const UsersInfos = ({
                 label={MESSAGES.homePage}
             />
             <InputComponent
+                keyValue="projects"
+                onChange={(key, value) =>
+                    setFieldValue(
+                        key,
+                        value
+                            ?.split(',')
+                            .map(projectId => parseInt(projectId, 10)),
+                    )
+                }
+                value={currentUser.projects.value}
+                errors={currentUser.projects.errors}
+                type="select"
+                multi
+                label={MESSAGES.projects}
+                options={allProjects}
+                loading={isFetchingProjects}
+            />
+            <InputComponent
                 keyValue="language"
                 onChange={(key, value) => setFieldValue(key, value)}
                 value={currentUser.language.value}
@@ -113,6 +136,20 @@ const UsersInfos = ({
                     };
                 })}
             />
+            <InputComponent
+                keyValue="user_roles"
+                onChange={(key, value) =>
+                    setFieldValue(key, value ? value.split(',') : [])
+                }
+                value={currentUser.user_roles.value}
+                type="select"
+                multi
+                label={MESSAGES.userRoles}
+                options={userRoles}
+                loading={isFetching}
+                clearable
+            />
+
             {allowSendEmailInvitation && (
                 <InputComponent
                     keyValue="send_email_invitation"
@@ -123,7 +160,7 @@ const UsersInfos = ({
                     label={sendUserIEmailnvitationLabel}
                 />
             )}
-        </>
+        </form>
     );
 };
 

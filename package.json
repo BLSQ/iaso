@@ -9,7 +9,7 @@
         "show-lint-problems": "eslint \"./hat/assets/js/**/*.js\"",
         "export-lint-problems": "eslint \"./hat/assets/js/**/*.js\" -f html -o ./hat/assets/js/lintErrors.html",
         "test-coverage": "nyc npm run test",
-        "test": "NODE_PATH=hat/assets/js/apps mocha --require ./babel-register.js --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/apps/**/*.spec.js'",
+        "test": "NODE_PATH=hat/assets/js/apps mocha --exit --require ./babel-register.js --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/apps/**/*.spec.js'",
         "test-watch": "NODE_PATH=hat/assets/js/apps mocha --require ./babel-register.js --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/apps/**/*.spec.js' --watch",
         "cypress:open": "cypress open",
         "test:e2e": "cypress run --browser chrome",

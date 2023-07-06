@@ -86,6 +86,7 @@ export const StarsComponent: FunctionComponent<Props> = ({
                     style={{
                         width: `${fullStarsRatio}%`,
                     }}
+                    data-test="star-value"
                     className={classes.starsBar}
                 />
                 <div className={classes.starsImage}>{stars}</div>

@@ -1,0 +1,26 @@
+{
+    "count": 14,
+    "results": [
+        {
+            "id": 38,
+            "algorithm": "levenshtein",
+            "created_at": "2023-06-27T12:02:42.990171Z",
+            "metadata": {
+                "fields": [
+                    "gender",
+                    "first_name",
+                    "last_name"
+                ],
+                "parameters": {},
+                "entity_type_id": "5"
+            },
+            "finished_at": "2023-06-27T12:02:43.075811Z",
+            "task": 49
+        }
+    ],
+    "has_next": true,
+    "has_previous": false,
+    "page": 1,
+    "pages": 14,
+    "limit": 1
+}

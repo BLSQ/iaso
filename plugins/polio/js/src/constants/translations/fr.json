@@ -46,6 +46,8 @@
     "iaso.polio.form.label.agNopvGroup": "Groupe AG/nOPV",
     "iaso.polio.form.label.approval": "Approbation",
     "iaso.polio.form.label.approval_confirmed": "Approbation confirmée",
+    "iaso.polio.form.label.approve_unicef": "Approuver (UNICEF)",
+    "iaso.polio.form.label.approve_who": "Approuver (WHO)",
     "iaso.polio.form.label.APPROVED": "Approuvé",
     "iaso.polio.form.label.approved_by_unicef": "Approuvé par UNICEF",
     "iaso.polio.form.label.approved_by_who": "Approuvé par WHO",

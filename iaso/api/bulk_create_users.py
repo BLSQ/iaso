@@ -110,8 +110,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 csv_str = io.StringIO(user_csv_decoded)
 
                 try:
-                    dialect = csv.Sniffer().sniff(user_csv_decoded)
-                    delimiter = dialect.delimiter
+                    delimiter = csv.Sniffer().sniff(user_csv_decoded).delimiter
                 except csv.Error:
                     try:
                         delimiter = ";" if ";" in user_csv.decoded else ","

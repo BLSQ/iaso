@@ -9,6 +9,7 @@ from iaso.models import OrgUnit
 from datetime import datetime
 from django.utils import timezone
 from iaso.models.deduplication import ValidationStatus
+from rest_framework.filters import OrderingFilter
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):
@@ -215,3 +216,19 @@ class IgnoredMergedFilterBackend(filters.BaseFilterBackend):
             queryset = queryset.filter(qs[0])
 
         return queryset
+
+
+class CustomOrderingFilter(OrderingFilter):
+    def get_ordering(self, request, queryset, view):
+        ordering = super().get_ordering(request, queryset, view)
+        if ordering:
+            new_ordering = []
+            for field in ordering:
+                if field == "similarity_star":  # fix bug because frontend is using the stars not the score
+                    new_ordering.append("similarity_score")
+                elif field == "-similarity_star":
+                    new_ordering.append("-similarity_score")
+                else:
+                    new_ordering.append(field)
+            return new_ordering
+        return ordering

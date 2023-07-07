@@ -306,6 +306,7 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
             "reason",
             "ended_at",
             "started_at",
+            "round",
             "previous_ended_at",
             "previous_started_at",
             "modified_by",

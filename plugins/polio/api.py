@@ -332,7 +332,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         search = params.get("search")
         org_unit_groups = params.get("orgUnitGroups") if params.get("orgUnitGroups") is not None else None
 
-        rounds = Round.objects.filter(started_at__year=year).filter(campaign__scopes__isnull=False)
+        rounds = Round.objects.filter(started_at__year=year)
         # Test campaigns should not appear in the xlsx calendar
         rounds = rounds.filter(campaign__is_test=False)
         if countries:
@@ -394,7 +394,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
         ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
         obr_name = campaign.obr_name if campaign.obr_name is not None else ""
-        vacine = self.get_campain_vaccine(round, campaign)
+        vaccines = campaign.vaccines
         round_number = round.number if round.number is not None else ""
         # count all districts in the country
         country_districts_count = country.descendants().filter(org_unit_type__category="DISTRICT").count()
@@ -419,29 +419,12 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             "started_at": started_at,
             "ended_at": ended_at,
             "obr_name": obr_name,
-            "vacine": vacine,
+            "vaccines": vaccines,
             "round_number": round_number,
             "percentage_covered_target_population": percentage_covered_target_population,
             "target_population": target_population,
             "nid_or_snid": nid_or_snid,
         }
-
-    def get_campain_vaccine(self: "CampaignViewSet", round: Round, campain: Campaign) -> str:
-        if campain.separate_scopes_per_round:
-            round_scope_vaccines = []
-
-            scopes = round.scopes
-            if scopes.count() < 1:
-                return ""
-            # Loop on round scopes
-            for scope in scopes.all():
-                round_scope_vaccines.append(scope.vaccine)
-            return ", ".join(round_scope_vaccines)
-        else:
-            if campain.vaccines:
-                return campain.vaccines
-
-            return ""
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):

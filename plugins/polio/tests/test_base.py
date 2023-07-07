@@ -454,8 +454,6 @@ class PolioAPITestCase(APITestCase):
         c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
         org_units_group_2 = m.Group.objects.create(name="group_2")
-        org_units_group_2.org_units.add(org_unit_2)
-        org_units_group_2.save()
 
         c2 = Campaign.objects.create(
             country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account
@@ -483,7 +481,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c2, c2_round_1))
         self.assertEqual(data_dict["January"][2], self.format_date_to_test(c2, c2_round_2))
-        #  + self.format_date_to_test(c2, c2_round_2)
 
     def test_create_calendar_xlsx_sheet_campaign_without_country(self):
         """

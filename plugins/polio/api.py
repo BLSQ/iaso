@@ -924,6 +924,7 @@ class IMStatsViewSet(viewsets.ViewSet):
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
+                .filter(validation_status="VALID")
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
@@ -1380,8 +1381,9 @@ def find_district(district_name, region_name, district_dict):
         return district_list[0]
     elif district_list and len(district_list) > 1:
         for di in district_list:
-            if di.parent.name.lower() == region_name.lower() or (
-                di.parent.aliases and region_name in di.parent.aliases
+            parent_aliases_lower = [alias.lower().strip() for alias in di.parent.aliases] if di.parent.aliases else []
+            if di.parent.name.lower().strip() == region_name.lower().strip() or (
+                di.parent.aliases and region_name.strip() in parent_aliases_lower
             ):
                 return di
     return None
@@ -1432,7 +1434,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        no_cache = request.GET.get("no_cache", "false") == "true"
+        no_cache = request.GET.get("no_cache", "true") == "true"
         requested_country = request.GET.get("country_id", None)
         if requested_country is None:
             return HttpResponseBadRequest
@@ -1527,6 +1529,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
+                .filter(validation_status="VALID")
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
@@ -1690,7 +1693,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             cache.set(
                 "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]),
                 json.dumps(response),
-                3600,
+                1,
                 version=CACHE_VERSION,
             )
         return JsonResponse(response, safe=False)

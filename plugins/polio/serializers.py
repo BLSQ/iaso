@@ -339,6 +339,9 @@ class RoundSerializer(serializers.ModelSerializer):
     datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
     districts_count_calculated = serializers.IntegerField(read_only=True)
 
+    # Vaccines from real scopes, from property, separated by ,
+    vaccine_names = serializers.CharField(read_only=True)
+
     @atomic
     def create(self, validated_data):
         request = self.context.get("request")

@@ -6,7 +6,6 @@ from iaso import models as m
 from iaso.models import Profile, BulkCreateUserCsvFile
 from iaso.test import APITestCase
 
-
 BASE_URL = "/api/bulkcreateuser/"
 
 
@@ -312,3 +311,20 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(org_unit_ids, [9999])
 
         self.assertEqual(response.data, {"Accounts created": 2})
+
+    def test_upload_csv_with_missing_column(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_missing_columns.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {
+                "error": "Something is wrong with your CSV File. Possibly missing {'permissions'} column(s). Your "
+                "columns: ['username', 'password', 'email', 'first_name', 'last_name', 'orgunit', "
+                "'profile_language', 'dhis2_id']Expected columns: ['username', 'password', 'email', "
+                "'first_name', 'last_name', 'orgunit', 'profile_language', 'dhis2_id', 'permissions']"
+            },
+        )

@@ -41,9 +41,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr,"iaso_submissions, iaso_forms"
 
+    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id"]
+
     Email is not mandatory, but you must keep the email column.
 
     You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
+
 
     The permissions are :
 
@@ -83,11 +86,25 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         user_created_count = 0
+        columns_list = [
+            "username",
+            "password",
+            "email",
+            "first_name",
+            "last_name",
+            "orgunit",
+            "profile_language",
+            "dhis2_id",
+            "permissions",
+        ]
         if request.FILES:
             user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
+
+            # Retrieve and check the validity and format of the CSV File
             try:
                 user_csv = request.FILES["file"]
                 user_csv_decoded = user_csv.read().decode("utf-8")
+                csv_str = io.StringIO(user_csv_decoded)
 
                 try:
                     dialect = csv.Sniffer().sniff(user_csv_decoded)
@@ -98,11 +115,12 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except Exception:
                         raise serializers.ValidationError({"error": "Error : CSV File incorrectly formatted."})
 
-                csv_str = io.StringIO(user_csv_decoded)
-
                 reader = csv.reader(csv_str, delimiter=delimiter)
+                pd.read_csv(io.BytesIO(csv_str.getvalue().encode()))
             except UnicodeDecodeError as e:
-                raise serializers.ValidationError({"error": "Operation aborted. Error: {}".format(e)})
+                raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
+            except pd.errors.ParserError as e:
+                raise serializers.ValidationError({"error": f"Invalid CSV File. Error: {e}"})
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
@@ -110,6 +128,16 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             file_instance.save()
 
             for i, row in enumerate(reader):
+                print(csv_indexes)
+                if i > 0 and not set(columns_list).issubset(csv_indexes):
+                    missing_elements = set(columns_list) - set(csv_indexes)
+                    raise serializers.ValidationError(
+                        {
+                            "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."
+                            f" Your columns: {csv_indexes}"
+                            f"Expected columns: {columns_list}"
+                        }
+                    )
                 org_units_list = []
                 if i > 0:
                     email_address = True if row[csv_indexes.index("email")] else None
@@ -244,7 +272,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     else:
                         profile.language = "fr"
                     profile.org_units.set(org_units_list)
-                    csv_file = pd.read_csv(io.StringIO(file_instance.file.read().decode("utf-8")), delimiter=delimiter)
+                    csv_file = pd.read_csv(io.BytesIO(csv_str.getvalue().encode()))
                     csv_file.at[i - 1, "password"] = None
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)
                     content_file = ContentFile(csv_file.encode("utf-8"))

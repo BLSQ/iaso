@@ -1822,8 +1822,6 @@ def calculate_country_status(country_data, scope, roundNumber):
     passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
     if passing_ratio >= 80:
         return "1lqasOK"
-    if passing_ratio >= 50:
-        return "2lqasDisqualified"
     return "3lqasFail"
 
 

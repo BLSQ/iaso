@@ -1434,7 +1434,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
     """
 
     def list(self, request):
-        no_cache = request.GET.get("no_cache", "true") == "true"
+        no_cache = request.GET.get("no_cache", "false") == "true"
         requested_country = request.GET.get("country_id", None)
         if requested_country is None:
             return HttpResponseBadRequest
@@ -1693,7 +1693,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             cache.set(
                 "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]),
                 json.dumps(response),
-                1,
+                3600,
                 version=CACHE_VERSION,
             )
         return JsonResponse(response, safe=False)

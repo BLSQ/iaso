@@ -35,17 +35,20 @@ class HasUserPermission(permissions.BasePermission):
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
     """Api endpoint to bulkcreate users and profiles from a CSV File.
 
-    Sample csv input:
-
-    username,password,email,first_name,last_name,orgunit,profile_language,permissions
-
-    simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr,"iaso_submissions, iaso_forms"
-
     Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id"]
 
-    Email is not mandatory, but you must keep the email column.
+    Email, dhis2_id, permissions, profile_language and org_unit are not mandatory, but you must keep the columns.
+
+    Sample csv input:
+
+    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id
+
+    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3
 
     You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
+    You can add multiples org_units for the same user by ID or Name : "28334, Bas Uele, 9999"
+
+    It's a better practice and less error-prone to use org_units IDs instead of names.
 
 
     The permissions are :

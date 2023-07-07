@@ -131,7 +131,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             file_instance.save()
 
             for i, row in enumerate(reader):
-                print(csv_indexes)
                 if i > 0 and not set(columns_list).issubset(csv_indexes):
                     missing_elements = set(columns_list) - set(csv_indexes)
                     raise serializers.ValidationError(

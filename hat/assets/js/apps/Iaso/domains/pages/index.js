@@ -19,8 +19,8 @@ import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
 import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
-import { useCurrentUser } from '../../utils/usersUtils';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -177,7 +177,7 @@ const Pages = ({ params }) => {
                 },
             },
         ],
-        [handleClickDeleteRow, handleClickEditRow],
+        [currentUser, handleClickDeleteRow, handleClickEditRow, intl],
     );
 
     return (

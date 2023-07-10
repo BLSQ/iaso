@@ -313,7 +313,7 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
         ]
 
     modified_by = UserSerializer(required=False, read_only=True)
-    round: Round = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
+    round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
 
     def validate(self, data):
         if not data["reason"]:

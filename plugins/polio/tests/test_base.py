@@ -585,7 +585,9 @@ class PolioAPITestCase(APITestCase):
 
         RoundScope.objects.create(vaccine="nOPV2", group=org_units_group_1, round=c_round_1)
         RoundScope.objects.create(vaccine="mOPV2", group=org_units_group_2, round=c_round_2)
-
+        c.separate_scopes_per_round = True
+        c.save()
+        c.refresh_from_db()
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.get("Content-Disposition"), "attachment; filename=calendar_2022-10-01.xlsx")
@@ -594,6 +596,11 @@ class PolioAPITestCase(APITestCase):
         excel_columns = excel_data.columns.ravel()
         self.assertEqual(excel_columns[0], "COUNTRY")
         self.assertEqual(excel_columns[3], "March")
+
+        data_dict = excel_data.to_dict()
+        self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
+        self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
+        self.assertEqual(data_dict["January"][1], self.format_date_to_test(c, c_round_2))
 
     @staticmethod
     def format_date_to_test(campaign, round):
@@ -608,7 +615,7 @@ class PolioAPITestCase(APITestCase):
             + " - "
             + ended_at
             + "\n"
-            + campaign.vaccines
+            + round.vaccine_names()
             + "\n"
         )
 

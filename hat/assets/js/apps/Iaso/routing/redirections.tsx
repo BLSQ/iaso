@@ -4,13 +4,13 @@ import { Redirect, Route } from 'react-router';
 import { getSort } from 'bluesquare-components';
 
 import { cloneDeep } from 'lodash';
+import React from 'react';
 import { baseUrls } from '../constants/urls';
 import Page404 from '../components/errors/Page404';
 
 import { defaultSorted as storageDefaultSort } from '../domains/storages/config';
 import { defaultSorted as workflowDefaultSort } from '../domains/workflows/config/index';
 import { getOrgUnitsUrl } from '../domains/orgUnits/utils';
-import React from 'react';
 
 type Redirection =
     | { path: string; to: any; component: undefined }
@@ -68,7 +68,7 @@ const getRedirections: (overrideLanding: boolean) => Redirection[] =
             },
             {
                 path: `${baseUrls.teams}`,
-                to: `${baseUrls.teams}${getPaginationParams('name')}`,
+                to: `${baseUrls.teams}${getPaginationParams('id')}`,
             },
             {
                 path: `${baseUrls.storages}`,

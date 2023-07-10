@@ -9,7 +9,7 @@ import { OrgunitTypesApi } from '../../types/orgunitTypes';
 import { staleTime } from '../../config';
 
 const getOrgunitTypes = (): Promise<OrgunitTypesApi> => {
-    return getRequest('/api/orgunittypes/');
+    return getRequest('/api/v2/orgunittypes/');
 };
 
 export const useGetOrgUnitTypes = (): UseQueryResult<

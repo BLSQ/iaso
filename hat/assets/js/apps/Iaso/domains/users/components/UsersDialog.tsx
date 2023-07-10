@@ -1,17 +1,17 @@
 /* eslint-disable camelcase */
-import React, {
-    useState,
-    FunctionComponent,
-    useCallback,
-    useEffect,
-    ReactElement,
-} from 'react';
+import React, { useState, FunctionComponent, useCallback } from 'react';
 import { useDispatch } from 'react-redux';
 import { Tabs, Tab, makeStyles } from '@material-ui/core';
-import { IntlMessage, useSafeIntl } from 'bluesquare-components';
+import {
+    IntlMessage,
+    useSafeIntl,
+    makeFullModal,
+    ConfirmCancelModal,
+    AddButton,
+    IconButton,
+} from 'bluesquare-components';
 
 import { MutateFunction } from 'react-query';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
 import UsersInfos from './UsersInfos';
 import { fetchCurrentUser } from '../actions';
@@ -47,49 +47,41 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     titleMessage: IntlMessage;
-    renderTrigger: ReactElement;
     initialData?: InitialUserData;
     saveProfile: MutateFunction<Profile, any>;
     allowSendEmailInvitation?: boolean;
-    forceRefresh: boolean;
+    isOpen: boolean;
+    closeDialog: () => void;
 };
 // Declaring defaultData here because using initialData={} in the props below will cause and infinite loop
 const defaultData: InitialUserData = {};
 const UserDialogComponent: FunctionComponent<Props> = ({
     titleMessage,
-    renderTrigger,
+    isOpen,
     initialData = defaultData,
     saveProfile,
     allowSendEmailInvitation = false,
-    forceRefresh = false,
+    closeDialog,
 }) => {
     const connectedUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
-    const { user, resetUser, setFieldValue, setFieldErrors } =
-        useInitialUser(initialData);
+    const { user, setFieldValue, setFieldErrors } = useInitialUser(initialData);
     const [tab, setTab] = useState('infos');
     const [openWarning, setOpenWarning] = useState<boolean>(false);
-    const [renderCount, setRenderCount] = useState<number>(0);
-    const onClosed = () => {
-        resetUser();
-        setTab('infos');
-    };
     const saveUser = useCallback(() => {
         const currentUser: any = {};
         Object.keys(user).forEach(key => {
             currentUser[key] = user[key].value;
         });
-
         saveProfile(currentUser, {
             onSuccess: () => {
-                setTab('infos');
-                resetUser();
                 if (currentUser.id === connectedUser.id) {
                     dispatch(fetchCurrentUser());
                 }
+                closeDialog();
             },
             onError: error => {
                 if (error.status === 400) {
@@ -101,114 +93,136 @@ const UserDialogComponent: FunctionComponent<Props> = ({
             },
         });
     }, [
-        connectedUser?.id,
+        closeDialog,
+        connectedUser.id,
         dispatch,
-        resetUser,
         saveProfile,
         setFieldErrors,
         user,
     ]);
 
     const onConfirm = useCallback(() => {
-        if ((user?.permissions.value ?? []).length > 0) {
+        if (
+            (user?.permissions.value ?? []).length > 0 ||
+            initialData?.is_superuser
+        ) {
             saveUser();
         } else {
             setOpenWarning(true);
         }
-    }, [saveUser, user?.permissions.value]);
-    // Workaround to force the modal to close when saving a new user without permissions.
-    // (Because closeDialog cound't be passed to the child WarningModal)
-    useEffect(() => {
-        if (forceRefresh) {
-            setRenderCount(v => v + 1);
-        }
-    }, [forceRefresh]);
-
+    }, [initialData?.is_superuser, saveUser, user?.permissions.value]);
     return (
-        // @ts-ignore
-        <ConfirmCancelDialogComponent
-            key={renderCount}
-            titleMessage={titleMessage}
-            onConfirm={() => onConfirm()}
-            cancelMessage={MESSAGES.cancel}
-            confirmMessage={MESSAGES.save}
-            onClosed={() => onClosed()}
-            renderTrigger={renderTrigger}
-            maxWidth="sm"
-            dialogProps={{
-                classNames: classes.dialog,
-            }}
-        >
+        <>
             <WarningModal
                 open={openWarning}
                 closeDialog={() => setOpenWarning(false)}
                 onConfirm={saveUser}
             />
-            <Tabs
-                id="user-dialog-tabs"
-                value={tab}
-                classes={{
-                    root: classes.tabs,
+
+            <ConfirmCancelModal
+                titleMessage={titleMessage}
+                onConfirm={onConfirm}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.save}
+                maxWidth="sm"
+                open={isOpen}
+                closeDialog={() => null}
+                allowConfirm={
+                    !(
+                        user.user_name.value === '' ||
+                        (!user.id?.value && user.password.value === '')
+                    )
+                }
+                onClose={() => null}
+                onCancel={() => {
+                    closeDialog();
                 }}
-                onChange={(_event, newtab) => setTab(newtab)}
+                id="user-dialog"
+                dataTestId="user-dialog"
             >
-                <Tab
+                <Tabs
+                    id="user-dialog-tabs"
+                    value={tab}
                     classes={{
-                        root: classes.tab,
+                        root: classes.tabs,
                     }}
-                    value="infos"
-                    label={formatMessage(MESSAGES.infos)}
-                />
-                <Tab
-                    classes={{
-                        root: classes.tab,
-                    }}
-                    value="permissions"
-                    label={formatMessage(MESSAGES.permissions)}
-                />
-                <Tab
-                    classes={{
-                        root: classes.tab,
-                    }}
-                    value="locations"
-                    label={formatMessage(MESSAGES.location)}
-                />
-            </Tabs>
-            <div className={classes.root} id="user-profile-dialog">
-                {tab === 'infos' && (
-                    <UsersInfos
-                        setFieldValue={(key, value) =>
-                            setFieldValue(key, value)
-                        }
-                        initialData={initialData}
-                        currentUser={user}
-                        allowSendEmailInvitation={allowSendEmailInvitation}
-                    />
-                )}
-                <div
-                    className={
-                        tab === 'permissions' ? '' : classes.hiddenOpacity
-                    }
+                    onChange={(_event, newtab) => setTab(newtab)}
                 >
-                    <PermissionsSwitches
-                        isSuperUser={initialData?.is_superuser}
-                        currentUser={user}
-                        handleChange={permissions =>
-                            setFieldValue('permissions', permissions)
-                        }
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="infos"
+                        label={formatMessage(MESSAGES.infos)}
                     />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="permissions"
+                        label={formatMessage(MESSAGES.permissions)}
+                    />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="locations"
+                        label={formatMessage(MESSAGES.location)}
+                    />
+                </Tabs>
+                <div className={classes.root} id="user-profile-dialog">
+                    {tab === 'infos' && (
+                        <UsersInfos
+                            setFieldValue={(key, value) =>
+                                setFieldValue(key, value)
+                            }
+                            initialData={initialData}
+                            currentUser={user}
+                            allowSendEmailInvitation={allowSendEmailInvitation}
+                        />
+                    )}
+                    <div
+                        className={
+                            tab === 'permissions' ? '' : classes.hiddenOpacity
+                        }
+                    >
+                        <PermissionsSwitches
+                            isSuperUser={initialData?.is_superuser}
+                            currentUser={user}
+                            handleChange={permissions =>
+                                setFieldValue('user_permissions', permissions)
+                            }
+                        />
+                    </div>
+                    {tab === 'locations' && (
+                        <UsersLocations
+                            handleChange={ouList =>
+                                setFieldValue('org_units', ouList)
+                            }
+                            currentUser={user}
+                        />
+                    )}
                 </div>
-                {tab === 'locations' && (
-                    <UsersLocations
-                        handleChange={ouList =>
-                            setFieldValue('org_units', ouList)
-                        }
-                        currentUser={user}
-                    />
-                )}
-            </div>
-        </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
+        </>
     );
 };
 
-export default UserDialogComponent;
+type PropsIcon = {
+    onClick: () => void;
+};
+
+export const EditIconButton: FunctionComponent<PropsIcon> = ({ onClick }) => {
+    return (
+        <IconButton
+            onClick={onClick}
+            icon="edit"
+            tooltipMessage={MESSAGES.edit}
+        />
+    );
+};
+
+const modalWithButton = makeFullModal(UserDialogComponent, AddButton);
+const modalWithIcon = makeFullModal(UserDialogComponent, EditIconButton);
+
+export { modalWithButton as AddUsersDialog, modalWithIcon as EditUsersDialog };

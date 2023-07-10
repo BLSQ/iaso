@@ -14,6 +14,8 @@ MANIFEST_URL = "/api/forms/{form_id}/manifest/"
 
 
 class FormAttachmentsAPITestCase(APITestCase):
+    project_1: m.Project
+
     @classmethod
     def setUpTestData(cls):
         time = cls.now = now()
@@ -279,3 +281,13 @@ class FormAttachmentsAPITestCase(APITestCase):
             self.assertEqual("text/xml", response["Content-Type"], response.content)
 
         return response.content
+
+    def test_manifest_anonymous_app_id(self):
+        f"""GET {BASE_URL} via app id"""
+
+        response = self.client.get(
+            MANIFEST_URL.format(form_id=self.form_2.id),
+            headers={"Content-Type": "application/json"},
+            data={"app_id": self.project_1.app_id},
+        )
+        self.assertXMLResponse(response, 200)

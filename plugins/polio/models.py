@@ -238,6 +238,28 @@ class Round(models.Model):
             return False
         return round.ended_at < date.today()
 
+    def vaccine_names(self):
+        # only take into account scope which have orgunit attached
+        campaign = self.campaign
+        if campaign.separate_scopes_per_round:
+            return ", ".join(
+                scope.vaccine
+                for scope in self.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
+        else:
+            return ",".join(
+                scope.vaccine
+                for scope in campaign.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
+
+    @property
+    def districts_count_calculated(self):
+        return self.campaign.get_districts_for_round(self).count()
+
 
 class CampaignQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
@@ -602,6 +624,7 @@ class Campaign(SoftDeletableModel):
 
     @property
     def vaccines(self):
+        # only take into account scope which have orgunit attached
         if self.separate_scopes_per_round:
             vaccines = set()
             for round in self.rounds.all():

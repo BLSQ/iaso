@@ -1,14 +1,17 @@
 import operator
+from datetime import datetime
 from functools import reduce
 from itertools import combinations
 
-from django.db.models import Q
+from django.db.models import Q, TextField
+from django.db.models.expressions import RawSQL
+from django.db.models.functions import Cast
+from django.utils import timezone
 from rest_framework import filters
 
 from iaso.models import OrgUnit
-from datetime import datetime
-from django.utils import timezone
 from iaso.models.deduplication import ValidationStatus
+from rest_framework.filters import OrderingFilter
 
 
 class EntityIdFilterBackend(filters.BaseFilterBackend):
@@ -26,9 +29,19 @@ class EntitySearchFilterBackend(filters.BaseFilterBackend):
         search = request.query_params.get("search")
 
         if search:
-            queryset = queryset.filter(
-                Q(entity1__name__icontains=search) | Q(entity2__name__icontains=search)
-            ).distinct()
+            queryset = (
+                queryset.select_related("entity1")
+                .select_related("entity2")
+                .annotate(entity1_json_as_text=Cast("entity1__attributes__json", TextField()))
+                .annotate(entity2_json_as_text=Cast("entity2__attributes__json", TextField()))
+                .filter(
+                    Q(entity1__name__icontains=search)
+                    | Q(entity2__name__icontains=search)
+                    | Q(entity1_json_as_text__icontains=search)
+                    | Q(entity2_json_as_text__icontains=search)
+                )
+                .distinct()
+            )
 
         return queryset
 
@@ -215,3 +228,19 @@ class IgnoredMergedFilterBackend(filters.BaseFilterBackend):
             queryset = queryset.filter(qs[0])
 
         return queryset
+
+
+class CustomOrderingFilter(OrderingFilter):
+    def get_ordering(self, request, queryset, view):
+        ordering = super().get_ordering(request, queryset, view)
+        if ordering:
+            new_ordering = []
+            for field in ordering:
+                if field == "similarity_star":  # fix bug because frontend is using the stars not the score
+                    new_ordering.append("similarity_score")
+                elif field == "-similarity_star":
+                    new_ordering.append("-similarity_score")
+                else:
+                    new_ordering.append(field)
+            return new_ordering
+        return ordering

@@ -31,7 +31,7 @@ describe('Forms details', () => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');
         cy.intercept('GET', '/api/profiles/me/**', superUser);
-        cy.intercept('GET', '/api/orgunittypes/**', orgUnitTypes);
+        cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes);
         cy.intercept('GET', '/api/projects/**', projects);
         // TODO paramatrise form_id
         cy.intercept(

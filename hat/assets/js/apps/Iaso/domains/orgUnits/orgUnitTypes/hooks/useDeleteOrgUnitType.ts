@@ -3,7 +3,7 @@ import { deleteRequest } from '../../../../libs/Api';
 import { useSnackMutation } from '../../../../libs/apiHooks';
 
 const deleteOrgUnitType = (id: number) =>
-    deleteRequest(`/api/orgunittypes/${id}/`);
+    deleteRequest(`/api/v2/orgunittypes/${id}/`);
 
 export const useDeleteOrgUnitType = (): UseMutationResult => {
     return useSnackMutation({

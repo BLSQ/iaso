@@ -35,6 +35,8 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const { data, isFetching } = useGetTeams(apiParams);
     const { mutate: deleteTeam } = useDeleteTeam();
+    const defaultSorted = [{ id: 'id', desc: true }];
+
     return (
         <>
             <TopBar
@@ -50,7 +52,7 @@ export const Teams: FunctionComponent<Props> = ({ params }) => {
                     baseUrl={baseUrl}
                     data={data?.results ?? []}
                     pages={data?.pages ?? 1}
-                    defaultSorted={[{ id: 'name', desc: false }]}
+                    defaultSorted={defaultSorted}
                     columns={teamColumns(formatMessage, deleteTeam)}
                     count={data?.count ?? 0}
                     params={apiParams}

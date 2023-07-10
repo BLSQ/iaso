@@ -28,7 +28,7 @@ export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
         });
 
 export const fetchOrgUnitsTypes = dispatch =>
-    getRequest('/api/orgunittypes/')
+    getRequest('/api/v2/orgunittypes/')
         .then(res => res.orgUnitTypes)
         .catch(error => {
             dispatch(

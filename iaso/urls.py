@@ -12,6 +12,7 @@ from iaso.api.data_store import DataStoreViewSet
 from iaso.api.tasks.create.copy_version import CopyVersionViewSet
 from iaso.api.tasks.create.dhis2_ou_importer import Dhis2OuImporterViewSet
 from iaso.api.tasks.create.org_units_bulk_update import OrgUnitsBulkUpdate
+from iaso.api.tasks.create.profiles_bulk_update import ProfilesBulkUpdate
 from iaso.models import MatchingAlgorithm
 from plugins.router import router as plugins_router
 from .api.accounts import AccountViewSet
@@ -53,6 +54,7 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
+from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -60,6 +62,7 @@ from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
+from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_units import OrgUnitViewSet
 from .api.pages import PagesViewSet
 from .api.periods import PeriodsViewSet
@@ -88,6 +91,7 @@ router = routers.DefaultRouter()
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
+router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
 router.register(r"instances", InstancesViewSet, basename="instances")
@@ -123,6 +127,7 @@ router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
 router.register(r"dhis2ouimporter", Dhis2OuImporterViewSet, basename="dhis2ouimporter")
 router.register(r"setupaccount", SetupAccountViewSet, basename="setupaccount")
 router.register(r"tasks/create/orgunitsbulkupdate", OrgUnitsBulkUpdate, basename="orgunitsbulkupdate")
+router.register(r"tasks/create/profilesbulkupdate", ProfilesBulkUpdate, basename="profilesbulkupdate")
 router.register(r"tasks/create/orgunitsbulklocationset", OrgUnitsBulkLocationSet, basename="orgunitsbulklocationset")
 router.register(r"tasks/create/importgpkg", ImportGPKGViewSet, basename="importgpkg")
 router.register(r"tasks", TaskSourceViewSet, basename="tasks")
@@ -153,6 +158,8 @@ router.register(r"userroles", UserRolesViewSet, basename="userroles")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
+
+router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 
 router.registry.extend(plugins_router.registry)
 
@@ -200,7 +207,6 @@ urlpatterns = urlpatterns + [
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
 ]
-
 
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)

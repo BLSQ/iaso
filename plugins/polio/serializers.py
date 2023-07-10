@@ -310,6 +310,7 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
             "reason",
             "ended_at",
             "started_at",
+            "round",
             "previous_ended_at",
             "previous_started_at",
             "modified_by",
@@ -341,6 +342,10 @@ class RoundSerializer(serializers.ModelSerializer):
     shipments = ShipmentSerializer(many=True, required=False)
     destructions = DestructionSerializer(many=True, required=False)
     datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
+    districts_count_calculated = serializers.IntegerField(read_only=True)
+
+    # Vaccines from real scopes, from property, separated by ,
+    vaccine_names = serializers.CharField(read_only=True)
 
     @atomic
     def create(self, validated_data):
@@ -380,15 +385,28 @@ class RoundSerializer(serializers.ModelSerializer):
 
         has_datelog = instance.datelogs.count() > 0
         if updated_datelogs:
+            new_datelog = updated_datelogs[-1]
+            datelog = None
             if has_datelog:
-                datelog = RoundDateHistoryEntry.objects.create(round=instance, modified_by=user)
+                last_entry = instance.datelogs.order_by("-created_at").first()
+                # if instance.datelogs.count() >= len(updated_datelogs) it means there was an update that was missed between input and confirmation
+                # This could lead to errors in the log with the previous_started_at and previous_ended_at fields
+                if len(updated_datelogs) >= instance.datelogs.count():
+                    new_datelog["previous_started_at"] = last_entry.started_at
+                    new_datelog["previous_ended_at"] = last_entry.ended_at
+                if (
+                    new_datelog["reason"] != last_entry.reason
+                    or new_datelog["started_at"] != last_entry.started_at
+                    or new_datelog["ended_at"] != last_entry.ended_at
+                ) and new_datelog["reason"] != "INITIAL_DATA":
+                    datelog = RoundDateHistoryEntry.objects.create(round=instance, modified_by=user)
             else:
                 datelog = RoundDateHistoryEntry.objects.create(round=instance, reason="INITIAL_DATA", modified_by=user)
-            new_datelog = updated_datelogs[-1]
-            datelog_serializer = RoundDateHistoryEntrySerializer(instance=datelog, data=new_datelog)
-            datelog_serializer.is_valid(raise_exception=True)
-            datelog_instance = datelog_serializer.save()
-            instance.datelogs.add(datelog_instance)
+            if datelog is not None:
+                datelog_serializer = RoundDateHistoryEntrySerializer(instance=datelog, data=new_datelog)
+                datelog_serializer.is_valid(raise_exception=True)
+                datelog_instance = datelog_serializer.save()
+                instance.datelogs.add(datelog_instance)
 
         # VACCINE STOCK
         vaccines = validated_data.pop("vaccines", [])

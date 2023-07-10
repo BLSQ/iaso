@@ -87,22 +87,22 @@ if args.localuser and args.localpwd:
 
     not_created = []
     created = []
-    #Get data from local data store, so we can decide whether to POST or PUSH
+    # Get data from local data store, so we can decide whether to POST or PUSH
     local_store_curl_output = subprocess.check_output(
-    [
-        "curl",
-        "-s",
-        "-X",
-        "GET",
-        "-H",
-        f"Authorisation: Bearer {local_token}",  # type: ignore
-        "-H",
-        f"Content-Type: application/json",
-        "-u",
-        f"{args.localuser}:{args.localpwd}",
-        f"{to}api/datastore/?format=json",
-    ],
-    stderr=subprocess.STDOUT,
+        [
+            "curl",
+            "-s",
+            "-X",
+            "GET",
+            "-H",
+            f"Authorisation: Bearer {local_token}",  # type: ignore
+            "-H",
+            f"Content-Type: application/json",
+            "-u",
+            f"{args.localuser}:{args.localpwd}",
+            f"{to}api/datastore/?format=json",
+        ],
+        stderr=subprocess.STDOUT,
     )
     local_store = json.loads(local_store_curl_output.decode("UTF-8"))["results"]
 

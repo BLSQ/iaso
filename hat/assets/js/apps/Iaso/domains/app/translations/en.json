@@ -776,6 +776,7 @@
     "iaso.permissions.iaso_entity_duplicates_write": "Edit entity duplicates",
     "iaso.permissions.iaso_org_unit_groups": "Org unit groups",
     "iaso.permissions.iaso_org_unit_types": "Org unit types",
+    "iaso.permissions.iaso_page_write": "Edit page",
     "iaso.permissions.iaso_registry": "Registry",
     "iaso.permissions.iaso_workflows": "Workflows",
     "iaso.permissions.links": "Sources matching",

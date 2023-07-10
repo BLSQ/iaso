@@ -20,6 +20,7 @@ from .models import (
     Round,
     LineListImport,
     VIRUSES,
+    RoundDateHistoryEntry,
     RoundVaccine,
     Shipment,
     Destruction,
@@ -297,6 +298,36 @@ class RoundVaccineSerializer(serializers.ModelSerializer):
         fields = ["wastage_ratio_forecast", "doses_per_vial", "name", "id"]
 
 
+class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RoundDateHistoryEntry
+        fields = [
+            "created_at",
+            "reason",
+            "ended_at",
+            "started_at",
+            "round",
+            "previous_ended_at",
+            "previous_started_at",
+            "modified_by",
+        ]
+
+    modified_by = UserSerializer(required=False, read_only=True)
+
+    def validate(self, data):
+        if not data["reason"]:
+            raise serializers.ValidationError("No reason provided")
+        start_date = data["started_at"]
+        end_date = data["ended_at"]
+        start_date_changed = start_date != data["previous_started_at"]
+        end_date_changed = start_date != data["previous_ended_at"]
+        if start_date and end_date and end_date < start_date:
+            raise serializers.ValidationError("End date should be after start date")
+        if not start_date_changed and not end_date_changed:
+            raise serializers.ValidationError("No date was modified")
+        return super().validate(data)
+
+
 class RoundSerializer(serializers.ModelSerializer):
     class Meta:
         model = Round
@@ -306,13 +337,29 @@ class RoundSerializer(serializers.ModelSerializer):
     vaccines = RoundVaccineSerializer(many=True, required=False)
     shipments = ShipmentSerializer(many=True, required=False)
     destructions = DestructionSerializer(many=True, required=False)
+    datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
+    districts_count_calculated = serializers.IntegerField(read_only=True)
+
+    # Vaccines from real scopes, from property, separated by ,
+    vaccine_names = serializers.CharField(read_only=True)
 
     @atomic
     def create(self, validated_data):
+        request = self.context.get("request")
+        user = request.user
         vaccines = validated_data.pop("vaccines", [])
         shipments = validated_data.pop("shipments", [])
         destructions = validated_data.pop("destructions", [])
+        started_at = validated_data.get("started_at", None)
+        ended_at = validated_data.get("ended_at", None)
         round = Round.objects.create(**validated_data)
+        if started_at is not None or ended_at is not None:
+            datelog = RoundDateHistoryEntry.objects.create(round=round, reason="INITIAL_DATA", modified_by=user)
+            if started_at is not None:
+                datelog.started_at = started_at
+            if ended_at is not None:
+                datelog.ended_at = ended_at
+            datelog.save()
         for vaccine in vaccines:
             RoundVaccine.objects.create(round=round, **vaccine)
         for shipment in shipments:
@@ -323,14 +370,43 @@ class RoundSerializer(serializers.ModelSerializer):
 
     @atomic
     def update(self, instance, validated_data):
+        request = self.context.get("request")
+        user = request.user
+        updated_datelogs = validated_data.pop("datelogs", [])
+        # from pprint import pprint
+
+        # print("DATELOGS")
+        # pprint(validated_data)
+        # pprint(self.data)
+
+        has_datelog = instance.datelogs.count() > 0
+        if updated_datelogs:
+            new_datelog = updated_datelogs[-1]
+            datelog = None
+            if has_datelog:
+                last_entry = instance.datelogs.order_by("-created_at").first()
+                # if instance.datelogs.count() >= len(updated_datelogs) it means there was an update that was missed between input and confirmation
+                # This could lead to errors in the log with the previous_started_at and previous_ended_at fields
+                if len(updated_datelogs) >= instance.datelogs.count():
+                    new_datelog["previous_started_at"] = last_entry.started_at
+                    new_datelog["previous_ended_at"] = last_entry.ended_at
+                if (
+                    new_datelog["reason"] != last_entry.reason
+                    or new_datelog["started_at"] != last_entry.started_at
+                    or new_datelog["ended_at"] != last_entry.ended_at
+                ) and new_datelog["reason"] != "INITIAL_DATA":
+                    datelog = RoundDateHistoryEntry.objects.create(round=instance, modified_by=user)
+            else:
+                datelog = RoundDateHistoryEntry.objects.create(round=instance, reason="INITIAL_DATA", modified_by=user)
+            if datelog is not None:
+                datelog_serializer = RoundDateHistoryEntrySerializer(instance=datelog, data=new_datelog)
+                datelog_serializer.is_valid(raise_exception=True)
+                datelog_instance = datelog_serializer.save()
+                instance.datelogs.add(datelog_instance)
+
+        # VACCINE STOCK
         vaccines = validated_data.pop("vaccines", [])
         vaccine_instances = []
-        shipments = validated_data.pop("shipments", [])
-        shipment_instances = []
-        current_shipment_ids = []
-        destructions = validated_data.pop("destructions", [])
-        destruction_instances = []
-        current_destruction_ids = []
         for vaccine_data in vaccines:
             round_vaccine = None
             if vaccine_data.get("id"):
@@ -345,6 +421,12 @@ class RoundSerializer(serializers.ModelSerializer):
             round_vaccine_serializer.is_valid(raise_exception=True)
             round_vaccine_instance = round_vaccine_serializer.save()
             vaccine_instances.append(round_vaccine_instance)
+        instance.vaccines.set(vaccine_instances)
+
+        # SHIPMENTS
+        shipments = validated_data.pop("shipments", [])
+        shipment_instances = []
+        current_shipment_ids = []
         for shipment_data in shipments:
             if shipment_data.get("id"):
                 shipment_id = shipment_data["id"]
@@ -358,12 +440,18 @@ class RoundSerializer(serializers.ModelSerializer):
             shipment_serializer.is_valid(raise_exception=True)
             shipment_instance = shipment_serializer.save()
             shipment_instances.append(shipment_instance)
-        # remove deleted shipments, ie existing shipments whose id wan't sent in the request
+        # remove deleted shipments, ie existing shipments whose id wasn't sent in the request
         all_current_shipments = instance.shipments.all()
         for current in all_current_shipments:
             if current_shipment_ids.count(current.id) == 0:
                 current.delete()
+        instance.shipments.set(shipment_instances)
+
+        # DESTRUCTIONS
         # TODO put repeated code in a function
+        destructions = validated_data.pop("destructions", [])
+        destruction_instances = []
+        current_destruction_ids = []
         for destruction_data in destructions:
             if destruction_data.get("id"):
                 destruction_id = destruction_data["id"]
@@ -382,9 +470,8 @@ class RoundSerializer(serializers.ModelSerializer):
         for current in all_current_destructions:
             if current_destruction_ids.count(current.id) == 0:
                 current.delete()
-        instance.vaccines.set(vaccine_instances)
-        instance.shipments.set(shipment_instances)
         instance.destructions.set(destruction_instances)
+
         round = super().update(instance, validated_data)
         # update the preparedness cache in case we touched the spreadsheet url
         set_preparedness_cache_for_round(round)
@@ -635,7 +722,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
         for round_data in rounds:
             scopes = round_data.pop("scopes", [])
-            round_serializer = RoundSerializer(data={**round_data, "campaign": campaign.id})
+            round_serializer = RoundSerializer(data={**round_data, "campaign": campaign.id}, context=self.context)
             round_serializer.is_valid(raise_exception=True)
             round = round_serializer.save()
 
@@ -699,7 +786,7 @@ class CampaignSerializer(serializers.ModelSerializer):
                 round = Round.objects.get(pk=round_id)
                 if round.campaign != instance:
                     raise serializers.ValidationError({"rounds": "round is attached to a different campaign"})
-            elif round_data.get("number"):
+            elif round_data.get("number", None) is not None:
                 try:
                     round = instance.rounds.get(number=round_data.get("number"))
                 except Round.DoesNotExist:
@@ -707,7 +794,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             # we pop the campaign since we use the set afterward which will also remove the deleted one
             round_data.pop("campaign", None)
             scopes = round_data.pop("scopes", [])
-            round_serializer = RoundSerializer(instance=round, data=round_data)
+            round_serializer = RoundSerializer(instance=round, data=round_data, context=self.context)
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()
             round_instances.append(round_instance)
@@ -1040,6 +1127,19 @@ class ExportCampaignSerializer(CampaignSerializer):
                     "wastage_ratio_forecast",
                 ]
 
+        class NestedRoundDateHistoryEntrySerializer(RoundVaccineSerializer):
+            class Meta:
+                model = RoundDateHistoryEntry
+                fields = [
+                    "previous_started_at",
+                    "previous_ended_at",
+                    "started_at",
+                    "ended_at",
+                    "reason",
+                    "modified_by",
+                    "created_at",
+                ]
+
         class Meta:
             model = Round
             fields = [
@@ -1050,6 +1150,7 @@ class ExportCampaignSerializer(CampaignSerializer):
                 "number",
                 "started_at",
                 "ended_at",
+                "datelogs",
                 "mop_up_started_at",
                 "mop_up_ended_at",
                 "im_started_at",
@@ -1086,6 +1187,7 @@ class ExportCampaignSerializer(CampaignSerializer):
         vaccines = NestedRoundVaccineSerializer(many=True, required=False)
         shipments = NestedShipmentSerializer(many=True, required=False)
         destructions = NestedDestructionSerializer(many=True, required=False)
+        datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
 
     class ExportCampaignScopeSerializer(CampaignScopeSerializer):
         class Meta:

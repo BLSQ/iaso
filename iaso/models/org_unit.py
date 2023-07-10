@@ -10,7 +10,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
@@ -87,6 +87,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         return queryset
 
 
+OrgUnitTypeManager = models.Manager.from_queryset(OrgUnitTypeQuerySet)
+
+
 class OrgUnitType(models.Model):
     """A type of org unit, such as a country, a province, a district, a health facility, etc.
 
@@ -105,11 +108,13 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
+    # Allow the creation of these sub org unit types only for mobile (IA-2153)"
+    allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
     reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
-    objects = OrgUnitTypeQuerySet.as_manager()
+    objects = OrgUnitTypeManager()
 
     def __str__(self):
         return "%s" % self.name

@@ -52,8 +52,11 @@ WORKFLOWS = _("Workflows")
 REPORTS = _("Reports")
 ENTITY_DUPLICATES_READ = _("Read Entity duplicates")
 ENTITY_DUPLICATES_WRITE = _("Write Entity duplicates")
+USER_ROLES = _("Manage user roles")
 DATASTORE_READ = _("Read data store")
 DATASTORE_WRITE = _("Write data store")
+ORG_UNIT_TYPES = _("Org unit types")
+ORG_UNIT_GROUPS = _("Org unit groups")
 
 
 class CustomPermissionSupport(models.Model):
@@ -111,6 +114,9 @@ class CustomPermissionSupport(models.Model):
             ("iaso_polio_budget_admin", POLIO_BUDGET_ADMIN),
             ("iaso_entity_duplicates_read", ENTITY_DUPLICATES_READ),
             ("iaso_entity_duplicates_write", ENTITY_DUPLICATES_WRITE),
+            ("iaso_user_roles", USER_ROLES),
             ("iaso_datastore_read", DATASTORE_READ),
             ("iaso_datastore_write", DATASTORE_WRITE),
+            ("iaso_org_unit_types", ORG_UNIT_TYPES),
+            ("iaso_org_unit_groups", ORG_UNIT_GROUPS),
         )

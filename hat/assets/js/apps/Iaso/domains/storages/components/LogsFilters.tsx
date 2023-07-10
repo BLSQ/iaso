@@ -1,10 +1,9 @@
 import { Box, Grid } from '@material-ui/core';
 import React, { FunctionComponent } from 'react';
 import {
-    // @ts-ignore
     DatePicker,
-    // @ts-ignore
     useSafeIntl,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 
 // @ts-ignore
@@ -19,7 +18,6 @@ import { useGetOperationsTypes } from '../hooks/useGetOperationsTypes';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
-import { IntlFormatMessage } from '../../../types/intl';
 
 type Props = {
     params: StorageDetailsParams;

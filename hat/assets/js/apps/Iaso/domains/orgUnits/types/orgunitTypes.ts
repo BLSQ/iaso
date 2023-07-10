@@ -1,3 +1,4 @@
+import { Pagination, UrlParams } from 'bluesquare-components';
 /* eslint-disable camelcase */
 
 type FeatureFlag = {
@@ -9,7 +10,7 @@ type FeatureFlag = {
     updated_at: number;
 };
 
-type Project = {
+export type Project = {
     id: number;
     name: string;
     app_id: string | null;
@@ -28,6 +29,7 @@ export type OrgunitType = {
     updated_at: number;
     units_count: number;
     sub_unit_types: OrgunitType[];
+    allow_creating_sub_unit_types: OrgunitType[];
     reference_form: any;
     projects: Project[];
     color?: string;
@@ -37,4 +39,13 @@ export type OrgunitTypes = OrgunitType[];
 
 export type OrgunitTypesApi = {
     orgUnitTypes: OrgunitTypes;
+};
+
+export interface PaginatedOrgUnitTypes extends Pagination {
+    orgUnitTypes: OrgunitType[];
+}
+
+export type OrgUnitTypesParams = UrlParams & {
+    accountId?: string;
+    search?: string;
 };

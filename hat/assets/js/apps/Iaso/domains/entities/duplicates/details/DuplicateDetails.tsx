@@ -5,6 +5,7 @@ import React, {
     FunctionComponent,
     useCallback,
     useEffect,
+    useMemo,
     useState,
 } from 'react';
 import { useDispatch } from 'react-redux';
@@ -113,7 +114,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
     const goBack = useGoBack(router, baseUrls.entityDuplicates);
     const { data: duplicatesInfos } = useGetDuplicates({
         params: { entities: params.entities },
-    }) as { data: DuplicateData[] };
+    }) as { data: { results: DuplicateData[] } };
 
     const [entityIdA, entityIdB] = params.entities.split(',');
 
@@ -121,9 +122,14 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         tableState.find(row => row.final.status === 'dropped'),
     );
 
-    const { data: entities, isFetching } = useGetDuplicateDetails({
+    const { data: dupDetailData, isFetching } = useGetDuplicateDetails({
         params,
     });
+
+    const { fields: entities, descriptor1, descriptor2 } = dupDetailData || {};
+    const descriptors = useMemo(() => {
+        return { descriptor1, descriptor2 };
+    }, [descriptor1, descriptor2]);
 
     const {
         unmatchedRemaining,
@@ -157,12 +163,12 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
         state: tableState,
         updateCellState,
         setQuery,
+        descriptors,
     });
 
     const takeAllValuesFromEntity = useCallback(
         (entity: 'entity1' | 'entity2') => {
             const selected = entity;
-            // const dropped = entity === 'entity1' ? 'entity2' : 'entity1';
             const newState = [...tableState].map(updateCellColors(entity));
             const newUnfilteredState = [...unfilteredTableState].map(
                 updateCellColors(entity),
@@ -232,9 +238,14 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                 row.original.final.status === 'identical' &&
                 onlyShowUnmatched
             ) {
-                return { className: `${classes.hidden}` };
+                return {
+                    className: `${classes.hidden}`,
+                    'data-test': 'hidden-row',
+                };
             }
-            return {};
+            return {
+                'data-test': 'visible-row',
+            };
         },
         [classes.hidden, onlyShowUnmatched],
     );
@@ -249,6 +260,7 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                     classes[cell.value.status],
                     classes.pointer,
                 ),
+                'data-test': cell.value.status,
             };
         },
         [classes],
@@ -293,58 +305,75 @@ export const DuplicateDetails: FunctionComponent<Props> = ({
                         </Box>
                     </Grid>
                 </Grid>
-                <Paper elevation={2} className={classes.fullWidth}>
-                    <DuplicateDetailsTableButtons
-                        onlyShowUnmatched={onlyShowUnmatched}
-                        setOnlyShowUnmatched={toggleUnmatchedDisplay}
-                        fillValues={takeAllValuesFromEntity}
-                        resetSelection={resetSelection}
-                    />
-                    <Divider />
-                    <TableWithDeepLink
-                        showPagination={false}
-                        baseUrl={baseUrls.entityDuplicateDetails}
-                        columns={columns}
-                        marginTop={false}
-                        countOnTop={false}
-                        elevation={0}
-                        data={tableState}
-                        rowProps={getRowProps}
-                        cellProps={getCellProps}
-                        params={params}
-                        extraProps={{
-                            loading: isFetching,
-                            onlyShowUnmatched,
-                            entities,
-                            getRowProps,
-                        }}
-                        onTableParamsChange={p =>
-                            dispatch(
-                                redirectTo(baseUrls.entityDuplicateDetails, p),
-                            )
-                        }
-                    />
-                </Paper>
-                <Grid container item spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                        <SubmissionsForEntity
-                            entityId={entityIdA}
-                            title={formatMessage(
-                                MESSAGES.submissionsForEntity,
-                                { entity: 'A' },
-                            )}
+                <Box data-test="duplicate-table">
+                    <Paper elevation={2} className={classes.fullWidth}>
+                        <DuplicateDetailsTableButtons
+                            onlyShowUnmatched={onlyShowUnmatched}
+                            setOnlyShowUnmatched={toggleUnmatchedDisplay}
+                            fillValues={takeAllValuesFromEntity}
+                            resetSelection={resetSelection}
                         />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                        <SubmissionsForEntity
-                            entityId={entityIdB}
-                            title={formatMessage(
-                                MESSAGES.submissionsForEntity,
-                                { entity: 'B' },
-                            )}
+                        <Divider />
+                        <TableWithDeepLink
+                            showPagination={false}
+                            baseUrl={baseUrls.entityDuplicateDetails}
+                            columns={columns}
+                            marginTop={false}
+                            countOnTop={false}
+                            elevation={0}
+                            data={tableState}
+                            rowProps={getRowProps}
+                            cellProps={getCellProps}
+                            params={params}
+                            extraProps={{
+                                loading: isFetching,
+                                onlyShowUnmatched,
+                                entities,
+                                getRowProps,
+                            }}
+                            onTableParamsChange={p =>
+                                dispatch(
+                                    redirectTo(
+                                        baseUrls.entityDuplicateDetails,
+                                        p,
+                                    ),
+                                )
+                            }
                         />
+                    </Paper>
+                </Box>
+                <Box>
+                    <Grid container item spacing={2}>
+                        <Grid
+                            item
+                            xs={12}
+                            sm={6}
+                            data-test="duplicate-submissions-a"
+                        >
+                            <SubmissionsForEntity
+                                entityId={entityIdA}
+                                title={formatMessage(
+                                    MESSAGES.submissionsForEntity,
+                                    { entity: 'A' },
+                                )}
+                            />
+                        </Grid>
+                        <Grid
+                            item
+                            xs={12}
+                            sm={6}
+                            data-test="duplicate-submissions-b"
+                        >
+                            <SubmissionsForEntity
+                                entityId={entityIdB}
+                                title={formatMessage(
+                                    MESSAGES.submissionsForEntity,
+                                    { entity: 'B' },
+                                )}
+                            />
+                        </Grid>
                     </Grid>
-                </Grid>
+                </Box>
             </Box>
         </>
     );

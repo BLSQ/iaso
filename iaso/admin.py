@@ -38,6 +38,7 @@ from .models import (
     Form,
     FormVersion,
     FormPredefinedFilter,
+    FormAttachment,
     Instance,
     InstanceFile,
     Account,
@@ -76,6 +77,9 @@ from .models import (
     WorkflowFollowup,
     Report,
     ReportVersion,
+    EntityDuplicate,
+    EntityDuplicateAnalyzis,
+    UserRole,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -172,6 +176,12 @@ class FormPredefinedFilterAdmin(admin.ModelAdmin):
     list_filter = ("form", "name", "short_name")
 
 
+class FormAttachmentAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at", "updated_at")
+    list_display = ("form", "name", "file", "md5")
+    list_filter = ("form", "name")
+
+
 class InstanceFileAdminInline(admin.TabularInline):
     model = InstanceFile
     extra = 0
@@ -203,6 +213,7 @@ class InstanceAdmin(admin.GeoModelAdmin):
                     "last_modified_by",
                     "created_by",
                     "form_version",
+                    "planning",
                 )
             },
         ),
@@ -333,17 +344,11 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
     def http_requests(self, instance):
         # Write a get-method for a list of module names in the class Profile
         # return HTML string which will be display in the form
-        return (
-            format_html_join(
-                mark_safe("<br/><br/>"),
-                "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-                (
-                    (line.id, line.http_status, line.url, line.sent, line.received)
-                    for line in instance.export_logs.all()
-                ),
-            )
-            or mark_safe("<span>no logs available.</span>")
-        )
+        return format_html_join(
+            mark_safe("<br/><br/>"),
+            "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
+            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
+        ) or mark_safe("<span>no logs available.</span>")
 
 
 @admin_attr_decorator
@@ -568,6 +573,32 @@ class PageAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+class EntityDuplicateAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+    @admin_attr_decorator
+    def entity1_desc(self, obj):
+        return f"{obj.entity1.name} ({obj.entity1.id})"
+
+    @admin_attr_decorator
+    def entity2_desc(self, obj):
+        return f"{obj.entity2.name} ({obj.entity2.id})"
+
+    list_display = (
+        "similarity_score",
+        "validation_status",
+        "get_entity_type",
+        "entity1_desc",
+        "entity2_desc",
+        "created_at",
+    )
+    list_filter = ("validation_status", "entity1__entity_type")
+
+
+class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -584,6 +615,7 @@ admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun, AlgorithmRunAdmin)
 admin.site.register(FormVersion, FormVersionAdmin)
 admin.site.register(FormPredefinedFilter, FormPredefinedFilterAdmin)
+admin.site.register(FormAttachment, FormAttachmentAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
 admin.site.register(Mapping, MappingAdmin)
@@ -610,3 +642,6 @@ admin.site.register(Workflow, WorkflowAdmin)
 admin.site.register(WorkflowVersion, WorkflowVersionAdmin)
 admin.site.register(Report)
 admin.site.register(ReportVersion)
+admin.site.register(EntityDuplicate, EntityDuplicateAdmin)
+admin.site.register(EntityDuplicateAnalyzis, EntityDuplicateAnalyzisAdmin)
+admin.site.register(UserRole)

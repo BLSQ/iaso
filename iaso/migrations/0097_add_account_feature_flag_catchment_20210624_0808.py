@@ -14,7 +14,6 @@ def reverse_create_shape_account_flag(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0096_add_account_feature_flag_20210621_1244"),
     ]

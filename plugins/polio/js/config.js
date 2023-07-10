@@ -331,6 +331,10 @@ const routes = [
                 key: 'order',
             },
             ...campaignsFilters,
+            {
+                isRequired: false,
+                key: 'orgUnitGroups',
+            },
         ],
         isRootUrl: false,
     },

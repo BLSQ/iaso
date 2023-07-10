@@ -62,6 +62,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
+    // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
     const successSnackBar = (msg, data) => {
         return succesfullSnackBar(formSuccessFullMessageKey, msg);
         // TODO uncomment when we figured out hwo to style the button
@@ -84,7 +85,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
     );
     const { mutateAsync: ignoreDuplicate } = useIgnoreDuplicate(onSuccess);
     return (
-        <>
+        <Box data-test="duplicate-infos">
             <Grid container>
                 <Grid item xs={12} md={4}>
                     <WidgetPaper
@@ -117,6 +118,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             <Button
                                 color="primary"
                                 variant="outlined"
+                                data-test="ignore-button"
                                 onClick={() => {
                                     ignoreDuplicate({
                                         entity1_id: entityIds[0],
@@ -131,8 +133,13 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                             <Button
                                 variant="contained"
                                 color="primary"
+                                data-test="merge-button"
                                 onClick={() => {
-                                    mergeEntities(query);
+                                    mergeEntities({
+                                        entity1_id: entityIds[0],
+                                        entity2_id: entityIds[1],
+                                        merge: query,
+                                    });
                                 }}
                                 disabled={disableMerge}
                             >
@@ -142,6 +149,6 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                     </Grid>
                 )}
             </Grid>
-        </>
+        </Box>
     );
 };

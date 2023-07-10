@@ -1,20 +1,24 @@
 import React from 'react';
+import { Typography, makeStyles } from '@material-ui/core';
 import {
-    FormControlLabel,
-    Switch,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
-// @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-
+    useSafeIntl,
+    LoadingSpinner,
+    Table,
+    Column,
+} from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useUserPermissionColumns } from '../config';
+import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
+import { Permission } from '../../userRoles/types/userRoles';
 
 const styles = theme => ({
     admin: {
         color: theme.palette.success.main,
+    },
+    tableCellStyle: {
+        border: '1px solid grey',
     },
 });
 
@@ -25,11 +29,6 @@ type Props = {
     currentUser: any;
     // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
-};
-
-type Permission = {
-    id: number;
-    codename: string;
 };
 
 type PermissionResult = {
@@ -43,16 +42,16 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data, isLoading } = useSnackQuery<PermissionResult>(
-        ['permissions'],
-        () => getRequest('/api/permissions/'),
-        MESSAGES.fetchPermissionsError,
+    const { data, isLoading } = useSnackQuery<PermissionResult>({
+        queryKey: ['permissions'],
+        queryFn: () => getRequest('/api/permissions/'),
+        snackErrorMsg: MESSAGES.fetchPermissionsError,
         // Permission list is not displayed for superuser, no need to fetch it from server
-        { enabled: !isSuperUser },
-    );
+        options: { enabled: !isSuperUser },
+    });
 
     const setPermissions = (codeName: string, isChecked: boolean) => {
-        const newUserPerms = [...currentUser.permissions.value];
+        const newUserPerms = [...currentUser.user_permissions.value];
         if (!isChecked) {
             const permIndex = newUserPerms.indexOf(codeName);
             newUserPerms.splice(permIndex, 1);
@@ -62,14 +61,19 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         handleChange(newUserPerms);
     };
 
-    // Get the translated label for the permission.
-    // or permission's codename if not translation exist
-    const permissionLabel = permissionCodeName => {
-        return MESSAGES[permissionCodeName]
-            ? formatMessage(MESSAGES[permissionCodeName])
-            : permissionCodeName;
-    };
-    const permissions = data?.permissions ?? [];
+    const allPermissions = data?.permissions ?? [];
+    const userPermissions = currentUser.user_permissions.value;
+
+    const permissionsData = useGetUserPermissions(
+        allPermissions,
+        userPermissions,
+    );
+    // This is a problem with the type definition of Column is bluesquare-components
+    // @ts-ignore
+    const columns: Column[] = useUserPermissionColumns({
+        setPermissions,
+        currentUser,
+    });
 
     return (
         <>
@@ -83,43 +87,14 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.isSuperUser)}
                 </Typography>
             )}
-            {!isSuperUser &&
-                permissions
-                    .sort((a, b) =>
-                        permissionLabel(a.codename).localeCompare(
-                            permissionLabel(b.codename),
-                            undefined,
-                            {
-                                sensitivity: 'accent',
-                            },
-                        ),
-                    )
-                    .map(p => (
-                        <div key={p.id}>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        className="permission-checkbox"
-                                        id={`permission-checkbox-${p.codename}`}
-                                        checked={Boolean(
-                                            currentUser.permissions.value.find(
-                                                up => up === p.codename,
-                                            ),
-                                        )}
-                                        onChange={e =>
-                                            setPermissions(
-                                                p.codename,
-                                                e.target.checked,
-                                            )
-                                        }
-                                        name={p.codename}
-                                        color="primary"
-                                    />
-                                }
-                                label={permissionLabel(p.codename)}
-                            />
-                        </div>
-                    ))}
+
+            {!isSuperUser && (
+                <Table
+                    columns={columns}
+                    data={permissionsData}
+                    showPagination={false}
+                />
+            )}
         </>
     );
 };

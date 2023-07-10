@@ -149,7 +149,6 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
 
 @transaction.atomic
 def import_gpkg_file(filename, project_id, source_name, version_number, validation_status, description):
-
     source, created = DataSource.objects.get_or_create(name=source_name)
     if source.read_only:
         raise Exception("Source is marked read only")

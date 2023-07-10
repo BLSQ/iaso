@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, ExpandableItem } from 'bluesquare-components';
 import { Divider } from '@material-ui/core';
-import { ExpandableItem } from '../../../../app/components/ExpandableItem';
 import { InstanceDetailRaw } from '../../../../instances/compare/components/InstanceDetailRaw';
 import { useGetInstancesForEntity } from '../hooks/useGetInstancesForEntity';
 import MESSAGES from '../../messages';
@@ -28,30 +27,33 @@ export const SubmissionsForEntity: FunctionComponent<Props> = ({
         <WidgetPaperComponent title={title} padded>
             {data.instances.length === 0 && <NoSubmission />}
             {data.instances.length > 0 &&
-                data.instances.map((instance, index) => (
-                    <>
-                        {index === 0 && (
-                            <Divider style={{ height: '1px', width: '100%' }} />
-                        )}
+                data.instances.map((instance, index) => {
+                    return (
+                        <div key={instance.id}>
+                            {index === 0 && (
+                                <Divider
+                                    style={{ height: '1px', width: '100%' }}
+                                />
+                            )}
 
-                        <ExpandableItem
-                            key={instance.id}
-                            label={`${formatMessage(
-                                MESSAGES.submissionTitle,
-                            )} - ${instance.id}`}
-                            titleColor="primary"
-                            titleVariant="h5"
-                        >
-                            <InstanceDetailRaw
-                                isLoading={isLoading}
-                                isError={isError}
-                                data={instance}
-                                showTitle={false}
-                            />
-                        </ExpandableItem>
-                        <Divider style={{ height: '1px', width: '100%' }} />
-                    </>
-                ))}
+                            <ExpandableItem
+                                label={`${formatMessage(
+                                    MESSAGES.submissionTitle,
+                                )} - ${instance.id}`}
+                                titleColor="primary"
+                                titleVariant="h5"
+                            >
+                                <InstanceDetailRaw
+                                    isLoading={isLoading}
+                                    isError={isError}
+                                    data={instance}
+                                    showTitle={false}
+                                />
+                            </ExpandableItem>
+                            <Divider style={{ height: '1px', width: '100%' }} />
+                        </div>
+                    );
+                })}
         </WidgetPaperComponent>
     );
 };

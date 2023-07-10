@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0052_fix_period_before_after")]
 
     operations = [

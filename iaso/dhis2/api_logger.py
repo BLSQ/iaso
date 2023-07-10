@@ -31,7 +31,6 @@ class ApiLogger:
     def post(self, url, payload):
         full_url = self.api.base_url + "/" + url
         try:
-
             response = self.api.post(url, payload)
 
             export_log = ExportLog()

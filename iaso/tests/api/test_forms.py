@@ -506,3 +506,49 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data["latest_form_version"], "file", str)
         self.assertHasField(form_data["latest_form_version"], "created_at", float)
         self.assertHasField(form_data["latest_form_version"], "updated_at", float)
+
+    def test_forms_list_planning(self):
+        """GET /forms/ web app happy path: we expect two results"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
+        form_1 = self.form_1
+        form_2 = self.form_2
+        orgunit_1 = m.OrgUnit.objects.create(name="Org Unit 1")
+        team1 = m.Team.objects.create(project=self.project_1, name="team1", manager=self.yoda)
+        planning_1 = m.Planning.objects.create(
+            name="Planning 1", org_unit=orgunit_1, project=self.project_1, team=team1
+        )
+        planning_2 = m.Planning.objects.create(
+            name="Planning 2", org_unit=orgunit_1, project=self.project_2, team=team1
+        )
+
+        planning_1.forms.add(form_1)
+
+        # it should return only form_1
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/forms/", {"planning": planning_1.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+        self.assertEqual(response.json()["forms"][0]["name"], form_1.name)
+
+        # it should return form_1 and form_2
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        self.assertEqual(response.json()["forms"][0]["name"], form_2.name)
+        self.assertEqual(response.json()["forms"][1]["name"], form_1.name)
+
+        # it should return none of the forms
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/forms/", {"planning": planning_2.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 0)

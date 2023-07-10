@@ -5,7 +5,6 @@ import plugins.polio.budget.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0113_merge_20221115_1540"),
     ]

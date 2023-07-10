@@ -10,6 +10,7 @@ import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { groupBy } from 'lodash';
+import { Paginated } from 'bluesquare-components';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useStyles } from '../../../styles/theme';
 import { BUDGET, BUDGET_DETAILS } from '../../../constants/routes';
@@ -20,7 +21,6 @@ import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/uti
 import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { useGetBudgetForCampaign } from '../hooks/api/useGetBudget';
 import { useGetBudgetDetails } from '../hooks/api/useGetBudgetDetails';
-import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStep } from '../types';
 
 import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';

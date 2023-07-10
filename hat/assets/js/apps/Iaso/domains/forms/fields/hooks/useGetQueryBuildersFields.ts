@@ -5,14 +5,7 @@ import { formatLabel } from '../../../instances/utils';
 import { FormDescriptor, PossibleField } from '../../types/forms';
 
 import { iasoFields, Field } from '../constants';
-
-const findDescriptorInChildren = (field, descriptor) =>
-    descriptor?.children?.reduce((a, child) => {
-        if (a) return a;
-        if (child.name === field.name) return child;
-        if (child.children) return findDescriptorInChildren(field, child);
-        return undefined;
-    }, null);
+import { findDescriptorInChildren } from '../../../../utils';
 
 export const useGetQueryBuildersFields = (
     formDescriptors?: FormDescriptor[],

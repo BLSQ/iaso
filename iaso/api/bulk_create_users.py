@@ -174,7 +174,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         )
                                     org_units_list.append(org_unit)
                                 except MultipleObjectsReturned:
-
                                     raise serializers.ValidationError(
                                         {
                                             "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."

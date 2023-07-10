@@ -16,7 +16,6 @@ def reverse_link_instance_reference_flag(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0143_add_microplanning_feature_flag"),
     ]

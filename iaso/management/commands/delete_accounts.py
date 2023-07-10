@@ -3,6 +3,7 @@ from collections import defaultdict
 
 import django
 from django.contrib.auth.models import User
+from django.contrib.sessions.models import Session
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.db import connection
@@ -15,7 +16,7 @@ from hat.audit.models import Modification
 from iaso.models import Account, OrgUnitType, CommentIaso, StoragePassword, StorageDevice, StorageLogEntry
 from iaso.models import BulkCreateUserCsvFile
 from iaso.models import ExportLog, ExportRequest
-from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile
+from iaso.models.base import DataSource, ExternalCredentials, Instance, Mapping, Profile, InstanceFile, InstanceLock
 from iaso.models.base import Task, QUEUED, KILLED
 from iaso.models.entity import Entity, EntityType
 from iaso.models.forms import Form
@@ -23,6 +24,7 @@ from iaso.models.microplanning import Assignment, Team, Planning
 from iaso.models.org_unit import OrgUnit
 from iaso.models.pages import Page
 from iaso.models.project import Project
+from iaso.models.device import Device
 
 from django_sql_dashboard.models import Dashboard
 
@@ -88,13 +90,11 @@ class Command(BaseCommand):
         parser.add_argument("--account-to-keep", type=int)
 
     def delete_account(self, account):
-
         print("************ deleting data related to ", account.id, account.name)
 
         forms = Form.objects_include_deleted.filter(projects__account=account)
 
         for form in forms:
-
             print(
                 "InstanceFile without project",
                 InstanceFile.objects.filter(instance__form=form, instance__project=None).delete(),
@@ -124,7 +124,34 @@ class Command(BaseCommand):
                     ),
                 )
                 print("Instance update", Instance.objects.filter(project=project).update(entity=None))
-                print("Entity", Entity.objects.filter(account=account).delete())
+
+                for entity_type in EntityType.objects.filter(account=account):
+                    if entity_type.reference_form:
+                        print(
+                            "reference form: entities delete",
+                            Entity.objects_include_deleted.filter(
+                                attributes__in=entity_type.reference_form.instances.all()
+                            )
+                            .all()
+                            .delete(),
+                        )
+
+                        print(
+                            "reference form : InstanceFile delete",
+                            InstanceFile.objects.filter(
+                                instance__in=entity_type.reference_form.instances.all()
+                            ).delete(),
+                        )
+                        print(
+                            "reference form : delete instances witht reference form",
+                            entity_type.reference_form.instances.all().delete(),
+                        )
+
+                for entity in Entity.objects_include_deleted.filter(account=account):
+                    print("Entity attributes", entity.attributes.delete())
+
+                print("Entity", Entity.objects_include_deleted.filter(account=account).delete())
+
                 print("EntityType", EntityType.objects.filter(account=account).delete())
                 print(
                     "InstanceFile delete",
@@ -161,6 +188,16 @@ class Command(BaseCommand):
                 for data_source in datasources:
                     print("missing related datasource", datasources)
                     print(
+                        Entity.objects.filter(
+                            attributes__in=Instance.objects.filter(
+                                org_unit__version__in=data_source.versions.all()
+                            ).all()
+                        )
+                        .all()
+                        .delete()
+                    )
+
+                    print(
                         InstanceFile.objects.filter(instance__org_unit__version__in=data_source.versions.all()).delete()
                     )
                     print(Instance.objects.filter(org_unit__version__in=data_source.versions.all()).delete())
@@ -175,11 +212,25 @@ class Command(BaseCommand):
                 traceback.print_exception(type(err), err, err.__traceback__)
                 print("can't delete project", project, err, traceback.format_exc())
 
+        profiles = Profile.objects.filter(account=account)
+
+        print("Instance lock", InstanceLock.objects.filter(locked_by__in=[p.user for p in profiles.all()]).delete())
+
         forms = Form.objects_include_deleted.filter(projects__account=account)
-        forms.delete()
+
+        print(
+            "Entity through attributes",
+            Entity.objects_include_deleted.filter(
+                attributes__in=Instance.objects.filter(
+                    form__in=Form.objects_include_deleted.filter(projects__account=account)
+                )
+            )
+            .all()
+            .delete(),
+        )
+        print("Forms ", forms.all().delete())
         print("Page", Page.objects.filter(account=account).delete())
 
-        profiles = Profile.objects.filter(account=account)
         print("User related resources (might take minutes due to modification log)")
         print(
             "Modification done account users ",
@@ -214,6 +265,7 @@ class Command(BaseCommand):
         print("Profiles", profiles.delete())
 
         print("Accounts", account.delete())
+        print("Device", Device.objects.filter(projects=None).all().delete())
 
         Instance.objects.raw("delete from vector_control_apiimport")
 
@@ -330,9 +382,22 @@ class Command(BaseCommand):
         datasources_to_delete = DataSource.objects.filter(~Q(id__in=[ds.id for ds in datasources_to_keep]))
         print("**** Delete orphan datasources unused by the account to keep")
         for data_source in datasources_to_delete.all():
-            print(data_source.id, data_source.name, data_source.description)
-            print(InstanceFile.objects.filter(instance__org_unit__version__in=data_source.versions.all()).delete())
-            print(Instance.objects.filter(org_unit__version__in=data_source.versions.all()).delete())
+            try:
+                print(data_source.id, data_source.name, data_source.description)
+
+                print(
+                    Entity.objects_include_deleted.filter(
+                        attributes__in=Instance.objects.filter(org_unit__version__in=data_source.versions.all()).all()
+                    )
+                    .all()
+                    .delete()
+                )
+
+                print(InstanceFile.objects.filter(instance__org_unit__version__in=data_source.versions.all()).delete())
+                print(Instance.objects.filter(org_unit__version__in=data_source.versions.all()).delete())
+            except Exception as err:
+                traceback.print_exception(type(err), err, err.__traceback__)
+                print("can't delete account", account, err, traceback.format_exc())
 
         print(datasources_to_delete.delete())
 
@@ -352,6 +417,9 @@ class Command(BaseCommand):
 
         print(Project.objects.filter(account=None).delete())
         print(Form.objects_include_deleted.filter(form_id=None).delete())
+        print("Session", Session.objects.all().delete())
+        print("deleteing devices might take sometime")
+        print(Device.objects.filter(projects=None).delete())
 
         for f in forms_without_projects:
             print(OrgUnitType.objects.filter(reference_form=f).update(reference_form=None))

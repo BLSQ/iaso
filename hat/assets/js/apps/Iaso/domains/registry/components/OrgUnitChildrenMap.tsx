@@ -1,27 +1,25 @@
 import React, {
     FunctionComponent,
     useState,
-    useRef,
-    useEffect,
     useMemo,
     useCallback,
 } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-    Map,
-    TileLayer,
-    GeoJSON,
-    Pane,
-    ScaleControl,
-    Tooltip,
-} from 'react-leaflet';
-import { LoadingSpinner } from 'bluesquare-components';
+import { MapContainer, GeoJSON, Pane, ScaleControl } from 'react-leaflet';
+import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import { Box, useTheme, makeStyles } from '@material-ui/core';
 import classNames from 'classnames';
-
 import { keyBy } from 'lodash';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
+import {
+    circleColorMarkerOptions,
+    getOrgUnitBounds,
+    getOrgUnitsBounds,
+    mergeBounds,
+    clusterCustomMarker,
+} from '../../../utils/map/mapUtils';
 
-import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
 import CircleMarkerComponent from '../../../components/maps/markers/CircleMarkerComponent';
 
@@ -34,21 +32,14 @@ import { MapToggleTooltips } from './MapToggleTooltips';
 import { MapToggleFullscreen } from './MapToggleFullscreen';
 
 import TILES from '../../../constants/mapTiles';
-import {
-    circleColorMarkerOptions,
-    ZoomControl,
-    getOrgUnitBounds,
-    getOrgUnitsBounds,
-    DEFAULT_VIEWPORT,
-    mergeBounds,
-    Bounds,
-    tryFitToBounds,
-} from '../../../utils/mapUtils';
 import { MapPopUp } from './MapPopUp';
-import { Optional } from '../../../types/utils';
 import { RegistryDetailParams } from '../types';
 import { redirectToReplace } from '../../../routing/actions';
 import { baseUrls } from '../../../constants/urls';
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import { MapToolTip } from './MapTooltip';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -58,8 +49,14 @@ type Props = {
     params: RegistryDetailParams;
 };
 
-const useStyles = makeStyles(() => ({
+const boundsOptions = {
+    padding: [50, 50],
+};
+
+const useStyles = makeStyles(theme => ({
     mapContainer: {
+        ...commonStyles(theme).mapContainer,
+        height: '542px',
         position: 'relative',
         '& .leaflet-control-zoom': {
             borderBottom: 'none',
@@ -86,10 +83,8 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
 }) => {
     const classes: Record<string, string> = useStyles();
     const theme = useTheme();
-    const map: any = useRef();
     const dispatch = useDispatch();
 
-    const bounds = useRef<Optional<Bounds | undefined>>();
     const [isMapFullScreen, setIsMapFullScreen] = useState<boolean>(
         params.isFullScreen === 'true',
     );
@@ -97,9 +92,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const [showTooltip, setShowTooltip] = useState<boolean>(
         params.showTooltip === 'true',
     );
-
     const getlegendOptions = useGetlegendOptions(orgUnit, subOrgUnitTypes);
-    const [isMapFitted, setIsMapFitted] = useState<boolean>(false);
     const [legendOptions, setLegendOptions] = useState<Legend[]>(
         getlegendOptions(),
     );
@@ -119,24 +112,14 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
     const isOrgUnitActive: boolean =
         optionsObject[`${orgUnit.id}`]?.active || false;
 
-    useEffect(() => {
-        const newBounds: Bounds | undefined = mergeBounds(
-            isOrgUnitActive ? getOrgUnitBounds(orgUnit) : undefined,
-            getOrgUnitsBounds(activeChildren),
-        );
-        bounds.current = newBounds;
-    }, [activeChildren, isOrgUnitActive, orgUnit]);
-
-    useEffect(() => {
-        if (!isFetchingChildren && orgUnitChildren && !isMapFitted) {
-            tryFitToBounds(bounds.current, map.current);
-            setIsMapFitted(true);
-        }
-    }, [isFetchingChildren, orgUnitChildren, isMapFitted, bounds]);
-
-    useEffect(() => {
-        map?.current?.leafletElement?.invalidateSize();
-    }, [isMapFullScreen]);
+    const bounds = useMemo(
+        () =>
+            mergeBounds(
+                isOrgUnitActive ? getOrgUnitBounds(orgUnit) : undefined,
+                getOrgUnitsBounds(activeChildren),
+            ),
+        [activeChildren, isOrgUnitActive, orgUnit],
+    );
 
     const handleToggleTooltip = useCallback(
         (isVisible: boolean) => {
@@ -177,42 +160,40 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 isMapFullScreen && classes.fullScreen,
             )}
         >
-            <MapToggleFullscreen
-                isMapFullScreen={isMapFullScreen}
-                setIsMapFullScreen={handleToggleFullScreen}
-            />
-            <MapToggleTooltips
-                showTooltip={showTooltip}
-                setShowTooltip={handleToggleTooltip}
-            />
             <MapLegend options={legendOptions} setOptions={setLegendOptions} />
-            <TilesSwitch
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
-            <Map
-                zoomSnap={0.25}
+
+            <MapContainer
                 maxZoom={currentTile.maxZoom}
-                ref={map}
                 style={{
-                    height: isMapFullScreen ? '100vh' : '542px',
-                    width: isMapFullScreen ? '100vw' : '100%',
+                    minHeight: '542px',
+                    height: '100%',
                 }}
-                center={DEFAULT_VIEWPORT.center}
-                zoom={DEFAULT_VIEWPORT.zoom}
+                center={[1, 20]}
+                zoom={3}
                 scrollWheelZoom={false}
                 zoomControl={false}
                 contextmenu
+                bounds={bounds}
+                boundsOptions={boundsOptions}
+                trackResize
             >
-                <ZoomControl
-                    fitToBounds={() => {
-                        tryFitToBounds(bounds.current, map.current);
-                    }}
+                <MapToggleTooltips
+                    showTooltip={showTooltip}
+                    setShowTooltip={handleToggleTooltip}
+                />
+                <MapToggleFullscreen
+                    isMapFullScreen={isMapFullScreen}
+                    setIsMapFullScreen={handleToggleFullScreen}
+                />
+                <CustomZoomControl
+                    bounds={bounds}
+                    boundsOptions={boundsOptions}
+                    fitOnLoad
                 />
                 <ScaleControl imperial={false} />
-                <TileLayer
-                    attribution={currentTile.attribution ?? ''}
-                    url={currentTile.url}
+                <CustomTileLayer
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
                 />
 
                 {isOrgUnitActive && (
@@ -220,6 +201,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         {orgUnit.geo_json && (
                             <Pane name="orgunit-shapes">
                                 <GeoJSON
+                                    // @ts-ignore TODO: fix this type problem
                                     className="secondary"
                                     data={orgUnit.geo_json}
                                     style={() => ({
@@ -261,6 +243,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                         return (
                                             <GeoJSON
                                                 key={childrenOrgUnit.id}
+                                                // @ts-ignore TODO: fix this type problem
                                                 style={() => ({
                                                     color: subType.color || '',
                                                 })}
@@ -269,11 +252,23 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                                 <MapPopUp
                                                     orgUnit={childrenOrgUnit}
                                                 />
-                                                <Tooltip
-                                                    permanent={showTooltip}
-                                                >
-                                                    {childrenOrgUnit.name}
-                                                </Tooltip>
+                                                {showTooltip && (
+                                                    <MapToolTip
+                                                        permanent
+                                                        pane="popupPane"
+                                                        label={
+                                                            childrenOrgUnit.name
+                                                        }
+                                                    />
+                                                )}
+                                                {!showTooltip && (
+                                                    <MapToolTip
+                                                        pane="popupPane"
+                                                        label={
+                                                            childrenOrgUnit.name
+                                                        }
+                                                    />
+                                                )}
                                             </GeoJSON>
                                         );
                                     }
@@ -297,32 +292,39 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                                         childrenOrgUnit.org_unit_type_id ===
                                         subType.id
                                     ) {
-                                        const { latitude, longitude } =
-                                            childrenOrgUnit;
                                         return (
-                                            <CircleMarkerComponent
-                                                PopupComponent={MapPopUp}
-                                                popupProps={() => ({
-                                                    orgUnit: childrenOrgUnit,
-                                                })}
+                                            <MarkerClusterGroup
                                                 key={childrenOrgUnit.id}
-                                                TooltipComponent={() => (
-                                                    <Tooltip
-                                                        permanent={showTooltip}
-                                                    >
-                                                        {childrenOrgUnit.name}
-                                                    </Tooltip>
-                                                )}
-                                                markerProps={() => ({
-                                                    ...circleColorMarkerOptions(
-                                                        subType.color || '',
-                                                    ),
-                                                })}
-                                                item={{
-                                                    latitude,
-                                                    longitude,
-                                                }}
-                                            />
+                                                iconCreateFunction={
+                                                    clusterCustomMarker
+                                                }
+                                            >
+                                                <MarkersListComponent
+                                                    items={
+                                                        orgUnitChildren || []
+                                                    }
+                                                    markerProps={() => ({
+                                                        ...circleColorMarkerOptions(
+                                                            theme.palette
+                                                                .primary.main,
+                                                        ),
+                                                        radius: 12,
+                                                    })}
+                                                    popupProps={location => ({
+                                                        orgUnit: location,
+                                                    })}
+                                                    tooltipProps={e => ({
+                                                        permanent: showTooltip,
+                                                        pane: 'popupPane',
+                                                        label: e.name,
+                                                    })}
+                                                    PopupComponent={MapPopUp}
+                                                    TooltipComponent={
+                                                        MapToolTip
+                                                    }
+                                                    isCircle
+                                                />
+                                            </MarkerClusterGroup>
                                         );
                                     }
                                     return null;
@@ -330,7 +332,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         </Pane>
                     </Box>
                 ))}
-            </Map>
+            </MapContainer>
         </Box>
     );
 };

@@ -161,7 +161,6 @@ def get_national_level_preparedness(spread: CachedSpread):
 
 
 def get_regional_level_preparedness(spread: CachedSpread):
-
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -246,7 +245,6 @@ def get_regional_level_preparedness(spread: CachedSpread):
 
 
 def get_regional_level_preparedness_v2(spread: CachedSpread):
-
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -275,7 +273,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
             continue
         print(f"Regional Data found on worksheet: {sheet.title}")
 
-        regional_name_range = absolute_range_name(sheet.title, "regional_name")
+        regional_name_range = absolute_range_name(sheet.title, "regional_name").replace("''", "'")
         if regional_name_range in spread.range_dict:
             start_region = spread.get_range_row_col(regional_name_range)
         else:
@@ -297,7 +295,7 @@ def get_regional_level_preparedness_v2(spread: CachedSpread):
         region_indicators: Dict[str, Any] = {}
         for _, indicator_key, _, kind in indicators:
             range_name = f"regional_{indicator_key}"
-            regional_name_range = absolute_range_name(sheet.title, range_name)
+            regional_name_range = absolute_range_name(sheet.title, range_name).replace("''", "'")
             if regional_name_range not in spread.range_dict:
                 regional_name_range = regional_name_range.replace("!", "_")
             if regional_name_range not in spread.range_dict:

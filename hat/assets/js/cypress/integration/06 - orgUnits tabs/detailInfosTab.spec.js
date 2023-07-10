@@ -13,7 +13,7 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'orgunittypes',
+    // 'orgunittypes',
 ];
 
 const newSourceIndex = 2;
@@ -100,12 +100,17 @@ const mockCalls = () => {
             fixture: `${i}/list.json`,
         });
     });
-
+    cy.intercept('GET', '/api/v2/orgunittypes/', {
+        fixture: `orgunittypes/list.json`,
+    });
     cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     });
     cy.intercept('GET', '/api/groups/**/*', {
         fixture: `groups/list.json`,
+    });
+    cy.intercept('GET', '/api/validationstatus/', {
+        fixture: `misc/validationStatuses.json`,
     });
     cy.intercept(
         'GET',
@@ -122,6 +127,9 @@ const mockCalls = () => {
             fixture: `logs/list-linked-paginated.json`,
         },
     );
+    cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}`, {
+        fixture: `datasources/details-ou.json`,
+    });
     cy.intercept('GET', `/api/datasources/?linkedTo=${orgUnit.id}/**/*`, {
         fixture: `datasources/details-ou.json`,
     });

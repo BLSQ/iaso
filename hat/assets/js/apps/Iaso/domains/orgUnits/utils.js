@@ -5,9 +5,10 @@ import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 
 import { locationLimitMax } from './constants/orgUnitConstants';
-import { orderOrgUnitsByDepth } from '../../utils/mapUtils.ts';
+import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils';
 
 import MESSAGES from './messages';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 
 export const fetchLatestOrgUnitLevelId = levels => {
     if (levels) {
@@ -190,17 +191,12 @@ export const getOrgUnitAncestors = orgUnit => {
     return result;
 };
 
-export const getStatusMessage = (status, formatMessage) => {
-    switch (status) {
-        case 'NEW': {
-            return formatMessage(MESSAGES.new);
-        }
-        case 'REJECTED': {
-            return formatMessage(MESSAGES.rejected);
-        }
-        default:
-            return formatMessage(MESSAGES.validated);
-    }
+export const useGetStatusMessage = () => {
+    const { data: validationStatusOptions } = useGetValidationStatus();
+    if (!validationStatusOptions) return () => '';
+    const getStatusMessage = status =>
+        validationStatusOptions.find(option => option.value === status)?.label;
+    return getStatusMessage;
 };
 
 export const getOrgUnitGroups = orgUnit => (

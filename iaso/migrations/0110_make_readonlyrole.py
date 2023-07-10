@@ -91,7 +91,6 @@ GRANT SELECT(
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0109_auto_20211024_2118"),
     ]

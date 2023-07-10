@@ -122,7 +122,6 @@ class PagesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
     def test_page_delete(self):
-
         self.client.force_login(self.goku)
 
         self.client.post(

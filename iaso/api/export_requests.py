@@ -31,7 +31,6 @@ class ExportRequestSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data: typing.MutableMapping):
-
         return parse_instance_filters(self.context["request"].data)
 
     def create(self, validated_data: typing.MutableMapping):

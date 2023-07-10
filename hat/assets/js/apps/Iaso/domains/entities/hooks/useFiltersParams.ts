@@ -1,11 +1,7 @@
-import {
-    // @ts-ignore
-    getSort,
-} from 'bluesquare-components';
+import { getSort, Column } from 'bluesquare-components';
 
 import { useStaticColumns, defaultSorted } from '../config';
 
-import { Column } from '../../../types/table';
 import { Filters, Params } from '../types/filters';
 
 export const useFiltersParams = (): ((

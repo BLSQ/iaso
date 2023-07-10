@@ -120,9 +120,6 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'virus',
         },
         {
-            key: 'vacine',
-        },
-        {
             key: 'is_preventive',
             getLogValue: log =>
                 convertBoolean(log.is_preventive, formatMessage),
@@ -137,12 +134,15 @@ export const useGetConfig = (): Record<string, any> => {
                 convertBoolean(log.enable_send_weekly_email, formatMessage),
         },
         {
-            key: 'pv_notified_at',
+            key: 'pv_notified_at', // deprecated
             getLogValue: log => convertDate(log.pv_notified_at),
         },
         {
             key: 'outbreak_declaration_date',
             getLogValue: log => convertDate(log.outbreak_declaration_date),
+        },
+        {
+            key: 'vacine', // deprecated
         },
         // Detection
         {
@@ -151,6 +151,20 @@ export const useGetConfig = (): Record<string, any> => {
         {
             key: 'detection_responsible',
         },
+        {
+            key: 'cvdpv_notified_at', // deprecated
+            getLogValue: log => convertDate(log.cvdpv_notified_at),
+        },
+        {
+            key: 'pv2_notified_at', // deprecated
+            getLogValue: log => convertDate(log.pv2_notified_at),
+        },
+        {
+            key: 'detection_rrt_oprtt_approval_at', // deprecated
+            getLogValue: log =>
+                convertDate(log.detection_rrt_oprtt_approval_at),
+        },
+
         // Risk assessment
         {
             key: 'risk_assessment_status',
@@ -168,6 +182,10 @@ export const useGetConfig = (): Record<string, any> => {
                 convertDate(log.risk_assessment_first_draft_submitted_at),
         },
         {
+            key: 'three_level_call_at', // deprecated
+            getLogValue: log => convertDate(log.three_level_call_at),
+        },
+        {
             key: 'risk_assessment_rrt_oprtt_approval_at',
             getLogValue: log =>
                 convertDate(log.risk_assessment_rrt_oprtt_approval_at),
@@ -182,6 +200,9 @@ export const useGetConfig = (): Record<string, any> => {
         },
         {
             key: 'risk_assessment_responsible',
+        },
+        {
+            key: 'doses_request', // deprecated
         },
         // Budget
         {
@@ -339,12 +360,51 @@ export const useGetConfig = (): Record<string, any> => {
             key: 'budget_submitted_at',
             getLogValue: log => convertDate(log.budget_submitted_at),
         },
-        // Preparedness
         {
-            key: 'preparedness_spreadsheet_url',
+            key: 'budget_responsible', // deprecated
         },
         {
-            key: 'preperadness_sync_status',
+            key: 'last_budget_event', // deprecated
+        },
+        {
+            key: 'budget_requested_at_WFEDITABLE_old', // deprecated
+            getLogValue: log =>
+                convertDate(log.budget_requested_at_WFEDITABLE_old),
+        },
+        {
+            key: 'feedback_sent_to_rrt3_at_WFEDITABLE_old', // deprecated
+            getLogValue: log =>
+                convertDate(log.feedback_sent_to_rrt3_at_WFEDITABLE_old),
+        },
+        {
+            key: 're_submitted_to_orpg_at_WFEDITABLE_old', // deprecated
+            getLogValue: log =>
+                convertDate(log.re_submitted_to_orpg_at_WFEDITABLE_old),
+        },
+        {
+            key: 'budget_rrt_oprtt_approval_at', // deprecated
+            getLogValue: log => convertDate(log.budget_rrt_oprtt_approval_at),
+        },
+        {
+            key: 'eomg', // deprecated
+        },
+        {
+            key: 'budget_submitted_at', // deprecated
+            getLogValue: log => convertDate(log.budget_submitted_at),
+        },
+
+        // Preparedness
+        {
+            key: 'preparedness_spreadsheet_url', // depreacted
+        },
+        {
+            key: 'preperadness_sync_status', // deprecated
+        },
+        {
+            key: 'surge_spreadsheet_url', // deprecated
+        },
+        {
+            key: 'country_name_in_surge_spreadsheet', // deprecated
         },
         // Scopes
         {
@@ -438,6 +498,9 @@ export const useGetConfig = (): Record<string, any> => {
                 {
                     key: 'lqas_ended_at',
                     getLogValue: log => convertDate(log.lqas_ended_at),
+                },
+                {
+                    key: 'percentage_covered_target_population',
                 },
                 {
                     key: 'lqas_district_passing',

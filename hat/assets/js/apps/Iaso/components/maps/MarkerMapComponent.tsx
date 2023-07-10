@@ -1,24 +1,17 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React, {
-    FunctionComponent,
-    useState,
-    useEffect,
-    useRef,
-    useCallback,
-} from 'react';
-import { Map, ScaleControl, TileLayer } from 'react-leaflet';
-// @ts-ignore
+import React, { FunctionComponent, useState, useMemo } from 'react';
+import { MapContainer, ScaleControl } from 'react-leaflet';
 import L from 'leaflet';
 
 import { makeStyles } from '@material-ui/core';
-// @ts-ignore
 import { commonStyles } from 'bluesquare-components';
 
-import { ZoomControl } from '../../utils/mapUtils';
+import { CustomTileLayer } from './tools/CustomTileLayer';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
-import { TilesSwitchDialog, Tile } from './tools/TilesSwitchDialog';
+import { Tile } from './tools/TilesSwitchControl';
+import { CustomZoomControl } from './tools/CustomZoomControl';
 
 const useStyles = makeStyles(theme => ({
     mapContainer: {
@@ -41,53 +34,40 @@ export const MarkerMap: FunctionComponent<Props> = ({
 }) => {
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
-    const map: any = useRef();
-
     const classes: Record<string, string> = useStyles();
 
-    const boundsOptions = { padding: [500, 500] };
+    const boundsOptions: Record<string, [number, number] | number> = {
+        padding: [500, 500],
+        maxZoom: currentTile.maxZoom,
+    };
 
-    const fitToBounds = useCallback(() => {
+    const bounds = useMemo(() => {
         const latlng = [L.latLng(latitude, longitude)];
-        const markerBounds = L.latLngBounds(latlng);
-
-        map.current.leafletElement?.fitBounds(markerBounds, {
-            maxZoom: 9,
-            padding: boundsOptions.padding,
-        });
-    }, [boundsOptions.padding, latitude, longitude]);
-
-    useEffect(() => {
-        fitToBounds();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+        return L.latLngBounds(latlng);
+    }, [latitude, longitude]);
 
     if (!latitude || !longitude) return null;
-
     return (
         <div className={classes.mapContainer}>
-            <TilesSwitchDialog
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
-            <Map
+            <MapContainer
+                doubleClickZoom={false}
                 scrollWheelZoom={false}
                 maxZoom={currentTile.maxZoom}
                 style={{ height: '100%' }}
                 center={[0, 0]}
-                ref={map}
                 zoomControl={false}
                 keyboard={false}
-                zoomSnap={0.1}
+                bounds={bounds}
+                boundsOptions={boundsOptions}
             >
-                <ZoomControl fitToBounds={() => fitToBounds()} />
-
+                <CustomZoomControl
+                    bounds={bounds}
+                    boundsOptions={boundsOptions}
+                />
                 <ScaleControl imperial={false} />
-                <TileLayer
-                    attribution={
-                        currentTile.attribution ? currentTile.attribution : ''
-                    }
-                    url={currentTile.url}
+                <CustomTileLayer
+                    currentTile={currentTile}
+                    setCurrentTile={setCurrentTile}
                 />
                 <MarkerComponent
                     item={{
@@ -95,7 +75,7 @@ export const MarkerMap: FunctionComponent<Props> = ({
                         longitude,
                     }}
                 />
-            </Map>
+            </MapContainer>
         </div>
     );
 };

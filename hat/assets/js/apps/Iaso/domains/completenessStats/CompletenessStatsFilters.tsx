@@ -6,7 +6,11 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { useSafeIntl, useSkipEffectOnMount } from 'bluesquare-components';
+import {
+    useSafeIntl,
+    useSkipEffectOnMount,
+    UrlParams,
+} from 'bluesquare-components';
 import uniq from 'lodash/uniq';
 import intersection from 'lodash/intersection';
 import isEqual from 'lodash/isEqual';
@@ -14,7 +18,6 @@ import { FilterButton } from '../../components/FilterButton';
 import InputComponent from '../../components/forms/InputComponent';
 import { baseUrls } from '../../constants/urls';
 import { useFilterState } from '../../hooks/useFilterState';
-import { UrlParams } from '../../types/table';
 import { OrgUnitTreeviewModal } from '../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../orgUnits/components/TreeView/requests';
 import { useGetFormsOptions } from './hooks/api/useGetFormsOptions';
@@ -25,6 +28,7 @@ import { useGetPlanningsOptions } from '../plannings/hooks/requests/useGetPlanni
 import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 
 type Props = {
     params: UrlParams & any;
@@ -110,6 +114,11 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
+
     return (
         <>
             <Grid container spacing={2}>
@@ -161,6 +170,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         />
                     </DisplayIfUserHasPerm>
                 </Grid>
+
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input-parent">
                         <OrgUnitTreeviewModal
@@ -170,6 +180,17 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                             initialSelection={initialParent}
                         />
                     </Box>
+                    <InputComponent
+                        type="select"
+                        clearable={false}
+                        multi
+                        keyValue="orgunitValidationStatus"
+                        onChange={handleChange}
+                        loading={isLoadingValidationStatusOptions}
+                        value={filters.orgunitValidationStatus}
+                        label={MESSAGES.validationStatus}
+                        options={validationStatusOptions || []}
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={3}>

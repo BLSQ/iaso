@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("vector_control", "0027_auto_20190628_1129")]
 
     operations = [

@@ -29,9 +29,11 @@ const goToPage = (
     };
     if (formQuery) {
         cy.intercept({ ...options, query: formQuery }, req => {
-            req.continue(res => {
-                interceptFlag = true;
-                res.send({ fixture });
+            req.on('response', response => {
+                if (response.statusMessage === 'OK') {
+                    interceptFlag = true;
+                    response.send({ fixture });
+                }
             });
         }).as('getForms');
     } else {
@@ -41,7 +43,7 @@ const goToPage = (
         }).as('getForms');
     }
 
-    cy.intercept('GET', '/api/orgunittypes/**', {
+    cy.intercept('GET', '/api/v2/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
     }).as('getTypes');
     cy.intercept('GET', '/api/projects/**', {
@@ -59,7 +61,7 @@ describe('Forms', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', 'Awaiting Access Permissions');
         });
 
         it('click on create button should redirect to form creation url', () => {
@@ -143,7 +145,7 @@ describe('Forms', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 4);
+                    actionCol.find('button').should('have.length', 5);
                 });
                 it('should display 3 buttons if user has iaso_forms permission', () => {
                     goToPage({
@@ -156,7 +158,7 @@ describe('Forms', () => {
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 3);
                 });
-                it('should display 1 buttons if user has iaso_submissions permission', () => {
+                it('should display 2 buttons if user has iaso_submissions permission', () => {
                     goToPage({
                         ...superUser,
                         permissions: ['iaso_submissions'],
@@ -165,7 +167,7 @@ describe('Forms', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 1);
+                    actionCol.find('button').should('have.length', 2);
                 });
             });
         });

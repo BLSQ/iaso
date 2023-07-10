@@ -11,9 +11,9 @@ import {
     Box,
 } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import { IntlMessage } from 'bluesquare-components';
 import { useStyles } from '../campaignCalendar/Styles';
 
-import { IntlMessage } from '../../../../../../hat/assets/js/apps/Iaso/types/intl';
 import MESSAGES from '../../constants/messages';
 import { convertWidth } from '../../utils';
 

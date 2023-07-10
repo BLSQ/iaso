@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
@@ -12,14 +13,15 @@ import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details.tsx';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
-import Users from '../domains/users';
+import { Users } from '../domains/users/index.tsx';
+import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import { CompletenessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/orgUnitTypes';
+import Types from '../domains/orgUnits/orgUnitTypes/index.tsx';
 import { Beneficiaries } from '../domains/entities/index.tsx';
 import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
@@ -39,7 +41,7 @@ import { CompareInstanceLogs } from '../domains/instances/compare/components/Com
 import { Registry } from '../domains/registry/index.tsx';
 import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
-import { paginationPathParams } from '../routing/common';
+import { paginationPathParams } from '../routing/common.ts';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
@@ -95,6 +97,10 @@ export const formsPath = {
             isRequired: false,
             key: 'showDeleted',
         },
+        {
+            isRequired: false,
+            key: 'planning',
+        },
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
@@ -127,7 +133,12 @@ export const formDetailPath = {
             isRequired: true,
             key: 'formId',
         },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
         ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('attachments'),
     ],
 };
 
@@ -232,6 +243,10 @@ export const instancesPath = {
         {
             isRequired: false,
             key: 'fieldsSearch',
+        },
+        {
+            isRequired: false,
+            key: 'planningIds',
         },
     ],
 };
@@ -637,6 +652,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'groupId',
         },
+        {
+            isRequired: false,
+            key: 'orgunitValidationStatus',
+        },
     ],
 };
 
@@ -673,9 +692,37 @@ export const usersPath = {
             isRequired: false,
             key: 'ouChildren',
         },
+        {
+            isRequired: false,
+            key: 'projectsIds',
+        },
+        {
+            isRequired: false,
+            key: 'userRoles',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,
+        })),
+    ],
+};
+
+export const userRolesPath = {
+    baseUrl: baseUrls.userRoles,
+    permissions: ['iaso_user_roles'],
+    component: props => <UserRoles {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: false,
         })),
     ],
 };
@@ -734,7 +781,7 @@ export const devicesPath = {
 
 export const groupsPath = {
     baseUrl: baseUrls.groups,
-    permissions: ['iaso_org_units'],
+    permissions: ['iaso_org_unit_groups'],
     component: props => <Groups {...props} />,
     params: [
         {
@@ -754,7 +801,7 @@ export const groupsPath = {
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
-    permissions: ['iaso_org_units'],
+    permissions: ['iaso_org_unit_types'],
     component: props => <Types {...props} />,
     params: [
         {
@@ -886,10 +933,7 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'accountId',
         },
-        ...paginationPathParams.map(p => ({
-            ...p,
-            isRequired: true,
-        })),
+
         {
             isRequired: false,
             key: 'search',
@@ -932,8 +976,9 @@ export const entityDuplicatesPath = {
         },
         {
             isRequired: false,
-            key: 'entity',
+            key: 'merged',
         },
+
         {
             isRequired: false,
             key: 'fields',
@@ -942,6 +987,14 @@ export const entityDuplicatesPath = {
             isRequired: false,
             key: 'form',
         },
+        {
+            isRequired: false,
+            key: 'entity_id',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
     ],
 };
 export const entityDuplicatesDetailsPath = {
@@ -1204,6 +1257,7 @@ export const routeConfigs = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    userRolesPath,
     projectsPath,
     dataSourcesPath,
     tasksPath,

@@ -172,7 +172,9 @@ export const BaseInfoForm = () => {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <Field
-                            label={formatMessage(MESSAGES.outbreakdeclarationdate)}
+                            label={formatMessage(
+                                MESSAGES.outbreakdeclarationdate,
+                            )}
                             fullWidth
                             name="outbreak_declaration_date"
                             component={DateInput}

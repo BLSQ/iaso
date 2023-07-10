@@ -45,6 +45,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.rejected',
         defaultMessage: 'rejected',
     },
+    closed: {
+        id: 'iaso.forms.closed',
+        defaultMessage: 'Closed',
+    },
     editValidation: {
         defaultMessage: 'Edit validation',
         id: 'iaso.orgUnits.editValidation',
@@ -513,6 +517,15 @@ const MESSAGES = defineMessages({
     depth: {
         id: 'iaso.orgUnits.depth',
         defaultMessage: 'Depth',
+    },
+    useGPSFromSubmission: {
+        id: 'iaso.orgUnits.useGPSFromSubmission',
+        defaultMessage: 'Use GPS coordinates from form submission',
+    },
+    GPSWarning: {
+        id: 'iaso.orgUnits.GPSWarning',
+        defaultMessage:
+            'GPS coordinates will NOT be updated for org units that already have coordinates or a shape',
     },
 });
 

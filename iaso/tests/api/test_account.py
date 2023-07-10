@@ -107,7 +107,6 @@ class AccountAPITestCase(APITestCase):
         self.assertEqual(self.ghi.default_version, old_version)
 
     def test_cant_assign_source_version_from_different_account(self):
-
         self.client.force_authenticate(self.jane)
         response = self.client.put(f"/api/accounts/{self.ghi.pk}/", {"default_version": self.wha_version.pk})
         j = self.assertJSONResponse(response, 400)

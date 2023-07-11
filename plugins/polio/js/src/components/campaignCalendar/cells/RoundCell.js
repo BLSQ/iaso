@@ -43,11 +43,11 @@ const RoundCell = ({ colSpan, campaign, round }) => {
     const vaccinesList = useMemo(() => {
         const list = campaign.separateScopesPerRound
             ? round.vaccine_names?.split(',') ?? []
-            : campaign.vaccines?.split(',') ?? [];
+            : campaign.original.vaccines?.split(',') ?? [];
         return list.map(vaccineName => vaccineName.trim());
     }, [
+        campaign.original.vaccines,
         campaign.separateScopesPerRound,
-        campaign.vaccines,
         round.vaccine_names,
     ]);
     const getVaccineColor = useCallback(

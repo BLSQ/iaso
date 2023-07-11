@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
-import { useSnackQuery } from '../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { makeUrlWithParams } from '../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
-import { AfroMapParams, MapCategory } from './types';
+import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { makeUrlWithParams } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
+import { AfroMapParams, MapCategory } from '../types';
 
 type GetAfroMapDataArgs = {
     category: MapCategory;
@@ -76,7 +76,7 @@ export const useGetZoomedInShapes = ({
 }: UseGetZoomedInShapesArgs): UseQueryResult<any, any> => {
     return useSnackQuery({
         queryFn: () => getZoomedInShapes({ bounds, category, params }),
-        queryKey: ['lqasim-zoomin-map', bounds, category],
+        queryKey: ['lqasim-zoomin-map', bounds, category, params],
         options: {
             select: data => {
                 if (!data) return [];

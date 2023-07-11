@@ -40,7 +40,7 @@ import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/c
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
 import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
 import { BudgetList } from './src/pages/Budget/index.tsx';
-import { LqasAfroMap } from './src/pages/LQAS/LqasAfroMap/LqasAfroMap.tsx';
+import { LqasAfroOverview } from './src/pages/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
 
 const campaignsFilters = [
     {
@@ -171,7 +171,7 @@ const routes = [
     },
     {
         baseUrl: `${LQAS_AFRO_MAP_URL}`,
-        component: props => <LqasAfroMap {...props} />,
+        component: props => <LqasAfroOverview {...props} />,
         permissions: ['iaso_polio'],
         params: [
             {

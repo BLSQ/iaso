@@ -32,7 +32,6 @@ export const MapPanes: FunctionComponent<Props> = ({
     onSelectShape = () => null,
     tooltipFieldKey = 'name',
 }) => {
-    console.log('SHAPES', mainLayer);
     return (
         <>
             <Pane name={`BackgroundLayer-${name}`}>
@@ -41,6 +40,7 @@ export const MapPanes: FunctionComponent<Props> = ({
                         <GeoJSON
                             key={shape.id}
                             data={shape.geo_json}
+                            // @ts-ignore
                             style={() => getBackgroundLayerStyle(shape)}
                             onClick={() => null}
                         />
@@ -52,11 +52,14 @@ export const MapPanes: FunctionComponent<Props> = ({
                         <GeoJSON
                             // TODO better parametrize this
                             key={
+                                // @ts-ignore
                                 shape?.status
-                                    ? `${shape.status}-${shape.id}`
+                                    ? // @ts-ignore
+                                      `${shape.status}-${shape.id}`
                                     : shape.id
                             }
                             data={shape.geo_json}
+                            // @ts-ignore
                             style={() => getMainLayerStyle(shape)}
                             onClick={() => onSelectShape(shape)}
                         >

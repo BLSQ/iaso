@@ -1,15 +1,15 @@
 import React, { FunctionComponent, useState } from 'react';
 import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
-import { lqasDistrictColors } from '../../IM/constants';
-import { MapPanes } from '../../../components/MapComponent/MapPanes';
+import { lqasDistrictColors } from '../../../IM/constants';
+import { MapPanes } from '../../../../components/MapComponent/MapPanes';
 import {
     useAfroMapShapes,
     useGetZoomedInBackgroundShapes,
     useGetZoomedInShapes,
-} from './useAfroMapShapes';
-import { defaultShapeStyle } from '../../../utils';
-import { AfroMapParams } from './types';
+} from '../hooks/useAfroMapShapes';
+import { defaultShapeStyle } from '../../../../utils';
+import { AfroMapParams } from '../types';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -60,7 +60,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
         bounds: JSON.stringify(bounds),
         enabled: !showCountries,
     });
-
+    const paramsAsString = JSON.stringify(params);
     return (
         <>
             {(isAfroShapesLoading ||
@@ -75,18 +75,18 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     // backgroundLayer={zoominbackgroundShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     // getBackgroundLayerStyle={}
-                    name={`LQAS-Map-country-view-${JSON.stringify(params)}`}
+                    name={`LQAS-Map-country-view-${paramsAsString}`}
                     tooltipFieldKey="data.country_name"
                 />
             )}
             {!showCountries && (
                 <MapPanes
-                    key={JSON.stringify(bounds)}
+                    key={`${JSON.stringify(bounds)}`}
                     mainLayer={zoominShapes}
                     backgroundLayer={zoominbackgroundShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     getBackgroundLayerStyle={getBackgroundLayerStyle}
-                    name="LQAS-Map-zoomin-view-"
+                    name={`LQAS-Map-zooomin-view-${paramsAsString}`}
                     tooltipFieldKey="data.district_name"
                 />
             )}

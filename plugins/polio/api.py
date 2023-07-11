@@ -1771,8 +1771,9 @@ def determine_status_for_district(district_data):
     if checked == 60:
         if marked > 56:
             return "1lqasOK"
-        return "3lqasFail"
-    return "2lqasDisqualified"
+        # return "3lqasFail"
+    # return "2lqasDisqualified"
+    return "3lqasFail"
 
 
 def reduce_to_country_status(total, current):

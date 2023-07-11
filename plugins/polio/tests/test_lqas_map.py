@@ -551,7 +551,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             results_for_second_district["data"]["district_name"],
             self.district_org_unit_2.name,
         )
-        self.assertEquals(results_for_second_district["status"], "2lqasDisqualified")
+        self.assertEquals(results_for_second_district["status"], "3lqasFail")
 
         # Third district has no data for latest round, ie round 2
         results_for_third_district = next(
@@ -633,7 +633,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEquals(len(results), 1)
         self.assertEquals(results[0]["data"]["campaign"], self.campaign_2.obr_name)
         self.assertEquals(results[0]["data"]["district_name"], self.district_org_unit_4.name)
-        self.assertEquals(results[0]["status"], "2lqasDisqualified")
+        self.assertEquals(results[0]["status"], "3lqasFail")
 
     def test_lqas_zoomedin_start_date_filter(self):
         c = APIClient()

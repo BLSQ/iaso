@@ -35,7 +35,7 @@ class HasUserPermission(permissions.BasePermission):
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
     """Api endpoint to bulkcreate users and profiles from a CSV File.
 
-    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id"]
+    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions"]
 
     Email, dhis2_id, permissions, profile_language and org_unit are not mandatory, but you must keep the columns.
 

@@ -9,7 +9,7 @@ import {
     useGetZoomedInShapes,
 } from '../hooks/useAfroMapShapes';
 import { defaultShapeStyle } from '../../../../utils';
-import { AfroMapParams } from '../types';
+import { AfroMapParams, RoundSelection, Side } from '../types';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -26,10 +26,32 @@ const getBackgroundLayerStyle = () => {
 
 type Props = {
     params: AfroMapParams;
+    side: Side;
+};
+
+const getRound = (rounds: string | undefined, side: Side): RoundSelection => {
+    if (!rounds) {
+        if (side === 'left') return 'penultimate';
+        return 'latest';
+    }
+    const [leftRound, rightRound] = rounds.split(',');
+    if (side === 'left') {
+        const parsedValue = parseInt(leftRound, 10);
+        if (Number.isInteger(parsedValue)) {
+            return parsedValue;
+        }
+        return leftRound as RoundSelection;
+    }
+    const parsedValue = parseInt(rightRound, 10);
+    if (Number.isInteger(parsedValue)) {
+        return parsedValue;
+    }
+    return rightRound as RoundSelection;
 };
 
 export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     params,
+    side,
 }) => {
     const map = useMapEvents({
         zoomend: () => {
@@ -40,10 +62,16 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
         },
     });
     const [bounds, setBounds] = useState<number>(map.getBounds());
+    const selectedRound = getRound(params.rounds, side);
 
     const showCountries = map.getZoom() <= 5;
     const { data: mapShapes, isFetching: isAfroShapesLoading } =
-        useAfroMapShapes({ category: 'lqas', enabled: showCountries, params });
+        useAfroMapShapes({
+            category: 'lqas',
+            enabled: showCountries,
+            params,
+            selectedRound,
+        });
 
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
         useGetZoomedInShapes({
@@ -51,6 +79,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             category: 'lqas',
             enabled: !showCountries,
             params,
+            selectedRound,
         });
 
     const {

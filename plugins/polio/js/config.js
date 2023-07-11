@@ -176,7 +176,7 @@ const routes = [
         params: [
             {
                 isRequired: false,
-                key: 'round',
+                key: 'rounds',
             },
             {
                 isRequired: false,

@@ -2,16 +2,22 @@ import { UseQueryResult } from 'react-query';
 import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
 import { makeUrlWithParams } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
-import { AfroMapParams, MapCategory } from '../types';
+import { AfroMapParams, MapCategory, RoundSelection } from '../types';
 
 type GetAfroMapDataArgs = {
     category: MapCategory;
     params: AfroMapParams;
+    selectedRound: RoundSelection;
 };
-const getAfroMapData = ({ category, params }: GetAfroMapDataArgs) => {
+const getAfroMapData = ({
+    category,
+    params,
+    selectedRound,
+}: GetAfroMapDataArgs) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { accountId, ...apiParams } = params;
-    (apiParams as Record<string, string>).category = category;
+    (apiParams as Record<string, string | number>).category = category;
+    (apiParams as Record<string, string | number>).round = selectedRound;
     const baseUrl = `/api/polio/lqasmap/global/`;
     const url = makeUrlWithParams(baseUrl, apiParams);
     return getRequest(url);
@@ -20,15 +26,17 @@ type UseAfroMapShapesArgs = {
     category: MapCategory;
     enabled: boolean;
     params: AfroMapParams;
+    selectedRound: RoundSelection;
 };
 export const useAfroMapShapes = ({
     category,
     enabled,
     params,
+    selectedRound,
 }: UseAfroMapShapesArgs): UseQueryResult<any, any> => {
     return useSnackQuery({
-        queryFn: () => getAfroMapData({ category, params }),
-        queryKey: ['lqasim-afro-map', category, params],
+        queryFn: () => getAfroMapData({ category, params, selectedRound }),
+        queryKey: ['lqasim-afro-map', category, params, selectedRound],
         options: {
             select: data => {
                 if (!data) return [];
@@ -45,6 +53,7 @@ export const useAfroMapShapes = ({
 type GetZoomedInShapesArgs = {
     category: MapCategory;
     params: AfroMapParams;
+    selectedRound: RoundSelection;
     bounds: string; // stringified object : {_northEast:{lat:number,lng:number},_southWest:{lat:number,lng:number}}
 };
 
@@ -52,11 +61,13 @@ const getZoomedInShapes = ({
     bounds,
     category,
     params,
+    selectedRound,
 }: GetZoomedInShapesArgs) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { accountId, ...apiParams } = params;
-    (apiParams as Record<string, string>).category = category;
-    (apiParams as Record<string, string>).bounds = bounds;
+    (apiParams as Record<string, string | number>).category = category;
+    (apiParams as Record<string, string | number>).bounds = bounds;
+    (apiParams as Record<string, string | number>).round = selectedRound;
     const baseUrl = `/api/polio/lqasmap/zoomin/`;
     const url = makeUrlWithParams(baseUrl, apiParams);
     return getRequest(url);
@@ -65,6 +76,7 @@ type UseGetZoomedInShapesArgs = {
     enabled: boolean;
     category: MapCategory;
     params: AfroMapParams;
+    selectedRound: RoundSelection;
     bounds: string; // stringified object : {_northEast:{lat:number,lng:number},_southWest:{lat:number,lng:number}}
 };
 
@@ -73,10 +85,18 @@ export const useGetZoomedInShapes = ({
     category,
     enabled,
     params,
+    selectedRound,
 }: UseGetZoomedInShapesArgs): UseQueryResult<any, any> => {
     return useSnackQuery({
-        queryFn: () => getZoomedInShapes({ bounds, category, params }),
-        queryKey: ['lqasim-zoomin-map', bounds, category, params],
+        queryFn: () =>
+            getZoomedInShapes({ bounds, category, params, selectedRound }),
+        queryKey: [
+            'lqasim-zoomin-map',
+            bounds,
+            category,
+            params,
+            selectedRound,
+        ],
         options: {
             select: data => {
                 if (!data) return [];

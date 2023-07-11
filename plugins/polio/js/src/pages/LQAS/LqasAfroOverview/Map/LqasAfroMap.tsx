@@ -10,19 +10,21 @@ import {
     Tile,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
-import { AfroMapParams } from '../types';
+import { AfroMapParams, Side } from '../types';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 
 type Props = {
     router: Router;
     currentTile: Tile;
     setCurrentTile: React.Dispatch<React.SetStateAction<Tile>>;
+    side: Side;
 };
 
 export const LqasAfroMap: FunctionComponent<Props> = ({
     router,
     currentTile,
     setCurrentTile,
+    side,
 }) => {
     return (
         <>
@@ -32,7 +34,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
             />
             <MapContainer
                 style={{
-                    height: '72vh',
+                    height: '65vh',
                 }}
                 center={defaultViewport.center}
                 zoom={defaultViewport.zoom}
@@ -48,6 +50,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
                 />
                 <LqasAfroMapPanesContainer
                     params={router.params as AfroMapParams}
+                    side={side}
                 />
             </MapContainer>
         </>

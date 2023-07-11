@@ -394,7 +394,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
         self.assertTrue(results_for_third_country is not None)
         self.assertEquals(results_for_third_country["status"], "inScope")
-        self.assertTrue(results_for_third_country["data"] is None)
+        self.assertEquals(results_for_third_country["data"], {"country_name": self.country_org_unit_3.name})
 
     def test_lqas_global_round_filter(self):
         c = APIClient()

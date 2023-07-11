@@ -12,6 +12,10 @@ import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext.tsx';
 import { polioVaccines } from '../../../constants/virus.ts';
 
+const getVaccineColor = vaccine =>
+    polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)?.color ||
+    '#bcbcbc';
+
 const RoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -50,12 +54,12 @@ const RoundCell = ({ colSpan, campaign, round }) => {
         campaign.separateScopesPerRound,
         round.vaccine_names,
     ]);
-    const getVaccineColor = useCallback(
-        vaccine =>
-            polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)
-                ?.color || campaign.color,
-        [campaign.color],
-    );
+    // const getVaccineColor = useCallback(
+    //     vaccine =>
+    //         polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)
+    //             ?.color || '#bcbcbc',
+    //     [campaign.color],
+    // );
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}

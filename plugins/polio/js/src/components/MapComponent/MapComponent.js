@@ -60,6 +60,7 @@ export const MapComponent = ({
 
     return (
         <MapContainer
+            key={`${bounds}`}
             style={{ height }}
             center={[0, 0]}
             zoom={3}

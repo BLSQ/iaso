@@ -2242,6 +2242,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.campaign.byCountry',
         defaultMessage: 'By country',
     },
+    penultimate: {
+        id: 'iaso.polio.lqasim.penultimate',
+        defaultMessage: 'Penultimate',
+    },
 });
 
 export default MESSAGES;

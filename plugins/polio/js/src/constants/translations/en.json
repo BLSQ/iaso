@@ -439,6 +439,7 @@
     "iaso.polio.label.whoCompletedRecruitement": "WHO Completed Recruitment",
     "iaso.polio.label.whoToRecruit": "WHO To Recruit",
     "iaso.polio.label.yes": "Yes",
+    "iaso.polio.lqasim.penultimate": "Penultimate",
     "iaso.polio.noCampaign": "No campaign to display",
     "iaso.polio.placeholder.noDateFound": "None",
     "iaso.polio.preparednessIntro": "Configure the Google Sheets that will be used to import the preparedness data for the round.",

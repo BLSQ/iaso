@@ -1795,6 +1795,14 @@ def get_latest_round_number(country_data):
     return data_for_all_rounds[0]["number"] if data_for_all_rounds else None
 
 
+def get_penultimate_round_number(country_data):
+    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
+    if data_for_all_rounds:
+        if len(data_for_all_rounds) > 1:
+            return data_for_all_rounds[1]["number"]
+    return None
+
+
 def get_data_for_round(country_data, roundNumber):
     data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
     return next((round for round in data_for_all_rounds if round["number"] == roundNumber), {"data": {}})
@@ -1880,7 +1888,7 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
             )
             # We apply the date filters if any
             if start_date_after is not None:
-                round_number_to_find = int(requested_round) if requested_round != "latest" else None
+                round_number_to_find = int(requested_round) if requested_round.isdigit() else None
                 start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
@@ -1889,7 +1897,7 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
                     and campaign.find_last_round_with_date("start", round_number_to_find).started_at >= start_date_after
                 ]
             if end_date_before is not None:
-                round_number_to_find = int(requested_round) if requested_round != "latest" else None
+                round_number_to_find = int(requested_round) if requested_round.isdigit() else None
                 end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
@@ -1909,8 +1917,9 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
             if stats and latest_campaign:
                 round_number = requested_round
                 if round_number == "latest":
-                    latest_round_number = get_latest_round_number(stats)
-                    round_number = latest_round_number
+                    round_number = get_latest_round_number(stats)
+                elif round_number == "penultimate":
+                    round_number = get_penultimate_round_number(stats)
                 else:
                     round_number = int(round_number)
                 if latest_campaign:
@@ -2007,7 +2016,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
             )
 
             if start_date_after is not None:
-                round_number_to_find = int(requested_round) if requested_round != "latest" else None
+                round_number_to_find = int(requested_round) if requested_round.isdigit() else None
                 start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
@@ -2016,7 +2025,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     and campaign.find_last_round_with_date("start", round_number_to_find).started_at >= start_date_after
                 ]
             if end_date_before is not None:
-                round_number_to_find = int(requested_round) if requested_round != "latest" else None
+                round_number_to_find = int(requested_round) if requested_round.isdigit() else None
                 end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
@@ -2029,10 +2038,14 @@ class LQASIMZoominMapViewSet(ModelViewSet):
 
             if latest_campaign is None:
                 continue
+            sorted_rounds = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
             if requested_round == "latest":
-                round_number = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)[
-                    0
-                ].number
+                round_number = sorted_rounds[0].number
+            elif requested_round == "penultimate":
+                if len(sorted_rounds) > 1:
+                    round_number = sorted_rounds[1].number
+                else:
+                    requested_round = None
             else:
                 round_number = int(requested_round)
             if latest_campaign.separate_scopes_per_round:

@@ -26,10 +26,8 @@ import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
 import { genUrl } from '../../utils/routing';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { defaultRounds } from '../IM/constants.ts';
+import { defaultRounds, paperElevation } from '../IM/constants.ts';
 import { useLqasIm } from '../IM/requests.ts';
-
-const paperElevation = 2;
 
 const styles = theme => ({
     ...commonStyles(theme),

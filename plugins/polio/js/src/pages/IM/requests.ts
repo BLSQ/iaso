@@ -40,7 +40,10 @@ export const useLqasIm = (
         dispatchOnError: false,
         options: {
             select: data => {
-                return data?.data;
+                if (type === 'lqas') {
+                    return data?.data;
+                }
+                return data;
             },
             retry: 0,
             keepPreviousData: false,

@@ -297,14 +297,13 @@ class PolioLqasAfroMapTestCase(APITestCase):
         district_data = self.country2_data_store_content["stats"][self.campaign_2.obr_name]["rounds"][1]["data"][
             self.district_org_unit_4.name
         ]
-        self.assertEqual(determine_status_for_district(district_data), "2lqasDisqualified")
+        self.assertEqual(determine_status_for_district(district_data), "3lqasFail")
         district_data = {"total_child_checked": 60, "total_child_fmd": 45}
         self.assertEqual(determine_status_for_district(district_data), "3lqasFail")
 
     def test_reduce_to_country_status(self):
         total = {}
         lqasPass = "1lqasOK"
-        lqasDisqualified = "2lqasDisqualified"
         lqasFail = "3lqasFail"
         inScope = "inScope"
         total = reduce_to_country_status(total, lqasPass)
@@ -313,7 +312,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         total = reduce_to_country_status(total, lqasPass)
         self.assertEqual(total["total"], 2)
         self.assertEqual(total["passed"], 2)
-        total = reduce_to_country_status(total, lqasDisqualified)
+        total = reduce_to_country_status(total, lqasFail)
         self.assertEqual(total["total"], 3)
         self.assertEqual(total["passed"], 2)
         total = reduce_to_country_status(total, lqasFail)
@@ -568,7 +567,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             results_for_fourth_district["data"]["district_name"],
             self.district_org_unit_4.name,
         )
-        self.assertEquals(results_for_fourth_district["status"], "2lqasDisqualified")
+        self.assertEquals(results_for_fourth_district["status"], "3lqasFail")
 
     def test_lqas_zoomin_round_filter(self):
         c = APIClient()

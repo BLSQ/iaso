@@ -1869,18 +1869,18 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
 
             # Probably not necessary as long as we only have AFRO in the platform
-            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
+            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
             # Since LQAS/IM are being performed after campaigns end, we filter out future and current campaigns
-            finished_campaigns = [
-                campaign
-                for campaign in campaigns
-                if len([round for round in campaign.rounds.all() if not Round.is_round_over(round)]) == 0
-            ]
-
+            # finished_campaigns = [
+            #     campaign
+            #     for campaign in campaigns
+            #     if len([round for round in campaign.rounds.all() if not Round.is_round_over(round)]) == 0
+            # ]
+            started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
             # By default, we want the last campaign that ended, so we sort them by descending round end date
             sorted_campaigns = (
                 sorted(
-                    finished_campaigns,
+                    started_campaigns,
                     key=lambda campaign: campaign.get_last_round_end_date(),
                     reverse=True,
                 )
@@ -2003,15 +2003,15 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 data_store = data_stores.get(slug__contains=str(country_id))
             except JsonDataStore.DoesNotExist:
                 continue
-            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None)
-            finished_campaigns = [
-                campaign
-                for campaign in campaigns
-                if len([round for round in campaign.rounds.all() if not Round.is_round_over(round)]) == 0
-            ]
-
+            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
+            # finished_campaigns = [
+            #     campaign
+            #     for campaign in campaigns
+            #     if len([round for round in campaign.rounds.all() if not Round.is_round_over(round)]) == 0
+            # ]
+            started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
             sorted_campaigns = sorted(
-                finished_campaigns,
+                started_campaigns,
                 key=lambda campaign: campaign.get_last_round_end_date(),
                 reverse=True,
             )
@@ -2035,7 +2035,7 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                     and campaign.find_last_round_with_date("end", round_number_to_find).ended_at <= end_date_before
                 ]
 
-            latest_campaign = sorted_campaigns[0] if len(finished_campaigns) > 0 and sorted_campaigns else None
+            latest_campaign = sorted_campaigns[0] if len(started_campaigns) > 0 and sorted_campaigns else None
 
             if latest_campaign is None:
                 continue

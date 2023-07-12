@@ -1,4 +1,5 @@
 from datetime import date
+import datetime
 import json
 from typing import Union
 from uuid import uuid4
@@ -602,7 +603,12 @@ class Campaign(SoftDeletableModel):
             reverse=True,
         )
         return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.min
-
+    
+    def is_started(self):
+        today = datetime.datetime.now()
+        started_rounds = self.rounds.filter(started_at__lte=today)
+        return started_rounds.count()>0
+        
     def find_last_round_with_date(self, date_type="start", round_number=None):
         rounds = self.rounds.all()
         if round_number is not None:

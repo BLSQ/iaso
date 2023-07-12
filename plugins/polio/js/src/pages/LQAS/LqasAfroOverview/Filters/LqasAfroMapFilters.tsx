@@ -1,5 +1,11 @@
-import React, { FunctionComponent } from 'react';
-import { Box, Grid } from '@material-ui/core';
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import {
+    Box,
+    FormControlLabel,
+    FormGroup,
+    Grid,
+    Switch,
+} from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { LQAS_AFRO_MAP_URL } from '../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
@@ -13,23 +19,41 @@ import MESSAGES from '../../../../constants/messages';
 const baseUrl = LQAS_AFRO_MAP_URL;
 type Props = {
     params: AfroMapParams;
-    mode?: 'date' | 'period';
 };
 
-export const LqasAfroMapFilters: FunctionComponent<Props> = ({
-    params,
-    mode = 'period',
-}) => {
+export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
-    const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params, withPagination: false });
+    const {
+        filters,
+        handleSearch,
+        handleChange,
+        filtersUpdated,
+        setFiltersUpdated,
+        setFilters,
+    } = useFilterState({ baseUrl, params, withPagination: false });
     const periodOptions = usePeriodOptions();
+    const [chooseDates, setChooseDates] = useState<boolean>(false);
+
+    const onSwitchChange = useCallback(() => {
+        if (chooseDates) {
+            handleChange('period', undefined);
+        }
+        if (!chooseDates) {
+            setFilters({
+                ...filters,
+                startDate: undefined,
+                endDate: undefined,
+            });
+        }
+        setChooseDates(!chooseDates);
+        setFiltersUpdated(true);
+    }, [chooseDates, filters, handleChange, setFilters, setFiltersUpdated]);
 
     return (
         <>
             <Grid container spacing={2}>
                 <Grid item xs={6} md={6}>
-                    {mode === 'date' && (
+                    {chooseDates && (
                         <DatesRange
                             onChangeDate={handleChange}
                             dateFrom={filters.startDate}
@@ -40,11 +64,12 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({
                             keyDateTo="endDate"
                         />
                     )}
-                    {mode === 'period' && (
+                    {!chooseDates && (
                         <InputComponent
                             type="select"
                             multi={false}
                             keyValue="period"
+                            clearable={false}
                             value={filters.period ?? '6months'}
                             onChange={handleChange}
                             options={periodOptions}
@@ -61,6 +86,20 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({
                     </Box>
                 </Grid>
             </Grid>
+            <FormGroup>
+                <FormControlLabel
+                    label={formatMessage(MESSAGES.chooseDates)}
+                    style={{ width: 'max-content' }}
+                    control={
+                        <Switch
+                            size="medium"
+                            checked={chooseDates}
+                            onChange={onSwitchChange}
+                            color="primary"
+                        />
+                    }
+                />
+            </FormGroup>
         </>
     );
 };

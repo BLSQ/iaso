@@ -55,6 +55,7 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <LqasAfroMapFilters params={router.params as AfroMapParams} />
+
                 <Box mt={2}>
                     <Grid container spacing={2} direction="row">
                         <Grid item xs={6}>

@@ -660,6 +660,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         to_date=None,
         show_deleted=None,
         entity_id=None,
+        user_id=None,
         json_content=None,
         planning_ids=None,
     ):
@@ -753,6 +754,9 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         if status:
             statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
+
+        if user_id:
+            queryset = queryset.filter(created_by__id=user_id)
 
         if json_content:
             q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")

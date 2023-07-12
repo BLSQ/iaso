@@ -97,7 +97,7 @@ export const Lqas = ({ router }) => {
                     {selectedRounds.map((rnd, index) => (
                         <Grid item xs={6} key={`round_${rnd}_${index}`}>
                             <MapContainer
-                                round={parseInt(rnd, 10)} // parsing the rnd because it willl be a string when coming from params
+                                round={parseInt(rnd, 10)} // parsing the rnd because it will be a string when coming from params
                                 campaign={campaign}
                                 campaigns={campaigns}
                                 country={country}

@@ -25,15 +25,21 @@ class HasUserPermission(permissions.BasePermission):
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
     """Api endpoint to bulkcreate users and profiles from a CSV File.
 
+    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions", "user_role"]
+
+    Email, dhis2_id, permissions, user_role, profile_language and org_unit are not mandatory, but you must keep the columns.
+
     Sample csv input:
 
-    username,password,email,first_name,last_name,orgunit,profile_language,permissions
+    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id,a_user_role
 
-    simon,sim0nrule2,biobroly@bluesquarehub.com,Simon,D.,KINSHASA,fr,"iaso_submissions, iaso_forms"
-
-    Email is not mandatory, but you must keep the email column.
+    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3
 
     You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
+    You can add multiples org_units for the same user by ID or Name : "28334, Bas Uele, 9999"
+
+    It's a better practice and less error-prone to use org_units IDs instead of names.
+
 
     The permissions are :
 
@@ -77,6 +83,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         file_instance = BulkCreateUserCsvFile.objects.create(
             file=file, created_by=user, account=user.iaso_profile.account
         )
-        task = bulk_create_users_task(user.id, file_id=file_instance.id, launch_task=True, user=user)  # type: ignore
+        task = bulk_create_users_task(user_id=user.id, file_id=file_instance.id, launch_task=True, user=user)  # type: ignore
 
         return Response({"task": TaskSerializer(instance=task).data})

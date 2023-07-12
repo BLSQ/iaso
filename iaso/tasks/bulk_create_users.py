@@ -1,5 +1,6 @@
 import csv
 import io
+import re
 
 import pandas as pd
 from django.contrib.auth.models import User, Permission
@@ -7,21 +8,38 @@ from django.contrib.auth.password_validation import validate_password
 from django.core import validators
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.files.base import ContentFile
+from django.db import transaction
 from rest_framework import serializers
+
+from django.utils.translation import gettext as _
 
 from beanstalk_worker import task_decorator
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, ERRORED
 
 
+@transaction.atomic
 @task_decorator(task_name="bulk_create_users")
 def bulk_create_users_task(user_id=None, file_id=None, launch_task=None, task=None, user=None):
-    request_user = user
+    columns_list = [
+        "username",
+        "password",
+        "email",
+        "first_name",
+        "last_name",
+        "orgunit",
+        "profile_language",
+        "dhis2_id",
+        "permissions",
+        "user_role",
+    ]
+    request_user = User.objects.get(pk=user_id)
+    print("REQ: ", request_user)
     user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request_user, None)
     user_created_count = 0
     file_instance = BulkCreateUserCsvFile.objects.get(pk=file_id)
-    file = file_instance.file
+    csv_decoded = file_instance.file.read().decode("utf-8")
+    csv_str = io.StringIO(csv_decoded, newline="")
     the_task = task
-
     if launch_task:
         try:
             the_task.report_progress_and_stop_if_killed(
@@ -31,23 +49,88 @@ def bulk_create_users_task(user_id=None, file_id=None, launch_task=None, task=No
             the_task.status = ERRORED
             the_task.result = {"message": e}
             the_task.save()
+
             raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
-    user_csv = file
-    user_csv_decoded = user_csv.read().decode("utf-8")
-    csv_str = io.StringIO(user_csv_decoded)
-    reader = csv.reader(csv_str)
-    i = 0
+
+    # Check the validity and delimiters of the CSV
+
+    try:
+        delimiter = csv.Sniffer().sniff(csv_decoded).delimiter
+    except csv.Error:
+        try:
+            delimiter = ";" if ";" in csv_decoded else ","
+        except Exception as e:
+            raise serializers.ValidationError({"error": f"Error: CSV bad format {e}"})
+    delimiter = delimiter.strip()
+    csv_str.seek(0)
+    csv_lines = csv_decoded.splitlines()
+    reader = [line.split(delimiter) for line in csv_lines]
+
     csv_indexes = []
-    # file_instance = BulkCreateUserCsvFile.objects.create(
-    #     file=user_csv, created_by=request_user, account=request_user.iaso_profile.account
-    # )
-    # file_instance.save()
-    for row in reader:
+    file_instance = BulkCreateUserCsvFile.objects.create(
+        file=file_instance.file, created_by=request_user, account=request_user.iaso_profile.account
+    )
+    file_instance.save()
+    for i, row in enumerate(reader):
+
+        index_list = []
+        element_dict = dict()
+        try:
+            for index, e in enumerate(row):
+                if e.startswith('"') or e.endswith('"'):
+                    element_dict[index] = e
+                    if len(element_dict) >= 2:
+                        for num in range(min(element_dict.keys()), max(element_dict.keys())):
+                            if num not in element_dict:
+                                element_dict[num] = row[num]
+
+        except Exception as e:
+            print(e)
+
+        if len(element_dict) > 0:
+            element_dict = {k: v.strip('"').replace('"', "") for k, v in element_dict.items()}
+            replacement_string = ""
+            for k, v in element_dict.items():
+                if v.startswith(" "):
+                    v = v[1:]
+                replacement_string = replacement_string + v + ","
+
+            replacement_string = replacement_string[:-1]
+
+            try:
+                row[min(element_dict.keys())] = replacement_string
+            except Exception as e:
+                print(e)
+
+            print("elem dict X: ", element_dict)
+
+            for k, v in element_dict.items():
+                index_list.append(k)
+
+            for p, e in enumerate(row):
+                if min(index_list) < p <= max(index_list):
+                    del row[min(index_list) + 1]
+
+            print(index_list)
+            print("ELEMENT DICT: ", element_dict)
+            print(replacement_string)
+            print(row)
+
         if launch_task:
             the_task.report_progress_and_stop_if_killed(progress_message=_("Creating users"))
+        if i > 0 and not set(columns_list).issubset(csv_indexes):
+            missing_elements = set(columns_list) - set(csv_indexes)
+            raise serializers.ValidationError(
+                {
+                    "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."
+                    f" Your columns: {csv_indexes}"
+                    f"Expected columns: {columns_list}"
+                }
+            )
         org_units_list = []
         if i > 0:
             email_address = True if row[csv_indexes.index("email")] else None
+            print("EMAIL")
             if email_address:
                 try:
                     try:
@@ -71,6 +154,7 @@ def bulk_create_users_task(user_id=None, file_id=None, launch_task=None, task=No
                         last_name=row[csv_indexes.index("last_name")],
                         email=row[csv_indexes.index("email")],
                     )
+                    print("CREE USER")
                     validate_password(row[csv_indexes.index("password")], user)
                     created_user.set_password(row[csv_indexes.index("password")])
                     created_user.save()
@@ -79,6 +163,7 @@ def bulk_create_users_task(user_id=None, file_id=None, launch_task=None, task=No
 
             except Exception as e:
                 row_error = row[csv_indexes.index("username")]
+
                 return {
                     "error": f"Operation aborted. Error at row {i} Account already exists : {row_error}. Fix the "
                     "error and try "
@@ -95,6 +180,7 @@ def bulk_create_users_task(user_id=None, file_id=None, launch_task=None, task=No
                         if int(ou):
                             try:
                                 ou = OrgUnit.objects.get(id=ou)
+                                print("OU 1")
                                 if ou not in user_access_ou:
                                     raise serializers.ValidationError(
                                         {
@@ -158,11 +244,11 @@ def bulk_create_users_task(user_id=None, file_id=None, launch_task=None, task=No
             else:
                 profile.language = "fr"
             profile.org_units.set(org_units_list)
-            csv_file = pd.read_csv(io.StringIO(file_instance.file.read().decode("utf-8")), delimiter=",")
-            csv_file.at[i - 1, "password"] = ""
-            csv_file = csv_file.to_csv(path_or_buf=None, index=False)
-            content_file = ContentFile(csv_file.encode("utf-8"))
-            file_instance.file.save(f"{file_instance.id}.csv", content_file)
+            # csv_file = pd.read_csv(io.BytesIO(csv_str.getvalue().encode()))
+            # csv_file.at[i - 1, "password"] = None
+            # csv_file = csv_file.to_csv(path_or_buf=None, index=False)
+            # content_file = ContentFile(csv_file.encode("utf-8"))
+            # file_instance.file.save(f"{file_instance.id}.csv", content_file)
             profile.save()
             user_created_count += 1
         else:

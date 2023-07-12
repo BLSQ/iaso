@@ -2270,6 +2270,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.selectPeriod',
         defaultMessage: 'Select period',
     },
+    chooseDates: {
+        id: 'iaso.polio.label.chooseDates',
+        defaultMessage: 'Choose dates',
+    },
 });
 
 export default MESSAGES;

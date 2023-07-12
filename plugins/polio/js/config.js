@@ -186,6 +186,10 @@ const routes = [
                 isRequired: false,
                 key: 'endDate',
             },
+            {
+                isRequired: false,
+                key: 'period',
+            },
         ],
     },
     {

@@ -2250,6 +2250,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.legend',
         defaultMessage: 'Legend',
     },
+    '3months': {
+        id: 'iaso.polio.label.3months',
+        defaultMessage: '3 months',
+    },
+    '6months': {
+        id: 'iaso.polio.label.6months',
+        defaultMessage: '6 months',
+    },
+    '9months': {
+        id: 'iaso.polio.label.9months',
+        defaultMessage: '9 months',
+    },
+    '12months': {
+        id: 'iaso.polio.label.12months',
+        defaultMessage: '12 months',
+    },
+    selectPeriod: {
+        id: 'iaso.polio.label.selectPeriod',
+        defaultMessage: 'Select period',
+    },
 });
 
 export default MESSAGES;

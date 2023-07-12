@@ -80,11 +80,6 @@ export const makeLqasMapLegendItems =
             value: failed?.length,
             message: formatMessage(MESSAGES.failing),
         });
-        // const disqualifiedLegendItem = makeLegendItem({
-        //     color: WARNING_COLOR,
-        //     value: disqualified?.length,
-        //     message: formatMessage(MESSAGES.disqualified),
-        // });
 
         return [passedLegendItem, failedLegendItem];
     };

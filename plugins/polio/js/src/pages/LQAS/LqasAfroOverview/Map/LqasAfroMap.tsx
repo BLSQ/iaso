@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { MapContainer } from 'react-leaflet';
+
 import { CustomZoomControl } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
 import TILES from '../../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
@@ -12,6 +13,7 @@ import {
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
 import { AfroMapParams, Side } from '../types';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
+import { LqasAfroMapLegend } from './LqasAfroMapLegend';
 
 type Props = {
     router: Router;
@@ -41,6 +43,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
                 zoomControl={false}
                 scrollWheelZoom={false}
             >
+                <LqasAfroMapLegend />
                 <CustomTileLayer
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}

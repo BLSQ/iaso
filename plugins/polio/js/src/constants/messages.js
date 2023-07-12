@@ -2246,6 +2246,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.lqasim.penultimate',
         defaultMessage: 'Penultimate',
     },
+    legend: {
+        id: 'iaso.polio.label.legend',
+        defaultMessage: 'Legend',
+    },
 });
 
 export default MESSAGES;

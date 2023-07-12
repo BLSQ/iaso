@@ -609,14 +609,17 @@ class Campaign(SoftDeletableModel):
         started_rounds = self.rounds.filter(started_at__lte=today)
         return started_rounds.count() > 0
 
-    def find_last_round_with_date(self, date_type="start", round_number=None):
+    def find_rounds_with_date(self, date_type="start", round_number=None):
         rounds = self.rounds.all()
         if round_number is not None:
             rounds = rounds.filter(number=round_number)
         if date_type == "start":
-            return rounds.exclude(started_at=None).order_by("-started_at").first()
+            return rounds.exclude(started_at=None).order_by("-started_at")
         if date_type == "end":
-            return rounds.exclude(ended_at=None).order_by("-ended_at").first()
+            return rounds.exclude(ended_at=None).order_by("-ended_at")
+
+    def find_last_round_with_date(self, date_type="start", round_number=None):
+        return self.find_rounds_with_date(date_type, round_number).first()
 
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:

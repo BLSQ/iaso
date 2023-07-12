@@ -1771,8 +1771,6 @@ def determine_status_for_district(district_data):
     if checked == 60:
         if marked > 56:
             return "1lqasOK"
-        # return "3lqasFail"
-    # return "2lqasDisqualified"
     return "3lqasFail"
 
 
@@ -1844,6 +1842,24 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
         # TODO see if we need to filter per user as with Campaign
         return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom=None)
 
+    def determine_reference_dates(self):
+        start_date_after = self.request.GET.get("startDate", None)
+        end_date_before = self.request.GET.get("endDate", None)
+        selected_period = self.request.GET.get("period", None)
+        if selected_period is not None:
+            if not selected_period[0].isdigit():
+                raise ValueError("period should be 3months, 6months, 9months or 12months")
+            end_date_before = None
+            today = datetime.now()
+            interval_in_months = int(selected_period[0])
+            start_date_after = (today - timedelta(days=interval_in_months * 31)).date()
+        else:
+            if start_date_after is not None:
+                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
+            if end_date_before is not None:
+                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
+        return start_date_after, end_date_before
+
     def list(self, request):
         results = []
         # Should be "lqas", "im_OHH", "im_HH"
@@ -1854,8 +1870,7 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
         data_stores = JsonDataStore.objects.filter(slug__in=countries)
         for org_unit in queryset:
-            start_date_after = self.request.GET.get("startDate", None)
-            end_date_before = self.request.GET.get("endDate", None)
+            start_date_after, end_date_before = self.determine_reference_dates()
             country_id = org_unit.id
 
             try:
@@ -1870,12 +1885,6 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
 
             # Probably not necessary as long as we only have AFRO in the platform
             campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
-            # Since LQAS/IM are being performed after campaigns end, we filter out future and current campaigns
-            # finished_campaigns = [
-            #     campaign
-            #     for campaign in campaigns
-            #     if len([round for round in campaign.rounds.all() if not Round.is_round_over(round)]) == 0
-            # ]
             started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
             # By default, we want the last campaign that ended, so we sort them by descending round end date
             sorted_campaigns = (
@@ -1890,7 +1899,6 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
             # We apply the date filters if any
             if start_date_after is not None:
                 round_number_to_find = int(requested_round) if requested_round.isdigit() else None
-                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns
@@ -1899,7 +1907,6 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
                 ]
             if end_date_before is not None:
                 round_number_to_find = int(requested_round) if requested_round.isdigit() else None
-                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns
@@ -1977,6 +1984,24 @@ class LQASIMZoominMapViewSet(ModelViewSet):
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
+    def determine_reference_dates(self):
+        start_date_after = self.request.GET.get("startDate", None)
+        end_date_before = self.request.GET.get("endDate", None)
+        selected_period = self.request.GET.get("period", None)
+        if selected_period is not None:
+            if not selected_period[0].isdigit():
+                raise ValueError("period should be 3months, 6months, 9months or 12months")
+            end_date_before = None
+            today = datetime.now()
+            interval_in_months = int(selected_period[0])
+            start_date_after = (today - timedelta(days=interval_in_months * 31)).date()
+        else:
+            if start_date_after is not None:
+                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
+            if end_date_before is not None:
+                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
+        return start_date_after, end_date_before
+
     def list(self, request):
         category = self.request.GET.get("category", None)
         requested_round = self.request.GET.get("round", "latest")
@@ -1996,19 +2021,14 @@ class LQASIMZoominMapViewSet(ModelViewSet):
         # TODO filter data store by type eg "lqas"
         data_stores = JsonDataStore.objects.filter(slug__in=countries)
         for org_unit in queryset:
-            start_date_after = self.request.GET.get("startDate", None)
-            end_date_before = self.request.GET.get("endDate", None)
+            start_date_after, end_date_before = self.determine_reference_dates()
             country_id = org_unit.id
             try:
                 data_store = data_stores.get(slug__contains=str(country_id))
             except JsonDataStore.DoesNotExist:
                 continue
             campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
-            # finished_campaigns = [
-            #     campaign
-            #     for campaign in campaigns
-            #     if len([round for round in campaign.rounds.all() if not Round.is_round_over(round)]) == 0
-            # ]
+
             started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
             sorted_campaigns = sorted(
                 started_campaigns,
@@ -2018,7 +2038,6 @@ class LQASIMZoominMapViewSet(ModelViewSet):
 
             if start_date_after is not None:
                 round_number_to_find = int(requested_round) if requested_round.isdigit() else None
-                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns
@@ -2027,7 +2046,6 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                 ]
             if end_date_before is not None:
                 round_number_to_find = int(requested_round) if requested_round.isdigit() else None
-                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
                 sorted_campaigns = [
                     campaign
                     for campaign in sorted_campaigns

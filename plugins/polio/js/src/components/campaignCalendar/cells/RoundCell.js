@@ -54,12 +54,7 @@ const RoundCell = ({ colSpan, campaign, round }) => {
         campaign.separateScopesPerRound,
         round.vaccine_names,
     ]);
-    // const getVaccineColor = useCallback(
-    //     vaccine =>
-    //         polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)
-    //             ?.color || '#bcbcbc',
-    //     [campaign.color],
-    // );
+
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}

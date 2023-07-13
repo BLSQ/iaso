@@ -331,6 +331,7 @@
     "iaso.instance.warningSoftDeletedExport": "Si l'soumission a été exportée précédemment, les données dans dhis2 sont sans doute toujours présentes.",
     "iaso.instances.editLocationWithInstanceGps": "Pousser le GPS à partir de la soumission",
     "iaso.instances.forceExport": "Forcer l'export des soumissions déjà exportées",
+    "iaso.instances.label.created_by__username": "Crée par",
     "iaso.instances.showDeleted": "Montrer seulement les soumissions effacées",
     "iaso.label.accuracy": "Précision",
     "iaso.label.actions": "Action(s)",

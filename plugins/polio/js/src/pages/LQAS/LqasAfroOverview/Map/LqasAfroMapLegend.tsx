@@ -1,9 +1,9 @@
-import React, { FunctionComponent, useMemo } from 'react';
+import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { makeStyles } from '@material-ui/core';
 import MESSAGES from '../../../../constants/messages';
-import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
 import { MapLegend } from '../../../../components/MapComponent/MapLegend';
+import { useLegendItems } from '../utils';
 
 const useStyles = makeStyles(theme => {
     return {
@@ -16,26 +16,6 @@ const useStyles = makeStyles(theme => {
         },
     };
 });
-
-const useLegendItems = () => {
-    const { formatMessage } = useSafeIntl();
-    return useMemo(() => {
-        const passed = formatMessage(MESSAGES.passing);
-        const failed = formatMessage(MESSAGES.failing);
-        return [
-            {
-                label: passed,
-                value: passed,
-                color: OK_COLOR,
-            },
-            {
-                label: failed,
-                value: failed,
-                color: FAIL_COLOR,
-            },
-        ];
-    }, [formatMessage]);
-};
 
 export const LqasAfroMapLegend: FunctionComponent = () => {
     const { formatMessage } = useSafeIntl();

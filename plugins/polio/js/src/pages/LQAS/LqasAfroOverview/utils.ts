@@ -3,6 +3,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../constants/messages';
 import { SelectPeriod } from './types';
+import { FAIL_COLOR, OK_COLOR } from '../../../styles/constants';
 
 export const useOptions = (): DropdownOptions<string>[] => {
     const { formatMessage } = useSafeIntl();
@@ -64,5 +65,29 @@ export const usePeriodOptions = (): DropdownOptions<SelectPeriod>[] => {
                 value: option,
             };
         });
+    }, [formatMessage]);
+};
+
+export const useLegendItems = (): {
+    label: string;
+    value: string;
+    color: string;
+}[] => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        const passed = formatMessage(MESSAGES.passing);
+        const failed = formatMessage(MESSAGES.failing);
+        return [
+            {
+                label: passed,
+                value: passed,
+                color: OK_COLOR,
+            },
+            {
+                label: failed,
+                value: failed,
+                color: FAIL_COLOR,
+            },
+        ];
     }, [formatMessage]);
 };

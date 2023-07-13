@@ -124,18 +124,14 @@ def calculate_country_status(country_data, scope, roundNumber):
     if scope.count() == 0:
         return "inScope"
     data_for_round = get_data_for_round(country_data, roundNumber)
-
-    # TODO filter out from data_for_round data from out of scope districts
-    # FIXME this way of calculating the status is vulnerable to bad scope encoding, i.e: if we have data from a district that is out of scope, it will be counted
-
     district_statuses = [
-        determine_status_for_district(district_data) for district_data in data_for_round["data"].values()
+        determine_status_for_district(district_data)
+        for district_data in data_for_round["data"].values()
+        if district_data["district"] in [org_unit.id for org_unit in scope]
     ]
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
         return "inScope"
-    # What if scope length is 0, but we have data anyway?
-    # If we have data for more districts than are in scope, this will skew the results
     passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
     if passing_ratio >= 80:
         return "1lqasOK"

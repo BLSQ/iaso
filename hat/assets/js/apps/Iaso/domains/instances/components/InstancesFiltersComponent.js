@@ -221,8 +221,9 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
-    const { data: selectedUsers, isFetching: loadingSelectedUsers } =
-        useGetProfilesDropdown(formState.userIds.value);
+    const { data: selectedUsers } = useGetProfilesDropdown(
+        formState.userIds.value,
+    );
 
     const handleChangeQueryBuilder = value => {
         let parsedValue;
@@ -438,7 +439,6 @@ const InstancesFiltersComponent = ({
                             keyValue="userIds"
                             label={MESSAGES.user}
                             value={selectedUsers ?? ''}
-                            loading={loadingSelectedUsers}
                             onChange={(keyValue, newValue) => {
                                 const joined = newValue
                                     ?.map(r => r.value)

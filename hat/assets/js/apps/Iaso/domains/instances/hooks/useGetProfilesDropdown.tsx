@@ -12,10 +12,10 @@ export const useGetProfilesDropdown = (
     return useSnackQuery(
         ['profiles', ids],
         () => {
-            if (ids.length < 1) {
-                return Promise.any([]);
+            if (ids === undefined || ids.length < 1) {
+                return [];
             }
-            return getRequest(makeUrlWithParams('/api/profiles', { ids }))
+            return getRequest(makeUrlWithParams('/api/profiles/', { ids }));
         },
         MESSAGES.error,
         {

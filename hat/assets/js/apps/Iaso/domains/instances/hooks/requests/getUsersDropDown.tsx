@@ -7,7 +7,7 @@ export const getUsersDropDown = async (query: string): Promise<any[]> => {
     return getRequest(url).then(data =>
         data.profiles.map(user => {
             return {
-                value: user.id,
+                value: user.user_id,
                 label: getDisplayName(user),
             };
         }),

@@ -47,6 +47,9 @@ import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
+import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
+import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -218,6 +221,8 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
+    const { data: selectedUsers, isFetching: loadingSelectedUsers } =
+        useGetProfilesDropdown(formState.userIds.value);
 
     const handleChangeQueryBuilder = value => {
         let parsedValue;
@@ -428,6 +433,23 @@ const InstancesFiltersComponent = ({
                             </Typography>
                         </Box>
                     )}
+                    <Box mt={2}>
+                        <AsyncSelect
+                            keyValue="userIds"
+                            label={MESSAGES.user}
+                            value={selectedUsers ?? ''}
+                            loading={loadingSelectedUsers}
+                            onChange={(keyValue, newValue) => {
+                                const joined = newValue
+                                    ?.map(r => r.value)
+                                    ?.join(',');
+                                handleFormChange(keyValue, joined);
+                            }}
+                            debounceTime="500"
+                            multi
+                            fetchOptions={input => getUsersDropDown(input)}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
             <Grid container spacing={2}>

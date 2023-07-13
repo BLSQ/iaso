@@ -50,7 +50,7 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "to_date": req.get(query.DATE_TO, None),
         "show_deleted": show_deleted,
         "entity_id": req.get(query.ENTITY_ID, None),
-        "user_id": req.get(query.USER_ID, None),
+        "user_ids": req.get(query.USER_IDS, None),
         "json_content": json_content,
     }
 

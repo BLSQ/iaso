@@ -248,6 +248,10 @@ export const instancesPath = {
             isRequired: false,
             key: 'planningIds',
         },
+        {
+            isRequired: false,
+            key: 'userIds',
+        },
     ],
 };
 

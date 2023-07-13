@@ -102,7 +102,7 @@ def profiles_bulk_update(
         base_queryset = queryset
         queryset = Profile.objects.none()  # type: ignore
         search_queryset = get_filtered_profiles(
-            base_queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
+            base_queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles, None
         )
         queryset = queryset.union(search_queryset)
 

@@ -1480,7 +1480,7 @@ class InstancesAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response_yoda = self.client.get(
             "/api/instances/",
-            {query.USER_ID: self.yoda.id},
+            {query.USER_IDS: self.yoda.id},
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response_yoda.status_code, 200)
@@ -1493,7 +1493,7 @@ class InstancesAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response_yoda_deleted = self.client.get(
             "/api/instances/",
-            {query.USER_ID: self.yoda.id, query.SHOW_DELETED: True},
+            {query.USER_IDS: self.yoda.id, query.SHOW_DELETED: True},
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response_yoda_deleted.status_code, 200)
@@ -1503,7 +1503,7 @@ class InstancesAPITestCase(APITestCase):
 
         response_guest = self.client.get(
             "/api/instances/",
-            {query.USER_ID: self.guest.id},
+            {query.USER_IDS: self.guest.id},
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response_guest.status_code, 200)
@@ -1513,7 +1513,7 @@ class InstancesAPITestCase(APITestCase):
 
         response_supervisor = self.client.get(
             "/api/instances/",
-            {query.USER_ID: self.supervisor.id},
+            {query.USER_IDS: self.supervisor.id},
             headers={"Content-Type": "application/json"},
         )
         self.assertEqual(response_supervisor.status_code, 200)
@@ -1521,3 +1521,16 @@ class InstancesAPITestCase(APITestCase):
         instances = response_supervisor.json()["instances"]
         self.assertEqual(self.instance_3.id, instances[0].get("id"))
         self.assertEqual(self.instance_6.id, instances[1].get("id"))
+
+        response_yoda_guest = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: f"{self.yoda.id},{self.guest.id}"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_yoda_guest.status_code, 200)
+        self.assertValidInstanceListData(response_yoda_guest.json(), 4)
+        instances = response_yoda_guest.json()["instances"]
+        self.assertEqual(self.instance_1.id, instances[0].get("id"))
+        self.assertEqual(self.instance_4.id, instances[1].get("id"))
+        self.assertEqual(self.instance_5.id, instances[2].get("id"))
+        self.assertEqual(self.instance_2.id, instances[3].get("id"))

@@ -30,7 +30,7 @@ class HasProfilePermission(permissions.BasePermission):
 
 
 def get_filtered_profiles(
-    queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
+    queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles, ids
 ):
     original_queryset = queryset
     if search:
@@ -106,6 +106,9 @@ def get_filtered_profiles(
 
     if userRoles:
         queryset = queryset.filter(user__iaso_profile__user_roles__in=userRoles.split(","))
+
+    if ids:
+        queryset = queryset.filter(user__id__in=ids.split(","))
     return queryset
 
 
@@ -140,6 +143,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "user__username").split(",")
+        ids = request.GET.get("ids", None)
         search = request.GET.get("search", None)
         perms = request.GET.get("permissions", None)
         location = request.GET.get("location", None)
@@ -149,7 +153,16 @@ class ProfilesViewSet(viewsets.ViewSet):
         projects = request.GET.get("projects", None)
         userRoles = request.GET.get("userRoles", None)
         queryset = get_filtered_profiles(
-            self.get_queryset(), search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
+            self.get_queryset(),
+            search,
+            perms,
+            location,
+            org_unit_type,
+            parent_ou,
+            children_ou,
+            projects,
+            userRoles,
+            ids,
         )
 
         if limit:

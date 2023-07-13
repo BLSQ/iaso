@@ -604,9 +604,10 @@ class Campaign(SoftDeletableModel):
         )
         return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.min
 
-    def is_started(self):
-        today = datetime.datetime.now()
-        started_rounds = self.rounds.filter(started_at__lte=today)
+    def is_started(self, reference_date=None):
+        if reference_date is None:
+            reference_date = datetime.datetime.now()
+        started_rounds = self.rounds.filter(started_at__lte=reference_date)
         return started_rounds.count() > 0
 
     def find_rounds_with_date(self, date_type="start", round_number=None):

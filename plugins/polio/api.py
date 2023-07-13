@@ -1781,16 +1781,12 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
     def list(self, request):
         results = []
         # Should be "lqas", "im_OHH", "im_HH"
-        category = self.request.GET.get("category", None)
         requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
-        # Construct the slug of the datastore endpoint for each country
-        countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
-        data_stores = JsonDataStore.objects.filter(slug__in=countries)
+        data_stores = self.get_datastores()
         for org_unit in queryset:
             start_date_after, end_date_before = self.determine_reference_dates()
             country_id = org_unit.id
-
             try:
                 data_store = data_stores.get(slug__contains=str(country_id))
             except JsonDataStore.DoesNotExist:
@@ -1803,8 +1799,9 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
             # Probably not necessary as long as we only have AFRO in the platform
             campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
+            # Filtering out future campaigns
             started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
-            # By default, we want the last campaign that ended, so we sort them by descending round end date
+            # By default, we want the last campaign, so we sort them by descending round end date
             sorted_campaigns = (
                 sorted(
                     started_campaigns,
@@ -1814,7 +1811,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                 if data_store
                 else []
             )
-            # We apply the date filters if any
+            # We apply the date filters if any. If there's a period filter it has already been taken into account in start_date_after and end_date_before
             if start_date_after is not None:
                 sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "start", start_date_after)
             if end_date_before is not None:
@@ -1891,8 +1888,9 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         )
 
     def list(self, request):
-        category = self.request.GET.get("category", None)
+        results = []
         requested_round = self.request.GET.get("round", "latest")
+        queryset = self.get_queryset()
         bounds = json.loads(request.GET.get("bounds", None))
         bounds_as_polygon = Polygon.from_bbox(
             (
@@ -1902,12 +1900,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 bounds["_northEast"]["lat"],
             )
         )
-        results = []
-        category = self.request.GET.get("category", None)
-        queryset = self.get_queryset()
-        countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
-        # TODO filter data store by type eg "lqas"
-        data_stores = JsonDataStore.objects.filter(slug__in=countries)
+        data_stores = self.get_datastores()
         for org_unit in queryset:
             start_date_after, end_date_before = self.determine_reference_dates()
             country_id = org_unit.id

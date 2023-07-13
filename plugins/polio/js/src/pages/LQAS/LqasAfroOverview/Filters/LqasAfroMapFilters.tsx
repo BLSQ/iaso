@@ -35,19 +35,16 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
     const [chooseDates, setChooseDates] = useState<boolean>(false);
 
     const onSwitchChange = useCallback(() => {
-        if (chooseDates) {
-            handleChange('period', undefined);
-        }
-        if (!chooseDates) {
-            setFilters({
-                ...filters,
-                startDate: undefined,
-                endDate: undefined,
-            });
-        }
+        setFilters({
+            ...filters,
+            startDate: undefined,
+            endDate: undefined,
+            period: undefined,
+        });
+
         setChooseDates(!chooseDates);
         setFiltersUpdated(true);
-    }, [chooseDates, filters, handleChange, setFilters, setFiltersUpdated]);
+    }, [chooseDates, filters, setFilters, setFiltersUpdated]);
 
     return (
         <>

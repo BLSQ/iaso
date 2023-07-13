@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.data_store import JsonDataStore
 from iaso.models.org_unit import OrgUnit, OrgUnitType
@@ -6,17 +6,17 @@ from iaso.models.project import Project
 from iaso.test import APITestCase
 import json
 from iaso.models.base import Account, Group
-from plugins.polio.api import (
+from plugins.polio.helpers import (
     calculate_country_status,
     determine_status_for_district,
     get_data_for_round,
     get_latest_round_number,
     reduce_to_country_status,
 )
-from plugins.polio.models import Campaign, CampaignScope, Config, Round, RoundScope
+from plugins.polio.models import Campaign, CampaignScope, Round, RoundScope
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
+from django.contrib.gis.geos import Polygon, MultiPolygon
 
 
 class PolioLqasAfroMapTestCase(APITestCase):
@@ -150,11 +150,21 @@ class PolioLqasAfroMapTestCase(APITestCase):
         cls.campaign_1_scope = CampaignScope.objects.create(
             campaign=cls.campaign_1, vaccine="bOPV", group=cls.campaign1_scope_group
         )
+        cls.campaign1_round1_start = (datetime.now() - timedelta(days=69)).date()
+        cls.campaign1_round1_end = (datetime.now() - timedelta(days=64)).date()
+        cls.campaign1_round2_start = (datetime.now() - timedelta(days=38)).date()
+        cls.campaign1_round2_end = (datetime.now() - timedelta(days=33)).date()
         cls.campaign1_round1 = Round.objects.create(
-            number=1, started_at="2023-05-05", ended_at="2023-05-10", campaign=cls.campaign_1
+            number=1,
+            started_at=cls.campaign1_round1_start.strftime("%Y-%m-%d"),
+            ended_at=cls.campaign1_round1_end.strftime("%Y-%m-%d"),
+            campaign=cls.campaign_1,
         )
         cls.campaign1_round2 = Round.objects.create(
-            number=2, started_at="2023-06-05", ended_at="2023-06-10", campaign=cls.campaign_1
+            number=2,
+            started_at=cls.campaign1_round2_start.strftime("%Y-%m-%d"),
+            ended_at=cls.campaign1_round2_end.strftime("%Y-%m-%d"),
+            campaign=cls.campaign_1,
         )
 
         # Campaign 2. Scope at round level
@@ -164,9 +174,15 @@ class PolioLqasAfroMapTestCase(APITestCase):
             separate_scopes_per_round=True,
             initial_org_unit=cls.country_org_unit_2,
         )
-
+        cls.campaign2_round1_start = (datetime.now() - timedelta(days=99)).date()
+        cls.campaign2_round1_end = (datetime.now() - timedelta(days=94)).date()
+        cls.campaign2_round2_start = (datetime.now() - timedelta(days=42)).date()
+        cls.campaign2_round2_end = (datetime.now() - timedelta(days=39)).date()
         cls.campaign2_round1 = Round.objects.create(
-            number=1, started_at="2023-04-05", ended_at="2023-04-10", campaign=cls.campaign_2
+            number=1,
+            started_at=cls.campaign2_round1_start.strftime("%Y-%m-%d"),
+            ended_at=cls.campaign2_round1_end.strftime("%Y-%m-%d"),
+            campaign=cls.campaign_2,
         )
         cls.campaign2_round1_scope_org_units = Group.objects.create(
             name="campaign2round1scope", domain="POLIO", source_version=cls.source_version
@@ -178,7 +194,10 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
 
         cls.campaign2_round2 = Round.objects.create(
-            number=2, started_at="2023-06-01", ended_at="2023-06-04", campaign=cls.campaign_2
+            number=2,
+            started_at=cls.campaign2_round2_start.strftime("%Y-%m-%d"),
+            ended_at=cls.campaign2_round2_end.strftime("%Y-%m-%d"),
+            campaign=cls.campaign_2,
         )
         cls.campaign2_round2_scope_org_units = Group.objects.create(
             name="campaign2round2scope", domain="POLIO", source_version=cls.source_version
@@ -360,6 +379,11 @@ class PolioLqasAfroMapTestCase(APITestCase):
         round = self.excluded_campaign.rounds.last()
         self.assertFalse(Round.is_round_over(round))
 
+    def test_campaign_is_started(self):
+        self.assertTrue(self.campaign_1.is_started())
+        reference_date = datetime.strptime("01-01-2018", "%d-%m-%Y")
+        self.assertFalse(self.campaign_1.is_started(reference_date))
+
     def test_lqas_global(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
@@ -418,11 +442,12 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_global_end_date_filter(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
-        response = c.get("/api/polio/lqasmap/global/?category=lqas&endDate=04-06-2023", accept="application/json")
+        ref_date = self.campaign2_round2_end.strftime("%d-%m-%Y")
+        response = c.get(f"/api/polio/lqasmap/global/?category=lqas&endDate={ref_date}", accept="application/json")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        # Campaign 1 round 2 should fail, campaign2 round 2 should pass
+        # Campaign 1 round 2 should be in scope, campaign2 round 2 should pass
         results_for_first_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
@@ -438,7 +463,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_global_start_date_filter(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
-        response = c.get("/api/polio/lqasmap/global/?category=lqas&startDate=07-06-2023", accept="application/json")
+        ref_date = (self.campaign1_round2_end + timedelta(days=2)).strftime("%d-%m-%Y")
+        response = c.get(f"/api/polio/lqasmap/global/?category=lqas&startDate={ref_date}", accept="application/json")
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
@@ -457,8 +483,9 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_global_round_with_start_date_filters(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_date = (self.campaign1_round1_start - timedelta(days=1)).strftime("%d-%m-%Y")
         response = c.get(
-            "/api/polio/lqasmap/global/?category=lqas&startDate=04-05-2023&round=1", accept="application/json"
+            f"/api/polio/lqasmap/global/?category=lqas&startDate={ref_date}&round=1", accept="application/json"
         )
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
@@ -479,13 +506,13 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_global_round_with_end_date_filters(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_end_date = self.campaign2_round1_end.strftime("%d-%m-%Y")
         response = c.get(
-            "/api/polio/lqasmap/global/?category=lqas&endDate=10-04-2023&round=1", accept="application/json"
+            f"/api/polio/lqasmap/global/?category=lqas&endDate={ref_end_date}&round=1", accept="application/json"
         )
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-
         results_for_first_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
@@ -501,8 +528,10 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def lqas_global_start_and_end_date_filters(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_start_date = (self.campaign2_round1_start + timedelta(days=1)).strftime("%d-%m-%Y")
+        ref_end_date = self.campaign2_round2_end.strftime("%d-%m-%Y")
         response = c.get(
-            "/api/polio/lqasmap/global/?category=lqas&endDate=10-04-2023&startDate=06-04-2023",
+            f"/api/polio/lqasmap/global/?category=lqas&endDate={ref_end_date}&startDate={ref_start_date}",
             accept="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -519,6 +548,29 @@ class PolioLqasAfroMapTestCase(APITestCase):
         )
         self.assertTrue(results_for_second_country is not None)
         self.assertEquals(results_for_second_country["status"], "inScope")
+
+    def test_lqas_global_period_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            "/api/polio/lqasmap/global/?category=lqas&period=6months",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 3)
+        response = c.get(
+            "/api/polio/lqasmap/global/?category=lqas&period=1months",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 3)
+        countries_with_inScope_status = [result for result in results if result["status"] == "inScope"]
+        # Countries with no data are shown inScope on the coutry level map
+        self.assertEquals(len(countries_with_inScope_status), 3)
 
     def test_lqas_zoomed_in(self):
         c = APIClient()
@@ -621,8 +673,9 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_zoomedin_end_date_filter(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_date = self.campaign2_round2_end.strftime("%d-%m-%Y")
         response = c.get(
-            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate=04-06-2023",
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate={ref_date}",
             accept="application/json",
         )
 
@@ -637,8 +690,9 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_zoomedin_start_date_filter(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_date = (self.campaign1_round2_end + timedelta(days=2)).strftime("%d-%m-%Y")
         response = c.get(
-            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&startDate=07-06-2023",
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&startDate={ref_date}",
             accept="application/json",
         )
 
@@ -651,8 +705,9 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_zoomin_round_with_start_date_filters(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_date = (self.campaign1_round1_start - timedelta(days=1)).strftime("%d-%m-%Y")
         response = c.get(
-            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&startDate=04-05-2023&round=1",
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&startDate={ref_date}&round=1",
             accept="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -660,17 +715,23 @@ class PolioLqasAfroMapTestCase(APITestCase):
         results = content["results"]
         self.assertEquals(len(results), 2)
         self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(results[0]["data"]["district_name"], self.district_org_unit_1.name)
+        # There's no guarantee on the order of the districts
+        district_name_to_check = (
+            self.district_org_unit_2.name
+            if results[0]["data"]["district_name"] == self.district_org_unit_1.name
+            else self.district_org_unit_1.name
+        )
         self.assertEquals(results[0]["status"], "1lqasOK")
         self.assertEquals(results[1]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(results[1]["data"]["district_name"], self.district_org_unit_2.name)
+        self.assertEquals(results[1]["data"]["district_name"], district_name_to_check)
         self.assertEquals(results[1]["status"], "1lqasOK")
 
     def test_lqas_zoomin_round_with_end_date_filters(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_date = self.campaign2_round1_end.strftime("%d-%m-%Y")
         response = c.get(
-            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate=10-04-2023&round=1",
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate={ref_date}&round=1",
             accept="application/json",
         )
         self.assertEqual(response.status_code, 200)
@@ -684,11 +745,34 @@ class PolioLqasAfroMapTestCase(APITestCase):
     def test_lqas_zoomin_start_and_end_date_filters(self):
         c = APIClient()
         c.force_authenticate(user=self.authorized_user)
+        ref_start_date = (self.campaign2_round2_start + timedelta(days=1)).strftime("%d-%m-%Y")
+        ref_end_date = self.campaign2_round2_end.strftime("%d-%m-%Y")
         response = c.get(
-            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate=10-04-2023&startDate=06-04-2023",
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&endDate={ref_end_date}&startDate={ref_start_date}",
             accept="application/json",
         )
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
+        self.assertEquals(len(results), 0)
+
+    def test_lqas_zoomed_in_period_filter(self):
+        c = APIClient()
+        c.force_authenticate(user=self.authorized_user)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&period=6months",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        self.assertEquals(len(results), 3)
+        response = c.get(
+            f"/api/polio/lqasmap/zoomin/?category=lqas&bounds={self.url_bounds}&period=1months",
+            accept="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        content = json.loads(response.content)
+        results = content["results"]
+        print(json.dumps(results))
         self.assertEquals(len(results), 0)

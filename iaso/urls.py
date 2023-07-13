@@ -54,6 +54,7 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
+from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -158,6 +159,8 @@ router.register(r"userroles", UserRolesViewSet, basename="userroles")
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
 
+router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
+
 router.registry.extend(plugins_router.registry)
 
 urlpatterns: URLList = [
@@ -204,7 +207,6 @@ urlpatterns = urlpatterns + [
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
 ]
-
 
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)

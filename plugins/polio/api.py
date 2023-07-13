@@ -4,8 +4,8 @@ import functools
 import json
 import numpy as np
 from collections import defaultdict
-from datetime import date, timedelta, datetime
-from functools import lru_cache, reduce
+from datetime import timedelta, datetime
+from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
 from django.contrib.gis.geos import Polygon
@@ -70,7 +70,15 @@ from .forma import (
     make_orgunits_cache,
     find_orgunit_in_cache,
 )
-from .helpers import get_url_content, CustomFilterBackend
+from .helpers import (
+    LqasAfroViewset,
+    get_url_content,
+    CustomFilterBackend,
+    calculate_country_status,
+    get_penultimate_round_number,
+    get_latest_round_number,
+    determine_status_for_district,
+)
 from .vaccines_email import send_vaccines_notification_email
 from .models import (
     Campaign,
@@ -1760,80 +1768,8 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
         return RoundDateHistoryEntry.objects.filter_for_user(user)
 
 
-# TODO see if this shouldn't a static method somewhere
-
-
-def determine_status_for_district(district_data):
-    if not district_data:
-        return "inScope"
-    checked = district_data["total_child_checked"]
-    marked = district_data["total_child_fmd"]
-    if checked == 60:
-        if marked > 56:
-            return "1lqasOK"
-    return "3lqasFail"
-
-
-def reduce_to_country_status(total, current):
-    if not total.get("passed", None):
-        total["passed"] = 0
-    if not total.get("total", None):
-        total["total"] = 0
-    try:
-        index = int(current[0])
-    except:
-        index = 0
-    if index == 1:
-        total["passed"] = total["passed"] + 1
-    total["total"] = total["total"] + 1
-    return total
-
-
-def get_latest_round_number(country_data):
-    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
-    return data_for_all_rounds[0]["number"] if data_for_all_rounds else None
-
-
-def get_penultimate_round_number(country_data):
-    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
-    if data_for_all_rounds:
-        if len(data_for_all_rounds) > 1:
-            return data_for_all_rounds[1]["number"]
-    return None
-
-
-def get_data_for_round(country_data, roundNumber):
-    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
-    return next((round for round in data_for_all_rounds if round["number"] == roundNumber), {"data": {}})
-
-
-def calculate_country_status(country_data, scope, roundNumber):
-    if len(country_data.get("rounds", [])) == 0:
-        # TODO put in an enum
-        return "inScope"
-    if scope.count() == 0:
-        return "inScope"
-    data_for_round = get_data_for_round(country_data, roundNumber)
-
-    # TODO filter out from data_for_round data from out of scope districts
-    # FIXME this way of calculating the status is vulnerable to bad scope encoding, i.e: if we have data from a district that is out of scope, it will be counted
-
-    district_statuses = [
-        determine_status_for_district(district_data) for district_data in data_for_round["data"].values()
-    ]
-    aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
-    if aggregated_statuses.get("total", 0) == 0:
-        return "inScope"
-    # What if scope length is 0, but we have data anyway?
-    # If we have data for more districts than are in scope, this will skew the results
-    passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
-    if passing_ratio >= 80:
-        return "1lqasOK"
-    return "3lqasFail"
-
-
 @swagger_auto_schema(tags=["lqasglobal"])
-class LQASIMGlobalMapViewSet(ModelViewSet):
+class LQASIMGlobalMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     results_key = "results"
@@ -1841,64 +1777,6 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
         return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom=None)
-
-    def determine_reference_dates(self):
-        start_date_after = self.request.GET.get("startDate", None)
-        end_date_before = self.request.GET.get("endDate", None)
-        selected_period = self.request.GET.get("period", None)
-        if start_date_after is None and end_date_before is None and selected_period is None:
-            selected_period = "6months"
-        if selected_period is not None:
-            if not selected_period[0].isdigit():
-                raise ValueError("period should be 3months, 6months, 9months or 12months")
-            end_date_before = None
-            today = datetime.now()
-            interval_in_months = int(selected_period[0])
-            if selected_period[1].isdigit():
-                interval_in_months = int(f"{selected_period[0]}{selected_period[1]}")
-            start_date_after = (today - timedelta(days=interval_in_months * 31)).date()
-        else:
-            if start_date_after is not None:
-                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
-            if end_date_before is not None:
-                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
-        return start_date_after, end_date_before
-
-    def filter_campaigns_by_date(self, campaigns, reference, reference_date):
-        requested_round = self.request.GET.get("round", "latest")
-        round_number_to_find = int(requested_round) if requested_round.isdigit() else None
-        if requested_round != "penultimate":
-            if reference == "start":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
-                    and campaign.find_last_round_with_date(reference, round_number_to_find).started_at >= reference_date
-                ]
-            if reference == "end":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
-                    and campaign.find_last_round_with_date(reference, round_number_to_find).ended_at <= reference_date
-                ]
-        else:
-            if reference == "start":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
-                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].started_at
-                    >= reference_date
-                ]
-            if reference == "end":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
-                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].ended_at
-                    <= reference_date
-                ]
 
     def list(self, request):
         results = []
@@ -1990,7 +1868,7 @@ class LQASIMGlobalMapViewSet(ModelViewSet):
 
 
 @swagger_auto_schema(tags=["lqaszoomin"])
-class LQASIMZoominMapViewSet(ModelViewSet):
+class LQASIMZoominMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     results_key = "results"
@@ -2011,62 +1889,6 @@ class LQASIMZoominMapViewSet(ModelViewSet):
             .exclude(simplified_geom=None)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
-
-    def determine_reference_dates(self):
-        start_date_after = self.request.GET.get("startDate", None)
-        end_date_before = self.request.GET.get("endDate", None)
-        selected_period = self.request.GET.get("period", None)
-        if start_date_after is None and end_date_before is None and selected_period is None:
-            selected_period = "6months"
-        if selected_period is not None:
-            if not selected_period[0].isdigit():
-                raise ValueError("period should be 3months, 6months, 9months or 12months")
-            end_date_before = None
-            today = datetime.now()
-            interval_in_months = int(selected_period[0])
-            start_date_after = (today - timedelta(days=interval_in_months * 31)).date()
-        else:
-            if start_date_after is not None:
-                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
-            if end_date_before is not None:
-                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
-        return start_date_after, end_date_before
-
-    def filter_campaigns_by_date(self, campaigns, reference, reference_date):
-        requested_round = self.request.GET.get("round", "latest")
-        round_number_to_find = int(requested_round) if requested_round.isdigit() else None
-        if requested_round != "penultimate":
-            if reference == "start":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
-                    and campaign.find_last_round_with_date(reference, round_number_to_find).started_at >= reference_date
-                ]
-            if reference == "end":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
-                    and campaign.find_last_round_with_date(reference, round_number_to_find).ended_at <= reference_date
-                ]
-        else:
-            if reference == "start":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
-                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].started_at
-                    >= reference_date
-                ]
-            if reference == "end":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
-                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].ended_at
-                    <= reference_date
-                ]
 
     def list(self, request):
         category = self.request.GET.get("category", None)
@@ -2179,7 +2001,6 @@ class LQASIMZoominMapViewSet(ModelViewSet):
                         "id": district.id,
                         "data": {"campaign": latest_campaign.obr_name, "district_name": district.name},
                         "geo_json": shapes,
-                        # "status": determine_status_for_district({}, district_is_in_scope),
                         "status": "inScope",
                     }
                 results.append(result)
@@ -2191,11 +2012,6 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
     http_method_names = ["get"]
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     results_key = "results"
-    # TODO configure filters
-    # filter_backends = [
-    #     filters.OrderingFilter,
-    #     DjangoFilterBackend,
-    # ]
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))

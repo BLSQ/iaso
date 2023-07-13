@@ -26,7 +26,6 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
     const {
         filters,
         handleSearch,
-        handleChange,
         filtersUpdated,
         setFiltersUpdated,
         setFilters,
@@ -46,13 +45,37 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
         setFiltersUpdated(true);
     }, [chooseDates, filters, setFilters, setFiltersUpdated]);
 
+    const handleDateChange = useCallback(
+        (keyValue, value) => {
+            setFiltersUpdated(true);
+            setFilters({
+                ...filters,
+                [keyValue]: value,
+                period: undefined,
+            });
+        },
+        [filters, setFilters, setFiltersUpdated],
+    );
+    const handlePeriodChange = useCallback(
+        (keyValue, value) => {
+            setFiltersUpdated(true);
+            setFilters({
+                ...filters,
+                [keyValue]: value,
+                startDate: undefined,
+                endDate: undefined,
+            });
+        },
+        [filters, setFilters, setFiltersUpdated],
+    );
+
     return (
         <>
             <Grid container spacing={2}>
                 <Grid item xs={6} md={6}>
                     {chooseDates && (
                         <DatesRange
-                            onChangeDate={handleChange}
+                            onChangeDate={handleDateChange}
                             dateFrom={filters.startDate}
                             dateTo={filters.endDate}
                             labelFrom={MESSAGES.startDatefrom}
@@ -68,7 +91,7 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
                             keyValue="period"
                             clearable={false}
                             value={filters.period ?? '6months'}
-                            onChange={handleChange}
+                            onChange={handlePeriodChange}
                             options={periodOptions}
                             labelString={formatMessage(MESSAGES.selectPeriod)}
                         />

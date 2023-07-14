@@ -252,6 +252,22 @@ export const instancesPath = {
             isRequired: false,
             key: 'userIds',
         },
+        {
+            isRequired: false,
+            key: 'modificationDateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'modificationDateTo',
+        },
+        {
+            isRequired: false,
+            key: 'sentDateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'sentDateTo',
+        },
     ],
 };
 

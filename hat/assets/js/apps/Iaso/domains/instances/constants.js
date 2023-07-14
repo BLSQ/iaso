@@ -181,5 +181,9 @@ export const filtersKeys = [
     'dateFrom',
     'planningIds',
     'userIds',
+    'modificationDateFrom',
+    'modificationDateTo',
+    'sentDateFrom;',
+    'sentDateTo',
     'dateTo',
 ];

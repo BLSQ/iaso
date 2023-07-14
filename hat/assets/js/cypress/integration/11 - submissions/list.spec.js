@@ -476,6 +476,56 @@ describe('Submissions', () => {
         });
     });
 
+    it.only('advanced settings should filter correctly', () => {
+        goToPage();
+        cy.get('#advanced-settings').click();
+        cy.get('[data-test="modificationDateFrom"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('14/07/2023');
+        cy.get('[data-test="modificationDateTo"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('15/07/2023');
+        cy.get('[data-test="sentDateFrom"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('12/07/2023');
+        cy.get('[data-test="sentDateTo"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('13/07/2023');
+        cy.wait('@getSubmissions')
+            .then(() => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'GET',
+                        pathname: '/api/instances/**',
+                        query: {
+                            ...defaultQuery,
+                            modificationDateFrom: '2023-07-14',
+                            modificationDateTo: '2023-07-15',
+                            sentDateFrom: '2023-07-12',
+                            sentDateTo: '2023-07-13',
+                        },
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: listFixture,
+                        });
+                    },
+                );
+            })
+            .as('getSubmissionsSearch');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@getSubmissionsSearch').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
+        });
+    });
+
     it('columns selection should render correctly ', () => {
         cy.intercept(
             'GET',

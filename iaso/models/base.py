@@ -1,3 +1,4 @@
+import datetime
 import operator
 import random
 import re
@@ -661,6 +662,10 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         show_deleted=None,
         entity_id=None,
         user_ids=None,
+        modification_date_from=None,
+        modification_date_to=None,
+        sent_date_from=None,
+        sent_date_to=None,
         json_content=None,
         planning_ids=None,
     ):
@@ -750,6 +755,28 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
                 )
         # add status annotation
         queryset = queryset.with_status()
+
+        def range_from(date: datetime.date):
+            return (
+                datetime.datetime.combine(date, datetime.time.min),
+                datetime.datetime.max,
+            )
+
+        def range_to(date: datetime.date):
+            return (
+                datetime.datetime.min,
+                datetime.datetime.combine(date, datetime.time.max),
+            )
+
+        if modification_date_from:
+            queryset = queryset.filter(updated_at__range=range_from(modification_date_from))
+        if modification_date_to:
+            queryset = queryset.filter(updated_at__range=range_to(modification_date_to))
+
+        if sent_date_from:
+            queryset = queryset.filter(created_at__range=range_from(sent_date_from))
+        if sent_date_to:
+            queryset = queryset.filter(created_at__range=range_to(sent_date_to))
 
         if status:
             statuses = status.split(",")

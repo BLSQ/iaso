@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
+import { apiDateFormat } from 'Iaso/utils/dates.ts';
 
 import {
     Box,
@@ -19,6 +20,7 @@ import {
     QueryBuilderInput,
     useSkipEffectOnMount,
     useHumanReadableJsonLogic,
+    DatePicker,
 } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 
@@ -85,6 +87,7 @@ const InstancesFiltersComponent = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const defaultFilters = useMemo(() => {
         const filters = { ...params };
@@ -305,13 +308,83 @@ const InstancesFiltersComponent = ({
                             InfoPopper={<Popper />}
                         />
                     )}
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={handleFormChange}
-                        value={formState.showDeleted.value}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
+                    <Box mt={3}>
+                        <InputComponent
+                            keyValue="showDeleted"
+                            onChange={handleFormChange}
+                            value={formState.showDeleted.value}
+                            type="checkbox"
+                            label={MESSAGES.showDeleted}
+                        />
+                    </Box>
+                    <Box mt={2}>
+                        {!showAdvancedSettings && (
+                            <Typography
+                                id="advanced-settings"
+                                className={classes.advancedSettings}
+                                variant="overline"
+                                onClick={() => setShowAdvancedSettings(true)}
+                            >
+                                {formatMessage(MESSAGES.showAdvancedSettings)}
+                            </Typography>
+                        )}
+                        {showAdvancedSettings && (
+                            <>
+                                <Box mt={2} data-test="modificationDateFrom">
+                                    <DatePicker
+                                        label={formatMessage(
+                                            MESSAGES.modificationDateFrom,
+                                        )}
+                                        clearMessage={MESSAGES.clear}
+                                        currentDate={
+                                            formState.modificationDateFrom.value
+                                        }
+                                        onChange={date => {
+                                            handleFormChange(
+                                                'modificationDateFrom',
+                                                date
+                                                    ? date.format(apiDateFormat)
+                                                    : null,
+                                            );
+                                        }}
+                                    />
+                                </Box>
+                                <Box mt={1} data-test="modificationDateTo">
+                                    <DatePicker
+                                        label={formatMessage(
+                                            MESSAGES.modificationDateTo,
+                                        )}
+                                        clearMessage={MESSAGES.clear}
+                                        currentDate={
+                                            formState.modificationDateTo.value
+                                        }
+                                        onChange={date => {
+                                            handleFormChange(
+                                                'modificationDateTo',
+                                                date
+                                                    ? date.format(apiDateFormat)
+                                                    : null,
+                                            );
+                                        }}
+                                    />
+                                </Box>
+                                <Box mt={2}>
+                                    <Typography
+                                        id="advanced-settings"
+                                        className={classes.advancedSettings}
+                                        variant="overline"
+                                        onClick={() =>
+                                            setShowAdvancedSettings(false)
+                                        }
+                                    >
+                                        {formatMessage(
+                                            MESSAGES.hideAdvancedSettings,
+                                        )}
+                                    </Typography>
+                                </Box>
+                            </>
+                        )}
+                    </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -348,6 +421,40 @@ const InstancesFiltersComponent = ({
                             setHasError={setHasLocationLimitError}
                         />
                     </Box>
+                    {showAdvancedSettings && (
+                        <>
+                            <Box mt={1} data-test="sentDateFrom">
+                                <DatePicker
+                                    label={formatMessage(MESSAGES.sentDateFrom)}
+                                    clearMessage={MESSAGES.clear}
+                                    currentDate={formState.sentDateFrom.value}
+                                    onChange={date => {
+                                        handleFormChange(
+                                            'sentDateFrom',
+                                            date
+                                                ? date.format(apiDateFormat)
+                                                : null,
+                                        );
+                                    }}
+                                />
+                            </Box>
+                            <Box mt={1} data-test="sentDateTo">
+                                <DatePicker
+                                    label={formatMessage(MESSAGES.sentDateTo)}
+                                    clearMessage={MESSAGES.clear}
+                                    currentDate={formState.sentDateTo.value}
+                                    onChange={date => {
+                                        handleFormChange(
+                                            'sentDateTo',
+                                            date
+                                                ? date.format(apiDateFormat)
+                                                : null,
+                                        );
+                                    }}
+                                />
+                            </Box>
+                        </>
+                    )}
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <Box id="ou-tree-input">

@@ -2,6 +2,7 @@ import datetime
 import json
 import typing
 from unittest import mock
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytz
@@ -80,34 +81,38 @@ class InstancesAPITestCase(APITestCase):
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
-        cls.instance_1 = cls.create_form_instance(
-            form=cls.form_1,
-            period="202001",
-            org_unit=cls.jedi_council_corruscant,
-            project=cls.project,
-            created_by=cls.yoda,
-        )
-        cls.instance_2 = cls.create_form_instance(
-            form=cls.form_1,
-            period="202002",
-            org_unit=cls.jedi_council_corruscant,
-            project=cls.project,
-            created_by=cls.guest,
-        )
-        cls.instance_3 = cls.create_form_instance(
-            form=cls.form_1,
-            period="202002",
-            org_unit=cls.jedi_council_corruscant,
-            project=cls.project,
-            created_by=cls.supervisor,
-        )
-        cls.instance_4 = cls.create_form_instance(
-            form=cls.form_1,
-            period="202003",
-            org_unit=cls.jedi_council_corruscant,
-            project=cls.project,
-            created_by=cls.yoda,
-        )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_1 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202001",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.yoda,
+            )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_2 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202002",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.guest,
+            )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_3 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202002",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.supervisor,
+            )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_4 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202003",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.yoda,
+            )
 
         cls.form_2 = m.Form.objects.create(
             name="Hydroponic public survey",
@@ -170,6 +175,10 @@ class InstancesAPITestCase(APITestCase):
             created_by=cls.yoda,
         )
         cls.form_4.save()
+
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_5.save()
+            cls.instance_6.save()
 
         cls.project.unit_types.add(cls.jedi_council)
         cls.project.forms.add(cls.form_1)
@@ -998,7 +1007,12 @@ class InstancesAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(
             r["data"],
-            [{"index": 0, "name": "2020-02-02", "period": "2020-02-02T00:00:00.000Z", "total": 6, "value": 6}],
+            [
+                {"index": 0, "name": "2020-02-01", "period": "2020-02-01T00:00:00.000Z", "total": 2, "value": 2},
+                {"index": 1, "name": "2020-02-02", "period": "2020-02-02T00:00:00.000Z", "total": 4, "value": 2},
+                {"index": 2, "name": "2020-02-03", "period": "2020-02-03T00:00:00.000Z", "total": 5, "value": 1},
+                {"index": 3, "name": "2020-02-05", "period": "2020-02-05T00:00:00.000Z", "total": 6, "value": 1},
+            ],
         )
 
         self.assertEqual(
@@ -1534,3 +1548,97 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(self.instance_4.id, instances[1].get("id"))
         self.assertEqual(self.instance_5.id, instances[2].get("id"))
         self.assertEqual(self.instance_2.id, instances[3].get("id"))
+
+    def test_instances_bad_sent_date_from(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.SENT_DATE_FROM: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_bad_sent_date_to(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.SENT_DATE_TO: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_sent_date(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.SENT_DATE_FROM: "2020-02-01",
+                query.SENT_DATE_TO: "2020-02-01",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 2)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_1.id, instances[0].get("id"))
+        self.assertEqual(self.instance_2.id, instances[1].get("id"))
+
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.SENT_DATE_FROM: "2020-02-03",
+                query.SENT_DATE_TO: "2020-02-03",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 1)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_3.id, instances[0].get("id"))
+
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.SENT_DATE_FROM: "2020-02-05",
+                query.SENT_DATE_TO: "2020-02-05",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 1)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_4.id, instances[0].get("id"))
+
+    def test_instances_bad_modification_date_from(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.MODIFICATION_DATE_FROM: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_bad_modification_date_to(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.MODIFICATION_DATE_TO: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_modification_date(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.MODIFICATION_DATE_FROM: "2020-02-10",
+                query.MODIFICATION_DATE_TO: "2020-02-10",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 2)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_5.id, instances[0].get("id"))
+        self.assertEqual(self.instance_6.id, instances[1].get("id"))

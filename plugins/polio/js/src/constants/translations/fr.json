@@ -384,7 +384,7 @@
     "iaso.polio.label.scopeUnlockConditions": "Veuillez sélectionner l'unité d'org initiale et encoder les dates d'au moins un round pour activer l'onglet \"Périmètre\"",
     "iaso.polio.label.search": "Recherche",
     "iaso.polio.label.searchInScopeOrAllDistricts": "Recherche des districts dans le périmètre",
-    "iaso.polio.label.SECURITY_REASONS": "Raisons de sécurité",
+    "iaso.polio.label.SECURITY_CONTEXT": "Contexte sécuritaire",
     "iaso.polio.label.see": "Voir",
     "iaso.polio.label.seeFullComment": "Voir commentaire",
     "iaso.polio.label.seeHistory": "Voir l'historique",

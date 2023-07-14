@@ -84,7 +84,7 @@ class DelayReasons(models.TextChoices):
     FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _("funds_not_arrived_in_country")
     VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
     VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
-    SECURITY_REASONS = "SECURITY_REASONS", _("security_reasons")
+    SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
 
 
 def make_group_round_scope():

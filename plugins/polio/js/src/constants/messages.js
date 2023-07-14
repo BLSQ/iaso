@@ -2202,6 +2202,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.PUBLIC_HOLIDAY',
         defaultMessage: 'Delayed to observe public holiday',
     },
+    SECURITY_REASONS: {
+        id: 'iaso.polio.label.SECURITY_REASONS',
+        defaultMessage: 'Security reasons',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',

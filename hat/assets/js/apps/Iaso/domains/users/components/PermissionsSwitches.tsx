@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, makeStyles } from '@material-ui/core';
+import { Box, Typography, makeStyles } from '@material-ui/core';
 import {
     useSafeIntl,
     LoadingSpinner,
@@ -19,6 +19,10 @@ const styles = theme => ({
     },
     tableCellStyle: {
         border: '1px solid grey',
+    },
+    tableStyle: {
+        maxHeight: '75vh',
+        overflow: 'scroll',
     },
 });
 
@@ -89,11 +93,13 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
             )}
 
             {!isSuperUser && (
-                <Table
-                    columns={columns}
-                    data={permissionsData}
-                    showPagination={false}
-                />
+                <Box className={classes.tableStyle}>
+                    <Table
+                        columns={columns}
+                        data={permissionsData}
+                        showPagination={false}
+                    />
+                </Box>
             )}
         </>
     );

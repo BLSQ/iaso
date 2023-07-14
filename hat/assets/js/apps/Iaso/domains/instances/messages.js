@@ -554,6 +554,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.planning',
         defaultMessage: 'Planning',
     },
+    created_by__username: {
+        id: 'iaso.instances.label.created_by__username',
+        defaultMessage: 'Created by',
+    },
 });
 
 export default MESSAGES;

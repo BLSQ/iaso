@@ -91,8 +91,7 @@ class UserRolesViewSet(ModelViewSet):
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self) -> QuerySet[UserRole]:
-        if not self.request.user.is_anonymous:
-            account = self.request.user.iaso_profile.account
+        account = self.request.user.iaso_profile.account
         queryset = UserRole.objects.filter(account=account)
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "group__name").split(",")

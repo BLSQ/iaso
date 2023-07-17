@@ -506,13 +506,6 @@ describe('Submissions', () => {
                     {
                         method: 'GET',
                         pathname: '/api/instances/**',
-                        query: {
-                            ...defaultQuery,
-                            modificationDateFrom: '2023-07-14',
-                            modificationDateTo: '2023-07-15',
-                            sentDateFrom: '2023-07-12',
-                            sentDateTo: '2023-07-13',
-                        },
                     },
                     req => {
                         interceptFlag = true;
@@ -525,8 +518,16 @@ describe('Submissions', () => {
             })
             .as('getSubmissionsSearch');
         cy.get('[data-test="search-button"]').click();
-        cy.wait('@getSubmissionsSearch').then(() => {
+        cy.wait('@getSubmissionsSearch').then(xhr => {
             cy.wrap(interceptFlag).should('eq', true);
+            cy.wrap(xhr.request.query).should('deep.equal', {
+                ...defaultQuery,
+                showDeleted: 'false',
+                modificationDateFrom: '2023-07-14',
+                modificationDateTo: '2023-07-15',
+                sentDateFrom: '2023-07-12',
+                sentDateTo: '2023-07-13',
+            });
         });
     });
 

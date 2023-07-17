@@ -16,6 +16,7 @@ from rest_framework.decorators import action
 from django.http import FileResponse
 
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit
+from hat.menupermissions import models as permission
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
@@ -27,7 +28,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
 class HasUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user.has_perm("menupermissions.iaso_users"):
+        if not request.user.has_perm(permission.USERS_ADMIN):
             return False
         return True
 

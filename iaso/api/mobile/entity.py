@@ -15,6 +15,7 @@ from iaso.models.entity import (
     UserNotAuthError,
     ProjectNotFoundError,
 )
+from hat.menupermissions import models as permission
 
 
 def filter_for_mobile_entity(queryset, request):
@@ -140,7 +141,7 @@ class MobileEntityViewSet(ModelViewSet):
     results_key = "results"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entities")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES)]  # type: ignore
 
     def pagination_class(self):
         return MobileEntitiesSetPagination(self.results_key)

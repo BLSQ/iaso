@@ -14,17 +14,19 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from iaso.models import Profile, OrgUnit, UserRole, Project
+from hat.menupermissions import models as permission
 
 
 class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action in ("retrieve", "partial_update") and view.kwargs.get("pk") == "me":
             return True
-        if (not request.user.has_perm("menupermissions.iaso_users")) and request.method != "GET":
+        if (not request.user.has_perm(permission.USERS_ADMIN)) and request.method != "GET":
             return False
         return True
 
@@ -109,10 +111,18 @@ def get_filtered_profiles(
     return queryset
 
 
-class ProfilesViewSet(viewsets.ViewSet):
-    """Profiles API
+class ProfileError(ValidationError):
+    field = None
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_users" permission for write permission
+    def __init__(self, field=None, detail=None, code=None):
+        super().__init__(detail, code)
+        self.field = field
+
+
+class ProfilesViewSet(viewsets.ViewSet):
+    f"""Profiles API
+
+    This API is restricted to authenticated users having the "{permission.USERS_ADMIN}" permission for write permission
     Read access is accessible to any authenticated users as it necessary to list profile or display a particular one in
     the interface.
 
@@ -183,28 +193,52 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         if pk == "me":
-            # allow user to change his own language
-            profile = request.user.iaso_profile
-            if "home_page" in request.data:
-                profile.home_page = request.data["home_page"]
+            return self.update_user_own_profile(request)
 
-            if "language" in request.data:
-                profile.language = request.data["language"]
-            profile.save()
-            return Response(profile.as_dict())
+        try:
+            profile = self.update_user_profile(request, pk)
+        except ProfileError as error:
+            return JsonResponse(
+                {"errorKey": error.field, "errorMessage": error.detail},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        user = profile.user
+
+        self.update_password(user, request)
+        self.update_permissions(user, request)
+
+        self.update_org_units(profile, request)
+        self.update_user_roles(profile, request)
+        self.update_projects(profile, request)
+
+        profile.save()
+
+        return Response(profile.as_dict())
+
+    @staticmethod
+    def update_user_own_profile(request):
+        # allow user to change his own language
+        profile = request.user.iaso_profile
+        if "home_page" in request.data:
+            profile.home_page = request.data["home_page"]
+        if "language" in request.data:
+            profile.language = request.data["language"]
+        profile.save()
+        return Response(profile.as_dict())
+
+    def update_user_profile(self, request, pk):
         profile = get_object_or_404(self.get_queryset(), id=pk)
         username = request.data.get("user_name")
-        password = request.data.get("password", "")
 
         if not username:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur requis"))
 
         user = profile.user
         existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
 
         if existing_user:
             # Prevent from username change with existing username
-            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+            raise ProfileError(field="user_name", detail=_("Nom d'utilisateur existant"))
 
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")
@@ -213,26 +247,39 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.language = request.data.get("language", "")
         profile.home_page = request.data.get("home_page", "")
         profile.dhis2_id = request.data.get("dhis2_id", "")
+        if profile.dhis2_id == "":
+            profile.dhis2_id = None
         profile.save()
-        if password != "":
-            user.set_password(password)
-        permissions = request.data.get("user_permissions", [])
+        return profile
+
+    @staticmethod
+    def update_permissions(user, request):
         user.user_permissions.clear()
-        for permission_codename in permissions:
-            permission = get_object_or_404(Permission, codename=permission_codename)
-            user.user_permissions.add(permission)
+        for permission_codename in request.data.get("user_permissions", []):
+            user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
         user.save()
 
+    @staticmethod
+    def update_password(user, request):
+        password = request.data.get("password", "")
+        if password != "":
+            user.set_password(password)
+            user.save()
         if password and request.user == user:
             # update session hash if you changed your own password, so you don't get unlogged
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
             update_session_auth_hash(request, user)
 
+    @staticmethod
+    def update_org_units(profile, request):
         org_units = request.data.get("org_units", [])
         profile.org_units.clear()
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+
+    @staticmethod
+    def update_user_roles(profile, request):
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
@@ -246,9 +293,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)
 
-        if profile.dhis2_id == "":
-            profile.dhis2_id = None
-
+    @staticmethod
+    def update_projects(profile, request):
         projects = request.data.get("projects", [])
         profile.projects.clear()
         for project in projects:
@@ -256,9 +302,6 @@ class ProfilesViewSet(viewsets.ViewSet):
             if profile.account_id != item.account_id:
                 return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
             profile.projects.add(item)
-        profile.save()
-
-        return Response(profile.as_dict())
 
     def send_email_invitation(self, profile, email_subject, email_message):
         current_site = get_current_site(self.request)

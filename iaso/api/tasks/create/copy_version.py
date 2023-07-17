@@ -8,6 +8,7 @@ from iaso.api.common import HasPermission
 from iaso.api.tasks import TaskSerializer
 from iaso.models import DataSource, SourceVersion, OrgUnit
 from iaso.tasks.copy_version import copy_version
+from hat.menupermissions import models as permission
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ class CopyVersionSerializer(serializers.Serializer):
 
 
 class CopyVersionViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
     serializer_class = CopyVersionSerializer
 
     def create(self, request):

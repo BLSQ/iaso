@@ -13,6 +13,7 @@ from hat.audit.models import log_modification, ORG_UNIT_API
 from iaso.api.common import CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import Link, OrgUnit, DataSource
 from iaso.utils import geojson_queryset
+from hat.menupermissions import models as permission
 
 
 class LinkSerializer(serializers.ModelSerializer):
@@ -39,9 +40,9 @@ class LinkSerializer(serializers.ModelSerializer):
 
 
 class LinkViewSet(viewsets.ViewSet):
-    """Links API
+    f"""Links API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
+    This API is restricted to authenticated users having the "{permission.LINKS}" permission
 
     GET /api/links/
     POST /api/links/

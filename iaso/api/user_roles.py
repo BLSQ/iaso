@@ -23,6 +23,11 @@ class UserRoleSerializer(serializers.ModelSerializer):
         model = UserRole
         fields = ["id", "name", "permissions", "created_at", "updated_at"]
 
+    def to_representation(self, instance):
+        user_role = super().to_representation(instance)
+        user_role["name"] = user_role["name"][1:]
+        return user_role
+
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
@@ -32,12 +37,13 @@ class UserRoleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
         request = self.context["request"]
-        groupname = request.data.get("name")
+        group_name = str(account.id) + request.data.get("name")
+        print(group_name)
         permissions = request.data.get("permissions", [])
-        if not groupname:
+        if not group_name:
             return Response({"error": "User group name is required"}, status=400)
 
-        group = Group(name=groupname)
+        group = Group(name=group_name)
         group.save()
 
         if group.id and len(permissions) > 0:
@@ -51,11 +57,12 @@ class UserRoleSerializer(serializers.ModelSerializer):
         return userRole
 
     def update(self, user_role, validated_data):
-        groupname = self.context["request"].data.get("name", None)
+        account = self.context["request"].user.iaso_profile.account
+        group_name = str(account.id) + self.context["request"].data.get("name", None)
         permissions = self.context["request"].data.get("permissions", None)
         group = user_role.group
-        if groupname is not None:
-            group.name = groupname
+        if group_name is not None:
+            group.name = group_name
         if permissions is not None:
             group.permissions.clear()
             for permission_codename in permissions:

@@ -27,9 +27,9 @@ class UserRoleAPITestCase(APITestCase):
         cls.permission2 = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission2"
         )
-        cls.group = Group.objects.create(name="user role")
+        cls.group = Group.objects.create(name=str(star_wars.id) + "user role")
         cls.group.permissions.add(cls.permission)
-
+        cls.group.refresh_from_db()
         cls.userRole = m.UserRole.objects.create(group=cls.group, account=star_wars)
 
     def test_create_user_role(self):
@@ -40,7 +40,7 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.post("/api/userroles/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 201)
-        self.assertEqual(r["name"], payload["name"])
+        self.assertEqual(r["name"][1:], payload["name"])
         self.assertIsNotNone(r["id"])
 
     def test_create_user_role_without_name(self):
@@ -58,6 +58,8 @@ class UserRoleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["id"], self.userRole.pk)
+        self.userRole.refresh_from_db()
+        self.assertEqual(r["name"], self.userRole.group.name[1:])
 
     def test_list_without_search(self):
         self.client.force_authenticate(self.yoda)
@@ -74,8 +76,9 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.get("/api/userroles/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
+
         self.assertEqual(len(r["results"]), 1)
-        self.assertEqual(r["results"][0]["name"], self.group.name)
+        self.assertEqual(r["results"][0]["name"], self.userRole.group.name[1:])
 
     def test_partial_update_no_modification(self):
         self.client.force_authenticate(self.yoda)
@@ -84,7 +87,7 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.put(f"/api/userroles/{self.userRole.id}/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(r["name"], self.userRole.group.name)
+        self.assertEqual(r["name"][1:], payload["name"])
 
     def test_update_name_modification(self):
         self.client.force_authenticate(self.yoda)
@@ -93,8 +96,7 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.put(f"/api/userroles/{self.userRole.id}/", data=payload, format="json")
         self.group.refresh_from_db()
         r = self.assertJSONResponse(response, 200)
-
-        self.assertEqual(r["name"], self.group.name)
+        self.assertEqual(r["name"], self.group.name[1:])
 
     def test_partial_update_permissions_modification(self):
         self.client.force_authenticate(self.yoda)
@@ -115,5 +117,4 @@ class UserRoleAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
 
         response = self.client.delete(f"/api/userroles/{self.userRole.id}/")
-
         r = self.assertJSONResponse(response, 204)

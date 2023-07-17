@@ -476,22 +476,26 @@ describe('Submissions', () => {
         });
     });
 
-    it.only('advanced settings should filter correctly', () => {
+    it('advanced settings should filter correctly', () => {
         goToPage();
-        cy.get('#advanced-settings').click();
-        cy.get('[data-test="modificationDateFrom"]')
+        cy.get('[data-test="advanced-settings"]').click();
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="start-date"]')
             .find('input.MuiInputBase-input')
             .clear()
             .type('14/07/2023');
-        cy.get('[data-test="modificationDateTo"]')
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="end-date"]')
             .find('input.MuiInputBase-input')
             .clear()
             .type('15/07/2023');
-        cy.get('[data-test="sentDateFrom"]')
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="start-date"]')
             .find('input.MuiInputBase-input')
             .clear()
             .type('12/07/2023');
-        cy.get('[data-test="sentDateTo"]')
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="end-date"]')
             .find('input.MuiInputBase-input')
             .clear()
             .type('13/07/2023');

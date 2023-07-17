@@ -445,10 +445,13 @@ export const getFilters = (
         jsonContent: params.fieldsSearch,
         planningIds: params.planningIds,
         userIds: params.userIds,
-        modificationDateFrom: params.modificationDateFrom,
-        modificationDateTo: params.modificationDateTo,
-        sentDateFrom: params.sentDateFrom,
-        sentDateTo: params.sentDateTo,
+        modificationDateFrom: getFromDateString(
+            params.modificationDateFrom,
+            false,
+        ),
+        modificationDateTo: getToDateString(params.modificationDateTo, false),
+        sentDateFrom: getFromDateString(params.sentDateFrom, false),
+        sentDateTo: getToDateString(params.sentDateTo, false),
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

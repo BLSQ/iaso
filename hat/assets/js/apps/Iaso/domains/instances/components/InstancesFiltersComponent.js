@@ -308,7 +308,7 @@ const InstancesFiltersComponent = ({
                             InfoPopper={<Popper />}
                         />
                     )}
-                    <Box mt={3}>
+                    <Box mt={2}>
                         <InputComponent
                             keyValue="showDeleted"
                             onChange={handleFormChange}
@@ -320,7 +320,7 @@ const InstancesFiltersComponent = ({
                     <Box mt={2}>
                         {!showAdvancedSettings && (
                             <Typography
-                                id="advanced-settings"
+                                data-test="advanced-settings"
                                 className={classes.advancedSettings}
                                 variant="overline"
                                 onClick={() => setShowAdvancedSettings(true)}
@@ -330,47 +330,30 @@ const InstancesFiltersComponent = ({
                         )}
                         {showAdvancedSettings && (
                             <>
-                                <Box mt={2} data-test="modificationDateFrom">
-                                    <DatePicker
-                                        label={formatMessage(
-                                            MESSAGES.modificationDateFrom,
-                                        )}
-                                        clearMessage={MESSAGES.clear}
-                                        currentDate={
+                                <Box data-test="modificationDate">
+                                    <DatesRange
+                                        xs={12}
+                                        sm={12}
+                                        md={12}
+                                        lg={6}
+                                        keyDateFrom="modificationDateFrom"
+                                        keyDateTo="modificationDateTo"
+                                        onChangeDate={handleFormChange}
+                                        dateFrom={
                                             formState.modificationDateFrom.value
                                         }
-                                        onChange={date => {
-                                            handleFormChange(
-                                                'modificationDateFrom',
-                                                date
-                                                    ? date.format(apiDateFormat)
-                                                    : null,
-                                            );
-                                        }}
-                                    />
-                                </Box>
-                                <Box mt={1} data-test="modificationDateTo">
-                                    <DatePicker
-                                        label={formatMessage(
-                                            MESSAGES.modificationDateTo,
-                                        )}
-                                        clearMessage={MESSAGES.clear}
-                                        currentDate={
+                                        dateTo={
                                             formState.modificationDateTo.value
                                         }
-                                        onChange={date => {
-                                            handleFormChange(
-                                                'modificationDateTo',
-                                                date
-                                                    ? date.format(apiDateFormat)
-                                                    : null,
-                                            );
-                                        }}
+                                        labelFrom={
+                                            MESSAGES.modificationDateFrom
+                                        }
+                                        labelTo={MESSAGES.modificationDateTo}
                                     />
                                 </Box>
                                 <Box mt={2}>
                                     <Typography
-                                        id="advanced-settings"
+                                        data-test="advanced-settings"
                                         className={classes.advancedSettings}
                                         variant="overline"
                                         onClick={() =>
@@ -422,38 +405,21 @@ const InstancesFiltersComponent = ({
                         />
                     </Box>
                     {showAdvancedSettings && (
-                        <>
-                            <Box mt={1} data-test="sentDateFrom">
-                                <DatePicker
-                                    label={formatMessage(MESSAGES.sentDateFrom)}
-                                    clearMessage={MESSAGES.clear}
-                                    currentDate={formState.sentDateFrom.value}
-                                    onChange={date => {
-                                        handleFormChange(
-                                            'sentDateFrom',
-                                            date
-                                                ? date.format(apiDateFormat)
-                                                : null,
-                                        );
-                                    }}
-                                />
-                            </Box>
-                            <Box mt={1} data-test="sentDateTo">
-                                <DatePicker
-                                    label={formatMessage(MESSAGES.sentDateTo)}
-                                    clearMessage={MESSAGES.clear}
-                                    currentDate={formState.sentDateTo.value}
-                                    onChange={date => {
-                                        handleFormChange(
-                                            'sentDateTo',
-                                            date
-                                                ? date.format(apiDateFormat)
-                                                : null,
-                                        );
-                                    }}
-                                />
-                            </Box>
-                        </>
+                        <Box data-test="sentDate">
+                            <DatesRange
+                                xs={12}
+                                sm={12}
+                                md={12}
+                                lg={6}
+                                keyDateFrom="sentDateFrom"
+                                keyDateTo="sentDateTo"
+                                onChangeDate={handleFormChange}
+                                dateFrom={formState.sentDateFrom.value}
+                                dateTo={formState.sentDateTo.value}
+                                labelFrom={MESSAGES.sentDateFrom}
+                                labelTo={MESSAGES.sentDateTo}
+                            />
+                        </Box>
                     )}
                 </Grid>
                 <Grid item xs={12} md={3}>

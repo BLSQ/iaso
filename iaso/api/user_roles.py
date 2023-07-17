@@ -45,7 +45,6 @@ class UserRoleSerializer(serializers.ModelSerializer):
         account = self.context["request"].user.iaso_profile.account
         request = self.context["request"]
         group_name = str(account.id) + request.data.get("name")
-        print(group_name)
         permissions = request.data.get("permissions", [])
         if not group_name:
             return Response({"error": "User group name is required"}, status=400)

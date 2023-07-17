@@ -228,9 +228,9 @@ We have a few ready-made components for filters:
 
 - `InputComponent`: handles most types of inputs: text, select, checkbox, radio
 - `OrgUnitTreeviewModal`: handles searches on org units
-- `DatePicker` and `DateRangePicker`: handle dates
+- `DatePicker` and `DateRange`: handle dates
 
-With the exception of `OrgUnitTreeviewModal`, these components take a `keyValue` prop, which is a string that corresponds to the url parameter that stores the filter value, and an `onChange` prop which is a function with the signature (keyValue,value) => void
+`InputComponent` takes a `keyValue` prop, which is a string that corresponds to the url parameter that stores the filter value, and an `onChange` prop which is a function with the signature (keyValue,value) => void. `DateRange` takes a `keyDateFrom` and a `keyDateTo` that play the same role for the start and end date respectively. 
 
 We also have a `useFilterState` hook that handles the state and update methods for filters of a given page:
 

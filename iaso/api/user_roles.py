@@ -9,6 +9,13 @@ from iaso.models import UserRole
 from .common import TimestampField, ModelViewSet, HasPermission
 
 
+class HasUserRolePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if (not request.user.has_perm("menupermissions.iaso_user_roles")) and request.method != "GET":
+            return False
+        return True
+
+
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission
@@ -86,14 +93,13 @@ class UserRolesViewSet(ModelViewSet):
     DELETE /api/userroles/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_user_roles")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasUserRolePermission]  # type: ignore
     serializer_class = UserRoleSerializer
     http_method_names = ["get", "post", "put", "delete"]
 
     def get_queryset(self) -> QuerySet[UserRole]:
-        if not self.request.user.is_anonymous:
-            account = self.request.user.iaso_profile.account
-        queryset = UserRole.objects.filter(account=account)
+        user = self.request.user
+        queryset = UserRole.objects.filter(account=user.iaso_profile.account)  # type: ignore
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "group__name").split(",")
         if search:

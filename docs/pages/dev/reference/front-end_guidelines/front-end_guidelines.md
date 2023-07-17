@@ -220,7 +220,7 @@ Most tables we display come with one or several filters, most commonly a text se
 
 It's a global feature in Iaso that all filter searches performed on pages are deep-linked, i.e.: the parameters of the filters are saved in the url, so users can share the results of their search/filtering. This has an impact on the architecture of Iaso:
 
-- All search fields need to be declared in `routes.js`, under the `params` key. Important: `params` is an ordered list. Passing them in the wrong order in the url will resukt in a 404.
+- All search fields need to be declared in `routes.js`, under the `params` key. Important: `params` is an ordered list. Passing them in the wrong order in the URL will result in a 404.
 
 - Applying a filter doesn't change the component state per se but results in a redirection. Depending on the use cases, we may or may not want to save consecutive filters/searches in the routers history
 

@@ -12,7 +12,7 @@ from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, permissions, serializers, status, viewsets
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -402,11 +402,12 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         dedup_filters.FormFilterBackend,
         dedup_filters.OrgUnitFilterBackend,
         dedup_filters.StartEndDateFilterBackend,
-        filters.OrderingFilter,
+        dedup_filters.CustomOrderingFilter,
         DjangoFilterBackend,
+        # filters.OrderingFilter,
     ]
 
-    ordering_fields = ["created_at", "similarity_score", "id"]
+    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
     remove_results_key_if_paginated = False
     results_key = "results"
     permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
@@ -540,6 +541,18 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
 
         version1 = duplicate.entity1.attributes.get_form_version()
         version2 = duplicate.entity2.attributes.get_form_version()
+
+        if version1 is None:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": f"No form version for attibutes of entity {duplicate.entity1.pk}"},
+            )
+
+        if version2 is None:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": f"No form version for attibutes of entity {duplicate.entity2.pk}"},
+            )
 
         return_data = {
             "fields": fields_data,

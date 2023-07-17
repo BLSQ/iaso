@@ -1377,15 +1377,11 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
 def find_district(district_name, region_name, district_dict):
     district_name_lower = district_name.lower() if district_name else None
     district_list = district_dict.get(district_name_lower)
-    # if district_name_lower == "boromo" or district_name_lower=="bousse" or district_name_lower=="toma":
-    #     print(district_name, region_name, len(district_list))
     if district_list and len(district_list) == 1:
         return district_list[0]
     elif district_list and len(district_list) > 1:
         for di in district_list:
             parent_aliases_lower = [alias.lower().strip() for alias in di.parent.aliases] if di.parent.aliases else []
-            if district_name_lower == "boromo" or district_name_lower=="bousse" or district_name_lower=="toma":
-                print(district_name_lower, di.name,di.parent.name.lower().strip(), parent_aliases_lower)
             if di.parent.name.lower().strip() == region_name.lower().strip() or (
                 di.parent.aliases and region_name.lower().strip() in parent_aliases_lower
             ):
@@ -1698,7 +1694,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             cache.set(
                 "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]),
                 json.dumps(response),
-                1,
+                3600,
                 version=CACHE_VERSION,
             )
         return JsonResponse(response, safe=False)

@@ -786,10 +786,10 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
 def _build_district_cache(districts_qs):
     district_dict = defaultdict(list)
     for f in districts_qs:
-        district_dict[f.name.lower()].append(f)
+        district_dict[f.name.lower().strip()].append(f)
         if f.aliases:
             for alias in f.aliases:
-                district_dict[alias.lower()].append(f)
+                district_dict[alias.lower().strip()].append(f)
     return district_dict
 
 
@@ -1377,13 +1377,17 @@ class OrgUnitsPerCampaignViewset(viewsets.ViewSet):
 def find_district(district_name, region_name, district_dict):
     district_name_lower = district_name.lower() if district_name else None
     district_list = district_dict.get(district_name_lower)
+    # if district_name_lower == "boromo" or district_name_lower=="bousse" or district_name_lower=="toma":
+    #     print(district_name, region_name, len(district_list))
     if district_list and len(district_list) == 1:
         return district_list[0]
     elif district_list and len(district_list) > 1:
         for di in district_list:
             parent_aliases_lower = [alias.lower().strip() for alias in di.parent.aliases] if di.parent.aliases else []
+            if district_name_lower == "boromo" or district_name_lower=="bousse" or district_name_lower=="toma":
+                print(district_name_lower, di.name,di.parent.name.lower().strip(), parent_aliases_lower)
             if di.parent.name.lower().strip() == region_name.lower().strip() or (
-                di.parent.aliases and region_name.strip() in parent_aliases_lower
+                di.parent.aliases and region_name.lower().strip() in parent_aliases_lower
             ):
                 return di
     return None
@@ -1440,7 +1444,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             return HttpResponseBadRequest
         requested_country = int(requested_country)
 
-        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False)
+        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False).filter(deleted_at=None)
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
         else:
@@ -1462,7 +1466,8 @@ class LQASStatsViewSet(viewsets.ViewSet):
         unknown_round = 0
         skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
 
-        find_lqas_im_campaign_cached = lru_cache(maxsize=None)(find_lqas_im_campaign)
+        find_lqas_im_campaign_cached = find_lqas_im_campaign
+        # find_lqas_im_campaign_cached = lru_cache(maxsize=None)(find_lqas_im_campaign)
 
         base_stats = lambda: {
             "total_child_fmd": 0,
@@ -1693,7 +1698,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             cache.set(
                 "{0}-{1}-LQAS".format(request.user.id, request.query_params["country_id"]),
                 json.dumps(response),
-                3600,
+                1,
                 version=CACHE_VERSION,
             )
         return JsonResponse(response, safe=False)

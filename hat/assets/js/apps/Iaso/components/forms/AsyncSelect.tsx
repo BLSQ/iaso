@@ -1,9 +1,14 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { debounce } from '@mui/material/utils';
 import { Autocomplete } from '@material-ui/lab';
-import { IntlMessage, useSafeIntl } from 'bluesquare-components';
-import { Box, Chip, TextField } from '@material-ui/core';
+import {
+    IntlMessage,
+    renderTags as defaultRenderTags,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { Box, TextField } from '@material-ui/core';
 import { isArray } from 'lodash';
+import { AutocompleteGetTagProps } from '@material-ui/lab/Autocomplete/Autocomplete';
 
 type Props = {
     value: any;
@@ -23,6 +28,22 @@ type Props = {
     minCharBeforeQuery?: number;
     // eslint-disable-next-line no-unused-vars
     fetchOptions: (input: string) => Promise<any[]>;
+    renderTags?: (
+        // eslint-disable-next-line no-unused-vars
+        tag: any[],
+        // eslint-disable-next-line no-unused-vars
+        getTagProps: AutocompleteGetTagProps,
+    ) => React.ReactNode;
+};
+
+const getOptionSelected = (option, val) => {
+    if (val?.value) {
+        return `${option.value}` === `${val.value}`;
+    }
+    if (val) {
+        return `${option.value}` === `${val}`;
+    }
+    return false;
 };
 
 export const AsyncSelect: FunctionComponent<Props> = ({
@@ -40,10 +61,11 @@ export const AsyncSelect: FunctionComponent<Props> = ({
     helperText = undefined,
     minCharBeforeQuery = 1,
     fetchOptions,
+    renderTags = defaultRenderTags(o => (o?.label ? o.label : '')),
 }) => {
     const { formatMessage } = useSafeIntl();
-    const [inputValue, setInputValue] = useState('');
-    const [isLoading, setLoading] = useState(loading);
+    const [inputValue, setInputValue] = useState<string>('');
+    const [isLoading, setLoading] = useState<boolean>(loading);
     const values = useMemo(() => {
         if (isArray(value)) {
             return value;
@@ -101,7 +123,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
         return () => {
             active = false;
         };
-    }, [values, inputValue, fetch]);
+    }, [values, inputValue, fetch, minCharBeforeQuery]);
 
     return (
         <Box>
@@ -118,20 +140,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                         helperText={helperText}
                     />
                 )}
-                renderTags={(tags, getTagProps) => {
-                    return tags.map((tag, index) => (
-                        <Chip
-                            color="secondary"
-                            style={{
-                                backgroundColor: tag.color,
-                                color: 'white',
-                            }}
-                            label={tag.label}
-                            /* eslint-disable-next-line react/jsx-props-no-spreading */
-                            {...getTagProps({ index })}
-                        />
-                    ));
-                }}
+                renderTags={renderTags}
                 multiple={multi}
                 disabled={disabled}
                 disableClearable={!clearable}
@@ -152,15 +161,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 onInputChange={(event, newInputValue) => {
                     setInputValue(newInputValue);
                 }}
-                getOptionSelected={(option, val) => {
-                    if (val?.value) {
-                        return `${option.value}` === `${val.value}`;
-                    }
-                    if (val) {
-                        return `${option.value}` === `${val}`;
-                    }
-                    return false;
-                }}
+                getOptionSelected={getOptionSelected}
             />
         </Box>
     );

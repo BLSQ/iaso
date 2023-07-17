@@ -9,16 +9,16 @@ import { makeUrlWithParams } from '../../../libs/utils';
 export const useGetProfilesDropdown = (
     ids: string,
 ): UseQueryResult<DropdownOptions<number>, Error> => {
-    return useSnackQuery(
-        ['profiles', ids],
-        () => {
+    return useSnackQuery({
+        queryKey: ['profiles', ids],
+        queryFn: () => {
             if (ids === undefined || ids.length < 1) {
                 return [];
             }
             return getRequest(makeUrlWithParams('/api/profiles/', { ids }));
         },
-        MESSAGES.error,
-        {
+        snackErrorMsg: MESSAGES.error,
+        options: {
             select: data => {
                 return (
                     data?.profiles?.map((profile: Profile) => {
@@ -30,5 +30,5 @@ export const useGetProfilesDropdown = (
                 );
             },
         },
-    );
+    });
 };

@@ -238,6 +238,14 @@ const InstancesFiltersComponent = ({
         );
     };
 
+    const joinValuesBeforeHandleFormChange = useCallback(
+        (keyValue, newValue) => {
+            const joined = newValue?.map(r => r.value)?.join(',');
+            handleFormChange(keyValue, joined);
+        },
+        [handleFormChange],
+    );
+
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     const fieldsSearchJson = formState.fieldsSearch.value
@@ -439,13 +447,8 @@ const InstancesFiltersComponent = ({
                             keyValue="userIds"
                             label={MESSAGES.user}
                             value={selectedUsers ?? ''}
-                            onChange={(keyValue, newValue) => {
-                                const joined = newValue
-                                    ?.map(r => r.value)
-                                    ?.join(',');
-                                handleFormChange(keyValue, joined);
-                            }}
-                            debounceTime="500"
+                            onChange={joinValuesBeforeHandleFormChange}
+                            debounceTime={500}
                             multi
                             fetchOptions={input => getUsersDropDown(input)}
                         />

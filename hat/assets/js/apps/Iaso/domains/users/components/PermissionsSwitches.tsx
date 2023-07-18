@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Box, Typography, makeStyles } from '@material-ui/core';
 import {
     useSafeIntl,
@@ -84,6 +84,16 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         currentUser,
     });
 
+    const handleChangeUserRoles = useCallback(
+        (_, value) => {
+            setFieldValue('user_roles', value ? value.split(',') : []);
+            console.log('value', value);
+            // const permissions =
+            // setFieldValue('user_permissions', permissions)
+        },
+        [setFieldValue],
+    );
+
     console.log('userRoles', userRoles);
     return (
         <>
@@ -102,12 +112,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                 <>
                     <InputComponent
                         keyValue="user_roles"
-                        onChange={(_, value) =>
-                            setFieldValue(
-                                'user_roles',
-                                value ? value.split(',') : [],
-                            )
-                        }
+                        onChange={handleChangeUserRoles}
                         value={currentUser.user_roles.value}
                         type="select"
                         multi

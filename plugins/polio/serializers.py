@@ -313,6 +313,7 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
         ]
 
     modified_by = UserSerializer(required=False, read_only=True)
+    round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
 
     def validate(self, data):
         if not data["reason"]:
@@ -889,13 +890,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         class Meta:
             model = Round
-            fields = [
-                "id",
-                "number",
-                "started_at",
-                "ended_at",
-                "scopes",
-            ]
+            fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names"]
 
     class NestedScopeSerializer(CampaignScopeSerializer):
         class NestedGroupSerializer(GroupSerializer):

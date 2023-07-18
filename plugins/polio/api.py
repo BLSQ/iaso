@@ -1444,8 +1444,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
         unknown_round = 0
         skipped_forms = {"count": 0, "no_round": 0, "unknown_round": unknown_round, "forms_id": skipped_forms_list}
 
-        find_lqas_im_campaign_cached = find_lqas_im_campaign
-        # find_lqas_im_campaign_cached = lru_cache(maxsize=None)(find_lqas_im_campaign)
+        find_lqas_im_campaign_cached = lru_cache(maxsize=None)(find_lqas_im_campaign)
 
         base_stats = lambda: {
             "total_child_fmd": 0,

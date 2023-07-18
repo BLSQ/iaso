@@ -30,7 +30,7 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
     const options = useOptions();
     return (
         <Paper elevation={paperElevation}>
-            <Box mb={2} pt={2} ml={2} style={{ width: '50%' }}>
+            <Box mb={2} pt={2} ml={2} width="50%">
                 <InputComponent
                     type="select"
                     multi={false}

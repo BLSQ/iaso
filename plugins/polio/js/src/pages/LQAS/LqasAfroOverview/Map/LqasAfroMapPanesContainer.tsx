@@ -101,9 +101,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             {showCountries && (
                 <MapPanes
                     mainLayer={mapShapes}
-                    // backgroundLayer={zoominbackgroundShapes}
                     getMainLayerStyle={getMainLayerStyle}
-                    // getBackgroundLayerStyle={}
                     name={`LQAS-Map-country-view-${paramsAsString}`}
                     tooltipFieldKey="data.country_name"
                 />

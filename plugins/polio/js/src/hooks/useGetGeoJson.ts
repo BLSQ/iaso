@@ -8,10 +8,12 @@ import { UseQueryResult } from 'react-query';
 type Params = {
     // eslint-disable-next-line camelcase
     validation_status: string;
-    withShapes: 'true' | 'false';
+    withShapes?: 'true' | 'false';
     order: string;
     orgUnitTypeCategory: string;
     orgUnitParentId?: string;
+    asLocation?: 'true' | 'false';
+    limit?: string;
 };
 
 export const useGetGeoJson = (
@@ -28,11 +30,11 @@ export const useGetGeoJson = (
         params.orgUnitParentId = `${topParentId}`;
     }
 
-    const queryString = new URLSearchParams(params);
+    const urlParams = new URLSearchParams(params);
 
     return useSnackQuery(
         ['geo_json', params],
-        () => getRequest(`/api/orgunits/?${queryString.toString()}`),
+        () => getRequest(`/api/orgunits/?${urlParams.toString()}`),
         undefined,
         {
             enabled: Boolean(topParentId),

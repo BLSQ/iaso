@@ -11,7 +11,7 @@ export const useGetUserRolesDropDown = (): UseQueryResult<
 > => {
     return useSnackQuery({
         queryKey: ['user_roles'],
-        queryFn: () => getRequest('/api/userroles'),
+        queryFn: () => getRequest('/api/userroles/'),
         snackErrorMsg: MESSAGES.userRolesDropDownError,
         options: {
             select: data => {
@@ -20,6 +20,7 @@ export const useGetUserRolesDropDown = (): UseQueryResult<
                         return {
                             value: userRole.id,
                             label: userRole.name,
+                            orginal: userRole,
                         };
                     }) ?? []
                 );

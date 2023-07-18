@@ -171,7 +171,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                     />
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
-                    {tab === 'infos' && (
+                    <div
+                        className={tab === 'infos' ? '' : classes.hiddenOpacity}
+                    >
                         <UsersInfos
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -180,7 +182,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             allowSendEmailInvitation={allowSendEmailInvitation}
                         />
-                    )}
+                    </div>
                     <div
                         className={
                             tab === 'permissions' ? '' : classes.hiddenOpacity
@@ -191,6 +193,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             handleChange={permissions =>
                                 setFieldValue('user_permissions', permissions)
+                            }
+                            setFieldValue={(key, value) =>
+                                setFieldValue(key, value)
                             }
                         />
                     </div>

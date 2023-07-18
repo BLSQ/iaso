@@ -3,7 +3,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
-import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 import InputComponent from '../../../components/forms/InputComponent';
 import { APP_LOCALES } from '../../app/constants';
 
@@ -34,7 +33,7 @@ const UsersInfos = ({
             passwordDisabled = true;
         }
     }
-    const { data: userRoles, isFetching } = useGetUserRolesDropDown({});
+    // const { data: userRoles, isFetching } = useGetUserRolesDropDown({});
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
 
@@ -136,7 +135,7 @@ const UsersInfos = ({
                     };
                 })}
             />
-            <InputComponent
+            {/* <InputComponent
                 keyValue="user_roles"
                 onChange={(key, value) =>
                     setFieldValue(key, value ? value.split(',') : [])
@@ -148,7 +147,7 @@ const UsersInfos = ({
                 options={userRoles}
                 loading={isFetching}
                 clearable
-            />
+            /> */}
 
             {allowSendEmailInvitation && (
                 <InputComponent

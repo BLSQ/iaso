@@ -4,13 +4,17 @@ import classnames from 'classnames';
 
 import { TableCell, Box } from '@material-ui/core';
 
-import { isEqual, uniq } from 'lodash';
+import { isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
 import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext.tsx';
 import { polioVaccines } from '../../../constants/virus.ts';
+
+const getVaccineColor = vaccine =>
+    polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)?.color ||
+    '#bcbcbc';
 
 const RoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
@@ -40,21 +44,17 @@ const RoundCell = ({ colSpan, campaign, round }) => {
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
     const isLogged = useSelector(state => Boolean(state.users.current));
-    const vaccinesList = useMemo(
-        () =>
-            uniq(
-                campaign.separateScopesPerRound
-                    ? round.scopes.map(scope => scope.vaccine)
-                    : campaign.scopes.map(scope => scope.vaccine),
-            ),
-        [campaign.scopes, campaign.separateScopesPerRound, round.scopes],
-    );
-    const getVaccineColor = useCallback(
-        vaccine =>
-            polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)
-                ?.color || campaign.color,
-        [campaign.color],
-    );
+    const vaccinesList = useMemo(() => {
+        const list = campaign.separateScopesPerRound
+            ? round.vaccine_names?.split(',') ?? []
+            : campaign.original.vaccines?.split(',') ?? [];
+        return list.map(vaccineName => vaccineName.trim());
+    }, [
+        campaign.original.vaccines,
+        campaign.separateScopesPerRound,
+        round.vaccine_names,
+    ]);
+
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}

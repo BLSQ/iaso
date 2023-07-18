@@ -46,8 +46,15 @@ class UserRoleSerializer(serializers.ModelSerializer):
         request = self.context["request"]
         group_name = str(account.id) + request.data.get("name")
         permissions = request.data.get("permissions", [])
+
+        # check if the user role name has been given
         if not group_name:
-            return Response({"error": "User group name is required"}, status=400)
+            raise serializers.ValidationError({"name": "User role name is required"})
+
+        # check if a user role with the same name already exists
+        group_exists = Group.objects.filter(name__iexact=group_name)
+        if group_exists:
+            raise serializers.ValidationError({"name": "User role already exists"})
 
         group = Group(name=group_name)
         group.save()
@@ -80,6 +87,10 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
         if group_name is not None:
             group.name = group_name
+        # check if a user role with the same name already exists other than the current user role
+        group_exists = Group.objects.filter(~Q(pk=group.id), name__iexact=group_name)
+        if group_exists:
+            raise serializers.ValidationError({"name": "User role already exists"})
 
         if permissions is not None:
             group.permissions.clear()

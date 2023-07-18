@@ -595,7 +595,7 @@ class Campaign(SoftDeletableModel):
         response["created_at"] = ssi.created_at
         return response
 
-    # To use in with sorted. returning date.min if ended_at has no value so the method can be used with `sorted`
+    # Returning date.min if ended_at has no value so the method can be used with `sorted`
     def get_last_round_end_date(self):
         sorted_rounds = sorted(
             list(self.rounds.all()),

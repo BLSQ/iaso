@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("iaso", "0220_merge_20230628_1038"),
+        ("iaso", "0217_fill_allow_creating_sub_unit_types"),
     ]
 
     operations = [

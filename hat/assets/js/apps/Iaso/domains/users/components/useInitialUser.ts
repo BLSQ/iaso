@@ -103,7 +103,15 @@ export const useInitialUser = (
             if (fieldName === 'user_roles') {
                 const userRolesPermissions: UserRole[] = (userRoles || [])
                     .filter(userRole => fieldValue.includes(userRole.value))
-                    .map(userRole => userRole.original as UserRole);
+                    .map(userRole => {
+                        const role = {
+                            ...(userRole.original as UserRole),
+                            permissions: userRole.original?.permissions.map(
+                                perm => perm.codename,
+                            ),
+                        };
+                        return role;
+                    });
                 newUser.user_roles_permissions = {
                     value: userRolesPermissions,
                     errors: [],

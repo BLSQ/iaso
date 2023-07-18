@@ -23,10 +23,8 @@ export const determineStatusForDistrict = district => {
         if (marked > 56) {
             return LQAS_PASS;
         }
-        // return LQAS_FAIL;
     }
     return LQAS_FAIL;
-    // return LQAS_DISQUALIFIED;
 };
 
 export const getLqasStatsForRound = (
@@ -45,13 +43,8 @@ export const getLqasStatsForRound = (
         return determineStatusForDistrict(district);
     });
     const passed = allStatuses.filter(status => status === LQAS_PASS);
-    // const disqualified = allStatuses.filter(
-    //     status => status === LQAS_DISQUALIFIED,
-    // );
     const failed = allStatuses.filter(status => status === LQAS_FAIL);
-
     return [passed, failed];
-    // return [passed, failed, disqualified];
 };
 
 export const makeLqasMapLegendItems =

@@ -114,7 +114,13 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => {
                     handleSubmit();
-                    setCloseModal({ closeDialog });
+                    setCloseModal({
+                        closeDialog: () => {
+                            resetForm();
+                            setUserRolePermissoins([]);
+                            closeDialog();
+                        },
+                    });
                 }}
                 onCancel={closeDialog => {
                     closeDialog();

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0076_alter_campaign_account"),
         ("polio", "0082_alter_roundvaccine_wastage_ratio_forecast"),

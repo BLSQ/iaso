@@ -172,6 +172,7 @@ class ParamSerializer(serializers.Serializer):
     def validate_org_unit_validation_status(self, statuses):
         statuses = statuses.split(",")
         for status in statuses:
+            # TODO: this should come from , OrgUnit.VALIDATION_STATUS_CHOICES
             if status not in (OrgUnit.VALIDATION_VALID, OrgUnit.VALIDATION_NEW, OrgUnit.VALIDATION_REJECTED):
                 raise serializers.ValidationError("Invalid status")
         return statuses
@@ -205,7 +206,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_completeness_stats"),  # type: ignore
+        HasPermission("menupermissions.iaso_completeness_stats", "menupermissions.iaso_registry"),  # type: ignore
     ]  # type: ignore
 
     # @swagger_auto_schema(query_serializer=ParamSerializer())
@@ -294,6 +295,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         # Transform the order parameter to handle the json properly
         converted_orders: List[Union[str, OrderBy]] = []
         for order in orders:
+            # There is an issue with using orgunit__name as it does a supplementary outer join that duplicate lines
+            # and break pagination
+            if order == "orgunit__name" or order == "-orgunit__name":
+                raise serializers.ValidationError(
+                    {"order": ["Sorting by `orgunit__name` is not supported, please use `name` instead"]}
+                )
             if not (order.startswith("form_stats") or order.startswith("-form_stats")):
                 converted_orders.append(order)
             else:

@@ -14,8 +14,6 @@ import formsFixture from './fixtures/forms.json';
 import TopBar from '../../components/nav/TopBarComponent';
 import { withQueryClientProvider } from '../../../../test/utils';
 
-const projectActions = require('../projects/actions');
-const orgUnitTypesActions = require('../orgUnits/orgUnitTypes/actions');
 const redirectActions = require('../../routing/actions');
 const requestsStub = require('../../utils/requests');
 
@@ -24,18 +22,6 @@ const fakeForm = formsFixture.forms[0];
 const formId = 69;
 
 const requests = theId => [
-    {
-        url: `/api/orgunittypes/`,
-        body: {
-            orgUnitTypes: [],
-        },
-    },
-    {
-        url: `/api/projects/`,
-        body: {
-            projects: [],
-        },
-    },
     {
         url: `/api/formversions/?&limit=10&page=1&order=-created_at&form_id=${theId}`,
         body: {
@@ -272,12 +258,6 @@ describe('Detail form connected component', () => {
             });
 
             it('with org_unit_type_ids, project_ids in state and does not call org unit type and projects api', () => {
-                const fetchAllOrgUnitTypesStub = sinon
-                    .stub(orgUnitTypesActions, 'fetchAllOrgUnitTypes')
-                    .returns({ type: 'ZELDA' });
-                const fetchProjectStub = sinon
-                    .stub(projectActions, 'fetchAllProjects')
-                    .returns({ type: 'ZELDA' });
                 connectedWrapper = mount(
                     withQueryClientProvider(
                         renderWithStore(
@@ -299,8 +279,6 @@ describe('Detail form connected component', () => {
                         ),
                     ),
                 );
-                expect(fetchAllOrgUnitTypesStub).not.to.have.been.called;
-                expect(fetchProjectStub).not.to.have.been.called;
                 expect(connectedWrapper.exists()).to.equal(true);
             });
         });

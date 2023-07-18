@@ -101,6 +101,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Language',
         id: 'iaso.users.dialog.locale',
     },
+    userRoles: {
+        defaultMessage: 'User roles',
+        id: 'iaso.users.dialog.userRoles',
+    },
     searchUser: {
         id: 'iaso.users.filter.searchUser',
         defaultMessage: 'Search user',
@@ -160,6 +164,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.submissions',
         defaultMessage: 'Form Submissions',
     },
+    iaso_user_roles: {
+        id: 'iaso.permissions.userRoles',
+        defaultMessage: 'User roles',
+    },
     iaso_update_submission: {
         id: 'iaso.permissions.update_submission',
         defaultMessage: 'Update Submissions',
@@ -212,6 +220,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_registry',
         defaultMessage: 'Registry',
     },
+    iaso_org_unit_types: {
+        id: 'iaso.permissions.iaso_org_unit_types',
+        defaultMessage: 'Org unit types',
+    },
+    iaso_org_unit_groups: {
+        id: 'iaso.permissions.iaso_org_unit_groups',
+        defaultMessage: 'Org unit groups',
+    },
     deleteError: {
         id: 'iaso.snackBar.deleteUserError',
         defaultMessage: 'An error occurred while deleting user profile',
@@ -237,6 +253,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',
     },
+    userRolesDropDownError: {
+        defaultMessage: 'Error while making user roles drop down',
+        id: 'iaso.snackBar.fetchPermissions',
+    },
     homePage: {
         defaultMessage: 'Home page',
         id: 'iaso.users.label.homePage',
@@ -244,6 +264,10 @@ const MESSAGES = defineMessages({
     ouChildrenCheckbox: {
         defaultMessage: 'Users with access to children org unit',
         id: 'iaso.users.ouChildrenCheckbox',
+    },
+    userPermissions: {
+        defaultMessage: 'User permissions',
+        id: 'iaso.users.userPermissions',
     },
     ouParentCheckbox: {
         defaultMessage: 'Users with access to parent org unit',
@@ -301,6 +325,62 @@ const MESSAGES = defineMessages({
     close: {
         id: 'iaso.label.close',
         defaultMessage: 'Close',
+    },
+    noTypeAssigned: {
+        id: 'iaso.users.label.noTypeAssigned',
+        defaultMessage: 'No org unit type assigned',
+    },
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected users',
+        id: 'iaso.users.multiSelectionAction',
+    },
+    projects: {
+        defaultMessage: 'Projects',
+        id: 'iaso.label.projects',
+    },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
+    validate: {
+        defaultMessage: 'Validate',
+        id: 'iaso.label.validate',
+    },
+    multiEditTitle: {
+        defaultMessage: 'Edit selection: {count} user(s)',
+        id: 'iaso.users.multiEditTitle',
+    },
+    bulkChangeCount: {
+        id: 'iaso.users.bulkChangeCount',
+        defaultMessage: 'You are about to change {count} user(s)',
+    },
+    addProjects: {
+        id: 'iaso.users.addProjects',
+        defaultMessage: 'Add to project(s)',
+    },
+    removeProjects: {
+        id: 'iaso.users.removeProjects',
+        defaultMessage: 'Remove from project(s)',
+    },
+    addRoles: {
+        id: 'iaso.users.addRoles',
+        defaultMessage: 'Add user role(s)',
+    },
+    removeRoles: {
+        id: 'iaso.users.removeRoles',
+        defaultMessage: 'Remove user role(s)',
+    },
+    taskLaunched: {
+        id: 'iaso.snackBar.copyVersionSuccessMessage',
+        defaultMessage: 'The task has been created"',
+    },
+    addLocations: {
+        id: 'iaso.users.addLocations',
+        defaultMessage: 'Add location(s)',
+    },
+    removeLocations: {
+        id: 'iaso.users.removeLocations',
+        defaultMessage: 'Remove location(s)',
     },
 });
 

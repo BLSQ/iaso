@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
+import { Pagination } from 'bluesquare-components';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { Pagination } from '../../../types/table';
 import { User } from '../../../utils/usersUtils';
 
 type Lock = {
@@ -24,6 +24,7 @@ export type Instance = {
     latitude: number;
     longitude: number;
     altitude: number;
+    accuracy: number;
     files: Array<string>;
     status: string;
     export_statuses: Array<string>;

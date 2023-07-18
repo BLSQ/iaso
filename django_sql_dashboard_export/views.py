@@ -9,6 +9,7 @@ from django.views.decorators.http import require_safe
 from django_sql_dashboard.models import Dashboard
 from django_sql_dashboard.utils import extract_named_parameters
 
+
 # Changed to get to enable permalinking
 @require_safe
 def export_sql_results_for_dashboard(request, slug):

@@ -27,7 +27,6 @@ def assign_campaigns_account(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0074_campaign_account"),
     ]

@@ -13,7 +13,6 @@ BASE_URL = "/api/bulkcreateuser/"
 class BulkCreateCsvTestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-
         star_wars = m.Account.objects.create(name="Star Wars")
 
         cls.project = m.Project.objects.create(
@@ -128,7 +127,6 @@ class BulkCreateCsvTestCase(APITestCase):
         )
 
     def test_upload_user_already_exists(self):
-
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
 
@@ -165,7 +163,6 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(profiles), 3)
 
     def test_user_cant_access_without_permission(self):
-
         self.client.force_authenticate(self.obi)
         self.sw_source.projects.set([self.project])
 

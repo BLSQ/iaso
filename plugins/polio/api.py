@@ -16,7 +16,7 @@ from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
 from django.http import FileResponse
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
@@ -38,11 +38,12 @@ from iaso.api.common import (
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
 )
-from iaso.models import OrgUnit
+from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
+    RoundDateHistoryEntrySerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -74,8 +75,11 @@ from .models import (
     Round,
     CampaignGroup,
     CampaignScope,
+    RoundDateHistoryEntry,
     RoundScope,
 )
+from hat.api.export_utils import Echo, iter_items
+from time import gmtime, strftime
 from .models import CountryUsersGroup
 from .preparedness.summary import get_or_set_preparedness_cache_for_round
 
@@ -241,6 +245,66 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         response["Content-Disposition"] = "attachment; filename=%s" % filename + ".xlsx"
         return response
 
+    @action(methods=["GET"], detail=False, serializer_class=None)
+    def csv_campaign_scopes_export(self, request, **kwargs):
+        """
+        It generates a csv export file with round's related informations
+
+            parameters:
+                self: a self
+                round: an integer representing the round id
+            returns:
+                it generates a csv file export
+        """
+        round = Round.objects.get(pk=request.GET.get("round"))
+        campaign = round.campaign
+        org_units_list = []
+        org_units = campaign.get_districts_for_round(round)
+
+        for org_unit in org_units:
+            item = {}
+            item["id"] = org_unit.id
+            item["org_unit_name"] = org_unit.name
+            item["org_unit_parent_name"] = org_unit.parent.name
+            item["org_unit_parent_of_parent_name"] = org_unit.parent.parent.name
+            item["obr_name"] = campaign.obr_name
+            item["round_number"] = "R" + str(round.number)
+            org_units_list.append(item)
+
+        filename = "%s-%s--%s--%s-%s" % (
+            "campaign",
+            campaign.obr_name,
+            "R" + str(round.number),
+            "org_units",
+            strftime("%Y-%m-%d-%H-%M", gmtime()),
+        )
+        columns = [
+            {"title": "ID", "width": 10},
+            {"title": "Admin 2", "width": 25},
+            {"title": "Admin 1", "width": 25},
+            {"title": "Admin 0", "width": 25},
+            {"title": "OBR Name", "width": 25},
+            {"title": "Round Number", "width": 35},
+        ]
+
+        def get_row(org_unit, **kwargs):
+            campaign_scope_values = [
+                org_unit.get("id"),
+                org_unit.get("org_unit_name"),
+                org_unit.get("org_unit_parent_name"),
+                org_unit.get("org_unit_parent_of_parent_name"),
+                org_unit.get("obr_name"),
+                org_unit.get("round_number"),
+            ]
+            return campaign_scope_values
+
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(org_units_list, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+        )
+        filename = filename + ".csv"
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
+
     @staticmethod
     def get_year(current_date):
         if current_date is not None:
@@ -330,7 +394,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
         ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
         obr_name = campaign.obr_name if campaign.obr_name is not None else ""
-        vacine = self.get_campain_vaccine(round, campaign)
         round_number = round.number if round.number is not None else ""
         # count all districts in the country
         country_districts_count = country.descendants().filter(org_unit_type__category="DISTRICT").count()
@@ -355,29 +418,12 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             "started_at": started_at,
             "ended_at": ended_at,
             "obr_name": obr_name,
-            "vacine": vacine,
+            "vaccines": round.vaccine_names(),
             "round_number": round_number,
             "percentage_covered_target_population": percentage_covered_target_population,
             "target_population": target_population,
             "nid_or_snid": nid_or_snid,
         }
-
-    def get_campain_vaccine(self: "CampaignViewSet", round: Round, campain: Campaign) -> str:
-        if campain.separate_scopes_per_round:
-            round_scope_vaccines = []
-
-            scopes = round.scopes
-            if scopes.count() < 1:
-                return ""
-            # Loop on round scopes
-            for scope in scopes.all():
-                round_scope_vaccines.append(scope.vaccine)
-            return ", ".join(round_scope_vaccines)
-        else:
-            if campain.vaccines:
-                return campain.vaccines
-
-            return ""
 
     @action(methods=["POST"], detail=True, serializer_class=CampaignPreparednessSpreadsheetSerializer)
     def create_preparedness_sheet(self, request: Request, pk=None, **kwargs):
@@ -1667,6 +1713,25 @@ class ConfigViewSet(ModelViewSet):
         return Config.objects.filter(users=self.request.user)
 
 
+@swagger_auto_schema(tags=["datelogs"])
+class RoundDateHistoryEntryViewset(ModelViewSet):
+    http_method_names = ["get"]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = RoundDateHistoryEntrySerializer
+    ordering_fields = ["modified_by", "created_at"]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+    filterset_fields = {
+        "round__id": ["exact"],
+    }
+
+    def get_queryset(self):
+        user = self.request.user
+        return RoundDateHistoryEntry.objects.filter_for_user(user)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -1686,3 +1751,4 @@ router.register(r"polio/countryusersgroup", CountryUsersGroupViewSet, basename="
 router.register(r"polio/linelistimport", LineListImportViewSet, basename="linelistimport")
 router.register(r"polio/orgunitspercampaign", OrgUnitsPerCampaignViewset, basename="orgunitspercampaign")
 router.register(r"polio/configs", ConfigViewSet, basename="polioconfigs")
+router.register(r"polio/datelogs", RoundDateHistoryEntryViewset, basename="datelogs")

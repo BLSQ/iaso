@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0183_set_storagedevice_status_updated_at"),
     ]

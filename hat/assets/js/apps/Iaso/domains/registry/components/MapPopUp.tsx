@@ -1,13 +1,20 @@
 import React, { FunctionComponent, useRef } from 'react';
-import { Popup } from 'react-leaflet';
+import { Popup, useMap } from 'react-leaflet';
 
-import { Card, CardContent, Box, makeStyles, Divider } from '@material-ui/core';
+import ClearIcon from '@material-ui/icons/Clear';
+import {
+    Card,
+    CardContent,
+    Box,
+    makeStyles,
+    Divider,
+    IconButton,
+} from '@material-ui/core';
 
 import {
     useSafeIntl,
     commonStyles,
     mapPopupStyles,
-    IconButton,
 } from 'bluesquare-components';
 
 import MESSAGES from '../messages';
@@ -43,9 +50,9 @@ export const MapPopUp: FunctionComponent<Props> = ({ orgUnit }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     const popup: any = useRef();
-
+    const map = useMap();
     return (
-        <Popup className={classes.popup} ref={popup}>
+        <Popup className={classes.popup} ref={popup} pane="popupPane">
             <Card className={classes.popupCard}>
                 <Box display="flex" justifyContent="flex-end" px={1} py="4px">
                     <Box mr="auto">
@@ -66,14 +73,11 @@ export const MapPopUp: FunctionComponent<Props> = ({ orgUnit }) => {
                         />
                     </Box>
                     <IconButton
-                        onClick={() =>
-                            popup.current.leafletElement.options.leaflet.map.closePopup()
-                        }
-                        icon="clear"
-                        tooltipMessage={MESSAGES.close}
-                        iconSize="small"
                         size="small"
-                    />
+                        onClick={() => map.closePopup(popup.current)}
+                    >
+                        <ClearIcon />
+                    </IconButton>
                 </Box>
                 <Divider />
                 <CardContent className={classes.popupCardContent}>

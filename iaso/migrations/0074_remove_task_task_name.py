@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0073_auto_20210118_1525")]
 
     operations = [migrations.RemoveField(model_name="task", name="task_name")]

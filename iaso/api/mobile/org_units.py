@@ -1,17 +1,23 @@
 from typing import Dict, Any
 
+from django.contrib.gis.db.models import GeometryField
+from django.contrib.gis.db.models.aggregates import Extent
+from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Cast
 from rest_framework import permissions
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, JSONField
+from rest_framework.decorators import action
+from typing import Optional
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
-from iaso.models import OrgUnit, Project
+from iaso.models import OrgUnit, Project, FeatureFlag
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -104,6 +110,24 @@ class HasOrgUnitPermission(permissions.BasePermission):
         return user_account.id in account_ids
 
 
+BUFFER_FOR_POINT = 0.008 * 3  # 0.008 degrees is around 3km at the equator
+
+
+# Define a GIS function, GeoDjango will map it to ST_BUFFER in postgis (using the class name)
+class Buffer(GeomOutputGeoFunc):
+    """Computes a POLYGON or MULTIPOLYGON that represents all points whose distance from a geometry/geography is less
+    than or equal to a given distance.
+
+    https://postgis.net/docs/ST_Buffer.html
+
+    arguments are:
+        - geography g1 or geometry g1
+        - float radius_of_buffer
+    """
+
+    arity = 2
+
+
 class MobileOrgUnitViewSet(ModelViewSet):
     f"""Org units API used by the mobile application
 
@@ -130,9 +154,22 @@ class MobileOrgUnitViewSet(ModelViewSet):
         return MobileOrgUnitsSetPagination(self.results_key)
 
     def get_queryset(self):
+        user = self.request.user
+        app_id = self.request.query_params.get(APP_ID)
+
+        limit_download_to_roots = False
+
+        if user and not user.is_anonymous:
+            limit_download_to_roots = Project.objects.get_for_user_and_app_id(user, app_id).has_feature(
+                FeatureFlag.LIMIT_OU_DOWNLOAD_TO_ROOTS
+            )
+
+        if limit_download_to_roots:
+            org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user, app_id)
+        else:
+            org_units = OrgUnit.objects.filter_for_user_and_app_id(None, app_id)
         queryset = (
-            OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get(APP_ID))
-            .filter(validation_status=OrgUnit.VALIDATION_VALID)
+            org_units.filter(validation_status=OrgUnit.VALIDATION_VALID)
             .order_by("path")
             .prefetch_related("parent", "org_unit_type")
             .select_related("org_unit_type")
@@ -154,13 +191,18 @@ class MobileOrgUnitViewSet(ModelViewSet):
         app_id = self.request.query_params.get(APP_ID)
         if not app_id:
             return Response()
+        roots_key = ""
+        roots = []
+        if request.user.is_authenticated:
+            roots = self.request.user.iaso_profile.org_units.values_list("id", flat=True).order_by("id")
+            roots_key = "|".join([str(root) for root in roots])
 
         page_size = self.paginator.get_page_size(request)
         page_number = self.paginator.get_page_number(request)
 
         include_geo_json = self.check_include_geo_json()
 
-        cache_key = f"{app_id}-{page_size}-{page_number}-{'geo_json' if include_geo_json else '' }"
+        cache_key = f"{app_id}-{page_size}-{page_number}-{'geo_json' if include_geo_json else ''}--{roots_key}"
         cached_response = cache.get(cache_key)
         if cached_response is None:
             super_response = super().list(request, *args, **kwargs)
@@ -168,9 +210,6 @@ class MobileOrgUnitViewSet(ModelViewSet):
             cache.set(cache_key, cached_response, 300)
 
         if page_number == 1:
-            roots = []
-            if request.user.is_authenticated:
-                roots = self.request.user.iaso_profile.org_units.values_list("id", flat=True)
             cached_response["roots"] = roots
 
         return Response(cached_response)
@@ -179,6 +218,45 @@ class MobileOrgUnitViewSet(ModelViewSet):
     def create(self, _, request):
         new_org_units = import_data(request.data, request.user, request.query_params.get(APP_ID))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
+
+    @action(detail=False, methods=["GET"])
+    def boundingbox(self, request):
+        qs = self.get_queryset()
+
+        aggregate = qs.aggregate(
+            bbox_location=Extent(Buffer(Cast("location", GeometryField(dim=3)), BUFFER_FOR_POINT)),
+            bbox_geom=Extent(Cast("simplified_geom", GeometryField())),
+        )
+        bbox_location = aggregate["bbox_location"]
+        bbox_geom = aggregate["bbox_geom"]
+        bbox = bbox_merge(bbox_location, bbox_geom)
+        results = []
+        if bbox:
+            results.append(
+                {
+                    "northern": bbox[0],
+                    "east": bbox[1],
+                    "south": bbox[2],
+                    "west": bbox[3],
+                }
+            )
+        # merge the bbox
+        return Response(data={"results": results})
+
+
+def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:
+    if not a and not b:
+        return None
+    if not a:
+        return b
+    if not b:
+        return a
+    return (
+        max(a[0], b[0]),
+        min(a[1], b[1]),
+        min(a[2], b[2]),
+        max(a[3], b[3]),
+    )
 
 
 def import_data(org_units, user, app_id):

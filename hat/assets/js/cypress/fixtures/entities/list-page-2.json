@@ -6,9 +6,9 @@
     "pages": 2,
     "limit": 10,
     "columns": [],
-    "result": [
-        {
+    "result": [{
             "id": 23,
+            "duplicates": [],
             "uuid": "6c25b7e1-2a95-4046-bfdc-cf75039006b1",
             "name": null,
             "created_at": "2022-08-22T09:17:55.921383Z",
@@ -41,6 +41,7 @@
         },
         {
             "id": 24,
+            "duplicates": [],
             "uuid": "d47e5e36-1c87-4e47-afb3-3812da8b0df8",
             "name": null,
             "created_at": "2022-09-21T10:28:11.357217Z",

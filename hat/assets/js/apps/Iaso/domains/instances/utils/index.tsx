@@ -10,15 +10,20 @@ import moment from 'moment';
 import { Tooltip } from '@material-ui/core';
 import CompareArrowsIcon from '@material-ui/icons/CompareArrows';
 import CallMade from '@material-ui/icons/CallMade';
-// @ts-ignore
-import { truncateText, useSafeIntl, getTableUrl } from 'bluesquare-components';
+import {
+    truncateText,
+    useSafeIntl,
+    getTableUrl,
+    Column,
+    Setting,
+    RenderCell,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 
 import instancesTableColumns from '../config';
 import MESSAGES from '../messages';
 import { VisibleColumn } from '../types/visibleColumns';
 import { Instance } from '../types/instance';
-import { Column, Setting, RenderCell } from '../../../types/table';
-import { IntlFormatMessage } from '../../../types/intl';
 
 import {
     apiDateTimeFormat,
@@ -235,7 +240,7 @@ export const useGetInstancesColumns = (
             }
             return tableColumns;
         },
-        [formatMessage, getActionCell, metasColumns],
+        [currentUser, formatMessage, getActionCell, metasColumns],
     );
     return getInstancesColumns;
 };
@@ -438,6 +443,7 @@ export const getFilters = (
         showDeleted: params.showDeleted,
         form_ids: params.formIds,
         jsonContent: params.fieldsSearch,
+        planningIds: params.planningIds,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

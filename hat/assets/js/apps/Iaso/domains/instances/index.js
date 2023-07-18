@@ -14,7 +14,7 @@ import {
 
 import { useQueryClient } from 'react-query';
 import { createInstance } from './actions';
-import { redirectToReplace } from '../../routing/actions';
+import { redirectToReplace } from '../../routing/actions.ts';
 import {
     fetchFormDetailsForInstance,
     fetchInstancesAsDict,
@@ -39,7 +39,7 @@ import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
 import { useSnackQuery } from '../../libs/apiHooks.ts';
 import snackMessages from '../../components/snackBars/messages';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { PaginatedInstanceFiles } from './components/PaginatedInstancesFiles';
 import { useGetPossibleFields } from '../forms/hooks/useGetPossibleFields.ts';
 

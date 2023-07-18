@@ -37,7 +37,7 @@ def update_single_unit_from_bulk(
 
 @task_decorator(task_name="org_unit_bulk_update")
 def org_units_bulk_update(
-    app_id: Optional[int],
+    app_id: Optional[str],
     select_all: bool,
     selected_ids: List[int],
     unselected_ids: List[int],
@@ -54,8 +54,7 @@ def org_units_bulk_update(
 
     # Restrict qs to org units accessible to the user
     user = task.launcher
-    # TODO: investigate type error on next line
-    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)  # type: ignore
+    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)
 
     if not select_all:
         queryset = queryset.filter(pk__in=selected_ids)

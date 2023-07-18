@@ -1,4 +1,4 @@
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { deleteRequest } from 'Iaso/libs/Api';
 import MESSAGES from '../messages';
 

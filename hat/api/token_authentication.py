@@ -25,7 +25,6 @@ def token_auth(request):
 
 
 def generate_auto_authentication_link(link, user):
-
     refresh = RefreshToken.for_user(user)
     access_token = str(refresh.access_token)
     domain = get_current_site(None).domain

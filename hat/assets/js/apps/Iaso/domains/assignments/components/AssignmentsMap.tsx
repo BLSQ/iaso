@@ -1,21 +1,18 @@
-import React, { FunctionComponent, useRef, useState, useEffect } from 'react';
+import React, { FunctionComponent, useRef, useState, useMemo } from 'react';
 import {
-    Map,
-    TileLayer,
+    MapContainer,
     GeoJSON,
     Pane,
     Tooltip,
     ScaleControl,
 } from 'react-leaflet';
+
 import { Box } from '@material-ui/core';
-import {
-    // @ts-ignore
-    LoadingSpinner,
-} from 'bluesquare-components';
+import { LoadingSpinner } from 'bluesquare-components';
 
 import { Locations, OrgUnitMarker, OrgUnitShape } from '../types/locations';
 
-import { TilesSwitch, Tile } from '../../../components/maps/tools/TileSwitch';
+import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { MapLegend } from './MapLegend';
 import { MapInfo } from './MapInfo';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
@@ -29,15 +26,17 @@ import {
 import tiles from '../../../constants/mapTiles';
 
 import {
-    ZoomControl,
+    Bounds,
     circleColorMarkerOptions,
     getShapesBounds,
     getLatLngBounds,
-} from '../../../utils/mapUtils';
+} from '../../../utils/map/mapUtils';
 import { Profile } from '../../../utils/usersUtils';
 
 import { DropdownTeamsOptions } from '../types/team';
 import { AssignmentsApi } from '../types/assigment';
+import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
+import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 
 const defaultViewport = {
     center: [1, 20],
@@ -104,8 +103,6 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     profiles,
 }) => {
     const mapContainer: any = useRef();
-    const map: any = useRef();
-    const [fitted, setFitted] = useState<boolean>(false);
     const [selectedLocation, setSelectedLocation] = useState<
         OrgUnitShape | OrgUnitMarker | undefined
     >(undefined);
@@ -121,24 +118,12 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
         setSelectedLocationAlreadyeAssigned,
     ] = useState<boolean>(false);
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
-    const fitToBounds = (
-        newLocations: Locations,
-        newParentLocations: OrgUnitShape[] | undefined,
-    ) => {
-        const bounds = getLocationsBounds(newLocations, newParentLocations);
-        if (
-            newLocations.shapes.all.length > 0 ||
-            newLocations.markers.all.length > 0
-        ) {
-            if (bounds && map?.current) {
-                try {
-                    map.current.leafletElement.fitBounds(bounds, boundsOptions);
-                } catch (e) {
-                    console.warn(e);
-                }
-            }
-        }
-    };
+
+    const bounds: Bounds | undefined = useMemo(
+        () => locations && getLocationsBounds(locations, parentLocations),
+        [locations, parentLocations],
+    );
+
     const onClick = (selecteOrgunit: OrgUnitShape | OrgUnitMarker) => {
         if (!selectedLocation) {
             handleClick(selecteOrgunit);
@@ -181,12 +166,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     };
 
     const isLoading = isFetchingLocations || isFetchingParentLocations;
-    useEffect(() => {
-        if (!isLoading && locations && !fitted) {
-            setFitted(true);
-            fitToBounds(locations, parentLocations);
-        }
-    }, [isLoading, locations, parentLocations]);
+
     return (
         <section ref={mapContainer}>
             <Box position="relative">
@@ -205,17 +185,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                         popupPosition={popupPosition}
                     />
                 )}
-                <TilesSwitch
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
-                />
                 {isLoading && <LoadingSpinner absolute />}
-                <Map
+                <MapContainer
+                    doubleClickZoom
                     isLoading={isLoading}
-                    zoomSnap={0.25}
                     maxZoom={currentTile.maxZoom}
-                    ref={map}
                     style={{ height: '72vh' }}
+                    bounds={bounds}
+                    boundsOptions={boundsOptions}
                     center={defaultViewport.center}
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}
@@ -223,18 +200,18 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                     contextmenu
                     onMovestart={() => setSelectedLocation(undefined)}
                 >
+                    <CustomZoomControl
+                        bounds={bounds}
+                        boundsOptions={boundsOptions}
+                        fitOnLoad
+                    />
                     <ScaleControl imperial={false} />
-                    <TileLayer
-                        attribution={currentTile.attribution ?? ''}
-                        url={currentTile.url}
+                    <CustomTileLayer
+                        currentTile={currentTile}
+                        setCurrentTile={setCurrentTile}
                     />
                     {locations && (
                         <>
-                            <ZoomControl
-                                fitToBounds={() =>
-                                    fitToBounds(locations, parentLocations)
-                                }
-                            />
                             <Pane name="shapes-unselected-already-assigned">
                                 {locations.shapes.unselected
                                     .filter(
@@ -244,6 +221,7 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     .map(shape => {
                                         return (
                                             <GeoJSON
+                                                // @ts-ignore TODO: fix this type problem
                                                 onEachFeature={(_, layer) =>
                                                     onEachFeature(
                                                         layer,
@@ -269,11 +247,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     )
                                     .map(shape => (
                                         <GeoJSON
+                                            // @ts-ignore TODO: fix this type problem
                                             onEachFeature={(_, layer) =>
                                                 onEachFeature(layer, shape)
                                             }
+                                            eventHandlers={{
+                                                click: () => onClick(shape),
+                                            }}
                                             key={shape.id}
-                                            onClick={() => onClick(shape)}
                                             data={shape.geoJson}
                                             style={() => ({
                                                 color: unSelectedColor,
@@ -284,11 +265,14 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                             <Pane name="shapes-selected">
                                 {locations.shapes.selected.map(shape => (
                                     <GeoJSON
+                                        // @ts-ignore TODO: fix this type problem
                                         onEachFeature={(_, layer) =>
                                             onEachFeature(layer, shape)
                                         }
                                         key={shape.id}
-                                        onClick={() => onClick(shape)}
+                                        eventHandlers={{
+                                            click: () => onClick(shape),
+                                        }}
                                         data={shape.geoJson}
                                         style={() => ({
                                             color: shape.color,
@@ -359,21 +343,27 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                                     {parentLocations.map(shape => (
                                         <GeoJSON
                                             key={shape.id}
-                                            onClick={() => onParentClick(shape)}
+                                            eventHandlers={{
+                                                click: () =>
+                                                    onParentClick(shape),
+                                            }}
                                             data={shape.geoJson}
-                                            style={() => ({
+                                            // @ts-ignore TODO: fix this type problem
+                                            style={{
                                                 color: parentColor,
                                                 fillOpacity: '0',
-                                            })}
+                                            }}
                                         >
-                                            <Tooltip>{shape.name}</Tooltip>
+                                            <Tooltip pane="popupPane">
+                                                {shape.name}
+                                            </Tooltip>
                                         </GeoJSON>
                                     ))}
                                 </Pane>
                             )}
                         </>
                     )}
-                </Map>
+                </MapContainer>
             </Box>
         </section>
     );

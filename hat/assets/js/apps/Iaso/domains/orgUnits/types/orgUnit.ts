@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { UrlParams, Pagination } from '../../../types/table';
+import { UrlParams, Pagination } from 'bluesquare-components';
 import { Shape } from './shapes';
 import { Nullable } from '../../../types/utils';
 import { Instance } from '../../instances/types/instance';
@@ -34,6 +34,8 @@ export type OrgunitInititialState = {
     reference_instance_id?: Nullable<number>;
 };
 
+export type OrgUnitStatus = 'VALID' | 'NEW' | 'REJECTED';
+
 export type OrgUnit = {
     name: string;
     short_name: string;
@@ -43,7 +45,7 @@ export type OrgUnit = {
     source_ref: string;
     source_url: null;
     parent_id: number;
-    validation_status: 'NEW' | 'VALID' | 'REJECTED';
+    validation_status: OrgUnitStatus;
     parent_name: string;
     parent: OrgUnit;
     org_unit_type_id: number;
@@ -66,6 +68,7 @@ export type OrgUnit = {
     search_index?: number;
     reference_instance_id: Nullable<number>;
     reference_instance: Instance;
+    catchment?: Shape;
 };
 export interface PaginatedOrgUnits extends Pagination {
     orgunits: OrgUnit[];

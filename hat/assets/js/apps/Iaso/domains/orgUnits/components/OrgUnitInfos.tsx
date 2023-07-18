@@ -27,6 +27,7 @@ import { Actions } from './OrgUnitActions';
 import { OrgUnitState, Group, OrgUnit, Action } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -116,6 +117,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
         }
     };
 
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus();
+
     return (
         <Grid container spacing={2}>
             {showSpeedDialsActions && (
@@ -199,20 +205,8 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     value={orgUnitState.validation_status.value}
                     type="select"
                     label={MESSAGES.status}
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.new),
-                            value: 'NEW',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.validated),
-                            value: 'VALID',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.rejected),
-                            value: 'REJECTED',
-                        },
-                    ]}
+                    loading={isLoadingValidationStatusOptions}
+                    options={validationStatusOptions || []}
                 />
                 <InputComponent
                     keyValue="source_ref"

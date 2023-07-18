@@ -14,7 +14,6 @@ def reverse_create_dhis2_link_account_flag(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0132_merge_20220412_1136"),
     ]

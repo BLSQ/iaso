@@ -19,7 +19,7 @@ describe('Org unit types', () => {
     beforeEach(() => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');
-        cy.intercept('GET', '/api/orgunittypes/', outypesList);
+        cy.intercept('GET', '/api/v2/orgunittypes/', outypesList);
         interceptList.forEach(i => {
             cy.intercept('GET', `/api/${i}/**`, {
                 fixture: `${i}/list.json`,
@@ -27,7 +27,7 @@ describe('Org unit types', () => {
         });
         cy.intercept(
             {
-                pathname: '/api/orgunittypes/**',
+                pathname: '/api/v2/orgunittypes/**',
                 query: {
                     order: 'name',
                     limit: '20',
@@ -38,6 +38,19 @@ describe('Org unit types', () => {
                 fixture: 'orgunittypes/page1_limit20.json',
             },
         ).as('getOrgUnitTypes');
+        cy.intercept(
+            {
+                pathname: '/api/v2/orgunittypes/**',
+                query: {
+                    order: 'name',
+                    limit: '20',
+                    page: '2',
+                },
+            },
+            {
+                fixture: 'orgunittypes/page1_limit20.json',
+            },
+        );
         cy.intercept('GET', '/api/profiles/me/**', superUser);
     });
 
@@ -53,14 +66,14 @@ describe('Org unit types', () => {
             testTablerender({
                 baseUrl,
                 rows: 20,
-                columns: 8,
-                apiKey: 'orgunittypes',
+                columns: 9,
+                apiKey: 'v2/orgunittypes',
                 responseKey: 'orgUnitTypes',
                 withVisit: false,
             });
             testPagination({
                 baseUrl,
-                apiPath: '/api/orgunittypes/**',
+                apiPath: '/api/v2/orgunittypes/**',
                 apiKey: 'orgUnitTypes',
                 withSearch: false,
                 fixture: orgUnitTypes,
@@ -102,7 +115,7 @@ describe('Org unit types', () => {
         it('displays tooltip when hovering over info icon', () => {
             cy.visit(baseUrl);
             cy.wait('@getOrgUnitTypes');
-            cy.findTableHead(3).find('svg').eq(0).as('icon');
+            cy.findTableHead(4).find('svg').eq(0).as('icon');
             cy.assertTooltipDiplay('icon');
         });
         describe('edit button', () => {

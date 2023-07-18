@@ -12,16 +12,17 @@ const styles = () => ({
 });
 
 const OrgUnitSourceRefDisplay = ({ orgUnit, classes }) => {
-    if (!orgUnit) {
+    if (!orgUnit || !orgUnit.source_ref) {
         return textPlaceholder;
     }
+
     return (
         <Link
             target="_blank"
             className={classes.link}
             href={`${orgUnit.source_url}/api/organisationUnits/${orgUnit.source_ref}`}
         >
-            {orgUnit.source_ref ?? textPlaceholder}
+            {orgUnit.source_ref}
         </Link>
     );
 };

@@ -10,6 +10,7 @@ const queryParamsMap = new Map([
     ['parentId', 'parent_org_unit_id'],
     ['planningId', 'planning_id'],
     ['groupId', 'org_unit_group_id'],
+    ['orgunitValidationStatus', 'org_unit_validation_status'],
 ]);
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];

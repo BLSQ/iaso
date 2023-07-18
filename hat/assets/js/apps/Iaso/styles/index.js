@@ -55,8 +55,41 @@ export const getOverriddenTheme = (theme, themeConfig) => {
                         textDecoration: 'none',
                         '&:hover': { textDecoration: 'underline' },
                     },
+                    '& .leaflet-bar a': {
+                        textDecoration: 'none !important',
+                    },
+                    '& .leaflet-tooltip': {
+                        zIndex: 1000,
+                    },
+                    '& .leaflet-interactive': {
+                        outline: 'none',
+                    },
                     '& #notistack-snackbar': {
                         maxWidth: 400,
+                    },
+                    '& .MuiInputLabel-shrink': {
+                        width: 'auto',
+                        height: 25,
+                        marginTop: -5,
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        'text-overflow': 'ellipsis',
+                    },
+                    '& .MuiInputLabel-outlined.MuiInputLabel-shrink': {
+                        width: 'auto',
+                        height: 25,
+                        marginTop: -5,
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        'text-overflow': 'ellipsis',
+                    },
+                    '& .MuiInputLabel-formControl': {
+                        width: '75%',
+                        height: 53,
+                        overflow: 'hidden',
+                        marginTop: -18,
+                        display: ' -webkit-box !important',
+                        '-webkit-box-align': 'center',
                     },
                 },
             },

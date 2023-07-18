@@ -1,6 +1,5 @@
 import gspread  # type: ignore
 import gspread.utils  # type: ignore
-import gspread.utils  # type: ignore
 
 
 class CachedSpread:

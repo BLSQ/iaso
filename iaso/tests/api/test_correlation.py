@@ -106,7 +106,6 @@ class CorrelationAPITestCase(APITestCase):
         self.assertEqual(len(str(instance.id)) + 6, len(str(instance.correlation_id)))
 
     def test_jwt_decode_instance_upload(self):
-
         user = User.objects.create_user(username="testuser", password="12345")
         user.save()
         Profile.objects.create(account=self.the_empire, user=user)

@@ -181,6 +181,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Export id", "width": 20},
             {"title": "Latitude", "width": 40},
             {"title": "Longitude", "width": 20},
+            {"title": "Altitude", "width": 20},
+            {"title": "Précision", "width": 20},
             {"title": "Période", "width": 20},
             {"title": "Date de création", "width": 20},
             {"title": "Date de modification", "width": 20},
@@ -239,6 +241,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 idict.get("export_id"),
                 idict.get("latitude"),
                 idict.get("longitude"),
+                idict.get("altitude"),
+                idict.get("accuracy"),
                 idict.get("period"),
                 created_at,
                 updated_at,
@@ -299,6 +303,7 @@ class InstancesViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
         org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
+        with_descriptor = request.GET.get("with_descriptor", "false")
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -341,7 +346,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 page = paginator.page(page_offset)
 
                 def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
-                    d = instance.as_dict()
+                    d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
                     reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None  # type: ignore
@@ -368,7 +373,14 @@ class InstancesViewSet(viewsets.ViewSet):
                 )
                 return Response([instance.as_small_dict() for instance in queryset])
             else:
-                return Response({"instances": [instance.as_dict() for instance in queryset]})
+                return Response(
+                    {
+                        "instances": [
+                            instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
+                            for instance in queryset
+                        ]
+                    }
+                )
         else:  # This is a CSV/XLSX file export
             return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 
@@ -383,7 +395,6 @@ class InstancesViewSet(viewsets.ViewSet):
     # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
     @action(detail=False, methods=["POST"])
     def unlock_lock(self, request):
-
         serializer = UnlockSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         lock = serializer.validated_data["lock"]
@@ -497,7 +508,6 @@ class InstancesViewSet(viewsets.ViewSet):
             self.check_object_permissions(request, instance)
 
         try:
-
             with transaction.atomic():
                 for instance in instances_query.iterator():
                     if is_deletion == True:

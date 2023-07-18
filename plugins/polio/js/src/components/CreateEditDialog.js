@@ -21,6 +21,7 @@ import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
+    BackdropClickModal,
 } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
 import { useFormValidator } from '../hooks/useFormValidator';
@@ -30,7 +31,7 @@ import {
     riskAssessmentFormFields,
 } from '../forms/RiskAssessmentForm';
 import { ScopeForm, scopeFormFields } from '../forms/ScopeForm.tsx';
-import { BudgetForm, budgetFormFields } from '../forms/BudgetForm';
+import { BudgetForm, budgetFormFields } from '../forms/BudgetForm.tsx';
 import { PreparednessForm } from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
 import { RoundsForm, roundFormFields } from '../forms/RoundsForm';
@@ -49,7 +50,6 @@ import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
 import { compareArraysValues } from '../utils/compareArraysValues.ts';
 import { PolioDialogTabs } from './MainDialog/PolioDialogTabs.tsx';
-import { BackdropClickModal } from '../../../../../hat/assets/js/apps/Iaso/components/dialogs/BackdropClickModal/BackdropClickModal.tsx';
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
@@ -75,6 +75,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             },
             onError: error => {
                 helpers.setErrors(error.details);
+                helpers.setSubmitting(false);
             },
         });
     };
@@ -107,7 +108,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: handleSubmit,
+        onSubmit: (values, helpers) => {
+            helpers.setSubmitting(true);
+            handleSubmit(values, helpers);
+        },
     });
     const { touched } = formik;
 
@@ -196,10 +200,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         setSelectedTab(0);
     }, [isOpen]);
 
-    const [isFormChanged, setIsFormChanged] = useState(false);
-    useEffect(() => {
-        setIsFormChanged(!isEqual(formik.values, formik.initialValues));
-    }, [formik]);
+    const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||

@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
 from .models import (
     Campaign,
+    RoundDateHistoryEntry,
     Round,
     Config,
     CountryUsersGroup,
@@ -127,6 +128,7 @@ admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
 admin.site.register(Round)
+admin.site.register(RoundDateHistoryEntry)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)

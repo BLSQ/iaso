@@ -11,6 +11,7 @@ import {
     commonStyles,
     useSafeIntl,
     useSkipEffectOnMount,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
@@ -23,10 +24,10 @@ import { getChipColors } from '../../../constants/chipColors';
 
 import { useGetGroups } from '../hooks/requests/useGetGroups';
 import { useGetDataSources } from '../hooks/requests/useGetDataSources';
+import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetOrgUnit } from './TreeView/requests';
 
-import { IntlFormatMessage } from '../../../types/intl';
 import { Search } from '../types/search';
 import { DropdownOptions } from '../../../types/utils';
 
@@ -106,6 +107,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         dataSourceId,
         sourceVersionId,
     });
+
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus(true);
     const handleChange = (key, value) => {
         if (key === 'version') {
             setSourceVersionId(parseInt(value, 10));
@@ -324,26 +330,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     clearable={false}
                     keyValue="validation_status"
                     onChange={handleChange}
-                    value={filters?.validation_status}
+                    value={
+                        isLoadingValidationStatusOptions
+                            ? undefined
+                            : filters?.validation_status
+                    }
                     label={MESSAGES.validationStatus}
-                    options={[
-                        {
-                            label: formatMessage(MESSAGES.all),
-                            value: 'all',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.new),
-                            value: 'NEW',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.validated),
-                            value: 'VALID',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.rejected),
-                            value: 'REJECTED',
-                        },
-                    ]}
+                    options={validationStatusOptions || []}
+                    loading={isLoadingValidationStatusOptions}
                 />
 
                 {currentTab === 'map' && (

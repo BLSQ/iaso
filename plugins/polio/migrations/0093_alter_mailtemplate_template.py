@@ -5,7 +5,6 @@ import plugins.polio.budget.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0092_mailtemplate"),
     ]

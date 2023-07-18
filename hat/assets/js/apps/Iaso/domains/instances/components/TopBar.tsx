@@ -44,9 +44,8 @@ export const InstancesTopBar: FunctionComponent<Props> = ({
                         value={tab}
                         classes={{
                             root: classes.tabs,
-                            indicator: classes.indicator,
                         }}
-                        onChange={(event, newtab) => handleChangeTab(newtab)}
+                        onChange={(_, newtab) => handleChangeTab(newtab)}
                     >
                         <Tab
                             value="list"

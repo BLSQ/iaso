@@ -398,6 +398,7 @@ class PolioAPITestCase(APITestCase):
         payload = {
             "account": self.account.pk,
             "obr_name": "obr_name",
+            "separate_scopes_per_round": False,
             "scopes": [
                 {"vaccine": "bOPV", "group": {"org_units": [self.org_unit.id]}},
                 {"vaccine": "mOPV2", "group": {"org_units": [self.child_org_unit.id]}},
@@ -434,9 +435,11 @@ class PolioAPITestCase(APITestCase):
         self.assertNotEqual(r["round_one"], None, r)
         # self.assertHasField(r["round_one"], "started_at", r)
         self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
+        self.assertEqual(r["round_one"]["districts_count_calculated"], 2, r["round_one"])
         self.assertEqual(len(r["rounds"]), 2)
         self.assertNotEqual(r["round_two"], None, r)
         self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
+        self.assertEqual(r["round_two"]["districts_count_calculated"], 2, r["round_two"])
 
         scope_bOPV = c.scopes.get(vaccine="bOPV")
         scope_mOPV2 = c.scopes.get(vaccine="mOPV2")
@@ -470,6 +473,7 @@ class PolioAPITestCase(APITestCase):
             "account": self.account.pk,
             "obr_name": "obr_name",
             "detection_status": "PENDING",
+            "separate_scopes_per_round": True,
             "rounds": [
                 {
                     "number": 1,
@@ -505,9 +509,11 @@ class PolioAPITestCase(APITestCase):
         self.assertNotEqual(r["round_one"], None, r)
         # self.assertHasField(r["round_one"], "started_at", r)
         self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
+        self.assertEqual(r["round_one"]["districts_count_calculated"], 2, r["round_one"])
         self.assertEqual(len(r["rounds"]), 2)
         self.assertNotEqual(r["round_two"], None, r)
         self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
+        self.assertEqual(r["round_two"]["districts_count_calculated"], 0, r["round_two"])
         round_one = list(filter(lambda r: r["number"] == 1, r["rounds"]))[0]
 
         self.assertEqual(

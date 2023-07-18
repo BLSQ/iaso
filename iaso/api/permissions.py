@@ -33,6 +33,7 @@ class PermissionsViewSet(viewsets.ViewSet):
             perms.filter(content_type=content_type)
             .filter(codename__startswith="iaso_")
             .exclude(codename__contains="datastore")
+            .exclude(codename__contains="iaso_beneficiaries")
             .order_by("id")
         )
         #  in future filter this on a feature flags, so we can disable it by account

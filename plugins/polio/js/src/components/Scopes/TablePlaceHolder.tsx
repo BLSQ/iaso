@@ -20,7 +20,7 @@ export const TablePlaceHolder: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     return (
         <TableRow>
-            <TableCell colSpan={4}>
+            <TableCell colSpan={5}>
                 <Box textAlign="center" width="100%">
                     {isFetching && formatMessage(MESSAGES.loading)}
                     {!isFetching &&

@@ -65,18 +65,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                             {!orgUnitType && orgUnit.org_unit_type_name}
                         </TableCell>
                     </TableRow>
-                    <TableRow>
-                        <TableCell className={classes.leftCell}>
-                            {formatMessage(MESSAGES.status)}
-                        </TableCell>
-                        <TableCell>
-                            {MESSAGES[orgUnit.validation_status]
-                                ? formatMessage(
-                                      MESSAGES[orgUnit.validation_status],
-                                  )
-                                : '--'}
-                        </TableCell>
-                    </TableRow>
                 </TableBody>
             </Table>
             <Box p={2} display="flex" justifyContent="flex-end">

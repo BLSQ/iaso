@@ -7,9 +7,7 @@ import {
     commonStyles,
     AddButton as AddButtonComponent,
 } from 'bluesquare-components';
-import { fetchAllProjects } from '../projects/actions';
-import { fetchAllOrgUnitTypes } from '../orgUnits/orgUnitTypes/actions';
-import { redirectTo } from '../../routing/actions';
+import { redirectTo } from '../../routing/actions.ts';
 
 import formsTableColumns from './config';
 
@@ -33,7 +31,7 @@ const useStyles = makeStyles(theme => ({
 const Forms = ({ params }) => {
     const baseUrl = baseUrls.forms;
     const classes = useStyles();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const currentUser = useCurrentUser();
     const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
@@ -49,8 +47,6 @@ const Forms = ({ params }) => {
             setForceRefresh(true);
         });
     useEffect(() => {
-        dispatch(fetchAllProjects());
-        dispatch(fetchAllOrgUnitTypes());
         // This fix a bug in redux cache when we passed from "archived" to "non-archived" form page and vice versa
         setForceRefresh(true);
         setShowDeleted(Boolean(params.showDeleted === 'true'));
@@ -61,7 +57,7 @@ const Forms = ({ params }) => {
 
     return (
         <>
-            <TopBar title={intl.formatMessage(MESSAGES.title)} />
+            <TopBar title={formatMessage(MESSAGES.title)} />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters
                     params={apiParams}
@@ -87,11 +83,12 @@ const Forms = ({ params }) => {
                     }
                     defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
                     columns={formsTableColumns({
-                        formatMessage: intl.formatMessage,
+                        formatMessage,
                         user: currentUser,
                         deleteForm: handleDeleteForm,
                         restoreForm: handleRestoreForm,
                         showDeleted,
+                        dispatch,
                     })}
                     hideGpkg
                     defaultPageSize={50}

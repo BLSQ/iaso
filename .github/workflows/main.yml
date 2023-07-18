@@ -3,6 +3,11 @@ name: Iaso Automated CI testing
 on:
   pull_request:
     types: [opened, synchronize, ready_for_review]
+  push:
+    # Run On push (or merge) on main.  This populates the cache and avoid the issue where we have undetected migrations
+    # conflict following subsequent merge
+    branches:
+      - main
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
@@ -31,6 +36,9 @@ jobs:
         run: |
           npm ci
           npm test
+      - name: Check that no JS translation are missing
+        run: |
+          python scripts/update_trads.py
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2.1.3
         env:
@@ -84,7 +92,7 @@ jobs:
     runs-on: ubuntu-20.04
     services:
       postgres:
-        image: mdillon/postgis:10
+        image: postgis/postgis:12-3.3
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres

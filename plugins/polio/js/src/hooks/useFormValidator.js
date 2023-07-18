@@ -89,6 +89,126 @@ yup.addMethod(
     },
 );
 
+yup.addMethod(yup.date, 'isValidOnset', function isValidOnset(formatMessage) {
+    return this.test('insValidOnset', '', (value, context) => {
+        const { path, createError, parent } = context;
+        const newDate = value ? moment(value) : null;
+        const today = moment().endOf('day');
+
+        if (newDate === null) return true;
+        if (newDate.isAfter(today)) {
+            return createError({
+                path,
+                message: formatMessage(MESSAGES.futureDateError),
+            });
+        }
+        const virusNotification = parent.cvdpv2_notified_at
+            ? moment(parent.cvdpv2_notified_at)
+            : null;
+        if (virusNotification && newDate.isAfter(virusNotification)) {
+            return createError({
+                path,
+                message: formatMessage(MESSAGES.onsetAfterNotificationError),
+            });
+        }
+        const outbreakDeclaration = parent.outbreak_declaration_date
+            ? moment(parent.outbreak_declaration_date)
+            : null;
+
+        if (outbreakDeclaration && newDate.isAfter(outbreakDeclaration)) {
+            return createError({
+                path,
+                message: formatMessage(
+                    MESSAGES.onsetAfterOutbreakDeclarationError,
+                ),
+            });
+        }
+        return true;
+    });
+});
+yup.addMethod(
+    yup.date,
+    'isValidVirusNotification',
+    function isValidVirusNotification(formatMessage) {
+        return this.test('isValidVirusNotification', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const newDate = value ? moment(value) : null;
+            const today = moment().endOf('day');
+
+            if (newDate === null) return true;
+            if (newDate.isAfter(today)) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.futureDateError),
+                });
+            }
+            const onset = parent.onset_at ? moment(parent.onset_at) : null;
+            if (onset && newDate.isBefore(onset)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.onsetAfterNotificationError,
+                    ),
+                });
+            }
+
+            const outbreakDeclaration = parent.outbreak_declaration_date
+                ? moment(parent.outbreak_declaration_date)
+                : null;
+
+            if (outbreakDeclaration && newDate.isAfter(outbreakDeclaration)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.virusNotificationAfterOutbreakDeclarationError,
+                    ),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.date,
+    'isValidOutbreakDeclaration',
+    function isValidOutbreakDeclaration(formatMessage) {
+        return this.test('isValidOutbreakDeclaration', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const newDate = value ? moment(value) : null;
+            const today = moment().endOf('day');
+
+            if (newDate === null) return true;
+            if (newDate.isAfter(today)) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.futureDateError),
+                });
+            }
+            const onset = parent.onset_at ? moment(parent.onset_at) : null;
+            if (onset && newDate.isBefore(onset)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.onsetAfterOutbreakDeclarationError,
+                    ),
+                });
+            }
+            const virusNotification = parent.cvdpv2_notified_at
+                ? moment(parent.cvdpv2_notified_at)
+                : null;
+            if (virusNotification && newDate.isBefore(virusNotification)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.virusNotificationAfterOutbreakDeclarationError,
+                    ),
+                });
+            }
+            return true;
+        });
+    },
+);
+
 yup.addMethod(
     yup.number,
     'hasAllFormAFieldsNumber',
@@ -461,7 +581,7 @@ const useRoundShape = () => {
         target_population: yup
             .number()
             .nullable()
-            .min(0)
+            .min(0, formatMessage(MESSAGES.positiveInteger))
             .integer()
             .typeError(formatMessage(MESSAGES.positiveInteger)),
         cost: yup.number().nullable().min(0).integer(),
@@ -552,15 +672,15 @@ const useRoundShape = () => {
         percentage_covered_target_population: yup
             .number()
             .nullable()
-            .min(0)
-            .max(100)
             .integer()
-            .typeError(formatMessage(MESSAGES.positiveRangeInteger)),
+            .min(0, formatMessage(MESSAGES.positiveRangeInteger))
+            .max(100, formatMessage(MESSAGES.positiveRangeInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         doses_requested: yup
             .number()
             .nullable()
             .integer()
-            .min(0)
+            .min(0, formatMessage(MESSAGES.positiveInteger))
             .typeError(formatMessage(MESSAGES.positiveInteger)),
     });
 };
@@ -579,15 +699,19 @@ export const useFormValidator = () => {
         onset_at: yup
             .date()
             .nullable()
-            .typeError(formatMessage(MESSAGES.invalidDate)),
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .isValidOnset(formatMessage),
+        cvdpv2_notified_at: yup
+            .date()
+            .nullable()
+            .isValidVirusNotification(formatMessage),
         outbreak_declaration_date: yup
             .date()
             .nullable()
-            .typeError(formatMessage(MESSAGES.invalidDate)),
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .isValidOutbreakDeclaration(formatMessage),
 
         cvdpv_notified_at: yup.date().nullable(),
-        cvdpv2_notified_at: yup.date().nullable(),
-
         verification_score: yup.number().nullable().positive().integer(),
 
         detection_first_draft_submitted_at: yup.date().nullable(),

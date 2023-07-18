@@ -3,9 +3,15 @@ name: Iaso Cypress manual testing
 on:
   issue_comment:
     types: [created]
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      ref:
+        type: string
+        description: 'Branch to test'
+        required: true  
   
-concurrency: 
+
+concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
@@ -24,10 +30,17 @@ jobs:
 
     runs-on: ubuntu-20.04
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (dispatch)
         uses: actions/checkout@v3
+        if: github.event_name == 'workflow_dispatch'
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.inputs.ref }}
+      
+      - name: Checkout repository (comment)
+        uses: actions/checkout@v3
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          ref: ${{ github.sha }}
 
       - name: Mark comment as seen
         if: github.event_name != 'workflow_dispatch'
@@ -38,19 +51,19 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
-      
+
       - name: Log in to the Container registry
         uses: docker/login-action@v2
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ghcr.io/blsq/iaso:${{github.sha}}
+          tags: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
           target: dev
           file: docker/bundle/Dockerfile
           cache-from: type=registry,ref=ghcr.io/blsq/iaso:buildcache
@@ -82,7 +95,7 @@ jobs:
       issues: write
     services:
       postgres:
-        image: mdillon/postgis:10
+        image: postgis/postgis:12-3.3
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -92,7 +105,7 @@ jobs:
         # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
       iaso:
-        image: ghcr.io/blsq/iaso:${{ github.sha }}
+        image: ghcr.io/blsq/iaso:${{ github.event.inputs.ref || github.sha }}
         env:
           TEST_PROD: true
           IASO_ENVIRONMENT: development
@@ -110,10 +123,17 @@ jobs:
         ports:
           - 8081:8081
     steps:
-      - name: Checkout repository
+      - name: Checkout repository (dispatch)
         uses: actions/checkout@v3
+        if: github.event_name == 'workflow_dispatch'
         with:
-          fetch-depth: 0
+          ref: ${{ github.event.inputs.ref }}
+      
+      - name: Checkout repository (comment)
+        uses: actions/checkout@v3
+        if: github.event_name != 'workflow_dispatch'
+        with:
+          ref: ${{ github.sha }}
 
       - name: Use node.js 14
         uses: actions/setup-node@v2
@@ -134,7 +154,7 @@ jobs:
 
       - run: npm ci
         if: steps.cache.outputs.cache-hit != 'true'
-        
+
       - name: Cypress run
         uses: cypress-io/github-action@v4
         with:
@@ -145,7 +165,17 @@ jobs:
           CYPRESS_USERNAME: "test"
           CYPRESS_PASSWORD: "test"
           CYPRESS_BASE_URL: "http://localhost:8081"
-
+      - uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/screenshots/
+      # Test run video was always captured, so this action uses "always()" condition
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-videos
+          path: /home/runner/work/iaso/iaso/hat/assets/js/cypress/videos/
 
       - name: Mark comment as success
         uses: dkershner6/reaction-action@v1

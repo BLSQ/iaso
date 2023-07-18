@@ -5,7 +5,6 @@ from iaso.models.forms import _form_version_upload_to
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("iaso", "0033_form_version_xls_file")]
 
     operations = [

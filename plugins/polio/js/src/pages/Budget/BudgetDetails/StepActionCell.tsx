@@ -2,11 +2,11 @@ import React, { FunctionComponent, useMemo } from 'react';
 import { useMediaQuery, useTheme, Box } from '@material-ui/core';
 import moment from 'moment';
 
+import { Paginated } from 'bluesquare-components';
 import { Transition, BudgetStep, Params } from '../types';
 import { DeleteRestoreButton } from './DeleteRestoreButton';
 import { CreateBudgetStepIcon } from '../CreateBudgetStep/CreateBudgetStep';
 import { getStyle, useStyles } from '../hooks/config';
-import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 
 type Props = {
     budgetStep: BudgetStep;

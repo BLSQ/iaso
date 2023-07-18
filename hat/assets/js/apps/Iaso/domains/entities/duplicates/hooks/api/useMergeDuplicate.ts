@@ -1,14 +1,18 @@
+/* eslint-disable camelcase */
 import { UseMutationResult } from 'react-query';
 import { useSnackMutation } from '../../../../../libs/apiHooks';
-import { waitFor } from '../../../../../utils';
-import { mergedEntity } from '../../mockDuplicationData';
+import { postRequest } from '../../../../../libs/Api';
 
-const apiUrl = '/api/entityduplicates';
+const apiUrl = '/api/entityduplicates/';
 
-const mergeDuplicate = async (query: Record<string, any>): Promise<any> => {
-    console.log('PATCH', apiUrl, query);
-    waitFor(1500);
-    return mergedEntity;
+type UseMergeDuplicatesParams = {
+    merge: Record<string, number>;
+    entity1_id: number;
+    entity2_id: number;
+};
+
+const mergeDuplicate = (query: UseMergeDuplicatesParams) => {
+    return postRequest({ url: apiUrl, data: query });
 };
 
 export const useMergeDuplicate = (

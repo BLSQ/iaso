@@ -6,7 +6,6 @@ import plugins.polio.models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0151_auto_20220718_1359"),
         ("polio", "0066_auto_20220620_0902"),

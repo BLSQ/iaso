@@ -1,20 +1,22 @@
 #!python3
-"""Update the translation json files
+"""Update the translation json files for React
 
-Run the npm formats command to extract the translation from the code
-Add them to the traduction file if not present.
-Add a CHECKME on the new added traduction so they can be found easily
-Count the number of CHECKME and missing trad so we can check the translation is complete.
+What it does:
+    Run the npm formats command to extract the translations from the code
+    Add them to the traduction file if not present.
+    Add a CHECKME on the newly added traduction so they can be found easily
+    Count the number of CHECKME and missing trad so we can check the translation is complete.
 
-To use:
+How to use it:
  - run it
- - search for CHECKME in your editor. Check these string, remove the CHECKME
+ - search for CHECKME in your editor. Check these string, translate them, remove the CHECKME
  - re run it. If it's say it's ok that's good.
  - commit
  - success
 
+This does not handle the django translations. see instructions in main README
+
 TODO: Remove old trad?
-TODO: Add the check in CI
 """
 
 import json
@@ -39,7 +41,7 @@ def extract_translations(path, trad_dir):
     return extracted
 
 
-# command to manually extracd trad
+# command to manually extract trad
 # ./node_modules/.bin/formatjs extract --out-file 'extracted.json' './hat/assets/js/apps/Iaso/**/*.[js]sx?' --format=simple
 
 
@@ -88,8 +90,8 @@ if __name__ == "__main__":
             previous_trad_for_lang.update(original)
             # somehow try to replicate VSCODE bizarre keys ordering
             sorted_dict = OrderedDict(sorted(original.items(), key=lambda x: x[0].lower().replace("_", "!")))
-            with (open(original_name, "w+", encoding="utf8")) as file_write:
-                # ensure_ascii is necessary othewhise it didn't properly encode unicode, not sure why.
+            with open(original_name, "w+", encoding="utf8") as file_write:
+                # ensure_ascii is necessary otherwise it didn't properly encode unicode, not sure why.
                 json.dump(sorted_dict, fp=file_write, indent=4, ensure_ascii=False)
     if missing_translations:
         print("Please translate the translation containing CHECKME and remove it.")

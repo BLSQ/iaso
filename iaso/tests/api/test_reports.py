@@ -8,7 +8,6 @@ from iaso.test import APITestCase
 class ReportsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-
         kame_house = m.Account.objects.create(name="Kame House")
         rr_army = m.Account.objects.create(name="Red Ribbon Army")
         cls.sayanj = m.Project.objects.create(account=kame_house, name="sayanJ")
@@ -71,7 +70,6 @@ class ReportsAPITestCase(APITestCase):
         self.assertEqual(len(response.json()), 0)
 
     def test_get_reports_must_be_authenticated(self):
-
         file = File(open("iaso/tests/fixtures/test_user_bulk_create_valid.csv", "rb"))
 
         report_version = ReportVersion.objects.create(

@@ -19,7 +19,7 @@ from iaso.test import APITestCase, TestCase
 from plugins.polio.tasks.weekly_email import send_notification_email
 from ..api import CACHE_VERSION
 from ..export_utils import format_date
-from ..models import Config, Round
+from ..models import Config, Round, RoundScope
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
@@ -319,7 +319,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(send_notification_email(campaign_active), True)
 
     def test_weekly_mail_content_active_campaign(self):
-
         round = Round.objects.create(
             started_at=datetime.date(2022, 9, 12),
             number=1,
@@ -361,7 +360,6 @@ class PolioAPITestCase(APITestCase):
             self.client.post("/api/polio/campaigns/", payload, format="json")
 
     def test_return_only_deleted_campaigns(self):
-
         self.create_multiple_campaigns(10)
 
         campaigns = Campaign.objects.all()
@@ -393,7 +391,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(len(response.json()), 2)
 
     def test_return_only_active_campaigns(self):
-
         self.create_multiple_campaigns(3)
 
         campaigns = Campaign.objects.all()
@@ -446,12 +443,14 @@ class PolioAPITestCase(APITestCase):
         c = Campaign.objects.create(
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
+
         c_round_1 = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2))
         c.rounds.create(number=2, started_at=datetime.date(2022, 3, 1), ended_at=datetime.date(2022, 3, 2))
 
         c2 = Campaign.objects.create(
             country_id=org_unit_2.id, obr_name="orb campaign 2", vacine="vacin", account=self.account
         )
+
         c2_round_1 = c2.rounds.create(
             number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
         )
@@ -473,7 +472,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
         self.assertEqual(data_dict["January"][1], self.format_date_to_test(c2, c2_round_1))
         self.assertEqual(data_dict["January"][2], self.format_date_to_test(c2, c2_round_2))
-        #  + self.format_date_to_test(c2, c2_round_2)
 
     def test_create_calendar_xlsx_sheet_campaign_without_country(self):
         """
@@ -505,7 +503,6 @@ class PolioAPITestCase(APITestCase):
         c = Campaign.objects.create(
             country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
         )
-
         round = c.rounds.create(number=1, started_at=datetime.date(2022, 1, 1), ended_at=None)
 
         response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
@@ -538,6 +535,73 @@ class PolioAPITestCase(APITestCase):
         data_dict = excel_data.to_dict()
         self.assertEqual(len(data_dict["COUNTRY"]), 0)
 
+    def test_create_calendar_xlsx_sheet_with_separate_scopes_per_round(self):
+        """
+        When a campaign is separeted into scopes per round:
+            - This test checks if the xlsx file displays into separeted scopes per round
+        """
+        org_unit = OrgUnit.objects.create(
+            id=5455,
+            name="Country name",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        district_1 = OrgUnit.objects.create(
+            id=5456,
+            name="district 1",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        district_2 = OrgUnit.objects.create(
+            id=5457,
+            name="district 2",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        c = Campaign.objects.create(
+            country_id=org_unit.id, obr_name="orb campaign", vacine="vacin", account=self.account
+        )
+
+        c_round_1 = Round.objects.create(
+            number=1, started_at=datetime.date(2022, 1, 1), ended_at=datetime.date(2022, 1, 2)
+        )
+        c_round_2 = Round.objects.create(
+            number=2, started_at=datetime.date(2022, 1, 3), ended_at=datetime.date(2022, 1, 4)
+        )
+        c.rounds.add(c_round_1)
+        c.rounds.add(c_round_2)
+        c.save()
+
+        org_units_group_1 = m.Group.objects.create(name="group_1")
+        org_units_group_1.org_units.add(district_1)
+        org_units_group_1.save()
+
+        org_units_group_2 = m.Group.objects.create(name="group_2")
+        org_units_group_2.org_units.add(district_2)
+        org_units_group_2.save()
+
+        RoundScope.objects.create(vaccine="nOPV2", group=org_units_group_1, round=c_round_1)
+        RoundScope.objects.create(vaccine="mOPV2", group=org_units_group_2, round=c_round_2)
+        c.separate_scopes_per_round = True
+        c.save()
+        c.refresh_from_db()
+        response = self.client.get("/api/polio/campaigns/create_calendar_xlsx_sheet/", {"currentDate": "2022-10-01"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.get("Content-Disposition"), "attachment; filename=calendar_2022-10-01.xlsx")
+        excel_data = pd.read_excel(response.content, engine="openpyxl", sheet_name="calendar_2022-10-01")
+
+        excel_columns = excel_data.columns.ravel()
+        self.assertEqual(excel_columns[0], "COUNTRY")
+        self.assertEqual(excel_columns[3], "March")
+
+        data_dict = excel_data.to_dict()
+        self.assertEqual(data_dict["COUNTRY"][0], org_unit.name)
+        self.assertEqual(data_dict["January"][0], self.format_date_to_test(c, c_round_1))
+        self.assertEqual(data_dict["January"][1], self.format_date_to_test(c, c_round_2))
+
     @staticmethod
     def format_date_to_test(campaign, round):
         started_at = format_date(round.started_at.strftime("%Y-%m-%d")) if round.started_at is not None else ""
@@ -551,7 +615,7 @@ class PolioAPITestCase(APITestCase):
             + " - "
             + ended_at
             + "\n"
-            + campaign.vaccines
+            + round.vaccine_names()
             + "\n"
         )
 
@@ -566,7 +630,6 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 400)
 
     def test_handle_non_existant_campaign(self):
-
         payload = {"id": "bd656a6b-f67e-4a1e-95ee-1bef8f36239a"}
         response = self.client.patch("/api/polio/campaigns/restore_deleted_campaigns/", payload, format="json")
         self.assertEqual(response.status_code, 404)
@@ -701,7 +764,6 @@ class LQASIMPolioTestCase(APITestCase):
         )
 
     def test_lqas_stats_response(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -724,7 +786,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_lqas_stats_response_is_cached(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -750,7 +811,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(is_cached, True)
 
     def test_IM_stats_response(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -773,7 +833,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
     def test_IM_stats_response_is_cached(self):
-
         self.client.force_authenticate(self.yoda)
 
         Config.objects.create(
@@ -799,7 +858,6 @@ class LQASIMPolioTestCase(APITestCase):
         self.assertEqual(is_cached, True)
 
     def test_shapes_resp_is_cached(self):
-
         self.client.force_authenticate(self.yoda)
 
         response = self.client.get("/api/polio/campaigns/merged_shapes.geojson/")

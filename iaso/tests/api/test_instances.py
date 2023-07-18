@@ -1405,7 +1405,46 @@ class InstancesAPITestCase(APITestCase):
         }
         instance.save()
 
-        response = self.client.get(f"/api/instances/{instance.pk}/")
+    def test_instances_list_planning(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/", headers={"Content-Type": "application/json"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json()["form_version_id"], form_version.id)
-        self.assertEqual(response.json()["form_name"], "Hydroponics study")
+        self.assertValidInstanceListData(response.json(), 6)
+
+        team = Team.objects.create(project=self.project, manager=self.yoda)
+        orgunit = m.OrgUnit.objects.create(name="Org Unit 1")
+        instance_1 = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=orgunit, project=self.project
+        )
+        instance_2 = self.create_form_instance(
+            form=self.form_1, period="202002", org_unit=orgunit, project=self.project
+        )
+        planning_1 = Planning.objects.create(name="Planning 1", org_unit=orgunit, project=self.project, team=team)
+        planning_2 = Planning.objects.create(name="Planning 2", org_unit=orgunit, project=self.project, team=team)
+
+        instance_1.planning = planning_1
+        instance_1.save()
+
+        # it should return only instance_1
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/", {"planningIds": planning_1.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 1)
+        self.assertEqual(response.json()["instances"][0]["id"], instance_1.id)
+        # it should return all of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/?order=-id", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 8)
+
+        self.assertEqual(response.json()["instances"][0]["id"], instance_2.id)
+        self.assertEqual(response.json()["instances"][1]["id"], instance_1.id)
+        # it should return none of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/", {"planningIds": planning_2.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 0)

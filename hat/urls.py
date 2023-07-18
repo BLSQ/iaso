@@ -22,6 +22,7 @@ urlpatterns = [
     path("_health", health),  # same without slash otherwise AWS complain about redirect
     path("health/", health),  # alias since current apache config hide _health/
     path("accounts/", include("django.contrib.auth.urls")),
+    path("accounts/", include("allauth.urls")),
     path("admin/", admin.site.urls),
     path("api/", include("iaso.urls")),
     path("pages/<page_slug>/", page, name="pages"),

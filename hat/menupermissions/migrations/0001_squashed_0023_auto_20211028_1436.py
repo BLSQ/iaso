@@ -10,7 +10,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     replaces = [
         ("menupermissions", "0001_initial"),
         ("menupermissions", "0002_auto_20180822_1020"),

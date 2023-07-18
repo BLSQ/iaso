@@ -21,8 +21,11 @@ import {
     TablePagination,
     TableRow,
     Typography,
+    Box,
 } from '@material-ui/core';
 import sortBy from 'lodash/sortBy';
+import { cloneDeep } from 'lodash';
+import MapIcon from '@material-ui/icons/Map';
 
 import CheckIcon from '@material-ui/icons/Check';
 import SelectAllIcon from '@material-ui/icons/SelectAll';
@@ -30,14 +33,13 @@ import MESSAGES from '../../constants/messages';
 import { useStyles } from '../../styles/theme';
 
 import { Scope, Shape, FilteredDistricts, ShapeRow } from './types';
-import {
-    findScopeWithOrgUnit,
-    findRegion,
-    checkFullRegionIsPartOfScope,
-} from './utils';
+import { checkFullRegionIsPartOfScope } from './utils';
 
 import { TableText } from './TableText';
 import { TablePlaceHolder } from './TablePlaceHolder';
+import { OrgUnit } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/types/orgUnit';
+
+import { OrgUnitLocationIcon } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/components/OrgUnitLocationIcon';
 
 type Props = {
     field: FieldInputProps<Scope[]>;
@@ -55,7 +57,7 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     setPage: (page: number) => void;
     isFetching: boolean;
-    districtShapes: FilteredDistricts[];
+    districtShapes: OrgUnit[];
     selectedVaccine: string;
 };
 
@@ -104,20 +106,14 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
         if (!regionShapes || !filteredDistricts) {
             return null;
         }
-
-        let ds: ShapeRow[] = filteredDistricts.map(district => {
-            return {
-                ...district,
-                region: findRegion(district, regionShapes),
-                vaccineName:
-                    findScopeWithOrgUnit(scopes, district.id)?.vaccine || '',
-            };
-        });
+        let ds: ShapeRow[] = cloneDeep(filteredDistricts) as ShapeRow[];
 
         if (sortFocus === 'REGION') {
             ds = sortBy(ds, ['region']);
         } else if (sortFocus === 'VACCINE') {
             ds = sortBy(ds, ['vaccineName']);
+        } else if (sortFocus === 'LOCATION') {
+            ds = sortBy(ds, ['latitude', 'longitude', 'has_geo_json']);
         }
         if (orderBy === 'desc') {
             ds = ds.reverse();
@@ -147,7 +143,6 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
 
     const displayPlaceHolder =
         isFetching || (!isFetching && filteredDistricts?.length === 0);
-
     return (
         <>
             <TableContainer className={classes.districtList}>
@@ -182,6 +177,19 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                 </Typography>
                             </TableCell>
                             <TableCell
+                                onClick={() => handleSort('LOCATION')}
+                                variant="head"
+                                style={{
+                                    cursor: 'pointer',
+                                    textAlign: 'center',
+                                    width: '70px',
+                                }}
+                            >
+                                <Box top="4px" position="relative" left="-3px">
+                                    <MapIcon fontSize="small" color="inherit" />
+                                </Box>
+                            </TableCell>
+                            <TableCell
                                 variant="head"
                                 style={{
                                     cursor: 'pointer',
@@ -214,7 +222,12 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                         <TableText text={shape.name} />
                                     </TableCell>
                                     <TableCell>
-                                        <TableText text={shape.vaccineName} />
+                                        <TableText
+                                            text={shape.vaccineName || '-'}
+                                        />
+                                    </TableCell>
+                                    <TableCell>
+                                        <OrgUnitLocationIcon orgUnit={shape} />
                                     </TableCell>
                                     <TableCell
                                         style={{
@@ -229,6 +242,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 onClick={() =>
                                                     toggleRegion(shape)
                                                 }
+                                                color="primary"
                                                 icon="clearAll"
                                                 tooltipMessage={
                                                     MESSAGES.removeRegion
@@ -241,6 +255,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                 onClick={() =>
                                                     toggleRegion(shape)
                                                 }
+                                                color="primary"
                                                 overrideIcon={SelectAllIcon}
                                                 tooltipMessage={
                                                     MESSAGES.addRegion
@@ -256,6 +271,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                             shape,
                                                         )
                                                     }
+                                                    color="primary"
                                                     icon="clear"
                                                     tooltipMessage={
                                                         MESSAGES.removeDistrict
@@ -272,6 +288,7 @@ export const DistrictScopeTable: FunctionComponent<Props> = ({
                                                             shape,
                                                         )
                                                     }
+                                                    color="primary"
                                                     overrideIcon={CheckIcon}
                                                     tooltipMessage={
                                                         MESSAGES.addDistrict

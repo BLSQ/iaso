@@ -7,7 +7,7 @@ from django.contrib.postgres.fields import ArrayField, CITextField
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.utils.html import strip_tags
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from .project import Project
 from .. import periods
@@ -304,5 +304,25 @@ class FormPredefinedFilter(models.Model):
     name = models.TextField(null=False, blank=False)
     short_name = models.CharField(null=False, blank=False, max_length=25)
     json_logic = models.JSONField(null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class FormAttachment(models.Model):
+    """ODK supports attaching files to form in order to display/play media or attach external data sources.
+
+    This is the representation of those attachments within Iaso.
+    """
+
+    class Meta:
+        unique_together = [["form", "name"]]
+
+    def form_folder(self, filename):
+        return "/".join(["form_attachments", str(self.form.id), filename])
+
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="attachments")
+    name = models.TextField(null=False, blank=False)
+    file = models.FileField(upload_to=form_folder)
+    md5 = models.CharField(null=False, blank=False, max_length=32)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -38,7 +38,7 @@ export const postGeoPkg = async request => {
 };
 
 const getOrgUnitTypes = async () => {
-    return getRequest('/api/orgunittypes/');
+    return getRequest('/api/v2/orgunittypes/');
 };
 
 export const useOrgUnitTypes = () => {

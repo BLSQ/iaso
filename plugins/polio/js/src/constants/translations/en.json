@@ -386,6 +386,7 @@
     "iaso.polio.label.scopeUnlockConditions": "Select initial org. unit and encode dates for at least one round to unlock Scope tab",
     "iaso.polio.label.search": "Search",
     "iaso.polio.label.searchInScopeOrAllDistricts": "Search districts in scope",
+    "iaso.polio.label.SECURITY_CONTEXT": "Security context",
     "iaso.polio.label.see": "See",
     "iaso.polio.label.seeFullComment": "See full comment",
     "iaso.polio.label.seeHistory": "See history",

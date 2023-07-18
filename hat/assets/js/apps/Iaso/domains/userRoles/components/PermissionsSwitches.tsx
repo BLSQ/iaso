@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { FormControlLabel, Switch } from '@material-ui/core';
+import { Box, FormControlLabel, Switch, makeStyles } from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
@@ -7,6 +7,15 @@ import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { Permission } from '../types/userRoles';
+
+const styles = () => ({
+    tableStyle: {
+        maxHeight: '75vh',
+        overflow: 'scroll',
+    },
+});
+
+const useStyles = makeStyles(styles);
 
 type Props = {
     userRolePermissions: Permission[];
@@ -19,6 +28,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     handleChange,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
         ['permissions'],
         () => getRequest('/api/permissions/'),
@@ -52,7 +62,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 
     return (
-        <>
+        <Box className={classes.tableStyle}>
             {isLoading && <LoadingSpinner />}
 
             {permissions
@@ -88,6 +98,6 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                         />
                     </div>
                 ))}
-        </>
+        </Box>
     );
 };

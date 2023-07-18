@@ -23,8 +23,16 @@ const styles = theme => ({
         border: '1px solid grey',
     },
     tableStyle: {
-        maxHeight: '70vh',
-        overflow: 'scroll',
+        '& .MuiTableHead-root': {
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+        },
+        '& .MuiTableContainer-root': {
+            maxHeight: '59vh',
+            overflow: 'auto',
+            border: `1px solid ${theme.palette.border.main}`,
+        },
     },
 });
 
@@ -86,15 +94,13 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 
     const handleChangeUserRoles = useCallback(
         (_, value) => {
-            setFieldValue('user_roles', value ? value.split(',') : []);
-            console.log('value', value);
-            // const permissions =
-            // setFieldValue('user_permissions', permissions)
+            const newUserRoles = value
+                ? value.split(',').map(userRoleId => parseInt(userRoleId, 10))
+                : [];
+            setFieldValue('user_roles', newUserRoles);
         },
         [setFieldValue],
     );
-
-    console.log('userRoles', userRoles);
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -110,24 +116,32 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 
             {!isSuperUser && (
                 <>
-                    <InputComponent
-                        keyValue="user_roles"
-                        onChange={handleChangeUserRoles}
-                        value={currentUser.user_roles.value}
-                        type="select"
-                        multi
-                        label={MESSAGES.userRoles}
-                        options={userRoles}
-                        loading={isFetching}
-                        clearable
-                    />
+                    <Box mb={2} width="50%">
+                        <InputComponent
+                            keyValue="user_roles"
+                            onChange={handleChangeUserRoles}
+                            value={currentUser.user_roles.value}
+                            type="select"
+                            multi
+                            label={MESSAGES.userRoles}
+                            options={userRoles}
+                            loading={isFetching}
+                            clearable
+                        />
+                    </Box>
                     <Box className={classes.tableStyle}>
                         <Table
                             columns={columns}
                             data={permissionsData}
                             showPagination={false}
                             countOnTop={false}
-                            extraProps={{ currentUser, userPermissions }}
+                            marginTop={false}
+                            marginBottom={false}
+                            extraProps={{
+                                currentUser,
+                                columns,
+                            }}
+                            elevation={0}
                         />
                     </Box>
                 </>

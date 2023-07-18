@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import get from 'lodash/get';
 import { InitialUserData, UserDialogData } from '../types';
+import { UserRole } from '../../userRoles/types/userRoles';
+import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown';
 
 export type InitialUserUtils = {
     user: UserDialogData;
@@ -75,6 +77,8 @@ export const useInitialUser = (
         };
     }, [initialData]);
     const [user, setUser] = useState<UserDialogData>(initialUser);
+
+    const { data: userRoles } = useGetUserRolesDropDown();
     const setFieldErrors = useCallback(
         (fieldName, fieldError) => {
             setUser({
@@ -89,15 +93,25 @@ export const useInitialUser = (
     );
     const setFieldValue = useCallback(
         (fieldName, fieldValue) => {
-            setUser({
+            const newUser = {
                 ...user,
                 [fieldName]: {
                     value: fieldValue,
                     errors: [],
                 },
-            });
+            };
+            if (fieldName === 'user_roles') {
+                const userRolesPermissions: UserRole[] = (userRoles || [])
+                    .filter(userRole => fieldValue.includes(userRole.value))
+                    .map(userRole => userRole.original as UserRole);
+                newUser.user_roles_permissions = {
+                    value: userRolesPermissions,
+                    errors: [],
+                };
+            }
+            setUser(newUser);
         },
-        [user],
+        [user, userRoles],
     );
 
     useEffect(() => {

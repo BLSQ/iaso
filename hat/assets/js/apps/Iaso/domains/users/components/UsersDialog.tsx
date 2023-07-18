@@ -25,11 +25,11 @@ import { WarningModal } from './WarningModal/WarningModal';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
-        marginBottom: theme.spacing(4),
+        marginBottom: theme.spacing(3),
     },
     tab: {
         padding: 0,
-        width: 'calc(100% / 4)',
+        width: '25%',
         minWidth: 0,
     },
     root: {
@@ -124,7 +124,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 onConfirm={onConfirm}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                maxWidth="sm"
+                maxWidth="md"
                 open={isOpen}
                 closeDialog={() => null}
                 allowConfirm={

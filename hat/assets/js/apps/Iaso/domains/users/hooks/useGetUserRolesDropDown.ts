@@ -6,7 +6,7 @@ import { UserRole } from '../../userRoles/types/userRoles';
 import MESSAGES from '../messages';
 
 export const useGetUserRolesDropDown = (): UseQueryResult<
-    DropdownOptions<number>,
+    DropdownOptions<number>[],
     Error
 > => {
     return useSnackQuery({
@@ -14,13 +14,15 @@ export const useGetUserRolesDropDown = (): UseQueryResult<
         queryFn: () => getRequest('/api/userroles/'),
         snackErrorMsg: MESSAGES.userRolesDropDownError,
         options: {
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
             select: data => {
                 return (
                     data?.results?.map((userRole: UserRole) => {
                         return {
                             value: userRole.id,
                             label: userRole.name,
-                            orginal: userRole,
+                            original: userRole,
                         };
                     }) ?? []
                 );

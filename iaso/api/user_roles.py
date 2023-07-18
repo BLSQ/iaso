@@ -1,12 +1,12 @@
 from typing import Any
+from django.conf import settings
 from django.shortcuts import get_object_or_404
-from rest_framework.request import Request
 from rest_framework import permissions, serializers
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from rest_framework.response import Response
 from iaso.models import UserRole
-from .common import TimestampField, ModelViewSet, HasPermission
+from .common import TimestampField, ModelViewSet
 
 
 class HasUserRolePermission(permissions.BasePermission):
@@ -54,7 +54,17 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
         if group.id and len(permissions) > 0:
             for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
+                if "polio" not in settings.PLUGINS:
+                    permission = get_object_or_404(
+                        Permission,
+                        ~Q(codename__startswith="iaso_polio"),
+                        codename__startswith="iaso_",
+                        codename=permission_codename,
+                    )
+                else:
+                    permission = get_object_or_404(
+                        Permission, codename__startswith="iaso_", codename=permission_codename
+                    )
                 group.permissions.add(permission)
             group.save()
 
@@ -67,13 +77,26 @@ class UserRoleSerializer(serializers.ModelSerializer):
         group_name = str(account.id) + self.context["request"].data.get("name", None)
         permissions = self.context["request"].data.get("permissions", None)
         group = user_role.group
+
         if group_name is not None:
             group.name = group_name
+
         if permissions is not None:
             group.permissions.clear()
             for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
+                if "polio" not in settings.PLUGINS:
+                    permission = get_object_or_404(
+                        Permission,
+                        ~Q(codename__startswith="iaso_polio"),
+                        codename__startswith="iaso_",
+                        codename=permission_codename,
+                    )
+                else:
+                    permission = get_object_or_404(
+                        Permission, codename__startswith="iaso_", codename=permission_codename
+                    )
                 group.permissions.add(permission)
+
         group.save()
         user_role.save()
         return user_role

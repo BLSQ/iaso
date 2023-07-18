@@ -102,15 +102,23 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     ]);
 
     const onConfirm = useCallback(() => {
+        const userPermissions = user?.user_permissions.value ?? [];
+        const userRolesPermissions = user?.user_roles_permissions.value ?? [];
         if (
-            (user?.permissions.value ?? []).length > 0 ||
+            userPermissions.length > 0 ||
+            userRolesPermissions.length > 0 ||
             initialData?.is_superuser
         ) {
             saveUser();
         } else {
             setOpenWarning(true);
         }
-    }, [initialData?.is_superuser, saveUser, user?.permissions.value]);
+    }, [
+        initialData?.is_superuser,
+        saveUser,
+        user?.user_permissions.value,
+        user?.user_roles_permissions.value,
+    ]);
     return (
         <>
             <WarningModal

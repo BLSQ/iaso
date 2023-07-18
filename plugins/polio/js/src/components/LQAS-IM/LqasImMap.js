@@ -116,7 +116,6 @@ export const LqasImMap = ({
         type === 'lqas'
             ? formatMessage(MESSAGES.lqasResults)
             : formatMessage(MESSAGES.imResults);
-
     return (
         <>
             <Box position="relative">
@@ -133,7 +132,7 @@ export const LqasImMap = ({
                 )}
                 <MapComponent
                     key={countryId}
-                    name={`LQASIMMap${round}-${type}`}
+                    name={`LQASIMMap${round}-${type}-${countryId}`}
                     backgroundLayer={regionShapes}
                     mainLayer={mainLayer}
                     onSelectShape={() => null}
@@ -145,6 +144,7 @@ export const LqasImMap = ({
                     }}
                     makePopup={makePopup(data, round, selectedCampaign)}
                     fitBoundsToBackground
+                    fitToBounds
                     height={600}
                 />
                 {selectedCampaign && (

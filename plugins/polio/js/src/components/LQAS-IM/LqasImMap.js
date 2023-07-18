@@ -27,7 +27,7 @@ import {
     defaultShapeStyle,
 } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { useGetGeoJson } from '../../hooks/useGetGeoJson.ts';
 import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
 
 const defaultShapes = [];
@@ -132,6 +132,7 @@ export const LqasImMap = ({
                     <LoadingSpinner fixed={false} absolute />
                 )}
                 <MapComponent
+                    key={countryId}
                     name={`LQASIMMap${round}-${type}`}
                     backgroundLayer={regionShapes}
                     mainLayer={mainLayer}

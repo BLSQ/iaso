@@ -51,7 +51,7 @@ import { ColumnSelect } from './ColumnSelect.tsx';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
-import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
+import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.ts';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,

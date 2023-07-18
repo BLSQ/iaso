@@ -156,6 +156,7 @@
                     "SHOW_PAGES"
                 ]
             },
+            "user_permissions": ["iaso_forms"],
             "permissions": ["iaso_forms"],
             "user_permissions": ["iaso_forms"],
             "is_superuser": false,

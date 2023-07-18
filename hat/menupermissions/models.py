@@ -17,7 +17,6 @@ The frontend is getting the list of existing permission from the
 `/api/permissions/` endpoint
 """
 from django.conf import LazySettings
-from django.contrib.auth.models import PermissionManager
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -170,3 +169,9 @@ class CustomPermissionSupport(models.Model):
             permissions = permissions.exclude(codename__startswith="iaso_polio")
 
         return permissions
+
+    @staticmethod
+    def has_right_to_assign(user, permission_codename: str):
+        if user.has_perm(USERS_MANAGED) and permission_codename == _USERS_ADMIN:
+            return False
+        return True

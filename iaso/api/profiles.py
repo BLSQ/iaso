@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth import models
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q
@@ -15,19 +16,50 @@ from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions, status
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 
 from iaso.models import Profile, OrgUnit, UserRole, Project
 from hat.menupermissions import models as permission
+from hat.menupermissions.models import CustomPermissionSupport
+
+PK_ME = "me"
 
 
 class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action in ("retrieve", "partial_update") and view.kwargs.get("pk") == "me":
+        if view.action in ("retrieve", "partial_update") and view.kwargs.get("pk") == PK_ME:
             return True
-        if (not request.user.has_perm(permission.USERS_ADMIN)) and request.method != "GET":
-            return False
+        if request.user.has_perm(permission.USERS_ADMIN):
+            return True
+        if request.user.has_perm(permission.USERS_MANAGED):
+            return self.has_permission_over_user(request, view)
+
+        return request.method == "GET"
+
+    # We could `return False` instead of raising exceptions,
+    # but it's better to be explicit about why the permission was denied.
+    @staticmethod
+    def has_permission_over_user(request, view):
+        pk = view.kwargs.get("pk")
+        if not pk:
+            raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot create users.")
+
+        if pk == request.user.id:
+            raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot edit their own permissions.")
+
+        org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
+        if not org_units or len(org_units) == 0:
+            raise PermissionDenied(
+                "Current user is not associated with any OrgUnit. " "They therefore cannot manage any users."
+            )
+
+        user = get_object_or_404(User, pk=pk)
+        user_managed_org_units = user.iaso_profile.org_units.filter(id__in=org_units).all()
+        if not user_managed_org_units or len(user_managed_org_units) == 0:
+            raise PermissionDenied(
+                "The user we are trying to modify is not part of any OrgUnit " "managed by the current user"
+            )
         return True
 
 
@@ -43,7 +75,7 @@ def get_filtered_profiles(
         ).distinct()
 
     if perms:
-        queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
+        queryset = queryset.filter(user__user_permissions__codename__in=perms.split(",")).distinct()
 
     if location:
         queryset = queryset.filter(
@@ -122,7 +154,8 @@ class ProfileError(ValidationError):
 class ProfilesViewSet(viewsets.ViewSet):
     f"""Profiles API
 
-    This API is restricted to authenticated users having the "{permission.USERS_ADMIN}" permission for write permission
+    This API is restricted to authenticated users having the "{permission.USERS_ADMIN}" or "{permission.USERS_MANAGED}"
+    permission for write permission.
     Read access is accessible to any authenticated users as it necessary to list profile or display a particular one in
     the interface.
 
@@ -184,7 +217,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
-        if pk == "me":
+        if pk == PK_ME:
             profile = request.user.iaso_profile
             return Response(profile.as_dict())
         else:
@@ -192,7 +225,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(profile.as_dict())
 
     def partial_update(self, request, pk=None):
-        if pk == "me":
+        if pk == PK_ME:
             return self.update_user_own_profile(request)
 
         try:
@@ -256,6 +289,10 @@ class ProfilesViewSet(viewsets.ViewSet):
     def update_permissions(user, request):
         user.user_permissions.clear()
         for permission_codename in request.data.get("user_permissions", []):
+            if not CustomPermissionSupport.has_right_to_assign(request.user, permission_codename):
+                raise PermissionDenied(
+                    f"User with {permission.USERS_MANAGED} cannot grant {permission.USERS_ADMIN} permission"
+                )
             user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
         user.save()
 

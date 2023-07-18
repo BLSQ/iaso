@@ -308,7 +308,7 @@ const InstancesFiltersComponent = ({
                             InfoPopper={<Popper />}
                         />
                     )}
-                    <Box mt={2}>
+                    <Box mt={2} height={40}>
                         <InputComponent
                             keyValue="showDeleted"
                             onChange={handleFormChange}

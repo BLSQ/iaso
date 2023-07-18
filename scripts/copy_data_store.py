@@ -59,7 +59,9 @@ curl_output = subprocess.check_output(
 )
 
 # Parse the results
-response = json.loads(curl_output.decode("UTF-8"))["results"]
+response = json.loads(curl_output.decode("UTF-8"))
+print("RESPONSE", response, args.pwd)
+response = response["results"]
 
 if args.file:
     print(f"writing to file {args.file}.json")
@@ -85,16 +87,36 @@ if args.localuser and args.localpwd:
 
     not_created = []
     created = []
+    # Get data from local data store, so we can decide whether to POST or PUSH
+    local_store_curl_output = subprocess.check_output(
+        [
+            "curl",
+            "-s",
+            "-X",
+            "GET",
+            "-H",
+            f"Authorisation: Bearer {local_token}",  # type: ignore
+            "-H",
+            f"Content-Type: application/json",
+            "-u",
+            f"{args.localuser}:{args.localpwd}",
+            f"{to}api/datastore/?format=json",
+        ],
+        stderr=subprocess.STDOUT,
+    )
+    local_store = json.loads(local_store_curl_output.decode("UTF-8"))["results"]
 
     # Make a post request for each of the json entries
     for store in response:
+        store_exists = [local_entry for local_entry in local_store if local_entry["key"] == store["key"]]
+        http_method = "POST" if store_exists else "PUT"
         data = {"key": store["key"], "data": store["data"]}
         key = store["key"]
         command = [
             "curl",
             "-s",
             "-X",
-            "POST",
+            http_method,
             "-H",
             f"Authorisation: Bearer {local_token}",  # type: ignore
             "-H",

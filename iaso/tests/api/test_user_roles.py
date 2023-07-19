@@ -33,9 +33,16 @@ class UserRoleAPITestCase(APITestCase):
             name="admin permission", content_type_id=1, codename="admin_permission1"
         )
         cls.group = Group.objects.create(name=str(star_wars.id) + "user role")
+
         cls.group.permissions.add(cls.permission)
         cls.group.refresh_from_db()
         cls.userRole = m.UserRole.objects.create(group=cls.group, account=star_wars)
+
+    # This method will remove a given prefix from a string
+    def remove_prefix_from_str(self, str, prefix):
+        if str.startswith(prefix):
+            return str[len(prefix) :]
+        return str
 
     def test_create_user_role(self):
         self.client.force_authenticate(self.yoda)
@@ -45,7 +52,7 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.post("/api/userroles/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 201)
-        self.assertEqual(r["name"][1:], payload["name"])
+        self.assertEqual(r["name"], payload["name"])
         self.assertIsNotNone(r["id"])
 
     def test_create_user_role_without_name(self):
@@ -64,15 +71,7 @@ class UserRoleAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["id"], self.userRole.pk)
         self.userRole.refresh_from_db()
-        self.assertEqual(r["name"], self.userRole.group.name[1:])
-
-    def test_retrieve_user_role_read_only(self):
-        self.client.force_authenticate(self.user_with_no_permissions)
-
-        response = self.client.get(f"/api/userroles/{self.userRole.pk}/")
-
-        r = self.assertJSONResponse(response, 200)
-        self.assertEqual(r["id"], self.userRole.pk)
+        self.assertEqual(r["name"], self.remove_prefix_from_str(self.userRole.group.name, str(self.star_wars.id) + "_"))
 
     def test_retrieve_user_role_read_only(self):
         self.client.force_authenticate(self.user_with_no_permissions)
@@ -99,7 +98,9 @@ class UserRoleAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
 
         self.assertEqual(len(r["results"]), 1)
-        self.assertEqual(r["results"][0]["name"], self.userRole.group.name[1:])
+        self.assertEqual(
+            r["results"][0]["name"], self.remove_prefix_from_str(self.userRole.group.name, str(self.star_wars.id) + "_")
+        )
 
     def test_partial_update_no_modification(self):
         self.client.force_authenticate(self.yoda)
@@ -108,16 +109,7 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.put(f"/api/userroles/{self.userRole.id}/", data=payload, format="json")
 
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(r["name"][1:], payload["name"])
-
-    def test_partial_update_no_permission(self):
-        self.client.force_authenticate(self.user_with_no_permissions)
-
-        payload = {"name": self.userRole.group.name}
-        response = self.client.put(f"/api/userroles/{self.userRole.id}/", data=payload, format="json")
-
-        r = self.assertJSONResponse(response, 403)
-        self.assertEqual(r["detail"], "You do not have permission to perform this action.")
+        self.assertEqual(r["name"], payload["name"])
 
     def test_partial_update_no_permission(self):
         self.client.force_authenticate(self.user_with_no_permissions)
@@ -135,7 +127,7 @@ class UserRoleAPITestCase(APITestCase):
         response = self.client.put(f"/api/userroles/{self.userRole.id}/", data=payload, format="json")
         self.group.refresh_from_db()
         r = self.assertJSONResponse(response, 200)
-        self.assertEqual(r["name"], self.group.name[1:])
+        self.assertEqual(r["name"], self.remove_prefix_from_str(self.group.name, str(self.star_wars.id) + "_"))
 
     def test_partial_update_permissions_modification(self):
         self.client.force_authenticate(self.yoda)

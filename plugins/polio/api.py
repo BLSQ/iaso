@@ -1768,7 +1768,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
         queryset = self.get_queryset()
         data_stores = self.get_datastores()
         for org_unit in queryset:
-            start_date_after, end_date_before = self.determine_reference_dates()
+            start_date_after, end_date_before = self.compute_reference_dates()
             country_id = org_unit.id
             try:
                 data_store = data_stores.get(slug__contains=str(country_id))
@@ -1885,7 +1885,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         )
         data_stores = self.get_datastores()
         for org_unit in queryset:
-            start_date_after, end_date_before = self.determine_reference_dates()
+            start_date_after, end_date_before = self.compute_reference_dates()
             country_id = org_unit.id
             try:
                 data_store = data_stores.get(slug__contains=str(country_id))

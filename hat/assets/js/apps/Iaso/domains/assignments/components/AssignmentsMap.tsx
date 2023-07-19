@@ -166,7 +166,13 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
     };
 
     const isLoading = isFetchingLocations || isFetchingParentLocations;
-
+    const markersColors = useMemo(
+        () =>
+            (locations?.markers.selected || [])
+                .map(marker => `${marker.color}_${marker.id}`)
+                .join('-'),
+        [locations?.markers.selected],
+    );
     return (
         <section ref={mapContainer}>
             <Box position="relative">
@@ -325,11 +331,12 @@ export const AssignmentsMap: FunctionComponent<Props> = ({
                             </Pane>
                             <Pane name="markers-selected">
                                 <MarkersListComponent
+                                    key={markersColors}
                                     items={locations.markers.selected || []}
-                                    onMarkerClick={shape => onClick(shape)}
-                                    markerProps={shape => ({
+                                    onMarkerClick={marker => onClick(marker)}
+                                    markerProps={marker => ({
                                         ...circleColorMarkerOptions(
-                                            shape.color,
+                                            marker.color,
                                         ),
                                     })}
                                     onContextmenu={(event, marker) =>

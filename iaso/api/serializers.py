@@ -147,8 +147,8 @@ class OrgUnitDropdownSerializer(OrgUnitSerializer):
         model = OrgUnit
         fields = ["value", "label"]
 
-    label = serializers.CharField(source="name")
-    value = serializers.IntegerField(source="id")
+    label = serializers.CharField(source="name",read_only=True) # type: ignore
+    value = serializers.IntegerField(source="id", read_only=True)
 
 
 # noinspection PyMethodMayBeStatic

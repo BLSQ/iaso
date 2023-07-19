@@ -1,0 +1,138 @@
+{
+    "results": [
+        {
+            "id": 5,
+            "name": "USER ROLE TEST 8",
+            "permissions": [
+                {
+                    "id": 46,
+                    "name": "Projets",
+                    "codename": "iaso_projects"
+                }
+            ],
+            "created_at": 1689678453.789863,
+            "updated_at": 1689678453.793603
+        },
+        {
+            "id": 8,
+            "name": "USER ROLE TEST 7",
+            "permissions": [
+                {
+                    "id": 320,
+                    "name": "Entities",
+                    "codename": "iaso_entities"
+                }
+            ],
+            "created_at": 1689683048.543832,
+            "updated_at": 1689683048.548519
+        },
+        {
+            "id": 4,
+            "name": "USER ROLE TEST 6",
+            "permissions": [
+                {
+                    "id": 435,
+                    "name": "Org unit groups",
+                    "codename": "iaso_org_unit_groups"
+                }
+            ],
+            "created_at": 1689678443.020076,
+            "updated_at": 1689678443.023131
+        },
+        {
+            "id": 6,
+            "name": "USER ROLE TEST 5",
+            "permissions": [
+                {
+                    "id": 417,
+                    "name": "Write Entity duplicates",
+                    "codename": "iaso_entity_duplicates_write"
+                }
+            ],
+            "created_at": 1689678464.083717,
+            "updated_at": 1689678464.087901
+        },
+        {
+            "id": 7,
+            "name": "USER ROLE TEST 4",
+            "permissions": [
+                {
+                    "id": 336,
+                    "name": "Completeness stats",
+                    "codename": "iaso_completeness_stats"
+                }
+            ],
+            "created_at": 1689682323.825077,
+            "updated_at": 1689682323.829001
+        },
+        {
+            "id": 2,
+            "name": "USER ROLE TEST 3",
+            "permissions": [
+                {
+                    "id": 320,
+                    "name": "Entities",
+                    "codename": "iaso_entities"
+                },
+                {
+                    "id": 219,
+                    "name": "Pages",
+                    "codename": "iaso_pages"
+                },
+                {
+                    "id": 292,
+                    "name": "Planning",
+                    "codename": "iaso_planning"
+                }
+            ],
+            "created_at": 1689676202.40143,
+            "updated_at": 1689676202.406876
+        },
+        {
+            "id": 3,
+            "name": "USER ROLE TEST 2",
+            "permissions": [
+                {
+                    "id": 228,
+                    "name": "Polio",
+                    "codename": "iaso_polio"
+                },
+                {
+                    "id": 238,
+                    "name": "Polio config",
+                    "codename": "iaso_polio_config"
+                },
+                {
+                    "id": 422,
+                    "name": "Registre",
+                    "codename": "iaso_registry"
+                }
+            ],
+            "created_at": 1689676994.056523,
+            "updated_at": 1689676994.060127
+        },
+        {
+            "id": 1,
+            "name": "USER ROLE TEST",
+            "permissions": [
+                {
+                    "id": 294,
+                    "name": "Attributions",
+                    "codename": "iaso_assignments"
+                },
+                {
+                    "id": 336,
+                    "name": "Completeness stats",
+                    "codename": "iaso_completeness_stats"
+                },
+                {
+                    "id": 320,
+                    "name": "Entities",
+                    "codename": "iaso_entities"
+                }
+            ],
+            "created_at": 1689602136.353463,
+            "updated_at": 1689602136.365635
+        }
+    ]
+}

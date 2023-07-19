@@ -28,6 +28,10 @@ class UserRoleAPITestCase(APITestCase):
         cls.permission2 = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission2"
         )
+
+        cls.permission_not_allowable = Permission.objects.create(
+            name="admin permission", content_type_id=1, codename="admin_permission1"
+        )
         cls.group = Group.objects.create(name=str(star_wars.id) + "_" + "user role")
         cls.group.permissions.add(cls.permission)
         cls.group.refresh_from_db()

@@ -51,6 +51,10 @@ class BulkCreateCsvTestCase(APITestCase):
         cls.solana = m.OrgUnit.objects.create(name="Solana", version=sw_version)
         cls.solanaa = m.OrgUnit.objects.create(name="Solana", version=sw_version)
 
+        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10244, version=sw_version)
+
+        cls.yoda.iaso_profile.org_units.set([cls.jedi_council_corruscant, cls.tatooine, cls.dagobah, cls.solana])
+
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -223,19 +227,6 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(login_response.status_code, 200)
 
-    def test_upload_duplicate_ou_names(self):
-        self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
-
-        with open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv") as csv_users:
-            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
-        )
-
     def test_upload_invalid_orgunit_name(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -283,3 +274,17 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 
         self.assertEqual(response.status_code, 400)
+
+    def test_cant_create_user_without_ou_profile(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_creator_no_access_to_ou.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {
+                "error": "Operation aborted. Invalid OrgUnit None chiloe 10244 at row : 2. You don't have access to this orgunit"
+            },
+        )

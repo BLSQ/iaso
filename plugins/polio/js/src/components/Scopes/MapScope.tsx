@@ -34,6 +34,14 @@ type Props = {
     setSelectedVaccine: (selected: string) => void;
 };
 
+const getBackgroundLayerStyle = () => {
+    return {
+        color: 'grey',
+        opacity: '1',
+        fillColor: 'transparent',
+    };
+};
+
 export const MapScope: FunctionComponent<Props> = ({
     field,
     values,
@@ -75,14 +83,6 @@ export const MapScope: FunctionComponent<Props> = ({
         },
         [values.org_unit?.id, scopes],
     );
-
-    const getBackgroundLayerStyle = () => {
-        return {
-            color: 'grey',
-            opacity: '1',
-            fillColor: 'transparent',
-        };
-    };
 
     const districts = useMemo(
         () =>

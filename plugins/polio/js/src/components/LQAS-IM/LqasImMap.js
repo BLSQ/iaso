@@ -27,7 +27,7 @@ import {
     defaultShapeStyle,
 } from '../../utils/index';
 import MESSAGES from '../../constants/messages';
-import { useGetGeoJson } from '../../hooks/useGetGeoJson';
+import { useGetGeoJson } from '../../hooks/useGetGeoJson.ts';
 import { ScopeAndDNFDisclaimer } from './ScopeAndDNFDisclaimer.tsx';
 
 const defaultShapes = [];
@@ -116,7 +116,6 @@ export const LqasImMap = ({
         type === 'lqas'
             ? formatMessage(MESSAGES.lqasResults)
             : formatMessage(MESSAGES.imResults);
-
     return (
         <>
             <Box position="relative">
@@ -132,7 +131,8 @@ export const LqasImMap = ({
                     <LoadingSpinner fixed={false} absolute />
                 )}
                 <MapComponent
-                    name={`LQASIMMap${round}-${type}`}
+                    key={countryId}
+                    name={`LQASIMMap${round}-${type}-${countryId}`}
                     backgroundLayer={regionShapes}
                     mainLayer={mainLayer}
                     onSelectShape={() => null}
@@ -144,6 +144,7 @@ export const LqasImMap = ({
                     }}
                     makePopup={makePopup(data, round, selectedCampaign)}
                     fitBoundsToBackground
+                    fitToBounds
                     height={600}
                 />
                 {selectedCampaign && (

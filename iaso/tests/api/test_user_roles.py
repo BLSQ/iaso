@@ -28,7 +28,13 @@ class UserRoleAPITestCase(APITestCase):
         cls.permission2 = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission2"
         )
-        cls.group = Group.objects.create(name=str(star_wars.id) + "_" + "user role")
+
+
+        cls.permission_not_allowable = Permission.objects.create(
+            name="admin permission", content_type_id=1, codename="admin_permission1"
+        )
+        cls.group = Group.objects.create(name=str(star_wars.id) + "user role")
+
         cls.group.permissions.add(cls.permission)
         cls.group.refresh_from_db()
         cls.userRole = m.UserRole.objects.create(group=cls.group, account=star_wars)
@@ -137,6 +143,21 @@ class UserRoleAPITestCase(APITestCase):
         self.assertEqual(
             [r["permissions"][0]["codename"], r["permissions"][1]["codename"]],
             [self.permission1.codename, self.permission2.codename],
+        )
+
+    def test_partial_update_not_allowable_permissions_modification(self):
+        self.client.force_authenticate(self.yoda)
+
+        payload = {
+            "name": self.userRole.group.name,
+            "permissions": [self.permission_not_allowable.codename],
+        }
+        response = self.client.put(f"/api/userroles/{self.userRole.id}/", data=payload, format="json")
+
+        r = self.assertJSONResponse(response, 404)
+        self.assertEqual(
+            r["detail"],
+            "Not found.",
         )
 
     def test_delete_permissions_modification(self):

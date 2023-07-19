@@ -8,10 +8,13 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { Permission } from '../types/userRoles';
 
-const styles = () => ({
-    tableStyle: {
-        maxHeight: '75vh',
+const styles = theme => ({
+    container: {
+        marginTop: theme.spacing(2),
+        padding: theme.spacing(1),
+        maxHeight: '60vh',
         overflow: 'scroll',
+        border: `1px solid ${theme.palette.border.main}`,
     },
 });
 
@@ -62,7 +65,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 
     return (
-        <Box className={classes.tableStyle}>
+        <Box className={classes.container}>
             {isLoading && <LoadingSpinner />}
 
             {permissions

@@ -1,9 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-    IconButton as IconButtonComponent,
-    textPlaceholder,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Switch } from '@material-ui/core';
 import {
     HighlightOffOutlined as NotCheckedIcon,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Box, Typography, makeStyles } from '@material-ui/core';
 import {
     useSafeIntl,
@@ -6,12 +6,14 @@ import {
     Table,
     Column,
 } from 'bluesquare-components';
+import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
 import { Permission } from '../../userRoles/types/userRoles';
+import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown';
 
 const styles = theme => ({
     admin: {
@@ -21,8 +23,16 @@ const styles = theme => ({
         border: '1px solid grey',
     },
     tableStyle: {
-        maxHeight: '75vh',
-        overflow: 'scroll',
+        '& .MuiTableHead-root': {
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+        },
+        '& .MuiTableContainer-root': {
+            maxHeight: '59vh',
+            overflow: 'auto',
+            border: `1px solid ${theme.palette.border.main}`,
+        },
     },
 });
 
@@ -33,6 +43,8 @@ type Props = {
     currentUser: any;
     // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
+    // eslint-disable-next-line no-unused-vars
+    setFieldValue: (fieldName, fieldError) => void;
 };
 
 type PermissionResult = {
@@ -43,6 +55,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     isSuperUser,
     currentUser,
     handleChange,
+    setFieldValue,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
@@ -67,7 +80,7 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
 
     const allPermissions = data?.permissions ?? [];
     const userPermissions = currentUser.user_permissions.value;
-
+    const { data: userRoles, isFetching } = useGetUserRolesDropDown();
     const permissionsData = useGetUserPermissions(
         allPermissions,
         userPermissions,
@@ -79,6 +92,15 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         currentUser,
     });
 
+    const handleChangeUserRoles = useCallback(
+        (_, value) => {
+            const newUserRoles = value
+                ? value.split(',').map(userRoleId => parseInt(userRoleId, 10))
+                : [];
+            setFieldValue('user_roles', newUserRoles);
+        },
+        [setFieldValue],
+    );
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -93,13 +115,36 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
             )}
 
             {!isSuperUser && (
-                <Box className={classes.tableStyle}>
-                    <Table
-                        columns={columns}
-                        data={permissionsData}
-                        showPagination={false}
-                    />
-                </Box>
+                <>
+                    <Box mb={2} width="50%">
+                        <InputComponent
+                            keyValue="user_roles"
+                            onChange={handleChangeUserRoles}
+                            value={currentUser.user_roles.value}
+                            type="select"
+                            multi
+                            label={MESSAGES.userRoles}
+                            options={userRoles}
+                            loading={isFetching}
+                            clearable
+                        />
+                    </Box>
+                    <Box className={classes.tableStyle}>
+                        <Table
+                            columns={columns}
+                            data={permissionsData}
+                            showPagination={false}
+                            countOnTop={false}
+                            marginTop={false}
+                            marginBottom={false}
+                            extraProps={{
+                                currentUser,
+                                columns,
+                            }}
+                            elevation={0}
+                        />
+                    </Box>
+                </>
             )}
         </>
     );

@@ -45,6 +45,7 @@
                 ]
             },
             "permissions": [],
+            "user_permissions": [],
             "is_superuser": true,
             "org_units": [],
             "language": "en",
@@ -94,6 +95,7 @@
                 ]
             },
             "permissions": [],
+            "user_permissions": [],
             "is_superuser": false,
             "org_units": [
                 {
@@ -156,6 +158,7 @@
             },
             "user_permissions": ["iaso_forms"],
             "permissions": ["iaso_forms"],
+            "user_permissions": ["iaso_forms"],
             "is_superuser": false,
             "org_units": [
                 {

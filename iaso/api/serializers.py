@@ -142,6 +142,15 @@ class OrgUnitSearchParentSerializer(OrgUnitSerializer):
         fields = ["id", "name", "parent"]
 
 
+class OrgUnitDropdownSerializer(OrgUnitSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["value", "label"]
+
+    label = serializers.CharField(source="name")
+    value = serializers.IntegerField(source="id")
+
+
 # noinspection PyMethodMayBeStatic
 class OrgUnitSearchSerializer(OrgUnitSerializer):
     parent = OrgUnitSearchParentSerializer()

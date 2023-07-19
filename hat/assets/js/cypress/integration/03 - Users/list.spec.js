@@ -26,6 +26,9 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    cy.intercept('GET', '/api/userroles/**', {
+        fixture: 'userRoles/list.json',
+    });
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
     });

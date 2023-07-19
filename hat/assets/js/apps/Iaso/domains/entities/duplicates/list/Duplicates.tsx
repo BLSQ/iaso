@@ -17,6 +17,7 @@ import { starsStyleForTable } from '../../../../components/stars/StarsComponent'
 import { useDuplicationTableColumns } from './useDuplicationTableColumns';
 import { DuplicatesList } from '../types';
 import { AnalyseAction } from './AnalyseAction';
+import { useGetLatestAnalysis } from '../hooks/api/analyzes';
 
 type Params = PaginationParams & DuplicatesGETParams;
 
@@ -37,7 +38,12 @@ const useStyles = makeStyles(theme => {
 export const Duplicates: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
-    const { data, isFetching } = useGetDuplicates({ params });
+    const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =
+        useGetLatestAnalysis();
+    const { data, isFetching } = useGetDuplicates({
+        params,
+        refresh: latestAnalysis?.finished_at,
+    });
     const dispatch = useDispatch();
     const columns = useDuplicationTableColumns();
     const { results, pages, count } = (data as DuplicatesList) ?? {
@@ -53,7 +59,10 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <AnalyseAction />
+                <AnalyseAction
+                    latestAnalysis={latestAnalysis}
+                    isFetchingLatestAnalysis={isFetchingLatestAnalysis}
+                />
                 <DuplicatesFilters params={params} />
                 <Box className={classes.table}>
                     <TableWithDeepLink
@@ -65,7 +74,9 @@ export const Duplicates: FunctionComponent<Props> = ({ params }) => {
                         count={count ?? 0}
                         baseUrl={baseUrl}
                         params={params}
-                        extraProps={{ loading: isFetching }}
+                        extraProps={{
+                            loading: isFetching,
+                        }}
                         onTableParamsChange={p =>
                             dispatch(redirectTo(baseUrl, p))
                         }

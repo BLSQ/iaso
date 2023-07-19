@@ -15,6 +15,7 @@ class UserRoleAPITestCase(APITestCase):
         star_wars.save()
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_user_roles"])
+        cls.user_with_no_permissions = cls.create_user_with_profile(username="userNoPermission", account=star_wars)
 
         cls.permission = Permission.objects.create(
             name="iaso permission", content_type_id=1, codename="iaso_permission"
@@ -59,6 +60,14 @@ class UserRoleAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["id"], self.userRole.pk)
 
+    def test_retrieve_user_role_read_only(self):
+        self.client.force_authenticate(self.user_with_no_permissions)
+
+        response = self.client.get(f"/api/userroles/{self.userRole.pk}/")
+
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(r["id"], self.userRole.pk)
+
     def test_list_without_search(self):
         self.client.force_authenticate(self.yoda)
 
@@ -85,6 +94,15 @@ class UserRoleAPITestCase(APITestCase):
 
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(r["name"], self.userRole.group.name)
+
+    def test_partial_update_no_permission(self):
+        self.client.force_authenticate(self.user_with_no_permissions)
+
+        payload = {"name": self.userRole.group.name}
+        response = self.client.put(f"/api/userroles/{self.userRole.id}/", data=payload, format="json")
+
+        r = self.assertJSONResponse(response, 403)
+        self.assertEqual(r["detail"], "You do not have permission to perform this action.")
 
     def test_update_name_modification(self):
         self.client.force_authenticate(self.yoda)

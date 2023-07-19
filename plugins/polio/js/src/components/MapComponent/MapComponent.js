@@ -39,6 +39,7 @@ export const MapComponent = ({
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
+        if (!fitToBounds) return null;
         const referenceLayer = fitBoundsToBackground
             ? backgroundLayer
             : mainLayer;
@@ -54,7 +55,7 @@ export const MapComponent = ({
         const newBounds = bounds_list[0];
         newBounds.extend(bounds_list);
         return newBounds;
-    }, [mainLayer, fitBoundsToBackground, backgroundLayer]);
+    }, [fitToBounds, fitBoundsToBackground, backgroundLayer, mainLayer]);
 
     return (
         <MapContainer
@@ -62,7 +63,7 @@ export const MapComponent = ({
             center={[0, 0]}
             zoom={3}
             scrollWheelZoom={false}
-            bounds={fitToBounds ? bounds : null}
+            bounds={bounds}
             boundsOptions={boundsOptions}
             zoomControl={false}
         >

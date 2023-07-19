@@ -116,7 +116,10 @@ def create_or_update_orgunit(
             orgunit.location = geom
         else:
             orgunit.geom = geom
-            orgunit.simplified_geom = geom
+            simplified_geom = geom.simplify(tolerance=0.002)
+            if type(simplified_geom) == Polygon:
+                simplified_geom = MultiPolygon(simplified_geom)
+            orgunit.simplified_geom = simplified_geom
 
     orgunit.save(skip_calculate_path=True)
 

@@ -140,7 +140,7 @@ def calculate_country_status(country_data, scope, roundNumber):
 
 
 class LqasAfroViewset(ModelViewSet):
-    def determine_reference_dates(self):
+    def compute_reference_dates(self):
         start_date_after = self.request.GET.get("startDate", None)
         end_date_before = self.request.GET.get("endDate", None)
         selected_period = self.request.GET.get("period", None)

@@ -1,4 +1,4 @@
-username,password,email,first_name,last_name,orgunit,permissions,profile_language,dhis2_id,user_roles
-pollux,yodnj!30dln,biobroly@bluesquarehub.com,broly,bio,9999,"iaso_forms, iaso_submissions",EN,KBFZK83J,
-ferdinand,!dsgd39hfghd,fdzepplin@bluesquarehub.com,ferdinand,von Zepplin,"Coruscant Jedi Council, 9999, Tatooine",,fr,9383,
-castor,frdghb30cd!hd,efsfg@srgrs.com,feesf,dsfsf,"Tatooine, Dagobah",iaso_projects,EN,SKNF83NF93,
+username,password,email,first_name,last_name,orgunit,permissions,profile_language,dhis2_id,user_roles,projects
+pollux,yodnj!30dln,biobroly@bluesquarehub.com,broly,bio,9999,"iaso_forms, iaso_submissions",EN,KBFZK83J,,
+ferdinand,!dsgd39hfghd,fdzepplin@bluesquarehub.com,ferdinand,von Zepplin,"Coruscant Jedi Council, 9999, Tatooine",,fr,9383,,
+castor,frdghb30cd!hd,efsfg@srgrs.com,feesf,dsfsf,"Tatooine, Dagobah",iaso_projects,EN,SKNF83NF93,,

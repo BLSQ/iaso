@@ -324,15 +324,11 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_missing_columns.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 
+        print("DATA: ", response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.data,
-            {
-                "error": "Something is wrong with your CSV File. Possibly missing {'permissions'} column(s). Your "
-                "columns: ['username', 'password', 'email', 'first_name', 'last_name', 'orgunit', "
-                "'profile_language', 'dhis2_id', 'user_roles']Expected columns: ['username', 'password', 'email', "
-                "'first_name', 'last_name', 'orgunit', 'profile_language', 'dhis2_id', 'permissions', 'user_roles']"
-            },
+            {"error": "Something is wrong with your CSV File. Possibly missing {'permissions'} column(s)."},
         )
 
     def test_create_user_with_roles(self):
@@ -364,4 +360,37 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(new_user_1.iaso_profile.user_roles.all()), 1)
         self.assertEqual(len(new_user_2.iaso_profile.user_roles.all()), 2)
 
+        self.assertEqual(response.data, {"Accounts created": 2})
+
+    def test_create_user_with_projects(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        users = User.objects.all()
+        profiles = Profile.objects.all()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(users), 5)
+        self.assertEqual(len(profiles), 5)
+        new_user_1 = users.get(username="broly")
+        new_user_2 = users.get(username="cyrus")
+        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
+        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_2.email, "cyruswashington@bluesquarehub.com")
+        self.assertEqual(new_user_1.first_name, "broly")
+        self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_2.first_name, "cyrus")
+        self.assertEqual(new_user_2.last_name, "washington")
+        self.assertEqual(new_user_1.iaso_profile.language, "fr")
+        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
+        self.assertEqual(org_unit_ids, [9999])
+        self.assertEqual(len(new_user_1.iaso_profile.user_roles.all()), 1)
+        self.assertEqual(len(new_user_2.iaso_profile.user_roles.all()), 2)
+        self.assertEqual(len(new_user_1.iaso_profile.projects.all()), 1)
+        self.assertEqual(new_user_1.iaso_profile.projects.all()[0].name, "Hydroponic gardens")
+        self.assertEqual(new_user_2.iaso_profile.projects.all()[0].name, "Hydroponic gardens")
         self.assertEqual(response.data, {"Accounts created": 2})

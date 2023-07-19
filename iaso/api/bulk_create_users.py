@@ -15,7 +15,7 @@ from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework.decorators import action
 from django.http import FileResponse
 
-from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole
+from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 
 
 class BulkCreateUserSerializer(serializers.ModelSerializer):
@@ -35,15 +35,15 @@ class HasUserPermission(permissions.BasePermission):
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
     """Api endpoint to bulkcreate users and profiles from a CSV File.
 
-    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions", "user_roles"]
+    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions", "user_roles", "projects"]
 
     Email, dhis2_id, permissions, profile_language and org_unit are not mandatory, but you must keep the columns.
 
     Sample csv input:
 
-    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id,user_role
+    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id,user_role,projects
 
-    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3, manager
+    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3, manager, "oms, RDC"
 
     You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
     You can add multiples org_units for the same user by ID or Name : "28334, Bas Uele, 9999"
@@ -100,6 +100,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             "dhis2_id",
             "permissions",
             "user_roles",
+            "projects",
         ]
         if request.FILES:
             user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
@@ -136,12 +137,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     raise serializers.ValidationError(
                         {
                             "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."
-                            f" Your columns: {csv_indexes}"
-                            f"Expected columns: {columns_list}"
                         }
                     )
                 org_units_list = []
                 user_roles_list = []
+                projects_instance_list = []
                 if i > 0:
                     email_address = True if row[csv_indexes.index("email")] else None
                     if email_address:
@@ -273,6 +273,29 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         }
                                     )
                     try:
+                        projects = row[csv_indexes.index("projects")]
+                    except (IndexError, ValueError):
+                        projects = None
+                    if projects:
+                        projects = projects.split(",")
+                        # check if the roles exists in the account of the request user
+                        # and add it to user_roles_list
+                        for project in projects:
+                            if project != "":
+                                project = project[1::] if project[:1] == " " else project
+                                try:
+                                    project_instance = Project.objects.get(
+                                        account=request.user.iaso_profile.account, name=project
+                                    )
+                                    projects_instance_list.append(project_instance)
+                                except ObjectDoesNotExist:
+                                    raise serializers.ValidationError(
+                                        {
+                                            "error": f"Error. User Project: {project}, at row {i + 1} does not exists: Fix "
+                                            "the error and try again."
+                                        }
+                                    )
+                    try:
                         user_permissions = row[csv_indexes.index("permissions")].split(",")
                         for perm in user_permissions:
                             perm = perm[1::] if perm[:1] == " " else perm
@@ -299,6 +322,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         profile.language = "fr"
                     profile.org_units.set(org_units_list)
                     profile.user_roles.set(user_roles_list)
+                    profile.projects.set(projects_instance_list)
                     csv_file = pd.read_csv(io.BytesIO(csv_str.getvalue().encode()))
                     csv_file.at[i - 1, "password"] = None
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)

@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from iaso.models import UserRole
 from .common import TimestampField, ModelViewSet
 
+
 class HasUserRolePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if (not request.user.has_perm("menupermissions.iaso_user_roles")) and request.method != "GET":

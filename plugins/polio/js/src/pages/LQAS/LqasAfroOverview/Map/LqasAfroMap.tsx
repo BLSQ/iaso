@@ -1,6 +1,7 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { MapContainer } from 'react-leaflet';
 
+import { Bounds } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/map/mapUtils';
 import { CustomZoomControl } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
 import TILES from '../../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 
@@ -28,6 +29,7 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
     setCurrentTile,
     side,
 }) => {
+    const [bounds, setBounds] = useState<Bounds | undefined>(undefined);
     return (
         <>
             <TilesSwitchControl
@@ -38,19 +40,26 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
                 style={{
                     height: '65vh',
                 }}
+                // @ts-ignore
                 center={defaultViewport.center}
                 zoom={defaultViewport.zoom}
                 zoomControl={false}
                 scrollWheelZoom={false}
+                whenCreated={mapInstance => {
+                    setBounds(mapInstance.getBounds());
+                }}
             >
                 <LqasAfroMapLegend />
                 <CustomTileLayer
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}
                 />
-                <CustomZoomControl
-                    boundsOptions={{ maxZoom: TILES.osm.maxZoom }}
-                />
+                {bounds && (
+                    <CustomZoomControl
+                        boundsOptions={{ maxZoom: TILES.osm.maxZoom }}
+                        bounds={bounds}
+                    />
+                )}
                 <LqasAfroMapPanesContainer
                     params={router.params as AfroMapParams}
                     side={side}

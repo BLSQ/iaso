@@ -175,7 +175,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 bounds={bounds}
                 boundsOptions={boundsOptions}
                 trackResize
-                // key={`registry-${orgUnit.id}-${showTooltip}`}
             >
                 <MapToggleTooltips
                     showTooltip={showTooltip}

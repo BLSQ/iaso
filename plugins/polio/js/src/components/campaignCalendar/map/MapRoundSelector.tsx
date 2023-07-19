@@ -14,7 +14,7 @@ type Props = {
     onChange: (value: 'all' | 'latest' | string) => void;
     options: DropdownOptions<'all' | 'latest' | string>[];
     isOpen: boolean;
-    closeDialog: CallableFunction;
+    closeDialog: () => void;
     id?: string;
 };
 

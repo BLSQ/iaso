@@ -16,7 +16,7 @@ import {
     getOrgUnitBounds,
     getOrgUnitsBounds,
     mergeBounds,
-    clusterCustomMarker,
+    colorClusterCustomMarker,
 } from '../../../utils/map/mapUtils';
 
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
@@ -127,7 +127,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             dispatch(
                 redirectToReplace(baseUrls.registryDetail, {
                     ...params,
-                    showTooltip: isVisible,
+                    showTooltip: `${isVisible}`,
                 }),
             );
         },
@@ -139,7 +139,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
             dispatch(
                 redirectToReplace(baseUrls.registryDetail, {
                     ...params,
-                    isFullScreen: isFull,
+                    isFullScreen: `${isFull}`,
                 }),
             );
         },
@@ -152,7 +152,6 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 <LoadingSpinner absolute />
             </Box>
         );
-
     return (
         <Box
             className={classNames(
@@ -176,6 +175,7 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                 bounds={bounds}
                 boundsOptions={boundsOptions}
                 trackResize
+                // key={`registry-${orgUnit.id}-${showTooltip}`}
             >
                 <MapToggleTooltips
                     showTooltip={showTooltip}
@@ -225,113 +225,94 @@ export const OrgUnitChildrenMap: FunctionComponent<Props> = ({
                         )}
                     </>
                 )}
-                {subOrgUnitTypes.map((subType, index) => (
-                    <Box key={subType.id}>
-                        <Pane
-                            name={`children-shapes-orgunit-type-${subType.id}`}
-                            style={{ zIndex: 400 + index }}
-                        >
-                            {activeChildren
-                                ?.filter(childrenOrgUnit =>
-                                    Boolean(childrenOrgUnit.geo_json),
-                                )
-                                .map(childrenOrgUnit => {
-                                    if (
-                                        childrenOrgUnit.org_unit_type_id ===
-                                        subType.id
-                                    ) {
-                                        return (
-                                            <GeoJSON
-                                                key={childrenOrgUnit.id}
-                                                // @ts-ignore TODO: fix this type problem
-                                                style={() => ({
-                                                    color: subType.color || '',
-                                                })}
-                                                data={childrenOrgUnit.geo_json}
-                                            >
-                                                <MapPopUp
-                                                    orgUnit={childrenOrgUnit}
-                                                />
-                                                {showTooltip && (
-                                                    <MapToolTip
-                                                        permanent
-                                                        pane="popupPane"
-                                                        label={
-                                                            childrenOrgUnit.name
-                                                        }
-                                                    />
-                                                )}
-                                                {!showTooltip && (
-                                                    <MapToolTip
-                                                        pane="popupPane"
-                                                        label={
-                                                            childrenOrgUnit.name
-                                                        }
-                                                    />
-                                                )}
-                                            </GeoJSON>
-                                        );
-                                    }
-                                    return null;
-                                })}
-                        </Pane>
+                {subOrgUnitTypes.map((subType, index) => {
+                    const orgUnitsShapes = activeChildren?.filter(
+                        childrenOrgUnit =>
+                            Boolean(childrenOrgUnit.geo_json) &&
+                            childrenOrgUnit.org_unit_type_id === subType.id,
+                    );
+                    const orgUnitsMarkers = activeChildren?.filter(
+                        childrenOrgUnit =>
+                            childrenOrgUnit.latitude &&
+                            childrenOrgUnit.longitude &&
+                            childrenOrgUnit.org_unit_type_id === subType.id,
+                    );
+                    return (
+                        <Box key={subType.id}>
+                            <Pane
+                                name={`children-shapes-orgunit-type-${subType.id}`}
+                                style={{ zIndex: 400 + index }}
+                            >
+                                {orgUnitsShapes.map(childrenOrgUnit => (
+                                    <GeoJSON
+                                        key={childrenOrgUnit.id}
+                                        // @ts-ignore TODO: fix this type problem
+                                        style={() => ({
+                                            color: subType.color || '',
+                                        })}
+                                        data={childrenOrgUnit.geo_json}
+                                    >
+                                        <MapPopUp orgUnit={childrenOrgUnit} />
+                                        {showTooltip && (
+                                            <MapToolTip
+                                                permanent
+                                                pane="popupPane"
+                                                label={childrenOrgUnit.name}
+                                            />
+                                        )}
+                                        {!showTooltip && (
+                                            <MapToolTip
+                                                pane="popupPane"
+                                                label={childrenOrgUnit.name}
+                                            />
+                                        )}
+                                    </GeoJSON>
+                                ))}
+                            </Pane>
 
-                        <Pane
-                            name={`children-locations-orgunit-type-${subType.id}`}
-                            style={{ zIndex: 600 + index }}
-                        >
-                            {activeChildren
-                                ?.filter(childrenOrgUnit =>
-                                    Boolean(
-                                        childrenOrgUnit.latitude &&
-                                            childrenOrgUnit.longitude,
-                                    ),
-                                )
-                                .map(childrenOrgUnit => {
-                                    if (
-                                        childrenOrgUnit.org_unit_type_id ===
-                                        subType.id
-                                    ) {
-                                        return (
-                                            <MarkerClusterGroup
-                                                key={childrenOrgUnit.id}
-                                                iconCreateFunction={
-                                                    clusterCustomMarker
-                                                }
-                                            >
-                                                <MarkersListComponent
-                                                    items={
-                                                        orgUnitChildren || []
-                                                    }
-                                                    markerProps={() => ({
-                                                        ...circleColorMarkerOptions(
-                                                            theme.palette
-                                                                .primary.main,
-                                                        ),
-                                                        radius: 12,
-                                                    })}
-                                                    popupProps={location => ({
-                                                        orgUnit: location,
-                                                    })}
-                                                    tooltipProps={e => ({
-                                                        permanent: showTooltip,
-                                                        pane: 'popupPane',
-                                                        label: e.name,
-                                                    })}
-                                                    PopupComponent={MapPopUp}
-                                                    TooltipComponent={
-                                                        MapToolTip
-                                                    }
-                                                    isCircle
-                                                />
-                                            </MarkerClusterGroup>
-                                        );
+                            <Pane
+                                name={`children-locations-orgunit-type-${subType.id}`}
+                                style={{ zIndex: 600 + index }}
+                            >
+                                <MarkerClusterGroup
+                                    iconCreateFunction={cluster =>
+                                        colorClusterCustomMarker(
+                                            cluster,
+                                            subType.color || '',
+                                        )
                                     }
-                                    return null;
-                                })}
-                        </Pane>
-                    </Box>
-                ))}
+                                    polygonOptions={{
+                                        fillColor: subType.color || '',
+                                        color: subType.color || '',
+                                    }}
+                                    key={subType.id}
+                                >
+                                    <MarkersListComponent
+                                        key={`markers-${subType.id}-${showTooltip}`}
+                                        items={orgUnitsMarkers || []}
+                                        markerProps={() => ({
+                                            ...circleColorMarkerOptions(
+                                                subType.color || '',
+                                            ),
+                                            radius: 12,
+                                        })}
+                                        popupProps={location => ({
+                                            orgUnit: location,
+                                        })}
+                                        tooltipProps={e => ({
+                                            permanent: showTooltip,
+                                            pane: 'popupPane',
+                                            label: e.name,
+                                        })}
+                                        PopupComponent={MapPopUp}
+                                        TooltipComponent={MapToolTip}
+                                        isCircle
+                                    />
+                                </MarkerClusterGroup>
+                            </Pane>
+                        </Box>
+                    );
+                })}
             </MapContainer>
         </Box>
     );

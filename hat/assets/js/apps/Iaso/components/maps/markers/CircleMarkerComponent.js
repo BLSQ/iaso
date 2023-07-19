@@ -18,7 +18,6 @@ const CircleMarkerComponent = props => {
         tooltipProps,
         onContextmenu,
     } = props;
-
     if (
         !item ||
         !item.latitude ||

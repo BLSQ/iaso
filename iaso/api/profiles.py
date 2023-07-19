@@ -27,20 +27,20 @@ PK_ME = "me"
 
 class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if view.action in ("retrieve", "partial_update") and view.kwargs.get("pk") == PK_ME:
+        pk = view.kwargs.get("pk")
+        if view.action in ("retrieve", "partial_update") and pk == PK_ME:
             return True
         if request.user.has_perm(permission.USERS_ADMIN):
             return True
         if request.user.has_perm(permission.USERS_MANAGED):
-            return self.has_permission_over_user(request, view)
+            return self.has_permission_over_user(request, pk)
 
         return request.method == "GET"
 
     # We could `return False` instead of raising exceptions,
     # but it's better to be explicit about why the permission was denied.
     @staticmethod
-    def has_permission_over_user(request, view):
-        pk = view.kwargs.get("pk")
+    def has_permission_over_user(request, pk):
         if not pk:
             raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot create users.")
 
@@ -53,8 +53,8 @@ class HasProfilePermission(permissions.BasePermission):
                 "Current user is not associated with any OrgUnit. " "They therefore cannot manage any users."
             )
 
-        user = get_object_or_404(User, pk=pk)
-        user_managed_org_units = user.iaso_profile.org_units.filter(id__in=org_units).all()
+        profile = get_object_or_404(Profile.objects.filter(account=request.user.iaso_profile.account), pk=pk)
+        user_managed_org_units = profile.org_units.filter(id__in=org_units).all()
         if not user_managed_org_units or len(user_managed_org_units) == 0:
             raise PermissionDenied(
                 "The user we are trying to modify is not part of any OrgUnit " "managed by the current user"
@@ -288,10 +288,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def update_permissions(user, request):
         user.user_permissions.clear()
         for permission_codename in request.data.get("user_permissions", []):
-            if not CustomPermissionSupport.has_right_to_assign(request.user, permission_codename):
-                raise PermissionDenied(
-                    f"User with {permission.USERS_MANAGED} cannot grant {permission.USERS_ADMIN} permission"
-                )
+            CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
             user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
         user.save()
 

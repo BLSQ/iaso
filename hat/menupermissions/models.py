@@ -20,6 +20,7 @@ from django.conf import LazySettings
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.utils.translation import gettext_lazy as _
+from rest_framework.exceptions import PermissionDenied
 
 _ASSIGNMENTS = "iaso_assignments"
 _COMPLETENESS = "iaso_completeness"
@@ -171,7 +172,6 @@ class CustomPermissionSupport(models.Model):
         return permissions
 
     @staticmethod
-    def has_right_to_assign(user, permission_codename: str):
+    def assert_right_to_assign(user, permission_codename: str):
         if user.has_perm(USERS_MANAGED) and permission_codename == _USERS_ADMIN:
-            return False
-        return True
+            raise PermissionDenied(f"User with {USERS_MANAGED} cannot grant {USERS_ADMIN} permission")

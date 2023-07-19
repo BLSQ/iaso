@@ -51,6 +51,17 @@ class ProfileAPITestCase(APITestCase):
         cls.ghi.default_version = sw_version_1
         cls.ghi.save()
 
+        cls.jedi_squad_1 = m.OrgUnit.objects.create(
+            org_unit_type=cls.jedi_squad,
+            version=sw_version_1,
+            name="Jedi Squad 1",
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
+            location=cls.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
             version=sw_version_1,
@@ -504,25 +515,27 @@ class ProfileAPITestCase(APITestCase):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
         self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
         self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "unittest_user_name",
             "password": "unittest_password",
             "first_name": "unittest_first_name",
-            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
             "last_name": "unittest_last_name",
+            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
         }
-        response = self.client.patch(f"/api/profiles/{self.jum.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
     def test_user_with_managed_permission_cannot_grant_user_admin_permission(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
         self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
         self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
         data = {
             "user_name": "jum",
             "user_permissions": [permission._FORMS, permission._USERS_MANAGED, permission._USERS_ADMIN],
         }
-        response = self.client.patch(f"/api/profiles/{self.jum.id}/", data=data, format="json")
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_update_profile_of_user_not_in_sub_org_unit(self):
@@ -534,7 +547,8 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
         }
-        response = self.client.patch(f"/api/profiles/{self.jum.id}/", data=data, format="json")
+        jum = Profile.objects.get(user=self.jum)
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_update_profile_if_not_themselves_in_sub_org_unit(self):
@@ -546,7 +560,8 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
         }
-        response = self.client.patch(f"/api/profiles/{self.jum.id}/", data=data, format="json")
+        jum = Profile.objects.get(user=self.jum)
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
 
     def test_user_with_managed_permission_cannot_create_users(self):
@@ -563,7 +578,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_user_with_managed_permission_cannot_update_from_unmanaged_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
-        self.jum.iaso_profile.org_units.set([self.elite_group.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_squad_1.id])
         self.client.force_authenticate(self.jam)
         data = {
             "user_name": "unittest_user_name",
@@ -571,5 +586,6 @@ class ProfileAPITestCase(APITestCase):
             "first_name": "unittest_first_name",
             "last_name": "unittest_last_name",
         }
-        response = self.client.patch(f"/api/profiles/{self.jum.id}/", data=data, format="json")
+        jum = Profile.objects.get(user=self.jum)
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)

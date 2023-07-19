@@ -106,7 +106,8 @@ def create_or_update_orgunit(
 
     orgunit.name = props["name"]
     orgunit.org_unit_type = data["type"]
-    orgunit.validation_status = validation_status
+    if orgunit.validation_status is None:
+        orgunit.validation_status = validation_status
     orgunit.source_ref = props["ref"]
     orgunit.version = source_version
 

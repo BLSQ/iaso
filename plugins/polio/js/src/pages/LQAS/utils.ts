@@ -1,13 +1,13 @@
 import { IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
-import { LQAS_PASS, LQAS_FAIL, LQAS_DISQUALIFIED } from '../IM/constants';
+import { LQAS_PASS, LQAS_FAIL } from '../IM/constants';
 import {
     LqasImDistrictDataWithNameAndRegion,
     ConvertedLqasImData,
     LqasImCampaign,
     LqasImDistrictData,
 } from '../../constants/types';
-import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
+import { OK_COLOR, FAIL_COLOR } from '../../styles/constants';
 import { makeLegendItem } from '../../utils';
 import {
     accessArrayRound,
@@ -23,9 +23,8 @@ export const determineStatusForDistrict = district => {
         if (marked > 56) {
             return LQAS_PASS;
         }
-        return LQAS_FAIL;
     }
-    return LQAS_DISQUALIFIED;
+    return LQAS_FAIL;
 };
 
 export const getLqasStatsForRound = (
@@ -44,12 +43,8 @@ export const getLqasStatsForRound = (
         return determineStatusForDistrict(district);
     });
     const passed = allStatuses.filter(status => status === LQAS_PASS);
-    const disqualified = allStatuses.filter(
-        status => status === LQAS_DISQUALIFIED,
-    );
     const failed = allStatuses.filter(status => status === LQAS_FAIL);
-
-    return [passed, failed, disqualified];
+    return [passed, failed];
 };
 
 export const makeLqasMapLegendItems =
@@ -63,7 +58,7 @@ export const makeLqasMapLegendItems =
         value: string;
         color: any;
     }[] => {
-        const [passed, failed, disqualified] = getLqasStatsForRound(
+        const [passed, failed] = getLqasStatsForRound(
             lqasData,
             campaign,
             round,
@@ -78,13 +73,8 @@ export const makeLqasMapLegendItems =
             value: failed?.length,
             message: formatMessage(MESSAGES.failing),
         });
-        const disqualifiedLegendItem = makeLegendItem({
-            color: WARNING_COLOR,
-            value: disqualified?.length,
-            message: formatMessage(MESSAGES.disqualified),
-        });
 
-        return [passedLegendItem, disqualifiedLegendItem, failedLegendItem];
+        return [passedLegendItem, failedLegendItem];
     };
 
 export const getLqasStatsWithStatus = ({ data, campaign, round }) => {

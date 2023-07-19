@@ -34,7 +34,6 @@ const useStyles = makeStyles(style);
 const getRatePassedColors = (ratePassed, classes) => {
     if (!ratePassed) return '';
     if (parseFloat(ratePassed) >= 80) return classes.pass;
-    if (parseFloat(ratePassed) >= 50) return classes.warning;
     return classes.fail;
 };
 
@@ -46,12 +45,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const summary = useMemo(() => {
-        // eslint-disable-next-line no-unused-vars
-        const [passed, failed, _disqualified] = getLqasStatsForRound(
-            data,
-            campaign,
-            round,
-        );
+        const [passed, failed] = getLqasStatsForRound(data, campaign, round);
         const evaluated: number = passed.length + failed.length;
         const ratePassed: string = convertStatToPercent(
             passed.length,

@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import { MapContainer, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import React, { useMemo } from 'react';
+import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 import {
@@ -12,6 +12,7 @@ import {
     number,
     bool,
 } from 'prop-types';
+
 import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
@@ -59,9 +60,11 @@ export const MapComponent = ({
 
     return (
         <MapContainer
+            key={`${bounds}`}
             style={{ height }}
             center={[0, 0]}
             zoom={3}
+            // zoomControl={false}
             scrollWheelZoom={false}
             bounds={bounds}
             boundsOptions={boundsOptions}

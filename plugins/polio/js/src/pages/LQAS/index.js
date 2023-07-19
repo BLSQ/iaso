@@ -26,9 +26,8 @@ import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
 import { genUrl } from '../../utils/routing';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { defaultRounds } from '../IM/constants.ts';
-
-const paperElevation = 2;
+import { defaultRounds, paperElevation } from '../IM/constants.ts';
+import { useLqasIm } from '../IM/requests.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -45,17 +44,16 @@ export const Lqas = ({ router }) => {
     const [selectedRounds, setSelectedRounds] = useState(
         rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
     );
+    const { data: LQASData, isFetching } = useLqasIm('lqas', country);
 
     const {
-        LQASData,
-        isFetching,
         convertedData,
         campaigns,
         campaignsFetching,
         debugData,
         hasScope,
         chartData,
-    } = useLqasData(campaign, country, selectedRounds);
+    } = useLqasData({ campaign, country, selectedRounds, LQASData });
 
     const dropDownOptions = useMemo(() => {
         return makeDropdownOptions(LQASData?.stats, campaign, selectedRounds);
@@ -97,7 +95,7 @@ export const Lqas = ({ router }) => {
                     {selectedRounds.map((rnd, index) => (
                         <Grid item xs={6} key={`round_${rnd}_${index}`}>
                             <MapContainer
-                                round={parseInt(rnd, 10)} // parsing the rnd because it willl be a string when coming from params
+                                round={parseInt(rnd, 10)} // parsing the rnd because it will be a string when coming from params
                                 campaign={campaign}
                                 campaigns={campaigns}
                                 country={country}

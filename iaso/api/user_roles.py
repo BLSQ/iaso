@@ -16,13 +16,6 @@ class HasUserRolePermission(permissions.BasePermission):
         return True
 
 
-class HasUserRolePermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        if (not request.user.has_perm("menupermissions.iaso_user_roles")) and request.method != "GET":
-            return False
-        return True
-
-
 class PermissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Permission

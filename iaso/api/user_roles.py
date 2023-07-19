@@ -54,17 +54,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
         if group.id and len(permissions) > 0:
             for permission_codename in permissions:
-                if "polio" not in settings.PLUGINS:
-                    permission = get_object_or_404(
-                        Permission,
-                        ~Q(codename__startswith="iaso_polio"),
-                        codename__startswith="iaso_",
-                        codename=permission_codename,
-                    )
-                else:
-                    permission = get_object_or_404(
-                        Permission, codename__startswith="iaso_", codename=permission_codename
-                    )
+                permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
                 group.permissions.add(permission)
             group.save()
 
@@ -84,17 +74,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
         if permissions is not None:
             group.permissions.clear()
             for permission_codename in permissions:
-                if "polio" not in settings.PLUGINS:
-                    permission = get_object_or_404(
-                        Permission,
-                        ~Q(codename__startswith="iaso_polio"),
-                        codename__startswith="iaso_",
-                        codename=permission_codename,
-                    )
-                else:
-                    permission = get_object_or_404(
-                        Permission, codename__startswith="iaso_", codename=permission_codename
-                    )
+                permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
                 group.permissions.add(permission)
 
         group.save()

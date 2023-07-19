@@ -12,7 +12,7 @@ export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
 export const LQAS_FAIL = '3lqasFail';
 export const IN_SCOPE = 'inScope';
-
+export const paperElevation = 2;
 export const imDistrictColors = {
     [IM_PASS]: {
         color: '#5e5e5e',

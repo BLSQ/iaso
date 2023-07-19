@@ -32,11 +32,18 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         user_role = super().to_representation(instance)
-        user_role["name"] = user_role["name"][1:]
+        account_id = user_role["name"].split("_")[0]
+        user_role["name"] = self.remove_prefix_from_str(user_role["name"], account_id + "_")
         return user_role
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    # This method will remove a given prefix from a string
+    def remove_prefix_from_str(self, str, prefix):
+        if str.startswith(prefix):
+            return str[len(prefix) :]
+        return str
 
     def get_permissions(self, obj):
         return PermissionSerializer(obj.group.permissions, many=True).data
@@ -44,7 +51,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
         request = self.context["request"]
-        group_name = str(account.id) + request.data.get("name")
+        group_name = str(account.id) + "_" + request.data.get("name")
         permissions = request.data.get("permissions", [])
         if not group_name:
             return Response({"error": "User group name is required"}, status=400)
@@ -64,7 +71,7 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
     def update(self, user_role, validated_data):
         account = self.context["request"].user.iaso_profile.account
-        group_name = str(account.id) + self.context["request"].data.get("name", None)
+        group_name = str(account.id) + "_" + self.context["request"].data.get("name", None)
         permissions = self.context["request"].data.get("permissions", None)
         group = user_role.group
 

@@ -29,7 +29,6 @@ class UserRoleAPITestCase(APITestCase):
             name="iaso permission", content_type_id=1, codename="iaso_permission2"
         )
 
-
         cls.permission_not_allowable = Permission.objects.create(
             name="admin permission", content_type_id=1, codename="admin_permission1"
         )

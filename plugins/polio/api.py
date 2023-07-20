@@ -75,8 +75,6 @@ from .helpers import (
     get_url_content,
     CustomFilterBackend,
     calculate_country_status,
-    get_penultimate_round_number,
-    get_latest_round_number,
     determine_status_for_district,
 )
 from .vaccines_email import send_vaccines_notification_email
@@ -1800,6 +1798,11 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                 sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "end", end_date_before)
             # And we pick the first one from our sorted list
             latest_campaign = sorted_campaigns[0] if data_store and sorted_campaigns else None
+            sorted_rounds = (
+                sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
+                if latest_campaign is not None
+                else []
+            )
             # Get data from json datastore
             data_for_country = data_store.content if data_store else None
             # remove data from all campaigns but latest
@@ -1810,9 +1813,9 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
             if stats and latest_campaign:
                 round_number = requested_round
                 if round_number == "latest":
-                    round_number = get_latest_round_number(stats)
+                    round_number = sorted_rounds[0].number if len(sorted_rounds) > 0 else None
                 elif round_number == "penultimate":
-                    round_number = get_penultimate_round_number(stats)
+                    round_number = sorted_rounds[1].number if len(sorted_rounds) > 1 else None
                 else:
                     round_number = int(round_number)
                 if latest_campaign:
@@ -1910,12 +1913,9 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 continue
             sorted_rounds = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
             if requested_round == "latest":
-                round_number = sorted_rounds[0].number
-            elif requested_round == "penultimate":
-                if len(sorted_rounds) > 1:
-                    round_number = sorted_rounds[1].number
-                else:
-                    requested_round = None
+                round_number = sorted_rounds[0].number if len(sorted_rounds) > 0 else None
+            elif requested_round == "penultimate" and len(sorted_rounds) > 1:
+                round_number = sorted_rounds[1].number if len(sorted_rounds) > 1 else None
             else:
                 round_number = int(requested_round)
             if latest_campaign.separate_scopes_per_round:

@@ -100,19 +100,6 @@ def reduce_to_country_status(total, current):
     return total
 
 
-def get_latest_round_number(country_data):
-    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
-    return data_for_all_rounds[0]["number"] if data_for_all_rounds else None
-
-
-def get_penultimate_round_number(country_data):
-    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
-    if data_for_all_rounds:
-        if len(data_for_all_rounds) > 1:
-            return data_for_all_rounds[1]["number"]
-    return None
-
-
 def get_data_for_round(country_data, roundNumber):
     data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
     return next((round for round in data_for_all_rounds if round["number"] == roundNumber), {"data": {}})

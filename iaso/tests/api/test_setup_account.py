@@ -1,3 +1,5 @@
+from django.contrib.auth.models import User
+
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -93,6 +95,23 @@ class SetupAccountApiTestCase(APITestCase):
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
         self.assertEqual(response.status_code, 201)
+        self.assertEqual(m.Account.objects.filter(name="unittest_account").count(), 1)
+        self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
+        self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
+
+    def test_setupaccount_create_is_super_user(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+
+        user = User.objects.get(username="unittest_username")
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(user.is_superuser, True)
         self.assertEqual(m.Account.objects.filter(name="unittest_account").count(), 1)
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)

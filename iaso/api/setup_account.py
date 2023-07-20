@@ -44,7 +44,6 @@ class SetupAccountSerializer(serializers.Serializer):
             password=validated_data["password"],
             first_name=validated_data.get("user_first_name", ""),
             last_name=validated_data.get("user_last_name", ""),
-            is_superuser=True,
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
 

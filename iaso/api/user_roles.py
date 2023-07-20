@@ -4,7 +4,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions, serializers
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
-from rest_framework.response import Response
 from iaso.models import UserRole
 from .common import TimestampField, ModelViewSet
 

@@ -246,6 +246,7 @@ class FormsViewSet(ModelViewSet):
                         & ~Q(instances__device__test_device=True)
                         & ~Q(instances__deleted=True)
                         & Q(instances__org_unit__in=orgunits)
+                        & Q(projects__in=self.request.user.iaso_profile.projects.all())
                     ),
                 )
             )
@@ -254,7 +255,10 @@ class FormsViewSet(ModelViewSet):
                 instances_count=Count(
                     "instances",
                     filter=(
-                        ~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)
+                        ~Q(instances__file="")
+                        & ~Q(instances__device__test_device=True)
+                        & ~Q(instances__deleted=True)
+                        & Q(projects__in=self.request.user.iaso_profile.projects.all())
                     ),
                 )
             )

@@ -96,7 +96,7 @@ const ActionTableColumnComponent = ({ settings }) => {
         saveOu(orgUnitPayload).catch(onError);
     };
 
-    const showButton =
+    const showLinkOrgUnitIstanceReferenceButton =
         settings.row.original.reference_form_id ===
             settings.row.original.form_id &&
         hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
@@ -144,7 +144,7 @@ const ActionTableColumnComponent = ({ settings }) => {
                     tooltipMessage={MESSAGES.viewOrgUnit}
                 />
             )}
-            {showButton && (
+            {showLinkOrgUnitIstanceReferenceButton && (
                 <ConfirmCancelDialogComponent
                     titleMessage={confirmCancelTitleMessage(notLinked)}
                     onConfirm={closeDialog => {

@@ -246,9 +246,11 @@ class FormsViewSet(ModelViewSet):
                         & ~Q(instances__device__test_device=True)
                         & ~Q(instances__deleted=True)
                         & Q(instances__org_unit__in=orgunits)
+                        & Q(projects__in=self.request.user.iaso_profile.projects.all())
                     ),
                 )
             )
+            print(queryset)
         else:
             queryset = queryset.annotate(
                 instances_count=Count(
@@ -258,7 +260,7 @@ class FormsViewSet(ModelViewSet):
                     ),
                 )
             )
-
+        print(queryset.query)
         from_date = self.request.query_params.get("date_from", None)
         if from_date:
             queryset = queryset.filter(

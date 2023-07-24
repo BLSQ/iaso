@@ -84,7 +84,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
 
-    def test_setupaccount_create_with_first_last_name(self):
+    def test_setup_account_create_with_first_last_name(self):
         self.client.force_authenticate(self.admin)
         data = {
             "account_name": "unittest_account",
@@ -100,7 +100,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
 
-    def test_setupaccount_has_all_perms(self):
+    def test_setup_account_has_all_perms(self):
 
         self.client.force_authenticate(self.admin)
         data = {
@@ -115,7 +115,7 @@ class SetupAccountApiTestCase(APITestCase):
         has_all_perms = True
 
         for perm in Permission.objects.filter(
-                codename__in=CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
+            codename__in=CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
         ):
             if perm not in user.user_permissions.all():
                 has_all_perms = False

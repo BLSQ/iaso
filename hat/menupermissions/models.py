@@ -60,65 +60,19 @@ ORG_UNIT_GROUPS = _("Org unit groups")
 
 
 class CustomPermissionSupport(models.Model):
-    """Model used to hold our custom permission.
+    """Model used to hold our custom permission."""
 
-    This is not a true model that generate a table hence the managed=False"""
+    @staticmethod
+    def get_full_permission_list():
+        return [couple[0] for couple in CustomPermissionSupport._meta.permissions]
 
-    # Used in setup_account api
-    DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
-        "iaso_forms",
-        "iaso_submissions",
-        "iaso_mappings",
-        "iaso_completeness",
-        "iaso_org_units",
-        "iaso_links",
-        "iaso_users",
-        "iaso_projects",
-        "iaso_sources",
-        "iaso_data_tasks",
-        "iaso_reports",
-        "iaso_forms",
-        "iaso_mappings",
-        "iaso_completeness",
-        "iaso_org_units",
-        "iaso_registry",
-        "iaso_links",
-        "iaso_users",
-        "iaso_pages",
-        "iaso_projects",
-        "iaso_sources",
-        "iaso_data_tasks",
-        "iaso_polio",
-        "iaso_polio_config",
-        "iaso_submissions",
-        "iaso_update_submission",
-        "iaso_planning",
-        "iaso_reports",
-        "iaso_teams",
-        "iaso_assignments",
-        "iaso_polio_budget",
-        "iaso_entities",
-        "iaso_storages",
-        "iaso_completeness_stats",
-        "iaso_workflows",
-        "iaso_polio_budget_admin",
-        "iaso_entity_duplicates_read",
-        "iaso_entity_duplicates_write",
-        "iaso_user_roles",
-        "iaso_datastore_read",
-        "iaso_datastore_write",
-        "iaso_org_unit_types",
-        "iaso_org_unit_groups",
-    ]
+    """This is not a true model that generate a table hence the managed=False"""
 
     class Meta:
         managed = False  # No database table creation or deletion operations \
         # will be performed for this model.
 
         permissions = (
-            ("x_modifications", MODIFICATIONS),
-            ("x_management_teams", TEAMS),
-            ("x_management_users", USERS),
             ("iaso_forms", FORMS),
             ("iaso_mappings", MAPPINGS),
             ("iaso_completeness", COMPLETENESS),

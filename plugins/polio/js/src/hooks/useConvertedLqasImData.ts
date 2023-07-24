@@ -17,7 +17,7 @@ const convertRoundDataToArray = roundDataAsDict => {
 };
 
 export const convertAPIData = (
-    data: LqasImData,
+    data?: LqasImData,
 ): Record<string, ConvertedLqasImData> => {
     if (!data) return {};
     const { stats } = data;
@@ -36,7 +36,7 @@ export const convertAPIData = (
 };
 
 export const useConvertedLqasImData = (
-    data: LqasImData,
+    data?: LqasImData,
 ): Record<string, ConvertedLqasImData> => {
     return useMemo(() => convertAPIData(data), [data]);
 };

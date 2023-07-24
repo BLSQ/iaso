@@ -198,9 +198,11 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         if not username:
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
-        existing_user = User.objects.get(username__iexact=username)
+
         user = profile.user
-        if existing_user and not existing_user.id == user.id:
+        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
+
+        if existing_user:
             # Prevent from username change with existing username
             return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
 
@@ -235,8 +237,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         user_roles = request.data.get("user_roles", [])
         profile.user_roles.clear()
         profile.user.groups.clear()
+        # Get the current connected user
+        current_profile = request.user.iaso_profile
         for user_role_id in user_roles:
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            # Get only a user role linked to the account's user
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
             user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
             profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)
@@ -336,7 +341,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         # link the profile to user roles
         user_roles = request.data.get("user_roles", [])
         for user_role_id in user_roles:
-            user_role_item = get_object_or_404(UserRole, pk=user_role_id)
+            # Get only a user role linked to the account's user
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
             user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
             profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)

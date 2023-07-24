@@ -108,7 +108,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         search: params.search,
         selectedItem,
     });
-
     const isLoading =
         isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
 
@@ -146,7 +145,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 ...params,
                 baseOrgunitType: newBaseOrgUnitType,
             };
-            dispatch(redirectTo(baseUrl, newParams));
+            dispatch(redirectTo(baseUrl, newParams as Record<string, any>));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [assignments]);
@@ -182,7 +181,12 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             ...params,
                             baseOrgunitType: newBaseOrgUnitType,
                         };
-                        dispatch(redirectTo(baseUrl, newParams));
+                        dispatch(
+                            redirectTo(
+                                baseUrl,
+                                newParams as Record<string, any>,
+                            ),
+                        );
                     }
                 }
             }
@@ -287,6 +291,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     data={sidebarData || []}
                                     assignments={assignments}
                                     selectedItem={selectedItem}
+                                    orgUnits={orgUnitsList || []}
                                     setSelectedItem={setSelectedItem}
                                     currentTeam={currentTeam}
                                     setItemColor={setItemColor}
@@ -295,6 +300,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     orgunitTypes={orgunitTypes || []}
                                     isFetchingOrgUnitTypes={
                                         isFetchingOrgunitTypes
+                                    }
+                                    isLoadingAssignments={
+                                        isLoadingAssignments ||
+                                        isFetchingOrgUnitsList
                                     }
                                 />
                             </Grid>

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0129_campaign_ra_completed_at_wfeditable"),
         ("polio", "0130_delete_surge"),

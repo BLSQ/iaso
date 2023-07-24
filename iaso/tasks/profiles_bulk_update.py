@@ -3,7 +3,7 @@ from time import time
 from typing import Optional, List
 
 from django.db import transaction
-
+from django.shortcuts import get_object_or_404
 from beanstalk_worker import task_decorator
 from hat.audit import models as audit_models
 from iaso.models import Task, Profile, Project, UserRole, OrgUnit
@@ -24,27 +24,27 @@ def update_single_profile_from_bulk(
 ):
     """Used within the context of a bulk operation"""
     original_copy = deepcopy(profile)
-
+    accound_id = user.iaso_profile.account.id
     if roles_id_added is not None:
         for role_id in roles_id_added:
-            role = UserRole.objects.get(id=role_id)
-            if role.account.id == user.iaso_profile.account.id:
+            role = get_object_or_404(UserRole, id=role_id, account_id=accound_id)
+            if role.account.id == accound_id:
                 role.iaso_profile.add(profile)
     if roles_id_removed is not None:
         for role_id in roles_id_removed:
-            role = UserRole.objects.get(id=role_id)
-            if role.account.id == user.iaso_profile.account.id:
+            role = get_object_or_404(UserRole, id=role_id, account_id=accound_id)
+            if role.account.id == accound_id:
                 role.iaso_profile.remove(profile)
 
     if projects_ids_added is not None:
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)
-            if project.account.id == user.iaso_profile.account.id:
+            if project.account.id == accound_id:
                 project.iaso_profile.add(profile)
     if projects_ids_removed is not None:
         for project_id in projects_ids_removed:
             project = Project.objects.get(pk=project_id)
-            if project.account.id == user.iaso_profile.account.id:
+            if project.account.id == accound_id:
                 project.iaso_profile.remove(profile)
 
     if language is not None:

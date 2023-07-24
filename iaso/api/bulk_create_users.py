@@ -99,7 +99,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             )
             file_instance.save()
 
-            orgunits_hierarchy = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all())
+            orgunits_hierarchy = OrgUnit.objects.hierarchy(user_access_ou)
 
             for row in reader:
                 org_units_list = []
@@ -115,7 +115,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     "again.".format(i)
                                 }
                             )
-
                     try:
                         try:
                             user = User.objects.create(

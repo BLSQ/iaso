@@ -101,7 +101,6 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
 
     def test_setup_account_has_all_perms(self):
-
         self.client.force_authenticate(self.admin)
         data = {
             "account_name": "unittest_account",

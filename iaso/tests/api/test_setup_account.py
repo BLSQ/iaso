@@ -115,7 +115,7 @@ class SetupAccountApiTestCase(APITestCase):
         has_all_perms = True
 
         for perm in Permission.objects.filter(
-            codename__in=CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
+                codename__in=CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
         ):
             if perm not in user.user_permissions.all():
                 has_all_perms = False

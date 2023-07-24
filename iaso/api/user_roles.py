@@ -8,6 +8,7 @@ from iaso.models import UserRole
 from .common import TimestampField, ModelViewSet
 from hat.menupermissions import models as permission
 
+
 class HasUserRolePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if (not request.user.has_perm(permission.USERS_ROLES)) and request.method != "GET":

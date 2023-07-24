@@ -12,6 +12,56 @@ from iaso.models import Account, DataSource, SourceVersion, Profile
 logger = logging.getLogger(__name__)
 
 
+DEFAULT_PERMISSIONS_FOR_NEW_SETUP_ACCOUNT_USER = [
+        "iaso_forms",
+        "iaso_submissions",
+        "iaso_mappings",
+        "iaso_completeness",
+        "iaso_org_units",
+        "iaso_links",
+        "iaso_users",
+        "iaso_projects",
+        "iaso_sources",
+        "iaso_data_tasks",
+        "iaso_reports",
+        "x_modifications",
+        "x_management_teams",
+        "x_management_users",
+        "iaso_forms",
+        "iaso_mappings",
+        "iaso_completeness",
+        "iaso_org_units",
+        "iaso_registry",
+        "iaso_links",
+        "iaso_users",
+        "iaso_pages",
+        "iaso_projects",
+        "iaso_sources",
+        "iaso_data_tasks",
+        "iaso_polio",
+        "iaso_polio_config",
+        "iaso_submissions",
+        "iaso_update_submission",
+        "iaso_planning",
+        "iaso_reports",
+        "iaso_teams",
+        "iaso_assignments",
+        "iaso_polio_budget",
+        "iaso_entities",
+        "iaso_storages",
+        "iaso_completeness_stats",
+        "iaso_workflows",
+        "iaso_polio_budget_admin",
+        "iaso_entity_duplicates_read",
+        "iaso_entity_duplicates_write",
+        "iaso_user_roles",
+        "iaso_datastore_read",
+        "iaso_datastore_write",
+        "iaso_org_unit_types",
+        "iaso_org_unit_groups",
+    ]
+
+
 # noinspection PyMethodMayBeStatic
 class SetupAccountSerializer(serializers.Serializer):
     """Set up an account with a first user and the appropriate sources"""
@@ -44,15 +94,19 @@ class SetupAccountSerializer(serializers.Serializer):
             password=validated_data["password"],
             first_name=validated_data.get("user_first_name", ""),
             last_name=validated_data.get("user_last_name", ""),
-            is_superuser=True,
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
 
-        profile = Profile.objects.create(account=account, user=user)
+        Profile.objects.create(account=account, user=user)
 
-        permissions_to_add = CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
-        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-        user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
+        menu_perms = Permission.objects.all()
+
+        for perm in menu_perms:
+            user.user_permissions.add(perm)
+
+        for perm in Permission.objects.filter(codename__in=DEFAULT_PERMISSIONS_FOR_NEW_SETUP_ACCOUNT_USER):
+            user.user_permissions.add(perm)
+
         return validated_data
 
 

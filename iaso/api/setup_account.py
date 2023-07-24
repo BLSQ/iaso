@@ -99,13 +99,9 @@ class SetupAccountSerializer(serializers.Serializer):
 
         Profile.objects.create(account=account, user=user)
 
-        menu_perms = Permission.objects.all()
-
-        for perm in menu_perms:
-            user.user_permissions.add(perm)
-
-        for perm in Permission.objects.filter(codename__in=DEFAULT_PERMISSIONS_FOR_NEW_SETUP_ACCOUNT_USER):
-            user.user_permissions.add(perm)
+        permissions_to_add = CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
+        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
+        user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
 
         return validated_data
 

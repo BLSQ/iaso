@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User, Permission
 
+from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -100,54 +101,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
 
     def test_setupaccount_has_all_perms(self):
-        DEFAULT_PERMISSIONS_FOR_NEW_SETUP_ACCOUNT_USER = [
-            "iaso_forms",
-            "iaso_submissions",
-            "iaso_mappings",
-            "iaso_completeness",
-            "iaso_org_units",
-            "iaso_links",
-            "iaso_users",
-            "iaso_projects",
-            "iaso_sources",
-            "iaso_data_tasks",
-            "iaso_reports",
-            "x_modifications",
-            "x_management_teams",
-            "x_management_users",
-            "iaso_forms",
-            "iaso_mappings",
-            "iaso_completeness",
-            "iaso_org_units",
-            "iaso_registry",
-            "iaso_links",
-            "iaso_users",
-            "iaso_pages",
-            "iaso_projects",
-            "iaso_sources",
-            "iaso_data_tasks",
-            "iaso_polio",
-            "iaso_polio_config",
-            "iaso_submissions",
-            "iaso_update_submission",
-            "iaso_planning",
-            "iaso_reports",
-            "iaso_teams",
-            "iaso_assignments",
-            "iaso_polio_budget",
-            "iaso_entities",
-            "iaso_storages",
-            "iaso_completeness_stats",
-            "iaso_workflows",
-            "iaso_polio_budget_admin",
-            "iaso_entity_duplicates_read",
-            "iaso_entity_duplicates_write",
-            "iaso_user_roles",
-            "iaso_datastore_read",
-            "iaso_datastore_write",
-            "iaso_org_unit_types",
-            "iaso_org_unit_groups",
-        ]
+
         self.client.force_authenticate(self.admin)
         data = {
             "account_name": "unittest_account",
@@ -160,7 +114,9 @@ class SetupAccountApiTestCase(APITestCase):
 
         has_all_perms = True
 
-        for perm in Permission.objects.filter(codename__in=DEFAULT_PERMISSIONS_FOR_NEW_SETUP_ACCOUNT_USER):
+        for perm in Permission.objects.filter(
+            codename__in=CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
+        ):
             if perm not in user.user_permissions.all():
                 has_all_perms = False
 

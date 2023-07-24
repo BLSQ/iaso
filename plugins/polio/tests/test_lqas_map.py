@@ -10,7 +10,6 @@ from plugins.polio.helpers import (
     calculate_country_status,
     determine_status_for_district,
     get_data_for_round,
-    get_latest_round_number,
     reduce_to_country_status,
 )
 from plugins.polio.models import Campaign, CampaignScope, Round, RoundScope
@@ -340,14 +339,6 @@ class PolioLqasAfroMapTestCase(APITestCase):
         total = reduce_to_country_status(total, inScope)
         self.assertEqual(total["total"], 5)
         self.assertEqual(total["passed"], 2)
-
-    def test_get_latest_round_number(self):
-        country_data = self.country1_data_store_content["stats"][self.campaign_1.obr_name]
-        number_found = get_latest_round_number(country_data)
-        self.assertEqual(number_found, 2)
-        country_data = {"rounds": []}
-        number_found = get_latest_round_number(country_data)
-        self.assertEqual(number_found, None)
 
     def test_get_data_for_round(self):
         country_data = self.country1_data_store_content["stats"][self.campaign_1.obr_name]

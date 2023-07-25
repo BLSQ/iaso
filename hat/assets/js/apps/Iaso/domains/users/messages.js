@@ -382,6 +382,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.removeLocations',
         defaultMessage: 'Remove location(s)',
     },
+    iaso_write_sources: {
+        id: 'iaso.permissions.iaso_write_sources',
+        defaultMessage: 'Edit data sources',
+    },
 });
 
 export default MESSAGES;

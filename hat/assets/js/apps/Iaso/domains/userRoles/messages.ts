@@ -176,6 +176,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permission.reports',
         defaultMessage: 'Reports',
     },
+    iaso_write_sources: {
+        id: 'iaso.permissions.iaso_write_sources',
+        defaultMessage: 'Edit data sources',
+    },
 });
 
 export default MESSAGES;

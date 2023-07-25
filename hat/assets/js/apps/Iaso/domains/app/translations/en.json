@@ -779,6 +779,7 @@
     "iaso.permissions.iaso_org_unit_types": "Org unit types",
     "iaso.permissions.iaso_registry": "Registry",
     "iaso.permissions.iaso_workflows": "Workflows",
+    "iaso.permissions.iaso_write_sources": "Edit data sources",
     "iaso.permissions.links": "Sources matching",
     "iaso.permissions.mappings": "Mappings with DHIS2",
     "iaso.permissions.orgUnits": "Organisation units",

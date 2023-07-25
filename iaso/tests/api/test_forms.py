@@ -573,8 +573,8 @@ class FormsAPITestCase(APITestCase):
 
     def test_instance_not_in_same_project_are_not_counted(self):
         """
-        This test ensures that the instance count on list form does not take into account the instances in other
-        projects using the same forms.
+        This test ensure that the instance count on list form is not multiplied by the number of projects with
+        instances linked to the same form.
         """
 
         self.client.force_authenticate(self.yoda)
@@ -587,6 +587,13 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(0, response.json()["forms"][1]["instances_count"])
 
         with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as instance_file:
+            instance_1 = Instance.objects.create(
+                form=self.form_2,
+                period="202001",
+                org_unit=self.jedi_council_corruscant,
+                project=self.project_2,
+            )
+            instance_1.file.save("hydroponics_test_upload.xml", File(instance_file))
             instance_2 = Instance.objects.create(
                 form=self.form_2,
                 period="202001",
@@ -599,5 +606,4 @@ class FormsAPITestCase(APITestCase):
 
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
-        self.assertEqual(0, response.json()["forms"][1]["instances_count"])
-        print(response.json())
+        self.assertEqual(2, response.json()["forms"][0]["instances_count"])

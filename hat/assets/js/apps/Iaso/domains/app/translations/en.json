@@ -50,6 +50,7 @@
     "iaso.completeness.title": "Completeness",
     "iaso.completeness.titleDescendants": "Completeness (with descendants)",
     "iaso.completeness.titleDirect": "Completeness (direct)",
+    "iaso.completenessStats.count": "Instance(s) count",
     "iaso.completenessStats.descendants": "Descendants",
     "iaso.completenessStats.descendantsNoSubmissionExpected": "No descendant OrgUnit is expected to fill that form. Check the Form config if this is unexpected",
     "iaso.completenessStats.itselfColumnLabel": "Itself",

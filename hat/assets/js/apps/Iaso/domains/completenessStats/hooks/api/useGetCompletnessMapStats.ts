@@ -1,7 +1,11 @@
 import { UseBaseQueryResult } from 'react-query';
 import { getRequest } from '../../../../libs/Api';
 import { useSnackQuery } from '../../../../libs/apiHooks';
-import { CompletenessApiResponse, CompletenessRouterParams } from '../../types';
+import {
+    CompletenessMapApiResponse,
+    CompletenessRouterParams,
+    CompletenessMapStats,
+} from '../../types';
 
 // Correspondance between the name in the filter object and what the API expect
 const queryParamsMap = new Map([
@@ -13,52 +17,49 @@ const queryParamsMap = new Map([
     ['orgunitValidationStatus', 'org_unit_validation_status'],
 ]);
 
-const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
 const getParams = (params: CompletenessRouterParams) => {
-    const { pageSize, ...urlParams } = params;
-    const apiParams = { ...urlParams, limit: pageSize ?? 10 };
-    const queryParams: Record<string, string> = {};
-    apiParamsKeys.forEach(apiParamKey => {
-        const apiParam = apiParams[apiParamKey];
-        if (apiParam !== undefined) {
-            queryParams[apiParamKey] = apiParam;
-        }
-    });
-
+    const queryParams = {};
     queryParamsMap.forEach((value, key) => {
         if (params[key]) {
             queryParams[value] = params[key];
         }
     });
-    delete queryParams.tab;
     return queryParams;
 };
 
 export const buildQueryString = (
     params: CompletenessRouterParams,
 ): URLSearchParams => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const queryParams = {};
+    queryParamsMap.forEach((value, key) => {
+        if (params[key]) {
+            queryParams[value] = params[key];
+        }
+    });
     const queryString = new URLSearchParams(getParams(params));
     return queryString;
 };
 
 const getCompletenessStats = async (
     params: CompletenessRouterParams,
-): Promise<CompletenessApiResponse> => {
+): Promise<CompletenessMapApiResponse> => {
     const queryString = buildQueryString(params);
     return getRequest(`/api/v2/completeness_stats/?${queryString}`);
 };
 
-export const useGetCompletenessStats = (
+export const useGetCompletnessMapStats = (
     params: CompletenessRouterParams,
-): UseBaseQueryResult<CompletenessApiResponse, unknown> => {
+): UseBaseQueryResult<CompletenessMapStats[], unknown> => {
     return useSnackQuery({
-        queryKey: ['completenessStats', getParams(params)],
+        queryKey: ['completenessMapStats', getParams(params)],
         queryFn: () => getCompletenessStats(params),
         options: {
             retry: 0,
             // Allow navigation via the action button to feel smooth
             //  otherwise it will blank the table then fill it.
             keepPreviousData: true,
+            select: data => data?.results,
         },
     });
 };

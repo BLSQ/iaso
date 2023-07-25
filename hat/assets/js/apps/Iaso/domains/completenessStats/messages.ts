@@ -98,6 +98,26 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View instances',
         id: 'iaso.forms.viewInstances',
     },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    count: {
+        defaultMessage: 'Instance(s) count',
+        id: 'iaso.completenessStats.count',
+    },
 });
 
 export default MESSAGES;

@@ -626,6 +626,10 @@ export const completenessStatsPath = {
         ...paginationPathParams,
         {
             isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
             key: 'orgUnitId',
         },
         {

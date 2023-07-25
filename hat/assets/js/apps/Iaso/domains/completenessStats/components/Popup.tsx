@@ -33,7 +33,7 @@ const useStyles = makeStyles(theme => ({
         '& .leaflet-popup-content': {
             margin: 0,
             minHeight: 100,
-            width: '300px !important',
+            width: '350px !important',
         },
     },
     actionBox: {
@@ -68,13 +68,16 @@ export const PopupComponent: FunctionComponent<Props> = ({
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
     const popup = createRef();
-    const handleClick = useCallback(() => {
-        const tempParams = {
-            ...params,
-            parentId: `${location.id}`,
-        };
-        dispatch(redirectTo(baseUrl, tempParams));
-    }, [dispatch, location.id, params]);
+    const handleClick = useCallback(
+        locationId => {
+            const tempParams = {
+                ...params,
+                parentId: `${locationId}`,
+            };
+            dispatch(redirectTo(baseUrl, tempParams));
+        },
+        [dispatch, params],
+    );
     return (
         // @ts-ignore
         <Popup className={classes.popup} ref={popup} pane="popupPane">
@@ -92,24 +95,24 @@ export const PopupComponent: FunctionComponent<Props> = ({
 
                             {Object.entries(location.form_stats).map(
                                 ([key, value]) => (
-                                    <Box key={key}>
-                                        <PopupRow
-                                            label={value.name}
-                                            value={`${value.percent.toFixed(
-                                                2,
-                                            )}%`}
-                                        />
-                                        <PopupRow
-                                            label={formatMessage(
-                                                MESSAGES.count,
-                                            )}
-                                            value={
-                                                value.descendants > 0
-                                                    ? `${value.descendants_ok}/${value.descendants}`
-                                                    : 'N/A'
-                                            }
-                                        />
-                                    </Box>
+                                    <PopupRow
+                                        key={`${key}-percent`}
+                                        label={value.name}
+                                        value={`${value.percent.toFixed(2)}%`}
+                                    />
+                                ),
+                            )}
+                            {Object.entries(location.form_stats).map(
+                                ([key, value]) => (
+                                    <PopupRow
+                                        key={`${key}-count`}
+                                        label={formatMessage(MESSAGES.count)}
+                                        value={
+                                            value.descendants > 0
+                                                ? `${value.descendants_ok}/${value.descendants}`
+                                                : 'N/A'
+                                        }
+                                    />
                                 ),
                             )}
                         </TableBody>
@@ -121,14 +124,33 @@ export const PopupComponent: FunctionComponent<Props> = ({
                             justifyContent="flex-end"
                             alignItems="center"
                         >
-                            <Button
-                                variant="outlined"
-                                color="primary"
-                                size="small"
-                                onClick={handleClick}
-                            >
-                                {formatMessage(MESSAGES.see)}
-                            </Button>
+                            {location.parent_org_unit?.parent && (
+                                <Box mr={1}>
+                                    <Button
+                                        variant="outlined"
+                                        color="primary"
+                                        size="small"
+                                        onClick={() =>
+                                            handleClick(
+                                                location.parent_org_unit?.parent
+                                                    ?.id,
+                                            )
+                                        }
+                                    >
+                                        {formatMessage(MESSAGES.seeParent)}
+                                    </Button>
+                                </Box>
+                            )}
+                            {location.has_children && (
+                                <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    size="small"
+                                    onClick={() => handleClick(location.id)}
+                                >
+                                    {formatMessage(MESSAGES.seeChildren)}
+                                </Button>
+                            )}
                         </Grid>
                     </Box>
                 </CardContent>

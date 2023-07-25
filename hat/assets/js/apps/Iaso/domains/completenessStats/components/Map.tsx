@@ -60,7 +60,10 @@ export const Map: FunctionComponent<Props> = ({
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
     const isLoading = isFetchingLocations;
-
+    const parentLocation = useMemo(() => {
+        const rootArray = locations?.filter(location => location.is_root);
+        return rootArray && rootArray[0];
+    }, [locations]);
     const markers = useMemo(
         () =>
             locations?.filter(
@@ -81,9 +84,10 @@ export const Map: FunctionComponent<Props> = ({
 
     return (
         <section className={classes.mapContainer}>
-            <Box position="relative">
+            <Box position="relative" mt={2}>
                 {isLoading && <LoadingSpinner absolute />}
                 <MapContainer
+                    key={parentLocation?.id}
                     isLoading={isLoading}
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '60vh' }}
@@ -108,6 +112,18 @@ export const Map: FunctionComponent<Props> = ({
                         boundsOptions={boundsOptions}
                         fitOnLoad
                     />
+                    <Pane name="parent">
+                        {parentLocation?.has_geo_json && (
+                            <GeoJSON
+                                data={parentLocation.geo_json}
+                                // @ts-ignore
+                                style={() => ({
+                                    color: 'grey',
+                                    fillOpacity: 0,
+                                })}
+                            />
+                        )}
+                    </Pane>
                     <Pane name="shapes">
                         {shapes.map(shape =>
                             Object.entries(shape.form_stats).map(
@@ -147,8 +163,10 @@ export const Map: FunctionComponent<Props> = ({
                                         })}
                                         markerProps={() => ({
                                             ...circleColorMarkerOptions(
-                                                getLegend(value.percent)
-                                                    ?.color || 'grey',
+                                                value.itself_has_instances
+                                                    ? 'green'
+                                                    : getLegend(value.percent)
+                                                          ?.color || 'grey',
                                             ),
                                             radius: 12,
                                         })}

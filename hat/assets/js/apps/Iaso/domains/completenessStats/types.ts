@@ -27,6 +27,7 @@ export type CompletenessStats = {
     org_unit_type?: NameAndId;
     org_unit: NameAndId;
     form_stat: FormStat;
+    has_children: boolean;
 };
 
 // Api add some metadata to help column creation
@@ -34,6 +35,7 @@ export type CompletenessApiResponse = Paginated<CompletenessStats> & {
     forms: FormDesc[];
 };
 
+export type ParentOrgUnit = { name: string; id: number; parent: NameAndId };
 /* eslint-disable camelcase */
 export type CompletenessMapStats = {
     altitude?: number;
@@ -46,6 +48,8 @@ export type CompletenessMapStats = {
     longitude?: number;
     name: string;
     org_unit_type?: NameAndId;
+    parent_org_unit?: ParentOrgUnit;
+    has_children: boolean;
 };
 // Api add some metadata to help column creation
 export type CompletenessMapApiResponse = {

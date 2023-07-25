@@ -333,16 +333,21 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 )
 
         def to_dict(row_ou: OrgUnitWithFormStat):
+            children_count = OrgUnit.objects.all().filter(parent_id=row_ou.id).count()
             return {
                 "name": row_ou.name,
                 "id": row_ou.id,
                 "org_unit": row_ou.as_dict_for_completeness_stats(),
                 "form_stats": row_ou.form_stats,
                 "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
-                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats() if row_ou.parent else None,
+                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats_with_parent()
+                if row_ou.parent
+                else None,
+                "has_children": True if children_count > 0 else False,
             }
 
         def to_map(row_ou: OrgUnitWithFormStat):
+            children_count = OrgUnit.objects.all().filter(parent_id=row_ou.id).count()
             temp_org_unit = {
                 "name": row_ou.name,
                 "id": row_ou.id,
@@ -353,6 +358,10 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "longitude": row_ou.location.x if row_ou.location else None,
                 "altitude": row_ou.location.z if row_ou.location else None,
                 "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
+                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats_with_parent()
+                if row_ou.parent
+                else None,
+                "has_children": True if children_count > 0 else False,
             }
             temp_org_unit["geo_json"] = None
             if temp_org_unit["has_geo_json"] == True:

@@ -219,22 +219,23 @@ export const useCompletenessStatsColumns = (
 
                 return (
                     <>
-                        {!settings.row.original.is_root && (
-                            <IconButtonComponent
-                                onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original.org_unit
-                                                    ?.id,
-                                        }),
-                                    );
-                                }}
-                                tooltipMessage={MESSAGES.seeChildren}
-                                overrideIcon={AccountTreeIcon}
-                            />
-                        )}
+                        {!settings.row.original.is_root &&
+                            settings.row.original.has_children && (
+                                <IconButtonComponent
+                                    onClick={() => {
+                                        dispatch(
+                                            redirectTo(baseUrl, {
+                                                ...redirectionParams,
+                                                parentId:
+                                                    settings.row.original
+                                                        .org_unit?.id,
+                                            }),
+                                        );
+                                    }}
+                                    tooltipMessage={MESSAGES.seeChildren}
+                                    overrideIcon={AccountTreeIcon}
+                                />
+                            )}
                         {settings.row.original.is_root && (
                             <IconButtonComponent
                                 onClick={() => {

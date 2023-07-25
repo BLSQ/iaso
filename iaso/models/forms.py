@@ -44,7 +44,7 @@ class FormQuerySet(models.QuerySet):
         queryset = self.all()
 
         if user.is_authenticated:
-            queryset = queryset.filter(projects__account=user.iaso_profile.account).distinct()
+            queryset = queryset.filter(projects__account=user.iaso_profile.account)
 
         if app_id is not None:  # mobile app
             try:

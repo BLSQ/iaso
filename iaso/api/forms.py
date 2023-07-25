@@ -235,7 +235,6 @@ class FormsViewSet(ModelViewSet):
             profile = self.request.user.iaso_profile
         else:
             profile = False
-
         if profile and profile.org_units.exists():
             orgunits = OrgUnit.objects.hierarchy(profile.org_units.all())
             queryset = queryset.annotate(
@@ -246,7 +245,8 @@ class FormsViewSet(ModelViewSet):
                         & ~Q(instances__device__test_device=True)
                         & ~Q(instances__deleted=True)
                         & Q(instances__org_unit__in=orgunits)
-                    ), distinct=True
+                    ),
+                    distinct=True,
                 )
             )
         else:

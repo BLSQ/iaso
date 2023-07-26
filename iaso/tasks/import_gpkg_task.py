@@ -1,7 +1,5 @@
 import tempfile
 
-from django.utils.timezone import now
-
 from beanstalk_worker import task_decorator
 from iaso.gpkg.import_gpkg import import_gpkg_file2
 from iaso.models import Task

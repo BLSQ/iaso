@@ -1,4 +1,3 @@
-from django.db import transaction
 from rest_framework import serializers, permissions
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -76,7 +75,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
         return queryset
 
-    @transaction.atomic
     def create(self, request, *args, **kwargs):
         user = request.user
         file = request.FILES["file"]

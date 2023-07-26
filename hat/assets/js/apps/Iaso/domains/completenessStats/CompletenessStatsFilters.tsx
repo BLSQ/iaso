@@ -63,7 +63,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                         ? 'list'
                         : params.tab,
             };
-            console.log('filters.formId', filters.formId);
             tempParams.page = '1';
             dispatch(redirectToReplace(baseUrl, tempParams));
         }

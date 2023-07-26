@@ -161,6 +161,7 @@ export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
                             // @ts-ignore
                             count={completenessStats?.count ?? 0}
                             baseUrl={baseUrl}
+                            countOnTop={false}
                             params={params}
                             extraProps={{ loading: isFetching }}
                             onTableParamsChange={p => {

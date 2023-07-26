@@ -92,13 +92,13 @@ export const Map: FunctionComponent<Props> = ({
     const theme = useTheme();
     return (
         <section className={classes.mapContainer}>
-            <Box position="relative" mt={2}>
+            <Box position="relative">
                 {isLoading && <LoadingSpinner absolute />}
                 <MapContainer
                     key={parentLocation?.id}
                     isLoading={isLoading}
                     maxZoom={currentTile.maxZoom}
-                    style={{ height: '60vh' }}
+                    style={{ height: '80vh' }}
                     center={defaultViewport.center}
                     zoom={defaultViewport.zoom}
                     scrollWheelZoom={false}

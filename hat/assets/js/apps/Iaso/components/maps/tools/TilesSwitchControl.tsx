@@ -2,8 +2,8 @@ import React, { FunctionComponent, useState } from 'react';
 import { Box, makeStyles, Typography } from '@material-ui/core';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
 import Layers from '@material-ui/icons/Layers';
-
 import classNames from 'classnames';
+
 import TileSwitch from './TileSwitchComponent';
 
 import MESSAGES from '../messages';
@@ -86,7 +86,12 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
 
     return (
         <>
-            <div className={classes.legendLayers}>
+            <div
+                className={classNames(
+                    classes.legendLayers,
+                    'tile-switch-control',
+                )}
+            >
                 {!tilePopup && (
                     <span
                         className={classes.barButton}

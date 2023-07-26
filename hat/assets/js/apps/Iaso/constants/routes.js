@@ -660,6 +660,10 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'orgunitValidationStatus',
         },
+        {
+            isRequired: false,
+            key: 'showDirectCompleteness',
+        },
     ],
 };
 

@@ -122,6 +122,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Completeness',
         id: 'iaso.completenessStats.completeness',
     },
+    directCompleteness: {
+        defaultMessage: 'Direct completeness',
+        id: 'iaso.completenessStats.directCompleteness',
+    },
+    childrenCompleteness: {
+        defaultMessage: 'Children completeness',
+        id: 'iaso.completenessStats.childrenCompleteness',
+    },
 });
 
 export default MESSAGES;

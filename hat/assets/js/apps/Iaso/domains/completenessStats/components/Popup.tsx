@@ -84,6 +84,18 @@ export const PopupComponent: FunctionComponent<Props> = ({
         },
         [dispatch, params],
     );
+
+    const getPercent = useCallback((): string => {
+        if (params.showDirectCompleteness === 'true') {
+            return stats.itself_has_instances ? '100' : '0';
+        }
+        return stats.percent.toFixed(2);
+    }, [
+        params.showDirectCompleteness,
+        stats.itself_has_instances,
+        stats.percent,
+    ]);
+
     return (
         // @ts-ignore
         <Popup className={classes.popup} ref={popup} pane="popupPane">
@@ -101,11 +113,7 @@ export const PopupComponent: FunctionComponent<Props> = ({
 
                             <PopupRow
                                 label={formatMessage(MESSAGES.completeness)}
-                                value={`${(stats.itself_has_instances &&
-                                !location.has_children
-                                    ? 100
-                                    : stats.percent
-                                ).toFixed(2)}%`}
+                                value={`${getPercent()}%`}
                             />
 
                             <PopupRow

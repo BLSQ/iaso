@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useState, useMemo } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useMemo,
+    useCallback,
+} from 'react';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
 import { Box, makeStyles, useTheme } from '@material-ui/core';
 import { commonStyles, LoadingSpinner } from 'bluesquare-components';
@@ -9,7 +14,11 @@ import CircleMarkerComponent from '../../../components/maps/markers/CircleMarker
 
 import tiles from '../../../constants/mapTiles';
 
-import { CompletenessMapStats, CompletenessRouterParams } from '../types';
+import {
+    CompletenessMapStats,
+    CompletenessRouterParams,
+    FormStat,
+} from '../types';
 import {
     circleColorMarkerOptions,
     Bounds,
@@ -20,6 +29,7 @@ import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer'
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
 import { getLegend, MapLegend } from './MapLegend';
+import { CompletenessSelect } from './CompletenessSelect';
 
 const defaultViewport = {
     center: [1, 20],
@@ -43,6 +53,9 @@ const useStyles = makeStyles(theme => ({
         ...commonStyles(theme).mapContainer,
         height: '60vh',
         marginBottom: 0,
+        '& .tile-switch-control': {
+            top: theme.spacing(13),
+        },
     },
 }));
 
@@ -88,6 +101,15 @@ export const Map: FunctionComponent<Props> = ({
             }),
         [locations, selectedFormId],
     );
+    const getPercent = useCallback(
+        (stats: FormStat): number => {
+            if (params.showDirectCompleteness === 'true') {
+                return stats.itself_has_instances ? 100 : 0;
+            }
+            return stats.percent;
+        },
+        [params.showDirectCompleteness],
+    );
 
     const theme = useTheme();
     return (
@@ -114,7 +136,7 @@ export const Map: FunctionComponent<Props> = ({
                         currentTile={currentTile}
                         setCurrentTile={setCurrentTile}
                     />
-
+                    <CompletenessSelect params={params} />
                     <CustomZoomControl
                         bounds={bounds}
                         boundsOptions={boundsOptions}
@@ -138,17 +160,13 @@ export const Map: FunctionComponent<Props> = ({
                                 shape.form_stats[`form_${selectedFormId}`];
                             return (
                                 <GeoJSON
-                                    key={`${shape.id}`}
+                                    key={`${shape.id}-${params.showDirectCompleteness}`}
                                     data={shape.geo_json}
                                     // @ts-ignore
                                     style={() => ({
                                         color:
-                                            getLegend(
-                                                stats.itself_has_instances &&
-                                                    !shape.has_children
-                                                    ? 100
-                                                    : stats.percent,
-                                            )?.color ||
+                                            getLegend(getPercent(stats))
+                                                ?.color ||
                                             theme.palette.primary.main,
                                         fillOpacity: 0.3,
                                     })}
@@ -169,7 +187,7 @@ export const Map: FunctionComponent<Props> = ({
                                 marker.form_stats[`form_${selectedFormId}`];
                             return (
                                 <CircleMarkerComponent
-                                    key={`${marker.id}`}
+                                    key={`${marker.id}-${params.showDirectCompleteness}`}
                                     item={marker}
                                     PopupComponent={Popup}
                                     popupProps={location => ({
@@ -179,12 +197,8 @@ export const Map: FunctionComponent<Props> = ({
                                     })}
                                     markerProps={() => ({
                                         ...circleColorMarkerOptions(
-                                            getLegend(
-                                                stats.itself_has_instances &&
-                                                    !marker.has_children
-                                                    ? 100
-                                                    : stats.percent,
-                                            )?.color ||
+                                            getLegend(getPercent(stats))
+                                                ?.color ||
                                                 theme.palette.primary.main,
                                         ),
                                         radius: 12,

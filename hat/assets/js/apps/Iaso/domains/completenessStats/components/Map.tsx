@@ -143,7 +143,12 @@ export const Map: FunctionComponent<Props> = ({
                                     // @ts-ignore
                                     style={() => ({
                                         color:
-                                            getLegend(stats.percent)?.color ||
+                                            getLegend(
+                                                stats.itself_has_instances &&
+                                                    !shape.has_children
+                                                    ? 100
+                                                    : stats.percent,
+                                            )?.color ||
                                             theme.palette.primary.main,
                                         fillOpacity: 0.3,
                                     })}

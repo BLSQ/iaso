@@ -49,7 +49,19 @@ const PageError = ({ errorCode }) => {
                                     <Box pt={2} pb={2}>
                                         <Typography variant="h5">
                                             <FormattedMessage
-                                                {...MESSAGES.notFound}
+                                                {...MESSAGES.notAuthenticated}
+                                            />
+                                        </Typography>
+                                    </Box>
+                                    <NotAuthorized className={classes.icon} />
+                                </>
+                            )}
+                            {errorCode === '403' && (
+                                <>
+                                    <Box pt={2} pb={2}>
+                                        <Typography variant="h5">
+                                            <FormattedMessage
+                                                {...MESSAGES.unauthorized}
                                             />
                                         </Typography>
                                     </Box>

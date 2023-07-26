@@ -46,6 +46,7 @@ import { Selection } from '../../orgUnits/types/selection';
 import { userHasPermission } from '../../users/utils';
 
 import { useCurrentUser } from '../../../utils/usersUtils';
+import * as Permission from '../../../utils/permissions';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
@@ -228,7 +229,7 @@ export const useGetInstancesColumns = (
                     }
                 });
             tableColumns = tableColumns.concat(childrenArray);
-            if (userHasPermission('iaso_update_submission', currentUser)) {
+            if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
                 tableColumns.push({
                     Header: formatMessage(MESSAGES.actions),
                     accessor: 'actions',

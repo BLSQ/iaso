@@ -7,6 +7,7 @@ import { useCurrentUser } from '../../../../utils/usersUtils.ts';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
+import * as Permission from '../../../../utils/permissions.ts';
 
 const initialGroup = currentGroup => {
     return {
@@ -115,7 +116,7 @@ const GroupDialog = ({
                         label={MESSAGES.sourceRef}
                     />
                     {userHasPermission(
-                        ['iaso_polio', 'iaso_polio_config'],
+                        [Permission.POLIO, Permission.POLIO_CONFIG],
                         currentUser,
                     ) && (
                         <InputComponent

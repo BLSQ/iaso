@@ -31,6 +31,7 @@ import { defaultSorted, INSTANCE_METAS_FIELDS } from '../config';
 import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetEmptyInstanceOrgUnits } from '../hooks/useGetEmptyInstanceOrgUnits';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     isLoading: boolean;
@@ -183,7 +184,7 @@ export const Instances: FunctionComponent<Props> = ({
                                     {orgUnitsWithoutCurrentForm &&
                                         orgUnitsWithoutCurrentForm.count > 0 &&
                                         userHasPermission(
-                                            'iaso_update_submission',
+                                            Permission.SUBMISSIONS_UPDATE,
                                             currentUser,
                                         ) && (
                                             <MissingInstanceDialog

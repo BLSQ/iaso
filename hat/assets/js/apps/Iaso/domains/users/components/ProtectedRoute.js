@@ -90,7 +90,7 @@ const ProtectedRoute = ({
             {isAuthorized && component}
             {hasNoPermWarning && <PageNoPerms />}
             {!isAuthorized && !hasNoPermWarning && (
-                <PageError errorCode="401" />
+                <PageError errorCode="403" />
             )}
         </>
     );

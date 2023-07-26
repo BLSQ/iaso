@@ -7,7 +7,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
-from django.db.models import Q
+from django.db.models import Q, QuerySet
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
@@ -17,6 +17,7 @@ from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
+from typing import Optional, List
 
 from iaso.models import Profile, OrgUnit, UserRole, Project
 from hat.menupermissions import models as permission
@@ -41,6 +42,8 @@ class HasProfilePermission(permissions.BasePermission):
     # but it's better to be explicit about why the permission was denied.
     @staticmethod
     def has_permission_over_user(request, pk):
+        if request.method == "GET":
+            return True
         if not pk:
             raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot create users.")
 
@@ -48,23 +51,29 @@ class HasProfilePermission(permissions.BasePermission):
             raise PermissionDenied(f"User with '{permission.USERS_MANAGED}' cannot edit their own permissions.")
 
         org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list("id", flat=True)
-        if not org_units or len(org_units) == 0:
-            raise PermissionDenied(
-                "Current user is not associated with any OrgUnit. " "They therefore cannot manage any users."
-            )
-
-        profile = get_object_or_404(Profile.objects.filter(account=request.user.iaso_profile.account), pk=pk)
-        user_managed_org_units = profile.org_units.filter(id__in=org_units).all()
-        if not user_managed_org_units or len(user_managed_org_units) == 0:
-            raise PermissionDenied(
-                "The user we are trying to modify is not part of any OrgUnit " "managed by the current user"
-            )
+        if org_units and len(org_units) > 0:
+            profile = get_object_or_404(Profile.objects.filter(account=request.user.iaso_profile.account), pk=pk)
+            user_managed_org_units = profile.org_units.filter(id__in=org_units).all()
+            if not user_managed_org_units or len(user_managed_org_units) == 0:
+                raise PermissionDenied(
+                    "The user we are trying to modify is not part of any OrgUnit " "managed by the current user"
+                )
         return True
 
 
 def get_filtered_profiles(
-    queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
-):
+    queryset: QuerySet[Profile],
+    user: User,
+    search: Optional[str] = None,
+    perms: Optional[List[str]] = None,
+    location: Optional[str] = None,
+    org_unit_type: Optional[str] = None,
+    parent_ou: Optional[bool] = False,
+    children_ou: Optional[bool] = False,
+    projects: Optional[List[str]] = None,
+    user_roles: Optional[List[str]] = None,
+    managed_users_only: Optional[bool] = False,
+) -> QuerySet[Profile]:
     original_queryset = queryset
     if search:
         queryset = queryset.filter(
@@ -123,7 +132,7 @@ def get_filtered_profiles(
 
             children_ou = OrgUnit.objects.filter(parent__pk=location)
             queryset_children = original_queryset.filter(
-                user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
+                user__iaso_profile__org_units__in=children_ou.values_list("id", flat=True)
             )
 
             queryset = queryset_current | queryset_parent | queryset_children
@@ -137,8 +146,22 @@ def get_filtered_profiles(
     if projects:
         queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects.split(","))
 
-    if userRoles:
-        queryset = queryset.filter(user__iaso_profile__user_roles__in=userRoles.split(","))
+    if user_roles:
+        queryset = queryset.filter(user__iaso_profile__user_roles__in=user_roles.split(","))
+
+    if managed_users_only:
+        if user.has_perm(permission.USERS_ADMIN):
+            queryset = queryset  # no filter needed
+        elif user.has_perm(permission.USERS_MANAGED):
+            managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
+                "id", flat=True
+            )
+            if managed_org_units and len(managed_org_units) > 0:
+                queryset = queryset.filter(user__iaso_profile__org_units__id__in=managed_org_units)
+            queryset = queryset.exclude(user=user)
+        else:
+            queryset = User.objects.none()
+
     return queryset
 
 
@@ -186,12 +209,23 @@ class ProfilesViewSet(viewsets.ViewSet):
         perms = request.GET.get("permissions", None)
         location = request.GET.get("location", None)
         org_unit_type = request.GET.get("orgUnitTypes", None)
-        parent_ou = True if request.GET.get("ouParent", None) == "true" else False
-        children_ou = True if request.GET.get("ouChildren", None) == "true" else False
+        parent_ou = request.GET.get("ouParent", None) == "true"
+        children_ou = request.GET.get("ouChildren", None) == "true"
         projects = request.GET.get("projects", None)
-        userRoles = request.GET.get("userRoles", None)
+        user_roles = request.GET.get("userRoles", None)
+        managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
         queryset = get_filtered_profiles(
-            self.get_queryset(), search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
+            queryset=self.get_queryset(),
+            user=request.user,
+            search=search,
+            perms=perms,
+            location=location,
+            org_unit_type=org_unit_type,
+            parent_ou=parent_ou,
+            children_ou=children_ou,
+            projects=projects,
+            user_roles=user_roles,
+            managed_users_only=managed_users_only,
         )
 
         if limit:
@@ -299,16 +333,34 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.set_password(password)
             user.save()
         if password and request.user == user:
-            # update session hash if you changed your own password, so you don't get unlogged
+            # update session hash if you changed your own password, so you don't get logged out
             # https://docs.djangoproject.com/en/3.2/topics/auth/default/#session-invalidation-on-password-change
             update_session_auth_hash(request, user)
 
     @staticmethod
     def update_org_units(profile, request):
         org_units = request.data.get("org_units", [])
+        # Using list to get the value before we clear the list right after
+        existing_org_units = list(profile.org_units.values_list("id", flat=True))
         profile.org_units.clear()
+        managed_org_units = None
+        if request.user.has_perm(permission.USERS_MANAGED):
+            managed_org_units = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all()).values_list(
+                "id", flat=True
+            )
         for org_unit in org_units:
-            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
+            org_unit_id = org_unit.get("id")
+            if (
+                managed_org_units
+                and len(managed_org_units) > 0
+                and org_unit_id not in managed_org_units
+                and org_unit_id not in existing_org_units
+            ):
+                raise PermissionDenied(
+                    f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "
+                    f"pyramid. Trying to assign {org_unit_id}."
+                )
+            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit_id)
             profile.org_units.add(org_unit_item)
 
     @staticmethod
@@ -323,6 +375,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             # Get only a user role linked to the account's user
             user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
             user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            for p in user_group_item.permissions.all():
+                CustomPermissionSupport.assert_right_to_assign(request.user, p.codename)
             profile.user.groups.add(user_group_item)
             profile.user_roles.add(user_role_item)
 
@@ -362,12 +416,12 @@ class ProfilesViewSet(viewsets.ViewSet):
         send_mail(email_subject_text, email_message_text, from_email, [profile.user.email])
 
     @staticmethod
-    def get_message_by_language(self, request_languange="en"):
-        return self.CREATE_PASSWORD_MESSAGE_FR if request_languange == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
+    def get_message_by_language(self, language="en"):
+        return self.CREATE_PASSWORD_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
 
     @staticmethod
-    def get_subject_by_language(self, request_languange="en"):
-        return self.EMAIL_SUBJECT_FR if request_languange == "fr" else self.EMAIL_SUBJECT_EN
+    def get_subject_by_language(self, language="en"):
+        return self.EMAIL_SUBJECT_FR if language == "fr" else self.EMAIL_SUBJECT_EN
 
     def create(self, request):
         username = request.data.get("user_name")

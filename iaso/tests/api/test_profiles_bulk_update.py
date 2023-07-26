@@ -345,8 +345,8 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         )
 
     @tag("iaso_only")
-    def test_profile_bulkupdate_user_managed_cannit_add_role_with_admin_permission(self):
-        """POST /api/tasks/create/profilesbulkupdate/ add role as a user manager"""
+    def test_profile_bulkupdate_user_managed_cannot_add_role_with_admin_permission(self):
+        """POST /api/tasks/create/profilesbulkupdate/ cannot add role with admin permission as a user manager"""
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,
@@ -376,7 +376,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_profile_bulkupdate_user_managed_can_remove_role(self):
-        """POST /api/tasks/create/profilesbulkupdate/ add role as a user manager"""
+        """POST /api/tasks/create/profilesbulkupdate/ remove role as a user manager"""
         self.client.force_authenticate(self.obi_wan)
         operation_payload = {
             "select_all": True,

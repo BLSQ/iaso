@@ -63,15 +63,15 @@ class HasProfilePermission(permissions.BasePermission):
 
 def get_filtered_profiles(
     queryset: QuerySet[Profile],
-    user: User,
+    user: Optional[User],
     search: Optional[str] = None,
-    perms: Optional[List[str]] = None,
+    perms: Optional[List[int]] = None,
     location: Optional[str] = None,
     org_unit_type: Optional[str] = None,
     parent_ou: Optional[bool] = False,
     children_ou: Optional[bool] = False,
-    projects: Optional[List[str]] = None,
-    user_roles: Optional[List[str]] = None,
+    projects: Optional[List[int]] = None,
+    user_roles: Optional[List[int]] = None,
     managed_users_only: Optional[bool] = False,
 ) -> QuerySet[Profile]:
     original_queryset = queryset
@@ -83,7 +83,7 @@ def get_filtered_profiles(
         ).distinct()
 
     if perms:
-        queryset = queryset.filter(user__user_permissions__codename__in=perms.split(",")).distinct()
+        queryset = queryset.filter(user__user_permissions__codename__in=perms).distinct()
 
     if location:
         queryset = queryset.filter(
@@ -144,12 +144,14 @@ def get_filtered_profiles(
             queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
 
     if projects:
-        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects.split(","))
+        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects)
 
     if user_roles:
-        queryset = queryset.filter(user__iaso_profile__user_roles__in=user_roles.split(","))
+        queryset = queryset.filter(user__iaso_profile__user_roles__in=user_roles)
 
     if managed_users_only:
+        if not user:
+            raise Exception("User cannot be 'None' when filtering on managed users only")
         if user.has_perm(permission.USERS_ADMIN):
             queryset = queryset  # no filter needed
         elif user.has_perm(permission.USERS_MANAGED):
@@ -207,12 +209,18 @@ class ProfilesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "user__username").split(",")
         search = request.GET.get("search", None)
         perms = request.GET.get("permissions", None)
+        if perms:
+            perms = perms.split(",")
         location = request.GET.get("location", None)
         org_unit_type = request.GET.get("orgUnitTypes", None)
         parent_ou = request.GET.get("ouParent", None) == "true"
         children_ou = request.GET.get("ouChildren", None) == "true"
         projects = request.GET.get("projects", None)
+        if projects:
+            projects = projects.split(",")
         user_roles = request.GET.get("userRoles", None)
+        if user_roles:
+            user_roles = projects.split(",")
         managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
         queryset = get_filtered_profiles(
             queryset=self.get_queryset(),

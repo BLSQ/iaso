@@ -118,6 +118,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Instance(s) count',
         id: 'iaso.completenessStats.count',
     },
+    completeness: {
+        defaultMessage: 'Completeness',
+        id: 'iaso.completenessStats.completeness',
+    },
 });
 
 export default MESSAGES;

@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, makeStyles, useTheme } from '@material-ui/core';
 import { commonStyles, LoadingSpinner } from 'bluesquare-components';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';
 import { PopupComponent as Popup } from './Popup';
@@ -30,6 +30,7 @@ type Props = {
     locations: CompletenessMapStats[];
     isFetchingLocations: boolean;
     params: CompletenessRouterParams;
+    selectedFormId: number;
 };
 
 const boundsOptions = {
@@ -49,6 +50,7 @@ export const Map: FunctionComponent<Props> = ({
     locations,
     isFetchingLocations,
     params,
+    selectedFormId,
 }) => {
     const classes: Record<string, string> = useStyles();
 
@@ -68,20 +70,26 @@ export const Map: FunctionComponent<Props> = ({
         () =>
             locations?.filter(
                 location =>
+                    location.form_stats[`form_${selectedFormId}`] &&
                     location.latitude &&
                     location.longitude &&
                     !location.is_root,
             ),
-        [locations],
+        [locations, selectedFormId],
     );
     const shapes = useMemo(
         () =>
-            locations?.filter(
-                location => location.has_geo_json && !location.is_root,
-            ),
-        [locations],
+            locations?.filter(location => {
+                return (
+                    location.form_stats[`form_${selectedFormId}`] &&
+                    location.has_geo_json &&
+                    !location.is_root
+                );
+            }),
+        [locations, selectedFormId],
     );
 
+    const theme = useTheme();
     return (
         <section className={classes.mapContainer}>
             <Box position="relative" mt={2}>
@@ -125,55 +133,60 @@ export const Map: FunctionComponent<Props> = ({
                         )}
                     </Pane>
                     <Pane name="shapes">
-                        {shapes.map(shape =>
-                            Object.entries(shape.form_stats).map(
-                                ([key, value]) => (
-                                    <GeoJSON
-                                        key={`${shape.id}-${key}`}
-                                        data={shape.geo_json}
-                                        // @ts-ignore
-                                        style={() => ({
-                                            color:
-                                                getLegend(value.percent)
-                                                    ?.color || 'grey',
-                                            fillOpacity: 0.3,
-                                        })}
-                                    >
-                                        <Popup
-                                            location={shape}
-                                            params={params}
-                                        />
-                                    </GeoJSON>
-                                ),
-                            ),
-                        )}
+                        {shapes.map(shape => {
+                            const stats =
+                                shape.form_stats[`form_${selectedFormId}`];
+                            return (
+                                <GeoJSON
+                                    key={`${shape.id}`}
+                                    data={shape.geo_json}
+                                    // @ts-ignore
+                                    style={() => ({
+                                        color:
+                                            getLegend(stats.percent)?.color ||
+                                            theme.palette.primary.main,
+                                        fillOpacity: 0.3,
+                                    })}
+                                >
+                                    <Popup
+                                        location={shape}
+                                        params={params}
+                                        stats={stats}
+                                    />
+                                </GeoJSON>
+                            );
+                        })}
                     </Pane>
 
                     <Pane name="markers">
-                        {markers.map(marker =>
-                            Object.entries(marker.form_stats).map(
-                                ([key, value]) => (
-                                    <CircleMarkerComponent
-                                        key={`${marker.id}-${key}`}
-                                        item={marker}
-                                        PopupComponent={Popup}
-                                        popupProps={location => ({
-                                            location,
-                                            params,
-                                        })}
-                                        markerProps={() => ({
-                                            ...circleColorMarkerOptions(
-                                                value.itself_has_instances
-                                                    ? 'green'
-                                                    : getLegend(value.percent)
-                                                          ?.color || 'grey',
-                                            ),
-                                            radius: 12,
-                                        })}
-                                    />
-                                ),
-                            ),
-                        )}
+                        {markers.map(marker => {
+                            const stats =
+                                marker.form_stats[`form_${selectedFormId}`];
+                            return (
+                                <CircleMarkerComponent
+                                    key={`${marker.id}`}
+                                    item={marker}
+                                    PopupComponent={Popup}
+                                    popupProps={location => ({
+                                        location,
+                                        params,
+                                        stats,
+                                    })}
+                                    markerProps={() => ({
+                                        ...circleColorMarkerOptions(
+                                            getLegend(
+                                                stats.itself_has_instances &&
+                                                    !marker.has_children
+                                                    ? 100
+                                                    : stats.percent,
+                                            )?.color ||
+                                                theme.palette.primary.main,
+                                        ),
+                                        radius: 12,
+                                    })}
+                                />
+                            );
+                        })}
                     </Pane>
                 </MapContainer>
             </Box>

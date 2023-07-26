@@ -1,6 +1,7 @@
 import React, {
     FunctionComponent,
     useCallback,
+    useEffect,
     useMemo,
     useState,
 } from 'react';
@@ -64,14 +65,24 @@ export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
     const theme = useTheme();
     // Used to show the requested orgunit prominently.
 
-    const handleChangeTab = (newTab: 'list' | 'map') => {
-        setTab(newTab);
-        const newParams = {
-            ...params,
-            tab: newTab,
-        };
-        dispatch(redirectTo(baseUrl, newParams));
-    };
+    const selectedFormsIds: number[] = useMemo(
+        () =>
+            params.formId
+                ? params.formId.split(',').map(id => parseInt(id, 10))
+                : [],
+        [params.formId],
+    );
+    const handleChangeTab = useCallback(
+        (newTab: 'list' | 'map') => {
+            setTab(newTab);
+            const newParams = {
+                ...params,
+                tab: newTab,
+            };
+            dispatch(redirectTo(baseUrl, newParams));
+        },
+        [dispatch, params],
+    );
     const getRowStyles = useCallback(
         ({ original }) => {
             if (original?.is_root) {
@@ -87,6 +98,12 @@ export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
         },
         [theme],
     );
+
+    useEffect(() => {
+        if (params.tab && params.tab !== tab) {
+            handleChangeTab(params.tab);
+        }
+    }, [handleChangeTab, params.tab, tab]);
 
     return (
         <>
@@ -107,24 +124,32 @@ export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
                         <CsvButton csvUrl={csvUrl} />
                     </Grid>
                 </Grid>
+                {selectedFormsIds.length === 1 && (
+                    <Tabs
+                        value={tab}
+                        onChange={(_, newtab) => handleChangeTab(newtab)}
+                    >
+                        <Tab
+                            value="list"
+                            label={formatMessage(MESSAGES.list)}
+                        />
+                        <Tab value="map" label={formatMessage(MESSAGES.map)} />
+                    </Tabs>
+                )}
 
-                <Tabs
-                    value={tab}
-                    onChange={(_, newtab) => handleChangeTab(newtab)}
-                >
-                    <Tab value="list" label={formatMessage(MESSAGES.list)} />
-                    <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                </Tabs>
-                <Box
-                    width="100%"
-                    className={tab === 'map' ? '' : classes.hiddenOpacity}
-                >
-                    <Map
-                        locations={completenessMapStats || []}
-                        isFetchingLocations={isFetchingMapStats}
-                        params={params}
-                    />
-                </Box>
+                {selectedFormsIds.length === 1 && (
+                    <Box
+                        width="100%"
+                        className={tab === 'map' ? '' : classes.hiddenOpacity}
+                    >
+                        <Map
+                            locations={completenessMapStats || []}
+                            isFetchingLocations={isFetchingMapStats}
+                            params={params}
+                            selectedFormId={selectedFormsIds[0]}
+                        />
+                    </Box>
+                )}
                 {tab === 'list' && (
                     <Box>
                         <TableWithDeepLink

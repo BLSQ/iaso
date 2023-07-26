@@ -20,7 +20,11 @@ import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
-import { CompletenessMapStats, CompletenessRouterParams } from '../types';
+import {
+    CompletenessMapStats,
+    CompletenessRouterParams,
+    FormStat,
+} from '../types';
 
 import { PopupRow } from './PopUpRow';
 
@@ -56,6 +60,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     location: CompletenessMapStats;
     params: CompletenessRouterParams;
+    stats: FormStat;
 };
 
 const baseUrl = baseUrls.completenessStats;
@@ -63,6 +68,7 @@ const baseUrl = baseUrls.completenessStats;
 export const PopupComponent: FunctionComponent<Props> = ({
     location,
     params,
+    stats,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -93,28 +99,23 @@ export const PopupComponent: FunctionComponent<Props> = ({
                                 value={<LinkToOrgUnit orgUnit={location} />}
                             />
 
-                            {Object.entries(location.form_stats).map(
-                                ([key, value]) => (
-                                    <PopupRow
-                                        key={`${key}-percent`}
-                                        label={value.name}
-                                        value={`${value.percent.toFixed(2)}%`}
-                                    />
-                                ),
-                            )}
-                            {Object.entries(location.form_stats).map(
-                                ([key, value]) => (
-                                    <PopupRow
-                                        key={`${key}-count`}
-                                        label={formatMessage(MESSAGES.count)}
-                                        value={
-                                            value.descendants > 0
-                                                ? `${value.descendants_ok}/${value.descendants}`
-                                                : 'N/A'
-                                        }
-                                    />
-                                ),
-                            )}
+                            <PopupRow
+                                label={formatMessage(MESSAGES.completeness)}
+                                value={`${(stats.itself_has_instances &&
+                                !location.has_children
+                                    ? 100
+                                    : stats.percent
+                                ).toFixed(2)}%`}
+                            />
+
+                            <PopupRow
+                                label={formatMessage(MESSAGES.count)}
+                                value={
+                                    stats.descendants > 0
+                                        ? `${stats.descendants_ok}/${stats.descendants}`
+                                        : 'N/A'
+                                }
+                            />
                         </TableBody>
                     </Table>
                     <Box className={classes.actionBox}>

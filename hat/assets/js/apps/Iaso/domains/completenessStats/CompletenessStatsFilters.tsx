@@ -1,4 +1,5 @@
 import { Box, Grid } from '@material-ui/core';
+import { useDispatch } from 'react-redux';
 import React, {
     FunctionComponent,
     useCallback,
@@ -29,6 +30,7 @@ import { DisplayIfUserHasPerm } from '../../components/DisplayIfUserHasPerm';
 import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
+import { redirectToReplace } from '../../routing/actions';
 
 type Props = {
     params: UrlParams & any;
@@ -40,13 +42,31 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     params,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
     const { data: forms, isFetching: fetchingForms } = useGetFormsOptions([
         'period_type',
     ]);
 
-    const { filters, handleSearch, handleChange, filtersUpdated } =
-        useFilterState({ baseUrl, params });
-
+    const { filters, handleChange, filtersUpdated, setFiltersUpdated } =
+        useFilterState({
+            baseUrl,
+            params,
+        });
+    const handleSearch = useCallback(() => {
+        if (filtersUpdated) {
+            setFiltersUpdated(false);
+            const tempParams = {
+                ...params,
+                ...filters,
+                tab:
+                    filters.formId.split(',').length !== 1
+                        ? 'list'
+                        : params.tab,
+            };
+            tempParams.page = '1';
+            dispatch(redirectToReplace(baseUrl, tempParams));
+        }
+    }, [filtersUpdated, setFiltersUpdated, params, filters, dispatch]);
     const [initialParentId, setInitialParentId] = useState(params?.parentId);
     const { data: initialParent } = useGetOrgUnit(initialParentId);
 

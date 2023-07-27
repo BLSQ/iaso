@@ -22,6 +22,8 @@ import { dataSourcesTableColumns } from './config';
 import MESSAGES from './messages';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
+import { userHasPermission } from '../users/utils';
+
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
 const DataSources = () => {
@@ -30,6 +32,24 @@ const DataSources = () => {
     const dispatch = useDispatch();
     const intl = useSafeIntl();
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+
+    const dataSourceDialog = () => {
+        if (userHasPermission('iaso_write_sources', currentUser)) {
+            return (
+                <DataSourceDialogComponent
+                    defaultSourceVersion={defaultSourceVersion}
+                    renderTrigger={({ openDialog }) => (
+                        <AddButtonComponent
+                            onClick={openDialog}
+                            dataTestId="create-datasource-button"
+                        />
+                    )}
+                    onSuccess={() => setForceRefresh(true)}
+                />
+            );
+        }
+        return '';
+    };
     return (
         <>
             <TopBar
@@ -53,18 +73,7 @@ const DataSources = () => {
                     )}
                     forceRefresh={forceRefresh}
                     onForceRefreshDone={() => setForceRefresh(false)}
-                    extraComponent={
-                        <DataSourceDialogComponent
-                            defaultSourceVersion={defaultSourceVersion}
-                            renderTrigger={({ openDialog }) => (
-                                <AddButtonComponent
-                                    onClick={openDialog}
-                                    dataTestId="create-datasource-button"
-                                />
-                            )}
-                            onSuccess={() => setForceRefresh(true)}
-                        />
-                    }
+                    extraComponent={dataSourceDialog()}
                 />
             </ErrorBoundary>
         </>

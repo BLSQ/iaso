@@ -17,6 +17,7 @@ import { Users } from '../domains/users/index.tsx';
 import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
+import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import { CompletenessStats } from '../domains/completenessStats/index.tsx';
@@ -753,6 +754,23 @@ export const dataSourcesPath = {
     ],
 };
 
+export const dataSourceDetailsPath = {
+    baseUrl: baseUrls.sourceDetails,
+    permissions: ['iaso_sources'],
+    component: props => <DataSourceDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'sourceId',
+        },
+        ...paginationPathParams,
+    ],
+};
+
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
     permissions: ['iaso_data_tasks'],
@@ -1260,6 +1278,7 @@ export const routeConfigs = [
     userRolesPath,
     projectsPath,
     dataSourcesPath,
+    dataSourceDetailsPath,
     tasksPath,
     devicesPath,
     groupsPath,

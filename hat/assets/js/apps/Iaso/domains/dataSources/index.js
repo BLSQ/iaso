@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import {
     AddButton as AddButtonComponent,
@@ -17,7 +17,7 @@ import { DataSourceDialogComponent } from './components/DataSourceDialogComponen
 import { baseUrls } from '../../constants/urls';
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
-import dataSourcesTableColumns from './config';
+import { dataSourcesTableColumns } from './config';
 
 import MESSAGES from './messages';
 import { useCurrentUser } from '../../utils/usersUtils.ts';

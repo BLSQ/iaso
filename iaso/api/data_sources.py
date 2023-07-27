@@ -179,7 +179,7 @@ class DataSourcePermission(permissions.BasePermission):
             "menupermissions.iaso_links",
             "menupermissions.iaso_sources",
         )
-        write_perms = ("menupermissions.iaso_sources",)
+        write_perms = ("menupermissions.iaso_write_sources",)
 
         if (
             request.method in permissions.SAFE_METHODS

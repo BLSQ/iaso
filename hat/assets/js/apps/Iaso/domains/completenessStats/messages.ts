@@ -130,6 +130,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Children completeness',
         id: 'iaso.completenessStats.childrenCompleteness',
     },
+    completed: {
+        defaultMessage: 'Completed',
+        id: 'iaso.completenessStats.completed',
+    },
+    notCompleted: {
+        defaultMessage: 'Not completed',
+        id: 'iaso.completenessStats.notCompleted',
+    },
 });
 
 export default MESSAGES;

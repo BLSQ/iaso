@@ -28,7 +28,7 @@ import {
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 
-import { getLegend, MapLegend } from './MapLegend';
+import { getDirectLegend, getLegend, MapLegend } from './MapLegend';
 import { CompletenessSelect } from './CompletenessSelect';
 
 const defaultViewport = {
@@ -101,21 +101,29 @@ export const Map: FunctionComponent<Props> = ({
             }),
         [locations, selectedFormId],
     );
+
+    const theme = useTheme();
+    const showDirectCompleteness = params.showDirectCompleteness === 'true';
     const getPercent = useCallback(
-        (stats: FormStat): number => {
-            if (params.showDirectCompleteness === 'true') {
+        (stats: FormStat): any => {
+            if (showDirectCompleteness) {
                 return stats.itself_has_instances ? 100 : 0;
             }
             return stats.percent;
         },
-        [params.showDirectCompleteness],
+        [showDirectCompleteness],
     );
-
-    const theme = useTheme();
+    const getLegendColor = useCallback(
+        value =>
+            showDirectCompleteness ? getDirectLegend(value) : getLegend(value),
+        [showDirectCompleteness],
+    );
     return (
         <section className={classes.mapContainer}>
             <Box position="relative">
                 {isLoading && <LoadingSpinner absolute />}
+                <CompletenessSelect params={params} />
+                <MapLegend showDirectCompleteness={showDirectCompleteness} />
                 <MapContainer
                     key={parentLocation?.id}
                     isLoading={isLoading}
@@ -130,13 +138,11 @@ export const Map: FunctionComponent<Props> = ({
                     bounds={bounds}
                     boundsOptions={boundsOptions}
                 >
-                    <MapLegend />
                     <ScaleControl imperial={false} />
                     <CustomTileLayer
                         currentTile={currentTile}
                         setCurrentTile={setCurrentTile}
                     />
-                    <CompletenessSelect params={params} />
                     <CustomZoomControl
                         bounds={bounds}
                         boundsOptions={boundsOptions}
@@ -158,16 +164,16 @@ export const Map: FunctionComponent<Props> = ({
                         {shapes.map(shape => {
                             const stats =
                                 shape.form_stats[`form_${selectedFormId}`];
+                            const color =
+                                getLegendColor(getPercent(stats)) ||
+                                theme.palette.primary.main;
                             return (
                                 <GeoJSON
                                     key={`${shape.id}-${params.showDirectCompleteness}`}
                                     data={shape.geo_json}
                                     // @ts-ignore
                                     style={() => ({
-                                        color:
-                                            getLegend(getPercent(stats))
-                                                ?.color ||
-                                            theme.palette.primary.main,
+                                        color,
                                         fillOpacity: 0.3,
                                     })}
                                 >
@@ -185,6 +191,9 @@ export const Map: FunctionComponent<Props> = ({
                         {markers.map(marker => {
                             const stats =
                                 marker.form_stats[`form_${selectedFormId}`];
+                            const color =
+                                getLegendColor(getPercent(stats)) ||
+                                theme.palette.primary.main;
                             return (
                                 <CircleMarkerComponent
                                     key={`${marker.id}-${params.showDirectCompleteness}`}
@@ -196,11 +205,7 @@ export const Map: FunctionComponent<Props> = ({
                                         stats,
                                     })}
                                     markerProps={() => ({
-                                        ...circleColorMarkerOptions(
-                                            getLegend(getPercent(stats))
-                                                ?.color ||
-                                                theme.palette.primary.main,
-                                        ),
+                                        ...circleColorMarkerOptions(color),
                                         radius: 12,
                                     })}
                                 />

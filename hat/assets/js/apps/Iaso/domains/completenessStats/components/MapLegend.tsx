@@ -1,57 +1,9 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, makeStyles, Box } from '@material-ui/core';
-
-type Legend = {
-    startValue: number;
-    endValue: number;
-    color: string;
-    name: string;
-    id?: string;
-};
-
-export type LegendSet = {
-    name: string;
-    id?: string;
-    legends: Legend[];
-};
-
-export const DEFAULT_LEGEND: LegendSet = {
-    name: 'Legend',
-    legends: [
-        {
-            startValue: 90,
-            endValue: 100,
-            color: 'green',
-            name: '> 90%',
-        },
-        {
-            startValue: 70,
-            endValue: 89,
-            color: 'orange',
-            name: '70% - 90%',
-        },
-        {
-            startValue: 0,
-            endValue: 69,
-            color: 'red',
-            name: '< 70',
-        },
-    ],
-};
-
-export const getLegend = (
-    percent: number,
-    legendSet: LegendSet = DEFAULT_LEGEND,
-): Legend | undefined => {
-    let currentLegend;
-    legendSet.legends.forEach(legend => {
-        if (percent >= legend.startValue && percent <= legend.endValue) {
-            currentLegend = legend;
-        }
-    });
-
-    return currentLegend;
-};
+import { Paper, makeStyles, Box, useTheme } from '@material-ui/core';
+import { scaleThreshold } from '@visx/scale';
+import { LegendThreshold, LegendItem, LegendLabel } from '@visx/legend';
+import { useSafeIntl } from 'bluesquare-components';
+import MESSAGES from '../messages';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -66,52 +18,100 @@ const useStyles = makeStyles(theme => ({
     legendContainer: {
         padding: theme.spacing(2, 2, 1, 2),
     },
-    legend: {
-        display: 'flex',
-        alignItems: 'center',
-    },
-    roundColor: {
-        borderRadius: 20,
-        height: 20,
-        width: 20,
-        display: 'inline-block',
-        marginRight: theme.spacing(1),
-    },
-    mapLegendLabel: {
-        textAlign: 'right',
-        display: 'inline-block',
-        verticalAlign: 'top',
-    },
 }));
 
+export const getLegend = scaleThreshold({
+    domain: [70, 90],
+    range: ['red', 'orange', 'green'],
+});
+
+const legendLabels: string[] = ['< 70', '70% - 90%', '> 90%'];
+
+export const getDirectLegend = scaleThreshold({
+    domain: [100],
+    range: ['red', 'green'],
+});
+
+const useGetDirectLabels = (): string[] => {
+    const { formatMessage } = useSafeIntl();
+    return [
+        formatMessage(MESSAGES.notCompleted),
+        formatMessage(MESSAGES.completed),
+    ];
+};
+
 type Props = {
-    legendSet?: LegendSet;
+    showDirectCompleteness: boolean;
 };
 
 export const MapLegend: FunctionComponent<Props> = ({
-    legendSet = DEFAULT_LEGEND,
+    showDirectCompleteness,
 }) => {
     const classes = useStyles();
-
+    const theme = useTheme();
+    const legendDirectLabels = useGetDirectLabels();
     return (
         <Paper elevation={1} className={classes.root}>
             <Box className={classes.legendContainer}>
-                {legendSet.legends.map(legend => (
-                    <Box
-                        key={`${legend.startValue}-${legend.endValue}`}
-                        mb={1}
-                        className={classes.legend}
-                    >
-                        <span
-                            className={classes.roundColor}
-                            style={{ backgroundColor: legend.color }}
-                        />
+                {showDirectCompleteness && (
+                    <LegendThreshold scale={getDirectLegend}>
+                        {labels =>
+                            labels.reverse().map(label => {
+                                return (
+                                    <LegendItem
+                                        key={`legend-${label.value}`}
+                                        margin={theme.spacing(0, 0, 1, 0)}
+                                    >
+                                        <svg width={20} height={20}>
+                                            <circle
+                                                fill={label.value}
+                                                cx="10"
+                                                cy="10"
+                                                r="10"
+                                            />
+                                        </svg>
+                                        <LegendLabel
+                                            align="left"
+                                            margin={theme.spacing(0, 0, 0, 1)}
+                                        >
+                                            {legendDirectLabels[label.index]}
+                                        </LegendLabel>
+                                    </LegendItem>
+                                );
+                            })
+                        }
+                    </LegendThreshold>
+                )}
 
-                        <span className={classes.mapLegendLabel}>
-                            {legend.name}
-                        </span>
-                    </Box>
-                ))}
+                {!showDirectCompleteness && (
+                    <LegendThreshold scale={getLegend}>
+                        {labels =>
+                            labels.reverse().map(label => {
+                                return (
+                                    <LegendItem
+                                        key={`legend-direct-${label.value}`}
+                                        margin={theme.spacing(0, 0, 1, 0)}
+                                    >
+                                        <svg width={20} height={20}>
+                                            <circle
+                                                fill={label.value}
+                                                cx="10"
+                                                cy="10"
+                                                r="10"
+                                            />
+                                        </svg>
+                                        <LegendLabel
+                                            align="left"
+                                            margin={theme.spacing(0, 0, 0, 1)}
+                                        >
+                                            {legendLabels[label.index]}
+                                        </LegendLabel>
+                                    </LegendItem>
+                                );
+                            })
+                        }
+                    </LegendThreshold>
+                )}
             </Box>
         </Paper>
     );

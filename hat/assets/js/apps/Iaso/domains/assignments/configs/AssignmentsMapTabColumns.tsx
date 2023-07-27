@@ -47,9 +47,6 @@ export const useColumns = ({
     const theme: Theme = useTheme();
     const getAssignationsCount = useCallback(
         (rowId: number): number | string => {
-            if (isLoadingAssignments) {
-                return '';
-            }
             return assignments.filter(assignment => {
                 if (currentTeam?.type === 'TEAM_OF_TEAMS') {
                     return (
@@ -65,7 +62,7 @@ export const useColumns = ({
                 );
             }).length;
         },
-        [assignments, currentTeam?.type, isLoadingAssignments, orgUnits],
+        [assignments, currentTeam?.type, orgUnits],
     );
 
     const getFullItem = useCallback(
@@ -161,7 +158,8 @@ export const useColumns = ({
                 Cell: settings => {
                     return (
                         <div>
-                            {getAssignationsCount(settings.row.original.id)}
+                            {!isLoadingAssignments &&
+                                getAssignationsCount(settings.row.original.id)}
                         </div>
                     );
                 },
@@ -172,6 +170,7 @@ export const useColumns = ({
         formatMessage,
         getAssignationsCount,
         getFullItem,
+        isLoadingAssignments,
         profiles,
         selectedItem?.id,
         setItemColor,

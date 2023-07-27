@@ -123,7 +123,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.completenessStats.completeness',
     },
     directCompleteness: {
-        defaultMessage: 'Direct completeness',
+        defaultMessage: 'Form filled at org unit',
         id: 'iaso.completenessStats.directCompleteness',
     },
     childrenCompleteness: {

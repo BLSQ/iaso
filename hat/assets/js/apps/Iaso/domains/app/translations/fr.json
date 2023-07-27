@@ -56,7 +56,7 @@
     "iaso.completenessStats.count": "Nombre de soumission(s)",
     "iaso.completenessStats.descendants": "Descendants",
     "iaso.completenessStats.descendantsNoSubmissionExpected": "Aucune soumission n'est attendue sur aucun descendant. Vérifiez la configuration du Formulaire si cela vous semble incorrect",
-    "iaso.completenessStats.directCompleteness": "Complétude directe",
+    "iaso.completenessStats.directCompleteness": "Formulaire rempli à l’unité d’org.",
     "iaso.completenessStats.itselfColumnLabel": "Direct",
     "iaso.completenessStats.itselfColumnTitle": "Soumission directement sur cette unité d'organisation",
     "iaso.completenessStats.itselfNoSubmissionExcepted": "Aucune soumission n'est attendue à ce niveau",

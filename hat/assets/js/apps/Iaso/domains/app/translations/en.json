@@ -58,7 +58,7 @@
     "iaso.completenessStats.count": "Instance(s) count",
     "iaso.completenessStats.descendants": "Descendants",
     "iaso.completenessStats.descendantsNoSubmissionExpected": "No descendant OrgUnit is expected to fill that form. Check the Form config if this is unexpected",
-    "iaso.completenessStats.directCompleteness": "Direct completeness",
+    "iaso.completenessStats.directCompleteness": "Form filled at org unit",
     "iaso.completenessStats.itselfColumnLabel": "Itself",
     "iaso.completenessStats.itselfColumnTitle": "Submissions on this org unit",
     "iaso.completenessStats.itselfNoSubmissionExcepted": "No submission is expected on this level for this form",

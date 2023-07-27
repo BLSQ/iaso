@@ -1,14 +1,4 @@
 /* eslint-disable camelcase */
-export type FileContent = {
-    name?: string;
-    age_type: '0' | '1';
-    birth_date?: string;
-    age?: string;
-    gender?: string;
-    vaccination_number?: string;
-    end?: string;
-};
-
 export type Project = {
     name: string;
 };

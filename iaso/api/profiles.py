@@ -65,7 +65,7 @@ def get_filtered_profiles(
     queryset: QuerySet[Profile],
     user: Optional[User],
     search: Optional[str] = None,
-    perms: Optional[List[int]] = None,
+    perms: Optional[List[str]] = None,
     location: Optional[str] = None,
     org_unit_type: Optional[str] = None,
     parent_ou: Optional[bool] = False,
@@ -90,23 +90,22 @@ def get_filtered_profiles(
             user__iaso_profile__org_units__pk=location,
         ).distinct()
 
-    no_parent_ou = False
-
+    parent: Optional[OrgUnit] = None
     if parent_ou and location or children_ou and location:
         ou = get_object_or_404(OrgUnit, pk=location)
-        if parent_ou and ou.parent is None:
-            no_parent_ou = True
+        if parent_ou and ou.parent is not None:
+            parent = ou.parent
 
         if parent_ou and not children_ou:
             queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
 
-            if no_parent_ou:
+            if not parent:
                 queryset = queryset_current
 
             else:
                 queryset = (
                     original_queryset.filter(
-                        user__iaso_profile__org_units__pk=ou.parent.pk,
+                        user__iaso_profile__org_units__pk=parent.id,
                     )
                 ) | queryset_current
 
@@ -114,25 +113,25 @@ def get_filtered_profiles(
 
         if children_ou and not parent_ou:
             queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
-            children_ou = OrgUnit.objects.filter(parent__pk=location)
+            children_ous = OrgUnit.objects.filter(parent__pk=location)
             queryset = (
-                original_queryset.filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                original_queryset.filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ous])
                 | queryset_current
             )
 
         if parent_ou and children_ou:
-            if no_parent_ou:
+            if not parent:
                 queryset_parent = original_queryset.filter(user__iaso_profile__org_units__pk=location)
             else:
                 queryset_parent = original_queryset.filter(
-                    user__iaso_profile__org_units__pk=ou.parent.pk,
+                    user__iaso_profile__org_units__pk=parent.pk,
                 )
 
             queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
 
-            children_ou = OrgUnit.objects.filter(parent__pk=location)
+            children_ous = OrgUnit.objects.filter(parent__pk=location)
             queryset_children = original_queryset.filter(
-                user__iaso_profile__org_units__in=children_ou.values_list("id", flat=True)
+                user__iaso_profile__org_units__in=children_ous.values_list("id", flat=True)
             )
 
             queryset = queryset_current | queryset_parent | queryset_children
@@ -147,7 +146,7 @@ def get_filtered_profiles(
         queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects)
 
     if user_roles:
-        queryset = queryset.filter(user__iaso_profile__user_roles__in=user_roles)
+        queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles)
 
     if managed_users_only:
         if not user:
@@ -162,7 +161,7 @@ def get_filtered_profiles(
                 queryset = queryset.filter(user__iaso_profile__org_units__id__in=managed_org_units)
             queryset = queryset.exclude(user=user)
         else:
-            queryset = User.objects.none()
+            queryset = Profile.objects.none()
 
     return queryset
 
@@ -220,7 +219,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             projects = projects.split(",")
         user_roles = request.GET.get("userRoles", None)
         if user_roles:
-            user_roles = projects.split(",")
+            user_roles = user_roles.split(",")
         managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
         queryset = get_filtered_profiles(
             queryset=self.get_queryset(),

@@ -52,7 +52,8 @@ def update_single_profile_from_bulk(
             )
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)
-            if project.account.id == user.iaso_profile.account.id:
+            account = project.account
+            if account and account.id == user.iaso_profile.account.id:
                 project.iaso_profile.add(profile)
     if projects_ids_removed is not None:
         if user.has_perm(permission.USERS_MANAGED):
@@ -61,7 +62,8 @@ def update_single_profile_from_bulk(
             )
         for project_id in projects_ids_removed:
             project = Project.objects.get(pk=project_id)
-            if project.account.id == user.iaso_profile.account.id:
+            account = project.account
+            if account and account.id == user.iaso_profile.account.id:
                 project.iaso_profile.remove(profile)
 
     if language is not None:
@@ -109,8 +111,8 @@ def profiles_bulk_update(
     org_unit_type: Optional[str],
     parent_ou: Optional[bool],
     children_ou: Optional[bool],
-    projects: Optional[List[str]],
-    user_roles: Optional[List[str]],
+    projects: Optional[List[int]],
+    user_roles: Optional[List[int]],
     task: Task,
 ):
     """Background Task to bulk update profiles."""
@@ -119,11 +121,13 @@ def profiles_bulk_update(
 
     # Restrict qs to profiles accessible to the user
     user = task.launcher
+    if not user:
+        raise Exception("Task must have a launcher.")
 
     queryset: QuerySet[Profile] = Profile.objects.filter(account=user.iaso_profile.account)  # type: ignore
 
     if not select_all:
-        queryset: QuerySet[Profile] = get_filtered_profiles(
+        queryset = get_filtered_profiles(
             queryset=queryset.filter(pk__in=selected_ids),
             user=user,
             managed_users_only=True,
@@ -151,7 +155,7 @@ def profiles_bulk_update(
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         managed_org_units = None
-        if user.has_perm(permission.USERS_MANAGED):
+        if user and user.has_perm(permission.USERS_MANAGED):
             managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )

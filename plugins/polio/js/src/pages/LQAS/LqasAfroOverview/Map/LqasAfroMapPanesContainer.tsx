@@ -75,6 +75,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             enabled: showCountries,
             params,
             selectedRound,
+            side,
         });
 
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
@@ -84,6 +85,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             enabled: !showCountries,
             params,
             selectedRound,
+            side,
         });
 
     const {

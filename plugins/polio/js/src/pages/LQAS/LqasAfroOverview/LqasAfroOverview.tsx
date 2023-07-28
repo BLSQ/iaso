@@ -55,7 +55,12 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
             if (side === 'right') {
                 tempParams.displayedShapesRight = value;
             }
-            dispatch(redirectToReplace(LQAS_AFRO_MAP_URL, tempParams));
+            dispatch(
+                redirectToReplace(
+                    LQAS_AFRO_MAP_URL,
+                    tempParams as AfroMapParams,
+                ),
+            );
         },
         [dispatch, router],
     );

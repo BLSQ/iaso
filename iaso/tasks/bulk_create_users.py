@@ -8,12 +8,6 @@ def bulk_create_users_task(task: Task, user=None, user_id=None, file_id=None, la
     """Background Task to bulk create users from a CSV file"""
     task.report_progress_and_stop_if_killed(progress_message="Importing")
 
-    total = bulk_create_users(
-        user=user,
-        user_id=user_id,
-        file_id=file_id,
-        launch_task=launch_task,
-        task=task
-    )
+    total = bulk_create_users(user=user, user_id=user_id, file_id=file_id, launch_task=launch_task, task=task)
 
     task.report_success(message=f"Created {total} Users.")

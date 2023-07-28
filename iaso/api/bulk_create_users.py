@@ -1,4 +1,7 @@
+from django.http import FileResponse
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import serializers, permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -84,3 +87,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
         task = bulk_create_users_task(user_id=user.id, file_id=file_instance.id, launch_task=True, user=user)  # type: ignore
 
         return Response({"task": TaskSerializer(instance=task).data})
+
+    @swagger_auto_schema(request_body=no_body)
+    @action(detail=False, methods=["get"], url_path="getsample")
+    def download_sample_csv(self, request):
+        return FileResponse(open("iaso/api/fixtures/sample_bulk_user_creation.csv", "rb"))

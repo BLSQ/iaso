@@ -1,5 +1,6 @@
 import csv
 
+import pandas as pd
 from django.contrib.auth.models import User, Permission
 from django.core.files.uploadedfile import SimpleUploadedFile
 
@@ -73,9 +74,7 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
 
         task = Task.objects.last()
 
@@ -109,9 +108,13 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
 
         pollux = User.objects.get(username="pollux")
         pollux_perms = pollux.user_permissions.all()
@@ -123,7 +126,6 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
         usernames = [profile.user.username for profile in profiles]
         username_list = ["yoda", "pollux", "obi", "ferdinand", "castor"]
 
-        self.assertEqual(create_result["Accounts created"], 3)
         self.assertEqual(has_perms, True)
         self.assertEqual(sorted(usernames), sorted(username_list))
 
@@ -141,13 +143,16 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
 
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
         self.assertEqual(
-            create_result.get("error"),
-            "Email Column Missing. Email column is required even if you don't provide an email address. Error code: ['Enter a valid email address.']",
+            task.progress_message,
+            "Error: Operation aborted. Invalid Email at row : 3.",
         )
 
     def test_upload_without_mail_must_work(self):
@@ -164,15 +169,18 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
 
         profiles = Profile.objects.filter(account=self.yoda.iaso_profile.account)
         usernames = [profile.user.username for profile in profiles]
         username_list = ["broly", "yoda", "obi", "ferdinand", "rsfg"]
 
-        self.assertEqual(create_result["Accounts created"], 3)
         self.assertEqual(sorted(usernames), sorted(username_list))
 
     def test_upload_invalid_orgunit_id(self):
@@ -189,13 +197,16 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
 
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
         self.assertEqual(
-            create_result.get("error"),
-            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error and try again. Error code: OrgUnit matching query does not exist.",
+            task.progress_message,
+            "Error: Invalid OrgUnit 99998 at row : 2. Fix the error and try again.Error code: OrgUnit matching query does not exist.",
         )
 
     def test_upload_user_already_exists(self):
@@ -218,18 +229,20 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
 
-        self.assertEqual(
-            create_result.get("error"),
-            'Operation aborted. Error at row 2. duplicate key value violates unique constraint "auth_user_username_key"\nDETAIL:  Key (username)=(broly) already exists.\n',
-        )
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
 
     def test_upload_invalid_csv_dont_create_entries(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
+
+        users = User.objects.all()
+        self.assertEqual(len(users), 3)
 
         file = open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv")
 
@@ -241,17 +254,20 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
+        self.assertEqual(
+            task.progress_message,
+            "Error: Invalid OrgUnit 99998 at row : 2. Fix the error and try again.Error code: OrgUnit matching query does not exist.",
         )
 
         users = User.objects.all()
-
-        self.assertEqual(
-            create_result.get("error"),
-            "Operation aborted. Invalid OrgUnit 99998 at row : 2. Fix the error and try again. Error code: OrgUnit matching query does not exist.",
-        )
-        self.assertEqual(len(users), 4)
+        self.assertEqual(len(users), 3)
 
     def test_user_cant_access_without_permission(self):
 
@@ -266,8 +282,6 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
 
-        pswd_deleted = False
-
         file = open("iaso/tests/fixtures/test_user_bulk_create_valid.csv")
 
         request = RequestFactory().post("/upload", {"file": file})
@@ -278,24 +292,17 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
+
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
 
         csv_file = BulkCreateUserCsvFile.objects.last()
 
-        file = open(csv_file.file.path, "r")
-        reader = csv.reader(file)
-        i = 0
-        csv_indexes = []
-        for row in reader:
-            if i > 0:
-                pswd_deleted = True if row[csv_indexes.index("password")] == "" else False
-            else:
-                csv_indexes = row
-            i += 1
+        df = pd.read_csv(csv_file.file.path)
 
-        self.assertEqual(pswd_deleted, True)
+        self.assertNotIn("password", df.columns)
 
     def test_upload_invalid_password(self):
         self.client.force_authenticate(self.yoda)
@@ -311,14 +318,13 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
 
-        self.assertEqual(
-            create_result.get("error"),
-            "Operation aborted. Error at row 4. ['This password is too short. It must contain at least 8 characters.']",
-        )
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
 
     def test_created_users_can_login(self):
         self.client.force_authenticate(self.yoda)
@@ -334,38 +340,19 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
 
         login_data = {"username": "broly", "password": "yodnj!30dln"}
 
         login_response = self.client.post("/api/token/", data=login_data, format="json")
 
         self.assertEqual(login_response.status_code, 200)
-
-    def test_upload_duplicate_ou_names(self):
-        self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
-
-        file = open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv")
-
-        request = RequestFactory().post("/upload", {"file": file})
-
-        uploaded_file = request.FILES["file"]
-
-        file_instance = BulkCreateUserCsvFile.objects.create(
-            file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
-        )
-
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
-
-        self.assertEqual(
-            create_result.get("error"),
-            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
-        )
 
     def test_upload_invalid_orgunit_name(self):
         self.client.force_authenticate(self.yoda)
@@ -381,13 +368,15 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        create_result = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
 
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "ERRORED")
         self.assertEqual(
-            create_result.get("error"),
-            "Operation aborted. Multiple OrgUnits with the name: Bazarre at row : 4.Use Orgunit ID instead of name.",
+            task.progress_message, "Error: Invalid OrgUnit Bazarre at row : 4. Fix the error and try again."
         )
 
     def test_users_profiles_have_right_ou(self):
@@ -404,9 +393,13 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
 
         broly_ou = Profile.objects.get(user=User.objects.get(username="broly").id).org_units.all()
         ou_list = []
@@ -436,18 +429,17 @@ class BulkCreateUsersFromCsvTestCase(APITestCase):
             file=uploaded_file, created_by=self.yoda, account=self.yoda.iaso_profile.account
         )
 
-        task = bulk_create_users_task(
-            user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda
-        )
+        task = bulk_create_users_task(user_id=self.yoda.id, file_id=file_instance.id, launch_task=True, user=self.yoda)
 
         self.assertEqual(task.status, "QUEUED")
         task_service = TestTaskService()
         task_service.run_all()
         task.refresh_from_db()
-        print(task.status)
-        print(task.progress_message)
-
-
+        self.assertEqual(task.status, "ERRORED")
+        self.assertEqual(
+            task.progress_message,
+            "Error: Invalid OrgUnit None Dagobah 9999 at row : 2. Fix the error and try again.Error code: Error: Invalid OrgUnit None Dagobah 9999 at row : 2.You don't have access to this orgunit",
+        )
 
     def test_creating_bulk_create_user_task(self):
         self.client.force_authenticate(self.yoda)

@@ -13,6 +13,8 @@ import { AfroMapParams } from './types';
 import { genUrl } from '../../../utils/routing';
 import MESSAGES from '../../../constants/messages';
 import { LqasAfroMapWithSelector } from './Map/LqasAfroMapWithSelector';
+import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { LQAS_AFRO_MAP_URL } from '../../../constants/routes';
 
 type Props = {
     router: Router;
@@ -42,6 +44,21 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
         },
         [dispatch, router, selectedRounds],
     );
+    const onDisplayedShapeChange = useCallback(
+        (value, side) => {
+            const tempParams = {
+                ...router.params,
+            };
+            if (side === 'left') {
+                tempParams.displayedShapesLeft = value;
+            }
+            if (side === 'right') {
+                tempParams.displayedShapesRight = value;
+            }
+            dispatch(redirectToReplace(LQAS_AFRO_MAP_URL, tempParams));
+        },
+        [dispatch, router],
+    );
 
     return (
         <>
@@ -62,6 +79,8 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                                 currentTile={currentTile}
                                 setCurrentTile={setCurrentTile}
                                 selectedRound={selectedRounds[0]}
+                                params={router.params as AfroMapParams}
+                                onDisplayedShapeChange={onDisplayedShapeChange}
                             />
                         </Grid>
                         <Grid item xs={6}>
@@ -72,6 +91,8 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                                 currentTile={currentTile}
                                 setCurrentTile={setCurrentTile}
                                 selectedRound={selectedRounds[1]}
+                                params={router.params as AfroMapParams}
+                                onDisplayedShapeChange={onDisplayedShapeChange}
                             />
                         </Grid>
                     </Grid>

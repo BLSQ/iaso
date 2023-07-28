@@ -190,6 +190,14 @@ const routes = [
                 isRequired: false,
                 key: 'period',
             },
+            {
+                isRequired: false,
+                key: 'displayedShapesLeft',
+            },
+            {
+                isRequired: false,
+                key: 'displayedShapesRight',
+            },
         ],
     },
     {

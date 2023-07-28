@@ -65,7 +65,10 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     const [bounds, setBounds] = useState<number>(map.getBounds());
     const selectedRound = getRound(params.rounds, side);
 
-    const showCountries = map.getZoom() <= 5;
+    const showCountries =
+        side === 'left'
+            ? params.displayedShapesLeft !== 'district'
+            : params.displayedShapesRight !== 'district';
     const { data: mapShapes, isFetching: isAfroShapesLoading } =
         useAfroMapShapes({
             category: 'lqas',

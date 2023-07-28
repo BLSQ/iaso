@@ -37,10 +37,12 @@ export const useAfroMapShapes = ({
     side,
 }: UseAfroMapShapesArgs): UseQueryResult<any, any> => {
     const queryKeyParams = {
-        ...params,
+        rounds: params.rounds,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        period: params.period,
+        accountId: params.accountId,
     };
-    delete queryKeyParams.displayedShapesLeft;
-    delete queryKeyParams.displayedShapesRight;
     return useSnackQuery({
         queryFn: () =>
             getAfroMapData({ category, params: queryKeyParams, selectedRound }),
@@ -104,10 +106,12 @@ export const useGetZoomedInShapes = ({
     side,
 }: UseGetZoomedInShapesArgs): UseQueryResult<any, any> => {
     const queryKeyParams = {
-        ...params,
+        rounds: params.rounds,
+        startDate: params.startDate,
+        endDate: params.endDate,
+        period: params.period,
+        accountId: params.accountId,
     };
-    delete queryKeyParams.displayedShapesLeft;
-    delete queryKeyParams.displayedShapesRight;
     return useSnackQuery({
         queryFn: () =>
             getZoomedInShapes({

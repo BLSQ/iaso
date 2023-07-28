@@ -6,6 +6,7 @@ import {
     FormControlLabel,
     Radio,
     RadioGroup,
+    makeStyles,
 } from '@material-ui/core';
 import { paperElevation } from '../../../IM/constants';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -15,6 +16,17 @@ import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/ge
 import { Tile } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import MESSAGES from '../../../../constants/messages';
 import { AfroMapParams, Side } from '../types';
+
+const useStyles = makeStyles(theme => ({
+    mapContainer: {
+        '& .tile-switch-control': {
+            top: 'auto',
+            bottom: theme.spacing(1),
+            left: theme.spacing(1),
+            right: 'auto',
+        },
+    },
+}));
 
 type Props = {
     selectedRound: string;
@@ -42,7 +54,7 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
     const options = useOptions();
     const shapeKey =
         side === 'left' ? 'displayedShapesLeft' : 'displayedShapesRight';
-
+    const classes = useStyles();
     return (
         <Paper elevation={paperElevation}>
             <Box px={2}>
@@ -60,7 +72,7 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                         />
                     </Grid>
                     <Grid item xs={6}>
-                        <Box mt={3}>
+                        <Box mt={3} display="flex" justifyContent="center">
                             <RadioGroup
                                 row
                                 name="displayedShapes"
@@ -84,7 +96,7 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                     </Grid>
                 </Grid>
             </Box>
-            <Box m={2} pb={2}>
+            <Box m={2} pb={2} className={classes.mapContainer}>
                 <LqasAfroMap
                     router={router}
                     currentTile={currentTile}

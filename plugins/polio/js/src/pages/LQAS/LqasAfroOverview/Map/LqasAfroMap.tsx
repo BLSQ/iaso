@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useMemo } from 'react';
 import { MapContainer } from 'react-leaflet';
 
 import { Bounds } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/map/mapUtils';
@@ -30,6 +30,28 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
     side,
 }) => {
     const [bounds, setBounds] = useState<Bounds | undefined>(undefined);
+    const { params } = router;
+    const defaultCenter = useMemo(
+        () =>
+            (side === 'left'
+                ? params.centerLeft && JSON.parse(params.centerLeft)
+                : params.centerRight && JSON.parse(params.centerRight)) ||
+            defaultViewport.center,
+        [params.centerLeft, params.centerRight, side],
+    );
+    const defaultZoom = useMemo(
+        () =>
+            (side === 'left' ? params.zoomLeft : params.zoomRight) ||
+            defaultViewport.zoom,
+        [params.zoomLeft, params.zoomRight, side],
+    );
+    const displayedShape: string = useMemo(
+        () =>
+            (side === 'left'
+                ? params.displayedShapesLeft
+                : params.displayedShapesRight) || 'country',
+        [params.displayedShapesLeft, params.displayedShapesRight, side],
+    );
     return (
         <>
             <TilesSwitchControl
@@ -41,15 +63,15 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
                     height: '65vh',
                 }}
                 // @ts-ignore
-                center={defaultViewport.center}
-                zoom={defaultViewport.zoom}
+                center={defaultCenter}
+                zoom={defaultZoom}
                 zoomControl={false}
                 scrollWheelZoom={false}
                 whenCreated={mapInstance => {
                     setBounds(mapInstance.getBounds());
                 }}
             >
-                <LqasAfroMapLegend />
+                <LqasAfroMapLegend displayedShape={displayedShape} />
                 <CustomTileLayer
                     currentTile={currentTile}
                     setCurrentTile={setCurrentTile}

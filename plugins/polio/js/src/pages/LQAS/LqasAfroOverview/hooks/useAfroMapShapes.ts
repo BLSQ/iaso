@@ -36,9 +36,21 @@ export const useAfroMapShapes = ({
     selectedRound,
     side,
 }: UseAfroMapShapesArgs): UseQueryResult<any, any> => {
+    const queryKeyParams = {
+        ...params,
+    };
+    delete queryKeyParams.displayedShapesLeft;
+    delete queryKeyParams.displayedShapesRight;
     return useSnackQuery({
-        queryFn: () => getAfroMapData({ category, params, selectedRound }),
-        queryKey: ['lqasim-afro-map', category, params, selectedRound, side],
+        queryFn: () =>
+            getAfroMapData({ category, params: queryKeyParams, selectedRound }),
+        queryKey: [
+            'lqasim-afro-map',
+            category,
+            queryKeyParams,
+            selectedRound,
+            side,
+        ],
         options: {
             select: data => {
                 if (!data) return [];
@@ -91,14 +103,24 @@ export const useGetZoomedInShapes = ({
     selectedRound,
     side,
 }: UseGetZoomedInShapesArgs): UseQueryResult<any, any> => {
+    const queryKeyParams = {
+        ...params,
+    };
+    delete queryKeyParams.displayedShapesLeft;
+    delete queryKeyParams.displayedShapesRight;
     return useSnackQuery({
         queryFn: () =>
-            getZoomedInShapes({ bounds, category, params, selectedRound }),
+            getZoomedInShapes({
+                bounds,
+                category,
+                params: queryKeyParams,
+                selectedRound,
+            }),
         queryKey: [
             'lqasim-zoomin-map',
             bounds,
             category,
-            params,
+            queryKeyParams,
             selectedRound,
             side,
         ],

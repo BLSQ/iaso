@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, { FunctionComponent, useState, useEffect } from 'react';
 import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
 import { lqasDistrictColors } from '../../../IM/constants';
@@ -96,13 +96,24 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
         enabled: !showCountries,
     });
     const paramsAsString = JSON.stringify(params);
+    const isLoading =
+        isAfroShapesLoading ||
+        (isLoadingZoomin && !showCountries) ||
+        (isLoadingZoominbackground && !showCountries);
+
+    useEffect(() => {
+        if (map) {
+            if (isLoading && map.dragging._enabled) {
+                map.dragging.disable();
+            }
+            if (!isLoading && !map.dragging._enabled) {
+                map.dragging.enable();
+            }
+        }
+    }, [isLoading, map]);
     return (
         <>
-            {(isAfroShapesLoading ||
-                (isLoadingZoomin && !showCountries) ||
-                (isLoadingZoominbackground && !showCountries)) && (
-                <LoadingSpinner fixed={false} absolute />
-            )}
+            {isLoading && <LoadingSpinner fixed={false} absolute />}
 
             {showCountries && (
                 <MapPanes

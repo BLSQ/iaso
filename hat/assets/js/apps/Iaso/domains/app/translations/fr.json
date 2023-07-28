@@ -29,6 +29,7 @@
     "iaso.assignment.map.disabled": "Déjà assigné",
     "iaso.assignment.map.parent": "Parent",
     "iaso.assignment.map.unselected": "Non assigné",
+    "iaso.polio.label.refreshPage": "Rafraîchir la page",
     "iaso.assignment.mapHelper": "Click droit sur une unité d'org pour voir les détails. Click gauche pour fermer",
     "iaso.assignment.parentDialog.title": "Assigner {assignmentCount} unité(s) d'org. à {parentOrgUnitName}",
     "iaso.assignment.parentDialog.titleUnsassign": "Désassigner {assignmentCount} unité(s) d'org. de {parentOrgUnitName}",

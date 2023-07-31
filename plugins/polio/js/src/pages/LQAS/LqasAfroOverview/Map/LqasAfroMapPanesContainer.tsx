@@ -10,6 +10,7 @@ import {
 } from '../hooks/useAfroMapShapes';
 import { defaultShapeStyle } from '../../../../utils';
 import { AfroMapParams, RoundSelection, Side } from '../types';
+import { LqasAfroTooltip } from './LqasAfroTooltip';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -103,7 +104,12 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     mainLayer={mapShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     name={`LQAS-Map-country-view-${paramsAsString}`}
-                    tooltipFieldKey="data.country_name"
+                    customTooltip={shape => (
+                        <LqasAfroTooltip
+                            shape={shape}
+                            name={shape.data?.country_name}
+                        />
+                    )}
                 />
             )}
             {!showCountries && (
@@ -114,7 +120,12 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     getMainLayerStyle={getMainLayerStyle}
                     getBackgroundLayerStyle={getBackgroundLayerStyle}
                     name={`LQAS-Map-zooomin-view-${paramsAsString}`}
-                    tooltipFieldKey="data.district_name"
+                    customTooltip={shape => (
+                        <LqasAfroTooltip
+                            shape={shape}
+                            name={shape.data?.district_name}
+                        />
+                    )}
                 />
             )}
         </>

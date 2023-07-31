@@ -1830,7 +1830,12 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
                 result = {
                     "id": int(country_id),
-                    "data": {"campaign": latest_campaign.obr_name, **stats, "country_name": org_unit.name},
+                    "data": {
+                        "campaign": latest_campaign.obr_name,
+                        **stats,
+                        "country_name": org_unit.name,
+                        "round_number": round_number,
+                    },
                     "geo_json": shapes,
                     "status": calculate_country_status(stats, scope, round_number),
                 }
@@ -1969,6 +1974,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                             "campaign": latest_campaign.obr_name,
                             **district_stats,
                             "district_name": district.name,
+                            "round_number": round_number,
                         },
                         "geo_json": shapes,
                         "status": determine_status_for_district(district_stats),

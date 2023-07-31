@@ -1,4 +1,4 @@
-from ...models import *
+from ...models import *  # type: ignore
 from django.core.management.base import BaseCommand
 from datetime import timedelta, datetime
 import random

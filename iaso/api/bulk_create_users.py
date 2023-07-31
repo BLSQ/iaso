@@ -131,7 +131,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             )
             file_instance.save()
 
-            orgunits_hierarchy = OrgUnit.objects.hierarchy(request.user.iaso_profile.org_units.all())
+            orgunits_hierarchy = OrgUnit.objects.hierarchy(user_access_ou)
 
             for i, row in enumerate(reader):
                 if i > 0 and not set(columns_list).issubset(csv_indexes):

@@ -1,4 +1,9 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 // @ts-ignore
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
@@ -82,6 +87,10 @@ const Filters: FunctionComponent<Props> = ({
         : null;
 
     const queryClient = useQueryClient();
+    const handleRefresh = useCallback(
+        () => queryClient.resetQueries(),
+        [queryClient],
+    );
     return (
         <Box mt={2} width="100%">
             <Grid container item spacing={2}>
@@ -131,7 +140,7 @@ const Filters: FunctionComponent<Props> = ({
                             size="small"
                             variant="contained"
                             color="primary"
-                            onClick={() => queryClient.resetQueries()}
+                            onClick={handleRefresh}
                         >
                             <Box mr={1} pt={1}>
                                 <RefreshIcon fontSize="small" />

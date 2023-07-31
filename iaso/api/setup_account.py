@@ -47,12 +47,11 @@ class SetupAccountSerializer(serializers.Serializer):
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
 
-        Profile.objects.create(account=account, user=user)
+        profile = Profile.objects.create(account=account, user=user)
 
-        permissions_to_add = CustomPermissionSupport.get_full_permission_list()
+        permissions_to_add = CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
-
         return validated_data
 
 

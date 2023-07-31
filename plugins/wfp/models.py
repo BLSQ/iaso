@@ -55,5 +55,3 @@ class Step(models.Model):
     quantity_given = models.FloatField()
     visit = models.ForeignKey(Visit, on_delete=models.DO_NOTHING, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)
-
-

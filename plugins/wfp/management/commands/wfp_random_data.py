@@ -55,7 +55,6 @@ class Command(BaseCommand):
 
             facility = random.choice(facilities)
             for k in range(visit_count):
-
                 visit = Visit()
                 visit.number = number
                 visit.org_unit = facility

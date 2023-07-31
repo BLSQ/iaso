@@ -63,7 +63,7 @@ from plugins.polio.serializers import (
     ListCampaignSerializer,
     CalendarCampaignSerializer,
 )
-from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
+from plugins.polio.serializers import CampaignPreparednessSpreadsheetSerializer
 from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from .forma import (
     FormAStocksViewSetV2,
@@ -442,12 +442,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         serializer = CampaignPreparednessSpreadsheetSerializer(data=data)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(serializer.data)
-
-    @action(methods=["POST"], detail=False, serializer_class=SurgePreviewSerializer)
-    def preview_surge(self, request, **kwargs):
-        serializer = SurgePreviewSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
         return Response(serializer.data)
 
     NEW_CAMPAIGN_MESSAGE = """Dear GPEI coordinator – {country_name}

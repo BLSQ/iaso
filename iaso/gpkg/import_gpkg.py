@@ -106,7 +106,8 @@ def create_or_update_orgunit(
 
     orgunit.name = props["name"]
     orgunit.org_unit_type = data["type"]
-    orgunit.validation_status = validation_status
+    if orgunit.validation_status is None:
+        orgunit.validation_status = validation_status
     orgunit.source_ref = props["ref"]
     orgunit.version = source_version
 
@@ -116,7 +117,10 @@ def create_or_update_orgunit(
             orgunit.location = geom
         else:
             orgunit.geom = geom
-            orgunit.simplified_geom = geom
+            simplified_geom = geom.simplify(tolerance=0.002)
+            if type(simplified_geom) == Polygon:
+                simplified_geom = MultiPolygon(simplified_geom)
+            orgunit.simplified_geom = simplified_geom
 
     orgunit.save(skip_calculate_path=True)
 

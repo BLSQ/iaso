@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import date, datetime
 
 import pandas as pd
 from django.db import transaction
@@ -8,13 +8,16 @@ from django.utils import timezone
 from django.utils.translation import gettext as _
 from gspread.exceptions import APIError  # type: ignore
 from gspread.exceptions import NoValidUrlKeyFound
+from iaso.utils import geojson_queryset
 from rest_framework import serializers
 from rest_framework.fields import Field
 from rest_framework.validators import UniqueValidator
+from functools import reduce
 
 from hat.audit.models import Modification, CAMPAIGN_API
 from iaso.api.common import UserSerializer
 from iaso.models import Group
+from iaso.models.data_store import JsonDataStore
 from .models import (
     Config,
     Round,
@@ -38,6 +41,7 @@ from .preparedness.parser import (
 from .preparedness.spreadsheet_manager import *
 from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
 from .preparedness.summary import preparedness_summary, set_preparedness_cache_for_round
+from iaso.api.serializers import OrgUnitSerializer as OUSerializer
 
 logger = getLogger(__name__)
 
@@ -306,12 +310,14 @@ class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):
             "reason",
             "ended_at",
             "started_at",
+            "round",
             "previous_ended_at",
             "previous_started_at",
             "modified_by",
         ]
 
     modified_by = UserSerializer(required=False, read_only=True)
+    round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
 
     def validate(self, data):
         if not data["reason"]:
@@ -337,6 +343,10 @@ class RoundSerializer(serializers.ModelSerializer):
     shipments = ShipmentSerializer(many=True, required=False)
     destructions = DestructionSerializer(many=True, required=False)
     datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
+    districts_count_calculated = serializers.IntegerField(read_only=True)
+
+    # Vaccines from real scopes, from property, separated by ,
+    vaccine_names = serializers.CharField(read_only=True)
 
     @atomic
     def create(self, validated_data):
@@ -884,13 +894,7 @@ class CalendarCampaignSerializer(CampaignSerializer):
 
         class Meta:
             model = Round
-            fields = [
-                "id",
-                "number",
-                "started_at",
-                "ended_at",
-                "scopes",
-            ]
+            fields = ["id", "number", "started_at", "ended_at", "scopes", "vaccine_names"]
 
     class NestedScopeSerializer(CampaignScopeSerializer):
         class NestedGroupSerializer(GroupSerializer):

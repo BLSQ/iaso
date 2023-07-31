@@ -423,3 +423,10 @@ export type Shape = {
     source_id: number;
     source_name: string;
 };
+
+export type MapColor = {
+    color: string;
+    weight: string; // a number as string: "2"
+    opacity: string; // a number as string: "2"
+    zIndex: number;
+};

@@ -205,7 +205,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         )
                             except ValueError:
                                 try:
-                                    org_unit = OrgUnit.objects.get(name=ou)
+                                    org_unit = OrgUnit.objects.get(name=ou, pk__in=orgunits_hierarchy)
                                     if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
                                         raise serializers.ValidationError(
                                             {

@@ -25,11 +25,11 @@ import { WarningModal } from './WarningModal/WarningModal';
 
 const useStyles = makeStyles(theme => ({
     tabs: {
-        marginBottom: theme.spacing(4),
+        marginBottom: theme.spacing(3),
     },
     tab: {
         padding: 0,
-        width: 'calc(100% / 4)',
+        width: '25%',
         minWidth: 0,
     },
     root: {
@@ -102,15 +102,23 @@ const UserDialogComponent: FunctionComponent<Props> = ({
     ]);
 
     const onConfirm = useCallback(() => {
+        const userPermissions = user?.user_permissions.value ?? [];
+        const userRolesPermissions = user?.user_roles_permissions.value ?? [];
         if (
-            (user?.permissions.value ?? []).length > 0 ||
+            userPermissions.length > 0 ||
+            userRolesPermissions.length > 0 ||
             initialData?.is_superuser
         ) {
             saveUser();
         } else {
             setOpenWarning(true);
         }
-    }, [initialData?.is_superuser, saveUser, user?.permissions.value]);
+    }, [
+        initialData?.is_superuser,
+        saveUser,
+        user?.user_permissions.value,
+        user?.user_roles_permissions.value,
+    ]);
     return (
         <>
             <WarningModal
@@ -124,7 +132,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                 onConfirm={onConfirm}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                maxWidth="sm"
+                maxWidth="md"
                 open={isOpen}
                 closeDialog={() => null}
                 allowConfirm={
@@ -171,7 +179,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                     />
                 </Tabs>
                 <div className={classes.root} id="user-profile-dialog">
-                    {tab === 'infos' && (
+                    <div
+                        className={tab === 'infos' ? '' : classes.hiddenOpacity}
+                    >
                         <UsersInfos
                             setFieldValue={(key, value) =>
                                 setFieldValue(key, value)
@@ -180,7 +190,7 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             allowSendEmailInvitation={allowSendEmailInvitation}
                         />
-                    )}
+                    </div>
                     <div
                         className={
                             tab === 'permissions' ? '' : classes.hiddenOpacity
@@ -191,6 +201,9 @@ const UserDialogComponent: FunctionComponent<Props> = ({
                             currentUser={user}
                             handleChange={permissions =>
                                 setFieldValue('user_permissions', permissions)
+                            }
+                            setFieldValue={(key, value) =>
+                                setFieldValue(key, value)
                             }
                         />
                     </div>

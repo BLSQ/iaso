@@ -1,12 +1,19 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-console */
+// @ts-ignore
 import { useSnackQuery } from 'Iaso/libs/apiHooks';
+// @ts-ignore
 import { getRequest } from 'Iaso/libs/Api';
-import { IM_POC_URL, LQAS_POC_URL } from './constants.ts';
-// import mockLQASData from './mockLQASData.json';
-// import mockImData from './mockImData.json';
+import { UseQueryResult } from 'react-query';
+import { IM_POC_URL, LQAS_DATASTORE_URL } from './constants';
+import { LqasImData } from '../../constants/types';
 
-export const getLqasIm = (type, countryId) => {
+export type LQASIMRequestType = 'lqas' | 'imOHH' | 'imIHH' | 'imGlobal';
+
+export const getLqasIm = (
+    type: LQASIMRequestType,
+    countryId: string,
+): Promise<any> => {
     switch (type) {
         case 'imOHH':
             return getRequest(`${IM_POC_URL}?type=OHH&country_id=${countryId}`);
@@ -15,7 +22,7 @@ export const getLqasIm = (type, countryId) => {
         case 'imGlobal':
             return getRequest(`${IM_POC_URL}?country_id=${countryId}`);
         case 'lqas':
-            return getRequest(`${LQAS_POC_URL}?country_id=${countryId}`);
+            return getRequest(`${LQAS_DATASTORE_URL}${countryId}`);
         default:
             throw new Error(
                 `wrong "type" parameter, expected one of :imOHH,imIHH,imGlobal, lqas; got ${type} `,
@@ -23,21 +30,19 @@ export const getLqasIm = (type, countryId) => {
     }
 };
 
-// export const getLqasIm = async (type, _countryId) => {
-//     console.log('USING MOCKED DATA');
-//     if (type === 'lqas') {
-//         return mockLQASData;
-//     }
-//     return mockImData;
-// };
-
-export const useLqasIm = (type, countryId) => {
-    return useSnackQuery(
-        [type, countryId, getLqasIm],
-        async () => getLqasIm(type, countryId),
-        undefined,
-        {
+export const useLqasIm = (
+    type: LQASIMRequestType,
+    countryId: string,
+): UseQueryResult<LqasImData> => {
+    return useSnackQuery({
+        queryKey: [type, countryId, getLqasIm],
+        queryFn: async () => getLqasIm(type, countryId),
+        dispatchOnError: false,
+        options: {
             select: data => {
+                if (type === 'lqas') {
+                    return data?.data;
+                }
                 return data;
             },
             retry: 0,
@@ -45,5 +50,5 @@ export const useLqasIm = (type, countryId) => {
             initialData: { stats: {} },
             enabled: Boolean(countryId),
         },
-    );
+    });
 };

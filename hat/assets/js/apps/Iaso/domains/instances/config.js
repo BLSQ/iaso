@@ -9,10 +9,10 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
     metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
     metaFields.forEach(f => {
         columns.push({
-            Header: formatMessage(MESSAGES[f.key]),
+            Header: formatMessage(MESSAGES[f.key]) ?? f.key,
             accessor: f.accessor || f.key,
             sortable: f.sortable !== false,
-            align: f.key.includes('name') ? 'left' : 'center',
+            align: 'center',
             Cell:
                 f.Cell ||
                 (settings =>

@@ -334,6 +334,7 @@
     "iaso.instance.warningSoftDeletedExport": "If this instance was exported, this doesn't mean these data has been deleted from dhis2.",
     "iaso.instances.editLocationWithInstanceGps": "Push GPS from submission",
     "iaso.instances.forceExport": "Force Export",
+    "iaso.instances.label.created_by__username": "Created by",
     "iaso.instances.showDeleted": "Show only deleted",
     "iaso.label.accuracy": "Accuracy",
     "iaso.label.actions": "Action(s)",

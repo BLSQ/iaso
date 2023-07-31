@@ -1,9 +1,12 @@
+from functools import reduce
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import requests
 from django.db.models import Q
 from django.utils.timezone import now
+from iaso.api.common import ModelViewSet
+from iaso.models.data_store import JsonDataStore
 from rest_framework import filters
 
 from iaso.models import OrgUnitType, OrgUnit
@@ -33,14 +36,17 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
             paginated_url = url + ("&page=%d&page_size=10000" % page)
             logger.info("paginated_url: " + paginated_url)
             response = requests.get(paginated_url, auth=(login, password))
-            response.raise_for_status()
 
-            content = response.json()
-            empty = len(content) == 0
-            j.extend(response.json())
-            page = page + 1
+            empty = response.status_code == 404
+            if not empty:
+                response.raise_for_status()
+
+                content = response.json()
+                empty = len(content) == 0
+                j.extend(response.json())
+                page = page + 1
         cached_response.content = json.dumps(j)
-        logger.info(f"fetched {len(response.content)} bytes")
+        logger.info(f"fetched {len(cached_response.content)} bytes")
         cached_response.save()
     else:
         logger.info(f"using cache for {url}")
@@ -66,3 +72,125 @@ class CustomFilterBackend(filters.BaseFilterBackend):
             return queryset.filter(query)
 
         return queryset
+
+
+def determine_status_for_district(district_data):
+    if not district_data:
+        return "inScope"
+    checked = district_data["total_child_checked"]
+    marked = district_data["total_child_fmd"]
+    if checked == 60:
+        if marked > 56:
+            return "1lqasOK"
+    return "3lqasFail"
+
+
+def reduce_to_country_status(total, current):
+    if not total.get("passed", None):
+        total["passed"] = 0
+    if not total.get("total", None):
+        total["total"] = 0
+    try:
+        index = int(current[0])
+    except:
+        index = 0
+    if index == 1:
+        total["passed"] = total["passed"] + 1
+    total["total"] = total["total"] + 1
+    return total
+
+
+def get_data_for_round(country_data, roundNumber):
+    data_for_all_rounds = sorted(country_data["rounds"], key=lambda round: round["number"], reverse=True)
+    return next((round for round in data_for_all_rounds if round["number"] == roundNumber), {"data": {}})
+
+
+def calculate_country_status(country_data, scope, roundNumber):
+    if len(country_data.get("rounds", [])) == 0:
+        # TODO put in an enum
+        return "inScope"
+    if scope.count() == 0:
+        return "inScope"
+    data_for_round = get_data_for_round(country_data, roundNumber)
+    district_statuses = [
+        determine_status_for_district(district_data)
+        for district_data in data_for_round["data"].values()
+        if district_data["district"] in [org_unit.id for org_unit in scope]
+    ]
+    aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
+    if aggregated_statuses.get("total", 0) == 0:
+        return "inScope"
+    passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
+    if passing_ratio >= 80:
+        return "1lqasOK"
+    return "3lqasFail"
+
+
+class LqasAfroViewset(ModelViewSet):
+    def compute_reference_dates(self):
+        start_date_after = self.request.GET.get("startDate", None)
+        end_date_before = self.request.GET.get("endDate", None)
+        selected_period = self.request.GET.get("period", None)
+        # Enforce 6 months as the default value
+        if start_date_after is None and end_date_before is None and selected_period is None:
+            selected_period = "6months"
+        if selected_period is not None:
+            if not selected_period[0].isdigit():
+                raise ValueError("period should be 3months, 6months, 9months or 12months")
+            # End_date should be None when selecting period, since its "from X months ago until now"
+            end_date_before = None
+            today = datetime.now()
+            interval_in_months = int(selected_period[0])
+            if selected_period[1].isdigit():
+                interval_in_months = int(f"{selected_period[0]}{selected_period[1]}")
+            # months have to be converted in days. using 31 days i.o 30 to avoid missing campaigns
+            start_date_after = (today - timedelta(days=interval_in_months * 31)).date()
+        else:
+            if start_date_after is not None:
+                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
+            if end_date_before is not None:
+                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
+        return start_date_after, end_date_before
+
+    def filter_campaigns_by_date(self, campaigns, reference, reference_date):
+        requested_round = self.request.GET.get("round", "latest")
+        round_number_to_find = int(requested_round) if requested_round.isdigit() else None
+        if requested_round != "penultimate":
+            if reference == "start":
+                return [
+                    campaign
+                    for campaign in campaigns
+                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
+                    and campaign.find_last_round_with_date(reference, round_number_to_find).started_at >= reference_date
+                ]
+            if reference == "end":
+                return [
+                    campaign
+                    for campaign in campaigns
+                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
+                    and campaign.find_last_round_with_date(reference, round_number_to_find).ended_at <= reference_date
+                ]
+        else:
+            if reference == "start":
+                return [
+                    campaign
+                    for campaign in campaigns
+                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
+                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].started_at
+                    >= reference_date
+                ]
+            if reference == "end":
+                return [
+                    campaign
+                    for campaign in campaigns
+                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
+                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].ended_at
+                    <= reference_date
+                ]
+
+    # constructs the slug for the required datastore, eg lqas_29702. It follows the naming convention adopted in OpenHExa pipeline
+    def get_datastores(self):
+        category = self.request.GET.get("category", None)
+        queryset = self.get_queryset()
+        countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
+        return JsonDataStore.objects.filter(slug__in=countries)

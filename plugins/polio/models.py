@@ -1,3 +1,5 @@
+from datetime import date
+import datetime
 import json
 from typing import Union
 from uuid import uuid4
@@ -84,6 +86,7 @@ class DelayReasons(models.TextChoices):
     FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _("funds_not_arrived_in_country")
     VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
     VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
+    SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
 
 
 def make_group_round_scope():
@@ -230,6 +233,34 @@ class Round(models.Model):
 
     def get_item_by_key(self, key):
         return getattr(self, key)
+
+    @staticmethod
+    def is_round_over(round):
+        if not round.ended_at:
+            return False
+        return round.ended_at < date.today()
+
+    def vaccine_names(self):
+        # only take into account scope which have orgunit attached
+        campaign = self.campaign
+        if campaign.separate_scopes_per_round:
+            return ", ".join(
+                scope.vaccine
+                for scope in self.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
+        else:
+            return ",".join(
+                scope.vaccine
+                for scope in campaign.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
+
+    @property
+    def districts_count_calculated(self):
+        return self.campaign.get_districts_for_round(self).count()
 
 
 class CampaignQuerySet(models.QuerySet):
@@ -565,6 +596,33 @@ class Campaign(SoftDeletableModel):
         response["created_at"] = ssi.created_at
         return response
 
+    # Returning date.min if ended_at has no value so the method can be used with `sorted`
+    def get_last_round_end_date(self):
+        sorted_rounds = sorted(
+            list(self.rounds.all()),
+            key=lambda round: round.ended_at if round.ended_at else date.min,
+            reverse=True,
+        )
+        return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.min
+
+    def is_started(self, reference_date=None):
+        if reference_date is None:
+            reference_date = datetime.datetime.now()
+        started_rounds = self.rounds.filter(started_at__lte=reference_date)
+        return started_rounds.count() > 0
+
+    def find_rounds_with_date(self, date_type="start", round_number=None):
+        rounds = self.rounds.all()
+        if round_number is not None:
+            rounds = rounds.filter(number=round_number)
+        if date_type == "start":
+            return rounds.exclude(started_at=None).order_by("-started_at")
+        if date_type == "end":
+            return rounds.exclude(ended_at=None).order_by("-ended_at")
+
+    def find_last_round_with_date(self, date_type="start", round_number=None):
+        return self.find_rounds_with_date(date_type, round_number).first()
+
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:
             try:
@@ -577,6 +635,7 @@ class Campaign(SoftDeletableModel):
 
     @property
     def vaccines(self):
+        # only take into account scope which have orgunit attached
         if self.separate_scopes_per_round:
             vaccines = set()
             for round in self.rounds.all():

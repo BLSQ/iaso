@@ -60,33 +60,19 @@ ORG_UNIT_GROUPS = _("Org unit groups")
 
 
 class CustomPermissionSupport(models.Model):
-    """Model used to hold our custom permission.
+    """Model used to hold our custom permission."""
 
-    This is not a true model that generate a table hence the managed=False"""
+    @staticmethod
+    def get_full_permission_list():
+        return [couple[0] for couple in CustomPermissionSupport._meta.permissions]
 
-    # Used in setup_account api
-    DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [
-        "iaso_forms",
-        "iaso_submissions",
-        "iaso_mappings",
-        "iaso_completeness",
-        "iaso_org_units",
-        "iaso_links",
-        "iaso_users",
-        "iaso_projects",
-        "iaso_sources",
-        "iaso_data_tasks",
-        "iaso_reports",
-    ]
+    """This is not a true model that generate a table hence the managed=False"""
 
     class Meta:
         managed = False  # No database table creation or deletion operations \
         # will be performed for this model.
 
         permissions = (
-            ("x_modifications", MODIFICATIONS),
-            ("x_management_teams", TEAMS),
-            ("x_management_users", USERS),
             ("iaso_forms", FORMS),
             ("iaso_mappings", MAPPINGS),
             ("iaso_completeness", COMPLETENESS),

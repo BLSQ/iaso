@@ -2286,6 +2286,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.chooseDates',
         defaultMessage: 'Choose dates',
     },
+    refreshPage: {
+        id: 'iaso.polio.label.refreshPage',
+        defaultMessage: 'Refresh page',
+    },
 });
 
 export default MESSAGES;

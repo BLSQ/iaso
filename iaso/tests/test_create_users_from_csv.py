@@ -330,6 +330,7 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(len(created_user.iaso_profile.org_units.all()), 1)
         self.assertEqual(created_user.iaso_profile.org_units.all()[0].name, "chiloe")
         self.assertEqual(created_user.iaso_profile.org_units.all()[0].id, 10244)
+
     def test_upload_semicolon_separated_csv(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])

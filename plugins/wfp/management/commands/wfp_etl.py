@@ -1,4 +1,4 @@
-from ...models import *
+from ...models import *  # type: ignore
 from django.core.management.base import BaseCommand
 
 
@@ -39,7 +39,6 @@ class Command(BaseCommand):
                         visit.journey = journey
                         visit.save()
 
-
                     form_id = instance.form.form_id
                     if form_id == "wfp_coda_child_registration":
                         journey.beneficiary = b
@@ -57,7 +56,6 @@ class Command(BaseCommand):
                     treatment = instance.json.get("speficy_treatment", None)
 
                     if treatment is not None:
-
                         step = Step()
                         step.assistance_type = treatment
                         step.visit = visit

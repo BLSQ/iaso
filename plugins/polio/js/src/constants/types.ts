@@ -422,4 +422,12 @@ export type Shape = {
     short_name: string;
     source_id: number;
     source_name: string;
+    data?: Record<string, any>;
+};
+
+export type MapColor = {
+    color: string;
+    weight: string; // a number as string: "2"
+    opacity: string; // a number as string: "2"
+    zIndex: number;
 };

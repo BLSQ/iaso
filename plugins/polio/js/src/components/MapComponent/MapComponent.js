@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
-import { MapContainer, TileLayer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import React, { useMemo } from 'react';
+import { TileLayer, MapContainer, GeoJSON, Tooltip, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { geoJSON } from 'leaflet';
 import {
@@ -12,6 +12,7 @@ import {
     number,
     bool,
 } from 'prop-types';
+
 import { CustomZoomControl } from '../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl.tsx';
 
 const findBackgroundShape = (shape, backgroundShapes) => {
@@ -39,6 +40,7 @@ export const MapComponent = ({
     // When there is no data, bounds is undefined, so default center and zoom is used,
     // when the data get there, bounds change and the effect focus on it via the deps
     const bounds = useMemo(() => {
+        if (!fitToBounds) return null;
         const referenceLayer = fitBoundsToBackground
             ? backgroundLayer
             : mainLayer;
@@ -54,15 +56,17 @@ export const MapComponent = ({
         const newBounds = bounds_list[0];
         newBounds.extend(bounds_list);
         return newBounds;
-    }, [mainLayer, fitBoundsToBackground, backgroundLayer]);
+    }, [fitToBounds, fitBoundsToBackground, backgroundLayer, mainLayer]);
 
     return (
         <MapContainer
+            key={`${bounds}`}
             style={{ height }}
             center={[0, 0]}
             zoom={3}
+            // zoomControl={false}
             scrollWheelZoom={false}
-            bounds={fitToBounds ? bounds : null}
+            bounds={bounds}
             boundsOptions={boundsOptions}
             zoomControl={false}
         >

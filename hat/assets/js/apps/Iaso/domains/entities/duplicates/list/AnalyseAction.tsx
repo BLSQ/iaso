@@ -5,14 +5,23 @@ import Autorenew from '@material-ui/icons/Autorenew';
 import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
 
 import { useSafeIntl } from 'bluesquare-components';
-import { useGetLatestAnalysis, useStartAnalyse } from '../hooks/api/analyzes';
+import { useStartAnalyse } from '../hooks/api/analyzes';
 import { AnalysisTooltipTitle } from './AnalysisTooltipTitle';
 import MESSAGES from '../messages';
+import { Analysis } from '../types';
 
-export const AnalyseAction: FunctionComponent = () => {
+type Props = {
+    latestAnalysis: Analysis | undefined;
+    isFetchingLatestAnalysis: boolean;
+};
+
+export const AnalyseAction: FunctionComponent<Props> = ({
+    latestAnalysis,
+    isFetchingLatestAnalysis,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =
-        useGetLatestAnalysis();
+    // const { data: latestAnalysis, isFetching: isFetchingLatestAnalysis } =
+    //     useGetLatestAnalysis();
 
     const { mutateAsync: startAnalyse, isLoading: isSaving } =
         useStartAnalyse();

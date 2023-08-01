@@ -43,7 +43,7 @@ import { baseUrls } from '../../../constants/urls';
 
 import { Selection } from '../../orgUnits/types/selection';
 
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 
 import { useCurrentUser } from '../../../utils/usersUtils';
 
@@ -228,7 +228,12 @@ export const useGetInstancesColumns = (
                     }
                 });
             tableColumns = tableColumns.concat(childrenArray);
-            if (userHasPermission('iaso_update_submission', currentUser)) {
+            if (
+                userHasOneOfPermissions(
+                    ['iaso_update_submission', 'iaso_submissions'],
+                    currentUser,
+                )
+            ) {
                 tableColumns.push({
                     Header: formatMessage(MESSAGES.actions),
                     accessor: 'actions',

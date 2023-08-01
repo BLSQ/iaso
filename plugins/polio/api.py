@@ -2037,7 +2037,10 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
     def get_queryset(self):
         category = self.request.query_params.get("category")
         configs = Config.objects.filter(slug=f"{category}-config").first().content
-        country_ids = [config["country_id"] for config in configs]
+        country_ids = [
+            (config["country_id"] if JsonDataStore.objects.filter(slug=f"{category}_{config['country_id']}") else None)
+            for config in configs
+        ]
 
         return (
             OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))

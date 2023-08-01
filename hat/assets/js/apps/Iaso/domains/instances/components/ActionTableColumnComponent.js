@@ -96,15 +96,21 @@ const ActionTableColumnComponent = ({ settings }) => {
         saveOu(orgUnitPayload).catch(onError);
     };
 
-    const showButton =
+    const showLinkOrgUnitIstanceReferenceButton =
         settings.row.original.reference_form_id ===
             settings.row.original.form_id &&
         hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
-        userHasPermission('iaso_org_units', user);
+        userHasPermission('iaso_org_units', user) &&
+        userHasPermission('iaso_update_permission', user);
 
     const notLinked =
         !settings.row.original?.org_unit?.reference_instance_id &&
         userHasPermission('iaso_org_units', user);
+
+    const showOrgUnitButton =
+        settings.row.original.org_unit &&
+        userHasPermission('iaso_org_units', user) &&
+        userHasPermission('iaso_update_permission', user);
 
     const confirmCancelTitleMessage = isItLinked => {
         return !isItLinked
@@ -131,15 +137,14 @@ const ActionTableColumnComponent = ({ settings }) => {
                 icon="remove-red-eye"
                 tooltipMessage={MESSAGES.view}
             />
-            {settings.row.original.org_unit &&
-                userHasPermission('iaso_org_units', user) && (
-                    <IconButtonComponent
-                        url={getUrlOrgUnit(settings)}
-                        icon="orgUnit"
-                        tooltipMessage={MESSAGES.viewOrgUnit}
-                    />
-                )}
-            {showButton && (
+            {showOrgUnitButton && (
+                <IconButtonComponent
+                    url={getUrlOrgUnit(settings)}
+                    icon="orgUnit"
+                    tooltipMessage={MESSAGES.viewOrgUnit}
+                />
+            )}
+            {showLinkOrgUnitIstanceReferenceButton && (
                 <ConfirmCancelDialogComponent
                     titleMessage={confirmCancelTitleMessage(notLinked)}
                     onConfirm={closeDialog => {
@@ -167,23 +172,26 @@ const ActionTableColumnComponent = ({ settings }) => {
                 </ConfirmCancelDialogComponent>
             )}
 
-            {settings.row.original.is_locked && (
-                <>
-                    {settings.row.original.can_user_modify ? (
-                        <IconButtonComponent
-                            url={getUrlInstance(settings)}
-                            overrideIcon={() => <LockIcon color="primary" />}
-                            tooltipMessage={MESSAGES.lockedCanModify}
-                        />
-                    ) : (
-                        <IconButtonComponent
-                            url={getUrlInstance(settings)}
-                            overrideIcon={LockIcon}
-                            tooltipMessage={MESSAGES.lockedCannotModify}
-                        />
-                    )}
-                </>
-            )}
+            {settings.row.original.is_locked &&
+                userHasPermission('iaso_update_permission', user) && (
+                    <>
+                        {settings.row.original.can_user_modify ? (
+                            <IconButtonComponent
+                                url={getUrlInstance(settings)}
+                                overrideIcon={() => (
+                                    <LockIcon color="primary" />
+                                )}
+                                tooltipMessage={MESSAGES.lockedCanModify}
+                            />
+                        ) : (
+                            <IconButtonComponent
+                                url={getUrlInstance(settings)}
+                                overrideIcon={LockIcon}
+                                tooltipMessage={MESSAGES.lockedCannotModify}
+                            />
+                        )}
+                    </>
+                )}
         </section>
     );
 };

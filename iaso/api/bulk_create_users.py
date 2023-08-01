@@ -118,17 +118,30 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         delimiter = ";" if ";" in user_csv.decoded else ","
                     except Exception:
                         raise serializers.ValidationError({"error": "Error : CSV File incorrectly formatted."})
-
                 reader = csv.reader(csv_str, delimiter=delimiter)
-                pd.read_csv(io.BytesIO(csv_str.getvalue().encode()))
+                """In case the delimiter is " ; " we must ensure that the multiple value can be read so we replace it
+                    with a " * " instead of " , " """
+                if delimiter is ";":
+                    print("ouesh ?")
+                    new_reader = []
+                    for row in reader:
+                        new_row = [cell.replace(",", "*") for cell in row]
+                        new_reader.append(new_row)
+                    reader = new_reader
+                print(reader)
+                pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
             except UnicodeDecodeError as e:
                 raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})
             except pd.errors.ParserError as e:
                 raise serializers.ValidationError({"error": f"Invalid CSV File. Error: {e}"})
+
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
+
+            value_splitter = "," if delimiter is "," else "*"
+
             file_instance.save()
 
             orgunits_hierarchy = OrgUnit.objects.hierarchy(user_access_ou)
@@ -181,7 +194,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                         )
                     org_units = row[csv_indexes.index("orgunit")]
                     if org_units:
-                        org_units = org_units.split(",")
+                        org_units = org_units.split(value_splitter)
                         for ou in org_units:
                             ou = ou[1::] if ou[:1] == " " else ou
                             try:
@@ -256,7 +269,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except (IndexError, ValueError):
                         user_roles = None
                     if user_roles:
-                        user_roles = user_roles.split(",")
+                        user_roles = user_roles.split(value_splitter)
                         # check if the roles exists in the account of the request user
                         # and add it to user_roles_list
                         for role in user_roles:
@@ -279,7 +292,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     except (IndexError, ValueError):
                         projects = None
                     if projects:
-                        projects = projects.split(",")
+                        projects = projects.split(value_splitter)
                         # check if the roles exists in the account of the request user
                         # and add it to user_roles_list
                         for project in projects:
@@ -298,7 +311,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         }
                                     )
                     try:
-                        user_permissions = row[csv_indexes.index("permissions")].split(",")
+                        user_permissions = row[csv_indexes.index("permissions")].split(value_splitter)
                         for perm in user_permissions:
                             perm = perm[1::] if perm[:1] == " " else perm
                             if perm:
@@ -325,7 +338,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     profile.org_units.set(org_units_list)
                     profile.user_roles.set(user_roles_list)
                     profile.projects.set(projects_instance_list)
-                    csv_file = pd.read_csv(io.BytesIO(csv_str.getvalue().encode()))
+                    csv_file = pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
                     csv_file.at[i - 1, "password"] = None
                     csv_file = csv_file.to_csv(path_or_buf=None, index=False)
                     content_file = ContentFile(csv_file.encode("utf-8"))

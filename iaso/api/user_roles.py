@@ -1,12 +1,11 @@
 from typing import Any
+from django.conf import settings
 from django.shortcuts import get_object_or_404
-from rest_framework.request import Request
 from rest_framework import permissions, serializers
 from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
-from rest_framework.response import Response
 from iaso.models import UserRole
-from .common import TimestampField, ModelViewSet, HasPermission
+from .common import TimestampField, ModelViewSet
 
 
 class HasUserRolePermission(permissions.BasePermission):
@@ -30,8 +29,20 @@ class UserRoleSerializer(serializers.ModelSerializer):
         model = UserRole
         fields = ["id", "name", "permissions", "created_at", "updated_at"]
 
+    def to_representation(self, instance):
+        user_role = super().to_representation(instance)
+        account_id = user_role["name"].split("_")[0]
+        user_role["name"] = self.remove_prefix_from_str(user_role["name"], account_id + "_")
+        return user_role
+
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    # This method will remove a given prefix from a string
+    def remove_prefix_from_str(self, str, prefix):
+        if str.startswith(prefix):
+            return str[len(prefix) :]
+        return str
 
     def get_permissions(self, obj):
         return PermissionSerializer(obj.group.permissions, many=True).data
@@ -39,17 +50,24 @@ class UserRoleSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
         request = self.context["request"]
-        groupname = request.data.get("name")
+        group_name = str(account.id) + "_" + request.data.get("name")
         permissions = request.data.get("permissions", [])
-        if not groupname:
-            return Response({"error": "User group name is required"}, status=400)
 
-        group = Group(name=groupname)
+        # check if the user role name has been given
+        if not group_name:
+            raise serializers.ValidationError({"name": "User role name is required"})
+
+        # check if a user role with the same name already exists
+        group_exists = Group.objects.filter(name__iexact=group_name)
+        if group_exists:
+            raise serializers.ValidationError({"name": "User role already exists"})
+
+        group = Group(name=group_name)
         group.save()
 
         if group.id and len(permissions) > 0:
             for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
+                permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
                 group.permissions.add(permission)
             group.save()
 
@@ -58,16 +76,24 @@ class UserRoleSerializer(serializers.ModelSerializer):
         return userRole
 
     def update(self, user_role, validated_data):
-        groupname = self.context["request"].data.get("name", None)
+        account = self.context["request"].user.iaso_profile.account
+        group_name = str(account.id) + "_" + self.context["request"].data.get("name", None)
         permissions = self.context["request"].data.get("permissions", None)
         group = user_role.group
-        if groupname is not None:
-            group.name = groupname
+
+        if group_name is not None:
+            group.name = group_name
+        # check if a user role with the same name already exists other than the current user role
+        group_exists = Group.objects.filter(~Q(pk=group.id), name__iexact=group_name)
+        if group_exists:
+            raise serializers.ValidationError({"name": "User role already exists"})
+
         if permissions is not None:
             group.permissions.clear()
             for permission_codename in permissions:
-                permission = get_object_or_404(Permission, codename=permission_codename)
+                permission = get_object_or_404(Permission, codename__startswith="iaso_", codename=permission_codename)
                 group.permissions.add(permission)
+
         group.save()
         user_role.save()
         return user_role

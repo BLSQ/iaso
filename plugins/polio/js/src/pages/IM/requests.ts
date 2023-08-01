@@ -22,7 +22,7 @@ export const getLqasIm = (
         case 'imGlobal':
             return getRequest(`${IM_POC_URL}?country_id=${countryId}`);
         case 'lqas':
-            return getRequest(`${LQAS_DATASTORE_URL}${countryId}`);
+            return getRequest(`${LQAS_DATASTORE_URL}${countryId}/`);
         default:
             throw new Error(
                 `wrong "type" parameter, expected one of :imOHH,imIHH,imGlobal, lqas; got ${type} `,

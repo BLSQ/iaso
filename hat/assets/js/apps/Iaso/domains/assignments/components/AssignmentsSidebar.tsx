@@ -16,6 +16,8 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { useColumns } from '../configs/AssignmentsMapTabColumns';
 
+import { AssignmentUnit } from '../types/locations';
+
 type Props = {
     data: SubTeam[] | User[];
     assignments: AssignmentsApi;
@@ -30,6 +32,8 @@ type Props = {
     selectedItem: SubTeam | User | undefined;
     // eslint-disable-next-line no-unused-vars
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
+    orgUnits: Array<AssignmentUnit>;
+    isLoadingAssignments: boolean;
 };
 
 export const Sidebar: FunctionComponent<Props> = ({
@@ -44,6 +48,8 @@ export const Sidebar: FunctionComponent<Props> = ({
     currentTeam,
     selectedItem,
     setSelectedItem,
+    orgUnits,
+    isLoadingAssignments,
 }) => {
     const columns = useColumns({
         assignments,
@@ -53,6 +59,8 @@ export const Sidebar: FunctionComponent<Props> = ({
         selectedItem,
         setSelectedItem,
         currentTeam,
+        orgUnits,
+        isLoadingAssignments,
     });
     return (
         <Paper>
@@ -74,6 +82,7 @@ export const Sidebar: FunctionComponent<Props> = ({
                         profiles,
                         assignments,
                         loading: !currentTeam,
+                        orgUnits,
                     }}
                 />
             </Box>

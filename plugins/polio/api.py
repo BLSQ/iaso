@@ -64,7 +64,7 @@ from plugins.polio.serializers import (
     ListCampaignSerializer,
     CalendarCampaignSerializer,
 )
-from plugins.polio.serializers import SurgePreviewSerializer, CampaignPreparednessSpreadsheetSerializer
+from plugins.polio.serializers import CampaignPreparednessSpreadsheetSerializer
 from .export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from .forma import (
     FormAStocksViewSetV2,
@@ -76,8 +76,6 @@ from .helpers import (
     get_url_content,
     CustomFilterBackend,
     calculate_country_status,
-    get_penultimate_round_number,
-    get_latest_round_number,
     determine_status_for_district,
 )
 from .vaccines_email import send_vaccines_notification_email
@@ -447,12 +445,6 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         serializer.save()
         return Response(serializer.data)
 
-    @action(methods=["POST"], detail=False, serializer_class=SurgePreviewSerializer)
-    def preview_surge(self, request, **kwargs):
-        serializer = SurgePreviewSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response(serializer.data)
-
     NEW_CAMPAIGN_MESSAGE = """Dear GPEI coordinator – {country_name}
 
 This is an automated email.
@@ -781,10 +773,10 @@ class PreparednessDashboardViewSet(viewsets.ViewSet):
 def _build_district_cache(districts_qs):
     district_dict = defaultdict(list)
     for f in districts_qs:
-        district_dict[f.name.lower()].append(f)
+        district_dict[f.name.lower().strip()].append(f)
         if f.aliases:
             for alias in f.aliases:
-                district_dict[alias.lower()].append(f)
+                district_dict[alias.lower().strip()].append(f)
     return district_dict
 
 
@@ -919,6 +911,7 @@ class IMStatsViewSet(viewsets.ViewSet):
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
+                .filter(validation_status="VALID")
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
@@ -1375,8 +1368,9 @@ def find_district(district_name, region_name, district_dict):
         return district_list[0]
     elif district_list and len(district_list) > 1:
         for di in district_list:
-            if di.parent.name.lower() == region_name.lower() or (
-                di.parent.aliases and region_name in di.parent.aliases
+            parent_aliases_lower = [alias.lower().strip() for alias in di.parent.aliases] if di.parent.aliases else []
+            if di.parent.name.lower().strip() == region_name.lower().strip() or (
+                di.parent.aliases and region_name.lower().strip() in parent_aliases_lower
             ):
                 return di
     return None
@@ -1433,7 +1427,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             return HttpResponseBadRequest
         requested_country = int(requested_country)
 
-        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False)
+        campaigns = Campaign.objects.filter(country_id=requested_country).filter(is_test=False).filter(deleted_at=None)
         if campaigns:
             latest_campaign_update = campaigns.latest("updated_at").updated_at
         else:
@@ -1522,6 +1516,7 @@ class LQASStatsViewSet(viewsets.ViewSet):
             districts_qs = (
                 OrgUnit.objects.hierarchy(country)
                 .filter(org_unit_type_id__category="DISTRICT")
+                .filter(validation_status="VALID")
                 .only("name", "id", "parent", "aliases")
                 .prefetch_related("parent")
             )
@@ -1801,6 +1796,11 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                 sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "end", end_date_before)
             # And we pick the first one from our sorted list
             latest_campaign = sorted_campaigns[0] if data_store and sorted_campaigns else None
+            sorted_rounds = (
+                sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
+                if latest_campaign is not None
+                else []
+            )
             # Get data from json datastore
             data_for_country = data_store.content if data_store else None
             # remove data from all campaigns but latest
@@ -1811,9 +1811,9 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
             if stats and latest_campaign:
                 round_number = requested_round
                 if round_number == "latest":
-                    round_number = get_latest_round_number(stats)
+                    round_number = sorted_rounds[0].number if len(sorted_rounds) > 0 else None
                 elif round_number == "penultimate":
-                    round_number = get_penultimate_round_number(stats)
+                    round_number = sorted_rounds[1].number if len(sorted_rounds) > 1 else None
                 else:
                     round_number = int(round_number)
                 if latest_campaign:
@@ -1825,7 +1825,12 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
                 result = {
                     "id": int(country_id),
-                    "data": {"campaign": latest_campaign.obr_name, **stats, "country_name": org_unit.name},
+                    "data": {
+                        "campaign": latest_campaign.obr_name,
+                        **stats,
+                        "country_name": org_unit.name,
+                        "round_number": round_number,
+                    },
                     "geo_json": shapes,
                     "status": calculate_country_status(stats, scope, round_number),
                 }
@@ -1911,12 +1916,9 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 continue
             sorted_rounds = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
             if requested_round == "latest":
-                round_number = sorted_rounds[0].number
-            elif requested_round == "penultimate":
-                if len(sorted_rounds) > 1:
-                    round_number = sorted_rounds[1].number
-                else:
-                    requested_round = None
+                round_number = sorted_rounds[0].number if len(sorted_rounds) > 0 else None
+            elif requested_round == "penultimate" and len(sorted_rounds) > 1:
+                round_number = sorted_rounds[1].number if len(sorted_rounds) > 1 else None
             else:
                 round_number = int(requested_round)
             if latest_campaign.separate_scopes_per_round:
@@ -1967,6 +1969,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                             "campaign": latest_campaign.obr_name,
                             **district_stats,
                             "district_name": district.name,
+                            "round_number": round_number,
                         },
                         "geo_json": shapes,
                         "status": determine_status_for_district(district_stats),

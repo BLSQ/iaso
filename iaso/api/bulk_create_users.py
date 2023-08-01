@@ -122,13 +122,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 """In case the delimiter is " ; " we must ensure that the multiple value can be read so we replace it
                     with a " * " instead of " , " """
                 if delimiter is ";":
-                    print("ouesh ?")
                     new_reader = []
                     for row in reader:
                         new_row = [cell.replace(",", "*") for cell in row]
                         new_reader.append(new_row)
                     reader = new_reader
-                print(reader)
                 pd.read_csv(io.BytesIO(csv_str.getvalue().encode()), delimiter=delimiter)
             except UnicodeDecodeError as e:
                 raise serializers.ValidationError({"error": f"Operation aborted. Error: {e}"})

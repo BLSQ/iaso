@@ -89,6 +89,7 @@ export const ImStats = ({ imType, router }) => {
                     isFetching={isFetching}
                     campaigns={campaigns}
                     campaignsFetching={campaignsFetching}
+                    category="im"
                 />
                 <Grid container spacing={2} direction="row">
                     {selectedRounds.map((rnd, index) => (

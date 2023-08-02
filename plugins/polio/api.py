@@ -2039,7 +2039,7 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
         configs = Config.objects.filter(slug=f"{category}-config").first().content
         country_ids = []
         for config in configs:
-            if JsonDataStore.objects.filter(slug=f"{category}_{config['country_id']}"):
+            if JsonDataStore.objects.filter(slug=f"{category}_{config['country_id']}").exists():
                 country_ids.append(config["country_id"])
             else:
                 continue

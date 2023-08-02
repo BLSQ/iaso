@@ -36,7 +36,6 @@ from .preparedness.calculator import get_preparedness_score
 from .preparedness.parser import (
     InvalidFormatError,
     get_preparedness,
-    surge_indicator_for_country,
 )
 from .preparedness.spreadsheet_manager import *
 from .preparedness.spreadsheet_manager import generate_spreadsheet_for_campaign
@@ -490,16 +489,6 @@ class RoundAnonymousSerializer(RoundSerializer):
         exclude = ["preparedness_spreadsheet_url"]
 
 
-class SurgeSerializer(serializers.Serializer):
-    created_at = serializers.DateTimeField()
-    # surge_country_name = serializers.CharField()
-    title = serializers.CharField()  # title of the Google spreadsheet
-    who_recruitment = serializers.IntegerField()
-    who_completed_recruitment = serializers.IntegerField()
-    unicef_recruitment = serializers.IntegerField()
-    unicef_completed_recruitment = serializers.IntegerField()
-
-
 def preparedness_from_url(spreadsheet_url, force_refresh=False):
     try:
         if force_refresh:
@@ -542,34 +531,6 @@ class PreparednessPreviewSerializer(serializers.Serializer):
     def validate(self, attrs):
         spreadsheet_url = attrs.get("google_sheet_url")
         return preparedness_from_url(spreadsheet_url, force_refresh=True)
-
-    def to_representation(self, instance):
-        return instance
-
-
-class SurgePreviewSerializer(serializers.Serializer):
-    surge_spreadsheet_url = serializers.URLField()
-    country_name_in_surge_spreadsheet = serializers.CharField(max_length=200)
-
-    def validate(self, attrs):
-        try:
-            spreadsheet_url = attrs.get("surge_spreadsheet_url")
-            surge_country_name = attrs.get("country_name_in_surge_spreadsheet")
-
-            ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
-            cs = ssi.cached_spreadsheet
-
-            response = surge_indicator_for_country(cs, surge_country_name)
-            response["created_at"] = ssi.created_at
-            return response
-        except InvalidFormatError as e:
-            raise serializers.ValidationError(e.args[0])
-        except APIError as e:
-            raise serializers.ValidationError(e.args[0].get("message"))
-        except NoValidUrlKeyFound:
-            raise serializers.ValidationError({"surge_spreadsheet_url": ["Invalid URL"]})
-        except Exception as e:
-            raise serializers.ValidationError(f"{type(e)}: {str(e)}")
 
     def to_representation(self, instance):
         return instance
@@ -681,12 +642,6 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)
-
-    last_surge = SurgeSerializer(
-        required=False,
-        read_only=True,
-        allow_null=True,
-    )
 
     obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])
 
@@ -840,7 +795,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         # fields = "__all__"
         exclude = ["geojson"]
 
-        read_only_fields = ["last_surge", "preperadness_sync_status", "creation_email_send_at", "group"]
+        read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
 
 
 class ListCampaignSerializer(CampaignSerializer):
@@ -969,7 +924,6 @@ class SmallCampaignSerializer(CampaignSerializer):
             "dg_authorized_at",
             "verification_score",
             "doses_requested",
-            "country_name_in_surge_spreadsheet",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
@@ -1046,7 +1000,6 @@ class AnonymousCampaignSerializer(CampaignSerializer):
             "dg_authorized_at",
             "verification_score",
             "doses_requested",
-            "country_name_in_surge_spreadsheet",
             "budget_status",
             "who_disbursed_to_co_at",
             "who_disbursed_to_moh_at",
@@ -1228,8 +1181,6 @@ class ExportCampaignSerializer(CampaignSerializer):
             "dg_authorized_at",
             "verification_score",
             "doses_requested",
-            "surge_spreadsheet_url",
-            "country_name_in_surge_spreadsheet",
             "budget_status",
             "is_test",
             "budget_current_state_key",

@@ -16,7 +16,7 @@ from gspread.utils import extract_id_from_url  # type: ignore
 from iaso.models import Group, OrgUnit
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
+from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences
@@ -435,9 +435,6 @@ class Campaign(SoftDeletableModel):
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     # DEPRECATED -> Moved to round.
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
-    # Surge recruitment. Not really used anymore
-    surge_spreadsheet_url = models.URLField(null=True, blank=True)
-    country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
     # Deprecated
@@ -582,20 +579,6 @@ class Campaign(SoftDeletableModel):
             )
         return self.get_campaign_scope_districts()
 
-    def last_surge(self):
-        spreadsheet_url = self.surge_spreadsheet_url
-        ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
-        if not ssi:
-            return None
-        cs = ssi.cached_spreadsheet
-
-        surge_country_name = self.country_name_in_surge_spreadsheet
-        if not surge_country_name:
-            return None
-        response = surge_indicator_for_country(cs, surge_country_name)
-        response["created_at"] = ssi.created_at
-        return response
-
     # Returning date.min if ended_at has no value so the method can be used with `sorted`
     def get_last_round_end_date(self):
         sorted_rounds = sorted(
@@ -738,29 +721,6 @@ class Preparedness(models.Model):
     national_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("National Score"))
     regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
     district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
-
-    payload = models.JSONField()
-
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    def __str__(self) -> str:
-        return f"{self.campaign} - {self.created_at}"
-
-
-# Deprecated
-class Surge(models.Model):
-    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    spreadsheet_url = models.URLField()
-    surge_country_name = models.CharField(max_length=250, null=True, default=True)
-    who_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment WHO"))
-    who_completed_recruitment = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Completed for WHO")
-    )
-    unicef_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment UNICEF"))
-    unicef_completed_recruitment = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Completed for UNICEF")
-    )
 
     payload = models.JSONField()
 

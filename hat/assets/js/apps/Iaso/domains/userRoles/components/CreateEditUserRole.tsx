@@ -1,12 +1,16 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { useFormik, FormikProvider } from 'formik';
-import { AddButton, IconButton, useSafeIntl } from 'bluesquare-components';
+import {
+    AddButton,
+    useSafeIntl,
+    ConfirmCancelModal,
+    makeFullModal,
+} from 'bluesquare-components';
 import { isEqual } from 'lodash';
 import {
     SaveUserRoleQuery,
     useSaveUserRole,
 } from '../hooks/requests/useSaveUserRole';
-import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import MESSAGES from '../messages';
 import { useUserRoleValidation } from '../validation';
 import {
@@ -16,31 +20,20 @@ import {
 import InputComponent from '../../../components/forms/InputComponent';
 import { PermissionsSwitches } from './PermissionsSwitches';
 import { Permission } from '../types/userRoles';
+import { EditIconButton } from '../../users/components/UsersDialog';
 
 type ModalMode = 'create' | 'edit';
 type Props = Partial<SaveUserRoleQuery> & {
     dialogType: ModalMode;
-};
-const makeRenderTrigger = (dialogType: 'create' | 'edit') => {
-    if (dialogType === 'create') {
-        return ({ openDialog }) => (
-            <AddButton
-                dataTestId="create-plannning-button"
-                onClick={openDialog}
-            />
-        );
-    }
-    return ({ openDialog }) => (
-        <IconButton
-            onClick={openDialog}
-            icon="edit"
-            tooltipMessage={MESSAGES.edit}
-        />
-    );
+    closeDialog: () => void;
+    isOpen: boolean;
+    id?: string;
 };
 
 export const CreateEditUserRole: FunctionComponent<Props> = ({
     dialogType = 'create',
+    closeDialog,
+    isOpen,
     id,
     name,
     permissions = [],
@@ -48,11 +41,6 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     const [userRolePermissions, setUserRolePermissoins] =
         useState<Permission[]>(permissions);
     const { formatMessage } = useSafeIntl();
-    const [closeModal, setCloseModal] = useState<any>();
-    const renderTrigger = useMemo(
-        () => makeRenderTrigger(dialogType),
-        [dialogType],
-    );
     const { mutateAsync: saveUserRole } = useSaveUserRole(dialogType);
     const {
         apiErrors,
@@ -61,7 +49,7 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
     } = useApiErrorValidation<Partial<SaveUserRoleQuery>, any>({
         mutationFn: saveUserRole,
         onSuccess: () => {
-            closeModal.closeDialog();
+            closeDialog();
         },
     });
     const schema = useUserRoleValidation(apiErrors, payload);
@@ -107,28 +95,23 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
             : formatMessage(MESSAGES.editUserRole);
     return (
         <FormikProvider value={formik}>
-            {/* @ts-ignore */}
-            <ConfirmCancelDialogComponent
+            <ConfirmCancelModal
                 allowConfirm={isValid && !isEqual(values, initialValues)}
-                renderTrigger={renderTrigger}
                 titleMessage={titleMessage}
-                onConfirm={closeDialog => {
+                onConfirm={() => {
                     handleSubmit();
-                    setCloseModal({
-                        closeDialog: () => {
-                            resetForm();
-                            setUserRolePermissoins([]);
-                            closeDialog();
-                        },
-                    });
                 }}
-                onCancel={closeDialog => {
-                    closeDialog();
-                    setUserRolePermissoins(permissions);
+                onCancel={() => {
                     resetForm();
                 }}
+                maxWidth="sm"
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
+                open={isOpen}
+                closeDialog={closeDialog}
+                id={id ?? ''}
+                dataTestId="Test-modal"
+                onClose={() => null}
             >
                 <InputComponent
                     keyValue="name"
@@ -146,7 +129,21 @@ export const CreateEditUserRole: FunctionComponent<Props> = ({
                         setFieldValue('permissions', newPermissions);
                     }}
                 />
-            </ConfirmCancelDialogComponent>
+            </ConfirmCancelModal>
         </FormikProvider>
     );
+};
+
+const createUserRoleModalWithButton = makeFullModal(
+    CreateEditUserRole,
+    AddButton,
+);
+const editUserRoleModalWithIcon = makeFullModal(
+    CreateEditUserRole,
+    EditIconButton,
+);
+
+export {
+    createUserRoleModalWithButton as CreateUserRoleDialog,
+    editUserRoleModalWithIcon as EditUserRoleDialog,
 };

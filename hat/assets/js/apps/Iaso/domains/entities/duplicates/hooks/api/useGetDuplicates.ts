@@ -51,17 +51,19 @@ export type DuplicatesGETParams = {
         merged?: boolean;
         entity?: string;
     };
+    refresh: string | undefined;
 };
 
 export const useGetDuplicates = ({
     params,
+    refresh,
 }: DuplicatesGETParams): UseQueryResult<
     DuplicatesList | DuplicateData[],
     any
 > => {
     const queryString = new URLSearchParams(formatParams(params)).toString();
     return useSnackQuery({
-        queryKey: ['entityDuplicates', queryString],
+        queryKey: ['entityDuplicates', queryString, refresh],
         queryFn: () => getDuplicates(queryString),
     });
 };

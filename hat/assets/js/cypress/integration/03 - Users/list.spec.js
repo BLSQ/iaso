@@ -26,6 +26,12 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    cy.intercept('GET', '/api/userroles/**', {
+        fixture: 'userRoles/list.json',
+    });
+    cy.intercept('GET', '/api/projects/**', {
+        fixture: 'projects/list.json',
+    });
     const options = {
         method: 'GET',
         pathname: '/api/profiles',
@@ -45,7 +51,7 @@ const goToPage = (
 const openDialogForUserIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').last();
+    const actionCol = row.find('td').eq(4);
     const editButton = actionCol.find('button').first();
     editButton.click();
     cy.get('#user-profile-dialog').should('be.visible');
@@ -123,7 +129,7 @@ describe('Users', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.profiles.length);
-                rows.eq(0).find('td').should('have.length', 5);
+                rows.eq(0).find('td').should('have.length', 6);
             });
         });
 
@@ -132,11 +138,11 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(1);
-                const actionCol = row.find('td').last();
+                const actionCol = row.find('td').eq(4);
                 actionCol.find('button').should('have.length', 2);
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
-                const actionColCurrentUser = row.find('td').last();
+                const actionColCurrentUser = row.find('td').eq(4);
                 actionColCurrentUser.find('button').should('have.length', 1);
             });
         });
@@ -156,6 +162,8 @@ describe('Users', () => {
                 userInfosFields.forEach(f => {
                     cy.testInputValue(`#input-text-${f}`, '');
                 });
+                cy.testInputValue(`#projects`, '');
+                cy.testInputValue(`#user_roles`, '');
                 cy.testInputValue('#language', '');
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
                 cy.get('.permission-checkbox').each($el => {
@@ -176,6 +184,10 @@ describe('Users', () => {
                 });
                 cy.testInputValue('#language', 'English version');
 
+                cy.testMultiSelect(
+                    `#projects`,
+                    listFixture.profiles[userIndex].projects,
+                );
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
                 cy.get('#superuser-permission-message').should('be.visible');
 

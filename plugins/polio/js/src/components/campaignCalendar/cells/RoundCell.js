@@ -1,15 +1,20 @@
-import React, { useState, useContext, useCallback } from 'react';
+import React, { useState, useContext, useCallback, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
-import { TableCell } from '@material-ui/core';
+import { TableCell, Box } from '@material-ui/core';
 
 import { isEqual } from 'lodash';
+import { useSelector } from 'react-redux';
 import { PolioCreateEditDialog as CreateEditDialog } from '../../CreateEditDialog';
 import { RoundPopper } from '../popper/RoundPopper';
 import { useStyles } from '../Styles';
 import { RoundPopperContext } from '../contexts/RoundPopperContext.tsx';
-import { useSelector } from 'react-redux';
+import { polioVaccines } from '../../../constants/virus.ts';
+
+const getVaccineColor = vaccine =>
+    polioVaccines.find(polioVaccine => polioVaccine.value === vaccine)?.color ||
+    '#bcbcbc';
 
 const RoundCell = ({ colSpan, campaign, round }) => {
     const classes = useStyles();
@@ -39,12 +44,37 @@ const RoundCell = ({ colSpan, campaign, round }) => {
     const defaultCellStyles = [classes.tableCell, classes.tableCellBordered];
     const open = self && isEqual(self, anchorEl);
     const isLogged = useSelector(state => Boolean(state.users.current));
+    const vaccinesList = useMemo(() => {
+        const list = campaign.separateScopesPerRound
+            ? round.vaccine_names?.split(',') ?? []
+            : campaign.original.vaccines?.split(',') ?? [];
+        return list.map(vaccineName => vaccineName.trim());
+    }, [
+        campaign.original.vaccines,
+        campaign.separateScopesPerRound,
+        round.vaccine_names,
+    ]);
+
     return (
         <TableCell
             className={classnames(defaultCellStyles, classes.round)}
-            style={{ backgroundColor: campaign.color }}
             colSpan={colSpan}
         >
+            <Box
+                className={classes.coloredBox}
+                style={{ backgroundColor: campaign.color }}
+            >
+                {vaccinesList.map(vaccine => (
+                    <span
+                        key={`${campaign.uuid}-${round.number}-${vaccine}`}
+                        style={{
+                            backgroundColor: getVaccineColor(vaccine),
+                            display: 'block',
+                            height: `${100 / vaccinesList.length}%`,
+                        }}
+                    />
+                ))}
+            </Box>
             <span
                 onClick={handleClick}
                 role="button"

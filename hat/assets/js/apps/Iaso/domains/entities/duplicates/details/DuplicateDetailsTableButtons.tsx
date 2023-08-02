@@ -52,6 +52,7 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                             <Button
                                 variant="contained"
                                 color="primary"
+                                data-test="fill-value-a-button"
                                 onClick={() => fillValues('entity1')}
                             >
                                 {formatMessage(MESSAGES.takeValuesFromA)}
@@ -61,6 +62,7 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                             <Button
                                 variant="contained"
                                 color="primary"
+                                data-test="fill-value-b-button"
                                 onClick={() => fillValues('entity2')}
                             >
                                 {formatMessage(MESSAGES.takeValuesFromB)}
@@ -70,6 +72,7 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                             <Button
                                 variant="contained"
                                 color="primary"
+                                data-test="reset-button"
                                 onClick={() => resetSelection()}
                             >
                                 {formatMessage(MESSAGES.reset)}

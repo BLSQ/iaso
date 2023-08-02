@@ -214,6 +214,55 @@ export const useDeleteWhatever = (
 };
 ```
 
+### Filters
+
+Most tables we display come with one or several filters, most commonly a text search and date filters.
+
+It's a global feature in Iaso that all filter searches performed on pages are deep-linked, i.e.: the parameters of the filters are saved in the url, so users can share the results of their search/filtering. This has an impact on the architecture of Iaso:
+
+- All search fields need to be declared in `routes.js`, under the `params` key. Important: `params` is an ordered list. Passing them in the wrong order in the URL will result in a 404.
+
+- Applying a filter doesn't change the component state per se but results in a redirection. Depending on the use cases, we may or may not want to save consecutive filters/searches in the routers history
+
+We have a few ready-made components for filters:
+
+- `InputComponent`: handles most types of inputs: text, select, checkbox, radio
+- `OrgUnitTreeviewModal`: handles searches on org units
+- `DatePicker` and `DateRange`: handle dates
+
+`InputComponent` takes a `keyValue` prop, which is a string that corresponds to the url parameter that stores the filter value, and an `onChange` prop which is a function with the signature (keyValue,value) => void. `DateRange` takes a `keyDateFrom` and a `keyDateTo` that play the same role for the start and end date respectively. 
+
+We also have a `useFilterState` hook that handles the state and update methods for filters of a given page:
+
+```typescript
+ const { filters, handleSearch, handleChange, filtersUpdated } =
+        useFilterState({
+            baseUrl,
+            params,
+            withPagination: false,
+            saveSearchInHistory: false,
+        });
+```
+
+- `baseUrl`: is the url of the page
+- `params`: the parameters passed to the url. `useFilterState`  will generate the state for the filters based on those. 
+-  withPagination: if `false`  the hook will remove parameters related to table pagination (`page`, `pageSize` and so on)
+- `saveSearchInHistory`: if `true`, the redirection will use `redirect`  i.o `redirectToReplace` and the searchg will be saved in the router's history, meaning that using the back arrow will bring the user to the previous search and not the previous page. 
+
+## Code style
+
+- prefer `type?:string` to `type: string | undefined`
+- prefer `const myVar = otherValue??"placeholder` to `let myVar = "placeholder" if(otherVAlue){myVar = otherValue}`
+- function names should include a verb:
+```javascript
+// BAD
+const username = user => user.firstname + user.lastname
+
+// GOOD
+const makeUsername = user => user.firstname + user.lastname
+```
+
+
 
 ## Remarks
 
@@ -221,5 +270,4 @@ export const useDeleteWhatever = (
 - spacing is by default theme.spacing(2)
 - do not use Grid everywhere or too much
 - all the calls to the api without query params should end by '/'
-- prefer `type?:string` to `type: string | undefined`
-- prefer `const myVar = otherValue??"placeholder` to `let myVar = "placeholder" if(otherVAlue){myVar = otherValue}`
+- in routes.js, the `params` listed are ordered, meaning you can get a 404 when they are not in the right order. Related to this, the `paginationPathParams` that we spread in most routes should come first, right after the `accountId` to avoid getting 404 because of automatic redirections

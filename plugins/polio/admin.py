@@ -10,7 +10,6 @@ from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetS
 from .models import (
     Campaign,
     RoundDateHistoryEntry,
-    Surge,
     Round,
     Config,
     CountryUsersGroup,
@@ -125,14 +124,9 @@ class ConfigAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
-class SurgeAdmin(admin.ModelAdmin):
-    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
-
-
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
-admin.site.register(Surge, SurgeAdmin)
 admin.site.register(Round)
 admin.site.register(RoundDateHistoryEntry)
 admin.site.register(CountryUsersGroup)

@@ -7,6 +7,7 @@
             "user_name": "oneFistPunch",
             "last_name": "Lee",
             "email": "",
+            "projects": [{"id": 1, "app_id": "app_id_2", "name": "Test2.35.3"}],
             "account": {
                 "name": "RDC",
                 "id": 1,
@@ -44,6 +45,7 @@
                 ]
             },
             "permissions": [],
+            "user_permissions": [],
             "is_superuser": true,
             "org_units": [],
             "language": "en",
@@ -93,6 +95,7 @@
                 ]
             },
             "permissions": [],
+            "user_permissions": [],
             "is_superuser": false,
             "org_units": [
                 {
@@ -153,7 +156,9 @@
                     "SHOW_PAGES"
                 ]
             },
+            "user_permissions": ["iaso_forms"],
             "permissions": ["iaso_forms"],
+            "user_permissions": ["iaso_forms"],
             "is_superuser": false,
             "org_units": [
                 {

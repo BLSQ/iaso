@@ -4,7 +4,7 @@ from django.conf import settings
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
 from django.core import mail
-
+from django.contrib.auth.models import Group, Permission
 from iaso import models as m
 from iaso.models import Profile
 from iaso.test import APITestCase
@@ -14,7 +14,7 @@ class ProfileAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.ghi = m.Account.objects.create(name="Global Health Initiative")
-
+        cls.another_account = m.Account.objects.create(name="Another account")
         cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.ghi, permissions=["iaso_forms"])
         cls.john = cls.create_user_with_profile(username="johndoe", account=cls.ghi, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
@@ -67,6 +67,19 @@ class ProfileAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
             parent=cls.jedi_council_corruscant,
+        )
+
+        cls.permission = Permission.objects.create(
+            name="iaso permission", content_type_id=1, codename="iaso_permission"
+        )
+        cls.group = Group.objects.create(name="user role")
+        cls.group.permissions.add(cls.permission)
+        cls.user_role = m.UserRole.objects.create(group=cls.group, account=cls.ghi)
+
+        cls.group_another_account = Group.objects.create(name="user role with another account")
+        cls.group_another_account.permissions.add(cls.permission)
+        cls.user_role_another_account = m.UserRole.objects.create(
+            group=cls.group_another_account, account=cls.another_account
         )
 
     def test_can_delete_dhis2_id(self):
@@ -182,6 +195,43 @@ class ProfileAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 403)
 
+    def test_create_user_with_user_roles(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "email": "unittest_last_name",
+            "user_permissions": ["iaso_forms"],
+            "user_roles": [self.user_role.id],
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        user_user_role = m.UserRole.objects.get(pk=response_data["user_roles"][0])
+        self.assertValidProfileData(response_data)
+        self.assertEqual(user_user_role.id, self.user_role.id)
+        self.assertEqual(user_user_role.group.name, self.group.name)
+
+    def test_create_user_with_not_allowed_user_roles(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "email": "unittest_last_name",
+            "user_permissions": ["iaso_forms"],
+            "user_roles": [self.user_role.id, self.user_role_another_account.id],
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 404)
+
+        response_data = response.json()
+        self.assertEqual(response_data["detail"], "Not found.")
+
     def test_create_profile_duplicate_user(self):
         self.client.force_authenticate(self.jim)
         data = {
@@ -251,7 +301,7 @@ class ProfileAPITestCase(APITestCase):
             "last_name": "unittest_last_name",
             "email": "unittest_last_name",
             "org_units": [{"id": self.jedi_council_corruscant.id}],
-            "permissions": ["iaso_forms"],
+            "user_permissions": ["iaso_forms"],
         }
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 200)

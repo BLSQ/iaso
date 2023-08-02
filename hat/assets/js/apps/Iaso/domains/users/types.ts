@@ -1,4 +1,5 @@
 import { Profile } from '../../utils/usersUtils';
+import { UserRole } from '../userRoles/types/userRoles';
 
 /* eslint-disable camelcase */
 export type ValueAndErrors<T> = {
@@ -17,7 +18,10 @@ export type UserDialogData = {
     home_page?: ValueAndErrors<string>;
     org_units?: ValueAndErrors<number[]>;
     permissions: ValueAndErrors<string[]>;
+    user_permissions: ValueAndErrors<string[]>;
+    user_roles_permissions: ValueAndErrors<UserRole[]>;
     language: ValueAndErrors<string | null>;
+    password: ValueAndErrors<string | null>;
 };
 
 export type InitialUserData = Partial<Profile> & { is_superuser?: boolean };

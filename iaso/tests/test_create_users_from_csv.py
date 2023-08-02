@@ -26,6 +26,7 @@ class BulkCreateCsvTestCase(APITestCase):
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
         cls.sw_source = sw_source
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        st_version = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version
         star_wars.save()
         cls.sw_version = sw_version
@@ -50,6 +51,11 @@ class BulkCreateCsvTestCase(APITestCase):
 
         cls.solana = m.OrgUnit.objects.create(name="Solana", version=sw_version)
         cls.solanaa = m.OrgUnit.objects.create(name="Solana", version=sw_version)
+
+        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10244, version=sw_version, parent=cls.tatooine)
+        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10934, version=st_version)
+
+        cls.yoda.iaso_profile.org_units.set([cls.jedi_council_corruscant, cls.tatooine, cls.dagobah, cls.solana])
 
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
@@ -223,19 +229,6 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(login_response.status_code, 200)
 
-    def test_upload_duplicate_ou_names(self):
-        self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
-
-        with open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv") as csv_users:
-            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
-        )
-
     def test_upload_invalid_orgunit_name(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -283,3 +276,52 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 
         self.assertEqual(response.status_code, 400)
+
+    def test_cant_create_user_without_ou_profile(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_creator_no_access_to_ou.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {
+                "error": "Operation aborted. Invalid OrgUnit None chiloe 10244 at row : 2. You don't have access to this orgunit"
+            },
+        )
+
+    def test_upload_duplicate_ou_names(self):
+        # This test detects if in case there is multiple OU with same name in different sources the right OU is taken.
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_user_duplicate_ou_names.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(User.objects.filter(username="jan").exists(), True)
+
+        created_user = User.objects.get(username="jan")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(created_user.iaso_profile.org_units.all()), 1)
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].name, "chiloe")
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].id, 10244)
+
+    def test_can_create_user_with_ou_that_are_child_of_ou(self):
+        # This test ensure that we can create users with access to ou child not explicitly added to the creator
+        # access ou list ( ou is a child of ou in the user ou list )
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_user_access_to_child_ou.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.filter(username="jan").exists(), True)
+
+        created_user = User.objects.get(username="jan")
+
+        self.assertEqual(len(created_user.iaso_profile.org_units.all()), 1)
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].name, "chiloe")
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].id, 10244)

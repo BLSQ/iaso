@@ -4,6 +4,8 @@ import { expect } from 'chai';
 import { renderWithIntl } from '../../../../../test/utils/intl';
 import UsersInfos from './UsersInfos';
 import MESSAGES from '../messages';
+import { renderWithStore } from '../../../../../test/utils/redux';
+import { withQueryClientProvider } from '../../../../../test/utils';
 
 let component;
 let inputs;
@@ -21,16 +23,22 @@ const currentUser = {
     language: { value: 'fr', errors: [] },
     dhis2_id: '1',
     home_page: '/settings/users',
+    projects: [1],
+    user_roles: [1],
 };
 
 const renderComponent = initialData => {
     component = mount(
         renderWithIntl(
-            <UsersInfos
-                currentUser={currentUser}
-                setFieldValue={setFieldValue}
-                initialData={initialData}
-            />,
+            withQueryClientProvider(
+                renderWithStore(
+                    <UsersInfos
+                        currentUser={currentUser}
+                        setFieldValue={setFieldValue}
+                        initialData={initialData}
+                    />,
+                ),
+            ),
         ),
     );
 };

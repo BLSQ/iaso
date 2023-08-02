@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
@@ -12,7 +13,8 @@ import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details.tsx';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
-import Users from '../domains/users';
+import { Users } from '../domains/users/index.tsx';
+import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import Tasks from '../domains/tasks';
@@ -690,9 +692,37 @@ export const usersPath = {
             isRequired: false,
             key: 'ouChildren',
         },
+        {
+            isRequired: false,
+            key: 'projectsIds',
+        },
+        {
+            isRequired: false,
+            key: 'userRoles',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,
+        })),
+    ],
+};
+
+export const userRolesPath = {
+    baseUrl: baseUrls.userRoles,
+    permissions: ['iaso_user_roles'],
+    component: props => <UserRoles {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: false,
         })),
     ],
 };
@@ -1227,6 +1257,7 @@ export const routeConfigs = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    userRolesPath,
     projectsPath,
     dataSourcesPath,
     tasksPath,

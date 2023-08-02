@@ -2,6 +2,7 @@ from django.conf import settings
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
+from django.contrib.auth import models
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
@@ -16,7 +17,7 @@ from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from iaso.models import Profile, OrgUnit
+from iaso.models import Profile, OrgUnit, UserRole, Project
 
 
 class HasProfilePermission(permissions.BasePermission):
@@ -26,6 +27,86 @@ class HasProfilePermission(permissions.BasePermission):
         if (not request.user.has_perm("menupermissions.iaso_users")) and request.method != "GET":
             return False
         return True
+
+
+def get_filtered_profiles(
+    queryset, search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
+):
+    original_queryset = queryset
+    if search:
+        queryset = queryset.filter(
+            Q(user__username__icontains=search)
+            | Q(user__first_name__icontains=search)
+            | Q(user__last_name__icontains=search)
+        ).distinct()
+
+    if perms:
+        queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
+
+    if location:
+        queryset = queryset.filter(
+            user__iaso_profile__org_units__pk=location,
+        ).distinct()
+
+    no_parent_ou = False
+
+    if parent_ou and location or children_ou and location:
+        ou = get_object_or_404(OrgUnit, pk=location)
+        if parent_ou and ou.parent is None:
+            no_parent_ou = True
+
+        if parent_ou and not children_ou:
+            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+
+            if no_parent_ou:
+                queryset = queryset_current
+
+            else:
+                queryset = (
+                    original_queryset.filter(
+                        user__iaso_profile__org_units__pk=ou.parent.pk,
+                    )
+                ) | queryset_current
+
+                queryset = queryset.distinct()
+
+        if children_ou and not parent_ou:
+            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+            children_ou = OrgUnit.objects.filter(parent__pk=location)
+            queryset = (
+                original_queryset.filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
+                | queryset_current
+            )
+
+        if parent_ou and children_ou:
+            if no_parent_ou:
+                queryset_parent = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+            else:
+                queryset_parent = original_queryset.filter(
+                    user__iaso_profile__org_units__pk=ou.parent.pk,
+                )
+
+            queryset_current = original_queryset.filter(user__iaso_profile__org_units__pk=location)
+
+            children_ou = OrgUnit.objects.filter(parent__pk=location)
+            queryset_children = original_queryset.filter(
+                user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
+            )
+
+            queryset = queryset_current | queryset_parent | queryset_children
+
+    if org_unit_type:
+        if org_unit_type == "unassigned":
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
+        else:
+            queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
+
+    if projects:
+        queryset = queryset.filter(user__iaso_profile__projects__pk__in=projects.split(","))
+
+    if userRoles:
+        queryset = queryset.filter(user__iaso_profile__user_roles__in=userRoles.split(","))
+    return queryset
 
 
 class ProfilesViewSet(viewsets.ViewSet):
@@ -65,75 +146,11 @@ class ProfilesViewSet(viewsets.ViewSet):
         org_unit_type = request.GET.get("orgUnitTypes", None)
         parent_ou = True if request.GET.get("ouParent", None) == "true" else False
         children_ou = True if request.GET.get("ouChildren", None) == "true" else False
-
-        queryset = self.get_queryset()
-        if search:
-            queryset = queryset.filter(
-                Q(user__username__icontains=search)
-                | Q(user__first_name__icontains=search)
-                | Q(user__last_name__icontains=search)
-            ).distinct()
-
-        if perms:
-            queryset = queryset.filter(user__user_permissions__codename__icontains=perms).distinct()
-
-        if location:
-            queryset = queryset.filter(
-                user__iaso_profile__org_units__pk=location,
-            ).distinct()
-
-        no_parent_ou = False
-
-        if parent_ou and location or children_ou and location:
-            ou = get_object_or_404(OrgUnit, pk=location)
-            if parent_ou and ou.parent is None:
-                no_parent_ou = True
-
-            if parent_ou and not children_ou:
-                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-
-                if no_parent_ou:
-                    queryset = queryset_current
-
-                else:
-                    queryset = (
-                        self.get_queryset().filter(
-                            user__iaso_profile__org_units__pk=ou.parent.pk,
-                        )
-                    ) | queryset_current
-
-                    queryset = queryset.distinct()
-
-            if children_ou and not parent_ou:
-                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-                children_ou = OrgUnit.objects.filter(parent__pk=location)
-                queryset = (
-                    self.get_queryset().filter(user__iaso_profile__org_units__in=[ou.pk for ou in children_ou])
-                    | queryset_current
-                )
-
-            if parent_ou and children_ou:
-                if no_parent_ou:
-                    queryset_parent = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-                else:
-                    queryset_parent = self.get_queryset().filter(
-                        user__iaso_profile__org_units__pk=ou.parent.pk,
-                    )
-
-                queryset_current = self.get_queryset().filter(user__iaso_profile__org_units__pk=location)
-
-                children_ou = OrgUnit.objects.filter(parent__pk=location)
-                queryset_children = self.get_queryset().filter(
-                    user__iaso_profile__org_units__in=[ou.pk for ou in children_ou]
-                )
-
-                queryset = queryset_current | queryset_parent | queryset_children
-
-        if org_unit_type:
-            if org_unit_type == "unassigned":
-                queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=None).distinct()
-            else:
-                queryset = queryset.filter(user__iaso_profile__org_units__org_unit_type__pk=org_unit_type).distinct()
+        projects = request.GET.get("projects", None)
+        userRoles = request.GET.get("userRoles", None)
+        queryset = get_filtered_profiles(
+            self.get_queryset(), search, perms, location, org_unit_type, parent_ou, children_ou, projects, userRoles
+        )
 
         if limit:
             queryset = queryset.order_by(*orders)
@@ -178,9 +195,17 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile = get_object_or_404(self.get_queryset(), id=pk)
         username = request.data.get("user_name")
         password = request.data.get("password", "")
+
         if not username:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"}, status=400)
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis")}, status=400)
+
         user = profile.user
+        existing_user = User.objects.filter(username__iexact=username).filter(~Q(pk=user.id))
+
+        if existing_user:
+            # Prevent from username change with existing username
+            return JsonResponse({"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur existant")}, status=400)
+
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")
         user.username = username
@@ -191,7 +216,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         profile.save()
         if password != "":
             user.set_password(password)
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         user.user_permissions.clear()
         for permission_codename in permissions:
             permission = get_object_or_404(Permission, codename=permission_codename)
@@ -208,8 +233,29 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+        # link the profile to user roles
+        user_roles = request.data.get("user_roles", [])
+        profile.user_roles.clear()
+        profile.user.groups.clear()
+        # Get the current connected user
+        current_profile = request.user.iaso_profile
+        for user_role_id in user_roles:
+            # Get only a user role linked to the account's user
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group_id)
+            profile.user.groups.add(user_group_item)
+            profile.user_roles.add(user_role_item)
+
         if profile.dhis2_id == "":
             profile.dhis2_id = None
+
+        projects = request.data.get("projects", [])
+        profile.projects.clear()
+        for project in projects:
+            item = get_object_or_404(Project, pk=project)
+            if profile.account_id != item.account_id:
+                return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
+            profile.projects.add(item)
         profile.save()
 
         return Response(profile.as_dict())
@@ -265,7 +311,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("last_name", "")
         user.username = username
         user.email = request.data.get("email", "")
-        permissions = request.data.get("permissions", [])
+        permissions = request.data.get("user_permissions", [])
         if password != "":
             user.set_password(password)
         user.save()
@@ -291,6 +337,23 @@ class ProfilesViewSet(viewsets.ViewSet):
         for org_unit in org_units:
             org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
             profile.org_units.add(org_unit_item)
+
+        # link the profile to user roles
+        user_roles = request.data.get("user_roles", [])
+        for user_role_id in user_roles:
+            # Get only a user role linked to the account's user
+            user_role_item = get_object_or_404(UserRole, pk=user_role_id, account=current_profile.account)
+            user_group_item = get_object_or_404(models.Group, pk=user_role_item.group.id)
+            profile.user.groups.add(user_group_item)
+            profile.user_roles.add(user_role_item)
+
+        projects = request.data.get("projects", [])
+        profile.projects.clear()
+        for project in projects:
+            item = get_object_or_404(Project, pk=project)
+            if profile.account_id != item.account_id:
+                return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
+            profile.projects.add(item)
         dhis2_id = request.data.get("dhis2_id", None)
         if dhis2_id == "":
             dhis2_id = None

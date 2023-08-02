@@ -1,19 +1,24 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 // @ts-ignore
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
+import RefreshIcon from '@material-ui/icons/Refresh';
 
-import { Box, Grid, IconButton } from '@material-ui/core';
+import { Box, Grid, IconButton, Button } from '@material-ui/core';
 
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import { useQueryClient } from 'react-query';
 import MESSAGES from '../../constants/messages';
-
-import { useGetCountries } from '../../hooks/useGetCountries';
-
 import { makeCampaignsDropDown } from '../../utils/index';
 import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
+import { useGetLqasImCountriesOptions } from '../../hooks/useGetLqasImCountriesOptions';
 
 type Params = {
     campaign: string | undefined;
@@ -32,6 +37,7 @@ type Props = {
     router: Router;
     campaigns: any[];
     campaignsFetching: boolean;
+    category: 'lqas' | 'im';
 };
 
 const Filters: FunctionComponent<Props> = ({
@@ -39,6 +45,7 @@ const Filters: FunctionComponent<Props> = ({
     router,
     campaigns,
     campaignsFetching,
+    category,
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -50,9 +57,8 @@ const Filters: FunctionComponent<Props> = ({
     });
     const { campaign, country } = filters;
 
-    const { data: countriesData, isFetching: countriesLoading } =
-        useGetCountries();
-    const countriesList = (countriesData && countriesData.orgUnits) || [];
+    const { data: countriesOptions, isFetching: countriesLoading } =
+        useGetLqasImCountriesOptions(category);
     const dropDownOptions = useMemo(() => {
         const displayedCampaigns = country
             ? campaigns.filter(c => c.top_level_org_unit_id === country)
@@ -79,6 +85,11 @@ const Filters: FunctionComponent<Props> = ({
         ? `/dashboard/polio/list/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
 
+    const queryClient = useQueryClient();
+    const handleRefresh = useCallback(
+        () => queryClient.resetQueries(),
+        [queryClient],
+    );
     return (
         <Box mt={2} width="100%">
             <Grid container item spacing={2}>
@@ -90,10 +101,7 @@ const Filters: FunctionComponent<Props> = ({
                         clearable
                         multi={false}
                         value={country?.toString()}
-                        options={countriesList.map(c => ({
-                            label: c.name,
-                            value: c.id,
-                        }))}
+                        options={countriesOptions}
                         onChange={value => onChange('country', value)}
                     />
                 </Grid>
@@ -122,6 +130,21 @@ const Filters: FunctionComponent<Props> = ({
                         </IconButton>
                     </Grid>
                 )}
+                <Grid item md={campaignLink ? 3 : 4}>
+                    <Box display="flex" justifyContent="flex-end" width="100%">
+                        <Button
+                            size="small"
+                            variant="contained"
+                            color="primary"
+                            onClick={handleRefresh}
+                        >
+                            <Box mr={1} pt={1}>
+                                <RefreshIcon fontSize="small" />
+                            </Box>
+                            {formatMessage(MESSAGES.refreshPage)}
+                        </Button>
+                    </Box>
+                </Grid>
             </Grid>
         </Box>
     );

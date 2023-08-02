@@ -87,6 +87,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         return queryset
 
 
+OrgUnitTypeManager = models.Manager.from_queryset(OrgUnitTypeQuerySet)
+
+
 class OrgUnitType(models.Model):
     """A type of org unit, such as a country, a province, a district, a health facility, etc.
 
@@ -111,7 +114,7 @@ class OrgUnitType(models.Model):
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
-    objects = OrgUnitTypeQuerySet.as_manager()
+    objects = OrgUnitTypeManager()
 
     def __str__(self):
         return "%s" % self.name

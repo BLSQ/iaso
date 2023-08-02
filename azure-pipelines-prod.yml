@@ -1,6 +1,6 @@
-name: Iaso-backend-dev
+name: Iaso-backend-prod
 trigger:
-- develop
+- main
 
 resources:
   containers:
@@ -110,22 +110,22 @@ steps:
     testResultsFiles: "**/TEST-*.xml"
     testRunTitle: 'Python $(PYTHON_VERSION)'
 
-- script: docker build -t dev-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+- script: docker build -t prod-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
   displayName: 'Build docker image'
 
-- script: docker save -o $(Build.ArtifactStagingDirectory)/dev-coda2.tar.gz dev-coda2
+- script: docker save -o $(Build.ArtifactStagingDirectory)/prod-coda2.tar.gz prod-coda2
   displayName: 'Save docker image'
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: dev-coda2
+    artifactName: prod-coda2
 
-- script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash dev-coda2 -c "cp -R /opt/app/static /opt/mount/"
+- script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash prod-coda2 -c "cp -R /opt/app/static /opt/mount/"
   displayName: 'Copy static files from docker'
 
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: $(Build.ArtifactStagingDirectory)/static
-    artifactName: dev-coda2-static
+    artifactName: prod-coda2-static
   displayName: 'Publish static files'

@@ -119,9 +119,6 @@ class CustomPermissionSupport(models.Model):
         # will be performed for this model.
 
         permissions = (
-            ("x_modifications", _("Modifications")),
-            ("x_management_teams", _("Equipes")),
-            ("x_management_users", _("Users")),
             (_FORMS, _("Formulaires")),
             (_MAPPINGS, _("Correspondances avec DHIS2")),
             (_COMPLETENESS, _("Complétude des données")),

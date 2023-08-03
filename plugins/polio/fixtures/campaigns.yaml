@@ -93,8 +93,6 @@
     doses_requested: null
     preperadness_spreadsheet_url: null
     preperadness_sync_status: FINISHED
-    surge_spreadsheet_url: null
-    country_name_in_surge_spreadsheet: null
     budget_status: null
     budget_responsible: null
     is_test: false

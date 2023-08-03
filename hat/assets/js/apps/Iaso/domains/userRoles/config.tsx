@@ -1,6 +1,6 @@
 import React, { ReactElement, useMemo } from 'react';
 import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
-import { CreateEditUserRole } from './components/CreateEditUserRole';
+import { EditUserRoleDialog } from './components/CreateEditUserRole';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
 import MESSAGES from './messages';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
@@ -39,11 +39,12 @@ export const useGetUserRolesColumns = (
                 Cell: (settings): ReactElement => {
                     return (
                         <>
-                            <CreateEditUserRole
+                            <EditUserRoleDialog
                                 dialogType="edit"
                                 id={settings.row.original.id}
                                 name={settings.row.original.name}
                                 permissions={settings.row.original.permissions}
+                                iconProps={{}}
                             />
                             <DeleteDialog
                                 keyName="userRole"

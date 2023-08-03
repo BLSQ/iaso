@@ -52,7 +52,7 @@ def update_single_profile_from_bulk(
             )
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)
-            if project.account.id == accound_id:
+            if project.account and project.account.id == accound_id:
                 project.iaso_profile.add(profile)
     if projects_ids_removed is not None:
         if user.has_perm(permission.USERS_MANAGED):
@@ -61,7 +61,7 @@ def update_single_profile_from_bulk(
             )
         for project_id in projects_ids_removed:
             project = Project.objects.get(pk=project_id)
-            if project.account.id == accound_id:
+            if project.account and project.account.id == accound_id:
                 project.iaso_profile.remove(profile)
 
     if language is not None:

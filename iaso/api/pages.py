@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from rest_framework import serializers
+from rest_framework import serializers, permissions
 
 from iaso.api.common import ModelViewSet
 from iaso.models import Page
@@ -19,7 +19,19 @@ class PagesSerializer(serializers.ModelSerializer):
         return page
 
 
+class PagesPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        read_perm = "menupermissions.iaso_pages"
+        write_perm = "menupermissions.iaso_page_write"
+
+        if request.method in permissions.SAFE_METHODS and request.user and request.user.has_perm(read_perm):
+            return True
+
+        return request.user and request.user.has_perm(write_perm)
+
+
 class PagesViewSet(ModelViewSet):
+    permission_classes = [PagesPermission]
     serializer_class = PagesSerializer
     results_key = "results"
     lookup_url_kwarg = "pk"

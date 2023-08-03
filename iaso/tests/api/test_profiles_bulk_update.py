@@ -511,10 +511,10 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.assertEqual(self.luke.iaso_profile.language, "fr")
         self.yoda.refresh_from_db()
         self.assertEqual(self.yoda.iaso_profile.language, "fr")
-        self.assertEqual(4, am.Modification.objects.count())
+        self.assertEqual(5, am.Modification.objects.count())
         self.obi_wan.refresh_from_db()
         self.assertEqual(self.obi_wan.iaso_profile.language, "fr")
-        self.assertEqual(4, am.Modification.objects.count())
+        self.assertEqual(5, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_search(self):
@@ -593,7 +593,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         self.yoda.refresh_from_db()
         self.assertEqual(self.yoda.iaso_profile.language, "fr")
 
-        self.assertEqual(1, am.Modification.objects.count())
+        self.assertEqual(2, am.Modification.objects.count())
 
     def test_task_kill(self):
         """Launch the task and then kill it

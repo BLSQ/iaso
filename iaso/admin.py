@@ -8,7 +8,7 @@ from django.db import models
 from django.utils.html import format_html_join, format_html
 from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget  # type: ignore
-
+from plugins.wfp.tasks import etl
 
 class IasoJSONEditorWidget(JSONEditorWidget):
     class Media:

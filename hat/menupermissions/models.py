@@ -93,9 +93,11 @@ WORKFLOW = _PREFIX + _WORKFLOW
 
 
 class CustomPermissionSupport(models.Model):
-    """Model used to hold our custom permission.
+    """Model used to hold our custom permission."""
 
-    This is not a true model that generate a table hence the managed=False"""
+    @staticmethod
+    def get_full_permission_list():
+        return [couple[0] for couple in CustomPermissionSupport._meta.permissions]
 
     # Used in setup_account api
     DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER = [

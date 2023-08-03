@@ -50,6 +50,12 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         Permission.ORG_UNITS,
         currentUser,
     );
+
+    const hasUpdateSubmissionPermission = userHasPermission(
+        'iaso_update_submission',
+        currentUser,
+    );
+
     const isOrgUnitAlreadyLinked =
         currentInstance.org_unit?.reference_instance_id !== null;
     const {
@@ -122,7 +128,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         actions.push(linkOrgUnitAction);
     }
 
-    return currentInstance?.can_user_modify ? (
+    return currentInstance?.can_user_modify && hasUpdateSubmissionPermission ? (
         <>
             {(isDeleting || isRestoring) && <LoadingSpinner />}
             <SpeedDialInstanceActions

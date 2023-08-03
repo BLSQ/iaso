@@ -99,6 +99,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
             file_instance.save()
+
+            orgunits_hierarchy = OrgUnit.objects.hierarchy(user_access_ou)
+
             for row in reader:
                 org_units_list = []
                 if i > 0:
@@ -113,7 +116,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     "again.".format(i)
                                 }
                             )
-
                     try:
                         try:
                             user = User.objects.create(
@@ -165,7 +167,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         )
                             except ValueError:
                                 try:
-                                    org_unit = OrgUnit.objects.get(name=ou)
+                                    org_unit = OrgUnit.objects.get(name=ou, pk__in=orgunits_hierarchy)
                                     if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
                                         raise serializers.ValidationError(
                                             {

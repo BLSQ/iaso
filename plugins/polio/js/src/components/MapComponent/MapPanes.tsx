@@ -1,9 +1,9 @@
 import React, { FunctionComponent, ReactNode } from 'react';
-import { GeoJSON, Tooltip, Pane } from 'react-leaflet';
+import { GeoJSON, Pane } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { get } from 'lodash';
 import { MapColor, Shape } from '../../constants/types';
-import { findBackgroundShape } from './utils';
+
+import { Tooltip } from './Tooltip';
 
 type Props = {
     mainLayer?: Shape[];
@@ -19,6 +19,8 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onSelectShape?: (shape: Shape) => void;
     tooltipFieldKey?: string;
+    // eslint-disable-next-line no-unused-vars
+    customTooltip?: (shape: Shape) => ReactNode;
 };
 
 export const MapPanes: FunctionComponent<Props> = ({
@@ -31,6 +33,7 @@ export const MapPanes: FunctionComponent<Props> = ({
     makePopup,
     onSelectShape = () => null,
     tooltipFieldKey = 'name',
+    customTooltip,
 }) => {
     return (
         <>
@@ -48,51 +51,35 @@ export const MapPanes: FunctionComponent<Props> = ({
             </Pane>
             <Pane name={`MainLayer-${name}`}>
                 {(mainLayer?.length ?? 0) > 0 &&
-                    mainLayer?.map(shape => (
-                        <GeoJSON
-                            // TODO better parametrize this
-                            key={
+                    mainLayer?.map(shape => {
+                        return (
+                            <GeoJSON
+                                // TODO better parametrize this
+                                key={
+                                    // @ts-ignore
+                                    shape?.status
+                                        ? // @ts-ignore
+                                          `${shape.status}-${shape.id}`
+                                        : shape.id
+                                }
+                                data={shape.geo_json}
                                 // @ts-ignore
-                                shape?.status
-                                    ? // @ts-ignore
-                                      `${shape.status}-${shape.id}`
-                                    : shape.id
-                            }
-                            data={shape.geo_json}
-                            // @ts-ignore
-                            style={() => getMainLayerStyle(shape)}
-                            onClick={() => onSelectShape(shape)}
-                        >
-                            {makePopup && makePopup(shape)}
-                            {/* @ts-ignore */}
-                            <Tooltip title={shape.name} pane="popupPane">
-                                {(backgroundLayer?.length ?? 0) > 0 && (
-                                    <span>
-                                        {tooltipLabels &&
-                                            `${
-                                                tooltipLabels.background
-                                            }: ${findBackgroundShape(
-                                                shape,
-                                                // backgroundLayer cannot be undefined because this code will only run if it is not.
-                                                // @ts-ignore
-                                                backgroundLayer,
-                                            )} > `}
-                                        {/* {!tooltipLabels &&
-                                            `${get(shape, tooltipFieldKey)}`} */}
-                                    </span>
+                                style={() => getMainLayerStyle(shape)}
+                                onClick={() => onSelectShape(shape)}
+                            >
+                                {makePopup && makePopup(shape)}
+                                {!customTooltip && (
+                                    <Tooltip
+                                        backgroundLayer={backgroundLayer}
+                                        shape={shape}
+                                        tooltipFieldKey={tooltipFieldKey}
+                                        tooltipLabels={tooltipLabels}
+                                    />
                                 )}
-                                <span>
-                                    {tooltipLabels &&
-                                        `${tooltipLabels.main}: ${get(
-                                            shape,
-                                            tooltipFieldKey,
-                                        )}`}
-                                    {!tooltipLabels &&
-                                        `${get(shape, tooltipFieldKey)}`}
-                                </span>
-                            </Tooltip>
-                        </GeoJSON>
-                    ))}
+                                {customTooltip && customTooltip(shape)}
+                            </GeoJSON>
+                        );
+                    })}
             </Pane>
         </>
     );

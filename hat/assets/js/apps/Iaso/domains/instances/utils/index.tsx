@@ -43,7 +43,7 @@ import { baseUrls } from '../../../constants/urls';
 
 import { Selection } from '../../orgUnits/types/selection';
 
-import { userHasPermission } from '../../users/utils';
+import { userHasOneOfPermissions } from '../../users/utils';
 
 import { useCurrentUser } from '../../../utils/usersUtils';
 import * as Permission from '../../../utils/permissions';
@@ -229,7 +229,12 @@ export const useGetInstancesColumns = (
                     }
                 });
             tableColumns = tableColumns.concat(childrenArray);
-            if (userHasPermission(Permission.SUBMISSIONS_UPDATE, currentUser)) {
+            if (
+                userHasOneOfPermissions(
+                    [Permission.SUBMISSIONS_UPDATE, Permission.SUBMISSIONS],
+                    currentUser,
+                )
+            ) {
                 tableColumns.push({
                     Header: formatMessage(MESSAGES.actions),
                     accessor: 'actions',

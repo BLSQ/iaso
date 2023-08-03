@@ -3,7 +3,7 @@ import csv
 from django.contrib.auth.models import User, Permission, Group
 
 from iaso import models as m
-from iaso.models import Profile, BulkCreateUserCsvFile
+from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
 from iaso.test import APITestCase
 
 BASE_URL = "/api/bulkcreateuser/"
@@ -20,12 +20,6 @@ class BulkCreateCsvTestCase(APITestCase):
             account=star_wars,
         )
 
-        manager_group = Group.objects.create(name="manager")
-        area_manager_group = Group.objects.create(name="area_manager")
-
-        cls.manager_role = m.UserRole.objects.create(group=manager_group, account=star_wars)
-        cls.area_manager_group = m.UserRole.objects.create(group=area_manager_group, account=star_wars)
-
         space_balls = m.Account.objects.create(name="Space Balls")
 
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
@@ -41,7 +35,7 @@ class BulkCreateCsvTestCase(APITestCase):
         )
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_submissions", "iaso_users"]
+            username="yoda", account=star_wars, permissions=["iaso_submissions", "iaso_users", "iaso_user_roles"]
         )
 
         cls.obi = cls.create_user_with_profile(username="obi", account=star_wars)
@@ -250,7 +244,6 @@ class BulkCreateCsvTestCase(APITestCase):
             "again. Use Orgunit ID instead of name.",
         )
 
-    # FIXME This test is flaky
     def test_users_profiles_have_right_ou(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -366,7 +359,6 @@ class BulkCreateCsvTestCase(APITestCase):
         with open("iaso/tests/fixtures/test_user_bulk_missing_columns.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 
-        print("DATA: ", response.data)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             response.data,
@@ -376,6 +368,12 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_create_user_with_roles(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
+
+        data = {"name": "manager"}
+        rep = self.client.post("/api/userroles/", data=data)
+
+        data = {"name": "area_manager"}
+        self.client.post("/api/userroles/", data=data)
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_roles.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -410,10 +408,14 @@ class BulkCreateCsvTestCase(APITestCase):
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
-
         users = User.objects.all()
         profiles = Profile.objects.all()
+        profile_1 = Profile.objects.get(user__username="broly")
+        profile_2 = Profile.objects.get(user__username="cyrus")
 
+
+        self.assertEqual(profile_1.projects.all()[0].name, "Hydroponic gardens")
+        self.assertEqual(profile_2.projects.all()[0].name, "Hydroponic gardens")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(users), 5)
         self.assertEqual(len(profiles), 5)
@@ -430,9 +432,4 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
-        self.assertEqual(len(new_user_1.iaso_profile.user_roles.all()), 1)
-        self.assertEqual(len(new_user_2.iaso_profile.user_roles.all()), 2)
-        self.assertEqual(len(new_user_1.iaso_profile.projects.all()), 1)
-        self.assertEqual(new_user_1.iaso_profile.projects.all()[0].name, "Hydroponic gardens")
-        self.assertEqual(new_user_2.iaso_profile.projects.all()[0].name, "Hydroponic gardens")
         self.assertEqual(response.data, {"Accounts created": 2})

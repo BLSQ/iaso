@@ -334,7 +334,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
         def to_dict(row_ou: OrgUnitWithFormStat):
             # TODO: improve this (check validation, account ,...)
-            children_count = OrgUnit.objects.all().filter(parent_id=row_ou.id).count()
             return {
                 "name": row_ou.name,
                 "id": row_ou.id,
@@ -344,12 +343,12 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats_with_parent()
                 if row_ou.parent
                 else None,
-                "has_children": True if children_count > 0 else False,
+                "has_children": True if row_ou.descendants().exists() else False,
             }
 
         def to_map(row_ou: OrgUnitWithFormStat):
             # TODO: improve this (check validation, account ,...)
-            children_count = OrgUnit.objects.all().filter(parent_id=row_ou.id).count()
+            children_count = row_ou.descendants().count()
             temp_org_unit = {
                 "name": row_ou.name,
                 "id": row_ou.id,

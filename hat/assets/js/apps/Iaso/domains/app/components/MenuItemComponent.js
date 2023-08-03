@@ -23,6 +23,7 @@ import {
 // import muiTheme from '../../../utils/theme';
 
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
+import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -45,10 +46,10 @@ function MenuItem(props) {
         intl,
         subMenuLevel,
         currentPath,
-        currentUser,
         url,
     } = props;
 
+    const currentUser = useCurrentUser();
     const urlLink = url;
     const path = urlLink ? `${currentPath}` : `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');

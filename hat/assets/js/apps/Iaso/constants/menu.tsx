@@ -1,5 +1,6 @@
 /* eslint-disable react/jsx-props-no-spreading */
-import React from 'react';
+import React, { ReactNode, useContext } from 'react';
+
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import Link from '@material-ui/icons/Link';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
@@ -36,9 +37,30 @@ import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants
 import { getChipColors } from './chipColors';
 
 import MESSAGES from './messages';
+import { useCurrentUser } from '../utils/usersUtils';
+import {
+    listMenuPermission,
+    userHasOneOfPermissions,
+} from '../domains/users/utils';
+import { PluginsContext } from '../utils';
+import { getDefaultSourceVersion } from '../domains/dataSources/utils';
 
+type MenuItem = {
+    label: { id: string; defaultMessage: string; values?: string };
+    permissions?: string[];
+    key: string;
+    // eslint-disable-next-line no-unused-vars
+    icon: (props: Record<string, any>) => ReactNode;
+    subMenu?: MenuItems;
+    extraPath?: string;
+    url?: string;
+};
+type MenuItems = MenuItem[];
+type Plugins = {
+    plugins: Record<string, any>[];
+};
 // !! remove permission property if the menu has a subMenu !!
-const menuItems = defaultSourceId => [
+const menuItems = (defaultSourceId?: number): MenuItems => [
     {
         label: MESSAGES.formsTitle,
         key: 'forms',
@@ -163,6 +185,26 @@ const menuItems = defaultSourceId => [
                 permissions: paths.entitiesPath.permissions,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
+                subMenu: [
+                    {
+                        label: MESSAGES.beneficiariesList,
+                        permissions: paths.entitiesPath.permissions,
+                        key: 'list',
+                        icon: props => <FormatListBulleted {...props} />,
+                    },
+                    {
+                        label: MESSAGES.entityTypesTitle,
+                        permissions: paths.entityTypesPath.permissions,
+                        key: 'types',
+                        icon: props => <CategoryIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.entityDuplicatesTitle,
+                        permissions: paths.entityDuplicatesPath.permissions,
+                        key: 'duplicates',
+                        icon: props => <FileCopyIcon {...props} />,
+                    },
+                ],
             },
             {
                 label: MESSAGES.entityTypesTitle,
@@ -242,8 +284,11 @@ const menuItems = defaultSourceId => [
     },
 ];
 
-const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
-    const pluginsMenu = enabledPlugins.map(plugin => plugin.menu).flat();
+const useMenuItems = (): MenuItems => {
+    const currentUser = useCurrentUser();
+    const defaultSourceVersion = getDefaultSourceVersion(currentUser);
+    const { plugins }: Plugins = useContext(PluginsContext);
+    const pluginsMenu = plugins.map(plugin => plugin.menu).flat();
     const allBasicItems = [...menuItems(defaultSourceVersion?.source?.id)];
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');
@@ -268,7 +313,11 @@ const getMenuItems = (currentUser, enabledPlugins, defaultSourceVersion) => {
             icon: props => <DHIS2Svg {...props} />,
         });
     }
-    return [...basicItems, ...pluginsMenu, admin];
+    const items = [...basicItems, ...pluginsMenu, admin].filter(menuItem => {
+        const permissionsList = listMenuPermission(menuItem);
+        return userHasOneOfPermissions(permissionsList, currentUser);
+    });
+    return items;
 };
 
-export default getMenuItems;
+export default useMenuItems;

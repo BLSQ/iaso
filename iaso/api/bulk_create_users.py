@@ -275,7 +275,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 role = role[1::] if role[:1] == " " else role
                                 try:
                                     role_instance = UserRole.objects.get(
-                                        account=request.user.iaso_profile.account, group__name=f"{request.user.iaso_profile.account.id}_{role}"
+                                        account=request.user.iaso_profile.account,
+                                        group__name=f"{request.user.iaso_profile.account.id}_{role}",
                                     )
                                     user_roles_list.append(role_instance)
                                 except ObjectDoesNotExist:

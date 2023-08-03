@@ -413,7 +413,6 @@ class BulkCreateCsvTestCase(APITestCase):
         profile_1 = Profile.objects.get(user__username="broly")
         profile_2 = Profile.objects.get(user__username="cyrus")
 
-
         self.assertEqual(profile_1.projects.all()[0].name, "Hydroponic gardens")
         self.assertEqual(profile_2.projects.all()[0].name, "Hydroponic gardens")
         self.assertEqual(response.status_code, 200)

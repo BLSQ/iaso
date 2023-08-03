@@ -41,9 +41,14 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: Params;
     types: Array<DropdownOptions<number>>;
+    isFetchingTypes: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({ params, types }) => {
+const Filters: FunctionComponent<Props> = ({
+    params,
+    types,
+    isFetchingTypes,
+}) => {
     const getParams = useFiltersParams();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -123,6 +128,7 @@ const Filters: FunctionComponent<Props> = ({ params, types }) => {
                         onChange={handleChange}
                         value={filters.entityTypeIds}
                         type="select"
+                        loading={isFetchingTypes}
                         label={MESSAGES.types}
                         options={types}
                         multi

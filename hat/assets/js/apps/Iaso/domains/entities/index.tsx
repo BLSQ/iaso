@@ -64,7 +64,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
 
     const { url: apiUrl } = useGetBeneficiariesApiParams(params);
-    const { data: types } = useGetBeneficiaryTypesDropdown();
+    const { data: types, isFetching: isFetchingTypes } =
+        useGetBeneficiaryTypesDropdown();
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
@@ -119,7 +120,11 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 </Tabs>
             </TopBar>
             <Box p={4} className={classes.container}>
-                <Filters params={params} types={types || []} />
+                <Filters
+                    params={params}
+                    types={types || []}
+                    isFetchingTypes={isFetchingTypes}
+                />
                 <Box display="flex" justifyContent="flex-end">
                     <DownloadButtonsComponent
                         csvUrl={`${apiUrl}&csv=true`}

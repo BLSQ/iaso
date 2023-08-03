@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React, { useMemo } from 'react';
 import { Link } from 'react-router';
 
 import {
@@ -9,18 +9,13 @@ import {
     Typography,
     Collapse,
     List,
+    Box,
 } from '@material-ui/core';
 import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import PropTypes from 'prop-types';
-import {
-    injectIntl,
-    commonStyles,
-    theme as muiTheme,
-} from 'bluesquare-components';
-// TODO check  that updated import of theme is equivalent
-// import muiTheme from '../../../utils/theme';
+import { commonStyles, theme as muiTheme } from 'bluesquare-components';
 
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
@@ -43,17 +38,23 @@ function MenuItem(props) {
         menuItem,
         location,
         classes,
-        intl,
         subMenuLevel,
         currentPath,
         url,
     } = props;
-
     const currentUser = useCurrentUser();
     const urlLink = url;
-    const path = urlLink ? `${currentPath}` : `${currentPath}/${menuItem.key}`;
+
+    const path = useMemo(() => {
+        if (urlLink || !menuItem.key) {
+            return `${currentPath}`;
+        }
+        return `${currentPath}/${menuItem.key}`;
+    }, [currentPath, menuItem.key, urlLink]);
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
-    const isMenuActive = path === activePath;
+    const isMenuActive = menuItem.isActive
+        ? menuItem.isActive(location.pathname)
+        : path === activePath;
     const fullPath = `${
         menuItem.extraPath
             ? `${path}/accountId/${currentUser.account.id}${menuItem.extraPath}`
@@ -87,14 +88,18 @@ function MenuItem(props) {
                         !hasSubMenu ? onClick(path, url) : toggleOpen()
                     }
                 >
-                    <ListItemIcon className={classes.listItemIcon}>
-                        {menuItem.icon({ color })}
-                    </ListItemIcon>
+                    {menuItem.icon && (
+                        <ListItemIcon className={classes.listItemIcon}>
+                            {menuItem.icon({ color })}
+                        </ListItemIcon>
+                    )}
                     <ListItemText
                         primary={
-                            <Typography type="body2" color={color}>
-                                {intl.formatMessage(menuItem.label)}
-                            </Typography>
+                            <Box pl={menuItem.icon ? 0 : 2}>
+                                <Typography type="body2" color={color}>
+                                    {menuItem.label}
+                                </Typography>
+                            </Box>
                         }
                     />
                     {hasSubMenu ? subMenuIcon : null}
@@ -114,9 +119,9 @@ function MenuItem(props) {
                                 return (
                                     <MenuItem
                                         classes={classes}
-                                        intl={intl}
-                                        key={subMenu.key}
+                                        key={subMenu.mapKey || subMenu.key}
                                         menuItem={subMenu}
+                                        url={subMenu.url}
                                         onClick={subPath => onClick(subPath)}
                                         subMenuLevel={subMenuLevel + 1}
                                         location={location}
@@ -141,15 +146,13 @@ MenuItem.defaultProps = {
 };
 
 MenuItem.propTypes = {
-    intl: PropTypes.object.isRequired,
     location: PropTypes.object.isRequired,
     menuItem: PropTypes.object.isRequired,
     onClick: PropTypes.func.isRequired,
     classes: PropTypes.object.isRequired,
     subMenuLevel: PropTypes.number,
     currentPath: PropTypes.string,
-    currentUser: PropTypes.object.isRequired,
     url: PropTypes.string,
 };
 
-export default withStyles(styles)(injectIntl(MenuItem));
+export default withStyles(styles)(MenuItem);

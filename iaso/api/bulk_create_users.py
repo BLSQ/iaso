@@ -122,7 +122,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 reader = csv.reader(csv_str, delimiter=delimiter)
                 """In case the delimiter is " ; " we must ensure that the multiple value can be read so we replace it
                     with a " * " instead of " , " """
-                if delimiter is ";":
+                if delimiter == ";":
                     new_reader = []
                     for row in reader:
                         new_row = [cell.replace(",", "*") for cell in row]
@@ -139,7 +139,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                 file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
             )
 
-            value_splitter = "," if delimiter is "," else "*"
+            value_splitter = "," if delimiter == "," else "*"
 
             file_instance.save()
 

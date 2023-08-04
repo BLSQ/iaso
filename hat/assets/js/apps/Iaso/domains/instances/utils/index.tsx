@@ -46,6 +46,7 @@ import { Selection } from '../../orgUnits/types/selection';
 import { userHasOneOfPermissions } from '../../users/utils';
 
 import { useCurrentUser } from '../../../utils/usersUtils';
+import * as Permission from '../../../utils/permissions';
 
 const NO_VALUE = '/';
 // eslint-disable-next-line no-unused-vars
@@ -230,7 +231,7 @@ export const useGetInstancesColumns = (
             tableColumns = tableColumns.concat(childrenArray);
             if (
                 userHasOneOfPermissions(
-                    ['iaso_update_submission', 'iaso_submissions'],
+                    [Permission.SUBMISSIONS_UPDATE, Permission.SUBMISSIONS],
                     currentUser,
                 )
             ) {

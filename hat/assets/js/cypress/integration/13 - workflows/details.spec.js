@@ -51,7 +51,7 @@ describe('Workflows details', () => {
         cy.intercept('GET', '/api/profiles/me/**', fakeUser);
         cy.visit(baseUrl);
         const errorCode = cy.get('#error-code');
-        errorCode.should('contain', '401');
+        errorCode.should('contain', '403');
     });
     it('with PUBLISHED or UNPUBLISHED status should not be able to publish; create, delete, change order or edit follow-ups and create, edit, delete changes', () => {
         const testStatus = status => {

@@ -9,6 +9,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { renderWithStore } from '../../../../test/utils/redux';
 import { mockGetRequestsList } from '../../../../test/utils/requests';
+import * as Permission from '../../utils/permissions.ts';
 
 const redirectActions = require('../../routing/actions');
 
@@ -47,7 +48,7 @@ const userWithFormPermission = {
         current: {
             id: 1,
             account: { name: '' },
-            permissions: ['iaso_forms'],
+            permissions: [Permission.FORMS],
         },
     },
 };

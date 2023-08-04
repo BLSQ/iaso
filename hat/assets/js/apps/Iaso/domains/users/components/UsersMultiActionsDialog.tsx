@@ -39,6 +39,9 @@ import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { useGetUserRolesOptions } from '../../userRoles/hooks/requests/useGetUserRoles';
+import { userHasPermission } from '../utils';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     open: boolean;
@@ -106,6 +109,7 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
     setSelection,
     saveMulti,
 }) => {
+    const currentUser = useCurrentUser();
     const [bulkState, setBulkState] = useState<BulkState>(initialState);
     const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
@@ -176,32 +180,40 @@ export const UsersMultiActionsDialog: FunctionComponent<Props> = ({
                     options={userRoles}
                     loading={isFetchingUserRoles}
                 />
-
-                <InputComponent
-                    keyValue="addProjects"
-                    onChange={(key, value) =>
-                        handleChange(key, value ? value.split(',') : value)
-                    }
-                    value={bulkState.addProjects}
-                    type="select"
-                    multi
-                    label={MESSAGES.addProjects}
-                    options={allProjects}
-                    loading={isFetchingProjects}
-                />
-                <InputComponent
-                    keyValue="removeProjects"
-                    onChange={(key, value) =>
-                        handleChange(key, value ? value.split(',') : value)
-                    }
-                    value={bulkState.removeProjects}
-                    type="select"
-                    multi
-                    label={MESSAGES.removeProjects}
-                    options={allProjects}
-                    loading={isFetchingProjects}
-                />
-
+                {userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                    <>
+                        <InputComponent
+                            keyValue="addProjects"
+                            onChange={(key, value) =>
+                                handleChange(
+                                    key,
+                                    value ? value.split(',') : value,
+                                )
+                            }
+                            value={bulkState.addProjects}
+                            type="select"
+                            multi
+                            label={MESSAGES.addProjects}
+                            options={allProjects}
+                            loading={isFetchingProjects}
+                        />
+                        <InputComponent
+                            keyValue="removeProjects"
+                            onChange={(key, value) =>
+                                handleChange(
+                                    key,
+                                    value ? value.split(',') : value,
+                                )
+                            }
+                            value={bulkState.removeProjects}
+                            type="select"
+                            multi
+                            label={MESSAGES.removeProjects}
+                            options={allProjects}
+                            loading={isFetchingProjects}
+                        />
+                    </>
+                )}
                 <InputComponent
                     keyValue="language"
                     onChange={handleChange}

@@ -13,6 +13,7 @@ from iaso.odk import parsing
 from iaso.api.query_params import APP_ID
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
+from hat.menupermissions import models as permission
 
 
 # noinspection PyMethodMayBeStatic
@@ -149,9 +150,9 @@ class HasFormVersionPermission(HasFormPermission):
 
 
 class FormVersionsViewSet(ModelViewSet):
-    """Form versions API
+    f"""Form versions API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
+    This API is restricted to authenticated users having the "{permission.FORMS}" or "{permission.SUBMISSIONS}" permissions.
 
     GET /api/formversions/
     GET /api/formversions/<id>

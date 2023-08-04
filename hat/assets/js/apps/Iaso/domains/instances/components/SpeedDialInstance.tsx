@@ -24,6 +24,7 @@ import {
     useRestoreInstance,
 } from '../hooks/requests/useDeleteInstance';
 import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     currentInstance: Instance;
@@ -46,7 +47,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         SHOW_LINK_INSTANCE_REFERENCE,
     );
     const hasOrgUnitPermission = userHasPermission(
-        'iaso_org_units',
+        Permission.ORG_UNITS,
         currentUser,
     );
 

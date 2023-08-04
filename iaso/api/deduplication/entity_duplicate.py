@@ -23,6 +23,7 @@ from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
+from hat.menupermissions import models as permission
 
 
 def var_dump(what):
@@ -410,7 +411,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
     ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
     remove_results_key_if_paginated = False
     results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
     serializer_class = EntityDuplicateSerializer
     results_key = "results"
     model = EntityDuplicate

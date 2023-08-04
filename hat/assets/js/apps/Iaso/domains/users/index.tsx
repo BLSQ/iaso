@@ -37,6 +37,8 @@ import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
 import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
+import { userHasPermission } from './utils';
+import * as Permission from '../../utils/permissions';
 
 const baseUrl = baseUrls.users;
 
@@ -120,26 +122,28 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {multiActionPopupOpen && 'SHOW MODALE'}
                 <Filters baseUrl={baseUrl} params={params} />
-                <Grid
-                    container
-                    spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                    className={classes.marginTop}
-                >
-                    <AddUsersDialog
-                        titleMessage={MESSAGES.create}
-                        saveProfile={saveProfile}
-                        allowSendEmailInvitation
-                        iconProps={{
-                            dataTestId: 'add-user-button',
-                        }}
-                    />
-                    <Box ml={2}>
-                        {/* @ts-ignore */}
-                        <BulkImportUsersDialog />
-                    </Box>
-                </Grid>
+                {userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                    <Grid
+                        container
+                        spacing={0}
+                        justifyContent='flex-end'
+                        alignItems='center'
+                        className={classes.marginTop}
+                    >
+                        <AddUsersDialog
+                            titleMessage={MESSAGES.create}
+                            saveProfile={saveProfile}
+                            allowSendEmailInvitation
+                            iconProps={{
+                                dataTestId: 'add-user-button',
+                            }}
+                        />
+                        <Box ml={2}>
+                            {/* @ts-ignore */}
+                            <BulkImportUsersDialog />
+                        </Box>
+                    </Grid>
+                )}
                 <Table
                     data={data?.profiles ?? []}
                     pages={data?.pages ?? 1}

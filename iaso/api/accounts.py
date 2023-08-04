@@ -5,6 +5,7 @@ from iaso.models import Account, SourceVersion
 from rest_framework import serializers, permissions
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
+from hat.menupermissions import models as permission
 
 
 class AccountSerializer(serializers.ModelSerializer):
@@ -43,16 +44,16 @@ class HasAccountPermission(permissions.BasePermission):
 
 
 class AccountViewSet(ModelViewSet):
-    """Account API
+    f"""Account API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_sources" permission
+    This API is restricted to authenticated users having the "{permission.SOURCES}" permission
     Only allow to update default source / version for an account
     PUT /api/account/<id>
     """
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_sources"),  # type: ignore
+        HasPermission(permission.SOURCES),  # type: ignore
         HasAccountPermission,
     ]
     serializer_class = AccountSerializer

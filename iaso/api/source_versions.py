@@ -8,6 +8,7 @@ from iaso.models import SourceVersion
 from .common import ModelViewSet, CONTENT_TYPE_CSV, HasPermission
 from .source_versions_serializers import DiffSerializer, ExportSerializer
 from .tasks import TaskSerializer
+from hat.menupermissions import models as permission
 
 
 class SourceVersionSerializer(serializers.ModelSerializer):
@@ -60,10 +61,10 @@ class SourceVersionSerializer(serializers.ModelSerializer):
 
 
 class SourceVersionViewSet(ModelViewSet):
-    """Data source API
+    f"""Data source API
 
-    This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
-    "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
+    This API is restricted to authenticated users having at least one of the "{permission.MAPPINGS}",
+    "{permission.ORG_UNITS}", and "{permission.LINKS}" permissions
 
     GET /api/sourceversions/
     GET /api/sourceversions/<id>
@@ -71,7 +72,7 @@ class SourceVersionViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_mappings", "menupermissions.iaso_org_units", "menupermissions.iaso_links"),  # type: ignore
+        HasPermission(permission.MAPPINGS, permission.ORG_UNITS, permission.LINKS),  # type: ignore
     ]
     serializer_class = SourceVersionSerializer
     results_key = "versions"

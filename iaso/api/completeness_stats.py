@@ -56,6 +56,7 @@ from ..models.microplanning import Planning
 from ..models.org_unit import OrgUnitQuerySet
 from ..periods import Period
 from iaso.utils import geojson_queryset
+from hat.menupermissions import models as permission
 
 
 class OrgUnitTypeSerializer(ModelSerializer):
@@ -207,7 +208,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_completeness_stats", "menupermissions.iaso_registry"),  # type: ignore
+        HasPermission(permission.COMPLETENESS_STATS, permission.REGISTRY),  # type: ignore
     ]  # type: ignore
 
     # @swagger_auto_schema(query_serializer=ParamSerializer())

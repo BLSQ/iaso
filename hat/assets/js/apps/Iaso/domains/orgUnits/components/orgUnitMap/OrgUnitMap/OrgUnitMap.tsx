@@ -46,6 +46,7 @@ import { CustomTileLayer } from '../../../../../components/maps/tools/CustomTile
 import { Tile } from '../../../../../components/maps/tools/TilesSwitchControl';
 import tiles from '../../../../../constants/mapTiles';
 import { CustomZoomControl } from '../../../../../components/maps/tools/CustomZoomControl';
+import * as Permission from '../../../../../utils/permissions';
 
 export const zoom = 5;
 export const padding = [75, 75];
@@ -407,7 +408,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}
                         />
-                        {userHasPermission('iaso_submissions', currentUser) && (
+                        {userHasPermission(Permission.SUBMISSIONS, currentUser) && (
                             <FormsFilterComponent
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}

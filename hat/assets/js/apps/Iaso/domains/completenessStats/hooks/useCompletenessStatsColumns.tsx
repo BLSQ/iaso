@@ -21,6 +21,7 @@ import {
     FormDesc,
     FormStatRow,
 } from '../types';
+import * as Permission from '../../../utils/permissions';
 
 const baseUrl = `${baseUrls.completenessStats}`;
 
@@ -45,7 +46,7 @@ export const useCompletenessStatsColumns = (
 ): Column[] => {
     const currentUser = useCurrentUser();
     const hasSubmissionPermission = userHasPermission(
-        'iaso_submissions',
+        Permission.SUBMISSIONS,
         currentUser,
     );
     const { formatMessage } = useSafeIntl();

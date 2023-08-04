@@ -8,7 +8,6 @@ import {
     Grid,
     makeStyles,
     Typography,
-    useMediaQuery,
     useTheme,
 } from '@material-ui/core';
 
@@ -247,7 +246,6 @@ const InstancesFiltersComponent = ({
     );
 
     const theme = useTheme();
-    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
@@ -463,7 +461,7 @@ const InstancesFiltersComponent = ({
                     justifyContent="flex-end"
                     alignItems="center"
                 >
-                    <Box mt={isLargeLayout ? 0 : 2}>
+                    <Box mt={2}>
                         {tab === 'list' && (
                             <Box mr={2} display="inline-block">
                                 <ColumnSelect

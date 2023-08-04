@@ -153,7 +153,7 @@ describe('Entities', () => {
             });
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
         it.skip('click on a row button should open entity detail page', () => {
             mockPage();

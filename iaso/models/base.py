@@ -1348,7 +1348,7 @@ class FeatureFlag(models.Model):
         ),
     }
 
-    code = models.CharField(max_length=30, null=False, blank=False, unique=True)
+    code = models.CharField(max_length=100, null=False, blank=False, unique=True)
     name = models.CharField(max_length=100, null=False, blank=False)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1402,16 +1402,23 @@ class UserRole(models.Model):
     def as_short_dict(self):
         return {
             "id": self.id,
-            "name": self.group.name,
+            "name": self.remove_user_role_name_prefix(self.group.name),
             "group_id": self.group.id,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
 
+    # This method will remove a given prefix from a string
+    def remove_user_role_name_prefix(self, str):
+        prefix = str.split("_")[0] + "_"
+        if str.startswith(prefix):
+            return str[len(prefix) :]
+        return str
+
     def as_dict(self):
         return {
             "id": self.id,
-            "name": self.group.name,
+            "name": self.remove_user_role_name_prefix(self.group.name),
             "group_id": self.group.id,
             "permissions": list(
                 self.group.permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)

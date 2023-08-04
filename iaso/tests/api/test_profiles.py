@@ -4,22 +4,30 @@ from django.conf import settings
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
 from django.core import mail
-
+from django.contrib.auth.models import Group, Permission
 from iaso import models as m
 from iaso.models import Profile
 from iaso.test import APITestCase
+from hat.menupermissions import models as permission
 
 
 class ProfileAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.ghi = m.Account.objects.create(name="Global Health Initiative")
-
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.ghi, permissions=["iaso_forms"])
+        cls.another_account = m.Account.objects.create(name="Another account")
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.ghi, permissions=[permission._FORMS])
         cls.john = cls.create_user_with_profile(username="johndoe", account=cls.ghi, is_superuser=True)
         cls.jim = cls.create_user_with_profile(
-            username="jim", account=cls.ghi, permissions=["iaso_forms", "iaso_users"]
+            username="jim", account=cls.ghi, permissions=[permission._FORMS, permission._USERS_ADMIN]
         )
+        cls.jam = cls.create_user_with_profile(
+            username="jam",
+            account=cls.ghi,
+            permissions=[permission._USERS_MANAGED],
+        )
+        cls.jom = cls.create_user_with_profile(username="jom", account=cls.ghi, permissions=[])
+        cls.jum = cls.create_user_with_profile(username="jum", account=cls.ghi, permissions=[])
 
         # TODO : make the org unit creations shorter and reusable
         cls.project = m.Project.objects.create(
@@ -43,6 +51,17 @@ class ProfileAPITestCase(APITestCase):
         cls.ghi.default_version = sw_version_1
         cls.ghi.save()
 
+        cls.jedi_squad_1 = m.OrgUnit.objects.create(
+            org_unit_type=cls.jedi_squad,
+            version=sw_version_1,
+            name="Jedi Squad 1",
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
+            location=cls.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
             version=sw_version_1,
@@ -67,6 +86,19 @@ class ProfileAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
             source_ref="PvtAI4RUMkr",
             parent=cls.jedi_council_corruscant,
+        )
+
+        cls.permission = Permission.objects.create(
+            name="iaso permission", content_type_id=1, codename="iaso_permission"
+        )
+        cls.group = Group.objects.create(name="user role")
+        cls.group.permissions.add(cls.permission)
+        cls.user_role = m.UserRole.objects.create(group=cls.group, account=cls.ghi)
+
+        cls.group_another_account = Group.objects.create(name="user role with another account")
+        cls.group_another_account.permissions.add(cls.permission)
+        cls.user_role_another_account = m.UserRole.objects.create(
+            group=cls.group_another_account, account=cls.another_account
         )
 
     def test_can_delete_dhis2_id(self):
@@ -145,19 +177,69 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_profile_list_ok(self):
-        """GET /profiles/me/ with auth (user has the right permissions)"""
+        """GET /profiles/ with auth"""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response.json(), 6)
+
+    def test_profile_list_user_admin_ok(self):
+        """GET /profiles/ with auth (user has user admin permissions)"""
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 3)
+        self.assertValidProfileListData(response.json(), 6)
 
     def test_profile_list_superuser_ok(self):
-        """GET /profiles/me/ with auth (superuser)"""
-
+        """GET /profiles/ with auth (superuser)"""
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
-        self.assertValidProfileListData(response.json(), 3)
+        self.assertValidProfileListData(response.json(), 6)
+
+    def test_profile_list_user_manager_ok(self):
+        """GET /profiles/ with auth (superuser)"""
+        self.client.force_authenticate(self.jam)
+        response = self.client.get("/api/profiles/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response.json(), 6)
+
+    def test_profile_list_managed_user_only_superuser(self):
+        """GET /profiles/ with auth (superuser)"""
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?managedUsersOnly=true")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response.json(), 6)
+
+    def test_profile_list_managed_user_only_user_admin(self):
+        """GET /profiles/ with auth (superuser)"""
+        self.client.force_authenticate(self.john)
+        response = self.client.get("/api/profiles/?managedUsersOnly=true")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response.json(), 6)
+
+    def test_profile_list_managed_user_only_user_manager_no_org_unit(self):
+        """GET /profiles/ with auth (superuser)"""
+        self.client.force_authenticate(self.jam)
+        response = self.client.get("/api/profiles/?managedUsersOnly=true")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response.json(), 5)
+
+    def test_profile_list_managed_user_only_user_manager_with_org_unit(self):
+        """GET /profiles/ with auth (superuser)"""
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.client.force_authenticate(self.jam)
+        response = self.client.get("/api/profiles/?managedUsersOnly=true")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response.json(), 1)
+
+    def test_profile_list_managed_user_only_user_regular_user(self):
+        """GET /profiles/ with auth (superuser)"""
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?managedUsersOnly=true")
+        self.assertJSONResponse(response, 200)
+        self.assertValidProfileListData(response.json(), 0)
 
     def assertValidProfileListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
@@ -181,6 +263,43 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.post("/api/profiles/", data=data, format="json")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_create_user_with_user_roles(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "email": "unittest_last_name",
+            "user_permissions": ["iaso_forms"],
+            "user_roles": [self.user_role.id],
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        response_data = response.json()
+        user_user_role = m.UserRole.objects.get(pk=response_data["user_roles"][0])
+        self.assertValidProfileData(response_data)
+        self.assertEqual(user_user_role.id, self.user_role.id)
+        self.assertEqual(user_user_role.group.name, self.group.name)
+
+    def test_create_user_with_not_allowed_user_roles(self):
+        self.client.force_authenticate(self.jim)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "email": "unittest_last_name",
+            "user_permissions": ["iaso_forms"],
+            "user_roles": [self.user_role.id, self.user_role_another_account.id],
+        }
+        response = self.client.post("/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 404)
+
+        response_data = response.json()
+        self.assertEqual(response_data["detail"], "Not found.")
 
     def test_create_profile_duplicate_user(self):
         self.client.force_authenticate(self.jim)
@@ -449,3 +568,157 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(len(response.json()["profiles"]), 2)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+
+    def test_user_with_managed_permission_can_update_profile_of_user_in_sub_org_unit(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+            "user_permissions": [permission._FORMS, permission._USERS_MANAGED],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_with_managed_permission_cannot_grant_user_admin_permission(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "jum",
+            "user_permissions": [permission._FORMS, permission._USERS_MANAGED, permission._USERS_ADMIN],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_managed_permission_cannot_grant_user_admin_permission_through_user_roles(self):
+        group = Group.objects.create(name="admin")
+        group.permissions.set([Permission.objects.get(codename=permission._USERS_ADMIN)])
+        role = m.UserRole.objects.create(account=self.ghi, group=group)
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "jum",
+            "user_roles": [role.id],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_managed_permission_can_grant_user_roles(self):
+        group = Group.objects.create(name="admin")
+        group.permissions.set([Permission.objects.get(codename=permission._FORMS)])
+        role = m.UserRole.objects.create(account=self.ghi, group=group)
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "jum",
+            "user_roles": [role.id],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "jum",
+            "org_units": [{"id": self.jedi_council_corruscant.id}],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_with_managed_permission_can_assign_org_unit_within_their_health_pyramid_with_existing_ones_outside(
+        self,
+    ):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id, self.jedi_squad_1])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "jum",
+            "org_units": [{"id": self.jedi_council_corruscant.id}, {"id": self.jedi_squad_1.id}],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_with_managed_permission_cannot_assign_org_unit_outside_of_their_health_pyramid(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        data = {
+            "user_name": "jum",
+            "org_units": [{"id": self.jedi_squad_1.id}],
+        }
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_managed_permission_cannot_update_profile_of_user_not_in_sub_org_unit(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.client.force_authenticate(self.jam)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+        }
+        jum = Profile.objects.get(user=self.jum)
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_managed_permission_can_update_profile_if_not_themselves_in_sub_org_unit(self):
+        self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.client.force_authenticate(self.jam)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+        }
+        jum = Profile.objects.get(user=self.jum)
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+    def test_user_with_managed_permission_cannot_create_users(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.client.force_authenticate(self.jam)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+        }
+        response = self.client.post(f"/api/profiles/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_managed_permission_cannot_delete_users(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
+        self.client.force_authenticate(self.jam)
+        jum = Profile.objects.get(user=self.jum)
+        response = self.client.delete(f"/api/profiles/{jum.id}/")
+        self.assertEqual(response.status_code, 403)
+
+    def test_user_with_managed_permission_cannot_update_from_unmanaged_org_unit(self):
+        self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
+        self.jum.iaso_profile.org_units.set([self.jedi_squad_1.id])
+        self.client.force_authenticate(self.jam)
+        data = {
+            "user_name": "unittest_user_name",
+            "password": "unittest_password",
+            "first_name": "unittest_first_name",
+            "last_name": "unittest_last_name",
+        }
+        jum = Profile.objects.get(user=self.jum)
+        response = self.client.patch(f"/api/profiles/{jum.id}/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)

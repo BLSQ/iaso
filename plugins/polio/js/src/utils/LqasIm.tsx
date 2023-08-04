@@ -36,8 +36,12 @@ export const accessDictRound = (
 };
 export const accessArrayRound = (
     data: ConvertedLqasImData,
-    round: number,
+    round: number | 'latest',
 ): LqasImDistrictDataWithNameAndRegion[] => {
+    if (round === 'latest') {
+        if (data.rounds.length === 0) return [];
+        return data.rounds[data.rounds.length - 1].data;
+    }
     return data.rounds.find(rnd => rnd.number === round)?.data ?? [];
 };
 
@@ -351,8 +355,8 @@ export const makeDropdownOptions = (
     data: Record<string, LqasImCampaign>,
     campaign: string,
 ): DropdownOptions<number>[] => {
-    if (!campaign || !data[campaign]) return [];
-    return data[campaign].rounds
+    if (!campaign || !data?.[campaign]) return [];
+    return data?.[campaign]?.rounds
         .sort((a, b) => a.number - b.number)
         .map(round => {
             return {

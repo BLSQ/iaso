@@ -1,9 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-    IconButton as IconButtonComponent,
-    textPlaceholder,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
 import { Switch } from '@material-ui/core';
 import {
     HighlightOffOutlined as NotCheckedIcon,
@@ -12,6 +8,9 @@ import {
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
+import { userHasPermission } from './utils';
+
+import * as Permission from '../../utils/permissions.ts';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -59,14 +58,17 @@ export const usersTableColumns = ({
                     params={params}
                     saveProfile={saveProfile}
                 />
-                {currentUser.id !== settings.row.original.id && (
-                    <DeleteDialog
-                        disabled={settings.row.original.instances_count > 0}
-                        titleMessage={MESSAGES.deleteUserTitle}
-                        message={MESSAGES.deleteUserText}
-                        onConfirm={() => deleteProfile(settings.row.original)}
-                    />
-                )}
+                {currentUser.id !== settings.row.original.id &&
+                    userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                        <DeleteDialog
+                            disabled={settings.row.original.instances_count > 0}
+                            titleMessage={MESSAGES.deleteUserTitle}
+                            message={MESSAGES.deleteUserText}
+                            onConfirm={() =>
+                                deleteProfile(settings.row.original)
+                            }
+                        />
+                    )}
             </section>
         ),
     },

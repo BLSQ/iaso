@@ -1,0 +1,131 @@
+name: Iaso-backend-prod
+trigger:
+- main
+
+resources:
+  containers:
+    - container: postgis
+      image: postgis/postgis:12-3.3
+      env:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: does_not_matter
+      ports:
+        - 5432:5432
+      # needed because the postgres container does not provide a health check
+      options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+variables:
+  tag: '$(Build.BuildId)'
+
+pool:
+  vmImage: ubuntu-20.04
+
+
+services:
+  postgres: postgis
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '14.x'
+  displayName: 'Install Node.js'
+
+- script: |
+    npm install -g npm@8.5
+    node -v
+    npm -v
+    npm ci
+    npm test -- --reporter xunit --reporter-option output=npm-test.xml
+  displayName: 'npm install and run test'
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFiles: "**/npm-test.xml"
+    testRunTitle: 'Npm test results'
+
+- task: UsePythonVersion@0
+  inputs:
+   versionSpec: '3.8'
+   addToPath: true
+   architecture: 'x64'
+
+- script: |
+    sudo apt install gdal-bin
+  displayName: 'install gdal'
+
+- script: |
+    python --version
+    python -m venv ./venv
+    . ./venv/bin/activate && pip install -U pip
+  displayName: 'install pip'
+
+- script: |
+    . ./venv/bin/activate && pip install -r requirements.txt  && pip install -r requirements-dev.txt
+    pip install unittest-xml-reporting
+  displayName: 'install requirements'
+
+- script: pip list
+  displayName: 'Environment info'
+
+- script: |
+    . ./venv/bin/activate && black --check .
+  displayName: 'Check formatting with black'
+
+# The secret key is done with an export because Azure pipelines will
+# remove all env variables that start with SECRET_
+- script: |
+    export SECRET_KEY=${SECRETKEY}
+    export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+    export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
+    export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
+    . ./venv/bin/activate &&  python manage.py migrate
+    . ./venv/bin/activate &&  python manage.py createcachetable
+    . ./venv/bin/activate &&  python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
+    . ./venv/bin/activate &&  python manage.py makemigrations --check
+    . ./venv/bin/activate &&  python manage.py createsuperuser --noinput
+  displayName: 'Django tests'
+  condition: succeededOrFailed()
+  env:
+    IASO_ENVIRONMENT: development
+    RDS_DB_NAME: does_not_matter
+    SECRETKEY: secret-only-used-in-azure-pipeline
+    DEBUG: true
+    DJANGO_SETTINGS_MODULE: hat.settings
+    RDS_PASSWORD: postgres
+    RDS_HOSTNAME: localhost
+    RDS_PORT: 5432
+    RDS_USERNAME: postgres
+    CACHE: false
+    DEV_SERVER: true
+    PLUGINS: polio
+    DJANGO_SUPERUSER_USERNAME: adm
+    DJANGO_SUPERUSER_EMAIL: adm@example.com
+    DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
+
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  inputs:
+    testResultsFiles: "**/TEST-*.xml"
+    testRunTitle: 'Python $(PYTHON_VERSION)'
+
+- script: docker build -t prod-coda2 --target prod -f $(Build.SourcesDirectory)/docker/bundle/Dockerfile .
+  displayName: 'Build docker image'
+
+- script: docker save -o $(Build.ArtifactStagingDirectory)/prod-coda2.tar.gz prod-coda2
+  displayName: 'Save docker image'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    artifactName: prod-coda2
+
+- script: docker run -v $(Build.ArtifactStagingDirectory)/static:/opt/mount --rm --entrypoint bash prod-coda2 -c "cp -R /opt/app/static /opt/mount/"
+  displayName: 'Copy static files from docker'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    pathtoPublish: $(Build.ArtifactStagingDirectory)/static
+    artifactName: prod-coda2-static
+  displayName: 'Publish static files'

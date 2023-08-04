@@ -23,6 +23,7 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 import { userHasPermission } from '../users/utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import * as Permission from '../../utils/permissions.ts';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -34,7 +35,10 @@ const Forms = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const currentUser = useCurrentUser();
-    const userHasFormsPermission = userHasPermission('iaso_forms', currentUser);
+    const userHasFormsPermission = userHasPermission(
+        Permission.FORMS,
+        currentUser,
+    );
     const [forceRefresh, setForceRefresh] = useState(false);
     const [textSearchError, setTextSearchError] = useState(false);
     const [showDeleted, setShowDeleted] = useState(params.showDeleted);

@@ -12,6 +12,7 @@ from iaso.models import FormAttachment, Form, Project
 from .common import ModelViewSet, TimestampField
 from .forms import HasFormPermission
 from .query_params import APP_ID
+from hat.menupermissions import models as permission
 
 
 class FormAttachmentSerializer(serializers.ModelSerializer):
@@ -75,10 +76,10 @@ class HasFormAttachmentPermission(HasFormPermission):
 
 
 class FormAttachmentsViewSet(ModelViewSet):
-    """Form Attachments API
+    f"""Form Attachments API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "menupermissions.iaso_forms"  permission.
+    having the "{permission.FORMS}"  permission.
 
     GET /api/formattachments/?form_id=<form_id>
     GET /api/formattachments/<id>/

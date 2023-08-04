@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo, useEffect } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import {
     useGetMultipleOrgUnits,
@@ -15,6 +15,7 @@ export type FilterState = {
     filtersUpdated: boolean;
     // eslint-disable-next-line no-unused-vars
     setFiltersUpdated: (updated: boolean) => void;
+    setFilters: React.Dispatch<Record<string, any>>;
 };
 
 type FilterStateParams = {
@@ -96,6 +97,7 @@ export const useFilterState = ({
             handleSearch,
             filtersUpdated,
             setFiltersUpdated,
+            setFilters,
         };
     }, [filters, handleChange, handleSearch, filtersUpdated]);
 };

@@ -1,11 +1,10 @@
 import csv
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import User, Permission, Group
 
 from iaso import models as m
-from iaso.models import Profile, BulkCreateUserCsvFile
+from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
 from iaso.test import APITestCase
-
 
 BASE_URL = "/api/bulkcreateuser/"
 
@@ -26,6 +25,7 @@ class BulkCreateCsvTestCase(APITestCase):
         sw_source = m.DataSource.objects.create(name="Galactic Empire")
         cls.sw_source = sw_source
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        st_version = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version
         star_wars.save()
         cls.sw_version = sw_version
@@ -35,7 +35,7 @@ class BulkCreateCsvTestCase(APITestCase):
         )
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_submissions", "iaso_users"]
+            username="yoda", account=star_wars, permissions=["iaso_submissions", "iaso_users", "iaso_user_roles"]
         )
 
         cls.obi = cls.create_user_with_profile(username="obi", account=star_wars)
@@ -50,6 +50,11 @@ class BulkCreateCsvTestCase(APITestCase):
 
         cls.solana = m.OrgUnit.objects.create(name="Solana", version=sw_version)
         cls.solanaa = m.OrgUnit.objects.create(name="Solana", version=sw_version)
+
+        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10244, version=sw_version, parent=cls.tatooine)
+        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10934, version=st_version)
+
+        cls.yoda.iaso_profile.org_units.set([cls.jedi_council_corruscant, cls.tatooine, cls.dagobah, cls.solana])
 
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
@@ -223,19 +228,6 @@ class BulkCreateCsvTestCase(APITestCase):
 
         self.assertEqual(login_response.status_code, 200)
 
-    def test_upload_duplicate_ou_names(self):
-        self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
-
-        with open("iaso/tests/fixtures/test_user_bulk_create_duplicated_ou_name.csv") as csv_users:
-            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
-
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(
-            response.json()["error"],
-            "Operation aborted. Multiple OrgUnits with the name: Solana at row : 4." "Use Orgunit ID instead of name.",
-        )
-
     def test_upload_invalid_orgunit_name(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -252,7 +244,6 @@ class BulkCreateCsvTestCase(APITestCase):
             "again. Use Orgunit ID instead of name.",
         )
 
-    # FIXME This test is flaky
     def test_users_profiles_have_right_ou(self):
         self.client.force_authenticate(self.yoda)
         self.sw_source.projects.set([self.project])
@@ -283,3 +274,161 @@ class BulkCreateCsvTestCase(APITestCase):
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 
         self.assertEqual(response.status_code, 400)
+
+    def test_cant_create_user_without_ou_profile(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_creator_no_access_to_ou.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {
+                "error": "Operation aborted. Invalid OrgUnit None chiloe 10244 at row : 2. You don't have access to this orgunit"
+            },
+        )
+
+    def test_upload_duplicate_ou_names(self):
+        # This test detects if in case there is multiple OU with same name in different sources the right OU is taken.
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_user_duplicate_ou_names.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(User.objects.filter(username="jan").exists(), True)
+
+        created_user = User.objects.get(username="jan")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(created_user.iaso_profile.org_units.all()), 1)
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].name, "chiloe")
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].id, 10244)
+
+    def test_can_create_user_with_ou_that_are_child_of_ou(self):
+        # This test ensure that we can create users with access to ou child not explicitly added to the creator
+        # access ou list ( ou is a child of ou in the user ou list )
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_user_access_to_child_ou.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(User.objects.filter(username="jan").exists(), True)
+
+        created_user = User.objects.get(username="jan")
+
+        self.assertEqual(len(created_user.iaso_profile.org_units.all()), 1)
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].name, "chiloe")
+        self.assertEqual(created_user.iaso_profile.org_units.all()[0].id, 10244)
+
+    def test_upload_semicolon_separated_csv(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_semicolon.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        users = User.objects.all()
+        profiles = Profile.objects.all()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(users), 5)
+        self.assertEqual(len(profiles), 5)
+        new_user_1 = users.get(username="broly")
+        new_user_2 = users.get(username="cyrus")
+        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
+        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_2.email, "cyruswashington@bluesquarehub.com")
+        self.assertEqual(new_user_1.first_name, "broly")
+        self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_2.first_name, "cyrus")
+        self.assertEqual(new_user_2.last_name, "washington")
+        self.assertEqual(new_user_1.iaso_profile.language, "fr")
+        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
+        self.assertEqual(org_unit_ids, [9999])
+
+        self.assertEqual(response.data, {"Accounts created": 2})
+
+    def test_upload_csv_with_missing_column(self):
+        self.client.force_authenticate(self.yoda)
+
+        with open("iaso/tests/fixtures/test_user_bulk_missing_columns.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            response.data,
+            {"error": "Something is wrong with your CSV File. Possibly missing {'permissions'} column(s)."},
+        )
+
+    def test_create_user_with_roles(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        data = {"name": "manager"}
+        rep = self.client.post("/api/userroles/", data=data)
+
+        data = {"name": "area_manager"}
+        self.client.post("/api/userroles/", data=data)
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_roles.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+
+        users = User.objects.all()
+        profiles = Profile.objects.all()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(users), 5)
+        self.assertEqual(len(profiles), 5)
+        new_user_1 = users.get(username="broly")
+        new_user_2 = users.get(username="cyrus")
+        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
+        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_2.email, "cyruswashington@bluesquarehub.com")
+        self.assertEqual(new_user_1.first_name, "broly")
+        self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_2.first_name, "cyrus")
+        self.assertEqual(new_user_2.last_name, "washington")
+        self.assertEqual(new_user_1.iaso_profile.language, "fr")
+        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
+        self.assertEqual(org_unit_ids, [9999])
+        self.assertEqual(len(new_user_1.iaso_profile.user_roles.all()), 1)
+        self.assertEqual(len(new_user_2.iaso_profile.user_roles.all()), 2)
+
+        self.assertEqual(response.data, {"Accounts created": 2})
+
+    def test_create_user_with_projects(self):
+        self.client.force_authenticate(self.yoda)
+        self.sw_source.projects.set([self.project])
+
+        with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
+            response = self.client.post(f"{BASE_URL}", {"file": csv_users})
+        users = User.objects.all()
+        profiles = Profile.objects.all()
+        profile_1 = Profile.objects.get(user__username="broly")
+        profile_2 = Profile.objects.get(user__username="cyrus")
+
+        self.assertEqual(profile_1.projects.all()[0].name, "Hydroponic gardens")
+        self.assertEqual(profile_2.projects.all()[0].name, "Hydroponic gardens")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(users), 5)
+        self.assertEqual(len(profiles), 5)
+        new_user_1 = users.get(username="broly")
+        new_user_2 = users.get(username="cyrus")
+        org_unit_ids = [org_unit.id for org_unit in list(new_user_1.iaso_profile.org_units.all())]
+        self.assertEqual(new_user_1.email, "biobroly@bluesquarehub.com")
+        self.assertEqual(new_user_2.email, "cyruswashington@bluesquarehub.com")
+        self.assertEqual(new_user_1.first_name, "broly")
+        self.assertEqual(new_user_1.last_name, "bio")
+        self.assertEqual(new_user_2.first_name, "cyrus")
+        self.assertEqual(new_user_2.last_name, "washington")
+        self.assertEqual(new_user_1.iaso_profile.language, "fr")
+        self.assertEqual(new_user_1.iaso_profile.dhis2_id, "dhis2_id_1")
+        self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
+        self.assertEqual(org_unit_ids, [9999])
+        self.assertEqual(response.data, {"Accounts created": 2})

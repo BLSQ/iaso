@@ -151,7 +151,7 @@ export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                 )}
                 {tab === 'list' && (
-                    <Box>
+                    <Box mt={selectedFormsIds.length === 1 ? 0 : 2}>
                         <TableWithDeepLink
                             marginTop={false}
                             data={completenessStats?.results ?? []}

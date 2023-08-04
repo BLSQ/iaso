@@ -155,7 +155,7 @@ describe('Submissions', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
         describe('Search field', () => {
             beforeEach(() => {
@@ -277,6 +277,82 @@ describe('Submissions', () => {
                     });
                 });
             });
+        });
+    });
+
+    it('select users should filter by user ids', () => {
+        cy.intercept('GET', '/api/profiles/?search=lui', {
+            fixture: 'profiles/search/lui.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=69', {
+            fixture: 'profiles/search/mario.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=999', {
+            fixture: 'profiles/search/lui.json',
+        });
+        cy.intercept('GET', '/api/profiles/?search=mario', {
+            fixture: 'profiles/search/mario.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=999%2C69', {
+            fixture: 'profiles/ids/69-999.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=69%2C999', {
+            fixture: 'profiles/ids/69-999.json',
+        });
+        goToPage();
+        cy.wait('@getSubmissions').then(() => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'GET',
+                    pathname: '/api/instances/**',
+                    query: {
+                        ...defaultQuery,
+                        userIds: '999',
+                    },
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: listFixture,
+                    });
+                },
+            ).as('Luigi');
+        });
+
+        cy.get('#userIds').type('lui');
+        cy.wait(800);
+        cy.get('#userIds').type('{downarrow}').type('{enter}');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@Luigi').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
+        });
+        interceptFlag = false;
+        cy.intercept(
+            {
+                method: 'GET',
+                pathname: '/api/instances/**',
+                query: {
+                    ...defaultQuery,
+                    userIds: '999,69',
+                },
+            },
+            req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: listFixture,
+                });
+            },
+        ).as('LuigiMario');
+
+        cy.get('#userIds').type('mario');
+        cy.wait(800);
+        cy.get('#userIds').type('{downarrow}').type('{enter}');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@LuigiMario').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
         });
     });
 

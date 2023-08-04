@@ -74,7 +74,7 @@ describe('Duplicate entities list', () => {
             });
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 

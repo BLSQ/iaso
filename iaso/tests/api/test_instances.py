@@ -13,9 +13,9 @@ from django.utils.timezone import now
 from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import InstanceLock
+from iaso.api import query_params as query
 from iaso.models.microplanning import Planning, Team
-from iaso.models import OrgUnit, Instance, InstanceLock, FormVersion
+from iaso.models import Instance, InstanceLock, FormVersion
 from iaso.test import APITestCase
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
@@ -80,17 +80,33 @@ class InstancesAPITestCase(APITestCase):
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
-        cls.create_form_instance(
-            form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_1 = cls.create_form_instance(
+            form=cls.form_1,
+            period="202001",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            created_by=cls.yoda,
         )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_2 = cls.create_form_instance(
+            form=cls.form_1,
+            period="202002",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            created_by=cls.guest,
         )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_3 = cls.create_form_instance(
+            form=cls.form_1,
+            period="202002",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            created_by=cls.supervisor,
         )
-        cls.create_form_instance(
-            form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_4 = cls.create_form_instance(
+            form=cls.form_1,
+            period="202003",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            created_by=cls.yoda,
         )
 
         cls.form_2 = m.Form.objects.create(
@@ -125,22 +141,33 @@ class InstancesAPITestCase(APITestCase):
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(
-            form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_5 = cls.create_form_instance(
+            form=cls.form_2,
+            period="202001",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            created_by=cls.yoda,
         )
         cls.form_2.save()
 
         # Instance saved without period
         cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_3.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant, project=cls.project)
+        cls.instance_6 = cls.create_form_instance(
+            form=cls.form_3, org_unit=cls.jedi_council_corruscant, project=cls.project, created_by=cls.supervisor
+        )
         cls.form_3.save()
 
         # A deleted Instance
         cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
         cls.form_4.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(
-            form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, project=cls.project, deleted=True
+        cls.instance_7 = cls.create_form_instance(
+            form=cls.form_4,
+            period="2020Q1",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            deleted=True,
+            created_by=cls.yoda,
         )
         cls.form_4.save()
 
@@ -1448,3 +1475,62 @@ class InstancesAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidInstanceListData(response.json(), 0)
+
+    def test_instances_list_user(self):
+        self.client.force_authenticate(self.yoda)
+        response_yoda = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.yoda.id},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_yoda.status_code, 200)
+        self.assertValidInstanceListData(response_yoda.json(), 3)
+        instances = response_yoda.json()["instances"]
+        self.assertEqual(self.instance_1.id, instances[0].get("id"))
+        self.assertEqual(self.instance_4.id, instances[1].get("id"))
+        self.assertEqual(self.instance_5.id, instances[2].get("id"))
+
+        self.client.force_authenticate(self.yoda)
+        response_yoda_deleted = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.yoda.id, query.SHOW_DELETED: True},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_yoda_deleted.status_code, 200)
+        self.assertValidInstanceListData(response_yoda_deleted.json(), 1)
+        instances = response_yoda_deleted.json()["instances"]
+        self.assertEqual(self.instance_7.id, instances[0].get("id"))
+
+        response_guest = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.guest.id},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_guest.status_code, 200)
+        self.assertValidInstanceListData(response_guest.json(), 1)
+        instances = response_guest.json()["instances"]
+        self.assertEqual(self.instance_2.id, instances[0].get("id"))
+
+        response_supervisor = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.supervisor.id},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_supervisor.status_code, 200)
+        self.assertValidInstanceListData(response_supervisor.json(), 2)
+        instances = response_supervisor.json()["instances"]
+        self.assertEqual(self.instance_3.id, instances[0].get("id"))
+        self.assertEqual(self.instance_6.id, instances[1].get("id"))
+
+        response_yoda_guest = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: f"{self.yoda.id},{self.guest.id}"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_yoda_guest.status_code, 200)
+        self.assertValidInstanceListData(response_yoda_guest.json(), 4)
+        instances = response_yoda_guest.json()["instances"]
+        self.assertEqual(self.instance_1.id, instances[0].get("id"))
+        self.assertEqual(self.instance_4.id, instances[1].get("id"))
+        self.assertEqual(self.instance_5.id, instances[2].get("id"))
+        self.assertEqual(self.instance_2.id, instances[3].get("id"))

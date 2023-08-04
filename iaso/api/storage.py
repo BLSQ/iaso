@@ -25,6 +25,7 @@ from .common import (
     EXPORTS_DATETIME_FORMAT,
 )
 from .instances import FileFormatEnum
+from hat.menupermissions import models as permission
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -215,7 +216,7 @@ def device_generate_export(
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storages")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.STORAGE)]  # type: ignore
     serializer_class = StorageSerializer
 
     def get_queryset(self):
@@ -478,7 +479,7 @@ def logs_for_device_generate_export(
 
 
 @api_view()
-@permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])  # type: ignore
+@permission_classes([IsAuthenticated, HasPermission(permission.STORAGE)])  # type: ignore
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
 

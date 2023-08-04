@@ -5,6 +5,7 @@ import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { Planning } from '../../assignments/types/planning';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     planning: Planning;
@@ -13,7 +14,7 @@ type Props = {
 export const LinkToPlanning: FunctionComponent<Props> = ({ planning }) => {
     const user = useCurrentUser();
 
-    if (userHasPermission('iaso_planning', user)) {
+    if (userHasPermission(Permission.PLANNINGS, user)) {
         const planningUrl = `/${baseUrls.assignments}/planningId/${planning.id}/team/${planning.team}`;
         return <Link to={planningUrl}>{planning.name}</Link>;
     }

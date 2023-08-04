@@ -6,11 +6,12 @@ from django.contrib.auth.models import Permission, Group
 from django.db.models import Q, QuerySet
 from iaso.models import UserRole
 from .common import TimestampField, ModelViewSet
+from hat.menupermissions import models as permission
 
 
 class HasUserRolePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if (not request.user.has_perm("menupermissions.iaso_user_roles")) and request.method != "GET":
+        if (not request.user.has_perm(permission.USERS_ROLES)) and request.method != "GET":
             return False
         return True
 
@@ -100,9 +101,9 @@ class UserRoleSerializer(serializers.ModelSerializer):
 
 
 class UserRolesViewSet(ModelViewSet):
-    """Roles API
+    f"""Roles API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_user_roles" permission for write permission
+    This API is restricted to authenticated users having the "{permission.USERS_ROLES}" permission for write permission
     Read access is accessible to any authenticated users as it necessary to list roles or display a particular one in
     the interface.
 

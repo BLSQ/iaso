@@ -19,6 +19,7 @@ import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
+import * as Permission from '../../../utils/permissions';
 // eslint-disable-next-line camelcase
 const initialFormState = (orgUnit, referenceSubmissionId) => {
     return {
@@ -100,17 +101,17 @@ const ActionTableColumnComponent = ({ settings }) => {
         settings.row.original.reference_form_id ===
             settings.row.original.form_id &&
         hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
-        userHasPermission('iaso_org_units', user) &&
-        userHasPermission('iaso_update_permission', user);
+        userHasPermission(Permission.ORG_UNITS, user) &&
+        userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
     const notLinked =
         !settings.row.original?.org_unit?.reference_instance_id &&
-        userHasPermission('iaso_org_units', user);
+        userHasPermission(Permission.ORG_UNITS, user);
 
     const showOrgUnitButton =
         settings.row.original.org_unit &&
         userHasPermission('iaso_org_units', user) &&
-        userHasPermission('iaso_update_permission', user);
+        userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
     const confirmCancelTitleMessage = isItLinked => {
         return !isItLinked
@@ -173,7 +174,7 @@ const ActionTableColumnComponent = ({ settings }) => {
             )}
 
             {settings.row.original.is_locked &&
-                userHasPermission('iaso_update_permission', user) && (
+                userHasPermission(Permission.SUBMISSIONS_UPDATE, user) && (
                     <>
                         {settings.row.original.can_user_modify ? (
                             <IconButtonComponent

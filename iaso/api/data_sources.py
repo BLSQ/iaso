@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
 from .common import ModelViewSet
 from ..tasks.dhis2_ou_importer import get_api
+from hat.menupermissions import models as permission
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -174,12 +175,12 @@ class DataSourcePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         # see permission logic on view
         read_perms = (
-            "menupermissions.iaso_mappings",
-            "menupermissions.iaso_org_units",
-            "menupermissions.iaso_links",
-            "menupermissions.iaso_sources",
+            permission.MAPPINGS,
+            permission.ORG_UNITS,
+            permission.LINKS,
+            permission.SOURCES,
         )
-        write_perms = ("menupermissions.iaso_write_sources",)
+        write_perms = (permission.SOURCE_WRITE,)
 
         if (
             request.method in permissions.SAFE_METHODS
@@ -193,12 +194,12 @@ class DataSourcePermission(permissions.BasePermission):
 
 
 class DataSourceViewSet(ModelViewSet):
-    """Data source API
+    f"""Data source API
 
     This API is restricted to authenticated users:
-    Read permission are restricted to user with at least one of the "menupermissions.iaso_sources",
-        "menupermissions.iaso_mappings","menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
-    Write permission are restricted to user having the iaso_sources permissions.
+    Read permission are restricted to user with at least one of the "{permission.SOURCES}",
+        "{permission.MAPPINGS}","{permission.ORG_UNITS}", and "{permission.LINKS}" permissions
+    Write permission are restricted to user having the "{permission.SOURCES}" permissions.
 
     GET /api/datasources/
     GET /api/datasources/<id>

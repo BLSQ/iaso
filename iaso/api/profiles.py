@@ -73,7 +73,7 @@ def get_filtered_profiles(
     projects: Optional[List[int]] = None,
     user_roles: Optional[List[int]] = None,
     managed_users_only: Optional[bool] = False,
-    ids: Optional[List[int]] = None,
+    ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
     original_queryset = queryset
     if search:

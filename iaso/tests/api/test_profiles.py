@@ -561,6 +561,14 @@ class ProfileAPITestCase(APITestCase):
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
         self.assertEqual(len(response.json()["profiles"]), 1)
 
+    def test_search_by_ids(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["profiles"]), 2)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+
     def test_user_with_managed_permission_can_update_profile_of_user_in_sub_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])
         self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])

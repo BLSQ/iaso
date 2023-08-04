@@ -450,6 +450,7 @@ export const getFilters = (
         form_ids: params.formIds,
         jsonContent: params.fieldsSearch,
         planningIds: params.planningIds,
+        userIds: params.userIds,
     };
     const filters = {};
     Object.keys(allFilters).forEach(k => {

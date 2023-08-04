@@ -558,6 +558,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instances.label.created_by__username',
         defaultMessage: 'Created by',
     },
+    user: {
+        id: 'iaso.label.user',
+        defaultMessage: 'User',
+    },
 });
 
 export default MESSAGES;

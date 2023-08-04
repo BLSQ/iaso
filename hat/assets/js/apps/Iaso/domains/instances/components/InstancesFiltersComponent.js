@@ -8,7 +8,6 @@ import {
     Grid,
     makeStyles,
     Typography,
-    useMediaQuery,
     useTheme,
 } from '@material-ui/core';
 
@@ -47,6 +46,9 @@ import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
 import { ColumnSelect } from './ColumnSelect.tsx';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
+import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
+import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -218,6 +220,9 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
+    const { data: selectedUsers } = useGetProfilesDropdown(
+        formState.userIds.value,
+    );
 
     const handleChangeQueryBuilder = value => {
         let parsedValue;
@@ -232,8 +237,15 @@ const InstancesFiltersComponent = ({
         );
     };
 
+    const joinValuesBeforeHandleFormChange = useCallback(
+        (keyValue, newValue) => {
+            const joined = newValue?.map(r => r.value)?.join(',');
+            handleFormChange(keyValue, joined);
+        },
+        [handleFormChange],
+    );
+
     const theme = useTheme();
-    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
@@ -428,6 +440,17 @@ const InstancesFiltersComponent = ({
                             </Typography>
                         </Box>
                     )}
+                    <Box mt={2}>
+                        <AsyncSelect
+                            keyValue="userIds"
+                            label={MESSAGES.user}
+                            value={selectedUsers ?? ''}
+                            onChange={joinValuesBeforeHandleFormChange}
+                            debounceTime={500}
+                            multi
+                            fetchOptions={input => getUsersDropDown(input)}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
             <Grid container spacing={2}>
@@ -438,7 +461,7 @@ const InstancesFiltersComponent = ({
                     justifyContent="flex-end"
                     alignItems="center"
                 >
-                    <Box mt={isLargeLayout ? 0 : 2}>
+                    <Box mt={2}>
                         {tab === 'list' && (
                             <Box mr={2} display="inline-block">
                                 <ColumnSelect

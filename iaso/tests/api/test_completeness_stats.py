@@ -163,7 +163,9 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_base_row_listing(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        response = self.client.get(
+            "/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW", "limit": "10"}
+        )
         j = self.assertJSONResponse(response, 200)
         expected_result = {
             "forms": [
@@ -214,6 +216,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
                     "parent_org_unit": None,
+                    "has_children": True,
                 },
                 {
                     "name": "Not yet validated country",
@@ -253,13 +256,14 @@ class CompletenessStatsAPITestCase(APITestCase):
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
                     "parent_org_unit": None,
+                    "has_children": True,
                 },
             ],
             "has_next": False,
             "has_previous": False,
             "page": 1,
             "pages": 1,
-            "limit": 10,
+            "limit": "10",
         }
         self.assertAlmostEqualRecursive(
             expected_result,
@@ -270,7 +274,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """No filters are used: only the heads OU (countries) are returned"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/?limit=10")
         json = response.json()
         for result in json["results"]:
             # There are lower-levels OUs in fixtures, but they shouldn't appear here
@@ -280,7 +284,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Filtering by form type"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/")
+        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
         json = self.assertJSONResponse(response, 200)
         # Without filtering, we  also have results for form_hs_2 and form_hs_4 just like in test_base_row_listing()
         self.assertEqual(len(json["forms"]), 3)
@@ -288,7 +292,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             self.assertIn(form["id"], [self.form_hs_1.id, self.form_hs_2.id, self.form_hs_4.id])
 
         # with filtering
-        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}")
+        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}&limit=10")
         json = self.assertJSONResponse(response, 200)
         self.assertEqual(len(json["forms"]), 1)
         for form in json["forms"]:
@@ -302,7 +306,9 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Filtering by multiple form types"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}, {self.form_hs_4.id}")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?limit=10&form_id={self.form_hs_1.id}, {self.form_hs_4.id}"
+        )
         json = response.json()
         self.assertEqual(len(json["forms"]), 2)
         for form in json["forms"]:
@@ -316,7 +322,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Only forms from the account are returned"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_3.id}")
+        response = self.client.get(f"/api/v2/completeness_stats/?limit=10&form_id={self.form_hs_3.id}")
         j = self.assertJSONResponse(response, 400)
         # Error because the form is not in the user's account
         self.assertIn("form_id", j)
@@ -326,7 +332,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """OUs with a non-valid status are excluded from the API"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/")
+        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
         json = response.json()
         ou_ids = [result["org_unit"]["id"] for result in json["results"]]
         # Those two OUs have a non-valid status
@@ -337,7 +343,9 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_filter_by_org_unit_type(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids={self.org_unit_type_hopital.id}")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?limit=10&org_unit_type_ids={self.org_unit_type_hopital.id}"
+        )
         json = response.json()
         for result in json["results"]:
             self.assertEqual(result["org_unit_type"]["id"], self.org_unit_type_hopital.id)
@@ -347,7 +355,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}, {self.org_unit_type_aire_sante.id}"
+            f"/api/v2/completeness_stats/?limit=10&org_unit_type_id={self.org_unit_type_hopital.id}, {self.org_unit_type_aire_sante.id}"
         )
         json = response.json()
         for result in json["results"]:
@@ -372,7 +380,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response_with_filter = self.client.get(
-            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}",
+            f"/api/v2/completeness_stats/?limit=10&org_unit_type_id={self.org_unit_type_country.id}",
             {"org_unit_validation_status": "VALID,NEW"},
         )
 
@@ -380,7 +388,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         results_with_filter = json["results"]
         self.assertEqual(len(results_with_filter), 2)
         response_without_filter = self.client.get(
-            f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"}
+            f"/api/v2/completeness_stats/?limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         results_without_filter = self.assertJSONResponse(response_without_filter, 200)["results"]
         self.assertListEqual(results_with_filter, results_without_filter)
@@ -389,7 +397,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/?parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
+            f"/api/v2/completeness_stats/?limit=10&parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
         )
         json = response.json()
         # All the rows we get are direct children of the Country (region A and B)
@@ -409,7 +417,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(j["count"], 2)
         self.assertEqual(j["page"], 1)
         self.assertEqual(j["pages"], 2)
-        self.assertEqual(j["limit"], 1)
+        self.assertEqual(j["limit"], "1")
         self.assertEqual(len(j["results"]), 1)
         self.assertTrue(j["has_next"])
         self.assertFalse(j["has_previous"])
@@ -418,14 +426,26 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Test that the default limit parameter is 10"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        response = self.client.get(
+            "/api/v2/completeness_stats/",
+            {
+                "org_unit_validation_status": "VALID,NEW",
+                "limit": 10,
+            },
+        )
         json = self.assertJSONResponse(response, 200)
-        self.assertEqual(json["limit"], 10)
+        self.assertEqual(json["limit"], "10")
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "org_unit_validation_status": "VALID,NEW",
+                "limit": 10,
+            },
+        )
         json = response.json()
         # Two OU, 3 forms => 2 rows
         self.assertEqual(len(json["results"]), 2)
@@ -435,7 +455,12 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We request a form/OU combination that has no forms to fill.
         response = self.client.get(
-            f"/api/v2/completeness_stats/", {"parent_org_unit_id": self.as_abb_ou.id, "form_id": self.form_hs_2.id}
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.id,
+                "form_id": self.form_hs_2.id,
+                "limit": 10,
+            },
         )
         j = self.assertJSONResponse(response, expected_status_code=200)
         json = response.json()
@@ -452,7 +477,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We filter to get only the district A.A
         response = self.client.get(
-            f"/api/v2/completeness_stats/?parent_org_unit_id=4", {"org_unit_validation_status": "VALID,NEW"}
+            f"/api/v2/completeness_stats/?parent_org_unit_id=4&limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         j = self.assertJSONResponse(response, 200)
         self.assertEqual(len(j["results"]), 2)
@@ -468,6 +493,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             f"/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "limit": 10,
                 "form_id": self.form_hs_4.id,
                 "org_unit_validation_status": "VALID,NEW",
             },
@@ -502,6 +528,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
+                "limit": 10,
                 "org_unit_validation_status": "VALID,NEW",
             },
         )
@@ -535,6 +562,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             f"/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "limit": 10,
                 "form_id": self.form_hs_4.id,
                 "without_submissions": "false",
             },
@@ -549,6 +577,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
+                "limit": 10,
             },
         )
 
@@ -562,6 +591,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
                 "without_submissions": "true",
+                "limit": 10,
             },
         )
 

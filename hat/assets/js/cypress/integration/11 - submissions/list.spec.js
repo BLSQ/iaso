@@ -476,6 +476,61 @@ describe('Submissions', () => {
         });
     });
 
+    it('advanced settings should filter correctly', () => {
+        goToPage();
+        cy.get('[data-test="advanced-settings"]').click();
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="start-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('14/07/2023');
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="end-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('15/07/2023');
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="start-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('12/07/2023');
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="end-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('13/07/2023');
+        cy.wait('@getSubmissions')
+            .then(() => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'GET',
+                        pathname: '/api/instances/**',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: listFixture,
+                        });
+                    },
+                );
+            })
+            .as('getSubmissionsSearch');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@getSubmissionsSearch').then(xhr => {
+            cy.wrap(interceptFlag).should('eq', true);
+            cy.wrap(xhr.request.query).should('deep.equal', {
+                ...defaultQuery,
+                showDeleted: 'false',
+                modificationDateFrom: '2023-07-14',
+                modificationDateTo: '2023-07-15',
+                sentDateFrom: '2023-07-12',
+                sentDateTo: '2023-07-13',
+            });
+        });
+    });
+
     it('columns selection should render correctly ', () => {
         cy.intercept(
             'GET',

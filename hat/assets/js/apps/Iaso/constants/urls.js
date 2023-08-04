@@ -41,5 +41,7 @@ export const baseUrls = {
     workflowDetail: 'workflows/details',
     apiLogs: 'api/logs',
     error401: '401',
+    error403: '403',
+    error404: '404',
     error500: '500',
 };

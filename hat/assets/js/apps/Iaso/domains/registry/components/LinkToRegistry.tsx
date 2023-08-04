@@ -17,6 +17,8 @@ import { redirectTo, redirectToReplace } from '../../../routing/actions';
 
 import MESSAGES from '../messages';
 
+import * as Permission from '../../../utils/permissions';
+
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
     useIcon?: boolean;
@@ -45,7 +47,7 @@ export const LinkToRegistry: FunctionComponent<Props> = ({
     const targetBlankEnabled = useKeyPressListener('Meta');
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
-    if (userHasPermission('iaso_registry', user) && orgUnit) {
+    if (userHasPermission(Permission.REGISTRY, user) && orgUnit) {
         const url = `/${baseUrls.registryDetail}/orgUnitId/${orgUnit?.id}`;
         const handleClick = () => {
             if (targetBlankEnabled) {

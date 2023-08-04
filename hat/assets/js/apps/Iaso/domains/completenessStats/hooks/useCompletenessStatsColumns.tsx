@@ -20,6 +20,7 @@ import {
     FormStatRow,
 } from '../types';
 import { genUrl } from '../../../routing/routing';
+import * as Permission from '../../../utils/permissions';
 
 // From https://v4.mui.com/components/progress/
 const LinearProgressWithLabel = props => (
@@ -43,7 +44,7 @@ export const useCompletenessStatsColumns = (
 ): Column[] => {
     const currentUser = useCurrentUser();
     const hasSubmissionPermission = userHasPermission(
-        'iaso_submissions',
+        Permission.SUBMISSIONS,
         currentUser,
     );
     const { formatMessage } = useSafeIntl();

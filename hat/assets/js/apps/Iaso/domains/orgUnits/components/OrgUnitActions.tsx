@@ -18,6 +18,7 @@ import {
 } from '../../../utils/featureFlags';
 import { OrgUnit, OrgUnitState, ActionsType } from '../types/orgUnit';
 import { Instance } from '../../instances/types/instance';
+import * as Permission from '../../../utils/permissions';
 
 type SaveOuType = {
     id: number;
@@ -67,7 +68,7 @@ export const Actions = ({
     const linkOrgUnit =
         formId !== referenceFormId || referenceSubmission !== null;
     const hasSubmissionPermission = userHasPermission(
-        'iaso_submissions',
+        Permission.SUBMISSIONS,
         currentUser,
     );
 

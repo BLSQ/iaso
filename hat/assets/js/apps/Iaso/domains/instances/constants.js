@@ -180,5 +180,6 @@ export const filtersKeys = [
     'levels',
     'dateFrom',
     'planningIds',
+    'userIds',
     'dateTo',
 ];

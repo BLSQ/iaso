@@ -71,7 +71,7 @@ describe('Duplicate details', () => {
         cy.intercept('GET', '/api/profiles/me/**', fakeUser);
         cy.visit(baseUrl);
         const errorCode = cy.get('#error-code');
-        errorCode.should('contain', '401');
+        errorCode.should('contain', '403');
     });
 
     it('should show correct infos', () => {

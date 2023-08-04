@@ -5,6 +5,7 @@ from rest_framework.response import Response
 
 from iaso.models import Group, SourceVersion, DataSource, Project
 from .common import ModelViewSet, TimestampField, HasPermission
+from hat.menupermissions import models as permission
 
 
 class HasGroupPermission(permissions.BasePermission):
@@ -77,9 +78,9 @@ class GroupDropdownSerializer(serializers.ModelSerializer):
 
 
 class GroupsViewSet(ModelViewSet):
-    """Groups API
+    f"""Groups API
 
-    This API is restricted to users having the "menupermissions.iaso_org_units" permission
+    This API is restricted to users having the "{permission.ORG_UNITS}" and "{permission.COMPLETENESS_STATS}" permission
 
     GET /api/groups/
     GET /api/groups/<id>
@@ -90,7 +91,7 @@ class GroupsViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_org_units", "menupermissions.iaso_completeness_stats"),  # type: ignore
+        HasPermission(permission.ORG_UNITS, permission.COMPLETENESS_STATS),  # type: ignore
         HasGroupPermission,
     ]
     serializer_class = GroupSerializer

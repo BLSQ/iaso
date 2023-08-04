@@ -24,6 +24,7 @@ import {
     useRestoreInstance,
 } from '../hooks/requests/useDeleteInstance';
 import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     currentInstance: Instance;
@@ -46,9 +47,15 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         SHOW_LINK_INSTANCE_REFERENCE,
     );
     const hasOrgUnitPermission = userHasPermission(
-        'iaso_org_units',
+        Permission.ORG_UNITS,
         currentUser,
     );
+
+    const hasUpdateSubmissionPermission = userHasPermission(
+        'iaso_update_submission',
+        currentUser,
+    );
+
     const isOrgUnitAlreadyLinked =
         currentInstance.org_unit?.reference_instance_id !== null;
     const {
@@ -121,7 +128,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         actions.push(linkOrgUnitAction);
     }
 
-    return currentInstance?.can_user_modify ? (
+    return currentInstance?.can_user_modify && hasUpdateSubmissionPermission ? (
         <>
             {(isDeleting || isRestoring) && <LoadingSpinner />}
             <SpeedDialInstanceActions

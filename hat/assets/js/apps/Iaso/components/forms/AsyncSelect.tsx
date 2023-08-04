@@ -1,4 +1,5 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
+import { defineMessages } from 'react-intl';
 import { debounce } from '@mui/material/utils';
 import { Autocomplete } from '@material-ui/lab';
 import {
@@ -9,6 +10,13 @@ import {
 import { Box, TextField } from '@material-ui/core';
 import { isArray } from 'lodash';
 import { AutocompleteGetTagProps } from '@material-ui/lab/Autocomplete/Autocomplete';
+
+const MESSAGES = defineMessages({
+    noOptionsText: {
+        id: 'iaso.forms.textSearch',
+        defaultMessage: 'Text search',
+    },
+});
 
 type Props = {
     value: any;
@@ -124,7 +132,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
             active = false;
         };
     }, [values, inputValue, fetch, minCharBeforeQuery]);
-
+    const displayedOtpions = useMemo(() => [...options] ?? [], [options]);
     return (
         <Box>
             <Autocomplete
@@ -148,14 +156,15 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 loadingText={
                     loadingText ? formatMessage(loadingText) : undefined
                 }
-                options={[...options] ?? []}
+                options={displayedOtpions}
                 value={values}
                 getOptionLabel={option => option?.label ?? ''}
                 filterOptions={(x: any[]) => x}
                 autoComplete
+                noOptionsText={formatMessage(MESSAGES.noOptionsText)}
                 includeInputInList
                 filterSelectedOptions
-                onChange={(event: any, newValue: any | null) => {
+                onChange={(_, newValue: any | null) => {
                     onChange(keyValue, newValue);
                 }}
                 onInputChange={(event, newInputValue) => {

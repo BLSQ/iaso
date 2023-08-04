@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from hat.api.authentication import CsrfExemptSessionAuthentication
 from hat.audit.models import Modification
 from iaso.models import OrgUnit, Instance, Form
+from hat.menupermissions import models as permission
 
 
 def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
@@ -21,7 +22,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
         return ous.filter(id=obj.id).exists()
     if isinstance(obj, Instance):
         instances = Instance.objects.filter_for_user(user)
-        return user.has_perm("menupermissions.iaso_submissions") and instances.filter(id=obj.id).exists()
+        return user.has_perm(permission.SUBMISSIONS) and instances.filter(id=obj.id).exists()
     if isinstance(obj, Form):
         forms = Form.objects.filter_for_user_and_app_id(user)
         return forms.filter(id=obj.id).exists()
@@ -29,10 +30,7 @@ def has_access_to(user: User, obj: Union[OrgUnit, Instance, models.Model]):
     from plugins.polio.models import Campaign
 
     if isinstance(obj, Campaign):
-        return (
-            user.has_perm("menupermissions.iaso_polio")
-            and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
-        )
+        return user.has_perm(permission.POLIO) and Campaign.objects.filter_for_user(user).filter(id=obj.id).exists()
     return False
 
 

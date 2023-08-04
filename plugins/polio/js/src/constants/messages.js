@@ -1538,6 +1538,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.cannotDisplayMap',
         defaultMessage: 'Cannot display map',
     },
+    map: {
+        id: 'iaso.polio.label.map',
+        defaultMessage: 'Map',
+    },
     amount: {
         id: 'iaso.polio.label.amount',
         defaultMessage: 'Amount',
@@ -2202,6 +2206,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.PUBLIC_HOLIDAY',
         defaultMessage: 'Delayed to observe public holiday',
     },
+    SECURITY_CONTEXT: {
+        id: 'iaso.polio.label.SECURITY_CONTEXT',
+        defaultMessage: 'Security context',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',
@@ -2229,6 +2237,50 @@ const MESSAGES = defineMessages({
     mobilePayment: {
         id: 'iaso.polio.campaign.mobilePayment',
         defaultMessage: 'Mobile Payment',
+    },
+    lqasMap: {
+        id: 'iaso.polio.campaign.lqasMap',
+        defaultMessage: 'LQAS map',
+    },
+    byCountry: {
+        id: 'iaso.polio.campaign.byCountry',
+        defaultMessage: 'By country',
+    },
+    penultimate: {
+        id: 'iaso.polio.lqasim.penultimate',
+        defaultMessage: 'Penultimate',
+    },
+    legend: {
+        id: 'iaso.polio.label.legend',
+        defaultMessage: 'Legend',
+    },
+    '3months': {
+        id: 'iaso.polio.label.3months',
+        defaultMessage: '3 months',
+    },
+    '6months': {
+        id: 'iaso.polio.label.6months',
+        defaultMessage: '6 months',
+    },
+    '9months': {
+        id: 'iaso.polio.label.9months',
+        defaultMessage: '9 months',
+    },
+    '12months': {
+        id: 'iaso.polio.label.12months',
+        defaultMessage: '12 months',
+    },
+    selectPeriod: {
+        id: 'iaso.polio.label.selectPeriod',
+        defaultMessage: 'Select period',
+    },
+    chooseDates: {
+        id: 'iaso.polio.label.chooseDates',
+        defaultMessage: 'Choose dates',
+    },
+    refreshPage: {
+        id: 'iaso.polio.label.refreshPage',
+        defaultMessage: 'Refresh page',
     },
 });
 

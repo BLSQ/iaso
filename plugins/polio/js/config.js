@@ -5,9 +5,11 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
 import AssessmentIcon from '@material-ui/icons/Assessment';
+import PublicIcon from '@material-ui/icons/Public';
 import DonutSmallIcon from '@material-ui/icons/DonutSmall';
 import GroupWork from '@material-ui/icons/GroupWork';
 import HomeWorkIcon from '@material-ui/icons/HomeWork';
+import PhotoSizeSelectActualIcon from '@material-ui/icons/PhotoSizeSelectActual';
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
@@ -28,15 +30,17 @@ import {
     IM_OHH,
     BUDGET,
     BUDGET_DETAILS,
+    LQAS_AFRO_MAP_URL,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
 import { Lqas } from './src/pages/LQAS';
 import { ImStats } from './src/pages/IM';
-import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common';
+import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common.ts';
 import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
 import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
 import { BudgetList } from './src/pages/Budget/index.tsx';
+import { LqasAfroOverview } from './src/pages/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
 
 const campaignsFilters = [
     {
@@ -96,6 +100,7 @@ const routes = [
             },
         ],
     },
+
     {
         baseUrl: CAMPAIGN_HISTORY_URL,
         component: props => <CampaignHistory {...props} />,
@@ -146,7 +151,7 @@ const routes = [
         ],
     },
     {
-        baseUrl: LQAS_BASE_URL,
+        baseUrl: `${LQAS_BASE_URL}/lqas`,
         component: props => <Lqas {...props} />,
         permissions: ['iaso_polio'],
         params: [
@@ -161,6 +166,29 @@ const routes = [
             {
                 isRequired: false,
                 key: 'rounds',
+            },
+        ],
+    },
+    {
+        baseUrl: `${LQAS_AFRO_MAP_URL}`,
+        component: props => <LqasAfroOverview {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            {
+                isRequired: false,
+                key: 'rounds',
+            },
+            {
+                isRequired: false,
+                key: 'startDate',
+            },
+            {
+                isRequired: false,
+                key: 'endDate',
+            },
+            {
+                isRequired: false,
+                key: 'period',
             },
         ],
     },
@@ -369,6 +397,20 @@ const menu = [
                 key: 'lqas',
                 permissions: ['iaso_polio'],
                 icon: props => <AssessmentIcon {...props} />,
+                subMenu: [
+                    {
+                        label: MESSAGES.byCountry,
+                        key: 'lqas',
+                        permissions: ['iaso_polio'],
+                        icon: props => <PhotoSizeSelectActualIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.map,
+                        key: 'lqas-map',
+                        permissions: ['iaso_polio'],
+                        icon: props => <PublicIcon {...props} />,
+                    },
+                ],
             },
             {
                 label: MESSAGES.im,

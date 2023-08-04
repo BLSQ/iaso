@@ -6,6 +6,7 @@ import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../../assignments/messages';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     instanceId: string;
@@ -18,7 +19,7 @@ export const LinkToInstance: FunctionComponent<Props> = ({
     color = 'inherit',
 }) => {
     const user = useCurrentUser();
-    if (userHasPermission('iaso_submissions', user)) {
+    if (userHasPermission(Permission.SUBMISSIONS, user)) {
         const formUrl = `/${baseUrls.instanceDetail}/instanceId/${instanceId}`;
         if (useIcon) {
             return (

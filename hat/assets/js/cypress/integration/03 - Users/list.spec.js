@@ -26,16 +26,20 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    cy.intercept('GET', '/api/userroles/**', {
+        fixture: 'userRoles/list.json',
+    });
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
     });
     const options = {
         method: 'GET',
-        pathname: '/api/profiles',
+        pathname: '/api/profiles/',
     };
     const query = {
         ...defaultQuery,
         ...formQuery,
+        "managedUsersOnly": "true",
     };
     cy.intercept({ ...options, query }, req => {
         req.continue(res => {
@@ -79,7 +83,7 @@ describe('Users', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 

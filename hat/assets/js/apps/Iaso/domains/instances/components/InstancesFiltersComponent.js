@@ -9,7 +9,6 @@ import {
     Grid,
     makeStyles,
     Typography,
-    useMediaQuery,
     useTheme,
 } from '@material-ui/core';
 
@@ -51,7 +50,7 @@ import { ColumnSelect } from './ColumnSelect.tsx';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
 import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
 import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
-import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.ts';
+import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -250,7 +249,6 @@ const InstancesFiltersComponent = ({
     );
 
     const theme = useTheme();
-    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
@@ -536,7 +534,7 @@ const InstancesFiltersComponent = ({
                     justifyContent="flex-end"
                     alignItems="center"
                 >
-                    <Box mt={isLargeLayout ? 0 : 2}>
+                    <Box mt={2}>
                         {tab === 'list' && (
                             <Box mr={2} display="inline-block">
                                 <ColumnSelect

@@ -37,6 +37,7 @@ import {
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { RegistryDetailParams } from '../types';
 import { LinkToInstance } from '../../instances/components/LinkToInstance';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     orgUnit: OrgUnit;
@@ -191,7 +192,7 @@ export const OrgUnitInstances: FunctionComponent<Props> = ({
                         >
                             <Box className={classes.paperTitleButton}>
                                 {userHasPermission(
-                                    'iaso_update_submission',
+                                    Permission.SUBMISSIONS_UPDATE,
                                     currentUser,
                                 ) && (
                                     <IconButton

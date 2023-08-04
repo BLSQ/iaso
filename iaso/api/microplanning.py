@@ -19,6 +19,7 @@ from iaso.api.common import (
 from iaso.models import Project, OrgUnit, Form, OrgUnitType
 from iaso.models.microplanning import Team, TeamType, Planning, Assignment
 from iaso.models.org_unit import OrgUnitQuerySet
+from hat.menupermissions import models as permission
 
 
 class NestedProjectSerializer(serializers.ModelSerializer):
@@ -251,7 +252,7 @@ class TeamViewSet(AuditMixin, ModelViewSet):
         TeamSearchFilterBackend,
         DeletionFilterBackend,
     ]
-    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_teams")]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(permission.TEAMS)]  # type: ignore
     serializer_class = TeamSerializer
     queryset = Team.objects.all()
     ordering_fields = ["id", "name", "created_at", "updated_at", "type"]
@@ -363,7 +364,7 @@ class PublishingStatusFilterBackend(filters.BaseFilterBackend):
 
 class PlanningViewSet(AuditMixin, ModelViewSet):
     remove_results_key_if_paginated = True
-    permission_classes = [ReadOnlyOrHasPermission("menupermissions.iaso_planning")]  # type: ignore
+    permission_classes = [ReadOnlyOrHasPermission(permission.PLANNING)]  # type: ignore
     serializer_class = PlanningSerializer
     queryset = Planning.objects.all()
     filter_backends = [
@@ -508,7 +509,7 @@ class AssignmentViewSet(AuditMixin, ModelViewSet):
     sense outside of it's planning."""
 
     remove_results_key_if_paginated = True
-    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission("menupermissions.iaso_planning")]  # type: ignore
+    permission_classes = [IsAuthenticated, ReadOnlyOrHasPermission(permission.PLANNING)]  # type: ignore
     serializer_class = AssignmentSerializer
     queryset = Assignment.objects.all()
     filter_backends = [

@@ -670,7 +670,7 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         planning_ids=None,
     ):
         queryset = self
-
+        print ('diff')
         if from_date:
             queryset = queryset.filter(created_at__gte=from_date)
 

@@ -142,6 +142,10 @@ class Exporter:
             # (example: [[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]])
             # WARNING: this will break if we introduce compound shapes
             geometry["coordinates"] = geometry["coordinates"][:2]
+            if json.loads(point_or_shape.geojson).get("type") == "Point":
+                # removing altitude, which is not supported by DHIS2
+                geometry["coordinates"] = geometry["coordinates"][:2]
+
             # if dhis2 >= 2.32
             payload["geometry"] = geometry
             # if dhis2 < 2.32

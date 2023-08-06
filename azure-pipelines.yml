@@ -52,7 +52,8 @@ steps:
    architecture: 'x64'
 
 - script: |
-    sudo apt install gdal-bin
+    sudo apt-get update
+    sudo apt --fix-missing install gdal-bin
   displayName: 'install gdal'
 
 - script: |

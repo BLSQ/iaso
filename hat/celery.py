@@ -10,6 +10,6 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hat.settings")
 app = Celery("iaso_celery")
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
-app.conf.update(timezone = 'Europe/Rome')
+app.conf.update(timezone="Europe/Rome")
 # Celery Beat Settings
-app.autodiscover_tasks(lambda: settings.INSTALLED_APPS, force=False) 
+app.autodiscover_tasks(lambda: settings.INSTALLED_APPS, force=False)

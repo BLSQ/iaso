@@ -10,6 +10,7 @@ from django.utils.safestring import mark_safe
 from django_json_widget.widgets import JSONEditorWidget  # type: ignore
 from plugins.wfp.tasks import etl
 
+
 class IasoJSONEditorWidget(JSONEditorWidget):
     class Media:
         css = {"all": ("css/admin-json-widget.css",)}

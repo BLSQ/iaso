@@ -96,7 +96,7 @@ steps:
     RDS_USERNAME: postgres
     CACHE: false
     DEV_SERVER: true
-    PLUGINS: polio
+    PLUGINS: polio,wfp
 
 - task: PublishTestResults@2
   condition: succeededOrFailed()

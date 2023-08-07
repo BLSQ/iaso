@@ -24,6 +24,8 @@ import { useCurrentUser } from '../../utils/usersUtils.ts';
 
 import { userHasPermission } from '../users/utils';
 
+import * as Permission from '../../utils/permissions.ts';
+
 const baseUrl = baseUrls.sources;
 const defaultOrder = 'name';
 const DataSources = () => {
@@ -34,7 +36,7 @@ const DataSources = () => {
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
 
     const dataSourceDialog = () => {
-        if (userHasPermission('iaso_write_sources', currentUser)) {
+        if (userHasPermission(Permission.SOURCE_WRITE, currentUser)) {
             return (
                 <DataSourceDialogComponent
                     defaultSourceVersion={defaultSourceVersion}

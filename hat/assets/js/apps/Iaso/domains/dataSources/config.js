@@ -15,6 +15,7 @@ import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { userHasPermission } from '../users/utils';
 import { baseUrls } from '../../constants/urls';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
+import * as Permission from '../../utils/permissions.ts';
 
 export const dataSourcesTableColumns = (
     formatMessage,
@@ -64,7 +65,10 @@ export const dataSourcesTableColumns = (
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.viewDataSource}
                     />
-                    {userHasPermission('iaso_write_sources', currentUser) && (
+                    {userHasPermission(
+                        Permission.SOURCE_WRITE,
+                        currentUser,
+                    ) && (
                         <>
                             <DataSourceDialog
                                 renderTrigger={({ openDialog }) => (

@@ -66,6 +66,12 @@ case "$1" in
     ./manage.py compilemessages
     ./manage.py runserver 0.0.0.0:8081
   ;;
+  "start_celery_beat" )
+    celery -A hat beat -l info
+  ;;
+  "start_celery_worker" )
+    celery -A hat worker -l info
+  ;;
   "start_webpack" )
     # if TEST_PROD, make a static js bundle otherwhise launch js dev server
     if [ -n "$TEST_PROD" ]; then

@@ -18,6 +18,7 @@ from iaso.api.tasks import TaskSerializer
 from iaso.models import DataSource, Task
 from iaso.models.import_gpkg import ImportGPKG
 from iaso.tasks.import_gpkg_task import import_gpkg_task
+from hat.menupermissions import models as permission
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class ImportGpkgSerializer(serializers.ModelSerializer):
 
 # noinspection PyMethodMayBeStatic
 class ImportGPKGViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
     serializer_class = ImportGpkgSerializer
 
     def create(self, request):

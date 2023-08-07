@@ -37,6 +37,7 @@ import { useCurrentUser } from '../../../../utils/usersUtils';
 import { OrgunitType } from '../../types/orgunitTypes';
 import { DropdownOptions } from '../../../../types/utils';
 import { Form } from '../../../forms/types/forms';
+import * as Permission from '../../../../utils/permissions';
 
 const mapOrgUnitType = orgUnitType => {
     return {
@@ -222,8 +223,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         [formState, formatMessage, saveType, setFieldErrors],
     );
     const hasPermission =
-        userHasPermission('iaso_org_units', currentUser) &&
-        userHasPermission('iaso_forms', currentUser);
+        userHasPermission(Permission.ORG_UNITS, currentUser) &&
+        userHasPermission(Permission.FORMS, currentUser);
 
     const resetForm = () => {
         setFormState(mapOrgUnitType(orgUnitType));

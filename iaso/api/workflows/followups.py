@@ -9,6 +9,7 @@ import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
 from iaso.api.common import ModelViewSet, HasPermission
 from iaso.models import WorkflowFollowup
+from hat.menupermissions import models as permission
 
 workflow_version_id_param = openapi.Parameter(
     name="workflow_version_id",
@@ -49,7 +50,7 @@ class WorkflowFollowupViewSet(ModelViewSet):
     Will delete the followup with id {followup_id}
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["order"]
     serializer_class = ser.WorkflowVersionDetailSerializer

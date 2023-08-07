@@ -5,6 +5,7 @@ import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
+import * as Permission from '../../../../utils/permissions';
 
 type Props = {
     onlyShowUnmatched: boolean;
@@ -39,7 +40,7 @@ export const DuplicateDetailsTableButtons: FunctionComponent<Props> = ({
                     />
                 </Box>
             </Grid>
-            {userHasPermission('iaso_entity_duplicates_write', currentUser) && (
+            {userHasPermission(Permission.ENTITIES_DUPLICATE_WRITE, currentUser) && (
                 <Grid container item xs={8} justifyContent="flex-end">
                     <Box
                         py={2}

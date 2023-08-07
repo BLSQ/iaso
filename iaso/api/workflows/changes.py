@@ -9,6 +9,7 @@ import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
 from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowChange
+from hat.menupermissions import models as permission
 
 version_id_param = openapi.Parameter(
     name="version_id",
@@ -37,7 +38,7 @@ class WorkflowChangeViewSet(ModelViewSet):
 
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
     serializer_class = ser.WorkflowChangeSerializer
     http_method_names = ["get", "post", "delete", "put"]
 

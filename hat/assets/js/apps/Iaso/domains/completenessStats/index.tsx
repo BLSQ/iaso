@@ -10,6 +10,7 @@ import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { Box, Grid, makeStyles, useTheme, Tabs, Tab } from '@material-ui/core';
 import Color from 'color';
 
+import { Router } from 'react-router';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
@@ -45,9 +46,13 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     params: CompletenessRouterParams;
+    router: Router;
 };
 
-export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
+export const CompletenessStats: FunctionComponent<Props> = ({
+    params,
+    router,
+}) => {
     const classes: Record<string, string> = useStyles();
 
     const [tab, setTab] = useState<'list' | 'map'>(params.tab ?? 'list');
@@ -57,7 +62,11 @@ export const CompletenessStats: FunctionComponent<Props> = ({ params }) => {
         useGetCompletenessStats(params);
     const { data: completenessMapStats, isFetching: isFetchingMapStats } =
         useGetCompletnessMapStats(params);
-    const columns = useCompletenessStatsColumns(params, completenessStats);
+    const columns = useCompletenessStatsColumns(
+        router,
+        params,
+        completenessStats,
+    );
     const csvUrl = useMemo(
         () => `/api/v2/completeness_stats.csv?${buildQueryString(params)}`,
         [params],

@@ -73,6 +73,7 @@ def get_filtered_profiles(
     projects: Optional[List[int]] = None,
     user_roles: Optional[List[int]] = None,
     managed_users_only: Optional[bool] = False,
+    ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
     original_queryset = queryset
     if search:
@@ -147,7 +148,8 @@ def get_filtered_profiles(
 
     if user_roles:
         queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles)
-
+    if ids:
+        queryset = queryset.filter(user__id__in=ids.split(","))
     if managed_users_only:
         if not user:
             raise Exception("User cannot be 'None' when filtering on managed users only")
@@ -162,7 +164,6 @@ def get_filtered_profiles(
             queryset = queryset.exclude(user=user)
         else:
             queryset = Profile.objects.none()
-
     return queryset
 
 
@@ -206,6 +207,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "user__username").split(",")
+        ids = request.GET.get("ids", None)
         search = request.GET.get("search", None)
         perms = request.GET.get("permissions", None)
         if perms:
@@ -233,6 +235,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             projects=projects,
             user_roles=user_roles,
             managed_users_only=managed_users_only,
+            ids=ids,
         )
 
         if limit:

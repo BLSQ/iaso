@@ -4,13 +4,11 @@ import {
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { cloneDeep } from 'lodash';
 import AccountTreeIcon from '@material-ui/icons/AccountTree';
 import { Box, LinearProgress } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
 import { ArrowUpward } from '@material-ui/icons';
-import { redirectTo } from '../../../routing/actions';
+import { Router } from 'react-router';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -21,9 +19,8 @@ import {
     FormDesc,
     FormStatRow,
 } from '../types';
+import { genUrl } from '../../../routing/routing';
 import * as Permission from '../../../utils/permissions';
-
-const baseUrl = `${baseUrls.completenessStats}`;
 
 // From https://v4.mui.com/components/progress/
 const LinearProgressWithLabel = props => (
@@ -41,6 +38,7 @@ const LinearProgressWithLabel = props => (
 );
 
 export const useCompletenessStatsColumns = (
+    router: Router,
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
@@ -50,12 +48,6 @@ export const useCompletenessStatsColumns = (
         currentUser,
     );
     const { formatMessage } = useSafeIntl();
-    const redirectionParams: CompletenessRouterParams = useMemo(() => {
-        const clonedParams = cloneDeep(params);
-        delete clonedParams.parentId;
-        return clonedParams;
-    }, [params]);
-    const dispatch = useDispatch();
     return useMemo(() => {
         let columns: Column[] = [
             {
@@ -217,37 +209,27 @@ export const useCompletenessStatsColumns = (
                 const hasFormSubmissions = Object.values(formStats).some(
                     (stat: any) => stat.itself_has_instances > 0,
                 );
+                const childrenPageUrl = genUrl(router, {
+                    parentId: settings.row.original.org_unit?.id,
+                    page: null,
+                });
+                const parentPageUrl = genUrl(router, {
+                    parentId: settings.row.original.parent_org_unit?.id,
+                    page: null,
+                });
 
                 return (
                     <>
                         {!settings.row.original.is_root && (
                             <IconButtonComponent
-                                onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original.org_unit
-                                                    ?.id,
-                                        }),
-                                    );
-                                }}
+                                url={childrenPageUrl}
                                 tooltipMessage={MESSAGES.seeChildren}
                                 overrideIcon={AccountTreeIcon}
                             />
                         )}
                         {settings.row.original.is_root && (
                             <IconButtonComponent
-                                onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original
-                                                    .parent_org_unit?.id,
-                                        }),
-                                    );
-                                }}
+                                url={parentPageUrl}
                                 tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
                             />
@@ -266,9 +248,8 @@ export const useCompletenessStatsColumns = (
         });
         return columns;
     }, [
-        dispatch,
+        router,
         formatMessage,
-        redirectionParams,
         completenessStats,
         params,
         hasSubmissionPermission,

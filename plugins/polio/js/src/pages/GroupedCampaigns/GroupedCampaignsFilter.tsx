@@ -11,7 +11,7 @@ import { Box, Button, Grid } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 // import { useGetCountries } from '../../hooks/useGetCountries';

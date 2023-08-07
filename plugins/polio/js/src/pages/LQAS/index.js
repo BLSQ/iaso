@@ -24,7 +24,7 @@ import { useLqasData } from '../../hooks/useLqasData.ts';
 import MESSAGES from '../../constants/messages';
 import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { defaultRounds, paperElevation } from '../IM/constants.ts';
 import { useLqasIm } from '../IM/requests.ts';

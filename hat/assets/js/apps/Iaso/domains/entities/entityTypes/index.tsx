@@ -24,6 +24,9 @@ import MESSAGES from './messages';
 
 import { redirectTo } from '../../../routing/actions';
 import { PaginationParams } from '../../../types/general';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import { userHasPermission } from '../../users/utils';
+import * as Permission from '../../../utils/permissions';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -40,6 +43,7 @@ type Props = {
 export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     const dispatch = useDispatch();
 
     const { data, isFetching: fetchingEntities } = useGetTypesPaginated(params);
@@ -64,16 +68,21 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
                     alignItems="center"
                     className={classes.marginTop}
                 >
-                    <EntityTypesDialog
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButtonComponent
-                                dataTestId="add-entity-button"
-                                onClick={openDialog}
-                            />
-                        )}
-                        saveEntityType={saveEntityType}
-                    />
+                    {userHasPermission(
+                        Permission.ENTITY_TYPE_WRITE,
+                        currentUser,
+                    ) && (
+                        <EntityTypesDialog
+                            titleMessage={MESSAGES.create}
+                            renderTrigger={({ openDialog }) => (
+                                <AddButtonComponent
+                                    dataTestId="add-entity-button"
+                                    onClick={openDialog}
+                                />
+                            )}
+                            saveEntityType={saveEntityType}
+                        />
+                    )}
                 </Grid>
                 <Table
                     data={data?.types ?? []}

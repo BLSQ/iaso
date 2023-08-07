@@ -15,6 +15,10 @@ import MESSAGES from './messages';
 import { baseUrls } from '../../../constants/urls';
 
 import { EntityType } from './types/entityType';
+import { userHasPermission } from '../../users/utils';
+
+import * as Permission from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
 
 export const baseUrl = baseUrls.entityTypes;
 
@@ -30,6 +34,7 @@ export const useColumns = ({
     saveEntityType,
 }: Props): Array<Column> => {
     const { formatMessage } = useSafeIntl();
+    const currentUser = useCurrentUser();
     return [
         {
             Header: formatMessage(MESSAGES.name),
@@ -60,6 +65,25 @@ export const useColumns = ({
                 const type = settings.row.original as EntityType;
                 return (
                     <section>
+                        {userHasPermission(
+                            Permission.ENTITY_TYPE_WRITE,
+                            currentUser,
+                        ) && (
+                            <EntityTypesDialog
+                                renderTrigger={({ openDialog }) => (
+                                    <IconButtonComponent
+                                        id={`edit-button-${type.id}`}
+                                        onClick={openDialog}
+                                        icon="edit"
+                                        dataTestId="edit-button"
+                                        tooltipMessage={MESSAGES.edit}
+                                    />
+                                )}
+                                initialData={type}
+                                titleMessage={MESSAGES.updateMessage}
+                                saveEntityType={saveEntityType}
+                            />
+                        )}
                         <IconButtonComponent
                             id={`entities-link-${type.id}`}
                             url={`/${baseUrls.entities}/entityTypeIds/${type.id}/order/last_saved_instance/pageSize/20/page/1`}
@@ -75,29 +99,19 @@ export const useColumns = ({
                                 tooltipMessage={MESSAGES.viewForm}
                             />
                         )}
-                        <EntityTypesDialog
-                            renderTrigger={({ openDialog }) => (
-                                <IconButtonComponent
-                                    id={`edit-button-${type.id}`}
-                                    onClick={openDialog}
-                                    icon="edit"
-                                    dataTestId="edit-button"
-                                    tooltipMessage={MESSAGES.edit}
+                        {userHasPermission(
+                            Permission.ENTITY_TYPE_WRITE,
+                            currentUser,
+                        ) &&
+                            type.entities_count === 0 && (
+                                <DeleteDialog
+                                    keyName={`entityType-${type.id}`}
+                                    disabled={type.instances_count > 0}
+                                    titleMessage={MESSAGES.deleteTitle}
+                                    message={MESSAGES.deleteText}
+                                    onConfirm={() => deleteEntityType(type)}
                                 />
                             )}
-                            initialData={type}
-                            titleMessage={MESSAGES.updateMessage}
-                            saveEntityType={saveEntityType}
-                        />
-                        {type.entities_count === 0 && (
-                            <DeleteDialog
-                                keyName={`entityType-${type.id}`}
-                                disabled={type.instances_count > 0}
-                                titleMessage={MESSAGES.deleteTitle}
-                                message={MESSAGES.deleteText}
-                                onConfirm={() => deleteEntityType(type)}
-                            />
-                        )}
                         <IconButtonComponent
                             id={`workflow-link-${type.id}`}
                             url={`/${baseUrls.workflows}/entityTypeId/${type.id}`}

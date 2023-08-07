@@ -14,7 +14,10 @@ import {
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-import { useGetBeneficiariesPaginated } from './hooks/requests';
+import {
+    useGetBeneficiariesPaginated,
+    useGetBeneficiaryTypesDropdown,
+} from './hooks/requests';
 
 import { useColumns, baseUrl, defaultSorted } from './config';
 import MESSAGES from './messages';
@@ -92,11 +95,26 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         return data;
     }, [data]);
     const columns = useColumns(entityTypeIds, extraColumns || []);
+
+    const { data: types } = useGetBeneficiaryTypesDropdown();
+    const entityTypeName = useMemo(() => {
+        if (entityTypeIds.length === 1) {
+            const currentType = types?.find(
+                type => `${type.value}` === entityTypeIds[0],
+            );
+            if (currentType) {
+                return currentType.label;
+            }
+        }
+        return undefined;
+    }, [entityTypeIds, types]);
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
             <TopBar
-                title={formatMessage(MESSAGES.beneficiaries)}
+                title={`${formatMessage(MESSAGES.beneficiaries)}${
+                    entityTypeName ? ` - ${entityTypeName}` : ''
+                }`}
                 displayBackButton={false}
             >
                 <Tabs

@@ -11,20 +11,17 @@ import { withRouter } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from 'Iaso/components/forms/InputComponent';
 import DatesRange from 'Iaso/components/filters/DatesRange';
-import {
-    useGetGroupDropdown,
-    useGetGroups,
-} from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
+import { useGetGroupDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups.ts';
 import MESSAGES from '../../constants/messages';
 import { useGetCountries } from '../../hooks/useGetCountries';
 import { useGetGroupedCampaigns } from '../../hooks/useGetGroupedCampaigns.ts';
 
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import {
     dateApiToDateRangePicker,
     dateRangePickerToDateApi,
 } from '../../../../../../hat/assets/js/apps/Iaso/utils/dates.ts';
-import { appId } from '../../constants/app';
+import { appId } from '../../constants/app.ts';
 
 const campaignTypeOptions = (formatMessage, showTest = false) => {
     const options = [

@@ -160,7 +160,6 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     <DisplayIfUserHasPerm permission="iaso_planning">
                         <InputComponent
                             type="select"
-                            multi
                             onChange={handleChange}
                             keyValue="planningId"
                             label={MESSAGES.planning}

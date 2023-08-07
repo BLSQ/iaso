@@ -1,7 +1,9 @@
+import datetime
 import json
 from typing import Dict, Any, Optional
 
 from django.http import QueryDict
+from rest_framework.exceptions import ValidationError
 
 from iaso.models import Form
 from iaso.periods import Period, DayPeriod
@@ -51,8 +53,22 @@ def parse_instance_filters(req: QueryDict) -> Dict[str, Any]:
         "show_deleted": show_deleted,
         "entity_id": req.get(query.ENTITY_ID, None),
         "user_ids": req.get(query.USER_IDS, None),
+        "modification_date_from": get_date_from_request(req, query.MODIFICATION_DATE_FROM),
+        "modification_date_to": get_date_from_request(req, query.MODIFICATION_DATE_TO),
+        "sent_date_from": get_date_from_request(req, query.SENT_DATE_FROM),
+        "sent_date_to": get_date_from_request(req, query.SENT_DATE_TO),
         "json_content": json_content,
     }
+
+
+def get_date_from_request(req: QueryDict, key: str):
+    date = req.get(key, None)
+    if date:
+        try:
+            return datetime.date.fromisoformat(date)
+        except ValueError:
+            raise ValidationError(f"Parameter '{key}' must be a valid ISO date (yyyy-MM-dd), received '{date}'")
+    return None
 
 
 # TODO: if we end up with multiple function that deal with instance filters, we should probably move this to a class

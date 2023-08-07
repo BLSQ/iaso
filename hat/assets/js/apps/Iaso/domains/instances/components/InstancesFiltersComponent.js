@@ -2,14 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-    Box,
-    Button,
-    Grid,
-    makeStyles,
-    Typography,
-    useTheme,
-} from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import {
@@ -57,6 +50,13 @@ export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    advancedSettings: {
+        color: theme.palette.primary.main,
+        alignSelf: 'center',
+        textAlign: 'right',
+        flex: '1',
+        cursor: 'pointer',
+    },
 }));
 
 const filterDefault = params => ({
@@ -84,6 +84,7 @@ const InstancesFiltersComponent = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const defaultFilters = useMemo(() => {
         const filters = { ...params };
@@ -245,7 +246,6 @@ const InstancesFiltersComponent = ({
         [handleFormChange],
     );
 
-    const theme = useTheme();
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
@@ -303,13 +303,15 @@ const InstancesFiltersComponent = ({
                             InfoPopper={<Popper />}
                         />
                     )}
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={handleFormChange}
-                        value={formState.showDeleted.value}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
+                    <Box mt={2} height={40}>
+                        <InputComponent
+                            keyValue="showDeleted"
+                            onChange={handleFormChange}
+                            value={formState.showDeleted.value}
+                            type="checkbox"
+                            label={MESSAGES.showDeleted}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -453,6 +455,71 @@ const InstancesFiltersComponent = ({
                     </Box>
                 </Grid>
             </Grid>
+
+            <Box mt={-2}>
+                {!showAdvancedSettings && (
+                    <Box mt={2}>
+                        <Typography
+                            data-test="advanced-settings"
+                            className={classes.advancedSettings}
+                            variant="overline"
+                            onClick={() => setShowAdvancedSettings(true)}
+                        >
+                            {formatMessage(MESSAGES.showAdvancedSettings)}
+                        </Typography>
+                    </Box>
+                )}
+                {showAdvancedSettings && (
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <Box data-test="modificationDate">
+                                <DatesRange
+                                    xs={12}
+                                    sm={12}
+                                    md={12}
+                                    lg={6}
+                                    keyDateFrom="modificationDateFrom"
+                                    keyDateTo="modificationDateTo"
+                                    onChangeDate={handleFormChange}
+                                    dateFrom={
+                                        formState.modificationDateFrom.value
+                                    }
+                                    dateTo={formState.modificationDateTo.value}
+                                    labelFrom={MESSAGES.modificationDateFrom}
+                                    labelTo={MESSAGES.modificationDateTo}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Box data-test="sentDate">
+                                <DatesRange
+                                    xs={12}
+                                    sm={12}
+                                    md={12}
+                                    lg={6}
+                                    keyDateFrom="sentDateFrom"
+                                    keyDateTo="sentDateTo"
+                                    onChangeDate={handleFormChange}
+                                    dateFrom={formState.sentDateFrom.value}
+                                    dateTo={formState.sentDateTo.value}
+                                    labelFrom={MESSAGES.sentDateFrom}
+                                    labelTo={MESSAGES.sentDateTo}
+                                />
+                            </Box>
+                        </Grid>
+                        <Box ml={1}>
+                            <Typography
+                                data-test="advanced-settings"
+                                className={classes.advancedSettings}
+                                variant="overline"
+                                onClick={() => setShowAdvancedSettings(false)}
+                            >
+                                {formatMessage(MESSAGES.hideAdvancedSettings)}
+                            </Typography>
+                        </Box>
+                    </Grid>
+                )}
+            </Box>
             <Grid container spacing={2}>
                 <Grid
                     item

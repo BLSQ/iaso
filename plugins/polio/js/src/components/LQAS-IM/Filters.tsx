@@ -17,7 +17,7 @@ import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import { useQueryClient } from 'react-query';
 import MESSAGES from '../../constants/messages';
 import { makeCampaignsDropDown } from '../../utils/index';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useGetLqasImCountriesOptions } from '../../hooks/useGetLqasImCountriesOptions';
 
 type Params = {

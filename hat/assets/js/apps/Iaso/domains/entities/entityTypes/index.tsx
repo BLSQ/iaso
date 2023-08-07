@@ -19,7 +19,7 @@ import {
     useSave,
 } from './hooks/requests/entitiyTypes';
 
-import { columns, baseUrl } from './config';
+import { useColumns, baseUrl } from './config';
 import MESSAGES from './messages';
 
 import { redirectTo } from '../../../routing/actions';
@@ -47,7 +47,7 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
     const { mutateAsync: saveEntityType, isLoading: saving } = useSave();
 
     const isLoading = fetchingEntities || deleting || saving;
-
+    const columns = useColumns({ deleteEntityType, saveEntityType });
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -79,11 +79,7 @@ export const EntityTypes: FunctionComponent<Props> = ({ params }) => {
                     data={data?.types ?? []}
                     pages={data?.pages ?? 1}
                     defaultSorted={[{ id: 'name', desc: false }]}
-                    columns={columns({
-                        formatMessage,
-                        deleteEntityType,
-                        saveEntityType,
-                    })}
+                    columns={columns}
                     count={data?.count ?? 0}
                     baseUrl={baseUrl}
                     params={params}

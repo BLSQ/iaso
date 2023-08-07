@@ -1,9 +1,9 @@
 import React, { ReactElement } from 'react';
-// @ts-ignore
+import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import {
     IconButton as IconButtonComponent,
-    IntlMessage,
     Column,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { EntityTypesDialog } from './components/EntityTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
@@ -20,87 +20,94 @@ export const baseUrl = baseUrls.entityTypes;
 
 type Props = {
     // eslint-disable-next-line no-unused-vars
-    formatMessage: (msg: IntlMessage) => string;
-    // eslint-disable-next-line no-unused-vars
     deleteEntityType: (e: EntityType) => void;
     // eslint-disable-next-line no-unused-vars
     saveEntityType: (e: EntityType) => void;
 };
 
-export const columns = ({
-    formatMessage,
+export const useColumns = ({
     deleteEntityType,
     saveEntityType,
-}: Props): Array<Column> => [
-    {
-        Header: formatMessage(MESSAGES.name),
-        id: 'name',
-        accessor: 'name',
-    },
-    {
-        Header: formatMessage(MESSAGES.created_at),
-        accessor: 'created_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.updated_at),
-        accessor: 'updated_at',
-        Cell: DateTimeCell,
-    },
-    {
-        Header: formatMessage(MESSAGES.entitiesCount),
-        accessor: 'entities_count',
-        sortable: false,
-    },
-    {
-        Header: formatMessage(MESSAGES.actions),
-        accessor: 'actions',
-        resizable: false,
-        sortable: false,
-        Cell: (settings): ReactElement => (
-            // TODO: limit to user permissions
-            <section>
-                {settings.row.original?.reference_form && (
-                    <IconButtonComponent
-                        id={`form-link-${settings.row.original.id}`}
-                        url={`/${baseUrls.formDetail}/formId/${settings.row.original.reference_form}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.viewForm}
-                    />
-                )}
-                <EntityTypesDialog
-                    renderTrigger={({ openDialog }) => (
+}: Props): Array<Column> => {
+    const { formatMessage } = useSafeIntl();
+    return [
+        {
+            Header: formatMessage(MESSAGES.name),
+            id: 'name',
+            accessor: 'name',
+        },
+        {
+            Header: formatMessage(MESSAGES.created_at),
+            accessor: 'created_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.updated_at),
+            accessor: 'updated_at',
+            Cell: DateTimeCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.entitiesCount),
+            accessor: 'entities_count',
+            sortable: false,
+        },
+        {
+            Header: formatMessage(MESSAGES.actions),
+            accessor: 'actions',
+            resizable: false,
+            sortable: false,
+            Cell: (settings): ReactElement => {
+                const type = settings.row.original as EntityType;
+                return (
+                    <section>
                         <IconButtonComponent
-                            id={`edit-button-${settings.row.original.id}`}
-                            onClick={openDialog}
-                            icon="edit"
-                            dataTestId="edit-button"
-                            tooltipMessage={MESSAGES.edit}
+                            id={`entities-link-${type.id}`}
+                            url={`/${baseUrls.entities}/entityTypeIds/${type.id}/order/last_saved_instance/pageSize/20/page/1`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.beneficiaries}
+                            disabled={type.entities_count === 0}
                         />
-                    )}
-                    initialData={settings.row.original}
-                    titleMessage={MESSAGES.updateMessage}
-                    saveEntityType={saveEntityType}
-                />
-                {settings.row.original.entities_count === 0 && (
-                    <DeleteDialog
-                        keyName={`entityType-${settings.row.original.id}`}
-                        disabled={settings.row.original.instances_count > 0}
-                        titleMessage={MESSAGES.deleteTitle}
-                        message={MESSAGES.deleteText}
-                        onConfirm={() =>
-                            deleteEntityType(settings.row.original)
-                        }
-                    />
-                )}
-                <IconButtonComponent
-                    id={`workflow-link-${settings.row.original.id}`}
-                    url={`/${baseUrls.workflows}/entityTypeId/${settings.row.original.id}`}
-                    icon="remove-red-eye"
-                    tooltipMessage={MESSAGES.workflow}
-                    overrideIcon={Workflow}
-                />
-            </section>
-        ),
-    },
-];
+                        {settings.row.original?.reference_form && (
+                            <IconButtonComponent
+                                id={`form-link-${settings.row.original.id}`}
+                                url={`/${baseUrls.formDetail}/formId/${settings.row.original.reference_form}`}
+                                overrideIcon={DataSourceIcon}
+                                tooltipMessage={MESSAGES.viewForm}
+                            />
+                        )}
+                        <EntityTypesDialog
+                            renderTrigger={({ openDialog }) => (
+                                <IconButtonComponent
+                                    id={`edit-button-${type.id}`}
+                                    onClick={openDialog}
+                                    icon="edit"
+                                    dataTestId="edit-button"
+                                    tooltipMessage={MESSAGES.edit}
+                                />
+                            )}
+                            initialData={type}
+                            titleMessage={MESSAGES.updateMessage}
+                            saveEntityType={saveEntityType}
+                        />
+                        {type.entities_count === 0 && (
+                            <DeleteDialog
+                                keyName={`entityType-${type.id}`}
+                                disabled={type.instances_count > 0}
+                                titleMessage={MESSAGES.deleteTitle}
+                                message={MESSAGES.deleteText}
+                                onConfirm={() => deleteEntityType(type)}
+                            />
+                        )}
+                        <IconButtonComponent
+                            id={`workflow-link-${type.id}`}
+                            url={`/${baseUrls.workflows}/entityTypeId/${type.id}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.workflow}
+                            overrideIcon={Workflow}
+                        />
+                    </section>
+                );
+            },
+        },
+    ];
+};

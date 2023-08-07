@@ -176,6 +176,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.users',
         defaultMessage: 'Users',
     },
+    iaso_users_managed: {
+        id: 'iaso.permissions.users_management',
+        defaultMessage: 'Users Management',
+    },
     iaso_teams: {
         id: 'iaso.permissions.teams',
         defaultMessage: 'Teams',

@@ -34,7 +34,7 @@ describe('OrgUnits', () => {
             cy.intercept('GET', '/api/profiles/me/**', fakeUser);
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
 
         describe('Search field', () => {

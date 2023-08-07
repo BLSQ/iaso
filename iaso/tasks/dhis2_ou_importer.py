@@ -440,4 +440,7 @@ def import_orgunits_and_groups(
         g.org_units.set(created_ou.values())
 
     load_groupsets(api, version, group_dict)
+    # If there is nothing in the fallback type, delete it.
+    if unknown_unit_type.orgunit_set.count() == 0:
+        unknown_unit_type.delete()
     return error_count, unit_dict

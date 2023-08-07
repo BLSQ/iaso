@@ -13,6 +13,7 @@ import { LinkToInstance } from '../../instances/components/LinkToInstance';
 
 import { useGetEnketoUrl } from '../hooks/useGetEnketoUrl';
 import { useDeleteInstance } from '../../instances/hooks/requests/useDeleteInstance';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     settings: any;
@@ -36,7 +37,7 @@ export const ActionCell: FunctionComponent<Props> = ({ settings }) => {
     return (
         <section>
             <LinkToInstance instanceId={settings.row.original.id} useIcon />
-            {userHasPermission('iaso_update_submission', user) && (
+            {userHasPermission(Permission.SUBMISSIONS_UPDATE, user) && (
                 <>
                     <IconButtonComponent
                         onClick={() => getEnketoUrl()}

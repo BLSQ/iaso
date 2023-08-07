@@ -39,6 +39,7 @@ from . import common
 from .comment import UserSerializerForComment
 from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instance_filters import parse_instance_filters, get_form_from_instance_filters
+from hat.menupermissions import models as permission
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -80,9 +81,9 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-            request.user.has_perm("menupermissions.iaso_forms")
-            or request.user.has_perm("menupermissions.iaso_submissions")
-            or request.user.has_perm("menupermissions.iaso_registry")
+            request.user.has_perm(permission.FORMS)
+            or request.user.has_perm(permission.SUBMISSIONS)
+            or request.user.has_perm(permission.REGISTRY)
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -136,10 +137,10 @@ class LockAnnotation(TypedDict):
 
 
 class InstancesViewSet(viewsets.ViewSet):
-    """Instances API
+    f"""Instances API
 
     Posting instances can be done anonymously (if the project allows it), all other methods are restricted
-    to authenticated users having the "menupermissions.iaso_forms" permission.
+    to authenticated users having the "{permission.FORMS}" permission.
 
     GET /api/instances/
     GET /api/instances/<id>

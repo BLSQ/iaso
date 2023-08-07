@@ -26,6 +26,7 @@ from iaso.enketo import (
 from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
 from iaso.models import User
+from hat.menupermissions import models as permission
 
 logger = getLogger(__name__)
 
@@ -231,7 +232,7 @@ def _build_url_for_edition(request, instance, user_id=None):
 
 
 @api_view(["GET"])
-@permission_classes([HasPermission("menupermissions.iaso_update_submission")])  # type: ignore
+@permission_classes([HasPermission(permission.SUBMISSIONS_UPDATE)])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
     """Used by Edit submission feature in Iaso Dashboard.
     Restricted to user with the `update submission` permission, to submissions in their account.

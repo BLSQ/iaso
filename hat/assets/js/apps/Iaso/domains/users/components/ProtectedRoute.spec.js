@@ -12,6 +12,7 @@ import { mockRequest } from '../../../../../test/utils/requests';
 import ProtectedRoute from './ProtectedRoute';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
+import * as Permission from '../../../utils/permissions.ts';
 
 const cookieStub = require('../../../utils/cookies');
 
@@ -35,7 +36,7 @@ const updatedUser = {
 };
 const unauthorizedUser = {
     ...user,
-    permissions: ['iaso_users'],
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     is_superuser: false,
     language: 'en',
 };

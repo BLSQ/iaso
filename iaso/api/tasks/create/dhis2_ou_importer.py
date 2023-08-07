@@ -7,6 +7,7 @@ from iaso.api.common import HasPermission
 from iaso.api.tasks import TaskSerializer
 from iaso.models import DataSource
 from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
+from hat.menupermissions import models as permission
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class Dhis2OuImporterViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
     serializer_class = Dhis2OuImporterSerializer
 
     def create(self, request):

@@ -19,7 +19,10 @@ export const useGetProfiles = params => {
           }
         : {};
 
-    const url = makeUrlWithParams(`/api/profiles/`, newParams);
+    const url = makeUrlWithParams(`/api/profiles/`, {
+        ...newParams,
+        managedUsersOnly: 'true',
+    });
 
     return useSnackQuery(['profiles', newParams], () => getRequest(url));
 };

@@ -3,6 +3,7 @@ from rest_framework import serializers, permissions
 
 from iaso.api.common import ModelViewSet
 from iaso.models import Page
+from hat.menupermissions import models as permission
 
 
 class PagesSerializer(serializers.ModelSerializer):
@@ -21,8 +22,8 @@ class PagesSerializer(serializers.ModelSerializer):
 
 class PagesPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        read_perm = "menupermissions.iaso_pages"
-        write_perm = "menupermissions.iaso_page_write"
+        read_perm = permission.PAGES
+        write_perm = permission.PAGE_WRITE
 
         if request.method in permissions.SAFE_METHODS and request.user and request.user.has_perm(read_perm):
             return True

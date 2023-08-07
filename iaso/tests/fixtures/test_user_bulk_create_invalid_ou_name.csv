@@ -1,4 +1,4 @@
-username,password,email,first_name,last_name,orgunit,,,profile_language
-broly,yodnj!30dln,biobroly@bluesquarehub.com,broly,bio,9999,,,fr
-ferdinand,!dsgd39hfghd,fdzepplin@bluesquarehub.com,ferdinand,von Zepplin,"Coruscant Jedi Council, 9999, Tatooine",,,fr
-rsfg,frdghb30cd!hd,efsfg@srgrs.com,feesf,dsfsf,"Tatooine, Dagobah, Bazarre",,,FR
+username,password,email,first_name,last_name,orgunit,dhis2_id,,profile_language,permissions,user_roles,projects
+broly,yodnj!30dln,biobroly@bluesquarehub.com,broly,bio,9999,,,fr,,,
+ferdinand,!dsgd39hfghd,fdzepplin@bluesquarehub.com,ferdinand,von Zepplin,"Coruscant Jedi Council, 9999, Tatooine",,,fr,,,
+rsfg,frdghb30cd!hd,efsfg@srgrs.com,feesf,dsfsf,"Tatooine, Dagobah, Bazarre",,,FR,,,

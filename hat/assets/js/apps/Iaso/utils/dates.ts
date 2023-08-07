@@ -32,32 +32,48 @@ export const getApiParamDateTimeString = (date: moment.Moment): string => {
  */
 export const getApiParamDateString = (
     date: moment.MomentInput,
-): string | undefined => {
-    return date ? getUrlParamDateObject(date).format(apiDateFormat) : undefined;
+): string | null => {
+    return date ? getUrlParamDateObject(date).format(apiDateFormat) : null;
 };
 
 /**
  * Convert a date string from a router params to a DateTime for the API
  * since it's the lower bound force it to the start of the day
  * @param  {String} dateFrom - date as string
+ * @param  {boolean} includeTime - whether the time should be included into the resulted string.
  */
 export const getFromDateString = (
     dateFrom: moment.MomentInput,
-): string | null =>
-    dateFrom
-        ? getApiParamDateTimeString(
-              getUrlParamDateObject(dateFrom).startOf('day'),
-          )
-        : null;
+    includeTime = true,
+): string | null => {
+    if (dateFrom) {
+        const m = getUrlParamDateObject(dateFrom);
+        if (includeTime) {
+            return getApiParamDateTimeString(m.startOf('day'));
+        }
+        return getApiParamDateString(m);
+    }
+    return null;
+};
 /**
  * Convert a date string from a router params to a DateTime for the API
  * since it's the *higher bound* force it to the *end of the day*
  * @param  {String} dateTo - date as string
+ * @param  {boolean} includeTime - whether the time should be included into the resulted string.
  */
-export const getToDateString = (dateTo: moment.MomentInput): string | null =>
-    dateTo
-        ? getApiParamDateTimeString(getUrlParamDateObject(dateTo).endOf('day'))
-        : null;
+export const getToDateString = (
+    dateTo: moment.MomentInput,
+    includeTime = true,
+): string | null => {
+    if (dateTo) {
+        const m = getUrlParamDateObject(dateTo);
+        if (includeTime) {
+            return getApiParamDateTimeString(m.endOf('day'));
+        }
+        return getApiParamDateString(m);
+    }
+    return null;
+};
 
 const longDateFormats = {
     fr: {

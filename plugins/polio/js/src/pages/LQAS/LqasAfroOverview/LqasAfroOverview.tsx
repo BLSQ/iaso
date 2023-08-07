@@ -10,7 +10,7 @@ import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
 import { useStyles } from '../../../styles/theme';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import { AfroMapParams } from './types';
-import { genUrl } from '../../../utils/routing';
+import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../../constants/messages';
 import { LqasAfroMapWithSelector } from './Map/LqasAfroMapWithSelector';
 

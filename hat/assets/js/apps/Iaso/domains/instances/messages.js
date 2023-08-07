@@ -377,6 +377,34 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.deviceOwnership',
         defaultMessage: 'Device ownership',
     },
+    showAdvancedSettings: {
+        id: 'iaso.form.label.showAdvancedSettings',
+        defaultMessage: 'Show advanced settings',
+    },
+    hideAdvancedSettings: {
+        id: 'iaso.form.label.hideAdvancedSettings',
+        defaultMessage: 'Hide advanced settings',
+    },
+    modificationDateFrom: {
+        id: 'iaso.instances.modificationDateFrom',
+        defineMessage: 'Modification date from',
+    },
+    modificationDateTo: {
+        id: 'iaso.instances.modificationDateTo',
+        defineMessage: 'Modification date to',
+    },
+    sentDateFrom: {
+        id: 'iaso.instances.sentDateFrom',
+        defineMessage: 'Sent date from',
+    },
+    sentDateTo: {
+        id: 'iaso.instances.sentDateTo',
+        defineMessage: 'Sent date to',
+    },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
+    },
     showDeleted: {
         id: 'iaso.instances.showDeleted',
         defaultMessage: 'Show deleted',
@@ -557,6 +585,10 @@ const MESSAGES = defineMessages({
     created_by__username: {
         id: 'iaso.instances.label.created_by__username',
         defaultMessage: 'Created by',
+    },
+    user: {
+        id: 'iaso.label.user',
+        defaultMessage: 'User',
     },
 });
 

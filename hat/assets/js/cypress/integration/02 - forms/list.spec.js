@@ -4,6 +4,7 @@ import listFixture from '../../fixtures/forms/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import { search, searchWithForbiddenChars } from '../../constants/search';
 import { testSearchField } from '../../support/testSearchField';
+import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -150,7 +151,7 @@ describe('Forms', () => {
                 it('should display 3 buttons if user has iaso_forms permission', () => {
                     goToPage({
                         ...superUser,
-                        permissions: ['iaso_forms'],
+                        permissions: [Permission.FORMS],
                         is_superuser: false,
                     });
                     table = cy.get('table');
@@ -161,7 +162,7 @@ describe('Forms', () => {
                 it('should display 2 buttons if user has iaso_submissions permission', () => {
                     goToPage({
                         ...superUser,
-                        permissions: ['iaso_submissions'],
+                        permissions: [Permission.SUBMISSIONS],
                         is_superuser: false,
                     });
                     table = cy.get('table');

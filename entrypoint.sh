@@ -20,6 +20,7 @@ show_help() {
 
 export PYTHONPATH="/opt/app:$PYTHONPATH"
 export DJANGO_SETTINGS_MODULE=hat.settings
+export PLUGINS=wfp
 
 case "$1" in
   "start")

@@ -28,11 +28,14 @@ import { baseUrl } from '../config';
 
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
-import { useGetUsersDropDown } from '../hooks/requests';
+import {
+    useGetBeneficiariesApiParams,
+    useGetUsersDropDown,
+} from '../hooks/requests';
 import { useFiltersParams } from '../hooks/useFiltersParams';
 
-import { DropdownOptions } from '../../../types/utils';
 import { Params, Filters as FilterType } from '../types/filters';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -40,15 +43,10 @@ const useStyles = makeStyles(theme => ({
 
 type Props = {
     params: Params;
-    types: Array<DropdownOptions<number>>;
-    isFetchingTypes: boolean;
+    isFetching: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({
-    params,
-    types,
-    isFetchingTypes,
-}) => {
+const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const getParams = useFiltersParams();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
@@ -79,7 +77,7 @@ const Filters: FunctionComponent<Props> = ({
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
-            const tempParams = getParams(params, filters);
+            const tempParams: Params = getParams(params, filters);
             dispatch(redirectTo(baseUrl, tempParams));
         }
     }, [filtersUpdated, getParams, params, filters, dispatch]);
@@ -109,10 +107,11 @@ const Filters: FunctionComponent<Props> = ({
         [filters],
     );
 
+    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
     return (
         <Box mb={1}>
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
@@ -123,18 +122,21 @@ const Filters: FunctionComponent<Props> = ({
                         blockForbiddenChars
                         onErrorChange={setTextSearchError}
                     />
-                    <InputComponent
-                        keyValue="entityTypeIds"
-                        onChange={handleChange}
-                        value={filters.entityTypeIds}
-                        type="select"
-                        loading={isFetchingTypes}
-                        label={MESSAGES.types}
-                        options={types}
-                        multi
-                    />
+                    <Box id="ou-tree-input">
+                        <OrgUnitTreeviewModal
+                            toggleOnLabelClick={false}
+                            titleMessage={MESSAGES.location}
+                            onConfirm={orgUnit =>
+                                handleChange(
+                                    'location',
+                                    orgUnit ? [orgUnit.id] : undefined,
+                                )
+                            }
+                            initialSelection={initialOrgUnit}
+                        />
+                    </Box>
                 </Grid>
-                <Grid item xs={12} sm={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <DatesRange
                         xs={12}
                         sm={12}
@@ -147,7 +149,7 @@ const Filters: FunctionComponent<Props> = ({
                         dateTo={filters.dateTo}
                     />
                 </Grid>
-                <Grid item xs={12} sm={3}>
+                <Grid item xs={12} sm={6} md={3}>
                     <InputComponent
                         keyValue="submitterTeamId"
                         onChange={handleTeamChange}
@@ -165,45 +167,33 @@ const Filters: FunctionComponent<Props> = ({
                         options={usersOptions}
                     />
                 </Grid>
-                <Grid item xs={12} sm={3}>
-                    <Box id="ou-tree-input">
-                        <OrgUnitTreeviewModal
-                            toggleOnLabelClick={false}
-                            titleMessage={MESSAGES.location}
-                            onConfirm={orgUnit =>
-                                handleChange(
-                                    'location',
-                                    orgUnit ? [orgUnit.id] : undefined,
-                                )
-                            }
-                            initialSelection={initialOrgUnit}
+
+                <Grid item xs={12} sm={6} md={3}>
+                    <Box
+                        mt={2}
+                        display="flex"
+                        justifyContent="flex-end"
+                        alignItems="end"
+                        flexDirection="column"
+                    >
+                        <Box mb={2}>
+                            <Button
+                                data-test="search-button"
+                                disabled={textSearchError || !filtersUpdated}
+                                variant="contained"
+                                color="primary"
+                                onClick={() => handleSearch()}
+                            >
+                                <SearchIcon className={classes.buttonIcon} />
+                                {formatMessage(MESSAGES.search)}
+                            </Button>
+                        </Box>
+                        <DownloadButtonsComponent
+                            csvUrl={`${apiUrl}&csv=true`}
+                            xlsxUrl={`${apiUrl}&xlsx=true`}
+                            disabled={isFetching}
                         />
                     </Box>
-                </Grid>
-            </Grid>
-            <Grid
-                container
-                spacing={4}
-                justifyContent="flex-end"
-                alignItems="center"
-            >
-                <Grid
-                    item
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Button
-                        data-test="search-button"
-                        disabled={textSearchError || !filtersUpdated}
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => handleSearch()}
-                    >
-                        <SearchIcon className={classes.buttonIcon} />
-                        {formatMessage(MESSAGES.search)}
-                    </Button>
                 </Grid>
             </Grid>
         </Box>

@@ -14,12 +14,7 @@ import {
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
-import {
-    useGetBeneficiariesPaginated,
-    useGetBeneficiariesApiParams,
-    useGetBeneficiaryTypesDropdown,
-} from './hooks/requests';
+import { useGetBeneficiariesPaginated } from './hooks/requests';
 
 import { useColumns, baseUrl, defaultSorted } from './config';
 import MESSAGES from './messages';
@@ -63,9 +58,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
-    const { data: types, isFetching: isFetchingTypes } =
-        useGetBeneficiaryTypesDropdown();
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
@@ -120,18 +112,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 </Tabs>
             </TopBar>
             <Box p={4} className={classes.container}>
-                <Filters
-                    params={params}
-                    types={types || []}
-                    isFetchingTypes={isFetchingTypes}
-                />
-                <Box display="flex" justifyContent="flex-end">
-                    <DownloadButtonsComponent
-                        csvUrl={`${apiUrl}&csv=true`}
-                        xlsxUrl={`${apiUrl}&xlsx=true`}
-                        disabled={isFetching}
-                    />
-                </Box>
+                <Filters params={params} isFetching={isFetching} />
                 <Box position="relative" width="100%" mt={2}>
                     <Box
                         width="100%"

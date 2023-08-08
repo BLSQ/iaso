@@ -21,6 +21,7 @@ import { PAGES_TYPES } from './constants';
 import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
+import * as Permission from '../../utils/permissions.ts';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -148,7 +149,7 @@ const Pages = ({ params }) => {
                                 />
                             </a>
                             {userHasPermission(
-                                'iaso_page_write',
+                                Permission.PAGE_WRITE,
                                 currentUser,
                             ) && (
                                 <>

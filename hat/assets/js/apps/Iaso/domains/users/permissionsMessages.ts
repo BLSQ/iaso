@@ -124,6 +124,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.users_management',
         defaultMessage: 'Users Management',
     },
+    iaso_page_write: {
+        id: 'iaso.permissions.iaso_page_write',
+        defaultMessage: 'Edit page',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

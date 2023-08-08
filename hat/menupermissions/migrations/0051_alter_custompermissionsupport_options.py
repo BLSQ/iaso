@@ -46,6 +46,7 @@ class Migration(migrations.Migration):
                     ("iaso_datastore_write", "Write data store"),
                     ("iaso_org_unit_types", "Org unit types"),
                     ("iaso_org_unit_groups", "Org unit groups"),
+                    ("iaso_page_write", "Write page"),
                 ),
             },
         ),

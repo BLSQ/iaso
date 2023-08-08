@@ -779,6 +779,7 @@
     "iaso.permissions.iaso_entity_type_write": "Type de bénéficiaires créer/éditer/effacer",
     "iaso.permissions.iaso_org_unit_groups": "Groupes d'unité d'organisation",
     "iaso.permissions.iaso_org_unit_types": "Types d'unité d'organisation",
+    "iaso.permissions.iaso_page_write": "Modifier la page",
     "iaso.permissions.iaso_registry": "Registre",
     "iaso.permissions.iaso_workflows": "Workflows",
     "iaso.permissions.links": "Correspondances sources",

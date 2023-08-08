@@ -13,6 +13,7 @@ const ORG_UNIT_GROUPS = 'iaso_org_unit_groups';
 const ORG_UNIT_TYPES = 'iaso_org_unit_types';
 const ORG_UNITS = 'iaso_org_units';
 const PAGES = 'iaso_pages';
+const PAGE_WRITE = 'iaso_page_write';
 const PLANNINGS = 'iaso_planning';
 const POLIO = 'iaso_polio';
 const POLIO_CONFIG = 'iaso_polio_config';
@@ -44,6 +45,7 @@ export {
     ORG_UNIT_TYPES,
     ORG_UNITS,
     PAGES,
+    PAGE_WRITE,
     PLANNINGS,
     POLIO,
     POLIO_CONFIG,

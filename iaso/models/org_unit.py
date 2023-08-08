@@ -1,3 +1,4 @@
+import json
 import operator
 import typing
 import uuid
@@ -77,7 +78,14 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
-        queryset = self.all()
+        queryset = self.prefetch_related(
+            "projects",
+            "projects__account",
+            "projects__feature_flags",
+            "allow_creating_sub_unit_types",
+            "reference_forms",
+            "sub_unit_types",
+        )
 
         if user and user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)
@@ -143,7 +151,7 @@ class OrgUnitType(models.Model):
             res["sub_unit_types"] = sub_unit_types
         return res
 
-    def as_dict_for_completeness_stats(self):
+    def as_minimal_dict(self):
         return {
             "name": self.name,
             "id": self.id,
@@ -496,14 +504,14 @@ class OrgUnit(TreeModel):
             "org_unit_type": self.org_unit_type.name,
         }
 
-    def as_dict_for_completeness_stats_with_parent(self):
+    def as_minimal_dict_with_parent(self):
         return {
             "name": self.name,
             "id": self.id,
-            "parent": self.parent.as_dict_for_completeness_stats() if self.parent else None,
+            "parent": self.parent.as_minimal_dict() if self.parent else None,
         }
 
-    def as_dict_for_completeness_stats(self):
+    def as_minimal_dict(self):
         return {
             "name": self.name,
             "id": self.id,
@@ -547,6 +555,61 @@ class OrgUnit(TreeModel):
 
     def get_reference_instances_details_for_api(self) -> list:
         return [instance.as_full_model() for instance in self.reference_instances.all()]
+
+    def get_extra_fields(self):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            return datastore.content
+        except JsonDataStore.DoesNotExist:
+            return {}
+
+    def set_extra_fields(self, content):
+        from iaso.models import Account
+        from iaso.models.data_store import JsonDataStore
+
+        try:
+            datastore = self.jsondatastore_set.get(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+            )
+            datastore.content = {**datastore.content, **content}
+            datastore.save()
+        except JsonDataStore.DoesNotExist:
+            self.jsondatastore_set.create(
+                account=Account.objects.filter(default_version=self.version).first(),
+                slug="extra_fields",
+                content=content,
+            )
+
+    @property
+    def contact_emails(self):
+        return self.get_extra_fields().get("contact_emails", [])
+
+    @property
+    def contact_phones(self):
+        return self.get_extra_fields().get("contact_phones", [])
+
+    @property
+    def population(self):
+        return self.get_extra_fields().get("population", None)
+
+    @property
+    def population_year(self):
+        return self.get_extra_fields().get("population_year", None)
+
+    @property
+    def population_source(self):
+        return self.get_extra_fields().get("population_source", None)
+
+    @property
+    def merged_to(self):
+        return self.get_extra_fields().get("merged_to", None)
 
 
 class OrgUnitReferenceInstance(models.Model):

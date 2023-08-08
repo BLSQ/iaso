@@ -18,5 +18,12 @@
 
     },
     "exclude":["node_modules"],
-    "include":["assets/js/apps/Iaso/**/*","assets/js/apps/Iaso/*","hat/assets/js/apps/Iaso/**/*","hat/assets/js/apps/Iaso/*","plugins/polio/js/**/*"],
+    "include":[
+        "assets/js/apps/Iaso/**/*",
+        "assets/js/apps/Iaso/*",
+        "hat/assets/js/apps/Iaso/**/*",
+        "hat/assets/js/apps/Iaso/*",
+        "plugins/polio/js/**/*", 
+        "plugins/trypelim/js/**/*"
+    ],
 }

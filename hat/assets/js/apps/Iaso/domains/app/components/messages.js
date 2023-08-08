@@ -22,7 +22,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.tooltip.viewUserManual',
     },
     iasoVersion: {
-        defautMessage: 'App version',
+        defaultMessage: 'App version',
         id: 'iaso.label.iasoVersion',
     },
 });

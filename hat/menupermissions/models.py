@@ -8,8 +8,8 @@ To add a new permission:
 1. Add a constant to hold its label
 2. Add it to the CustomPermissionSupport.Meta.permissions tuple bellow
 3. Generate a migration via makemigrations (and run the migration locally)
-4. Add it in hat/assets/js/apps/Iaso/domains/users/messages.js
-5. add it to en.json and fr.json
+4. Add it in hat/assets/js/apps/Iaso/domains/users/permissionsMessages.ts
+5. Add it to en.json and fr.json
 
 If you don't follow these steps you will break the frontend!
 
@@ -65,6 +65,41 @@ _WORKFLOW = "iaso_workflows"
 _POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
 _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
 
+# Trypelim
+_ANONYMOUS_VIEW = "iaso_trypelim_anonymous"
+_AREAS = "iaso_trypelim_management_areas"
+_AREAS_EDIT = "iaso_trypelim_management_edit_areas"
+_AREAS_SHAPES_EDIT = "iaso_trypelim_management_edit_shape_areas"
+_CASES = "iaso_trypelim_case_cases"
+_CASE_ANALYSIS = "iaso_trypelim_case_analysis"
+_COORDINATIONS = "iaso_trypelim_management_coordinations"
+_DEVICES = "iaso_trypelim_management_devices"
+_DOWNLOAD_DATAS = "iaso_trypelim_datas_download"
+_DUPLICATES = "iaso_trypelim_duplicates"
+_EDIT_PATIENT = "iaso_trypelim_datas_patient_edition"
+_GRAPHS = "iaso_trypelim_stats_graphs"
+_HEALTH_STRUCTURES = "iaso_trypelim_management_health_structures"
+_LAB = "iaso_trypelim_lab"
+_LAB_UPLOAD = "iaso_trypelim_labupload"
+_LOCATOR = "iaso_trypelim_locator"
+_MACROPLANNING = "iaso_trypelim_plannings_macroplanning"
+_MICROPLANNING = "iaso_trypelim_plannings_microplanning"
+_MODIFICATIONS = "iaso_trypelim_modifications"
+_PLANNINGS = "iaso_trypelim_management_plannings"
+_PLANNINGS_TEMPLATE = "iaso_trypelim_management_plannings_template"
+_QUALITY_CONTROL = "iaso_trypelim_qualitycontrol"
+_RECONCILIATION = "iaso_trypelim_case_reconciliation"
+_ROUTES = "iaso_trypelim_plannings_routes"
+_UPLOAD_OF_CASE_FILES = "iaso_trypelim_datasets_datauploads"
+_UPLOAD_OF_VILLAGES = "iaso_trypelim_datasets_villageuploads"
+_USERS = "iaso_trypelim_management_users"
+_VECTOR_CONTROL = "iaso_trypelim_vectorcontrol"
+_VECTOR_CONTROL_UPLOAD = "iaso_trypelim_vectorcontrolupload"
+_VILLAGES = "iaso_trypelim_management_villages"
+_WORKZONES = "iaso_trypelim_management_workzones"
+_ZONES = "iaso_trypelim_management_zones"
+_ZONES_EDIT = "iaso_trypelim_management_edit_zones"
+_ZONES_SHAPES_EDIT = "iaso_trypelim_management_edit_shape_zones"
 
 _PREFIX = "menupermissions."
 ASSIGNMENTS = _PREFIX + _ASSIGNMENTS
@@ -109,6 +144,41 @@ USERS_ADMIN = _PREFIX + _USERS_ADMIN
 USERS_MANAGED = _PREFIX + _USERS_MANAGED
 USERS_ROLES = _PREFIX + _USERS_ROLES
 WORKFLOW = _PREFIX + _WORKFLOW
+# Trypelim
+ANONYMOUS_VIEW = _PREFIX + _ANONYMOUS_VIEW
+AREAS = _PREFIX + _AREAS
+AREAS_EDIT = _PREFIX + _AREAS_EDIT
+AREAS_SHAPES_EDIT = _PREFIX + _AREAS_SHAPES_EDIT
+CASES = _PREFIX + _CASES
+CASE_ANALYSIS = _PREFIX + _CASE_ANALYSIS
+COORDINATIONS = _PREFIX + _COORDINATIONS
+DEVICES = _PREFIX + _DEVICES
+DOWNLOAD_DATAS = _PREFIX + _DOWNLOAD_DATAS
+DUPLICATES = _PREFIX + _DUPLICATES
+EDIT_PATIENT = _PREFIX + _EDIT_PATIENT
+GRAPHS = _PREFIX + _GRAPHS
+HEALTH_STRUCTURES = _PREFIX + _HEALTH_STRUCTURES
+LAB = _PREFIX + _LAB
+LAB_UPLOAD = _PREFIX + _LAB_UPLOAD
+LOCATOR = _PREFIX + _LOCATOR
+MACROPLANNING = _PREFIX + _MACROPLANNING
+MICROPLANNING = _PREFIX + _MICROPLANNING
+MODIFICATIONS = _PREFIX + _MODIFICATIONS
+PLANNINGS = _PREFIX + _PLANNINGS
+PLANNINGS_TEMPLATE = _PREFIX + _PLANNINGS_TEMPLATE
+QUALITY_CONTROL = _PREFIX + _QUALITY_CONTROL
+RECONCILIATION = _PREFIX + _RECONCILIATION
+ROUTES = _PREFIX + _ROUTES
+UPLOAD_OF_CASE_FILES = _PREFIX + _UPLOAD_OF_CASE_FILES
+UPLOAD_OF_VILLAGES = _PREFIX + _UPLOAD_OF_VILLAGES
+USERS = _PREFIX + _USERS
+VECTOR_CONTROL = _PREFIX + _VECTOR_CONTROL
+VECTOR_CONTROL_UPLOAD = _PREFIX + _VECTOR_CONTROL_UPLOAD
+VILLAGES = _PREFIX + _VILLAGES
+WORKZONES = _PREFIX + _WORKZONES
+ZONES = _PREFIX + _ZONES
+ZONES_EDIT = _PREFIX + _ZONES_EDIT
+ZONES_SHAPES_EDIT = _PREFIX + _ZONES_SHAPES_EDIT
 
 
 class CustomPermissionSupport(models.Model):
@@ -180,6 +250,41 @@ class CustomPermissionSupport(models.Model):
             (_PAGE_WRITE, _("Write page")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
+            # Trypelim
+            (_ANONYMOUS_VIEW, "Anonymisation des patients"),
+            (_AREAS, _("Areas")),
+            (_AREAS_EDIT, _("Edit areas")),
+            (_AREAS_SHAPES_EDIT, _("Edit areas shapes")),
+            (_CASES, _("Cases")),
+            (_CASE_ANALYSIS, _("Cases analysis")),
+            (_COORDINATIONS, _("Coordinations")),
+            (_DEVICES, _("Devices")),
+            (_DOWNLOAD_DATAS, _("Téléchargement de données")),
+            (_DUPLICATES, _("Doublons")),
+            (_EDIT_PATIENT, _("Edition d'un patient")),
+            (_GRAPHS, _("Graphs")),
+            (_HEALTH_STRUCTURES, _("Health facilities")),
+            (_LAB, _("Labo")),
+            (_LAB_UPLOAD, _("Labo import")),
+            (_LOCATOR, _("Locator")),
+            (_MACROPLANNING, _("Macroplanning")),
+            (_MICROPLANNING, _("Microplanning")),
+            (_MODIFICATIONS, _("Modifications")),
+            (_PLANNINGS, _("Plannings")),
+            (_PLANNINGS_TEMPLATE, _("Plannings template")),
+            (_QUALITY_CONTROL, _("Quality control")),
+            (_RECONCILIATION, _("Reconciliation")),
+            (_ROUTES, _("Routes")),
+            (_UPLOAD_OF_CASE_FILES, _("Upload of cases files")),
+            (_UPLOAD_OF_VILLAGES, _("Upload of villages files")),
+            (_USERS, _("Users")),
+            (_VECTOR_CONTROL, _("Vector control")),
+            (_VECTOR_CONTROL_UPLOAD, _("Vector control import Gpx")),
+            (_VILLAGES, _("Villages")),
+            (_WORKZONES, _("Work zones")),
+            (_ZONES, _("Zones")),
+            (_ZONES_EDIT, _("Edit zones")),
+            (_ZONES_SHAPES_EDIT, _("Edit zones shapes")),
         )
 
     @staticmethod
@@ -200,6 +305,8 @@ class CustomPermissionSupport(models.Model):
         #  in future filter this on a feature flags, so we can disable it by account
         if "polio" not in settings.PLUGINS:
             permissions = permissions.exclude(codename__startswith="iaso_polio")
+        if "trypelim" not in settings.PLUGINS:
+            permissions = permissions.exclude(codename__startswith="iaso_trypelim")
 
         return permissions
 

@@ -23,3 +23,8 @@ black==23.3.0
 pre-commit==2.9.2
 
 locust==2.15.1
+
+# Trypelim
+sauceclient==1.0.0
+selenium==3.141.0
+vcrpy==4.1.1

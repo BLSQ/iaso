@@ -3,7 +3,7 @@ import React from 'react';
 import { useMutation } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { getRequest, iasoFetch, postRequest, putRequest } from 'Iaso/libs/Api';
-import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks';
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { dispatch as storeDispatch } from '../../redux/store';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../constants/snackBars';

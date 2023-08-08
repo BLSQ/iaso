@@ -19,6 +19,7 @@ const POLIO_CONFIG = 'iaso_polio_config';
 const PROJECTS = 'iaso_projects';
 const REGISTRY = 'iaso_registry';
 const SOURCES = 'iaso_sources';
+const SOURCE_WRITE = 'iaso_write_sources';
 const STORAGES = 'iaso_storages';
 const SUBMISSIONS = 'iaso_submissions';
 const SUBMISSIONS_UPDATE = 'iaso_update_submission';
@@ -50,6 +51,7 @@ export {
     PROJECTS,
     REGISTRY,
     SOURCES,
+    SOURCE_WRITE,
     STORAGES,
     SUBMISSIONS,
     SUBMISSIONS_UPDATE,

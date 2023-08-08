@@ -47,6 +47,7 @@ _POLIO_CONFIG = "iaso_polio_config"
 _PROJECTS = "iaso_projects"
 _REGISTRY = "iaso_registry"
 _REPORTS = "iaso_reports"
+_SOURCE_WRITE = "iaso_write_sources"
 _SOURCES = "iaso_sources"
 _STORAGE = "iaso_storages"
 _SUBMISSIONS = "iaso_submissions"
@@ -83,6 +84,7 @@ POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
 PROJECTS = _PREFIX + _PROJECTS
 REGISTRY = _PREFIX + _REGISTRY
 REPORTS = _PREFIX + _REPORTS
+SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
 SOURCES = _PREFIX + _SOURCES
 STORAGE = _PREFIX + _STORAGE
 SUBMISSIONS = _PREFIX + _SUBMISSIONS
@@ -154,6 +156,7 @@ class CustomPermissionSupport(models.Model):
             (_DATASTORE_WRITE, _("Write data store")),
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
+            (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
         )
 

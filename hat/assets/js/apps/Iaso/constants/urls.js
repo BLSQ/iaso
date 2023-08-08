@@ -22,6 +22,7 @@ export const baseUrls = {
     userRoles: 'settings/userRoles',
     projects: 'settings/projects',
     sources: 'orgunits/sources/list',
+    sourceDetails: 'orgunits/source/details',
     tasks: 'settings/tasks',
     devices: 'settings/devices',
     entities: 'entities/list',

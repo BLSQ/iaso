@@ -12,14 +12,16 @@ import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
 import { useGetPages } from './hooks/useGetPages';
 import { useRemovePage } from './hooks/useRemovePage';
-
+import { userHasPermission } from '../users/utils';
 import DeleteConfirmDialog from './components/DeleteConfirmDialog';
 import CreateEditDialog from './components/CreateEditDialog';
 import PageActions from './components/PageActions';
 import PageAction from './components/PageAction';
 import { PAGES_TYPES } from './constants';
 import { DateTimeCellRfc } from '../../components/Cells/DateTimeCell';
-import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
+import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink.tsx';
+import { useCurrentUser } from '../../utils/usersUtils.ts';
+import * as Permission from '../../utils/permissions.ts';
 
 const DEFAULT_PAGE_SIZE = 10;
 const DEFAULT_PAGE = 1;
@@ -99,6 +101,8 @@ const Pages = ({ params }) => {
         });
     };
 
+    const currentUser = useCurrentUser();
+
     const columns = useMemo(
         () => [
             {
@@ -144,30 +148,37 @@ const Pages = ({ params }) => {
                                     onClick={() => {}}
                                 />
                             </a>
-                            <IconButtonComponent
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
-                                onClick={() =>
-                                    handleClickEditRow(
-                                        settings.row.original.slug,
-                                    )
-                                }
-                            />
-                            <IconButtonComponent
-                                icon="delete"
-                                tooltipMessage={MESSAGES.delete}
-                                onClick={() =>
-                                    handleClickDeleteRow(
-                                        settings.row.original.slug,
-                                    )
-                                }
-                            />
+                            {userHasPermission(
+                                Permission.PAGE_WRITE,
+                                currentUser,
+                            ) && (
+                                <>
+                                    <IconButtonComponent
+                                        icon="edit"
+                                        tooltipMessage={MESSAGES.edit}
+                                        onClick={() =>
+                                            handleClickEditRow(
+                                                settings.row.original.slug,
+                                            )
+                                        }
+                                    />
+                                    <IconButtonComponent
+                                        icon="delete"
+                                        tooltipMessage={MESSAGES.delete}
+                                        onClick={() =>
+                                            handleClickDeleteRow(
+                                                settings.row.original.slug,
+                                            )
+                                        }
+                                    />
+                                </>
+                            )}
                         </>
                     );
                 },
             },
         ],
-        [handleClickDeleteRow, handleClickEditRow],
+        [currentUser, handleClickDeleteRow, handleClickEditRow, intl],
     );
 
     return (

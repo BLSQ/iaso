@@ -239,7 +239,10 @@ export const getLabelsAndValues = (dataSource, formatMessage) => {
     const fields = [];
 
     Object.entries(dataSource).forEach(([key, source]) => {
-        const label = formatMessage(MESSAGES[translations[key]]);
+        const label =
+            translations[key] === undefined
+                ? ''
+                : formatMessage(MESSAGES[translations[key]]);
         if (keys.includes(key)) {
             switch (key) {
                 case 'default_version':

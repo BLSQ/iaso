@@ -46,16 +46,12 @@ export const DataSourceInfo: FunctionComponent<Props> = ({ dataSource }) => {
     }, [dataSource, formatMessage]);
 
     return (
-        <>
-            <Table size="small">
-                <TableBody>
-                    <>
-                        {dataSourceDetailFields.map(field => (
-                            <Row field={field} key={field.label} />
-                        ))}
-                    </>
-                </TableBody>
-            </Table>
-        </>
+        <Table size="small">
+            <TableBody>
+                {dataSourceDetailFields.map(field => (
+                    <Row field={field} key={field.label} />
+                ))}
+            </TableBody>
+        </Table>
     );
 };

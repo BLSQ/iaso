@@ -61,7 +61,6 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
         data?: DataSource;
         isLoading: boolean;
     } = useGetDataSource(sourceId);
-    const intl = useSafeIntl();
     const [page, setPage] = useState<any>(0);
     const [rowsPerPage, setRowsPerPage] = useState(5);
     const [sortBy, setSortBy] = useState('asc');
@@ -154,7 +153,7 @@ export const Details: FunctionComponent<Props> = ({ router }) => {
                                 data={sortedSourceVersions}
                                 columns={sourceVersionsTableColumns(
                                     dataSource,
-                                    intl.formatMessage,
+                                    formatMessage,
                                 )}
                                 params={tableParams}
                                 pages={pages}

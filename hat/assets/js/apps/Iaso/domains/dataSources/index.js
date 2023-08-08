@@ -32,7 +32,7 @@ const DataSources = () => {
     const [forceRefresh, setForceRefresh] = useState(false);
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
-    const intl = useSafeIntl();
+    const { formatMessage } = useSafeIntl();
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
 
     const dataSourceDialog = () => {
@@ -55,7 +55,7 @@ const DataSources = () => {
     return (
         <>
             <TopBar
-                title={intl.formatMessage(MESSAGES.dataSources)}
+                title={formatMessage(MESSAGES.dataSources)}
                 displayBackButton={false}
                 toggleSidebar={() => dispatch(toggleSidebarMenu())}
             />
@@ -69,7 +69,7 @@ const DataSources = () => {
                     fetchItems={fetchAllDataSources}
                     defaultSorted={[{ id: defaultOrder, desc: false }]}
                     columns={dataSourcesTableColumns(
-                        intl.formatMessage,
+                        formatMessage,
                         setForceRefresh,
                         defaultSourceVersion,
                     )}

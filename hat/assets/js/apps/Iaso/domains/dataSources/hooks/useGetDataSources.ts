@@ -19,8 +19,7 @@ export const useGetDataSource = (
         queryFn: () => getDataSource(sourceId),
         snackErrorMsg: undefined,
         options: {
-            retry: false,
-            staleTime: Infinity,
+            staleTime: 60000,
         },
     });
 };

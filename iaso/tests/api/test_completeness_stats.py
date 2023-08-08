@@ -256,7 +256,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
                     "parent_org_unit": None,
-                    "has_children": True,
+                    "has_children": False,
                 },
             ],
             "has_next": False,

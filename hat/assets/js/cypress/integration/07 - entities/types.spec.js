@@ -4,6 +4,7 @@ import listFixture from '../../fixtures/entityTypes/list-paginated.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import formDetail from '../../fixtures/forms/detail.json';
 import formsList from '../../fixtures/forms/list.json';
+import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -380,6 +381,35 @@ describe('Entities types', () => {
                     .click();
                 cy.get('#delete-dialog-entityType').should('not.exist');
             });
+        });
+    });
+
+    it('User wihtout write access should not be able to create,edit or delete a type', () => {
+        const unauthorizedUser = {
+            ...superUser,
+            permissions: [Permission.ENTITIES],
+            is_superuser: false,
+        };
+        goToPage(unauthorizedUser);
+        cy.wait('@getEntitiesTypes').then(() => {
+            cy.get('[data-test="add-entity-button"]').should('not.exist');
+
+            cy.get('table').as('table');
+
+            cy.get('#delete-button-entityType-7').should('not.exist');
+
+            cy.get('@table').find('tbody').find('tr').eq(0).as('row');
+            cy.get('@row').find('td').last().as('actionCol');
+            cy.get('@actionCol').find('button').should('have.length', 3);
+
+            cy.get('@table').find('tbody').find('tr').eq(1).as('row');
+            cy.get('@row').find('td').last().as('actionCol');
+            cy.get('@actionCol').find('button').should('have.length', 2);
+
+            cy.log('Type with form link');
+            cy.get('@table').find('tbody').find('tr').eq(3).as('row');
+            cy.get('@row').find('td').last().as('actionCol');
+            cy.get('@actionCol').find('button').should('have.length', 3);
         });
     });
 

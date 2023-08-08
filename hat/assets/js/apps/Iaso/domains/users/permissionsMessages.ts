@@ -128,6 +128,10 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_page_write',
         defaultMessage: 'Edit page',
     },
+    iaso_write_sources: {
+        id: 'iaso.permissions.iaso_write_sources',
+        defaultMessage: 'Edit data sources',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

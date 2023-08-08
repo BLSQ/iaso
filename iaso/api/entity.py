@@ -140,18 +140,13 @@ class EntityTypeViewSet(ModelViewSet):
         name = request.data.get("name", None)
         if name is None:
             raise serializers.ValidationError({"name": "This field is required"})
-        fields_list_view = request.data.get("fields_list_view", None)
-        if fields_list_view is None:
-            raise serializers.ValidationError({"fields_list_view": "This field is required"})
-        fields_detail_info_view = request.data.get("fields_detail_info_view", None)
-        if fields_detail_info_view is None:
-            raise serializers.ValidationError({"fields_detail_info_view": "This field is required"})
         try:
+            print(pk)
             entity_type = EntityType.objects.get(pk=pk)
             entity_type.name = name
             entity_type.fields_duplicate_search = request.data.get("fields_duplicate_search", None)
-            entity_type.fields_list_view = fields_list_view
-            entity_type.fields_detail_info_view = fields_detail_info_view
+            entity_type.fields_list_view = request.data.get("fields_list_view", None)
+            entity_type.fields_detail_info_view = request.data.get("fields_detail_info_view", None)
             entity_type.save()
             return Response(entity_type.as_dict())
         except:
@@ -169,7 +164,7 @@ class EntityTypeViewSet(ModelViewSet):
         entity_type_serializer = EntityTypeSerializer(data=request.data, context={"request": request})
         entity_type_serializer.is_valid(raise_exception=True)
         entity_type = entity_type_serializer.save()
-        return Response(entity_type.as_dict())
+        return Response(entity_type.as_dict(), status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk=None, *args, **kwargs):
         """

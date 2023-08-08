@@ -179,6 +179,9 @@ const MESSAGES = defineMessages({
     iaso_write_sources: {
         id: 'iaso.permissions.iaso_write_sources',
         defaultMessage: 'Edit data sources',
+    iaso_page_write: {
+        id: 'iaso.permissions.iaso_page_write',
+        defaultMessage: 'Edit page',
     },
 });
 

@@ -785,6 +785,7 @@
     "iaso.permissions.iaso_entity_duplicates_write": "Editer les doublons d'entités",
     "iaso.permissions.iaso_org_unit_groups": "Groupes d'unité d'organisation",
     "iaso.permissions.iaso_org_unit_types": "Types d'unité d'organisation",
+    "iaso.permissions.iaso_page_write": "Modifier la page",
     "iaso.permissions.iaso_registry": "Registre",
     "iaso.permissions.iaso_workflows": "Workflows",
     "iaso.permissions.iaso_write_sources": "Editer les sources de données",

@@ -38,6 +38,7 @@ _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
 _PAGES = "iaso_pages"
+_PAGE_WRITE = "iaso_page_write"
 _PLANNING = "iaso_planning"
 _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
@@ -74,6 +75,7 @@ ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
 PAGES = _PREFIX + _PAGES
+PAGE_WRITE = _PREFIX + _PAGE_WRITE
 PLANNING = _PREFIX + _PLANNING
 POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
@@ -155,6 +157,7 @@ class CustomPermissionSupport(models.Model):
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
             (_SOURCE_WRITE, _("Write data source")),
+            (_PAGE_WRITE, _("Write page")),
         )
 
     @staticmethod

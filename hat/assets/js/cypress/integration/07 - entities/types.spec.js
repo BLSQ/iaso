@@ -28,18 +28,8 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept(
-        'GET',
-        // eslint-disable-next-line max-len
-        '/api/forms/7/?fields=possible_fields',
-        formDetail,
-    );
-    cy.intercept(
-        'GET',
-        // eslint-disable-next-line max-len
-        '/api/forms/?fields=id,name',
-        formsList,
-    );
+    cy.intercept('GET', '/api/forms/7/**', formDetail);
+    cy.intercept('GET', '/api/forms/?fields=id,name', formsList);
     const options = {
         method: 'GET',
         pathname: '/api/entitytypes',
@@ -155,7 +145,7 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 4);
+                cy.get('@actionCol').find('button').should('have.length', 5);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
@@ -179,7 +169,7 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 2);
+                cy.get('@actionCol').find('button').should('have.length', 3);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
                     .should('not.exist');
@@ -203,7 +193,7 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 3);
+                cy.get('@actionCol').find('button').should('have.length', 4);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
@@ -326,7 +316,7 @@ describe('Entities types', () => {
             table = cy.get('table');
             row = table.find('tbody').find('tr').eq(entityTypeIndex);
             const actionCol = row.find('td').last();
-            const deleteButton = actionCol.find('button').eq(2);
+            const deleteButton = actionCol.find('button').eq(3);
             deleteButton.click();
             cy.get('#delete-dialog-entityType-7').as('deleteDialog');
         });

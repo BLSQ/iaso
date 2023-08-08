@@ -180,7 +180,7 @@ class DataSourcePermission(permissions.BasePermission):
             permission.LINKS,
             permission.SOURCES,
         )
-        write_perms = (permission.SOURCES,)
+        write_perms = (permission.SOURCE_WRITE,)
 
         if (
             request.method in permissions.SAFE_METHODS

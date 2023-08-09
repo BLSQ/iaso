@@ -223,7 +223,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.instanceStatus.errorMulti',
     },
     duplicated: {
-        defaultMessage: 'Error (duplicated)',
+        defaultMessage: 'Duplicated',
         id: 'iaso.label.instanceStatus.duplicatedMulti',
     },
     exported: {

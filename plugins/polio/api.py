@@ -41,7 +41,8 @@ from iaso.api.common import (
     ModelViewSet,
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
-    CONTENT_TYPE_CSV, TimestampField,
+    CONTENT_TYPE_CSV,
+    TimestampField,
 )
 from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (
@@ -87,7 +88,8 @@ from .models import (
     CampaignGroup,
     CampaignScope,
     RoundDateHistoryEntry,
-    RoundScope, VaccineAuthorization,
+    RoundScope,
+    VaccineAuthorization,
 )
 from hat.api.export_utils import Echo, iter_items
 from time import gmtime, strftime
@@ -2052,18 +2054,25 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
         )
 
 
+class CountryForVaccineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+
+
+class CountryField(serializers.PrimaryKeyRelatedField):
+    def to_representation(self, value):
+        country = OrgUnit.objects.get(pk=value.pk)
+        serializer = CountryForVaccineSerializer(country)
+        return serializer.data
+
+
 class VaccineAuthorizationSerializer(serializers.ModelSerializer):
+    country = CountryField(queryset=OrgUnit.objects.filter(org_unit_type__name="COUNTRY"))
+
     class Meta:
         model = VaccineAuthorization
-        fields = ["country",
-                  "account",
-                  "expiration_date",
-                  "created_at",
-                  "updated_at",
-                  "quantity",
-                  "status",
-                  "comment"
-                  ]
+        fields = ["country", "account", "expiration_date", "created_at", "updated_at", "quantity", "status", "comment"]
 
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)

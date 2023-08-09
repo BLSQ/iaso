@@ -122,6 +122,10 @@ class OrgUnitAPITestCase(APITestCase):
         )
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
 
+        # cls.user_manager = cls.create_user_with_profile(username="userManager", account=star_wars, permissions=["iaso_org_units"])
+        # cls.user_manager.iaso_profile.org_units.set([cls.org_unit_country_2])
+        # cls.user_manager.save()
+
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
         cls.create_form_instance(
@@ -340,6 +344,50 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(
             returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id, self.jedi_squad_endor_2.id}
         )
+
+    def test_org_units_tree_super_user(self):
+        """Search orgunits tree when the user is a super user"""
+        org_unit_country = m.OrgUnit.objects.create(
+            name="Country",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        super_user = self.create_user_with_profile(
+            username="superUser", is_superuser=True, account=self.star_wars, permissions=["iaso_org_units"]
+        )
+        super_user.iaso_profile.org_units.set([org_unit_country])
+        super_user.save()
+        super_user.refresh_from_db()
+        self.client.force_authenticate(super_user)
+
+        response = self.client.get(
+            "/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true"
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(jr["orgunits"]), 3)
+
+    def test_org_units_tree_user_manager(self):
+        """Search orgunits tree when the user is a user manager"""
+        org_unit_country = m.OrgUnit.objects.create(
+            name="Country",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        user_manager = self.create_user_with_profile(
+            username="userManager", account=self.star_wars, permissions=["iaso_org_units"]
+        )
+        user_manager.iaso_profile.org_units.set([org_unit_country])
+        user_manager.save()
+        user_manager.refresh_from_db()
+        self.client.force_authenticate(user_manager)
+
+        response = self.client.get(
+            "/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true"
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(jr["orgunits"]), 1)
 
     def test_org_unit_instance_duplicate_search(self):
         """GET /orgunits/ with a search based on duplicates"""

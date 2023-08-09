@@ -152,7 +152,7 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'status',
         render: value =>
-            value && MESSAGES[value.toLowerCase()] ? (
+            value ? (
                 <FormattedMessage {...MESSAGES[value.toLowerCase()]} />
             ) : (
                 '-'

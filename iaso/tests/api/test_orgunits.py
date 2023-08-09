@@ -122,10 +122,6 @@ class OrgUnitAPITestCase(APITestCase):
         )
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
 
-        # cls.user_manager = cls.create_user_with_profile(username="userManager", account=star_wars, permissions=["iaso_org_units"])
-        # cls.user_manager.iaso_profile.org_units.set([cls.org_unit_country_2])
-        # cls.user_manager.save()
-
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
         cls.create_form_instance(

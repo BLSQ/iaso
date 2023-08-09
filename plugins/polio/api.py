@@ -9,6 +9,7 @@ from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
 from django.contrib.gis.geos import Polygon
+from django.db.models.functions import RowNumber
 from django.db.models.query import QuerySet
 from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
@@ -16,7 +17,7 @@ from django.core.cache import cache
 from django.core.mail import send_mail
 from django.db.models import Q, Max, Min
 from django.db.models import Value, TextField, UUIDField
-from django.db.models.expressions import RawSQL
+from django.db.models.expressions import RawSQL, OuterRef, Subquery, F, Window
 from django.http import FileResponse
 from django.http import HttpResponse, StreamingHttpResponse
 from django.http import JsonResponse
@@ -2096,9 +2097,36 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
 
         if country_id:
-            queryset.filter(country__id=country_id)
+            queryset = queryset.filter(country__pk=country_id)
 
         return queryset
+
+    @action(detail=False, methods=["POST", "GET"])
+    def get_most_recent_update(self, request):
+        """
+        return the most recent Authorization by country for all countries
+        """
+        most_recent_dates = (
+            VaccineAuthorization.objects.filter(
+                country=OuterRef("country"), account=self.request.user.iaso_profile.account
+            )
+            .values("country")
+            .annotate(max_updated_at=Max("updated_at"))
+            .values("max_updated_at")
+        )
+
+        most_recent_authorizations = VaccineAuthorization.objects.filter(
+            country=OuterRef("country"), updated_at=Subquery(most_recent_dates)
+        )
+
+        recent_per_country = VaccineAuthorization.objects.filter(
+            id=Subquery(most_recent_authorizations.values("id"))
+        ).select_related("country")
+
+        serializer = VaccineAuthorizationSerializer(recent_per_country, many=True)
+        serialized_data = serializer.data
+
+        return Response(serialized_data)
 
 
 router = routers.SimpleRouter()

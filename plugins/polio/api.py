@@ -41,7 +41,7 @@ from iaso.api.common import (
     ModelViewSet,
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
-    CONTENT_TYPE_CSV,
+    CONTENT_TYPE_CSV, TimestampField,
 )
 from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (
@@ -87,7 +87,7 @@ from .models import (
     CampaignGroup,
     CampaignScope,
     RoundDateHistoryEntry,
-    RoundScope,
+    RoundScope, VaccineAuthorization,
 )
 from hat.api.export_utils import Echo, iter_items
 from time import gmtime, strftime
@@ -2052,6 +2052,46 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
         )
 
 
+class VaccineAuthorizationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VaccineAuthorization
+        fields = ["country",
+                  "account",
+                  "expiration_date",
+                  "created_at",
+                  "updated_at",
+                  "quantity",
+                  "status",
+                  "comment"
+                  ]
+
+        created_at = TimestampField(read_only=True)
+        updated_at = TimestampField(read_only=True)
+
+
+class VaccineAuthorizationViewSet(ModelViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
+    results_key = "results"
+
+    serializer_class = VaccineAuthorizationSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+        user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
+        country_id = self.request.query_params.get("country", None)
+        queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
+
+        if country_id:
+            queryset.filter(country__id=country_id)
+
+        return queryset
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -2076,3 +2116,4 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")

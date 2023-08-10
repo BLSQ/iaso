@@ -2085,6 +2085,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY)]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
+    remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
 
     def get_queryset(self):

@@ -43,7 +43,7 @@ from iaso.api.common import (
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
-    TimestampField,
+    TimestampField, HasPermission,
 )
 from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (
@@ -96,6 +96,7 @@ from hat.api.export_utils import Echo, iter_items
 from time import gmtime, strftime
 from .models import CountryUsersGroup
 from .preparedness.summary import get_or_set_preparedness_cache_for_round
+from hat.menupermissions import models as permission
 
 logger = getLogger(__name__)
 
@@ -2079,14 +2080,11 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         updated_at = TimestampField(read_only=True)
 
 
+@swagger_auto_schema(tags=["vaccineauthorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
-    filter_backends = [
-        filters.OrderingFilter,
-        DjangoFilterBackend,
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY)]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
-
     serializer_class = VaccineAuthorizationSerializer
 
     def get_queryset(self):

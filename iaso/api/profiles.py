@@ -365,6 +365,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 and len(managed_org_units) > 0
                 and org_unit_id not in managed_org_units
                 and org_unit_id not in existing_org_units
+                and not request.user.is_superuser
             ):
                 raise PermissionDenied(
                     f"User with {permission.USERS_MANAGED} cannot assign an OrgUnit outside of their own health "

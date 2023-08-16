@@ -2094,9 +2094,13 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
         country_id = self.request.query_params.get("country", None)
         queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
+        block_country = self.request.query_params.get("block_country", None).splt(",")
+        only_deleted = self.request.query_params.get("only_deleted", None)
 
         if country_id:
             queryset = queryset.filter(country__pk=country_id)
+        if block_country:
+            queryset = queryset.filter(country__pk__in=block_country)
 
         return queryset
 

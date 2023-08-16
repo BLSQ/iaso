@@ -91,6 +91,31 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)
 
+
+    def test_get_by_id(self):
+        self.client.force_authenticate(self.user_1)
+
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.id])
+
+        print(self.user_1.iaso_profile.org_units.all())
+
+        vaccine_auth = VaccineAuthorization.objects.create(
+            country=self.org_unit_DRC,
+            account=self.user_1.iaso_profile.account,
+            quantity=1000000,
+            status="signature",
+            comment="validated",
+            expiration_date="2024-02-01"
+        )
+
+        print(VaccineAuthorization.objects.last())
+
+        response = self.client.get(f"/api/polio/vaccineauthorizations/{vaccine_auth.pk}/")
+
+        print("RESPONSE: ", response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
     def test_can_access_list(self):
         self.client.force_authenticate(self.user_1)
 

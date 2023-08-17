@@ -17,6 +17,7 @@ import { Users } from '../domains/users/index.tsx';
 import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
+import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
 import { CompletenessStats } from '../domains/completenessStats/index.tsx';
@@ -45,6 +46,7 @@ import { paginationPathParams } from '../routing/common.ts';
 import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
+import * as Permission from '../utils/permissions.ts';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -78,7 +80,7 @@ export const getPath = path => {
 
 export const formsPath = {
     baseUrl: baseUrls.forms,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
     params: [
         {
             isRequired: false,
@@ -108,7 +110,7 @@ export const formsPath = {
 
 export const pagesPath = {
     baseUrl: baseUrls.pages,
-    permissions: ['iaso_pages'],
+    permissions: [Permission.PAGES],
     featureFlag: SHOW_PAGES,
     params: [
         {
@@ -122,7 +124,7 @@ export const pagesPath = {
 
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
     component: props => <FormDetail {...props} />,
     params: [
         {
@@ -144,7 +146,7 @@ export const formDetailPath = {
 
 export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
-    permissions: ['iaso_forms'],
+    permissions: [Permission.FORMS],
     component: () => <FormsStats />,
     params: [
         {
@@ -156,7 +158,7 @@ export const formsStatsPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <Instances {...props} />,
     params: [
         {
@@ -248,12 +250,32 @@ export const instancesPath = {
             isRequired: false,
             key: 'planningIds',
         },
+        {
+            isRequired: false,
+            key: 'userIds',
+        },
+        {
+            isRequired: false,
+            key: 'modificationDateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'modificationDateTo',
+        },
+        {
+            isRequired: false,
+            key: 'sentDateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'sentDateTo',
+        },
     ],
 };
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <InstanceDetail {...props} />,
     params: [
         {
@@ -273,7 +295,7 @@ export const instanceDetailPath = {
 
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <CompareInstanceLogs {...props} />,
     params: [
         {
@@ -297,7 +319,7 @@ export const compareInstanceLogsPath = {
 
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <CompareSubmissions {...props} />,
     params: [
         {
@@ -313,7 +335,7 @@ export const compareInstancesPath = {
 
 export const mappingsPath = {
     baseUrl: baseUrls.mappings,
-    permissions: ['iaso_mappings'],
+    permissions: [Permission.MAPPINGS],
     component: props => <Mappings {...props} />,
     params: [
         {
@@ -333,7 +355,7 @@ export const mappingsPath = {
 
 export const mappingDetailPath = {
     baseUrl: baseUrls.mappingDetail,
-    permissions: ['iaso_mappings'],
+    permissions: [Permission.MAPPINGS],
     component: props => <MappingDetails {...props} />,
     params: [
         {
@@ -353,7 +375,7 @@ export const mappingDetailPath = {
 
 export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
-    permissions: ['iaso_org_units'],
+    permissions: [Permission.ORG_UNITS],
     component: props => <OrgUnits {...props} />,
     params: [
         {
@@ -389,7 +411,7 @@ export const orgUnitsPath = {
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
-    permissions: ['iaso_org_units'],
+    permissions: [Permission.ORG_UNITS],
     component: props => <OrgUnitDetail {...props} />,
     params: [
         {
@@ -436,7 +458,7 @@ export const orgUnitsDetailsPath = {
 
 export const registryPath = {
     baseUrl: baseUrls.registry,
-    permissions: ['iaso_registry'],
+    permissions: [Permission.REGISTRY],
     component: props => <Registry {...props} />,
     params: [
         {
@@ -447,7 +469,7 @@ export const registryPath = {
 };
 export const registryDetailPath = {
     baseUrl: baseUrls.registryDetail,
-    permissions: ['iaso_registry'],
+    permissions: [Permission.REGISTRY],
     component: props => <RegistryDetail {...props} />,
     params: [
         {
@@ -498,7 +520,7 @@ export const registryDetailPath = {
 
 export const linksPath = {
     baseUrl: baseUrls.links,
-    permissions: ['iaso_links'],
+    permissions: [Permission.LINKS],
     component: props => <Links {...props} />,
     params: [
         {
@@ -563,7 +585,7 @@ export const linksPath = {
 
 export const algosPath = {
     baseUrl: baseUrls.algos,
-    permissions: ['iaso_links'],
+    permissions: [Permission.LINKS],
     component: props => <Runs {...props} />,
     params: [
         {
@@ -604,7 +626,7 @@ export const algosPath = {
 
 export const completenessPath = {
     baseUrl: baseUrls.completeness,
-    permissions: ['iaso_completeness'],
+    permissions: [Permission.COMPLETENESS],
     component: props => <Completeness {...props} />,
     params: [
         {
@@ -616,7 +638,7 @@ export const completenessPath = {
 
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
-    permissions: ['iaso_completeness_stats'],
+    permissions: [Permission.COMPLETENESS_STATS],
     component: props => <CompletenessStats {...props} />,
     params: [
         {
@@ -661,7 +683,7 @@ export const completenessStatsPath = {
 
 export const usersPath = {
     baseUrl: baseUrls.users,
-    permissions: ['iaso_users'],
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     component: props => <Users {...props} />,
     params: [
         {
@@ -709,7 +731,7 @@ export const usersPath = {
 
 export const userRolesPath = {
     baseUrl: baseUrls.userRoles,
-    permissions: ['iaso_user_roles'],
+    permissions: [Permission.USER_ROLES],
     component: props => <UserRoles {...props} />,
     params: [
         {
@@ -729,7 +751,7 @@ export const userRolesPath = {
 
 export const projectsPath = {
     baseUrl: baseUrls.projects,
-    permissions: ['iaso_projects'],
+    permissions: [Permission.PROJECTS],
     component: props => <Projects {...props} />,
     params: [
         {
@@ -742,7 +764,7 @@ export const projectsPath = {
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
-    permissions: ['iaso_sources'],
+    permissions: [Permission.SOURCES],
     component: props => <DataSources {...props} />,
     params: [
         {
@@ -753,9 +775,26 @@ export const dataSourcesPath = {
     ],
 };
 
+export const dataSourceDetailsPath = {
+    baseUrl: baseUrls.sourceDetails,
+    permissions: ['iaso_sources'],
+    component: props => <DataSourceDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'sourceId',
+        },
+        ...paginationPathParams,
+    ],
+};
+
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
-    permissions: ['iaso_data_tasks'],
+    permissions: [Permission.DATA_TASKS],
     component: props => <Tasks {...props} />,
     params: [
         {
@@ -768,7 +807,7 @@ export const tasksPath = {
 
 export const devicesPath = {
     baseUrl: baseUrls.devices,
-    permissions: ['iaso_data_devices'],
+    permissions: [Permission.DATA_DEVICES],
     component: props => <Devices {...props} />,
     params: [
         {
@@ -781,7 +820,7 @@ export const devicesPath = {
 
 export const groupsPath = {
     baseUrl: baseUrls.groups,
-    permissions: ['iaso_org_unit_groups'],
+    permissions: [Permission.ORG_UNIT_GROUPS],
     component: props => <Groups {...props} />,
     params: [
         {
@@ -801,7 +840,7 @@ export const groupsPath = {
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
-    permissions: ['iaso_org_unit_types'],
+    permissions: [Permission.ORG_UNIT_TYPES],
     component: props => <Types {...props} />,
     params: [
         {
@@ -820,7 +859,7 @@ export const orgUnitTypesPath = {
 };
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <Beneficiaries {...props} />,
     params: [
         {
@@ -867,7 +906,7 @@ export const entitiesPath = {
 };
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <BeneficiaryDetail {...props} />,
     params: [
         {
@@ -884,7 +923,7 @@ export const entityDetailsPath = {
 
 export const entitySubmissionDetailPath = {
     baseUrl: baseUrls.entitySubmissionDetail,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <VisitDetails {...props} />,
     params: [
         {
@@ -904,7 +943,7 @@ export const entitySubmissionDetailPath = {
 
 export const entityTypesPath = {
     baseUrl: baseUrls.entityTypes,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <EntityTypes {...props} />,
     params: [
         {
@@ -924,8 +963,8 @@ export const entityTypesPath = {
 export const entityDuplicatesPath = {
     baseUrl: baseUrls.entityDuplicates,
     permissions: [
-        'iaso_entity_duplicates_read',
-        'iaso_entity_duplicates_write',
+        Permission.ENTITIES_DUPLICATE_READ,
+        Permission.ENTITIES_DUPLICATE_WRITE,
     ],
     component: props => <Duplicates {...props} />,
     params: [
@@ -1000,8 +1039,8 @@ export const entityDuplicatesPath = {
 export const entityDuplicatesDetailsPath = {
     baseUrl: baseUrls.entityDuplicateDetails,
     permissions: [
-        'iaso_entity_duplicates_read',
-        'iaso_entity_duplicates_write',
+        Permission.ENTITIES_DUPLICATE_READ,
+        Permission.ENTITIES_DUPLICATE_WRITE,
     ],
     component: props => <DuplicateDetails {...props} />,
     params: [
@@ -1022,7 +1061,7 @@ export const entityDuplicatesDetailsPath = {
 export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_planning'],
+    permissions: [Permission.PLANNINGS],
     component: props => <Planning {...props} />,
     params: [
         {
@@ -1054,7 +1093,7 @@ export const planningPath = {
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_planning'],
+    permissions: [Permission.PLANNINGS],
     component: props => <Assignments {...props} />,
     params: [
         {
@@ -1097,7 +1136,7 @@ export const assignmentsPath = {
 };
 export const teamsPath = {
     baseUrl: baseUrls.teams,
-    permissions: ['iaso_teams'],
+    permissions: [Permission.TEAMS],
     component: props => <Teams {...props} />,
     params: [
         {
@@ -1116,7 +1155,7 @@ export const teamsPath = {
 };
 export const storagesPath = {
     baseUrl: baseUrls.storages,
-    permissions: ['iaso_storages'],
+    permissions: [Permission.STORAGES],
     component: props => <Storages {...props} />,
     params: [
         {
@@ -1147,7 +1186,7 @@ export const storagesPath = {
 };
 export const storageDetailPath = {
     baseUrl: baseUrls.storageDetail,
-    permissions: ['iaso_storages'],
+    permissions: [Permission.STORAGES],
     component: props => <StorageDetails {...props} />,
     params: [
         {
@@ -1175,7 +1214,7 @@ export const storageDetailPath = {
 };
 export const workflowsPath = {
     baseUrl: baseUrls.workflows,
-    permissions: ['iaso_workflows'],
+    permissions: [Permission.WORKFLOWS],
     component: props => <Workflows {...props} />,
     params: [
         {
@@ -1202,7 +1241,7 @@ export const workflowsPath = {
 };
 export const workflowsDetailPath = {
     baseUrl: baseUrls.workflowDetail,
-    permissions: ['iaso_workflows'],
+    permissions: [Permission.WORKFLOWS],
     component: props => <WorkflowDetails {...props} />,
     params: [
         {
@@ -1225,6 +1264,12 @@ export const workflowsDetailPath = {
 export const page401 = {
     baseUrl: baseUrls.error401,
     component: () => <PageError errorCode="401" />,
+    params: [],
+};
+
+export const page403 = {
+    baseUrl: baseUrls.error403,
+    component: () => <PageError errorCode="403" />,
     params: [],
 };
 
@@ -1260,6 +1305,7 @@ export const routeConfigs = [
     userRolesPath,
     projectsPath,
     dataSourcesPath,
+    dataSourceDetailsPath,
     tasksPath,
     devicesPath,
     groupsPath,
@@ -1267,6 +1313,8 @@ export const routeConfigs = [
     entityTypesPath,
     pagesPath,
     page401,
+    page403,
+    page404,
     page500,
     teamsPath,
     planningPath,

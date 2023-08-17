@@ -34,11 +34,12 @@ const goToPage = (
     });
     const options = {
         method: 'GET',
-        pathname: '/api/profiles',
+        pathname: '/api/profiles/',
     };
     const query = {
         ...defaultQuery,
         ...formQuery,
+        "managedUsersOnly": "true",
     };
     cy.intercept({ ...options, query }, req => {
         req.continue(res => {
@@ -82,7 +83,7 @@ describe('Users', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 

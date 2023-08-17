@@ -11,7 +11,7 @@ export const useGetProfilesDropdown = (): UseQueryResult<
 > => {
     return useSnackQuery(
         ['profiles'],
-        () => getRequest('/api/profiles'),
+        () => getRequest('/api/profiles/'),
         MESSAGES.projectsError,
         {
             select: data => {

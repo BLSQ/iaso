@@ -6,6 +6,7 @@ from rest_framework import serializers, permissions
 import iaso.models as m
 from iaso.models import FormVersion, MappingVersion
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
+from hat.menupermissions import models as permission
 
 
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
@@ -166,9 +167,9 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
 
 class MappingVersionsViewSet(ModelViewSet):
-    """Mapping versions API
+    f"""Mapping versions API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_mappings" permission
+    This API is restricted to authenticated users having the "{permission.MAPPINGS}" permission
 
     GET /api/mappingversions/
     GET /api/mappingversions/<id>
@@ -176,7 +177,7 @@ class MappingVersionsViewSet(ModelViewSet):
     PATCH /api/mappingversions/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_mappings")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.MAPPINGS)]  # type: ignore
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()

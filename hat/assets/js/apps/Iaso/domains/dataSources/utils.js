@@ -1,4 +1,10 @@
+import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
+import { Chip } from '@material-ui/core';
+import {
+    HighlightOffOutlined as NotCheckedIcon,
+    CheckCircleOutlineOutlined as CheckedIcon,
+} from '@material-ui/icons';
 import MESSAGES from './messages';
 
 /**
@@ -100,4 +106,164 @@ export const dataSourceVersionsAsOptions = (
                     : versionNumber,
         };
     });
+};
+
+const sortByNumberAsc = (sourceA, sourceB) => {
+    return sourceA.number - sourceB.number;
+};
+const sortByNumberDesc = (sourceA, sourceB) => {
+    return sourceB.number - sourceA.number;
+};
+const sortByOrgUnitsAsc = (sourceA, sourceB) => {
+    return sourceA.org_units_count - sourceB.org_units_count;
+};
+const sortByOrgUnitsDesc = (sourceA, sourceB) => {
+    return sourceB.org_units_count - sourceA.org_units_count;
+};
+
+export const getSortedSourceVersions = (
+    dataForTable,
+    sortFocus,
+    sortBy,
+    formatDataForTable,
+    formatMessage,
+) => {
+    if (sortFocus === 'number' && sortBy === 'asc') {
+        return formatDataForTable(dataForTable, sortByNumberAsc);
+    }
+    if (sortFocus === 'number' && sortBy === 'desc') {
+        return formatDataForTable(dataForTable, sortByNumberDesc);
+    }
+    if (sortFocus === 'org_units_count' && sortBy === 'asc') {
+        return formatDataForTable(dataForTable, sortByOrgUnitsAsc);
+    }
+    if (sortFocus === 'org_units_count' && sortBy === 'desc') {
+        return formatDataForTable(dataForTable, sortByOrgUnitsDesc);
+    }
+    console.warn(
+        formatMessage(MESSAGES.dataSourceVersionSortingWarn, {
+            sortBy,
+            sortFocus,
+        }),
+    );
+
+    return [];
+};
+
+export const handleSort = (
+    focus,
+    sortFocus,
+    sortBy,
+    setSortFocus,
+    setSortBy,
+) => {
+    if (sortFocus !== focus) {
+        setSortFocus(focus);
+        setSortBy('asc');
+    } else if (sortBy === 'asc') {
+        setSortBy('desc');
+    } else {
+        setSortBy('asc');
+    }
+};
+
+export const handleTableParamsChange = (
+    tableParams,
+    handleSortFunction,
+    setRowsPerPage,
+    setPage,
+) => {
+    if (tableParams.order) {
+        handleSortFunction(tableParams.order.replace('-', ''));
+    }
+    if (tableParams.pageSize) {
+        setRowsPerPage(parseInt(tableParams.pageSize, 10));
+    }
+    if (tableParams.page) {
+        setPage(parseInt(tableParams.page, 10) - 1);
+    }
+};
+
+export const getTableParams = (rowsPerPage, page) => ({
+    pageSize: rowsPerPage,
+    page: page + 1,
+});
+
+export const getTablePages = (dataForTable, rowsPerPage) => {
+    return dataForTable.length
+        ? Math.ceil(dataForTable.length / rowsPerPage)
+        : 0;
+};
+
+export const getLabelsAndValues = (dataSource, formatMessage) => {
+    const keys = [
+        'name',
+        'description',
+        'url',
+        'default_version',
+        'projects',
+        'read_only',
+    ];
+
+    const translations = {
+        name: 'dataSourceName',
+        description: 'dataSourceDescription',
+        url: 'dhisUrl',
+        default_version: 'defaultVersion',
+        projects: 'projects',
+        read_only: 'dataSourceReadOnly',
+    };
+    const getProjects = projects => {
+        return (
+            <>
+                {projects.flat().map(project => {
+                    return (
+                        <Chip
+                            label={project.name}
+                            key={project.id}
+                            color="primary"
+                        />
+                    );
+                })}
+            </>
+        );
+    };
+
+    const getDefaultVersion = defaultVersion => {
+        if (defaultVersion) {
+            return <CheckedIcon style={{ color: 'green' }} />;
+        }
+        return <NotCheckedIcon color="disabled" />;
+    };
+
+    const fields = [];
+
+    Object.entries(dataSource).forEach(([key, source]) => {
+        const label = formatMessage(MESSAGES[translations[key]]);
+        if (keys.includes(key)) {
+            switch (key) {
+                case 'default_version':
+                    fields.push({
+                        label,
+                        value: getDefaultVersion(!!source),
+                    });
+                    break;
+                case 'projects':
+                    fields.push({
+                        label,
+                        value: getProjects(source),
+                    });
+                    break;
+                case 'read_only':
+                    fields.push({
+                        label,
+                        value: getDefaultVersion(!!source),
+                    });
+                    break;
+                default:
+                    fields.push({ label, value: source });
+            }
+        }
+    });
+    return fields;
 };

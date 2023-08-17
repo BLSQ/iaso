@@ -10,6 +10,7 @@ import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
 from iaso.api.common import ModelViewSet, HasPermission
 from iaso.models import WorkflowVersion
+from hat.menupermissions import models as permission
 
 
 class WorkflowVersionViewSet(ModelViewSet):
@@ -20,7 +21,7 @@ class WorkflowVersionViewSet(ModelViewSet):
     Else returns a paginated list of all the workflow versions.
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["name", "created_at", "updated_at", "id", "status"]
     serializer_class = ser.WorkflowVersionDetailSerializer

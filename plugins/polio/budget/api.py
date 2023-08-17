@@ -23,6 +23,7 @@ from plugins.polio.budget.serializers import (
 )
 from plugins.polio.helpers import CustomFilterBackend
 from plugins.polio.models import Campaign
+from hat.menupermissions import models as permission
 
 
 # FIXME maybe: Maybe we should inherit from CampaignViewSet directly to not duplicate all the order and filter logic
@@ -38,7 +39,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     serializer_class = CampaignBudgetSerializer
     exporter_serializer_class = ExportCampaignBudgetSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
-    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
 
     # Make this read only
@@ -133,7 +134,7 @@ class BudgetStepViewSet(ModelViewSet):
             return UpdateBudgetStepSerializer
         return BudgetStepSerializer
 
-    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
 
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [
@@ -200,7 +201,7 @@ class WorkflowViewSet(ViewSet):
     This endpoint is currently used to show the possible state in the filter
     """
 
-    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
 
     # At the moment I only implemented retrieve /current hardcode because we only support one workflow at the time
     # to keep the design simple, change if/when we want to support multiple workflow.

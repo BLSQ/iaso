@@ -1,15 +1,20 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
 
-from iaso.api.profiles import HasProfilePermission
 from iaso.api.tasks import TaskSerializer
 from iaso.tasks.profiles_bulk_update import profiles_bulk_update
+from hat.menupermissions import models as permission
+
+
+class HasBulkUpdatePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.has_perm(permission.USERS_ADMIN) or request.user.has_perm(permission.USERS_MANAGED)
 
 
 class ProfilesBulkUpdate(viewsets.ViewSet):
     """Bulk update Profiles"""
 
-    permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
+    permission_classes = [permissions.IsAuthenticated, HasBulkUpdatePermission]
 
     def create(self, request):
         select_all = request.data.get("select_all", False)
@@ -27,10 +32,10 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
         perms = request.data.get("permissions", None)
         location = request.data.get("location", None)
         org_unit_type = request.data.get("orgUnitTypes", None)
-        parent_ou = True if request.data.get("ouParent", None) == "true" else False
-        children_ou = True if request.data.get("ouChildren", None) == "true" else False
+        parent_ou = request.data.get("ouParent", None) == "true"
+        children_ou = request.data.get("ouChildren", None) == "true"
         projects = request.data.get("projects", None)
-        userRoles = request.data.get("userRoles", None)
+        user_roles = request.data.get("userRoles", None)
 
         user = self.request.user
 
@@ -53,7 +58,7 @@ class ProfilesBulkUpdate(viewsets.ViewSet):
             children_ou=children_ou,
             projects=projects,
             user=user,
-            userRoles=userRoles,
+            user_roles=user_roles,
         )
         return Response(
             {"task": TaskSerializer(instance=task).data},

@@ -70,12 +70,12 @@ def find_orgunit_in_cache(cache_dict, name, parent_name=None):
 def make_orgunits_cache(orgunits):
     cache_dict = defaultdict(list)
     for f in orgunits:
-        cache_dict[f.name.lower()].append(f)
+        cache_dict[f.name.lower().strip()].append(f)
     for f in orgunits:
         if f.aliases:
             for a in f.aliases:
-                if not f.name.lower() == a.lower():
-                    cache_dict[a.lower()].append(f)
+                if not f.name.lower().strip() == a.lower().strip():
+                    cache_dict[a.lower().strip()].append(f)
     return cache_dict
 
 

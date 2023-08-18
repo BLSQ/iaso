@@ -2282,6 +2282,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshPage',
         defaultMessage: 'Refresh page',
     },
+    vaccinemodule: {
+        id: 'iaso.polio.title.vaccinemodule',
+        defaultMessage: 'Vaccine module',
+    },
+    nopv2Auth: {
+        id: 'iaso.polio.title.nopv2Auth',
+        defaultMessage: 'NOPV2 authorisations',
+    },
+    signature: {
+        id: 'iaso.polio.label.signature',
+        defaultMessage: 'Signature',
+    },
+    expired: {
+        id: 'iaso.polio.label.expired',
+        defaultMessage: 'Expired',
+    },
 });
 
 export default MESSAGES;

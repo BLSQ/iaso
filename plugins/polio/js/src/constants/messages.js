@@ -2298,6 +2298,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.expired',
         defaultMessage: 'Expired',
     },
+    quantity: {
+        id: 'iaso.polio.label.quantity',
+        defaultMessage: 'Quantity',
+    },
+    expirationDate: {
+        id: 'iaso.polio.label.expirationDate',
+        defaultMessage: 'Expiration date',
+    },
 });
 
 export default MESSAGES;

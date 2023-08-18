@@ -209,6 +209,8 @@
     "iaso.polio.label.configuration": "Configuration",
     "iaso.polio.label.countryBlock": "Country block",
     "iaso.polio.label.countryNameInSheet": "Country Name in sheet",
+    "iaso.polio.label.quantity": "Quantity",
+    "iaso.polio.label.expirationDate": "Expiration date",
     "iaso.polio.label.create": "Create",
     "iaso.polio.label.creation_email_send_at": "Email creation date",
     "iaso.polio.label.csv": "CSV",

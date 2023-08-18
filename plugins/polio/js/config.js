@@ -332,17 +332,17 @@ const routes = [
     },
     {
         baseUrl: NOPV2_AUTH,
-        component: () => <Nopv2Authorisations />,
+        component: props => <Nopv2Authorisations {...props} />,
         permissions: ['iaso_polio'],
         params: [
             ...paginationPathParams,
             {
                 isRequired: false,
-                key: 'countryBloc',
+                key: 'status',
             },
             {
                 isRequired: false,
-                key: 'status',
+                key: 'countryBlock',
             },
         ],
     },

@@ -30,6 +30,8 @@ from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
+from rest_framework.exceptions import PermissionDenied
+
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
@@ -43,7 +45,8 @@ from iaso.api.common import (
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
-    TimestampField, HasPermission,
+    TimestampField,
+    HasPermission,
 )
 from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (
@@ -2075,7 +2078,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
     class Meta:
         model = VaccineAuthorization
         fields = ["country", "account", "expiration_date", "created_at", "updated_at", "quantity", "status", "comment"]
-
+        read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
 
@@ -2088,6 +2091,11 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
 
+    def get_permission(self):
+        if self.action in ["create", "update", "delete", "partial_update", "destroy"]:
+            if not self.request.user.has_perms("iaso_polio_vaccine_authorizations_admin"):
+                raise PermissionDenied()
+
     def get_queryset(self):
         user = self.request.user
         user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
@@ -2097,6 +2105,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         block_country = self.request.query_params.get("block_country", None)
         only_deleted = self.request.query_params.get("only_deleted", None)
         search = self.request.query_params.get("search", None)
+        auth_status = self.request.query_params.get("auth_status", None)
 
         if only_deleted:
             queryset = queryset.filter(deleted_at__isnull=False)
@@ -2107,6 +2116,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
             queryset = queryset.filter(country__pk__in=block_country)
         if search:
             queryset = queryset.filter(country__name__icontains=search)
+        if auth_status:
+            auth_status = auth_status.split(",")
+            queryset = queryset.filter(status__in=auth_status)
 
         return queryset
 

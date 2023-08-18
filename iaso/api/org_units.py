@@ -330,7 +330,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if roots_for_user:
             org_unit_for_profile = request.user.iaso_profile.org_units.only("id")
-            if org_unit_for_profile:
+            if org_unit_for_profile and not request.user.is_superuser:
                 queryset = queryset.filter(id__in=org_unit_for_profile)
             else:
                 queryset = queryset.filter(parent__isnull=True)

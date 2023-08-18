@@ -49,6 +49,8 @@ class Migration(migrations.Migration):
                     ("iaso_org_unit_groups", "Org unit groups"),
                     ("iaso_polio_vaccine_authorizations_read_only", "Polio Vaccine Authorizations Read Only"),
                     ("iaso_polio_vaccine_authorizations_admin", "Polio Vaccine Authorizations Admin"),
+                    ("iaso_write_sources", "Write data source"),
+                    ("iaso_page_write", "Write page"),
                 ),
             },
         ),

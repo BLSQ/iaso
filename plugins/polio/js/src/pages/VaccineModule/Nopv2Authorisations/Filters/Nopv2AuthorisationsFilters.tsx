@@ -29,8 +29,8 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                     type="select"
                     multi
                     clearable
-                    keyValue="countryBlock"
-                    value={filters.countryBlock}
+                    keyValue="block_country"
+                    value={filters.block_country}
                     onChange={handleChange}
                     loading={isFetchingCountryBlocks}
                     options={countryBlocksOptions}
@@ -42,8 +42,8 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                     type="select"
                     multi
                     clearable
-                    keyValue="status"
-                    value={filters.status}
+                    keyValue="auth_status"
+                    value={filters.auth_status}
                     onChange={handleChange}
                     options={statusOptions}
                     labelString={formatMessage(MESSAGES.status)}

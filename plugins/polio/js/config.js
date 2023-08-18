@@ -338,11 +338,11 @@ const routes = [
             ...paginationPathParams,
             {
                 isRequired: false,
-                key: 'status',
+                key: 'auth_status',
             },
             {
                 isRequired: false,
-                key: 'countryBlock',
+                key: 'block_country',
             },
         ],
     },

@@ -8,29 +8,13 @@ import {
     DuplicatesList,
 } from '../../types';
 import { getRequest } from '../../../../../libs/Api';
+import { formatParams } from '../../../../../utils/requests';
 
 const apiUrl = '/api/entityduplicates';
 
 const getDuplicates = async (queryString: string) => {
     const url = `${apiUrl}/?${queryString}`;
     return getRequest(url);
-};
-
-const formatParams = (params: Record<string, any>) => {
-    const copy = { ...params };
-    Object.keys(params).forEach(key => {
-        if (copy[key] === undefined) {
-            delete copy[key];
-        }
-    });
-    if (params.pageSize) {
-        copy.limit = params.pageSize;
-        delete copy.pageSize;
-    }
-    if (params.accountId) {
-        delete copy.accountId;
-    }
-    return copy;
 };
 
 export type DuplicatesGETParams = {

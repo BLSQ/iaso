@@ -23,8 +23,14 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
         cls.account = Account.objects.create(name="polio", default_version=cls.source_version_1)
         cls.account_2 = Account.objects.create(name="second_account", default_version=cls.source_version_1)
-        cls.user_1 = cls.create_user_with_profile(username="user_1", account=cls.account, permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"])
-        cls.user_2 = cls.create_user_with_profile(username="user_2", account=cls.account, permissions=["iaso_polio_vaccine_authorizations_read_only"])
+        cls.user_1 = cls.create_user_with_profile(
+            username="user_1",
+            account=cls.account,
+            permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
+        )
+        cls.user_2 = cls.create_user_with_profile(
+            username="user_2", account=cls.account, permissions=["iaso_polio_vaccine_authorizations_read_only"]
+        )
 
         cls.project = m.Project.objects.create(
             name="Polio",
@@ -38,9 +44,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             account=cls.account_2,
         )
 
-        cls.org_unit_type_country = OrgUnitType.objects.create(
-            name="COUNTRY",
-            category="COUNTRY")
+        cls.org_unit_type_country = OrgUnitType.objects.create(name="COUNTRY", category="COUNTRY")
 
         cls.org_unit_type_country.projects.set([cls.project, cls.project_2])
         cls.org_unit_type_country.save()
@@ -74,15 +78,17 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
     def test_can_post(self):
         self.client.force_authenticate(self.user_1)
-        response = self.client.post("/api/polio/vaccineauthorizations/",
-                         data={
-                             "country": self.org_unit_DRC.pk,
-                             "account": self.account.pk,
-                             "quantity": 12346,
-                             "status": "ongoing",
-                             "comment": "waiting for approval.",
-                             "expiration_date": "2024-02-01"
-                         })
+        response = self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "account": self.account.pk,
+                "quantity": 12346,
+                "status": "ongoing",
+                "comment": "waiting for approval.",
+                "expiration_date": "2024-02-01",
+            },
+        )
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
         self.assertEqual(response.data["account"], self.account.pk)
@@ -104,7 +110,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=1000000,
             status="signature",
             comment="validated",
-            expiration_date="2024-02-01"
+            expiration_date="2024-02-01",
         )
 
         response = self.client.get("/api/polio/vaccineauthorizations/")

@@ -43,7 +43,8 @@ from iaso.api.common import (
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
-    TimestampField, HasPermission,
+    TimestampField,
+    HasPermission,
 )
 from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (

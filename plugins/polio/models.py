@@ -876,7 +876,6 @@ class BudgetFiles(models.Model):
 
 
 class VaccineAuthorization(SoftDeletableModel):
-
     STATUS = (
         ("ongoing", "Ongoing"),
         ("signature", "Sent for signature"),

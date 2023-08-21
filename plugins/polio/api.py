@@ -2143,8 +2143,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         country = self.request.data.get("country")
-        if country not in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None):
-            raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
+        if not self.request.user.is_superuser:
+            if country not in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None):
+                raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
 
         return super().create(request)
 

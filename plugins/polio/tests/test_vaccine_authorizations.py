@@ -84,6 +84,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
     def test_can_post(self):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.id])
+
         response = self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
@@ -95,6 +96,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "expiration_date": "2024-02-01",
             },
         )
+
+        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
         self.assertEqual(response.data["account"], self.account.pk)
@@ -114,16 +117,20 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=123456,
             status="ongoing",
             comment="waiting for approval",
-            date="2024-02-01"
+            expiration_date="2024-02-01"
         )
 
         response = self.client.get(f"/api/polio/vaccineauthorizations/{vaccine_auth.id}/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data["country"]["id"], 1)
+        self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
+        self.assertEqual(response.data["account"], 1)
+        self.assertEqual(response.data["quantity"], 123456)
+        self.assertEqual(response.data["status"], "ongoing")
+        self.assertEqual(response.data["comment"], "waiting for approval")
 
     def test_can_access_list(self):
-
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.id])
 
@@ -142,7 +149,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 1)
 
     def test_without_perm_cant_read(self):
-
         self.client.force_authenticate(self.user_3)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.id])
 

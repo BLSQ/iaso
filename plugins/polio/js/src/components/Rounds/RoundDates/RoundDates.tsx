@@ -38,12 +38,6 @@ export const RoundDates: FunctionComponent<Props> = ({
         values: { rounds = [] },
         initialValues,
     } = useFormikContext<Campaign>();
-    // const currentStartDate = rounds.find(
-    //     round => round.number === roundNumber,
-    // )?.started_at;
-    // const currentEndDate = rounds.find(
-    //     round => round.number === roundNumber,
-    // )?.ended_at;
     const currentStartDate = rounds?.[roundIndex]?.started_at;
     const currentEndDate = rounds?.[roundIndex]?.ended_at;
     // For initial data, wee need to perform a find, because if we're adding round 0

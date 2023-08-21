@@ -13,7 +13,6 @@ export const Nopv2AuthorisationsTable: FunctionComponent<Props> = ({
     const safeParams = useUrlParams(params);
     const { data: latestAuth, isFetching } =
         useLatestAuthorisations(safeParams);
-    console.log('data', latestAuth);
     const columns = useNopv2AuthTableColumns();
     return (
         <TableWithDeepLink

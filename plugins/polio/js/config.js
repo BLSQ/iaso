@@ -34,6 +34,7 @@ import {
     BUDGET_DETAILS,
     LQAS_AFRO_MAP_URL,
     NOPV2_AUTH,
+    NOPV2_AUTH_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -343,6 +344,18 @@ const routes = [
             {
                 isRequired: false,
                 key: 'block_country',
+            },
+        ],
+    },
+    {
+        baseUrl: NOPV2_AUTH_DETAILS,
+        component: props => <Nopv2Authorisations {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'country',
             },
         ],
     },

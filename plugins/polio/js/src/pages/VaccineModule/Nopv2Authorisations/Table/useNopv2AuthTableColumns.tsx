@@ -1,9 +1,17 @@
 import React, { useMemo } from 'react';
-import { formatThousand, useSafeIntl } from 'bluesquare-components';
+import {
+    Column,
+    IconButton,
+    formatThousand,
+    useSafeIntl,
+} from 'bluesquare-components';
+import { NOPV2_AUTH_DETAILS } from '../../../../constants/routes';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../../../constants/messages';
 
-export const useNopv2AuthTableColumns = () => {
+const baseUrl = NOPV2_AUTH_DETAILS;
+
+export const useNopv2AuthTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -47,10 +55,17 @@ export const useNopv2AuthTableColumns = () => {
             },
             {
                 Header: formatMessage(MESSAGES.actions),
-                accessor: 'none',
-                Cell: settings => (
-                    <span>{settings.row.original.country.id}</span>
-                ),
+                accessor: 'account',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <IconButton
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.details}
+                            url={`${baseUrl}/order/-expiration_date/pageSize/20/page/1/country/${settings.row.original.country.id}`}
+                        />
+                    );
+                },
             },
         ];
     }, [formatMessage]);

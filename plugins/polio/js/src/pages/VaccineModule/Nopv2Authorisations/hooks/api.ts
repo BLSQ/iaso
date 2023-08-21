@@ -1,4 +1,4 @@
-import { UseMutationResult } from 'react-query';
+import { UseMutationResult, useQueryClient } from 'react-query';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import {
     useSnackMutation,
@@ -60,11 +60,17 @@ const deleteNopv2Authorisation = authorisationId => {
     return deleteRequest(`${baseUrl}${authorisationId}`);
 };
 
-export const useDeleteNopv2Authorisation = (
-    authoristationId: number,
-): UseMutationResult => {
+export const useDeleteNopv2Authorisation = (): UseMutationResult => {
+    const queryClient = useQueryClient();
     return useSnackMutation({
-        mutationFn: () => deleteNopv2Authorisation(authoristationId),
-        invalidateQueryKey: 'nopv2-auth',
+        mutationFn: authoristationId =>
+            deleteNopv2Authorisation(authoristationId),
+        options: {
+            // TODO refactor when useSnackMtation refactor is merged
+            onSuccess: () => {
+                queryClient.invalidateQueries('nopv2-auth');
+                queryClient.invalidateQueries('latest-nopv2-auth');
+            },
+        },
     });
 };

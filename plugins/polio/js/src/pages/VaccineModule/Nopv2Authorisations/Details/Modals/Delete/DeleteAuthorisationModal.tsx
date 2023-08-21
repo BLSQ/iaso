@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import {
     ConfirmCancelModal,
     makeFullModal,
@@ -21,7 +21,11 @@ const DeleteAuthorisationModal: FunctionComponent<Props> = ({
 }) => {
     const testId = 'delete-nopv2-auth';
     const { formatMessage } = useSafeIntl();
-    const { mutate: deleteAuth } = useDeleteNopv2Authorisation(authorisationId);
+    const { mutate: deleteAuth } = useDeleteNopv2Authorisation();
+    const onConfirm = useCallback(
+        () => deleteAuth(authorisationId),
+        [authorisationId, deleteAuth],
+    );
     return (
         <ConfirmCancelModal
             open={isOpen}
@@ -30,7 +34,7 @@ const DeleteAuthorisationModal: FunctionComponent<Props> = ({
             id={testId}
             dataTestId={testId}
             titleMessage={MESSAGES.deleteNopv2Auth}
-            onConfirm={deleteAuth}
+            onConfirm={onConfirm}
             onCancel={() => null}
             confirmMessage={MESSAGES.yes}
             cancelMessage={MESSAGES.no}

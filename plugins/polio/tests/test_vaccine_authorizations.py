@@ -122,7 +122,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         response = self.client.get(f"/api/polio/vaccineauthorizations/{vaccine_auth.id}/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data["country"]["id"], 1)
+        self.assertEqual(response.data["country"]["id"], self.org_unit_DRC.id)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
         self.assertEqual(response.data["account"], 1)
         self.assertEqual(response.data["quantity"], 123456)

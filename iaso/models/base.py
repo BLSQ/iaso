@@ -30,6 +30,7 @@ from django.utils.translation import gettext_lazy as _
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models.data_source import SourceVersion, DataSource
 from iaso.models.org_unit import OrgUnit
+from iaso.models.project import Project
 from iaso.utils import flat_parse_xml_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
@@ -121,6 +122,38 @@ class Account(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
+
+    def save(self, *args, **kwargs):
+        """Override the default save new account method of an account so that when the default version is not selected
+        it can create direcly default project, data source and source version et make it default
+
+        The project, data source and source version creation will happen only when it's a new account to be created
+        and when the default version is not selected
+        """
+        if not self.pk and not self.default_version:
+            super(Account, self).save(*args, **kwargs)
+            project = Project.objects.create(
+                name=self.name + " project", app_id=self.name + " app id", account=self, needs_authentication=True
+            )
+            data_source = DataSource.objects.create(name=self.name + " source", read_only=False)
+            # Link the data source with the project
+            if project.pk:
+                data_source.projects.set([project])
+                data_source.save()
+
+            if data_source.pk:
+                # As it's a new data source the number of the source version to be created will be one(1)
+                source_version = SourceVersion.objects.create(data_source=data_source, number=1)
+                if source_version.pk:
+                    # Link the data source with its default source version
+                    data_source.default_version = source_version
+                    data_source.save()
+                    # link the account with de default source version
+                    self.default_version = source_version
+                    self.save()
+
+        else:
+            super(Account, self).save(*args, **kwargs)
 
 
 class RecordType(models.Model):

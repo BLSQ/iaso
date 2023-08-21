@@ -393,13 +393,10 @@ const MESSAGES = defineMessages({
     iaso_page_write: {
         id: 'iaso.permissions.iaso_page_write',
         defaultMessage: 'Edit page',
-    iaso_polio_vaccine_authorizations_read_only: {
-        id: 'iaso.permissions.iaso_polio_vaccine_authorizations_read_only',
-        defaultMessage: 'Vaccine Authorizations Read Only',
     },
     iaso_polio_vaccine_authorizations_admin: {
         id: 'iaso.permissions.iaso_polio_vaccine_authorizations_admin',
-        defaultMessage: 'Vaccine Authorizations Admin'
+        defaultMessage: 'Vaccine Authorizations Admin',
     },
 });
 

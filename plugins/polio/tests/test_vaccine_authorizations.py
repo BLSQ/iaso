@@ -124,7 +124,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["country"]["id"], self.org_unit_DRC.id)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
-        self.assertEqual(response.data["account"], 1)
+        self.assertEqual(response.data["account"], self.user_1.iaso_profile.account.id)
         self.assertEqual(response.data["quantity"], 123456)
         self.assertEqual(response.data["status"], "ongoing")
         self.assertEqual(response.data["comment"], "waiting for approval")

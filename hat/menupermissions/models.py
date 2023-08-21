@@ -161,10 +161,10 @@ class CustomPermissionSupport(models.Model):
             (_DATASTORE_WRITE, _("Write data store")),
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
-            (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
-            (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
+            (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
+            (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
         )
 
     @staticmethod

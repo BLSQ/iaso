@@ -47,6 +47,7 @@ from iaso.api.common import (
     CONTENT_TYPE_CSV,
     TimestampField,
     HasPermission,
+    Paginator,
 )
 from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (
@@ -2077,24 +2078,54 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VaccineAuthorization
-        fields = ["country", "account", "expiration_date", "created_at", "updated_at", "quantity", "status", "comment"]
+        fields = [
+            "id",
+            "country",
+            "account",
+            "expiration_date",
+            "created_at",
+            "updated_at",
+            "quantity",
+            "status",
+            "comment",
+        ]
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
 
 
+class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+        write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+        if request.method == "GET":
+            can_get = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(read_perm)
+                or request.user.is_superuser
+            )
+            return can_get
+        elif request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
+            can_post = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(write_perm)
+                or request.user.is_superuser
+            )
+            return can_post
+        else:
+            return False
+
+
 @swagger_auto_schema(tags=["vaccineauthorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY)]
+    permission_classes = [HassVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
-
-    def get_permission(self):
-        if self.action in ["create", "update", "delete", "partial_update", "destroy"]:
-            if not self.request.user.has_perms("iaso_polio_vaccine_authorizations_admin"):
-                raise PermissionDenied()
+    pagination_class = Paginator
 
     def get_queryset(self):
         user = self.request.user
@@ -2122,11 +2153,22 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         return queryset
 
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        country = self.request.data.get("country")
+        if not self.request.user.is_superuser:
+            if country not in [
+                str(ou.id) for ou in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None)
+            ]:
+                raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
+
+        return super().create(request)
+
     @action(detail=False, methods=["POST", "GET"])
     def get_most_recent_update(self, request):
         """
         return the most recent Authorization by country for all countries
         """
+
         most_recent_dates = (
             VaccineAuthorization.objects.filter(
                 country=OuterRef("country"), account=self.request.user.iaso_profile.account
@@ -2143,6 +2185,12 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         recent_per_country = VaccineAuthorization.objects.filter(
             id=Subquery(most_recent_authorizations.values("id"))
         ).select_related("country")
+
+        page = self.paginate_queryset(recent_per_country)
+
+        if page:
+            serializer = VaccineAuthorizationSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
         serializer = VaccineAuthorizationSerializer(recent_per_country, many=True)
         serialized_data = serializer.data

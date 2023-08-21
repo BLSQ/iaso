@@ -46,6 +46,7 @@ import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.ts
 import { BudgetList } from './src/pages/Budget/index.tsx';
 import { LqasAfroOverview } from './src/pages/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
 import { Nopv2Authorisations } from './src/pages/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
+import { Nopv2AuthorisationsDetails } from './src/pages/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
 
 const campaignsFilters = [
     {
@@ -349,13 +350,17 @@ const routes = [
     },
     {
         baseUrl: NOPV2_AUTH_DETAILS,
-        component: props => <Nopv2Authorisations {...props} />,
+        component: props => <Nopv2AuthorisationsDetails {...props} />,
         permissions: ['iaso_polio'],
         params: [
             ...paginationPathParams,
             {
                 isRequired: false,
-                key: 'country',
+                key: 'countryId',
+            },
+            {
+                isRequired: false,
+                key: 'countryName',
             },
         ],
     },

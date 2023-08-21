@@ -1,6 +1,6 @@
 import { ApiParams, UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
-import { formatParams } from '../utils/requests';
+import { cleanupParams } from '../utils/requests';
 
 type FormattedParams = ApiParams & Record<string, any>;
 
@@ -9,7 +9,7 @@ export const useApiParams = (
     defaults?: { order?: string; limit?: number; page?: number },
 ): FormattedParams => {
     return useMemo(() => {
-        const formattedParams: Record<string, any> = formatParams(params);
+        const formattedParams: Record<string, any> = cleanupParams(params);
         if (!params.order && defaults?.order) {
             formattedParams.order = defaults.order;
         }

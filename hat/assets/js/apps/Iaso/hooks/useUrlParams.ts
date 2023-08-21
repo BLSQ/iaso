@@ -1,6 +1,6 @@
 import { UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
-import { formatParams } from '../utils/requests';
+import { cleanupParams } from '../utils/requests';
 
 type FormattedParams = UrlParams & Record<string, any>;
 
@@ -13,7 +13,7 @@ export const useUrlParams = (
     },
 ): FormattedParams => {
     return useMemo(() => {
-        const formattedParams: Record<string, any> = formatParams(params);
+        const formattedParams: Record<string, any> = cleanupParams(params);
         if (!params.order && defaults?.order) {
             formattedParams.order = defaults.order;
         }

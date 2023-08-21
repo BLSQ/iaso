@@ -1,17 +1,9 @@
 import React, { useMemo } from 'react';
-import {
-    Column,
-    IconButton,
-    formatThousand,
-    useSafeIntl,
-} from 'bluesquare-components';
-import { NOPV2_AUTH_DETAILS } from '../../../../constants/routes';
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { Column, formatThousand, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
+import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 
-const baseUrl = NOPV2_AUTH_DETAILS;
-
-export const useNopv2AuthTableColumns = (): Column[] => {
+export const useNopv2AuthDetailsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -19,6 +11,12 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.country),
                 accessor: 'country.name',
                 sortable: true,
+            },
+            {
+                Header: formatMessage(MESSAGES.updated_at),
+                accessor: 'updated_at',
+                sortable: true,
+                Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.expirationDate),
@@ -53,17 +51,18 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                 ),
             },
             {
-                Header: formatMessage(MESSAGES.actions),
+                Header: formatMessage(MESSAGES.comment),
+                accessor: 'comment',
+            },
+            {
+                Header: formatMessage(MESSAGES.comment),
                 accessor: 'account',
-                sortable: false,
                 Cell: settings => {
-                    const { name, id } = settings.row.original.country;
                     return (
-                        <IconButton
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.details}
-                            url={`${baseUrl}/order/-expiration_date/pageSize/20/page/1/countryId/${id}/countryName/${name}`}
-                        />
+                        <>
+                            <div>EDIT</div>
+                            <div>DELETE</div>
+                        </>
                     );
                 },
             },

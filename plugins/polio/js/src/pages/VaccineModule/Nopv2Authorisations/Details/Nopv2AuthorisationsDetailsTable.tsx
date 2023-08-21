@@ -2,25 +2,25 @@ import React, { FunctionComponent } from 'react';
 import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { NOPV2_AUTH } from '../../../../constants/routes';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
-import { useGetAuthorisations, useGetLatestAuthorisations } from '../hooks/api';
-import { useNopv2AuthTableColumns } from './useNopv2AuthTableColumns';
+import { useNopv2AuthDetailsTableColumns } from './useNopv2AuthDetailsTableColumns';
+import { useGetAuthorisations } from '../hooks/api';
 
 type Props = { params: any };
 
-export const Nopv2AuthorisationsTable: FunctionComponent<Props> = ({
+export const Nopv2AuthorisationsDetailsTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const safeParams = useUrlParams(params);
-    // Waiting for backend API fix to uncomment
-    // const { data: latestAuth, isFetching } =
-    //     useGetLatestAuthorisations(safeParams);
-    const { data: latestAuth, isFetching } = useGetAuthorisations(safeParams);
-    const columns = useNopv2AuthTableColumns();
+    console.log('PARAMS', params);
+    console.log('SAFE PARAMS', safeParams);
+    const { data: authorisations, isFetching } =
+        useGetAuthorisations(safeParams);
+    const columns = useNopv2AuthDetailsTableColumns();
     return (
         <TableWithDeepLink
-            data={latestAuth?.results ?? []}
-            count={latestAuth?.count}
-            pages={latestAuth?.pages}
+            data={authorisations?.results ?? []}
+            count={authorisations?.count}
+            pages={authorisations?.pages}
             params={safeParams}
             columns={columns}
             baseUrl={NOPV2_AUTH}

@@ -5,8 +5,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import MESSAGES from './MESSAGES';
-import { useDeleteNopv2Authorisation } from '../../hooks/api';
-import { EditIconButton } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { useDeleteNopv2Authorisation } from '../../../hooks/api';
+import { EditIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 
 type Props = {
     isOpen: boolean;

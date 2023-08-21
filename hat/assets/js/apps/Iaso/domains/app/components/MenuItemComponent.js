@@ -15,7 +15,11 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import PropTypes from 'prop-types';
-import { commonStyles, theme as muiTheme } from 'bluesquare-components';
+import {
+    commonStyles,
+    theme as muiTheme,
+    useSafeIntl,
+} from 'bluesquare-components';
 
 import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
@@ -44,6 +48,7 @@ function MenuItem(props) {
     } = props;
     const currentUser = useCurrentUser();
     const urlLink = url;
+    const { formatMessage } = useSafeIntl();
 
     const path = useMemo(() => {
         if (urlLink || !menuItem.key) {
@@ -97,7 +102,11 @@ function MenuItem(props) {
                         primary={
                             <Box pl={menuItem.icon ? 0 : 2}>
                                 <Typography type="body2" color={color}>
-                                    {menuItem.label}
+                                    {menuItem.label.defaultMessage &&
+                                        menuItem.label.id &&
+                                        formatMessage(menuItem.label)}
+                                    {typeof menuItem.label === 'string' &&
+                                        menuItem.label}
                                 </Typography>
                             </Box>
                         }

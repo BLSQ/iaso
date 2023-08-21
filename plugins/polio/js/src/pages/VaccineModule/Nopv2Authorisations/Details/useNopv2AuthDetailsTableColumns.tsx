@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Column, formatThousand, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { DeleteAuthorisationModal } from './Modals/DeleteAuthorisationModal';
 
 export const useNopv2AuthDetailsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -61,7 +62,10 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
                     return (
                         <>
                             <div>EDIT</div>
-                            <div>DELETE</div>
+                            {/* @ts-ignore */}
+                            <DeleteAuthorisationModal
+                                authorisationId={settings.row.original.id}
+                            />
                         </>
                     );
                 },

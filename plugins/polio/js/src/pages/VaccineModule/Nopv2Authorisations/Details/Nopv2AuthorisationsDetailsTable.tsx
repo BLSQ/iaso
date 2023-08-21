@@ -11,8 +11,6 @@ export const Nopv2AuthorisationsDetailsTable: FunctionComponent<Props> = ({
     params,
 }) => {
     const safeParams = useUrlParams(params);
-    console.log('PARAMS', params);
-    console.log('SAFE PARAMS', safeParams);
     const { data: authorisations, isFetching } =
         useGetAuthorisations(safeParams);
     const columns = useNopv2AuthDetailsTableColumns();

@@ -1,6 +1,12 @@
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
-import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import {
+    useSnackMutation,
+    useSnackQuery,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import {
+    deleteRequest,
+    getRequest,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 const listUrl = '/api/polio/vaccineauthorizations/get_most_recent_update';
 const baseUrl = '/api/polio/vaccineauthorizations/';
@@ -46,5 +52,15 @@ export const useGetAuthorisations = params => {
                 return data;
             },
         },
+    });
+};
+
+const deleteNopv2Authorisation = authorisationId => {
+    return deleteRequest(`${baseUrl}/authorisationId`);
+};
+
+export const useDeleteNopv2Authorisation = (authoristationId: number) => {
+    return useSnackMutation({
+        mutationFn: () => deleteNopv2Authorisation(authoristationId),
     });
 };

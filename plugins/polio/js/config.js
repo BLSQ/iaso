@@ -46,7 +46,7 @@ import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.ts
 import { BudgetList } from './src/pages/Budget/index.tsx';
 import { LqasAfroOverview } from './src/pages/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
 import { Nopv2Authorisations } from './src/pages/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
-import { Nopv2AuthorisationsDetails } from './src/pages/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails';
+import { Nopv2AuthorisationsDetails } from './src/pages/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 
 const campaignsFilters = [
     {

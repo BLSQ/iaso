@@ -38,6 +38,7 @@ _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
 _PAGES = "iaso_pages"
+_PAGE_WRITE = "iaso_page_write"
 _PLANNING = "iaso_planning"
 _POLIO = "iaso_polio"
 _POLIO_BUDGET = "iaso_polio_budget"
@@ -46,6 +47,7 @@ _POLIO_CONFIG = "iaso_polio_config"
 _PROJECTS = "iaso_projects"
 _REGISTRY = "iaso_registry"
 _REPORTS = "iaso_reports"
+_SOURCE_WRITE = "iaso_write_sources"
 _SOURCES = "iaso_sources"
 _STORAGE = "iaso_storages"
 _SUBMISSIONS = "iaso_submissions"
@@ -76,6 +78,7 @@ ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
 PAGES = _PREFIX + _PAGES
+PAGE_WRITE = _PREFIX + _PAGE_WRITE
 PLANNING = _PREFIX + _PLANNING
 POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
@@ -86,6 +89,7 @@ POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS
 PROJECTS = _PREFIX + _PROJECTS
 REGISTRY = _PREFIX + _REGISTRY
 REPORTS = _PREFIX + _REPORTS
+SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
 SOURCES = _PREFIX + _SOURCES
 STORAGE = _PREFIX + _STORAGE
 SUBMISSIONS = _PREFIX + _SUBMISSIONS
@@ -157,6 +161,8 @@ class CustomPermissionSupport(models.Model):
             (_DATASTORE_WRITE, _("Write data store")),
             (_ORG_UNITS_TYPES, _("Org unit types")),
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
+            (_SOURCE_WRITE, _("Write data source")),
+            (_PAGE_WRITE, _("Write page")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
         )

@@ -2141,6 +2141,13 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         return queryset
 
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        country = self.request.data.get("country")
+        if country not in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None):
+            raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
+
+        return super().create(request)
+
     @action(detail=False, methods=["POST", "GET"])
     def get_most_recent_update(self, request):
         """

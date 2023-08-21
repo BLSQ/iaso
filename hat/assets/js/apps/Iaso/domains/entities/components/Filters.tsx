@@ -30,12 +30,18 @@ import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
 import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 import {
     useGetBeneficiariesApiParams,
+    useGetBeneficiaryTypesDropdown,
     useGetUsersDropDown,
 } from '../hooks/requests';
 import { useFiltersParams } from '../hooks/useFiltersParams';
 
 import { Params, Filters as FilterType } from '../types/filters';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
+import { useCurrentUser } from '../../../utils/usersUtils';
+import {
+    SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+    hasFeatureFlag,
+} from '../../../utils/featureFlags';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -48,6 +54,7 @@ type Props = {
 
 const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const getParams = useFiltersParams();
+    const currentUser = useCurrentUser();
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -65,6 +72,9 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
 
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+
+    const { data: types, isFetching: isFetchingTypes } =
+        useGetBeneficiaryTypesDropdown();
     const { data: teamOptions } = useGetTeamsDropdown({});
     const selectedTeam = useMemo(() => {
         return teamOptions?.find(
@@ -122,6 +132,22 @@ const Filters: FunctionComponent<Props> = ({ params, isFetching }) => {
                         blockForbiddenChars
                         onErrorChange={setTextSearchError}
                     />
+                    {!hasFeatureFlag(
+                        currentUser,
+                        SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
+                    ) && (
+                        <InputComponent
+                            keyValue="entityTypeIds"
+                            onChange={handleChange}
+                            value={filters.entityTypeIds}
+                            type="select"
+                            loading={isFetchingTypes}
+                            label={MESSAGES.types}
+                            options={types}
+                            multi
+                        />
+                    )}
+
                     <Box id="ou-tree-input">
                         <OrgUnitTreeviewModal
                             toggleOnLabelClick={false}

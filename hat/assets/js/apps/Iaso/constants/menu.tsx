@@ -33,6 +33,7 @@ import {
     hasFeatureFlag,
     SHOW_PAGES,
     SHOW_DHIS2_LINK,
+    SHOW_BENEFICIARY_TYPES_IN_LIST_MENU,
 } from '../utils/featureFlags';
 import { locationLimitMax } from '../domains/orgUnits/constants/orgUnitConstants';
 import { getChipColors } from './chipColors';
@@ -69,8 +70,26 @@ type Plugins = {
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,
     formatMessage: IntlFormatMessage,
+    currentUser,
     defaultSourceId?: number,
 ): MenuItems => {
+    const beneficiariesListEntry: MenuItem = {
+        label: formatMessage(MESSAGES.beneficiariesList),
+        permissions: paths.entitiesPath.permissions,
+        key: 'list',
+        icon: props => <FormatListBulleted {...props} />,
+    };
+    if (hasFeatureFlag(currentUser, SHOW_BENEFICIARY_TYPES_IN_LIST_MENU)) {
+        beneficiariesListEntry.subMenu = entityTypes.map(entityType => ({
+            label: `${entityType.label}`,
+            permissions: paths.entitiesPath.permissions,
+            mapKey: `${entityType.value}`,
+            isActive: pathname =>
+                pathname?.includes(`/entityTypeIds/${entityType.value}/`) &&
+                pathname?.includes(`entities/list/`),
+            extraPath: `/entityTypeIds/${entityType.value}/order/last_saved_instance/pageSize/20/page/1`,
+        }));
+    }
     return [
         {
             label: formatMessage(MESSAGES.formsTitle),
@@ -199,22 +218,7 @@ const menuItems = (
                     key: 'types',
                     icon: props => <CategoryIcon {...props} />,
                 },
-                {
-                    label: formatMessage(MESSAGES.beneficiariesList),
-                    permissions: paths.entitiesPath.permissions,
-                    key: 'list',
-                    icon: props => <FormatListBulleted {...props} />,
-                    subMenu: entityTypes.map(entityType => ({
-                        label: `${entityType.label}`,
-                        permissions: paths.entitiesPath.permissions,
-                        mapKey: `${entityType.value}`,
-                        isActive: pathname =>
-                            pathname?.includes(
-                                `/entityTypeIds/${entityType.value}/`,
-                            ) && pathname?.includes(`entities/list/`),
-                        extraPath: `/entityTypeIds/${entityType.value}/order/last_saved_instance/pageSize/20/page/1`,
-                    })),
-                },
+                { ...beneficiariesListEntry },
                 {
                     label: formatMessage(MESSAGES.entityDuplicatesTitle),
                     permissions: paths.entityDuplicatesPath.permissions,
@@ -301,6 +305,7 @@ const useMenuItems = (): MenuItems => {
             ...menuItems(
                 entityTypes || [],
                 formatMessage,
+                currentUser,
                 defaultSourceVersion?.source?.id,
             ),
         ],

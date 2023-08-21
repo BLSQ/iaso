@@ -81,7 +81,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
     def setUp(self):
         self.client = APIClient()
 
-    def test_can_post(self):
+    def test_user_can_post(self):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.id])
 
@@ -97,7 +97,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             },
         )
 
-        print(response.data)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
         self.assertEqual(response.data["account"], self.account.pk)
@@ -117,7 +116,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=123456,
             status="ongoing",
             comment="waiting for approval",
-            expiration_date="2024-02-01"
+            expiration_date="2024-02-01",
         )
 
         response = self.client.get(f"/api/polio/vaccineauthorizations/{vaccine_auth.id}/")
@@ -187,3 +186,48 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         response = self.client.get("/api/polio/vaccineauthorizations/")
 
         self.assertEqual(response.status_code, 403)
+
+    def test_get_last_modified_authorizations(self):
+        self.client.force_authenticate(self.user_1)
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "account": self.account.pk,
+                "quantity": 12346,
+                "status": "ongoing",
+                "comment": "waiting for approval.",
+                "expiration_date": "2024-02-01",
+            },
+        )
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "account": self.account.pk,
+                "quantity": 12346,
+                "status": "ongoing",
+                "comment": "new update",
+                "expiration_date": "2024-02-01",
+            },
+        )
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "account": self.account.pk,
+                "quantity": 12346,
+                "status": "validated",
+                "comment": "Approved.",
+                "expiration_date": "2024-02-01",
+            },
+        )
+
+        response = self.client.post("/api/polio/vaccineauthorizations/get_most_recent_update/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]["comment"], "Approved.")
+        self.assertEqual(response.data[0]["status"], "validated")

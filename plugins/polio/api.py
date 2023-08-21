@@ -2089,18 +2089,18 @@ class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
         write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
         if request.method == "GET":
             can_get = (
-                    request.user
-                    and request.user.is_authenticated
-                    and request.user.has_perm(read_perm)
-                    or request.user.is_superuser
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(read_perm)
+                or request.user.is_superuser
             )
             return can_get
         elif request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
             can_post = (
-                    request.user
-                    and request.user.is_authenticated
-                    and request.user.has_perm(write_perm)
-                    or request.user.is_superuser
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(write_perm)
+                or request.user.is_superuser
             )
             return can_post
         else:
@@ -2144,7 +2144,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
         country = self.request.data.get("country")
         if not self.request.user.is_superuser:
-            if country not in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None):
+            if country not in [
+                str(ou.id) for ou in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None)
+            ]:
                 raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
 
         return super().create(request)

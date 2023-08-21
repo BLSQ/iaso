@@ -47,6 +47,7 @@ from iaso.api.common import (
     CONTENT_TYPE_CSV,
     TimestampField,
     HasPermission,
+    Paginator,
 )
 from iaso.models import OrgUnit, Group
 from plugins.polio.serializers import (
@@ -2077,7 +2078,17 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VaccineAuthorization
-        fields = ["country", "account", "expiration_date", "created_at", "updated_at", "quantity", "status", "comment"]
+        fields = [
+            "id",
+            "country",
+            "account",
+            "expiration_date",
+            "created_at",
+            "updated_at",
+            "quantity",
+            "status",
+            "comment",
+        ]
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
@@ -2114,6 +2125,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     results_key = "results"
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
+    pagination_class = Paginator
 
     def get_queryset(self):
         user = self.request.user
@@ -2156,6 +2168,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         """
         return the most recent Authorization by country for all countries
         """
+
         most_recent_dates = (
             VaccineAuthorization.objects.filter(
                 country=OuterRef("country"), account=self.request.user.iaso_profile.account
@@ -2172,6 +2185,12 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         recent_per_country = VaccineAuthorization.objects.filter(
             id=Subquery(most_recent_authorizations.values("id"))
         ).select_related("country")
+
+        page = self.paginate_queryset(recent_per_country)
+
+        if page:
+            serializer = VaccineAuthorizationSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
 
         serializer = VaccineAuthorizationSerializer(recent_per_country, many=True)
         serialized_data = serializer.data

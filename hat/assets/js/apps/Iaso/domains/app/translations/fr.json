@@ -798,6 +798,8 @@
     "iaso.permissions.polio_budget": "Validation de budget polio",
     "iaso.permissions.polio_budget_admin": "Validation de budget polio: Admin",
     "iaso.permissions.polio_config": "Gestion campagnes vaccination Polio - configuration",
+    "iaso.permissions.polio_vaccine_authorizations_admin": "Validation d'authorisation de vaccins polio: Admin",
+    "iaso.permissions.polio_vaccine_authorizations_read_only": "Validation d'authorisation de vaccins polio: Lecture seule",
     "iaso.permissions.projects": "Projets",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.submissions": "Soumissions de formulaire",

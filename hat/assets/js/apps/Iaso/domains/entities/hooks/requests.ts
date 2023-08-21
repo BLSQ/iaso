@@ -101,8 +101,8 @@ export const useGetBeneficiaryTypesDropdown = (): UseQueryResult<
     Error
 > =>
     useSnackQuery({
-        queryKey: ['beneficiaryTypes'],
-        queryFn: () => getRequest('/api/entitytypes/'),
+        queryKey: ['beneficiaryTypesOptions'],
+        queryFn: () => getRequest('/api/entitytypes/?order=name'),
         options: {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,

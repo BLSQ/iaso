@@ -2083,18 +2083,37 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         updated_at = TimestampField(read_only=True)
 
 
+class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+        write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+        if request.method == "GET":
+            can_get = (
+                    request.user
+                    and request.user.is_authenticated
+                    and request.user.has_perm(read_perm)
+                    or request.user.is_superuser
+            )
+            return can_get
+        elif request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
+            can_post = (
+                    request.user
+                    and request.user.is_authenticated
+                    and request.user.has_perm(write_perm)
+                    or request.user.is_superuser
+            )
+            return can_post
+        else:
+            return False
+
+
 @swagger_auto_schema(tags=["vaccineauthorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY)]
+    permission_classes = [HassVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
-
-    def get_permission(self):
-        if self.action in ["create", "update", "delete", "partial_update", "destroy"]:
-            if not self.request.user.has_perms("iaso_polio_vaccine_authorizations_admin"):
-                raise PermissionDenied()
 
     def get_queryset(self):
         user = self.request.user

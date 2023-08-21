@@ -386,6 +386,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.users.removeLocations',
         defaultMessage: 'Remove location(s)',
     },
+    iaso_polio_vaccine_authorizations_read_only: {
+        id: 'iaso.permissions.iaso_polio_vaccine_authorizations_read_only',
+        defaultMessage: 'Vaccine Authorizations Read Only',
+    },
+    iaso_polio_vaccine_authorizations_admin: {
+        id: 'iaso.permissions.iaso_polio_vaccine_authorizations_admin',
+        defaultMessage: 'Vaccine Authorizations Admin'
+    },
 });
 
 export default MESSAGES;

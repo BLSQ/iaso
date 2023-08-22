@@ -3,6 +3,7 @@ import { Column, formatThousand, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DeleteAuthorisationModal } from './Modals/Delete/DeleteAuthorisationModal';
+import { EditAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
 
 export const useNopv2AuthDetailsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -61,7 +62,12 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
                 Cell: settings => {
                     return (
                         <>
-                            <div>EDIT</div>
+                            {/* @ts-ignore */}
+                            <EditAuthorisationModal
+                                authorisationData={settings.row.original}
+                                countryId={settings.row.original.country.id}
+                                countryName={settings.row.original.country.name}
+                            />
                             {/* @ts-ignore */}
                             <DeleteAuthorisationModal
                                 authorisationId={settings.row.original.id}

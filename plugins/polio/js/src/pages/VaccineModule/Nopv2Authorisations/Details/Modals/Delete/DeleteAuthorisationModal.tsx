@@ -6,7 +6,7 @@ import {
 } from 'bluesquare-components';
 import MESSAGES from './MESSAGES';
 import { useDeleteNopv2Authorisation } from '../../../hooks/api';
-import { EditIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
+import { DeleteIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/DeleteIconButton';
 
 type Props = {
     isOpen: boolean;
@@ -43,6 +43,9 @@ const DeleteAuthorisationModal: FunctionComponent<Props> = ({
         </ConfirmCancelModal>
     );
 };
-const modalWithButton = makeFullModal(DeleteAuthorisationModal, EditIconButton);
+const modalWithButton = makeFullModal(
+    DeleteAuthorisationModal,
+    DeleteIconButton,
+);
 
 export { modalWithButton as DeleteAuthorisationModal };

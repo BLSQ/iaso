@@ -356,7 +356,7 @@ const routes = [
             ...paginationPathParams,
             {
                 isRequired: false,
-                key: 'countryId',
+                key: 'country',
             },
             {
                 isRequired: false,

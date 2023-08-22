@@ -7,6 +7,8 @@ import {
 import {
     deleteRequest,
     getRequest,
+    patchRequest,
+    postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 const listUrl = '/api/polio/vaccineauthorizations/get_most_recent_update';
@@ -20,7 +22,7 @@ const getVaccineAuthorisationsList = params => {
 export const useGetLatestAuthorisations = params => {
     const apiParams = useApiParams(params);
     return useSnackQuery({
-        queryKey: ['latest-nopv2-auth', params],
+        queryKey: ['latest-nopv2-auth', apiParams],
         queryFn: () => getVaccineAuthorisationsList(apiParams),
         options: {
             keepPreviousData: true,
@@ -65,6 +67,27 @@ export const useDeleteNopv2Authorisation = (): UseMutationResult => {
     return useSnackMutation({
         mutationFn: authoristationId =>
             deleteNopv2Authorisation(authoristationId),
+        options: {
+            // TODO refactor when useSnackMtation refactor is merged
+            onSuccess: () => {
+                queryClient.invalidateQueries('nopv2-auth');
+                queryClient.invalidateQueries('latest-nopv2-auth');
+            },
+        },
+    });
+};
+
+const createEditNopv2Authorisation = body => {
+    if (body.id) {
+        return patchRequest(`${baseUrl}${body.id}/`, body);
+    }
+    return postRequest(baseUrl, body);
+};
+
+export const useCreateEditNopv2Authorisation = (): UseMutationResult => {
+    const queryClient = useQueryClient();
+    return useSnackMutation({
+        mutationFn: body => createEditNopv2Authorisation(body),
         options: {
             // TODO refactor when useSnackMtation refactor is merged
             onSuccess: () => {

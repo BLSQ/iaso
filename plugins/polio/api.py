@@ -2081,6 +2081,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
+            "account",
             "expiration_date",
             "created_at",
             "updated_at",
@@ -2091,6 +2092,12 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["account"] = user.iaso_profile.account
+
+        return super().create(validated_data)
 
 
 class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
@@ -2173,12 +2180,12 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 country=OuterRef("country"), account=self.request.user.iaso_profile.account
             )
             .values("country")
-            .annotate(max_updated_at=Max("updated_at"))
-            .values("max_updated_at")
+            .annotate(max_expiration_date=Max("expiration_date"))
+            .values("max_expiration_date")
         )
 
         most_recent_authorizations = VaccineAuthorization.objects.filter(
-            country=OuterRef("country"), updated_at=Subquery(most_recent_dates)
+            country=OuterRef("country"), expiration_date=Subquery(most_recent_dates)
         )
 
         recent_per_country = VaccineAuthorization.objects.filter(

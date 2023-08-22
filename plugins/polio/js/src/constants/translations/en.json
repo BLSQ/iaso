@@ -449,6 +449,8 @@
     "iaso.polio.label.yes": "Yes",
     "iaso.polio.lqasim.penultimate": "Penultimate",
     "iaso.polio.noCampaign": "No campaign to display",
+    "iaso.polio.permissions.vaccine_authorizations_admin": "Polio Vaccine Authorizations: Admin",
+    "iaso.polio.permissions.vaccine_authorizations_read_only": "Polio Vaccine Authorizations: Read Only",
     "iaso.polio.placeholder.noDateFound": "None",
     "iaso.polio.preparednessIntro": "Configure the Google Sheets that will be used to import the preparedness data for the round.",
     "iaso.polio.preparednessRoundStarted": "Preparedness can't be edited if round already started",
@@ -491,7 +493,5 @@
     "iaso.polio.validation.futureDateError": "This date should not be in the future",
     "iaso.polio.validation.onsetAfterNotificationError": "Date of onset should be before virus notification",
     "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "Date of onset should be before outbreak declaration",
-    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration",
-    "iaso.polio.vaccine_authorizations_admin": "Vaccine Authorizations Admin",
-    "iaso.polio.vaccine_authorizations_read_only": "Vaccine Authorizations read only"
+    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration"
 }

@@ -183,6 +183,7 @@
     "iaso.polio.label.calendar.previous": "Previous week",
     "iaso.polio.label.calendar.selectDate": "Select a date",
     "iaso.polio.label.campaign": "Campaign",
+    "iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH": "Campaign moved forward by MOH",
     "iaso.polio.label.CAMPAIGN_SYNCHRONIZATION": "Campaigns synchronization",
     "iaso.polio.label.campaign.id": "Id",
     "iaso.polio.label.campaignDropdownLabel": "Modification date",

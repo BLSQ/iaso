@@ -356,6 +356,9 @@ class RoundSerializer(serializers.ModelSerializer):
         destructions = validated_data.pop("destructions", [])
         started_at = validated_data.get("started_at", None)
         ended_at = validated_data.get("ended_at", None)
+        datelogs = validated_data.get("datelogs", None)
+        if datelogs:
+            raise serializers.ValidationError({"datelogs": "Cannot have modification history for new round"})
         round = Round.objects.create(**validated_data)
         if started_at is not None or ended_at is not None:
             datelog = RoundDateHistoryEntry.objects.create(round=round, reason="INITIAL_DATA", modified_by=user)

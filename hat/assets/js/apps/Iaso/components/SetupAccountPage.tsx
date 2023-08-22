@@ -1,15 +1,17 @@
 import React, { FunctionComponent } from 'react';
+import { makeStyles, Box } from '@material-ui/core';
 
-import { UrlParams } from 'bluesquare-components';
+import { commonStyles } from 'bluesquare-components';
 import { useCurrentUser } from '../utils/usersUtils';
 import TopBar from './nav/TopBarComponent';
 
-type Props = {
-    params: UrlParams;
-};
+const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
+}));
 
-export const SetupAccount: FunctionComponent<Props> = ({ params }) => {
+export const SetupAccount: FunctionComponent = () => {
     const currentUser = useCurrentUser();
+    const classes: Record<string, string> = useStyles();
     return (
         <>
             <TopBar
@@ -17,7 +19,12 @@ export const SetupAccount: FunctionComponent<Props> = ({ params }) => {
                 displayMenuButton={false}
                 title="SETUP"
             />
-            SETUP ACCOUNT {currentUser.user_name}
+            <Box className={classes.containerFullHeightNoTabPadded}>
+                {currentUser.is_superuser && (
+                    <> SETUP ACCOUNT {currentUser.user_name}</>
+                )}
+                {!currentUser.is_superuser && <> No account for this user</>}
+            </Box>
         </>
     );
 };

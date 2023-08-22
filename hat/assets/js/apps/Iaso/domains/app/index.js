@@ -8,7 +8,7 @@ import SnackBarContainer from '../../components/snackBars/SnackBarContainer';
 import LocalizedApp from './components/LocalizedAppComponent';
 
 import { getRoutes } from '../../routing/redirections.tsx';
-import { useCurrentUser, useIsAdminNoAccount } from '../../utils/usersUtils.ts';
+import { useCurrentUser, useHasNoAccount } from '../../utils/usersUtils.ts';
 import { fetchCurrentUser } from '../users/actions';
 
 import {
@@ -20,7 +20,7 @@ import {
 
 import ProtectedRoute from '../users/components/ProtectedRoute';
 
-const getBaseRoutes = (plugins, isAdminNoAccount) => {
+const getBaseRoutes = (plugins, hasNoAccount) => {
     const routesWithAccount = [
         ...routeConfigs,
         ...plugins
@@ -41,7 +41,7 @@ const getBaseRoutes = (plugins, isAdminNoAccount) => {
             )
             .flat(),
     ];
-    const allRoutesConfigs = isAdminNoAccount
+    const allRoutesConfigs = hasNoAccount
         ? [setupAccountPath, page404]
         : routesWithAccount;
     return {
@@ -54,11 +54,11 @@ const getBaseRoutes = (plugins, isAdminNoAccount) => {
                     routeConfig={routeConfig}
                     component={routeConfig.component(props)}
                     allRoutes={allRoutesConfigs}
-                    isAdminNoAccount={isAdminNoAccount}
+                    hasNoAccount={hasNoAccount}
                 />
             );
             const page =
-                allowAnonymous || isAdminNoAccount
+                allowAnonymous || hasNoAccount
                     ? component
                     : renderProtectedComponent;
             return <Route path={getPath(routeConfig)} component={page} />;
@@ -73,10 +73,10 @@ export default function App({ history, userHomePage, plugins }) {
     const dispatch = useDispatch();
     // on first load this is undefined, it will be updated when fetchCurrentUser is done
     const currentUser = useCurrentUser();
-    const isAdminNoAccount = useIsAdminNoAccount();
+    const hasNoAccount = useHasNoAccount();
     const { baseRoutes, currentRoute } = useMemo(
-        () => getBaseRoutes(plugins, isAdminNoAccount),
-        [plugins, isAdminNoAccount],
+        () => getBaseRoutes(plugins, hasNoAccount),
+        [plugins, hasNoAccount],
     );
 
     // launch fetch user only once on mount
@@ -103,10 +103,10 @@ export default function App({ history, userHomePage, plugins }) {
         return getRoutes(
             baseRoutes,
             userHomePage || overrideLanding,
-            isAdminNoAccount,
+            hasNoAccount,
         );
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentUser, isAdminNoAccount]);
+    }, [currentUser, hasNoAccount]);
 
     if ((!currentUser || routes.length === 0) && !currentRoute?.allowAnonymous)
         return null;

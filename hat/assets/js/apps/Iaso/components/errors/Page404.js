@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 import { fetchCurrentUser } from '../../domains/users/actions';
 import SidebarMenu from '../../domains/app/components/SidebarMenuComponent';
 import PageError from './PageError';
-import { useCurrentUser, useIsAdminNoAccount } from '../../utils/usersUtils.ts';
+import { useCurrentUser, useHasNoAccount } from '../../utils/usersUtils.ts';
 
 /* Wrap PageError so we can display the sidebar */
 const Page404 = ({ location }) => {
@@ -15,13 +15,13 @@ const Page404 = ({ location }) => {
     }, [dispatch]);
     const currentUser = useCurrentUser();
 
-    const isAdminNoAccount = useIsAdminNoAccount();
+    const hasNoAccount = useHasNoAccount();
     return (
         <>
-            {currentUser && !isAdminNoAccount && (
+            {currentUser && !hasNoAccount && (
                 <SidebarMenu location={location} />
             )}
-            <PageError errorCode="404" displayMenuButton={!isAdminNoAccount} />
+            <PageError errorCode="404" displayMenuButton={!hasNoAccount} />
         </>
     );
 };

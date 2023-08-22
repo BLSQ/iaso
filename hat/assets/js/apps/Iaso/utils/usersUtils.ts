@@ -93,13 +93,7 @@ export const useCurrentUser = (): User => {
     return currentUser;
 };
 
-export const useIsAdminNoAccount = (): boolean => {
+export const useHasNoAccount = (): boolean => {
     const currentUser = useCurrentUser();
-    return Boolean(
-        currentUser &&
-            !currentUser.account &&
-            currentUser.projects?.length === 0 &&
-            (currentUser.is_staff === true ||
-                currentUser.is_superuser === true),
-    );
+    return Boolean(currentUser && !currentUser.account);
 };

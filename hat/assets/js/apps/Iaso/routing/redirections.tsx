@@ -19,12 +19,12 @@ const getRedirections: (
     // eslint-disable-next-line no-unused-vars
     overrideLanding: boolean,
     // eslint-disable-next-line no-unused-vars
-    isAdminNoAccount: boolean,
-) => Redirection[] = (overrideLanding, isAdminNoAccount) => {
+    hasNoAccount: boolean,
+) => Redirection[] = (overrideLanding, hasNoAccount) => {
     const getPaginationParams = (order = 'id', pageSize = 20) =>
         `/order/${order}/pageSize/${pageSize}/page/1`;
 
-    if (isAdminNoAccount) {
+    if (hasNoAccount) {
         return [
             {
                 path: '/',
@@ -126,10 +126,10 @@ const getRedirections: (
 const getRoutes = (
     baseRoutes: JSX.Element[],
     overrideLanding: boolean,
-    isAdminNoAccount: boolean,
+    hasNoAccount: boolean,
 ): JSX.Element[] => {
     return cloneDeep(baseRoutes).concat(
-        getRedirections(overrideLanding, isAdminNoAccount).map(redirection => {
+        getRedirections(overrideLanding, hasNoAccount).map(redirection => {
             if (redirection.component) {
                 return (
                     <Route

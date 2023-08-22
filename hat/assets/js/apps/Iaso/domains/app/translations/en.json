@@ -463,7 +463,7 @@
     "iaso.label.infos": "Infos",
     "iaso.label.instanceLocks": "Instance locks",
     "iaso.label.instanceStatus": "Status",
-    "iaso.label.instanceStatus.duplicatedMulti": "Duplicated",
+    "iaso.label.instanceStatus.duplicatedMulti": "Error (duplicated)",
     "iaso.label.instanceStatus.duplicatedSingle": "duplicated",
     "iaso.label.instanceStatus.duplicateMulti": "Duplicated",
     "iaso.label.instanceStatus.error": "Error(s)",

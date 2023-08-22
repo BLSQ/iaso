@@ -21,7 +21,7 @@ import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
-import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
+import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
 
 import MenuItem from './MenuItemComponent';
 import { Logo } from './Logo.tsx';

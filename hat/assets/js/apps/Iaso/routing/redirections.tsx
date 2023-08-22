@@ -15,103 +15,121 @@ import { getOrgUnitsUrl } from '../domains/orgUnits/utils';
 type Redirection =
     | { path: string; to: any; component: undefined }
     | { path: string; component: React.FC<{ location }>; to: undefined };
-const getRedirections: (overrideLanding: boolean) => Redirection[] =
-    overrideLanding => {
-        const getPaginationParams = (order = 'id', pageSize = 20) =>
-            `/order/${order}/pageSize/${pageSize}/page/1`;
+const getRedirections: (
+    // eslint-disable-next-line no-unused-vars
+    overrideLanding: boolean,
+    // eslint-disable-next-line no-unused-vars
+    isAdminNoAccount: boolean,
+) => Redirection[] = (overrideLanding, isAdminNoAccount) => {
+    const getPaginationParams = (order = 'id', pageSize = 20) =>
+        `/order/${order}/pageSize/${pageSize}/page/1`;
+
+    if (isAdminNoAccount) {
         return [
             {
                 path: '/',
-                to: overrideLanding ?? baseUrls.forms,
-            },
-            {
-                path: `${baseUrls.orgUnits}`,
-                to: getOrgUnitsUrl(),
-            },
-            {
-                path: `${baseUrls.mappings}`,
-                to: `${baseUrls.mappings}${getPaginationParams(
-                    'form_version__form__name,form_version__version_id,mapping__mapping_type',
-                )}`,
-            },
-            {
-                path: `${baseUrls.users}`,
-                to: `${baseUrls.users}${getPaginationParams('user__username')}`,
-            },
-            {
-                path: `${baseUrls.entities}`,
-                to: `${baseUrls.entities}${getPaginationParams(
-                    'last_saved_instance',
-                )}`,
-            },
-            {
-                path: `${baseUrls.entityTypes}`,
-                to: `${baseUrls.entityTypes}${getPaginationParams('name')}`,
-            },
-            {
-                path: `${baseUrls.entityDuplicates}`,
-                to: `${baseUrls.entityDuplicates}${getPaginationParams()}`,
-            },
-            {
-                path: `${baseUrls.groups}`,
-                to: `${baseUrls.groups}${getPaginationParams('name')}`,
-            },
-            {
-                path: `${baseUrls.orgUnitTypes}`,
-                to: `${baseUrls.orgUnitTypes}${getPaginationParams('name')}`,
-            },
-            {
-                path: `${baseUrls.planning}`,
-                to: `${
-                    baseUrls.planning
-                }/publishingStatus/all${getPaginationParams('name')}`,
-            },
-            {
-                path: `${baseUrls.teams}`,
-                to: `${baseUrls.teams}${getPaginationParams('id')}`,
-            },
-            {
-                path: `${baseUrls.storages}`,
-                to: `${baseUrls.storages}${getPaginationParams(
-                    getSort(storageDefaultSort),
-                )}`,
-            },
-            {
-                path: `${baseUrls.workflows}/entityTypeId/:entityTypeId`,
-                to: `${
-                    baseUrls.workflows
-                }/entityTypeId/:entityTypeId/order/${getSort(
-                    workflowDefaultSort,
-                )}/pageSize/20/page/1`,
-            },
-            // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
-            {
-                path: '/instance/instanceId/:instanceId',
-                to: '/forms/submission/instanceId/:instanceId',
-            },
-            // idem and the formId parameter was renamed to formIds (with s) to support multiple form
-            {
-                path:
-                    '/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
-                    '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
-                    '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
-                to:
-                    '/forms/submissions(/formIds/:formId)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
-                    '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
-                    '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+                to: baseUrls.setupAccount,
             },
             {
                 path: '/*',
                 component: ({ location }) => <Page404 location={location} />,
             },
         ];
-    };
+    }
+    return [
+        {
+            path: '/',
+            to: overrideLanding ?? baseUrls.forms,
+        },
+        {
+            path: `${baseUrls.orgUnits}`,
+            to: getOrgUnitsUrl(),
+        },
+        {
+            path: `${baseUrls.mappings}`,
+            to: `${baseUrls.mappings}${getPaginationParams(
+                'form_version__form__name,form_version__version_id,mapping__mapping_type',
+            )}`,
+        },
+        {
+            path: `${baseUrls.users}`,
+            to: `${baseUrls.users}${getPaginationParams('user__username')}`,
+        },
+        {
+            path: `${baseUrls.entities}`,
+            to: `${baseUrls.entities}${getPaginationParams(
+                'last_saved_instance',
+            )}`,
+        },
+        {
+            path: `${baseUrls.entityTypes}`,
+            to: `${baseUrls.entityTypes}${getPaginationParams('name')}`,
+        },
+        {
+            path: `${baseUrls.entityDuplicates}`,
+            to: `${baseUrls.entityDuplicates}${getPaginationParams()}`,
+        },
+        {
+            path: `${baseUrls.groups}`,
+            to: `${baseUrls.groups}${getPaginationParams('name')}`,
+        },
+        {
+            path: `${baseUrls.orgUnitTypes}`,
+            to: `${baseUrls.orgUnitTypes}${getPaginationParams('name')}`,
+        },
+        {
+            path: `${baseUrls.planning}`,
+            to: `${baseUrls.planning}/publishingStatus/all${getPaginationParams(
+                'name',
+            )}`,
+        },
+        {
+            path: `${baseUrls.teams}`,
+            to: `${baseUrls.teams}${getPaginationParams('id')}`,
+        },
+        {
+            path: `${baseUrls.storages}`,
+            to: `${baseUrls.storages}${getPaginationParams(
+                getSort(storageDefaultSort),
+            )}`,
+        },
+        {
+            path: `${baseUrls.workflows}/entityTypeId/:entityTypeId`,
+            to: `${
+                baseUrls.workflows
+            }/entityTypeId/:entityTypeId/order/${getSort(
+                workflowDefaultSort,
+            )}/pageSize/20/page/1`,
+        },
+        // Keep compatibility with the olds url for instance as they got renamed in Nov 2021
+        {
+            path: '/instance/instanceId/:instanceId',
+            to: '/forms/submission/instanceId/:instanceId',
+        },
+        // idem and the formId parameter was renamed to formIds (with s) to support multiple form
+        {
+            path:
+                '/instances/formId/:formId(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
+                '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
+                '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+            to:
+                '/forms/submissions(/formIds/:formId)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/dateFrom/:dateFrom)' +
+                '(/dateTo/:dateTo)(/periods/:periods)(/status/:status)(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)' +
+                '(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)(/columns/:columns)(/search/:search)(/showDeleted/:showDeleted)',
+        },
+        {
+            path: '/*',
+            component: ({ location }) => <Page404 location={location} />,
+        },
+    ];
+};
 const getRoutes = (
     baseRoutes: JSX.Element[],
     overrideLanding: boolean,
+    isAdminNoAccount: boolean,
 ): JSX.Element[] => {
     return cloneDeep(baseRoutes).concat(
-        getRedirections(overrideLanding).map(redirection => {
+        getRedirections(overrideLanding, isAdminNoAccount).map(redirection => {
             if (redirection.component) {
                 return (
                     <Route

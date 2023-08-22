@@ -46,7 +46,8 @@ const styles = theme => ({
 const useStyles = makeStyles(styles);
 
 function TopBar(props) {
-    const { title, children, displayBackButton, goBack } = props;
+    const { title, children, displayBackButton, goBack, displayMenuButton } =
+        props;
     // const { formatMessage } = useSafeIntl();
     const classes = useStyles();
 
@@ -82,7 +83,7 @@ function TopBar(props) {
                             xs={9}
                             alignItems="center"
                         >
-                            {!displayBackButton && (
+                            {!displayBackButton && displayMenuButton && (
                                 <IconButton
                                     className={classes.menuButton}
                                     color="inherit"
@@ -145,6 +146,7 @@ TopBar.defaultProps = {
     displayBackButton: false,
     goBack: () => null,
     title: '',
+    displayMenuButton: true,
 };
 
 TopBar.propTypes = {
@@ -152,6 +154,7 @@ TopBar.propTypes = {
     children: PropTypes.any,
     displayBackButton: PropTypes.bool,
     goBack: PropTypes.func,
+    displayMenuButton: PropTypes.bool,
 };
 
 export default TopBar;

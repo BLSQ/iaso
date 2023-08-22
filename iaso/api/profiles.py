@@ -14,6 +14,7 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
@@ -261,8 +262,23 @@ class ProfilesViewSet(viewsets.ViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk == PK_ME:
-            profile = request.user.iaso_profile
-            return Response(profile.as_dict())
+            try:
+                profile = request.user.iaso_profile
+                return Response(profile.as_dict())
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "first_name": request.user.first_name,
+                        "user_name": request.user.username,
+                        "last_name": request.user.last_name,
+                        "email": request.user.email,
+                        "user_id": request.user.id,
+                        "projects": [],
+                        "is_staff": request.user.is_staff,
+                        "is_superuser": request.user.is_superuser,
+                        "account": None,
+                    }
+                )
         else:
             profile = get_object_or_404(self.get_queryset(), pk=pk)
             return Response(profile.as_dict())

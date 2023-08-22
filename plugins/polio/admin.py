@@ -16,6 +16,7 @@ from .models import (
     URLCache,
     SpreadSheetImport,
     CampaignGroup,
+    VaccineAuthorization,
 )
 
 from iaso.admin import IasoJSONEditorWidget
@@ -123,7 +124,6 @@ class ConfigAdmin(admin.ModelAdmin):
     raw_id_fields = ["users"]
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
-
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
@@ -135,3 +135,4 @@ admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
 admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)
 admin.site.register(WorkflowModel, WorkflowAdmin)
+admin.site.register(VaccineAuthorization)

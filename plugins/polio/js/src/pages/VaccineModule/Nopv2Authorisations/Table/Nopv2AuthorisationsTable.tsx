@@ -14,7 +14,6 @@ export const Nopv2AuthorisationsTable: FunctionComponent<Props> = ({
     // Waiting for backend API fix to uncomment
     const { data: latestAuth, isFetching } =
         useGetLatestAuthorisations(safeParams);
-    // const { data: latestAuth, isFetching } = useGetAuthorisations(safeParams);
     const columns = useNopv2AuthTableColumns();
     return (
         <TableWithDeepLink

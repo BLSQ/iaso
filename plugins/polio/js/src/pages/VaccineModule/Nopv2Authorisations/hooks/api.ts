@@ -22,7 +22,13 @@ const getVaccineAuthorisationsList = params => {
 export const useGetLatestAuthorisations = params => {
     const apiParams = useApiParams(params);
     return useSnackQuery({
-        queryKey: ['latest-nopv2-auth', apiParams],
+        queryKey: [
+            'latest-nopv2-auth',
+            apiParams,
+            apiParams.page,
+            apiParams.limit,
+            apiParams.order,
+        ],
         queryFn: () => getVaccineAuthorisationsList(apiParams),
         options: {
             keepPreviousData: true,

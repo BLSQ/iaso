@@ -813,6 +813,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
     },
+    countryPassing: {
+        id: 'iaso.polio.label.countryPassing',
+        defaultMessage: '80% or more districts passed',
+    },
+    countryFailing: {
+        id: 'iaso.polio.label.countryFailing',
+        defaultMessage: 'Less than 80% districts passed',
+    },
     '1lqasOK': {
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',

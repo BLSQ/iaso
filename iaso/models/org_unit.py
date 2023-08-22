@@ -216,8 +216,8 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
             )
             queryset = queryset.filter(version_id__in=version_ids)
 
-            # If applicable, filter on the org units associated to the user
-            if user.iaso_profile.org_units.exists():
+            # If applicable, filter on the org units associated to the user but only when the user is not a super user
+            if user.iaso_profile.org_units.exists() and not user.is_superuser:
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
         if app_id is not None:

@@ -3,9 +3,7 @@ import { Box, Grid } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { push } from 'react-router-redux';
-import TILES from '../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
-import { Tile } from '../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import { LqasAfroMapFilters } from './Filters/LqasAfroMapFilters';
 import { useStyles } from '../../../styles/theme';
 import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/general';
@@ -23,7 +21,6 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
-    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const [selectedRounds, setSelectedRounds] = useState(
         router.params?.rounds?.split(',') ?? ['penultimate', 'latest'],
     );
@@ -81,8 +78,6 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                                 onRoundChange={onRoundChange}
                                 side="left"
                                 router={router}
-                                currentTile={currentTile}
-                                setCurrentTile={setCurrentTile}
                                 selectedRound={selectedRounds[0]}
                                 params={router.params as AfroMapParams}
                                 onDisplayedShapeChange={onDisplayedShapeChange}
@@ -93,8 +88,6 @@ export const LqasAfroOverview: FunctionComponent<Props> = ({ router }) => {
                                 onRoundChange={onRoundChange}
                                 side="right"
                                 router={router}
-                                currentTile={currentTile}
-                                setCurrentTile={setCurrentTile}
                                 selectedRound={selectedRounds[1]}
                                 params={router.params as AfroMapParams}
                                 onDisplayedShapeChange={onDisplayedShapeChange}

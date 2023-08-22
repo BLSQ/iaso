@@ -13,7 +13,6 @@ import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/comp
 import { LqasAfroMap } from './LqasAfroMap';
 import { useOptions } from '../utils';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
-import { Tile } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import MESSAGES from '../../../../constants/messages';
 import { AfroMapParams, Side } from '../types';
 
@@ -33,8 +32,6 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onRoundChange: (value: string, side: Side) => void;
     router: Router;
-    currentTile: Tile;
-    setCurrentTile: React.Dispatch<React.SetStateAction<Tile>>;
     side: Side;
     params: AfroMapParams;
     // eslint-disable-next-line no-unused-vars
@@ -45,8 +42,6 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
     selectedRound,
     onRoundChange,
     router,
-    currentTile,
-    setCurrentTile,
     side,
     params,
     onDisplayedShapeChange,
@@ -97,12 +92,7 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                 </Grid>
             </Box>
             <Box m={2} pb={2} className={classes.mapContainer}>
-                <LqasAfroMap
-                    router={router}
-                    currentTile={currentTile}
-                    setCurrentTile={setCurrentTile}
-                    side={side}
-                />
+                <LqasAfroMap router={router} side={side} />
             </Box>
         </Paper>
     );

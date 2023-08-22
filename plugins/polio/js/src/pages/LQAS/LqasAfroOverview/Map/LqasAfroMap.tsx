@@ -7,10 +7,7 @@ import TILES from '../../../../../../../../hat/assets/js/apps/Iaso/constants/map
 
 import { defaultViewport } from '../../../../components/campaignCalendar/map/constants';
 import { CustomTileLayer } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomTileLayer';
-import {
-    TilesSwitchControl,
-    Tile,
-} from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
+import { Tile } from '../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/TilesSwitchControl';
 import { LqasAfroMapPanesContainer } from './LqasAfroMapPanesContainer';
 import { AfroMapParams, Side } from '../types';
 import { Router } from '../../../../../../../../hat/assets/js/apps/Iaso/types/general';
@@ -18,18 +15,12 @@ import { LqasAfroMapLegend } from './LqasAfroMapLegend';
 
 type Props = {
     router: Router;
-    currentTile: Tile;
-    setCurrentTile: React.Dispatch<React.SetStateAction<Tile>>;
     side: Side;
 };
 
-export const LqasAfroMap: FunctionComponent<Props> = ({
-    router,
-    currentTile,
-    setCurrentTile,
-    side,
-}) => {
+export const LqasAfroMap: FunctionComponent<Props> = ({ router, side }) => {
     const [bounds, setBounds] = useState<Bounds | undefined>(undefined);
+    const [currentTile, setCurrentTile] = useState<Tile>(TILES.osm);
     const { params } = router;
     const defaultCenter = useMemo(
         () =>
@@ -54,10 +45,6 @@ export const LqasAfroMap: FunctionComponent<Props> = ({
     );
     return (
         <>
-            <TilesSwitchControl
-                currentTile={currentTile}
-                setCurrentTile={setCurrentTile}
-            />
             <MapContainer
                 style={{
                     height: '65vh',

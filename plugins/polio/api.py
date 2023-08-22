@@ -44,11 +44,13 @@ from iaso.api.common import (
     CONTENT_TYPE_CSV,
 )
 from iaso.models import OrgUnit, Group
+from iaso.utils.powerbi import launch_dataset_refresh
 from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
     RoundDateHistoryEntrySerializer,
+    PowerBIRefreshSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -1416,6 +1418,23 @@ def format_caregiver_stats(campaign_stats):
                 district["care_giver_stats"] = caregivers_dict
 
 
+@swagger_auto_schema()
+class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
+    serializer_class = PowerBIRefreshSerializer
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data_set_id = serializer.validated_data["data_set_id"]
+        group_id = serializer.validated_data["group_id"]
+        # Perform actions using uuid1 and uuid2
+        response_data = {"message": f"Received data_set_id: {data_set_id}, group_id: {group_id}"}
+        launch_dataset_refresh(group_id, data_set_id)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -2086,3 +2105,4 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")

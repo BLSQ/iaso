@@ -170,7 +170,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
-                "account": self.account.pk,
                 "quantity": 12346,
                 "status": "ongoing",
                 "comment": "waiting for approval.",
@@ -194,7 +193,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
-                "account": self.account.pk,
                 "quantity": 12346,
                 "status": "ongoing",
                 "comment": "waiting for approval.",
@@ -206,7 +204,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
-                "account": self.account.pk,
                 "quantity": 12346,
                 "status": "ongoing",
                 "comment": "new update",
@@ -218,7 +215,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
-                "account": self.account.pk,
                 "quantity": 12346,
                 "status": "validated",
                 "comment": "Approved.",

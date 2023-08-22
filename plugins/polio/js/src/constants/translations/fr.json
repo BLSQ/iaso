@@ -463,6 +463,8 @@
     "iaso.polio.label.yes": "Oui",
     "iaso.polio.lqasim.penultimate": "Avant-dernier",
     "iaso.polio.noCampaign": "Aucune campagne",
+    "iaso.polio.permissions.vaccine_authorizations_admin": "Polio Authorisation de vaccins : Admin",
+    "iaso.polio.permissions.vaccine_authorizations_read_only": "Polio Authorisation de vaccins: Lecture seule",
     "iaso.polio.placeholder.noDateFound": "Aucune",
     "iaso.polio.preparednessIntro": "Configurer la Google Sheet qui sera utilisée pour importer les données de préparation du round",
     "iaso.polio.preparednessRoundStarted": "La préparation de campagne ne peut être éditée après le début du round",

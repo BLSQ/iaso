@@ -86,4 +86,5 @@ django-stubs==1.9.0
 celery==5.3.1
 SQLAlchemy==2.0.19
 redis==4.6.0
-django-celery-beat==2.0.0
+django-celery-results==2.4.0
+django-celery-beat==2.5.0

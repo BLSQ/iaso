@@ -2044,20 +2044,29 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
 
     def get_queryset(self):
         category = self.request.query_params.get("category")
-        configs = Config.objects.filter(slug=f"{category}-config").first().content
-        country_ids = []
-        for config in configs:
-            if JsonDataStore.objects.filter(slug=f"{category}_{config['country_id']}").exists():
-                country_ids.append(config["country_id"])
-            else:
-                continue
+        # For lqas, we filter out the countries with no datastore
+        if category == "lqas":
+            configs = Config.objects.filter(slug=f"{category}-config").first().content
+            country_ids = []
+            for config in configs:
+                if JsonDataStore.objects.filter(slug=f"{category}_{config['country_id']}").exists():
+                    country_ids.append(config["country_id"])
+                else:
+                    continue
 
-        return (
-            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
-            .filter(validation_status="VALID")
-            .filter(org_unit_type__category="COUNTRY")
-            .filter(id__in=country_ids)
-        )
+            return (
+                OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+                .filter(validation_status="VALID")
+                .filter(org_unit_type__category="COUNTRY")
+                .filter(id__in=country_ids)
+            )
+        # For IM we send all countries. We'll align with LQAS when the datastores are configured for IM as well
+        else:
+            return (
+                OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+                .filter(validation_status="VALID")
+                .filter(org_unit_type__category="COUNTRY")
+            )
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):

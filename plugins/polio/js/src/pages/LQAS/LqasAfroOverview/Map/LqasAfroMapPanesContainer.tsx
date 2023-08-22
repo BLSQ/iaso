@@ -1,6 +1,14 @@
-import React, { FunctionComponent, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useState,
+    useEffect,
+    useCallback,
+} from 'react';
 import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
+import { useDispatch } from 'react-redux';
+import { redirectToReplace } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { LQAS_AFRO_MAP_URL } from '../../../../constants/routes';
 import { lqasDistrictColors } from '../../../IM/constants';
 import { MapPanes } from '../../../../components/MapComponent/MapPanes';
 import {
@@ -20,7 +28,7 @@ const getBackgroundLayerStyle = () => {
         color: '#5e5e5e',
         opacity: '1',
         fillColor: 'lightGrey',
-        weight: '2',
+        weight: '4',
         zIndex: 1,
     };
 };
@@ -54,24 +62,63 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
     params,
     side,
 }) => {
+    const dispatch = useDispatch();
+    const handleEvent = useCallback(
+        currentMap => {
+            const newParams: Record<string, string> = {
+                ...params,
+            };
+            if (side === 'left') {
+                newParams.zoomLeft = currentMap.getZoom();
+            }
+            if (side === 'right') {
+                newParams.zoomRight = currentMap.getZoom();
+            }
+            const latLongCenter = currentMap.getCenter();
+            const paramCenter = JSON.stringify([
+                latLongCenter.lat,
+                latLongCenter.lng,
+            ]);
+            if (side === 'left') {
+                newParams.centerLeft = paramCenter;
+            }
+            if (side === 'right') {
+                newParams.centerRight = paramCenter;
+            }
+            dispatch(
+                redirectToReplace(
+                    LQAS_AFRO_MAP_URL,
+                    newParams as AfroMapParams,
+                ),
+            );
+        },
+        [dispatch, params, side],
+    );
     const map = useMapEvents({
         zoomend: () => {
             setBounds(map.getBounds());
+            handleEvent(map);
         },
         dragend: () => {
             setBounds(map.getBounds());
+            handleEvent(map);
         },
     });
+
     const [bounds, setBounds] = useState<number>(map.getBounds());
     const selectedRound = getRound(params.rounds, side);
 
-    const showCountries = map.getZoom() <= 5;
+    const showCountries =
+        side === 'left'
+            ? params.displayedShapesLeft !== 'district'
+            : params.displayedShapesRight !== 'district';
     const { data: mapShapes, isFetching: isAfroShapesLoading } =
         useAfroMapShapes({
             category: 'lqas',
             enabled: showCountries,
             params,
             selectedRound,
+            side,
         });
 
     const { data: zoominShapes, isFetching: isLoadingZoomin } =
@@ -81,6 +128,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
             enabled: !showCountries,
             params,
             selectedRound,
+            side,
         });
 
     const {
@@ -91,13 +139,24 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
         enabled: !showCountries,
     });
     const paramsAsString = JSON.stringify(params);
+    const isLoading =
+        isAfroShapesLoading ||
+        (isLoadingZoomin && !showCountries) ||
+        (isLoadingZoominbackground && !showCountries);
+
+    useEffect(() => {
+        if (map) {
+            if (isLoading && map.dragging._enabled) {
+                map.dragging.disable();
+            }
+            if (!isLoading && !map.dragging._enabled) {
+                map.dragging.enable();
+            }
+        }
+    }, [isLoading, map]);
     return (
         <>
-            {(isAfroShapesLoading ||
-                (isLoadingZoomin && !showCountries) ||
-                (isLoadingZoominbackground && !showCountries)) && (
-                <LoadingSpinner fixed={false} absolute />
-            )}
+            {isLoading && <LoadingSpinner fixed={false} absolute />}
 
             {showCountries && (
                 <MapPanes

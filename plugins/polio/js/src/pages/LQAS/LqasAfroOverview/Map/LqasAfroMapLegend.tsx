@@ -11,22 +11,28 @@ const useStyles = makeStyles(theme => {
             position: 'absolute',
             zIndex: 499,
             fontSize: 10,
-            top: theme.spacing(5),
+            top: theme.spacing(1),
             right: theme.spacing(1),
         },
     };
 });
 
-export const LqasAfroMapLegend: FunctionComponent = () => {
+type Props = {
+    displayedShape: string;
+};
+
+export const LqasAfroMapLegend: FunctionComponent<Props> = ({
+    displayedShape,
+}) => {
     const { formatMessage } = useSafeIntl();
-    const legendItems = useLegendItems();
+    const legendItems = useLegendItems(displayedShape);
     const classes: Record<string, string> = useStyles();
     return (
         <div className={classes.mapLegendContainer}>
             <MapLegend
                 title={formatMessage(MESSAGES.legend)}
                 legendItems={legendItems}
-                width="md"
+                width={displayedShape === 'country' ? 'lg' : 'sm'}
             />
         </div>
     );

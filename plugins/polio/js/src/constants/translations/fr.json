@@ -500,5 +500,7 @@
     "iaso.polio.validation.futureDateError": "Cette date ne peut être dans le futur",
     "iaso.polio.validation.onsetAfterNotificationError": "La date de début doit précéder la date de notification virus",
     "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "La date de début doit précéder la date de déclaration de l'épidémie",
-    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "La date de notification virus doit précéder la déclaration de l'épidémie"
+    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "La date de notification virus doit précéder la déclaration de l'épidémie",
+    "iaso.polio.vaccine_authorizations_admin": "Administration d'Authorisation de Vaccins",
+    "iaso.polio.vaccine_authorizations_read_only": "Lecture seule d'Authorisation de vaccins"
 }

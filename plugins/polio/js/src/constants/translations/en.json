@@ -491,5 +491,7 @@
     "iaso.polio.validation.futureDateError": "This date should not be in the future",
     "iaso.polio.validation.onsetAfterNotificationError": "Date of onset should be before virus notification",
     "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "Date of onset should be before outbreak declaration",
-    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration"
+    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration",
+    "iaso.polio.vaccine_authorizations_admin": "Vaccine Authorizations Admin",
+    "iaso.polio.vaccine_authorizations_read_only": "Vaccine Authorizations read only"
 }

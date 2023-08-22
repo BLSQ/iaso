@@ -2081,7 +2081,6 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
-            "account",
             "expiration_date",
             "created_at",
             "updated_at",

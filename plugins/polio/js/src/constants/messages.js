@@ -2218,6 +2218,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.SECURITY_CONTEXT',
         defaultMessage: 'Security context',
     },
+    CAMPAIGN_MOVED_FORWARD_BY_MOH: {
+        id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
+        defaultMessage: 'Campaign moved forward by MOH',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',

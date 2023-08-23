@@ -1,5 +1,7 @@
 import { defineMessages } from 'react-intl';
 
+// List of translations for Iaso permissions used all along the project
+
 const PERMISSIONS_MESSAGES = defineMessages({
     iaso_completeness: {
         id: 'iaso.permissions.completeness',

@@ -141,7 +141,6 @@ class EntityTypeViewSet(ModelViewSet):
         if name is None:
             raise serializers.ValidationError({"name": "This field is required"})
         try:
-            print(pk)
             entity_type = EntityType.objects.get(pk=pk)
             entity_type.name = name
             entity_type.fields_duplicate_search = request.data.get("fields_duplicate_search", None)
@@ -175,11 +174,7 @@ class EntityTypeViewSet(ModelViewSet):
         if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
-        try:
-            obj = EntityType.objects.get(pk=pk)
-
-        except EntityType.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+        obj = get_object_or_404(pk=pk)
 
         obj.delete()
 

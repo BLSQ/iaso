@@ -97,17 +97,16 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const columns = useColumns(entityTypeIds, extraColumns || []);
 
     const { data: types } = useGetBeneficiaryTypesDropdown();
-    const entityTypeName = useMemo(() => {
-        if (entityTypeIds.length === 1) {
-            const currentType = types?.find(
-                type => `${type.value}` === entityTypeIds[0],
-            );
-            if (currentType) {
-                return currentType.label;
-            }
+
+    let entityTypeName;
+    if (entityTypeIds.length === 1) {
+        const currentType = types?.find(
+            type => `${type.value}` === entityTypeIds[0],
+        );
+        if (currentType) {
+            entityTypeName = currentType.label;
         }
-        return undefined;
-    }, [entityTypeIds, types]);
+    }
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}

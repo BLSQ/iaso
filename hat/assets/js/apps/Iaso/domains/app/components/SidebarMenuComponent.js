@@ -27,7 +27,7 @@ import MenuItem from './MenuItemComponent';
 import { Logo } from './Logo.tsx';
 import LanguageSwitch from './LanguageSwitchComponent';
 
-import useMenuItems from '../../../constants/menu.tsx';
+import { useMenuItems } from '../../../constants/menu.tsx';
 
 import MESSAGES from './messages';
 

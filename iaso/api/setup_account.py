@@ -7,7 +7,7 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.models import Account, DataSource, SourceVersion, Profile, Project
+from iaso.models import Account, DataSource, SourceVersion, Profile, Project, OrgUnitType
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +37,7 @@ class SetupAccountSerializer(serializers.Serializer):
     def create(self, validated_data):
         data_source = DataSource.objects.create(name=validated_data["account_name"], description="via setup_account")
         source_version = SourceVersion.objects.create(data_source=data_source, number=1)
-        data_source.default_version = source_version
-        data_source.save()
+
         user = User.objects.create_user(
             username=validated_data["user_username"],
             password=validated_data["password"],
@@ -46,13 +45,20 @@ class SetupAccountSerializer(serializers.Serializer):
             last_name=validated_data.get("user_last_name", ""),
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
+        
         # Create a setup_account project with an app_id represented by the account name
-        project = Project.objects.create(
+        initial_project = Project.objects.create(
             name=validated_data["account_name"] + " project", account=account, app_id=validated_data["account_name"]
         )
 
-        data_source.projects.set([project])
+        # Create an initial orgUnit type and link it to project
+        initial_orgunit_type = OrgUnitType.objects.create(name="COUNTRY", short_name="country", depth=1)
+        initial_orgunit_type.projects.set([initial_project])
+        initial_orgunit_type.save()
 
+        # Link data source to projects and source version
+        data_source.projects.set([initial_project])
+        data_source.default_version = source_version
         data_source.save()
 
         Profile.objects.create(account=account, user=user)

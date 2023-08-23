@@ -648,6 +648,10 @@ export const completenessStatsPath = {
         ...paginationPathParams,
         {
             isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
             key: 'orgUnitId',
         },
         {
@@ -677,6 +681,10 @@ export const completenessStatsPath = {
         {
             isRequired: false,
             key: 'orgunitValidationStatus',
+        },
+        {
+            isRequired: false,
+            key: 'showDirectCompleteness',
         },
     ],
 };

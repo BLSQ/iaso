@@ -65,7 +65,6 @@ describe('Entities', () => {
                 query: {
                     ...defaultQuery,
                     search,
-                    entityTypeIds: '1,2',
                     dateFrom: '10-03-2022',
                     dateTo: '20-03-2022',
                     created_by_team_id: '25',
@@ -97,7 +96,6 @@ describe('Entities', () => {
             fixture: 'orgunits/details.json',
         });
         cy.get('#search-search').type(search);
-        cy.fillMultiSelect('#entityTypeIds', [0, 1], false);
         cy.get('[data-test="start-date"] input').type('10032022');
         cy.get('[data-test="end-date"] input').type('20032022');
         cy.fillSingleSelect('#submitterTeamId', 0);
@@ -109,7 +107,7 @@ describe('Entities', () => {
             cy.get('[data-test="search-button"]').click();
             cy.url().should(
                 'contain',
-                `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/entityTypeIds/1,2`,
+                `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/`,
             );
 
             cy.wait('@getEntities').then(() => {
@@ -217,12 +215,11 @@ describe('Entities', () => {
             cy.wait('@getEntities').then(() => {
                 cy.wait('@getEntitiesTypes').then(() => {
                     cy.get('#search-search').type(search);
-                    cy.fillSingleSelect('#entityTypeIds', 0);
 
                     cy.get('[data-test="search-button"]').click();
                     cy.url().should(
                         'contain',
-                        `${baseUrl}/accountId/1/search/${search}/entityTypeIds/1`,
+                        `${baseUrl}/accountId/1/search/${search}/`,
                     );
                 });
             });

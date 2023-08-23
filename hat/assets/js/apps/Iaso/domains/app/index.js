@@ -7,7 +7,7 @@ import { LinkProvider } from 'bluesquare-components';
 import SnackBarContainer from '../../components/snackBars/SnackBarContainer';
 import LocalizedApp from './components/LocalizedAppComponent';
 
-import { getRoutes } from '../../routing/redirections';
+import { getRoutes } from '../../routing/redirections.tsx';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 import { fetchCurrentUser } from '../users/actions';
 

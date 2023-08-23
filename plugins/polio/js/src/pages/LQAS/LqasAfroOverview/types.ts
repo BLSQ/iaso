@@ -6,6 +6,8 @@ export type AfroMapParams = {
     endDate?: string; // date in dd-mm-yyyy format
     rounds?: string; // RoundSelection but wuth the number in string form
     period?: SelectPeriod;
+    displayedShapesLeft?: 'country' | 'district';
+    displayedShapesRight?: 'country' | 'district';
 };
 
 export type MapCategory = 'lqas' | 'imIHH' | 'imOHH' | 'imGlobal';

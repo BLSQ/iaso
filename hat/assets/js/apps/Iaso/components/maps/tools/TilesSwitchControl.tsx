@@ -86,7 +86,12 @@ export const TilesSwitchControl: FunctionComponent<Props> = ({
 
     return (
         <>
-            <div className={classes.legendLayers}>
+            <div
+                className={classNames(
+                    classes.legendLayers,
+                    'tile-switch-control',
+                )}
+            >
                 {!tilePopup && (
                     <span
                         className={classes.barButton}

@@ -309,7 +309,12 @@ const useMenuItems = (): MenuItems => {
                 defaultSourceVersion?.source?.id,
             ),
         ],
-        [defaultSourceVersion?.source?.id, entityTypes, formatMessage],
+        [
+            currentUser,
+            defaultSourceVersion?.source?.id,
+            entityTypes,
+            formatMessage,
+        ],
     );
     // Find admin entry
     const admin = allBasicItems.find(item => item.key === 'settings');

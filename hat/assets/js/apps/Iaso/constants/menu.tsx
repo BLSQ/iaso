@@ -292,7 +292,7 @@ const menuItems = (
     ];
 };
 
-const useMenuItems = (): MenuItems => {
+export const useMenuItems = (): MenuItems => {
     const currentUser = useCurrentUser();
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
@@ -348,5 +348,3 @@ const useMenuItems = (): MenuItems => {
     });
     return items;
 };
-
-export default useMenuItems;

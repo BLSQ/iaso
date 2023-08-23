@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { Link } from 'react-router';
 
 import {
@@ -49,13 +49,10 @@ function MenuItem(props) {
     const currentUser = useCurrentUser();
     const urlLink = url;
     const { formatMessage } = useSafeIntl();
-
-    const path = useMemo(() => {
-        if (urlLink || !menuItem.key) {
-            return `${currentPath}`;
-        }
-        return `${currentPath}/${menuItem.key}`;
-    }, [currentPath, menuItem.key, urlLink]);
+    const path =
+        urlLink || !menuItem.key
+            ? `${currentPath}`
+            : `${currentPath}/${menuItem.key}`;
     const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
     const isMenuActive = menuItem.isActive
         ? menuItem.isActive(location.pathname)

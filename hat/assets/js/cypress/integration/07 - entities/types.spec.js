@@ -384,7 +384,7 @@ describe('Entities types', () => {
         });
     });
 
-    it('User wihtout write access should not be able to create,edit or delete a type', () => {
+    it('User without write access should not be able to create,edit or delete a type', () => {
         const unauthorizedUser = {
             ...superUser,
             permissions: [Permission.ENTITIES],

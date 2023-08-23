@@ -226,3 +226,95 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.data[0]["comment"], "Approved.")
         self.assertEqual(response.data[0]["status"], "validated")
         self.assertEqual(response.data[0]["expiration_date"], "2024-04-01")
+
+    def test_filters(self):
+        self.client.force_authenticate(self.user_1)
+
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk, self.org_unit_ALGERIA, self.org_unit_SOMALIA])
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "quantity": 12346,
+                "status": "ongoing",
+                "comment": "waiting for approval.",
+                "expiration_date": "2024-02-01",
+            },
+        )
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "quantity": 12346,
+                "status": "ongoing",
+                "comment": "new update",
+                "expiration_date": "2024-03-01",
+            },
+        )
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_ALGERIA.pk,
+                "quantity": 12346,
+                "status": "validated",
+                "comment": "Approved.",
+                "expiration_date": "2024-04-01",
+            },
+        )
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_SOMALIA.pk,
+                "quantity": 12346,
+                "status": "validated",
+                "comment": "Approved.",
+                "expiration_date": "2024-04-01",
+            },
+        )
+
+        # search by partial name
+
+        response = self.client.get("/api/polio/vaccineauthorizations/?search=congo")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+
+        # retrieve by status
+        response = self.client.get("/api/polio/vaccineauthorizations/?auth_status=validated")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+
+        # retrieve only non deleted entries
+
+        self.client.delete(f"/api/polio/vaccineauthorizations/{VaccineAuthorization.objects.last().pk}/")
+
+        response = self.client.get("/api/polio/vaccineauthorizations/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+
+        # retrieve only deleted
+
+        response = self.client.get("/api/polio/vaccineauthorizations/?deletion_status=deleted")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+
+        # all
+
+        response = self.client.get("/api/polio/vaccineauthorizations/?deletion_status=all")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 4)
+
+        # only actives
+
+        response = self.client.get("/api/polio/vaccineauthorizations/?deletion_status=active")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)

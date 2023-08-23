@@ -4,10 +4,9 @@ import {
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import { ArrowUpward, AccountTree } from '@material-ui/icons';
 import { Box, LinearProgress } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
-import { ArrowUpward } from '@material-ui/icons';
 import { Router } from 'react-router';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../../users/utils';
@@ -19,8 +18,8 @@ import {
     FormDesc,
     FormStatRow,
 } from '../types';
-import { genUrl } from '../../../routing/routing';
 import * as Permission from '../../../utils/permissions';
+import { usetGetParentPageUrl } from '../utils';
 
 // From https://v4.mui.com/components/progress/
 const LinearProgressWithLabel = props => (
@@ -43,6 +42,8 @@ export const useCompletenessStatsColumns = (
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
     const currentUser = useCurrentUser();
+
+    const getParentPageUrl = usetGetParentPageUrl(router);
     const hasSubmissionPermission = userHasPermission(
         Permission.SUBMISSIONS,
         currentUser,
@@ -209,24 +210,23 @@ export const useCompletenessStatsColumns = (
                 const hasFormSubmissions = Object.values(formStats).some(
                     (stat: any) => stat.itself_has_instances > 0,
                 );
-                const childrenPageUrl = genUrl(router, {
-                    parentId: settings.row.original.org_unit?.id,
-                    page: null,
-                });
-                const parentPageUrl = genUrl(router, {
-                    parentId: settings.row.original.parent_org_unit?.id,
-                    page: null,
-                });
+                const childrenPageUrl = getParentPageUrl(
+                    settings.row.original.org_unit?.id,
+                );
+                const parentPageUrl = getParentPageUrl(
+                    settings.row.original.parent_org_unit?.id,
+                );
 
                 return (
                     <>
-                        {!settings.row.original.is_root && (
-                            <IconButtonComponent
-                                url={childrenPageUrl}
-                                tooltipMessage={MESSAGES.seeChildren}
-                                overrideIcon={AccountTreeIcon}
-                            />
-                        )}
+                        {!settings.row.original.is_root &&
+                            settings.row.original.has_children && (
+                                <IconButtonComponent
+                                    url={childrenPageUrl}
+                                    tooltipMessage={MESSAGES.seeChildren}
+                                    overrideIcon={AccountTree}
+                                />
+                            )}
                         {settings.row.original.is_root && (
                             <IconButtonComponent
                                 url={parentPageUrl}
@@ -248,10 +248,10 @@ export const useCompletenessStatsColumns = (
         });
         return columns;
     }, [
-        router,
         formatMessage,
-        completenessStats,
-        params,
+        completenessStats?.forms,
+        getParentPageUrl,
         hasSubmissionPermission,
+        params.accountId,
     ]);
 };

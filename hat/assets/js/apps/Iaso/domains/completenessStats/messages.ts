@@ -98,6 +98,46 @@ const MESSAGES = defineMessages({
         defaultMessage: 'View instances',
         id: 'iaso.forms.viewInstances',
     },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    count: {
+        defaultMessage: 'Instance(s) count',
+        id: 'iaso.completenessStats.count',
+    },
+    completeness: {
+        defaultMessage: 'Completeness',
+        id: 'iaso.completenessStats.completeness',
+    },
+    directCompleteness: {
+        defaultMessage: 'Form filled at org unit',
+        id: 'iaso.completenessStats.directCompleteness',
+    },
+    childrenCompleteness: {
+        defaultMessage: 'Children completeness',
+        id: 'iaso.completenessStats.childrenCompleteness',
+    },
+    completed: {
+        defaultMessage: 'Completed',
+        id: 'iaso.completenessStats.completed',
+    },
+    notCompleted: {
+        defaultMessage: 'Not completed',
+        id: 'iaso.completenessStats.notCompleted',
+    },
 });
 
 export default MESSAGES;

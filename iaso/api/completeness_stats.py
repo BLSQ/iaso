@@ -55,6 +55,7 @@ from .common import HasPermission
 from ..models.microplanning import Planning
 from ..models.org_unit import OrgUnitQuerySet
 from ..periods import Period
+from iaso.utils import geojson_queryset
 from hat.menupermissions import models as permission
 
 
@@ -193,6 +194,11 @@ class ParamSerializer(serializers.Serializer):
         # resolve problem with duplicate Form if form is in multiple project
         # This method seems faster than using a distinct()
         return Form.objects.filter(id__in=[f.id for f in forms])
+
+
+def has_children(row_ou):
+    children_count = row_ou.descendants().exclude(pk=row_ou.id).count()
+    return True if children_count > 0 else False
 
 
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):
@@ -349,54 +355,86 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "org_unit": row_ou.as_dict_for_completeness_stats(),
                 "form_stats": row_ou.form_stats,
                 "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
-                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats() if row_ou.parent else None,
+                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats_with_parent()
+                if row_ou.parent
+                else None,
+                "has_children": has_children(row_ou),
             }
 
+        def to_map(row_ou: OrgUnitWithFormStat):
+            temp_org_unit = {
+                "name": row_ou.name,
+                "id": row_ou.id,
+                "form_stats": row_ou.form_stats,
+                "has_geo_json": True if row_ou.simplified_geom else False,
+                "geo_json": None,
+                "latitude": row_ou.location.y if row_ou.location else None,
+                "longitude": row_ou.location.x if row_ou.location else None,
+                "altitude": row_ou.location.z if row_ou.location else None,
+                "org_unit_type": row_ou.org_unit_type.as_dict_for_completeness_stats() if row_ou.org_unit_type else {},
+                "parent_org_unit": row_ou.parent.as_dict_for_completeness_stats_with_parent()
+                if row_ou.parent
+                else None,
+                "has_children": has_children(row_ou),
+            }
+            if temp_org_unit["has_geo_json"] == True:
+                shape_queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
+                temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
+            return temp_org_unit
+
+        def with_parent(list_objects, is_map):
+            # If a particular parent is requested we calculate its own stats
+            #  and put it on the top of the list
+            temp_list = list_objects
+            if parent_ou and not params.get("without_submissions"):
+                ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
+                ou_qs = get_annotated_queryset(ou_qs, orgunit_qs, instance_qs, form_qs)
+
+                top_row_ou = to_dict(ou_qs[0]) if not is_map else to_map(ou_qs[0])
+                top_row_ou["is_root"] = True
+                temp_list.insert(0, top_row_ou)
+            return temp_list
+
+        limit = request.GET.get("limit", None)
         # convert to proper pagination
-        limit = int(request.GET.get("limit", 10))
         page_offset = int(request.GET.get("page", "1"))
-        paginator = Paginator(ou_with_stats, limit)
-        if page_offset > paginator.num_pages:
-            page_offset = paginator.num_pages
-        page = paginator.page(page_offset)
+        if limit is not None:
+            paginator = Paginator(ou_with_stats, int(limit))
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
 
-        # fix a bug somewhere in django-cte and pagination that make the whole thing crash
-        # if the set is empty
-        if paginator.count <= 0:
-            object_list = []
-        else:
-            object_list = [to_dict(ou) for ou in page.object_list]
+            # fix a bug somewhere in django-cte and pagination that make the whole thing crash
+            # if the set is empty
+            if paginator.count <= 0:
+                object_list = []
+            else:
+                object_list = [to_dict(ou) for ou in page.object_list]
+            object_list = with_parent(object_list, False)
 
-        # If a particular parent is requested we calculate its own stats
-        #  and put it on the top of the list
-        if parent_ou and not params.get("without_submissions"):
-            ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
-            ou_qs = get_annotated_queryset(ou_qs, orgunit_qs, instance_qs, form_qs)
+            paginated_res = {
+                # Metadata outside pagination to help the frontend make the form columns
+                "forms": [
+                    {
+                        "id": form.id,
+                        "name": form.name,
+                        "slug": f"form_{form.id}",  # accessor in the form stats dict
+                    }
+                    for form in form_qs
+                ],
+                "count": paginator.count,
+                "results": object_list,
+                "has_next": page.has_next(),
+                "has_previous": page.has_previous(),
+                "page": page_offset,
+                "pages": paginator.num_pages,
+                "limit": int(limit),
+            }
 
-            top_row_ou = to_dict(ou_qs[0])
-            top_row_ou["is_root"] = True
-            object_list.insert(0, top_row_ou)
+            return Response(paginated_res)
 
-        paginated_res = {
-            # Metadata outside pagination to help the frontend make the form columns
-            "forms": [
-                {
-                    "id": form.id,
-                    "name": form.name,
-                    "slug": f"form_{form.id}",  # accessor in the form stats dict
-                }
-                for form in form_qs
-            ],
-            "count": paginator.count,
-            "results": object_list,
-            "has_next": page.has_next(),
-            "has_previous": page.has_previous(),
-            "page": page_offset,
-            "pages": paginator.num_pages,
-            "limit": limit,
-        }
-
-        return Response(paginated_res)
+        object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
+        return Response({"results": object_list})
 
     @action(methods=["GET"], detail=False)
     def types_for_version_ou(self, request):

@@ -52,6 +52,8 @@
         "@terraformer/wkt": "^2.1.2",
         "@types/react": "^17.0.36",
         "@types/react-dom": "^17.0.9",
+        "@visx/legend": "^3.3.0",
+        "@visx/scale": "^3.3.0",
         "babel-plugin-formatjs": "^10.3.4",
         "bluesquare-components": "github:BLSQ/bluesquare-components",
         "classnames": "^2.2.6",

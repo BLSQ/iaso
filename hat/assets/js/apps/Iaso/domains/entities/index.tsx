@@ -14,10 +14,8 @@ import {
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import TopBar from '../../components/nav/TopBarComponent';
 import { Filters } from './components/Filters';
-import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
 import {
     useGetBeneficiariesPaginated,
-    useGetBeneficiariesApiParams,
     useGetBeneficiaryTypesDropdown,
 } from './hooks/requests';
 
@@ -63,8 +61,6 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
 
-    const { url: apiUrl } = useGetBeneficiariesApiParams(params);
-    const { data: types } = useGetBeneficiaryTypesDropdown();
     const { data, isFetching } = useGetBeneficiariesPaginated(params);
     const [tab, setTab] = useState(params.tab ?? 'list');
 
@@ -99,11 +95,25 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
         return data;
     }, [data]);
     const columns = useColumns(entityTypeIds, extraColumns || []);
+
+    const { data: types } = useGetBeneficiaryTypesDropdown();
+
+    let entityTypeName;
+    if (entityTypeIds.length === 1) {
+        const currentType = types?.find(
+            type => `${type.value}` === entityTypeIds[0],
+        );
+        if (currentType) {
+            entityTypeName = currentType.label;
+        }
+    }
     return (
         <>
             {isLoading && tab === 'map' && <LoadingSpinner />}
             <TopBar
-                title={formatMessage(MESSAGES.beneficiaries)}
+                title={`${formatMessage(MESSAGES.beneficiaries)}${
+                    entityTypeName ? ` - ${entityTypeName}` : ''
+                }`}
                 displayBackButton={false}
             >
                 <Tabs
@@ -119,14 +129,7 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 </Tabs>
             </TopBar>
             <Box p={4} className={classes.container}>
-                <Filters params={params} types={types || []} />
-                <Box display="flex" justifyContent="flex-end">
-                    <DownloadButtonsComponent
-                        csvUrl={`${apiUrl}&csv=true`}
-                        xlsxUrl={`${apiUrl}&xlsx=true`}
-                        disabled={isFetching}
-                    />
-                </Box>
+                <Filters params={params} isFetching={isFetching} />
                 <Box position="relative" width="100%" mt={2}>
                     <Box
                         width="100%"

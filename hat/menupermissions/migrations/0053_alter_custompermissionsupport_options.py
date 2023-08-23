@@ -36,6 +36,7 @@ class Migration(migrations.Migration):
                     ("iaso_assignments", "Attributions"),
                     ("iaso_polio_budget", "Budget Polio"),
                     ("iaso_entities", "Entities"),
+                    ("iaso_entity_type_write", "Write entity type"),
                     ("iaso_storages", "Storages"),
                     ("iaso_completeness_stats", "Completeness stats"),
                     ("iaso_workflows", "Workflows"),

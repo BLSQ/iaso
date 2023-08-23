@@ -87,6 +87,7 @@ class DelayReasons(models.TextChoices):
     VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
     VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
     SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
+    CAMPAIGN_MOVED_FORWARD_BY_MOH = "CAMPAIGN_MOVED_FORWARD_BY_MOH", _("campaign_moved_forward_by_moh")
 
 
 def make_group_round_scope():

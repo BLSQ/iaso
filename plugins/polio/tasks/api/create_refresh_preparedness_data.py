@@ -30,7 +30,7 @@ class RefreshPreparednessLaucherSerializer(serializers.Serializer):
 
 # noinspection PyMethodMayBeStatic
 class RefreshPreparednessLaucherViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO)]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
     serializer_class = RefreshPreparednessLaucherSerializer
 
     def create(self, request):

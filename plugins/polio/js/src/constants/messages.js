@@ -300,10 +300,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.verificationScore',
         defaultMessage: 'Verification Score (/20)',
     },
-    verification_score: {
-        id: 'iaso.polio.form.label.verificationScore',
-        defaultMessage: 'Verif',
-    },
     fieldInvestigationDate: {
         id: 'iaso.polio.form.label.fieldInvestigationDate',
         defaultMessage: 'Field Investigation Date',
@@ -589,11 +585,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Status',
     },
     sync_status: {
-        id: 'iaso.polio.table.label.status',
+        id: 'iaso.polio.table.label.sync_status',
         defaultMessage: 'Synchronisation',
     },
     preperadness_sync_status: {
-        id: 'iaso.polio.table.label.status',
+        id: 'iaso.polio.table.label.sync_status',
         defaultMessage: 'Synchronisation',
     },
     import: {
@@ -1262,7 +1258,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Test campaign',
     },
     is_test: {
-        id: 'iaso.polio.label.testCampaign',
+        id: 'iaso.polio.label.is_test',
         defaultMessage: 'Test campaigns/On hold status',
     },
     testCampaigns: {

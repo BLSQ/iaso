@@ -50,6 +50,7 @@ const getCompletenessStats = async (
 
 export const useGetCompletnessMapStats = (
     params: CompletenessRouterParams,
+    enabled: boolean,
 ): UseBaseQueryResult<CompletenessMapStats[], unknown> => {
     return useSnackQuery({
         queryKey: ['completenessMapStats', getParams(params)],
@@ -60,6 +61,9 @@ export const useGetCompletnessMapStats = (
             //  otherwise it will blank the table then fill it.
             keepPreviousData: true,
             select: data => data?.results,
+            enabled,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };

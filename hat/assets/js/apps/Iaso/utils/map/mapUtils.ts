@@ -9,6 +9,7 @@ import {
     AssociatedOrgUnit,
     MappedOrgUnit,
 } from '../../domains/orgUnits/components/orgUnitMap/OrgUnitMap/types';
+import { CompletenessMapStats } from '../../domains/completenessStats/types';
 
 export const defaultCenter = [5, 20];
 export const defaultZoom = 4;
@@ -186,7 +187,7 @@ export type Bounds = {
 };
 
 export const getOrgUnitBounds = (
-    orgUnit: Record<string, any>,
+    orgUnit: OrgUnit | CompletenessMapStats,
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
     const locations: { latitude: number; longitude: number }[] = [];
@@ -201,10 +202,10 @@ export const getOrgUnitBounds = (
 };
 
 export const getOrgUnitsBounds = (
-    orgUnits: Record<string, any>[],
+    orgUnits: OrgUnit[] | CompletenessMapStats[],
 ): Bounds | undefined => {
     let bounds: Bounds | undefined;
-    orgUnits.forEach((childOrgUnit: OrgUnit) => {
+    orgUnits.forEach((childOrgUnit: OrgUnit | CompletenessMapStats) => {
         const childrenBounds: Bounds | undefined =
             getOrgUnitBounds(childOrgUnit);
         if (bounds) {

@@ -164,7 +164,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            "/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW", "limit": "10"}
+            "/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW", "limit": 10}
         )
         j = self.assertJSONResponse(response, 200)
         expected_result = {
@@ -263,7 +263,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             "has_previous": False,
             "page": 1,
             "pages": 1,
-            "limit": "10",
+            "limit": 10,
         }
         self.assertAlmostEqualRecursive(
             expected_result,

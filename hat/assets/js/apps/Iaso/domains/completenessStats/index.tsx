@@ -61,7 +61,7 @@ export const CompletenessStats: FunctionComponent<Props> = ({
     const { data: completenessStats, isFetching } =
         useGetCompletenessStats(params);
     const { data: completenessMapStats, isFetching: isFetchingMapStats } =
-        useGetCompletnessMapStats(params);
+        useGetCompletnessMapStats(params, tab === 'map');
     const columns = useCompletenessStatsColumns(
         router,
         params,
@@ -158,7 +158,7 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                     >
                         <Map
                             locations={completenessMapStats || []}
-                            isFetchingLocations={isFetchingMapStats}
+                            isLoading={isFetchingMapStats}
                             params={params}
                             selectedFormId={selectedFormsIds[0]}
                             router={router}

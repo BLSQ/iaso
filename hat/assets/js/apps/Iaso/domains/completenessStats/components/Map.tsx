@@ -48,7 +48,7 @@ const defaultViewport = {
 
 type Props = {
     locations: CompletenessMapStats[];
-    isFetchingLocations: boolean;
+    isLoading: boolean;
     params: CompletenessRouterParams;
     selectedFormId: number;
     router: Router;
@@ -77,7 +77,7 @@ const useStyles = makeStyles(theme => ({
 
 export const Map: FunctionComponent<Props> = ({
     locations,
-    isFetchingLocations,
+    isLoading,
     params,
     selectedFormId,
     router,
@@ -91,7 +91,6 @@ export const Map: FunctionComponent<Props> = ({
 
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
 
-    const isLoading = isFetchingLocations;
     const parentLocation = useMemo(() => {
         const rootArray = locations?.filter(location => location.is_root);
         return rootArray && rootArray[0];

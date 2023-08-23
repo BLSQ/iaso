@@ -59,7 +59,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                             labels.reverse().map(label => {
                                 return (
                                     <LegendItem
-                                        key={`legend-${label.value}`}
+                                        key={`legend-direct-${label.value}`}
                                         margin={theme.spacing(0, 0, 1, 0)}
                                     >
                                         <svg width={20} height={20}>
@@ -89,7 +89,7 @@ export const MapLegend: FunctionComponent<Props> = ({
                             labels.reverse().map(label => {
                                 return (
                                     <LegendItem
-                                        key={`legend-direct-${label.value}`}
+                                        key={`legend-${label.value}`}
                                         margin={theme.spacing(0, 0, 1, 0)}
                                     >
                                         <svg width={20} height={20}>

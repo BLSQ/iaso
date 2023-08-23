@@ -196,6 +196,11 @@ class ParamSerializer(serializers.Serializer):
         return Form.objects.filter(id__in=[f.id for f in forms])
 
 
+def has_children(row_ou):
+    children_count = row_ou.descendants().exclude(pk=row_ou.id).count()
+    return True if children_count > 0 else False
+
+
 class CompletenessStatsV2ViewSet(viewsets.ViewSet):
     """Completeness Stats API"""
 
@@ -343,10 +348,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                     ),
                 )
 
-        def has_children(row_ou):
-            children_count = row_ou.descendants().exclude(pk=row_ou.id).count()
-            return True if children_count > 0 else False
-
         def to_dict(row_ou: OrgUnitWithFormStat):
             return {
                 "name": row_ou.name,
@@ -376,7 +377,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 else None,
                 "has_children": has_children(row_ou),
             }
-            temp_org_unit["geo_json"] = None
             if temp_org_unit["has_geo_json"] == True:
                 shape_queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
                 temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
@@ -428,7 +428,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 "has_previous": page.has_previous(),
                 "page": page_offset,
                 "pages": paginator.num_pages,
-                "limit": limit,
+                "limit": int(limit),
             }
 
             return Response(paginated_res)

@@ -248,10 +248,10 @@ export const useCompletenessStatsColumns = (
         });
         return columns;
     }, [
-        router,
         formatMessage,
-        completenessStats,
-        params,
+        completenessStats?.forms,
+        getParentPageUrl,
         hasSubmissionPermission,
+        params.accountId,
     ]);
 };

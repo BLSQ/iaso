@@ -160,6 +160,159 @@ class CompletenessStatsAPITestCase(APITestCase):
         response = self.client.get("/api/v2/completeness_stats/")
         self.assertEqual(response.status_code, 403)
 
+    def test_base_map_results(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        j = self.assertJSONResponse(response, 200)
+        expected_result = {
+            "results": [
+                {
+                    "name": "LaLaland",
+                    "id": 1,
+                    "form_stats": {
+                        # "Hydroponics study 1" applies to OUt "District" and "Hospital"
+                        f"form_{self.form_hs_1.id}": {
+                            "name": "Hydroponics study 1",
+                            "percent": 33.333333333333336,
+                            "descendants": 3,
+                            # 2 OUs of type "District" and 1 of type "Hospital" in the tree with LalaLand on top
+                            "itself_target": 0,
+                            "descendants_ok": 1,
+                            "total_instances": 1,  # Only one form instance for "Hospital"
+                            "itself_has_instances": 0,
+                            # No forms/instances are directly associated to "LaLaland" (only to its children)
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_2.id}": {
+                            "name": "Hydroponics study 2",
+                            "percent": 0,
+                            "descendants": 1,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_4.id}": {
+                            "name": "Hydroponics study 4",
+                            "percent": 33.333333333333336,
+                            "descendants": 3,
+                            "itself_target": 1,
+                            "descendants_ok": 1,
+                            "total_instances": 2,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                    },
+                    "has_geo_json": True,
+                    "geo_json": {
+                        "type": "FeatureCollection",
+                        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": 1,
+                                "geometry": {
+                                    "type": "MultiPolygon",
+                                    "coordinates": [
+                                        [
+                                            [
+                                                [4.394863, 50.68188],
+                                                [4.6674, 50.696023],
+                                                [4.913351, 50.345253],
+                                                [4.219994, 50.343499],
+                                                [4.394863, 50.68188],
+                                            ]
+                                        ]
+                                    ],
+                                },
+                                "properties": {},
+                            }
+                        ],
+                    },
+                    "latitude": None,
+                    "longitude": None,
+                    "altitude": None,
+                    "org_unit_type": {"name": "Country", "id": 1},
+                    "parent_org_unit": None,
+                    "has_children": True,
+                },
+                {
+                    "name": "Not yet validated country",
+                    "id": 9,
+                    "form_stats": {
+                        f"form_{self.form_hs_1.id}": {
+                            "name": "Hydroponics study 1",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_2.id}": {
+                            "name": "Hydroponics study 2",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_4.id}": {
+                            "name": "Hydroponics study 4",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 1,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                    },
+                    "has_geo_json": True,
+                    "geo_json": {
+                        "type": "FeatureCollection",
+                        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": 9,
+                                "geometry": {
+                                    "type": "MultiPolygon",
+                                    "coordinates": [
+                                        [
+                                            [
+                                                [4.394863, 50.68188],
+                                                [4.6674, 50.696023],
+                                                [4.913351, 50.345253],
+                                                [4.219994, 50.343499],
+                                                [4.394863, 50.68188],
+                                            ]
+                                        ]
+                                    ],
+                                },
+                                "properties": {},
+                            }
+                        ],
+                    },
+                    "latitude": None,
+                    "longitude": None,
+                    "altitude": None,
+                    "org_unit_type": {"name": "Country", "id": 1},
+                    "parent_org_unit": None,
+                    "has_children": False,
+                },
+            ],
+        }
+        self.assertAlmostEqualRecursive(
+            expected_result,
+            j,
+        )
+
     def test_base_row_listing(self):
         self.client.force_authenticate(self.user)
 
@@ -417,7 +570,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.assertEqual(j["count"], 2)
         self.assertEqual(j["page"], 1)
         self.assertEqual(j["pages"], 2)
-        self.assertEqual(j["limit"], "1")
+        self.assertEqual(j["limit"], 1)
         self.assertEqual(len(j["results"]), 1)
         self.assertTrue(j["has_next"])
         self.assertFalse(j["has_previous"])
@@ -434,7 +587,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             },
         )
         json = self.assertJSONResponse(response, 200)
-        self.assertEqual(json["limit"], "10")
+        self.assertEqual(json["limit"], 10)
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)

@@ -1,30 +1,66 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles, Box } from '@material-ui/core';
+import { defineMessages } from 'react-intl';
+import { makeStyles, Paper, Typography, Box } from '@material-ui/core';
 
-import { commonStyles } from 'bluesquare-components';
-import { useCurrentUser } from '../utils/usersUtils';
+import { useSafeIntl } from 'bluesquare-components';
+import getDisplayName, { useCurrentUser } from '../utils/usersUtils';
 import TopBar from './nav/TopBarComponent';
+import InputComponent from './forms/InputComponent';
 
 const useStyles = makeStyles(theme => ({
-    ...commonStyles(theme),
+    paper: {
+        margin: `${theme.spacing(4)}px auto`,
+        width: 400,
+        padding: theme.spacing(2),
+    },
 }));
+export const MESSAGES = defineMessages({
+    accountSetup: {
+        defaultMessage: 'Account setup',
+        id: 'iaso.setup.accountSetup',
+    },
+    accountName: {
+        defaultMessage: 'Account name',
+        id: 'iaso.setup.accountName',
+    },
+    notAdmin: {
+        defaultMessage:
+            'User {displayName} has no iaso_profile. Please contact your administrator.',
+        id: 'iaso.setup.notAdmin',
+    },
+});
 
 export const SetupAccount: FunctionComponent = () => {
     const currentUser = useCurrentUser();
+    const { formatMessage } = useSafeIntl();
     const classes: Record<string, string> = useStyles();
     return (
         <>
-            <TopBar
-                displayBackButton={false}
-                displayMenuButton={false}
-                title="SETUP"
-            />
-            <Box className={classes.containerFullHeightNoTabPadded}>
+            <TopBar displayBackButton={false} displayMenuButton={false} />
+            <Paper className={classes.paper}>
                 {currentUser.is_superuser && (
-                    <> SETUP ACCOUNT {currentUser.user_name}</>
+                    <>
+                        <Typography variant="h5" color="primary">
+                            {formatMessage(MESSAGES.accountSetup)}
+                        </Typography>
+                        <Box>
+                            <InputComponent
+                                type="text"
+                                keyValue="accountName"
+                                labelString={formatMessage(
+                                    MESSAGES.accountName,
+                                )}
+                                value=""
+                                onChange={() => null}
+                            />
+                        </Box>
+                    </>
                 )}
-                {!currentUser.is_superuser && <> No account for this user</>}
-            </Box>
+                {!currentUser.is_superuser &&
+                    formatMessage(MESSAGES.notAdmin, {
+                        displayName: getDisplayName(currentUser),
+                    })}
+            </Paper>
         </>
     );
 };

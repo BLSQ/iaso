@@ -7,7 +7,7 @@ from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.models import Account, DataSource, SourceVersion, Profile
+from iaso.models import Account, DataSource, SourceVersion, Profile, Project
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +46,14 @@ class SetupAccountSerializer(serializers.Serializer):
             last_name=validated_data.get("user_last_name", ""),
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
+        # Create a setup_account project with an app_id represented by the account name
+        project = Project.objects.create(
+            name=validated_data["account_name"] + " project", account=account, app_id=validated_data["account_name"]
+        )
+
+        data_source.projects.set([project])
+
+        data_source.save()
 
         Profile.objects.create(account=account, user=user)
 

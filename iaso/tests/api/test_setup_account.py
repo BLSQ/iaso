@@ -122,3 +122,17 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
         self.assertEqual(has_all_perms, True)
+
+    def test_setup_account_project_creation(self):
+        self.client.force_authenticate(self.admin)
+
+        data = {
+            "account_name": "initial_project_account",
+            "user_username": "username",
+            "password": "password",
+        }
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        project = m.Project.objects.filter(name="initial_project_account project")
+        self.assertEqual(len(project), 1)

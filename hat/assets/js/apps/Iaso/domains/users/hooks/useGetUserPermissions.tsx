@@ -1,7 +1,7 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useCallback, useMemo } from 'react';
 import { Permission } from '../../userRoles/types/userRoles';
-import MESSAGES from '../messages';
+import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 type Row = {
     permission: string;
@@ -15,8 +15,8 @@ export const useGetUserPermissions = (
     const { formatMessage } = useSafeIntl();
     const permissionLabel = useCallback(
         permissionCodeName => {
-            return MESSAGES[permissionCodeName]
-                ? formatMessage(MESSAGES[permissionCodeName])
+            return PERMISSIONS_MESSAGES[permissionCodeName]
+                ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
                 : permissionCodeName;
         },
         [formatMessage],

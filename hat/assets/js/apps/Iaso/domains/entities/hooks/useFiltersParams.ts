@@ -9,7 +9,7 @@ export const useFiltersParams = (): ((
     params: Params,
     // eslint-disable-next-line no-unused-vars
     filters: Filters,
-) => void) => {
+) => Params) => {
     const staticColumns: Array<Column> = useStaticColumns();
     const getParams = (params: Params, filters: Filters): Params => {
         const tempParams = {

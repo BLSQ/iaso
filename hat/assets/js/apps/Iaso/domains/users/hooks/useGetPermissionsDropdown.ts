@@ -4,6 +4,7 @@ import { useSafeIntl } from 'bluesquare-components';
 import { getRequest } from '../../../libs/Api';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import MESSAGES from '../messages';
+import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 export const useGetPermissionsDropDown = (): UseQueryResult => {
     const { formatMessage } = useSafeIntl();
@@ -17,8 +18,10 @@ export const useGetPermissionsDropDown = (): UseQueryResult => {
                 return data.permissions.map(permission => {
                     return {
                         value: permission.codename,
-                        label: MESSAGES[permission.codename]
-                            ? formatMessage(MESSAGES[permission.codename])
+                        label: PERMISSIONS_MESSAGES[permission.codename]
+                            ? formatMessage(
+                                  PERMISSIONS_MESSAGES[permission.codename],
+                              )
                             : permission.codename,
                     };
                 });

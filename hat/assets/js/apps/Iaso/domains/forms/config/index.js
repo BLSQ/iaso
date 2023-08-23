@@ -13,7 +13,7 @@ import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { CreateSubmissionModal } from '../components/CreateSubmissionModal/CreateSubmissionModal.tsx';
 import { createInstance } from '../../instances/actions';
-import * as Permission from '../../../utils/permissions';
+import * as Permission from '../../../utils/permissions.ts';
 
 export const baseUrl = baseUrls.forms;
 

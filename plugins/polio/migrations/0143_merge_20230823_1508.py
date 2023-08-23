@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("polio", "0140_alter_rounddatehistoryentry_reason"),
         ("polio", "0142_alter_vaccineauthorization_expiration_date"),

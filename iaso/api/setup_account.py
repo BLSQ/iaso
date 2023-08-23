@@ -45,7 +45,7 @@ class SetupAccountSerializer(serializers.Serializer):
             last_name=validated_data.get("user_last_name", ""),
         )
         account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
-        
+
         # Create a setup_account project with an app_id represented by the account name
         initial_project = Project.objects.create(
             name=validated_data["account_name"] + " project", account=account, app_id=validated_data["account_name"]

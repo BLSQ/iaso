@@ -134,16 +134,21 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                     </Grid>
                 </Grid>
                 {selectedFormsIds.length === 1 && (
-                    <Tabs
-                        value={tab}
-                        onChange={(_, newtab) => handleChangeTab(newtab)}
-                    >
-                        <Tab
-                            value="list"
-                            label={formatMessage(MESSAGES.list)}
-                        />
-                        <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                    </Tabs>
+                    <Box mt={2}>
+                        <Tabs
+                            value={tab}
+                            onChange={(_, newtab) => handleChangeTab(newtab)}
+                        >
+                            <Tab
+                                value="list"
+                                label={formatMessage(MESSAGES.list)}
+                            />
+                            <Tab
+                                value="map"
+                                label={formatMessage(MESSAGES.map)}
+                            />
+                        </Tabs>
+                    </Box>
                 )}
 
                 {selectedFormsIds.length === 1 && (
@@ -156,6 +161,7 @@ export const CompletenessStats: FunctionComponent<Props> = ({
                             isFetchingLocations={isFetchingMapStats}
                             params={params}
                             selectedFormId={selectedFormsIds[0]}
+                            router={router}
                         />
                     </Box>
                 )}

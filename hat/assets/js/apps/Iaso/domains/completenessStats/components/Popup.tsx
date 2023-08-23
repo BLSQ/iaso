@@ -133,23 +133,6 @@ export const PopupComponent: FunctionComponent<Props> = ({
                             justifyContent="flex-end"
                             alignItems="center"
                         >
-                            {location.parent_org_unit?.parent && (
-                                <Box mr={1}>
-                                    <Button
-                                        variant="outlined"
-                                        color="primary"
-                                        size="small"
-                                        onClick={() =>
-                                            handleClick(
-                                                location.parent_org_unit?.parent
-                                                    ?.id,
-                                            )
-                                        }
-                                    >
-                                        {formatMessage(MESSAGES.seeParent)}
-                                    </Button>
-                                </Box>
-                            )}
                             {location.has_children && (
                                 <Button
                                     variant="outlined"

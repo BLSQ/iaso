@@ -813,6 +813,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
     },
+    countryPassing: {
+        id: 'iaso.polio.label.countryPassing',
+        defaultMessage: '80% or more districts passed',
+    },
+    countryFailing: {
+        id: 'iaso.polio.label.countryFailing',
+        defaultMessage: 'Less than 80% districts passed',
+    },
     '1lqasOK': {
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
@@ -2209,6 +2217,10 @@ const MESSAGES = defineMessages({
     SECURITY_CONTEXT: {
         id: 'iaso.polio.label.SECURITY_CONTEXT',
         defaultMessage: 'Security context',
+    },
+    CAMPAIGN_MOVED_FORWARD_BY_MOH: {
+        id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
+        defaultMessage: 'Campaign moved forward by MOH',
     },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',

@@ -19,7 +19,7 @@ export const useDelete = (): UseMutationResult =>
         body => deleteRequest(`/api/entitytypes/${body.id}/`),
         MESSAGES.deleteSuccess,
         MESSAGES.deleteError,
-        ['entitytypes'],
+        ['entitytypes', 'beneficiaryTypesOptions'],
     );
 
 type Params = {
@@ -84,10 +84,10 @@ export const useSave = (): UseMutationResult => {
             return body.id
                 ? patchRequest(`/api/entitytypes/${body.id}/`, body)
                 : postRequest('/api/entitytypes/', {
-                    ...body,
-                    account: account.id,
-                });
+                      ...body,
+                      account: account.id,
+                  });
         },
-        invalidateQueryKey: ['entitytypes'],
+        invalidateQueryKey: ['entitytypes', 'beneficiaryTypesOptions'],
     });
 };

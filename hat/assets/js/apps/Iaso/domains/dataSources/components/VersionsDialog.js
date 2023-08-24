@@ -111,7 +111,12 @@ const tableColumns = (source, forceRefreshParent) => [
         sortable: false,
     },
     {
-        Header: <FormattedMessage id="iaso.label.actions" />,
+        Header: (
+            <FormattedMessage
+                id="iaso.label.actions"
+                defaultMessage="Action(s)"
+            />
+        ),
         accessor: 'actions',
         sortable: false,
         width: 200,

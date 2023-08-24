@@ -1839,7 +1839,7 @@ const MESSAGES = defineMessages({
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
-        defaultMessage: 'Modified By',
+        defaultMessage: 'Modified by',
     },
     seeLogDetail: {
         id: 'iaso.polio.campaign.seeLogDetail',

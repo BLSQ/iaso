@@ -114,7 +114,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Close',
     },
     actions: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     deleteTitle: {

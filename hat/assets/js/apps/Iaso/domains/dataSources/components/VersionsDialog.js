@@ -236,7 +236,10 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
             renderActions={({ closeDialog }) => (
                 <DialogActions className={classes.action}>
                     <Button onClick={closeDialog} color="primary">
-                        <FormattedMessage id="iaso.label.close" />
+                        <FormattedMessage
+                            id="iaso.label.close"
+                            defaultMessage="Close"
+                        />
                     </Button>
                 </DialogActions>
             )}

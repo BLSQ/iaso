@@ -54,4 +54,4 @@ class RefreshPreparednessTestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         task = self.assertValidTaskAndInDB(jr)
         self.assertEqual(task.launcher, self.user)
-        self.assertEqual(task.params["kwargs"]["obr_name"], self.campaign.obr_name)
+        self.assertEqual(task.params["kwargs"]["campaigns"], [self.campaign.obr_name])

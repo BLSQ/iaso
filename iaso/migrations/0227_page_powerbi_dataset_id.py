@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0226_merge_20230724_1245'),
+        ("iaso", "0226_merge_20230724_1245"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='page',
-            name='powerbi_dataset_id',
+            model_name="page",
+            name="powerbi_dataset_id",
             field=models.TextField(blank=True, null=True),
         ),
     ]

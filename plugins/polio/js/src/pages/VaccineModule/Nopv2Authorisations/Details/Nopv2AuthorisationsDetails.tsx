@@ -24,7 +24,9 @@ export const Nopv2AuthorisationsDetails: FunctionComponent<Props> = ({
     return (
         <>
             <TopBar
-                title={formatMessage(MESSAGES.nopv2Auth)}
+                title={`${formatMessage(MESSAGES.nopv2Auth)} - ${
+                    router.params.countryName
+                }`}
                 displayBackButton
                 goBack={goBack}
             />
@@ -37,6 +39,7 @@ export const Nopv2AuthorisationsDetails: FunctionComponent<Props> = ({
                         countryName={router.params.countryName}
                         // @ts-ignore
                         countryId={router.params.country}
+                        iconProps={{ message: MESSAGES.addAuthorisation }}
                     />
                 </Grid>
                 <Nopv2AuthorisationsDetailsTable params={router.params} />

@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Select region',
         id: 'iaso.polio.button.label.addRegion',
     },
+    addAuthorisation: {
+        defaultMessage: 'Add authorisation',
+        id: 'iaso.polio.button.label.addAuthorisation',
+    },
     confirm: {
         defaultMessage: 'Confirm',
         id: 'iaso.label.confirm',
@@ -2297,6 +2301,10 @@ const MESSAGES = defineMessages({
     nopv2Auth: {
         id: 'iaso.polio.title.nopv2Auth',
         defaultMessage: 'NOPV2 authorisations',
+    },
+    editAuth: {
+        id: 'iaso.polio.title.editAuth',
+        defaultMessage: 'Edit authorisation',
     },
     signature: {
         id: 'iaso.polio.label.signature',

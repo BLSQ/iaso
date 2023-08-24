@@ -25,5 +25,13 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Comment',
         id: 'iaso.polio.label.comment',
     },
+    addAuthorisation: {
+        defaultMessage: 'Add authorisation',
+        id: 'iaso.polio.button.label.addAuthorisation',
+    },
+    editAuth: {
+        id: 'iaso.polio.title.editAuth',
+        defaultMessage: 'Edit authorisation',
+    },
 });
 export default MESSAGES;

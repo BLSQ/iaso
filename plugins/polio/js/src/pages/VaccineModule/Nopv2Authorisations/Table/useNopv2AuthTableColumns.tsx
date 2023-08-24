@@ -61,7 +61,7 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                     return (
                         <IconButton
                             icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.details}
+                            tooltipMessage={MESSAGES.seeHistory}
                             url={`${baseUrl}/order/-expiration_date/pageSize/20/page/1/country/${id}/countryName/${name}`}
                         />
                     );

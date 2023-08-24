@@ -62,7 +62,11 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
 
     const allowConfirm =
-        !formik.isSubmitting && formik.isValid && isFormChanged; // && stuff
+        !formik.isSubmitting && formik.isValid && isFormChanged;
+
+    const title = authorisationData?.id
+        ? `${formatMessage(MESSAGES.editAuth)}`
+        : `${formatMessage(MESSAGES.addAuthorisation)} - ${countryName}`;
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -71,7 +75,7 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                 onClose={() => null}
                 id={testId}
                 dataTestId={testId}
-                titleMessage={countryName}
+                titleMessage={title}
                 onConfirm={() => formik.handleSubmit()}
                 onCancel={() => null}
                 confirmMessage={MESSAGES.confirm}

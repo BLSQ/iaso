@@ -41,7 +41,7 @@ export const userHasOneOfPermissions = (permissions = [], user) => {
  * list all submenu permission
  *
  * @param {Object} menuItem
- * @return {Boolean}
+ * @return {Array}
  */
 export const listMenuPermission = (menuItem, permissions = []) => {
     let permissionsTemp = [...permissions];

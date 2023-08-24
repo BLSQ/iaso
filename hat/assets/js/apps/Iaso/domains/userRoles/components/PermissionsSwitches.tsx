@@ -7,6 +7,7 @@ import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { Permission } from '../types/userRoles';
+import PERMISSIONS_MESSAGES from '../../users/permissionsMessages';
 
 const styles = theme => ({
     container: {
@@ -55,8 +56,8 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 
     const getPermissionLabel = permissionCodeName => {
-        return MESSAGES[permissionCodeName]
-            ? formatMessage(MESSAGES[permissionCodeName])
+        return PERMISSIONS_MESSAGES[permissionCodeName]
+            ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
             : permissionCodeName;
     };
     const permissions = useMemo(

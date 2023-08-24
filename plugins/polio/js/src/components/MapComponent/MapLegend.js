@@ -24,7 +24,7 @@ export const MapLegend = ({ title, legendItems, width }) => {
                     >
                         <Grid
                             item
-                            sm={width === 'xs' ? 6 : 3}
+                            sm={width === 'xs' || width === 'sm' ? 6 : 3}
                             container
                             justifyContent="flex-start"
                         >
@@ -35,7 +35,7 @@ export const MapLegend = ({ title, legendItems, width }) => {
                         </Grid>
                         <Grid
                             item
-                            sm={width === 'xs' ? 6 : 9}
+                            sm={width === 'xs' || width === 'sm' ? 6 : 9}
                             container
                             justifyContent="flex-end"
                             alignItems="center"

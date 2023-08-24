@@ -2044,20 +2044,29 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
 
     def get_queryset(self):
         category = self.request.query_params.get("category")
-        configs = Config.objects.filter(slug=f"{category}-config").first().content
-        country_ids = []
-        for config in configs:
-            if JsonDataStore.objects.filter(slug=f"{category}_{config['country_id']}").exists():
-                country_ids.append(config["country_id"])
-            else:
-                continue
+        # For lqas, we filter out the countries with no datastore
+        if category == "lqas":
+            configs = Config.objects.filter(slug=f"{category}-config").first().content
+            country_ids = []
+            for config in configs:
+                if JsonDataStore.objects.filter(slug=f"{category}_{config['country_id']}").exists():
+                    country_ids.append(config["country_id"])
+                else:
+                    continue
 
-        return (
-            OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
-            .filter(validation_status="VALID")
-            .filter(org_unit_type__category="COUNTRY")
-            .filter(id__in=country_ids)
-        )
+            return (
+                OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+                .filter(validation_status="VALID")
+                .filter(org_unit_type__category="COUNTRY")
+                .filter(id__in=country_ids)
+            )
+        # For IM we send all countries. We'll align with LQAS when the datastores are configured for IM as well
+        else:
+            return (
+                OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
+                .filter(validation_status="VALID")
+                .filter(org_unit_type__category="COUNTRY")
+            )
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):
@@ -2081,7 +2090,6 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
-            "account",
             "expiration_date",
             "created_at",
             "updated_at",
@@ -2145,12 +2153,10 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         country_id = self.request.query_params.get("country", None)
         queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
         block_country = self.request.query_params.get("block_country", None)
-        only_deleted = self.request.query_params.get("only_deleted", None)
         search = self.request.query_params.get("search", None)
         auth_status = self.request.query_params.get("auth_status", None)
+        get_most_recent = self.request.query_params.get("get_most_recent", None)
 
-        if only_deleted:
-            queryset = queryset.filter(deleted_at__isnull=False)
         if country_id:
             queryset = queryset.filter(country__pk=country_id)
         if block_country:
@@ -2161,6 +2167,16 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if auth_status:
             auth_status = auth_status.split(",")
             queryset = queryset.filter(status__in=auth_status)
+        if get_most_recent:
+            most_recent_expiration_per_country = (
+                VaccineAuthorization.objects.filter(country=OuterRef("country"))
+                .order_by("-expiration_date")
+                .values("expiration_date")[:1]
+            )
+
+            queryset = VaccineAuthorization.objects.annotate(
+                most_recent_expiration_date=Subquery(most_recent_expiration_per_country)
+            ).filter(expiration_date=F("most_recent_expiration_date"))
 
         return queryset
 
@@ -2173,40 +2189,6 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
 
         return super().create(request)
-
-    @action(detail=False, methods=["POST", "GET"])
-    def get_most_recent_update(self, request):
-        """
-        return the most recent Authorization by country for all countries
-        """
-
-        most_recent_dates = (
-            VaccineAuthorization.objects.filter(
-                country=OuterRef("country"), account=self.request.user.iaso_profile.account
-            )
-            .values("country")
-            .annotate(max_expiration_date=Max("expiration_date"))
-            .values("max_expiration_date")
-        )
-
-        most_recent_authorizations = VaccineAuthorization.objects.filter(
-            country=OuterRef("country"), expiration_date=Subquery(most_recent_dates)
-        )
-
-        recent_per_country = VaccineAuthorization.objects.filter(
-            id=Subquery(most_recent_authorizations.values("id"))
-        ).select_related("country")
-
-        page = self.paginate_queryset(recent_per_country)
-
-        if page:
-            serializer = VaccineAuthorizationSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = VaccineAuthorizationSerializer(recent_per_country, many=True)
-        serialized_data = serializer.data
-
-        return Response(serialized_data)
 
 
 router = routers.SimpleRouter()

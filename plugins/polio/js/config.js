@@ -196,6 +196,30 @@ const routes = [
                 isRequired: false,
                 key: 'period',
             },
+            {
+                isRequired: false,
+                key: 'displayedShapesLeft',
+            },
+            {
+                isRequired: false,
+                key: 'zoomLeft',
+            },
+            {
+                isRequired: false,
+                key: 'centerLeft',
+            },
+            {
+                isRequired: false,
+                key: 'zoomRight',
+            },
+            {
+                isRequired: false,
+                key: 'centerRight',
+            },
+            {
+                isRequired: false,
+                key: 'displayedShapesRight',
+            },
         ],
     },
     {

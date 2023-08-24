@@ -40,6 +40,7 @@ class Page(models.Model):
 
     powerbi_group_id = models.TextField(blank=True, null=True)
     powerbi_report_id = models.TextField(blank=True, null=True)
+    powerbi_dataset_id = models.TextField(blank=True, null=True)
     powerbi_filters = models.JSONField(blank=True, null=True)
     # see https://learn.microsoft.com/en-us/javascript/api/overview/powerbi/configure-report-settings#locale-settings
     powerbi_language = models.CharField(

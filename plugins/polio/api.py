@@ -19,6 +19,7 @@ from django.db.models import Value, TextField, UUIDField
 from django.db.models.expressions import RawSQL
 from django.http import FileResponse
 from django.http import HttpResponse, StreamingHttpResponse
+from django.db.models.expressions import RawSQL, Subquery
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
@@ -1758,11 +1759,13 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
     def list(self, request):
         results = []
+
         # Should be "lqas", "im_OHH", "im_HH"
         requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
         data_stores = self.get_datastores()
         for org_unit in queryset:
+            result = None
             start_date_after, end_date_before = self.compute_reference_dates()
             country_id = org_unit.id
             try:
@@ -1774,46 +1777,56 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                 request.user, request.query_params.get("app_id", None)
             ).filter(id=org_unit.id)
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
-
-            # Probably not necessary as long as we only have AFRO in the platform
-            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
-            # Filtering out future campaigns
-            started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
-            # By default, we want the last campaign, so we sort them by descending round end date
-            sorted_campaigns = (
-                sorted(
-                    started_campaigns,
-                    key=lambda campaign: campaign.get_last_round_end_date(),
-                    reverse=True,
-                )
-                if data_store
-                else []
-            )
-            # We apply the date filters if any. If there's a period filter it has already been taken into account in start_date_after and end_date_before
+            # Alt
+            today = dt.date.today()
+            latest_active_round_qs = Round.objects.filter(campaign__country=org_unit)
             if start_date_after is not None:
-                sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "start", start_date_after)
+                latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=dt.date(start_date_after))
             if end_date_before is not None:
-                sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "end", end_date_before)
-            # And we pick the first one from our sorted list
-            latest_campaign = sorted_campaigns[0] if data_store and sorted_campaigns else None
-            sorted_rounds = (
-                sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
-                if latest_campaign is not None
-                else []
+                latest_active_round_qs = latest_active_round_qs.filter(started_at__lte=dt.date(end_date_before))
+            # filter out rounds that start in the future
+            latest_active_round_qs = latest_active_round_qs.filter(started_at__lte=today()).order_by("-started_at")[:1]
+            latest_active_campaign = (
+                Campaign.objects.filter(id__in=Subquery(latest_active_round_qs.values("campaign")))
+                .filter(deleted_at=None)
+                .exclude(is_test=True)
+                .prefetch_related("rounds")
+                .first()
+                # .prefetch_related("scopes")
+                # .prefetch_related("rounds__scopes")
             )
+            if latest_active_campaign is None:
+                result = {
+                    "id": int(country_id),
+                    "data": {"country_name": org_unit.name},
+                    "geo_json": shapes,
+                    "status": "inScope",
+                }
+                continue
+            latest_active_campaign_rounds = latest_active_campaign.rounds.filter(started_at__lte=today).order_by(
+                "-number"
+            )
+            # Alt END
+
             # Get data from json datastore
             data_for_country = data_store.content if data_store else None
             # remove data from all campaigns but latest
             stats = data_for_country.get("stats", None) if data_for_country else None
-            result = None
-            if stats and latest_campaign:
-                stats = stats.get(latest_campaign.obr_name, None)
-            if stats and latest_campaign:
+
+            if stats:
+                stats = stats.get(latest_active_campaign.obr_name, None)
+            if stats:
                 round_number = requested_round
                 if round_number == "latest":
-                    round_number = sorted_rounds[0].number if len(sorted_rounds) > 0 else None
+                    round_number = (
+                        latest_active_campaign_rounds.first().number
+                        if latest_active_campaign_rounds.count() > 0
+                        else None
+                    )
                 elif round_number == "penultimate":
-                    round_number = sorted_rounds[1].number if len(sorted_rounds) > 1 else None
+                    round_number = (
+                        latest_active_campaign_rounds[1].number if latest_active_campaign_rounds.count() > 1 else None
+                    )
                 else:
                     round_number = int(round_number)
                 if latest_campaign:

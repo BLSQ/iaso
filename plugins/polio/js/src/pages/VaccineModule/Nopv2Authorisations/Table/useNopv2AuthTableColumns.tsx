@@ -22,10 +22,11 @@ export const useNopv2AuthTableColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.expirationDate),
-                accessor: 'expiration_date',
+                accessor: 'current_expiration_date',
                 sortable: true,
                 Cell: DateCell,
             },
+
             {
                 Header: formatMessage(MESSAGES.quantity),
                 accessor: 'quantity',
@@ -51,6 +52,12 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                         ).toUpperCase()}
                     </span>
                 ),
+            },
+            {
+                Header: formatMessage(MESSAGES.expirationDate),
+                accessor: 'next_expiration_date',
+                sortable: true,
+                Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.actions),

@@ -14,7 +14,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Address',
     },
     updatedAt: {
-        defaultMessage: 'Updated at',
+        defaultMessage: 'Updated',
         id: 'iaso.label.updated_at',
     },
     actions: {

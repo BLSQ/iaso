@@ -186,7 +186,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validated',
     },
     rejected: {
-        id: 'iaso.forms.rejected',
+        id: 'iaso.forms.rejectedCap',
         defaultMessage: 'Rejected',
     },
     notValidated: {
@@ -202,7 +202,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'All',
     },
     new: {
-        id: 'iaso.forms.new',
+        id: 'iaso.forms.newCap',
         defaultMessage: 'New',
     },
     Prov: {
@@ -383,7 +383,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitsTypes: {
         id: 'iaso.label.orgUnitsTypes',
-        defaultMessage: 'Organisation unit types',
+        defaultMessage: 'Org unit types',
     },
     deviceField: {
         id: 'iaso.label.deviceField',
@@ -403,7 +403,7 @@ const MESSAGES = defineMessages({
     },
     noOptions: {
         id: 'iaso.label.noOptions',
-        defaultMessage: 'No results found',
+        defaultMessage: 'No result found',
     },
     planning: {
         id: 'iaso.label.planning',
@@ -551,7 +551,7 @@ const MESSAGES = defineMessages({
     },
     deleteWarning: {
         id: 'iaso.label.deleteWarning',
-        defaultMessage: 'Are you sure you want to delete {attachmentName}?',
+        defaultMessage: 'Are you sure you want to delete {name}?',
     },
     download: {
         id: 'iaso.label.download',

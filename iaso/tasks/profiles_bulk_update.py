@@ -30,38 +30,38 @@ def update_single_profile_from_bulk(
 ):
     """Used within the context of a bulk operation"""
     original_copy = deepcopy(profile)
-    accound_id = user.iaso_profile.account.id
+    account_id = user.iaso_profile.account.id
     if roles_id_added is not None:
         for role_id in roles_id_added:
-            role = get_object_or_404(UserRole, id=role_id, account_id=accound_id)
-            if role.account.id == accound_id:
-                if user.has_perm(permission.USERS_MANAGED):
+            role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
+            if role.account.id == account_id:
+                if not user.has_perm(permission.USERS_ADMIN):
                     for p in role.group.permissions.all():
                         CustomPermissionSupport.assert_right_to_assign(user, p.codename)
                 role.iaso_profile.add(profile)
     if roles_id_removed is not None:
         for role_id in roles_id_removed:
-            role = get_object_or_404(UserRole, id=role_id, account_id=accound_id)
-            if role.account.id == accound_id:
+            role = get_object_or_404(UserRole, id=role_id, account_id=account_id)
+            if role.account.id == account_id:
                 role.iaso_profile.remove(profile)
 
     if projects_ids_added is not None:
-        if user.has_perm(permission.USERS_MANAGED):
+        if not user.has_perm(permission.USERS_ADMIN):
             raise PermissionDenied(
-                f"User with permission {permission.USERS_MANAGED} cannot changed project " f"attributions"
+                f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
             )
         for project_id in projects_ids_added:
             project = Project.objects.get(pk=project_id)
-            if project.account and project.account.id == accound_id:
+            if project.account and project.account.id == account_id:
                 project.iaso_profile.add(profile)
     if projects_ids_removed is not None:
-        if user.has_perm(permission.USERS_MANAGED):
+        if not user.has_perm(permission.USERS_ADMIN):
             raise PermissionDenied(
-                f"User with permission {permission.USERS_MANAGED} cannot changed project " f"attributions"
+                f"User with permission {permission.USERS_MANAGED} cannot changed project attributions"
             )
         for project_id in projects_ids_removed:
             project = Project.objects.get(pk=project_id)
-            if project.account and project.account.id == accound_id:
+            if project.account and project.account.id == account_id:
                 project.iaso_profile.remove(profile)
 
     if language is not None:
@@ -153,7 +153,7 @@ def profiles_bulk_update(
     # FIXME Task don't handle rollback properly if task is killed by user or other error
     with transaction.atomic():
         managed_org_units = None
-        if user and user.has_perm(permission.USERS_MANAGED):
+        if user and not user.has_perm(permission.USERS_ADMIN):
             managed_org_units = OrgUnit.objects.hierarchy(user.iaso_profile.org_units.all()).values_list(
                 "id", flat=True
             )

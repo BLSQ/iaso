@@ -188,5 +188,5 @@ class CustomPermissionSupport(models.Model):
 
     @staticmethod
     def assert_right_to_assign(user, permission_codename: str):
-        if user.has_perm(USERS_MANAGED) and permission_codename == _USERS_ADMIN:
-            raise PermissionDenied(f"User with {USERS_MANAGED} cannot grant {USERS_ADMIN} permission")
+        if not user.has_perm(USERS_ADMIN) and permission_codename == _USERS_ADMIN:
+            raise PermissionDenied(f"Only users with {USERS_ADMIN} permission can grant {USERS_ADMIN} permission")

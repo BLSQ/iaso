@@ -35,7 +35,7 @@ from rest_framework.exceptions import PermissionDenied
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
-from rest_framework import routers, filters, viewsets, serializers, permissions, status
+from rest_framework import routers, filters, viewsets, serializers, permissions, status, pagination
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -2100,12 +2100,77 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
+        expiration_date = TimestampField(read_only=True)
 
     def create(self, validated_data):
         user = self.context["request"].user
         validated_data["account"] = user.iaso_profile.account
 
         return super().create(validated_data)
+
+
+class RecentVaccineAuthorizationSerializer(serializers.ModelSerializer):
+    country = CountryField(queryset=OrgUnit.objects.filter(org_unit_type__name="COUNTRY"))
+    current_expiration_date = serializers.SerializerMethodField()
+    next_expiration_date = serializers.SerializerMethodField()
+    quantity = serializers.IntegerField()
+    status = serializers.CharField()
+    comment = serializers.CharField()
+
+    class Meta:
+        model = VaccineAuthorization
+        fields = ["country", "current_expiration_date", "next_expiration_date", "quantity", "status", "comment"]
+
+        read_only_fields = [
+            "country",
+            "current_expiration_date",
+            "next_expiration_date",
+            "quantity",
+            "status",
+            "comment",
+        ]
+
+        current_expiration_date = TimestampField(read_only=True)
+        next_expiration_date = TimestampField(read_only=True)
+        
+    def get_current_expiration_date(self, obj):
+        latest_expired_or_validated = (
+            VaccineAuthorization.objects.filter(
+                country=obj.country,
+                status__in=["validated", "expired"],
+            )
+            .order_by("-expiration_date")
+            .first()
+        )
+
+        if latest_expired_or_validated:
+            return latest_expired_or_validated.expiration_date
+        else:
+            return None
+
+    def get_next_expiration_date(self, obj):
+        ongoing_authorizations = VaccineAuthorization.objects.filter(
+            country=obj.country,
+            status__in=["ongoing", "signature"],
+        ).order_by("expiration_date")[:1]
+
+        if ongoing_authorizations:
+            return ongoing_authorizations[0].expiration_date
+        else:
+            return obj.expiration_date
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        country = representation.pop("country")
+        representation["results"] = {
+            "country": country,
+            "current_expiration_date": representation.pop("current_expiration_date"),
+            "next_expiration_date": representation.pop("next_expiration_date"),
+            "quantity": representation.pop("quantity"),
+            "status": representation.pop("status"),
+            "comment": representation.pop("comment"),
+        }
+        return representation
 
 
 class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
@@ -2155,7 +2220,6 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         block_country = self.request.query_params.get("block_country", None)
         search = self.request.query_params.get("search", None)
         auth_status = self.request.query_params.get("auth_status", None)
-        get_most_recent = self.request.query_params.get("get_most_recent", None)
 
         if country_id:
             queryset = queryset.filter(country__pk=country_id)
@@ -2167,16 +2231,6 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if auth_status:
             auth_status = auth_status.split(",")
             queryset = queryset.filter(status__in=auth_status)
-        if get_most_recent:
-            most_recent_expiration_per_country = (
-                VaccineAuthorization.objects.filter(country=OuterRef("country"))
-                .order_by("-expiration_date")
-                .values("expiration_date")[:1]
-            )
-
-            queryset = VaccineAuthorization.objects.annotate(
-                most_recent_expiration_date=Subquery(most_recent_expiration_per_country)
-            ).filter(expiration_date=F("most_recent_expiration_date"))
 
         return queryset
 
@@ -2189,6 +2243,28 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
 
         return super().create(request)
+
+    @action(detail=False, methods=["POST", "GET"])
+    def get_most_recent_authorizations(self, request):
+        queryset = self.get_queryset()
+
+        most_recent_expiration_per_country = (
+            VaccineAuthorization.objects.filter(country=OuterRef("country"))
+            .order_by("-expiration_date")
+            .values("expiration_date")[:1]
+        )
+
+        queryset = queryset.annotate(most_recent_expiration_date=Subquery(most_recent_expiration_per_country)).filter(
+            expiration_date=F("most_recent_expiration_date")
+        )
+
+        page = self.paginate_queryset(queryset)
+        if page:
+            serializer = RecentVaccineAuthorizationSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = RecentVaccineAuthorizationSerializer(queryset, many=True)
+        serialized_data = serializer.data
+        return Response(serialized_data)
 
 
 router = routers.SimpleRouter()

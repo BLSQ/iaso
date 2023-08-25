@@ -1,4 +1,5 @@
 import { UseMutationResult, useQueryClient } from 'react-query';
+import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import {
     useSnackMutation,
@@ -21,7 +22,8 @@ const getVaccineAuthorisationsList = params => {
 };
 
 export const useGetLatestAuthorisations = params => {
-    const apiParams = useApiParams(params);
+    const safeParams = useUrlParams(params);
+    const apiParams = useApiParams(safeParams);
     return useSnackQuery({
         queryKey: [
             'latest-nopv2-auth',

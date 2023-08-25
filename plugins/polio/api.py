@@ -2132,10 +2132,7 @@ class RecentVaccineAuthorizationSerializer(serializers.ModelSerializer):
 
         current_expiration_date = TimestampField(read_only=True)
         next_expiration_date = TimestampField(read_only=True)
-
-    def get_country(self, obj):
-        return {"name": obj.country.name, "id": obj.country.id}  # Assuming the country field is a ForeignKey to OrgUnit
-
+        
     def get_current_expiration_date(self, obj):
         latest_expired_or_validated = (
             VaccineAuthorization.objects.filter(

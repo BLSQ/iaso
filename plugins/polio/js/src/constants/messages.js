@@ -320,10 +320,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.detection_responsible',
         defaultMessage: 'Detection responsible',
     },
-    risk_assessment_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/ORPG-Approval',
-    },
     ag_nopv_group_met_at: {
         id: 'iaso.polio.form.label.agNopvGroup',
         defaultMessage: 'AG/nOPV Group',
@@ -1843,7 +1839,7 @@ const MESSAGES = defineMessages({
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
-        defaultMessage: 'Modified By',
+        defaultMessage: 'Modified by',
     },
     seeLogDetail: {
         id: 'iaso.polio.campaign.seeLogDetail',
@@ -1956,6 +1952,10 @@ const MESSAGES = defineMessages({
     rrtOprttApproval: {
         id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/OPRTT Approval',
+    },
+    risk_assessment_rrt_oprtt_approval_at: {
+        id: 'iaso.polio.form.label.risk_assessment_rrt_oprtt_approval_at',
+        defaultMessage: 'RRT/ORPG-Approval',
     },
     loading: {
         id: 'iaso.label.loading',

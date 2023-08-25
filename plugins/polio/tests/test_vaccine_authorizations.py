@@ -224,10 +224,10 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0]["results"]["comment"], "en cours.")
-        self.assertEqual(response.data[0]["results"]["status"], "ongoing")
-        self.assertEqual(response.data[0]["results"]["current_expiration_date"], datetime.date(2024, 3, 1))
-        self.assertEqual(response.data[0]["results"]["next_expiration_date"], datetime.date(2024, 4, 1))
+        self.assertEqual(response.data[0]["comment"], "en cours.")
+        self.assertEqual(response.data[0]["status"], "ongoing")
+        self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2024, 3, 1))
+        self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 4, 1))
 
     def test_filters(self):
         self.client.force_authenticate(self.user_1)

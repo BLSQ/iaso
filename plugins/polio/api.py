@@ -2132,7 +2132,7 @@ class RecentVaccineAuthorizationSerializer(serializers.ModelSerializer):
 
         current_expiration_date = TimestampField(read_only=True)
         next_expiration_date = TimestampField(read_only=True)
-        
+
     def get_current_expiration_date(self, obj):
         latest_expired_or_validated = (
             VaccineAuthorization.objects.filter(
@@ -2162,7 +2162,7 @@ class RecentVaccineAuthorizationSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         country = representation.pop("country")
-        representation["results"] = {
+        representation = {
             "country": country,
             "current_expiration_date": representation.pop("current_expiration_date"),
             "next_expiration_date": representation.pop("next_expiration_date"),

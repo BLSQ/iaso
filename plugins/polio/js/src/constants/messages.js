@@ -2322,6 +2322,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.expirationDate',
         defaultMessage: 'Expiration date',
     },
+    dateForExpired: {
+        id: 'iaso.polio.error.dateForExpired',
+        defaultMessage: 'Expired authorisations can only have past dates',
+    },
 });
 
 export default MESSAGES;

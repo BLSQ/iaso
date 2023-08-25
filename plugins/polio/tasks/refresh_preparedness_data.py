@@ -20,6 +20,8 @@ def refresh_data(
     started_at = datetime.now()
     if date_filter is None:
         date_filter = now() - timedelta(days=180)
+    elif type(date_filter) == str:
+        date_filter = datetime.fromisoformat(date_filter)
 
     round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")
     round_qs = round_qs.filter(started_at__gte=date_filter)

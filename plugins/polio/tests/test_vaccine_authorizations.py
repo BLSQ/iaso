@@ -1,3 +1,4 @@
+import datetime
 from datetime import date
 
 from django.contrib.auth.models import User, Permission
@@ -192,7 +193,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "expired",
                 "comment": "waiting for approval.",
                 "expiration_date": "2024-02-01",
             },
@@ -203,7 +204,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "validated",
                 "comment": "new update",
                 "expiration_date": "2024-03-01",
             },
@@ -214,18 +215,19 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "validated",
-                "comment": "Approved.",
+                "status": "ongoing",
+                "comment": "en cours.",
                 "expiration_date": "2024-04-01",
             },
         )
 
-        response = self.client.get("/api/polio/vaccineauthorizations/?get_most_recent=true")
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0]["comment"], "Approved.")
-        self.assertEqual(response.data[0]["status"], "validated")
-        self.assertEqual(response.data[0]["expiration_date"], "2024-04-01")
+        self.assertEqual(response.data[0]["results"]["comment"], "en cours.")
+        self.assertEqual(response.data[0]["results"]["status"], "ongoing")
+        self.assertEqual(response.data[0]["results"]["current_expiration_date"], datetime.date(2024, 3, 1))
+        self.assertEqual(response.data[0]["results"]["next_expiration_date"], datetime.date(2024, 4, 1))
 
     def test_filters(self):
         self.client.force_authenticate(self.user_1)

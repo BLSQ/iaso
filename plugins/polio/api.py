@@ -35,7 +35,7 @@ from rest_framework.exceptions import PermissionDenied
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
-from rest_framework import routers, filters, viewsets, serializers, permissions, status
+from rest_framework import routers, filters, viewsets, serializers, permissions, status, pagination
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -2100,6 +2100,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
+        expiration_date = TimestampField(read_only=True)
 
     def create(self, validated_data):
         user = self.context["request"].user
@@ -2128,6 +2129,9 @@ class RecentVaccineAuthorizationSerializer(serializers.ModelSerializer):
             "status",
             "comment",
         ]
+
+        current_expiration_date = TimestampField(read_only=True)
+        next_expiration_date = TimestampField(read_only=True)
 
     def get_country(self, obj):
         return {"name": obj.country.name, "id": obj.country.id}  # Assuming the country field is a ForeignKey to OrgUnit
@@ -2252,9 +2256,13 @@ class VaccineAuthorizationViewSet(ModelViewSet):
             expiration_date=F("most_recent_expiration_date")
         )
 
+        page = self.paginate_queryset(queryset)
+        if page:
+            serializer = RecentVaccineAuthorizationSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = RecentVaccineAuthorizationSerializer(queryset, many=True)
-
-        return Response(serializer.data)
+        serialized_data = serializer.data
+        return Response(serialized_data)
 
 
 router = routers.SimpleRouter()

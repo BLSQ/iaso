@@ -13,7 +13,7 @@ import { redirectToReplace } from '../../../../../../../hat/assets/js/apps/Iaso/
 import { NOPV2_AUTH } from '../../../constants/routes';
 
 const defaultParams = {
-    order: '-updated_at',
+    order: '-current_expiration_date',
     pageSize: 20,
     page: 1,
 };

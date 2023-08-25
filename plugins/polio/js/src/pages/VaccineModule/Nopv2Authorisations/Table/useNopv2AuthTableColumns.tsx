@@ -18,6 +18,7 @@ export const useNopv2AuthTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.country),
                 accessor: 'country.name',
+                id: 'country__name',
                 sortable: true,
             },
             {
@@ -54,7 +55,7 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                 ),
             },
             {
-                Header: formatMessage(MESSAGES.expirationDate),
+                Header: formatMessage(MESSAGES.nextExpirationDate),
                 accessor: 'next_expiration_date',
                 sortable: true,
                 Cell: DateCell,

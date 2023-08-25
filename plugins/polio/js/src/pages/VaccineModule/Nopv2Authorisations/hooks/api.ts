@@ -11,12 +11,13 @@ import {
     postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
-const listUrl = '/api/polio/vaccineauthorizations/?get_most_recent=true&';
+const listUrl =
+    '/api/polio/vaccineauthorizations/get_most_recent_authorizations/';
 const baseUrl = '/api/polio/vaccineauthorizations/';
 
 const getVaccineAuthorisationsList = params => {
     const queryString = new URLSearchParams(params).toString();
-    return getRequest(`${listUrl}${queryString}`);
+    return getRequest(`${listUrl}?${queryString}`);
 };
 
 export const useGetLatestAuthorisations = params => {

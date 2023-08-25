@@ -14,11 +14,15 @@ logger = logging.getLogger(__name__)
 @task_decorator(task_name="refresh_data")
 def refresh_data(
     campaigns=None,
+    date_filter=None,
     task=None,
 ):
     started_at = datetime.now()
+    if date_filter is None:
+        date_filter = now() - timedelta(days=180)
+
     round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")
-    round_qs = round_qs.filter(started_at__gte=now() - timedelta(days=180))
+    round_qs = round_qs.filter(started_at__gte=date_filter)
     round_qs = round_qs.exclude(campaign__isnull=True)
     round_qs = round_qs.filter(campaign__deleted_at__isnull=True)
     round_qs = round_qs.order_by("-started_at")

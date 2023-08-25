@@ -2,8 +2,14 @@ import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../../constants/messages';
+import { Nopv2AuthStatus } from '../types';
 
-const statuses = ['ongoing', 'signature', 'validated', 'expired'];
+const statuses: Nopv2AuthStatus[] = [
+    'ongoing',
+    'signature',
+    'validated',
+    'expired',
+];
 
 export const useStatusOptions = (): DropdownOptions<string>[] => {
     const { formatMessage } = useSafeIntl();

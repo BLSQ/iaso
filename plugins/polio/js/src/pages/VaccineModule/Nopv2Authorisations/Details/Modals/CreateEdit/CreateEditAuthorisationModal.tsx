@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import {
     AddButton,
@@ -18,11 +19,12 @@ import { NumberInput } from '../../../../../../components/Inputs';
 import { MultilineText } from '../../../../../../components/Inputs/MultilineText';
 import { SingleSelect } from '../../../../../../components/Inputs/SingleSelect';
 import { useStatusOptions } from '../../../hooks/statuses';
+import { AuthorisationData } from '../../../types';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    authorisationData: any;
+    authorisationData?: AuthorisationData;
     countryName: string;
     countryId: number;
 };
@@ -39,7 +41,6 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
     const options = useStatusOptions();
     const { mutate: confirm } = useCreateEditNopv2Authorisation();
     const currentUser = useCurrentUser();
-
     const schema = useNopv2AuthorisationsSchema();
 
     const formik = useFormik({

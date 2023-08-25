@@ -4,8 +4,9 @@ import { NOPV2_AUTH } from '../../../../constants/routes';
 import { TableWithDeepLink } from '../../../../../../../../hat/assets/js/apps/Iaso/components/tables/TableWithDeepLink';
 import { useGetLatestAuthorisations } from '../hooks/api';
 import { useNopv2AuthTableColumns } from './useNopv2AuthTableColumns';
+import { VaccineAuthParams } from '../types';
 
-type Props = { params: any };
+type Props = { params: VaccineAuthParams };
 
 export const Nopv2AuthorisationsTable: FunctionComponent<Props> = ({
     params,

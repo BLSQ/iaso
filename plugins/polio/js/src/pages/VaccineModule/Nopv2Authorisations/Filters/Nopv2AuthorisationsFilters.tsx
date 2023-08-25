@@ -9,9 +9,10 @@ import MESSAGES from '../../../../constants/messages';
 import { appId } from '../../../../constants/app';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useStatusOptions } from '../hooks/statuses';
+import { VaccineAuthParams } from '../types';
 
 const baseUrl = NOPV2_AUTH;
-type Props = { params: any };
+type Props = { params: VaccineAuthParams };
 
 export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
     params,

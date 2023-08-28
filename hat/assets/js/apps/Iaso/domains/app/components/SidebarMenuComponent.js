@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
@@ -79,10 +80,13 @@ const styles = theme => ({
 });
 
 const localizedManualUrl = (locale, account) => {
-    if (locale === 'fr' && account === 'RDC') {
+    if (locale === 'fr' && account.name === 'RDC') {
         return 'https://docs.google.com/document/d/1lKyhbKDLZpHtAsf3K6pRs0_EAXWdSDsL76Ohv0cyZQc/edit';
     }
-    return 'https://docs.google.com/document/d/12eXaHgQ0egNp1SMS86gv_X2j5vhpohU_Usagq4u_FAw/edit';
+
+    return account.user_manual_path
+        ? account.user_manual_path
+        : 'https://docs.google.com/document/d/12eXaHgQ0egNp1SMS86gv_X2j5vhpohU_Usagq4u_FAw/edit';
 };
 
 const SidebarMenu = ({
@@ -187,7 +191,7 @@ const SidebarMenu = ({
                         <a
                             href={localizedManualUrl(
                                 activeLocale.code,
-                                currentUser.account.name,
+                                currentUser.account,
                             )}
                             target="_blank"
                             rel="noreferrer"

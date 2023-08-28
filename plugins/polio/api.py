@@ -2219,8 +2219,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if country_id:
             queryset = queryset.filter(country__pk=country_id)
         if block_country:
-            block_country = block_country.split(",")
-            queryset = queryset.filter(country__pk__in=block_country)
+            queryset = queryset.filter(country__pk__in=Group.objects.get(pk=str(block_country)).org_units.all())
         if search:
             queryset = queryset.filter(country__name__icontains=search)
         if auth_status:

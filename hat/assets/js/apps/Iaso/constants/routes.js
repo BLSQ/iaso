@@ -47,7 +47,7 @@ import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 import * as Permission from '../utils/permissions.ts';
-import { SetupAccount } from '../components/SetupAccountPage.tsx';
+import { SetupAccount } from '../domains/setup/index.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({

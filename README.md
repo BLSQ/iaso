@@ -128,6 +128,8 @@ configure all dep in separate container. As such your computer should only need:
 If docker-compose give you trouble, make sure it can connect to the
 __docker daemon__.
 
+If you use an Apple Silicon Mac, ensure `export DOCKER_DEFAULT_PLATFORM=linux/amd64` is set.
+
 A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository
 
 ### 1. Environment variables
@@ -307,7 +309,7 @@ The following are some examples:
 * Create a shell inside the container    `docker-compose run iaso bash`
 * Run a shell command          `docker-compose run iaso eval curl http://google.com`
 * Run Django manage.py         `docker-compose exec iaso ./manage.py help`
-* Launch a python shell        `docker-compose exec iaso ./manage.py shell
+* Launch a python shell        `docker-compose exec iaso ./manage.py shell`
 * Launch a postgresql shell    `docker-compose exec iaso ./manage.py dbshell`
 * Create pending ORM migration files `docker-compose exec iaso ./manage.py makemigrations`
 * Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`

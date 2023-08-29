@@ -32,6 +32,7 @@ from requests import HTTPError
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
+from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -2086,3 +2087,4 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")

@@ -9,7 +9,7 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Account setup',
         id: 'iaso.setup.accountSetup',
     },
-    accountName: {
+    account_name: {
         defaultMessage: 'Account name',
         id: 'iaso.setup.accountName',
     },
@@ -26,15 +26,27 @@ export const MESSAGES = defineMessages({
         defaultMessage:
             'Account and profile created successfully, please logout and login again with the new profile.',
     },
-    userName: {
+    account_name_already_exist: {
+        defaultMessage: 'Account name already exists',
+        id: 'iaso.setup.accountNameAlreadyExist',
+    },
+    data_source_name_already_exist: {
+        defaultMessage: 'Data source name already exists',
+        id: 'iaso.setup.dataSourceNameAlreadyExist',
+    },
+    user_name_already_exist: {
+        defaultMessage: 'Username already exists',
+        id: 'iaso.setup.usernameAlreadyExist',
+    },
+    user_username: {
         defaultMessage: 'User name',
         id: 'iaso.label.userName',
     },
-    firstName: {
+    user_first_name: {
         defaultMessage: 'First name',
         id: 'iaso.label.firstName',
     },
-    lastName: {
+    user_last_name: {
         defaultMessage: 'Last name',
         id: 'iaso.label.lastName',
     },

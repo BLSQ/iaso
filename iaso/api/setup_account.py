@@ -24,14 +24,14 @@ class SetupAccountSerializer(serializers.Serializer):
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
-            raise serializers.ValidationError("An account with this name already exists")
+            raise serializers.ValidationError("account_name_already_exist")
         if DataSource.objects.filter(name=value).exists():
-            raise serializers.ValidationError("A data source with this name already exists")
+            raise serializers.ValidationError("data_source_name_already_exist")
         return value
 
     def validate_user_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A data source with this name already exists")
+            raise serializers.ValidationError("user_name_already_exist")
         return value
 
     def create(self, validated_data):

@@ -14,8 +14,11 @@ import TopBar from '../../components/nav/TopBarComponent';
 import InputComponent from '../../components/forms/InputComponent';
 import { MESSAGES } from './messages';
 import { useAccountValidation } from './validation';
-import { useTranslatedErrors } from '../../libs/validation';
-import { useSaveAccount } from './hooks/useSaveAccount';
+import {
+    useApiErrorValidation,
+    useTranslatedErrors,
+} from '../../libs/validation';
+import { SaveAccountQuery, useSaveAccount } from './hooks/useSaveAccount';
 import { switchLocale } from '../app/actions';
 import { APP_LOCALES } from '../app/constants';
 
@@ -59,23 +62,31 @@ export const SetupAccount: FunctionComponent = () => {
         (state: { app: { locale: { code: string } } }) => state.app.locale,
     );
     const isAdmin = currentUser.is_superuser || currentUser.is_staff;
-    const schema = useAccountValidation();
 
-    const { mutateAsync: saveAccount } = useSaveAccount({
-        onSuccess: () => setIsSaved(true),
+    const { mutateAsync: saveAccount, isLoading } = useSaveAccount();
+    const {
+        apiErrors,
+        payload,
+        mutation: save,
+    } = useApiErrorValidation<SaveAccountQuery, any>({
+        mutationFn: saveAccount,
+        onSuccess: () => {
+            setIsSaved(true);
+        },
     });
+    const schema = useAccountValidation(apiErrors, payload);
     const formik = useFormik({
         initialValues: {
-            accountName: '',
-            userName: '',
-            firstName: '',
-            lastName: '',
+            account_name: '',
+            user_username: '',
+            user_first_name: '',
+            user_last_name: '',
             password: '',
         },
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: () => saveAccount(formik.values),
+        onSubmit: save,
     });
 
     const {
@@ -88,7 +99,6 @@ export const SetupAccount: FunctionComponent = () => {
         initialValues,
         handleSubmit,
     } = formik;
-
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         setFieldValue(keyValue, value);
@@ -175,43 +185,43 @@ export const SetupAccount: FunctionComponent = () => {
                                     <InputComponent
                                         type="text"
                                         required
-                                        keyValue="accountName"
+                                        keyValue="account_name"
                                         labelString={formatMessage(
-                                            MESSAGES.accountName,
+                                            MESSAGES.account_name,
                                         )}
-                                        value={values.accountName}
+                                        value={values.account_name}
                                         onChange={onChange}
-                                        errors={getErrors('accountName')}
+                                        errors={getErrors('account_name')}
                                     />
                                     <InputComponent
                                         type="text"
                                         required
-                                        keyValue="userName"
+                                        keyValue="user_username"
                                         labelString={formatMessage(
-                                            MESSAGES.userName,
+                                            MESSAGES.user_username,
                                         )}
-                                        value={values.userName}
+                                        value={values.user_username}
                                         onChange={onChange}
-                                        errors={getErrors('userName')}
+                                        errors={getErrors('user_username')}
                                     />
                                     <InputComponent
                                         type="text"
                                         required
-                                        keyValue="firstName"
+                                        keyValue="user_first_name"
                                         labelString={formatMessage(
-                                            MESSAGES.firstName,
+                                            MESSAGES.user_first_name,
                                         )}
-                                        value={values.firstName}
+                                        value={values.user_first_name}
                                         onChange={onChange}
                                     />
                                     <InputComponent
                                         type="text"
                                         required
-                                        keyValue="lastName"
+                                        keyValue="user_last_name"
                                         labelString={formatMessage(
-                                            MESSAGES.lastName,
+                                            MESSAGES.user_last_name,
                                         )}
-                                        value={values.lastName}
+                                        value={values.user_last_name}
                                         onChange={onChange}
                                     />
                                     <InputComponent
@@ -233,7 +243,9 @@ export const SetupAccount: FunctionComponent = () => {
                                         <Button
                                             data-test="confirm-button"
                                             onClick={() => handleSubmit()}
-                                            disabled={!allowConfirm}
+                                            disabled={
+                                                !allowConfirm || isLoading
+                                            }
                                             color="primary"
                                             autoFocus
                                             variant="contained"

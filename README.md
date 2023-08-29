@@ -128,6 +128,8 @@ configure all dep in separate container. As such your computer should only need:
 If docker-compose give you trouble, make sure it can connect to the
 __docker daemon__.
 
+If you use an Apple Silicon Mac, ensure `export DOCKER_DEFAULT_PLATFORM=linux/amd64` is set.
+
 A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository
 
 ### 1. Environment variables

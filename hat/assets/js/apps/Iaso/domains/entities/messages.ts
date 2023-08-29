@@ -134,7 +134,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.entities.label.beneficiaryInfo',
     },
     uuid: {
-        defaultMessage: 'UUID',
+        defaultMessage: 'Uuid',
         id: 'iaso.label.uuid',
     },
     see: {

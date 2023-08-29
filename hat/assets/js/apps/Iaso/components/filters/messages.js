@@ -15,11 +15,11 @@ const MESSAGES = defineMessages({
     },
     from: {
         id: 'iaso.label.dateFrom',
-        defaultMessage: 'From date',
+        defaultMessage: 'Start date',
     },
     to: {
         id: 'iaso.label.dateTo',
-        defaultMessage: 'To date',
+        defaultMessage: 'End date',
     },
     clear: {
         id: 'iaso.label.clear',

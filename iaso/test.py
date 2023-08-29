@@ -190,3 +190,14 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertHasField(project_data, "created_at", float)
         self.assertHasField(project_data, "updated_at", float)
         self.assertHasField(project_data, "needs_authentication", bool)
+
+    def assertValidTaskAndInDB(self, jr, status="QUEUED", name=None):
+        task_dict = jr["task"]
+        self.assertEqual(task_dict["status"], status, task_dict)
+
+        task = m.Task.objects.get(id=task_dict["id"])
+        self.assertTrue(task)
+        if name:
+            self.assertEqual(task.name, name)
+
+        return task

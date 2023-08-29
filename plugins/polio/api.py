@@ -8,7 +8,7 @@ from datetime import timedelta, datetime
 from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, MultiPolygon
 from django.db.models.query import QuerySet
 from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
@@ -1755,7 +1755,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
-        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom=None)
+        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
 
     def list(self, request):
         results = []
@@ -1781,11 +1781,11 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
             today = dt.date.today()
             latest_active_round_qs = Round.objects.filter(campaign__country=org_unit)
             if start_date_after is not None:
-                latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=dt.date(start_date_after))
+                latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=start_date_after)
             if end_date_before is not None:
-                latest_active_round_qs = latest_active_round_qs.filter(started_at__lte=dt.date(end_date_before))
+                latest_active_round_qs = latest_active_round_qs.filter(started_at__lte=end_date_before)
             # filter out rounds that start in the future
-            latest_active_round_qs = latest_active_round_qs.filter(started_at__lte=today()).order_by("-started_at")[:1]
+            latest_active_round_qs = latest_active_round_qs.filter(started_at__lte=today).order_by("-started_at")[:1]
             latest_active_campaign = (
                 Campaign.objects.filter(id__in=Subquery(latest_active_round_qs.values("campaign")))
                 .filter(deleted_at=None)
@@ -1829,17 +1829,17 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     )
                 else:
                     round_number = int(round_number)
-                if latest_campaign:
-                    if latest_campaign.separate_scopes_per_round:
-                        scope = latest_campaign.get_districts_for_round_number(round_number)
 
-                    else:
-                        scope = latest_campaign.get_all_districts()
+                if latest_active_campaign.separate_scopes_per_round:
+                    scope = latest_active_campaign.get_districts_for_round_number(round_number)
+
+                else:
+                    scope = latest_active_campaign.get_all_districts()
 
                 result = {
                     "id": int(country_id),
                     "data": {
-                        "campaign": latest_campaign.obr_name,
+                        "campaign": latest_active_campaign.obr_name,
                         **stats,
                         "country_name": org_unit.name,
                         "round_number": round_number,
@@ -1847,17 +1847,10 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     "geo_json": shapes,
                     "status": calculate_country_status(stats, scope, round_number),
                 }
-            elif latest_campaign:
-                result = {
-                    "id": int(country_id),
-                    "data": {"campaign": latest_campaign.obr_name, "country_name": org_unit.name},
-                    "geo_json": shapes,
-                    "status": "inScope",
-                }
             else:
                 result = {
                     "id": int(country_id),
-                    "data": {"country_name": org_unit.name},
+                    "data": {"campaign": latest_active_campaign.obr_name, "country_name": org_unit.name},
                     "geo_json": shapes,
                     "status": "inScope",
                 }
@@ -1873,18 +1866,21 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
+        print("BOUNDS", bounds)
         bounds_as_polygon = Polygon.from_bbox(
             (
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
                 bounds["_northEast"]["lat"],
-            )
+            ),
         )
+        print("AS POLYGON", bounds_as_polygon)
         # TODO see if we need to filter per user as with Campaign
         return (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
+            # .filter(id=29720)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
@@ -1943,7 +1939,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
             districts = (
                 scope.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
-                .exclude(simplified_geom=None)
+                .exclude(simplified_geom__isnull=True)
                 .filter(simplified_geom__intersects=bounds_as_polygon)
             )
             data_for_country = data_store.content
@@ -2016,14 +2012,18 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
             )
         )
         # TODO see if we need to filter per user as with Campaign
-        return (
+        qs = (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
+            # .filter(id=29720)/
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
+        print("Query", qs.query)
+        return qs
 
     def list(self, request):
         org_units = self.get_queryset()
+
         results = []
         for org_unit in org_units:
             shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(

@@ -1,4 +1,3 @@
-import logging
 from plugins.polio.models import Campaign
 from plugins.polio.tasks.refresh_preparedness_data import refresh_data
 
@@ -7,11 +6,7 @@ from rest_framework.response import Response
 
 from iaso.api.common import HasPermission
 from iaso.api.tasks import TaskSerializer
-from iaso.models import DataSource
-from iaso.tasks.dhis2_ou_importer import dhis2_ou_importer
 from hat.menupermissions import models as permission
-
-logger = logging.getLogger(__name__)
 
 
 class RefreshPreparednessLaucherSerializer(serializers.Serializer):

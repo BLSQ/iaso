@@ -108,6 +108,7 @@ class Account(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
+    user_manual_path = models.TextField(null=True, blank=True)
 
     def as_dict(self):
         return {
@@ -117,6 +118,7 @@ class Account(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
+            "user_manual_path": self.user_manual_path,
         }
 
     def __str__(self):

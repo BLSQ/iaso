@@ -309,7 +309,7 @@ The following are some examples:
 * Create a shell inside the container    `docker-compose run iaso bash`
 * Run a shell command          `docker-compose run iaso eval curl http://google.com`
 * Run Django manage.py         `docker-compose exec iaso ./manage.py help`
-* Launch a python shell        `docker-compose exec iaso ./manage.py shell
+* Launch a python shell        `docker-compose exec iaso ./manage.py shell`
 * Launch a postgresql shell    `docker-compose exec iaso ./manage.py dbshell`
 * Create pending ORM migration files `docker-compose exec iaso ./manage.py makemigrations`
 * Apply pending ORM migrations `docker-compose exec iaso ./manage.py migrate`

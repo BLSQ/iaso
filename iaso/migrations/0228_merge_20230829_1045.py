@@ -4,11 +4,9 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0227_add_account_feature_flag_SHOW_BENEFICIARY_TYPES_IN_LIST_MENU'),
-        ('iaso', '0227_featureflag_requires_authentication'),
+        ("iaso", "0227_add_account_feature_flag_SHOW_BENEFICIARY_TYPES_IN_LIST_MENU"),
+        ("iaso", "0227_featureflag_requires_authentication"),
     ]
 
-    operations = [
-    ]
+    operations = []

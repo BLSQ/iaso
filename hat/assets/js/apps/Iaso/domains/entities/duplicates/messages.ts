@@ -107,7 +107,7 @@ const MESSAGES = defineMessages({
     },
     algorithmRuns: {
         id: 'iaso.label.algorithmsRuns',
-        defaultMessage: 'Algorithm runs',
+        defaultMessage: 'Algorithms runs',
     },
     algorithmsUsed: {
         id: 'iaso.label.algorithmsUsed',

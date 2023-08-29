@@ -1353,6 +1353,7 @@ class FeatureFlag(models.Model):
         (
             TAKE_GPS_ON_FORM,
             "Mobile: take GPS on new form",
+            False,
             _("GPS localization on start of instance on mobile"),
         ),
         (
@@ -1363,12 +1364,14 @@ class FeatureFlag(models.Model):
         (
             FORMS_AUTO_UPLOAD,
             "",
+            False,
             _(
                 "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
             ),
         ),
         (
             LIMIT_OU_DOWNLOAD_TO_ROOTS,
+            False,
             "Mobile: Limit download of orgunit to what the user has access to",
             _(
                 "Mobile: Limit download of orgunit to what the user has access to",
@@ -1378,6 +1381,7 @@ class FeatureFlag(models.Model):
 
     code = models.CharField(max_length=100, null=False, blank=False, unique=True)
     name = models.CharField(max_length=100, null=False, blank=False)
+    requires_authentication = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

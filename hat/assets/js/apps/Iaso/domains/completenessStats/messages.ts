@@ -30,7 +30,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.completenessStats.title',
     },
     actions: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     seeChildren: {
@@ -80,11 +80,11 @@ const MESSAGES = defineMessages({
     },
     rejected: {
         defaultMessage: 'Rejected',
-        id: 'iaso.forms.rejected',
+        id: 'iaso.forms.rejectedCap',
     },
     new: {
         defaultMessage: 'New',
-        id: 'iaso.forms.new',
+        id: 'iaso.forms.newCap',
     },
     validated: {
         defaultMessage: 'Validated',
@@ -95,7 +95,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.validationStatus',
     },
     viewInstances: {
-        defaultMessage: 'View instances',
+        defaultMessage: 'View submission(s)',
         id: 'iaso.forms.viewInstances',
     },
     list: {

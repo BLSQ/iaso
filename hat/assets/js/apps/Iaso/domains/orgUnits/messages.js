@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.new',
     },
     action: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     multiEditTitle: {
@@ -408,7 +408,7 @@ const MESSAGES = defineMessages({
     },
     ouParent: {
         id: 'iaso.label.parentOu',
-        defaultMessage: 'Parent org Unit',
+        defaultMessage: 'Parent Org unit',
     },
     ouLinked: {
         id: 'iaso.orgUnits.sourcesHelperTextSingular',

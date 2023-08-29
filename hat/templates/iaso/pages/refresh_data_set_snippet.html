@@ -22,7 +22,7 @@
         }
       }).then(response => response.json())
         .then(responseData => {
-          if (!responseData.permissions.includes('iaso_polio_config')) {
+          if (!(responseData.user_permissions.includes('iaso_polio_config') || responseData.is_superuser) ) {
             var button = document.getElementById('refreshButton')
             button.style.display = 'none'
 

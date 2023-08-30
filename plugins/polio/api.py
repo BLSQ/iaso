@@ -2141,6 +2141,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
     pagination_class = Paginator
+    ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date"]
 
     def get_queryset(self):
         user = self.request.user
@@ -2198,22 +2199,23 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 .expiration_date
             )
 
-            vacc_auth = {
-                "id": last_entry.id,
-                "country": {
-                    "id": last_entry.country.pk,
-                    "name": last_entry.country.name,
-                },
-                "current_expiration_date": last_entry.expiration_date,
-                "next_expiration_date": next_expiration_date
-                if next_expiration_date > last_entry.expiration_date
-                else None,
-                "quantity": last_entry.quantity,
-                "status": last_entry.status,
-                "comment": last_entry.comment,
-            }
+            if last_entry is not None:
+                vacc_auth = {
+                    "id": last_entry.id,
+                    "country": {
+                        "id": last_entry.country.pk,
+                        "name": last_entry.country.name,
+                    },
+                    "current_expiration_date": last_entry.expiration_date,
+                    "next_expiration_date": next_expiration_date
+                    if next_expiration_date > last_entry.expiration_date
+                    else None,
+                    "quantity": last_entry.quantity,
+                    "status": last_entry.status,
+                    "comment": last_entry.comment,
+                }
 
-            response.append(vacc_auth)
+                response.append(vacc_auth)
 
         page = self.paginate_queryset(response)
 

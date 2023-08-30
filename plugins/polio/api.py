@@ -2219,7 +2219,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         return super().create(request)
 
-    @action(detail=False, methods=["POST", "GET"])
+    @action(detail=False, methods=["POST", "GET", "PUT", "DELETE"])
     def get_most_recent_authorizations(self, request):
         queryset = self.get_queryset()
         country_list = []
@@ -2278,7 +2278,8 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
                 response.append(vacc_auth)
 
-        response = sorted(response, key=lambda x: handle_none(x, ordering))
+        if ordering:
+            response = sorted(response, key=lambda x: handle_none(x, ordering))
 
         page = self.paginate_queryset(response)
 

@@ -2133,15 +2133,25 @@ class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
             return False
 
 
+def handle_none(item, ordering):
+    if "date" in ordering:
+        item = item.get(ordering)
+        return item if item is not None else dt.date(1, 1, 1)
+
+    if "date" not in "current_expiration_date":
+        item = item.get(ordering)
+        return item if item is not None else float("inf")
+
+
 @swagger_auto_schema(tags=["vaccineauthorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
     permission_classes = [HassVaccineAuthorizationsPermissions]
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend, CustomFilterBackend]
     results_key = "results"
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
     pagination_class = Paginator
-    ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date"]
+    ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date", "quantity"]
 
     def get_queryset(self):
         user = self.request.user
@@ -2156,7 +2166,19 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if country_id:
             queryset = queryset.filter(country__pk=country_id)
         if block_country:
-            queryset = queryset.filter(country__pk__in=Group.objects.get(pk=block_country).org_units.all())
+            block_country = block_country.split(",")
+            block_country = Group.objects.filter(pk__in=block_country)
+            org_units = [
+                ou_queryset
+                for ou_queryset in [
+                    ou_group_queryset for ou_group_queryset in [country.org_units.all() for country in block_country]
+                ]
+            ]
+            ou_pk_list = []
+            for ou_q in org_units:
+                for ou in ou_q:
+                    ou_pk_list.append(ou.pk)
+            queryset = queryset.filter(country__pk__in=ou_pk_list)
         if search:
             queryset = queryset.filter(country__name__icontains=search)
         if auth_status:
@@ -2181,6 +2203,8 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         country_list = []
         response = []
 
+        ordering = request.query_params.get("order", None)
+
         for auth in queryset:
             if auth.country not in country_list:
                 country_list.append(auth.country)
@@ -2192,11 +2216,10 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 .first()
             )
 
-            next_expiration_date = (
+            next_expiration_auth = (
                 queryset.filter(country=country, status__in=["ongoing", "signature"])
                 .order_by("-expiration_date")
                 .first()
-                .expiration_date
             )
 
             if last_entry is not None:
@@ -2207,8 +2230,8 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "name": last_entry.country.name,
                     },
                     "current_expiration_date": last_entry.expiration_date,
-                    "next_expiration_date": next_expiration_date
-                    if next_expiration_date > last_entry.expiration_date
+                    "next_expiration_date": next_expiration_auth.expiration_date
+                    if next_expiration_auth.expiration_date > last_entry.expiration_date
                     else None,
                     "quantity": last_entry.quantity,
                     "status": last_entry.status,
@@ -2216,6 +2239,24 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 }
 
                 response.append(vacc_auth)
+
+            if last_entry is None and next_expiration_auth:
+                vacc_auth = {
+                    "id": next_expiration_auth.id,
+                    "country": {
+                        "id": next_expiration_auth.country.pk,
+                        "name": next_expiration_auth.country.name,
+                    },
+                    "current_expiration_date": None,
+                    "next_expiration_date": next_expiration_auth.expiration_date,
+                    "quantity": None,
+                    "status": next_expiration_auth.status,
+                    "comment": next_expiration_auth.comment,
+                }
+
+                response.append(vacc_auth)
+
+        response = sorted(response, key=lambda x: handle_none(x, ordering))
 
         page = self.paginate_queryset(response)
 

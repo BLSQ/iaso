@@ -1,10 +1,14 @@
 import typing
 
+import numpy as np
+import pandas as pd
+
 from django.conf import settings
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.contrib.auth.models import Group, Permission
+
 from iaso import models as m
 from iaso.models import Profile
 from iaso.test import APITestCase
@@ -182,6 +186,87 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 6)
+
+    def test_profile_list_export_as_csv(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?csv=true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+
+        expected_csv = (
+            "username,"
+            "password,"
+            "email,"
+            "first_name,"
+            "last_name,"
+            "orgunit,"
+            "profile_language,"
+            "dhis2_id,"
+            "permissions,"
+            "user_roles,"
+            "projects\r\n"
+        )
+        expected_csv += "janedoe,,,,,,,,iaso_forms,,\r\n"
+        expected_csv += "johndoe,,,,,,,,,,\r\n"
+        expected_csv += 'jim,,,,,,,,"iaso_forms,iaso_users",,\r\n'
+        expected_csv += "jam,,,,,,,,iaso_users_managed,,\r\n"
+        expected_csv += "jom,,,,,,,,,,\r\n"
+        expected_csv += "jum,,,,,,,,,,\r\n"
+
+        self.assertEqual(response_csv, expected_csv)
+
+    def test_profile_list_export_as_xlsx(self):
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?xlsx=true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        excel_data = pd.read_excel(response.content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        self.assertEqual(
+            excel_columns,
+            [
+                "username",
+                "password",
+                "email",
+                "first_name",
+                "last_name",
+                "orgunit",
+                "profile_language",
+                "dhis2_id",
+                "permissions",
+                "user_roles",
+                "projects",
+            ],
+        )
+
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+        self.assertDictEqual(
+            data_dict,
+            {
+                "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum"},
+                "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "orgunit": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "profile_language": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "permissions": {
+                    0: "iaso_forms",
+                    1: None,
+                    2: "iaso_forms,iaso_users",
+                    3: "iaso_users_managed",
+                    4: None,
+                    5: None,
+                },
+                "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+            },
+        )
 
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""

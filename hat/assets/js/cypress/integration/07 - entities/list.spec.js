@@ -25,7 +25,7 @@ const mockPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/entitytypes', {
+    cy.intercept('GET', '/api/entitytypes/?order=name', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
     cy.intercept('GET', '/api/microplanning/teams/*', {
@@ -212,16 +212,14 @@ describe('Entities', () => {
         });
 
         it('action should deep link search', () => {
-            cy.wait('@getEntities').then(() => {
-                cy.wait('@getEntitiesTypes').then(() => {
-                    cy.get('#search-search').type(search);
+            cy.wait(['@getEntities', '@getEntitiesTypes']).then(() => {
+                cy.get('#search-search').type(search);
 
-                    cy.get('[data-test="search-button"]').click();
-                    cy.url().should(
-                        'contain',
-                        `${baseUrl}/accountId/1/search/${search}/`,
-                    );
-                });
+                cy.get('[data-test="search-button"]').click();
+                cy.url().should(
+                    'contain',
+                    `${baseUrl}/accountId/1/search/${search}/`,
+                );
             });
         });
     });

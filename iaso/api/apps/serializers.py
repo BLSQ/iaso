@@ -1,11 +1,14 @@
 import logging
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from iaso.models import Project, FeatureFlag, Form
 from ..projects import ProjectSerializer
 
 logger = logging.getLogger(__name__)
+
+REQUIRE_AUTHENTICATION_FEATURE_FLAG = "REQUIRE_AUTHENTICATION"
 
 
 class AppSerializer(ProjectSerializer):
@@ -37,8 +40,25 @@ class AppSerializer(ProjectSerializer):
             if current_account_id in account_ids:
                 validated_forms.append(f)
             else:
-                raise serializers.ValidationError("Form not associated to any of the accounts")
+                raise ValidationError("Form not associated to any of the accounts")
         return validated_forms
+
+    def validate_feature_flags(self, feature_flags):
+        request_needs_auth = self.context["request"].data.get("needs_authentication", None)
+        needs_authentication = request_needs_auth or self.needs_authentication_based_on_feature_flags(feature_flags)
+        validated_feature_flags = []
+        if feature_flags is not None:
+            for f_f in feature_flags:
+                f_f_object = FeatureFlag.objects.get(code=f_f["code"])
+                if f_f_object.requires_authentication and not needs_authentication:
+                    raise ValidationError(
+                        f"'{f_f_object.code}' requires authentication. The feature flag "
+                        f"'{REQUIRE_AUTHENTICATION_FEATURE_FLAG}' must be added alongside this one."
+                    )
+                validated_feature_flags.append(f_f)
+            if needs_authentication:  # Line should be removed when this field is removed
+                validated_feature_flags.append({"code": REQUIRE_AUTHENTICATION_FEATURE_FLAG})
+        return validated_feature_flags
 
     def create(self, validated_data):
         new_app = Project()
@@ -49,38 +69,20 @@ class AppSerializer(ProjectSerializer):
 
         name = validated_data.get("name", None)
         forms = validated_data.get("forms", None)
-        needs_auth = validated_data.get("needs_authentication", None)
         feature_flags = validated_data.get("feature_flags", None)
 
         new_app.app_id = app_id
         new_app.name = name
         new_app.account = account
-        new_app.needs_authentication = False if needs_auth is None else needs_auth
-        if "REQUIRE_AUTHENTICATION" in list(f_f["code"] for f_f in feature_flags):
-            new_app.needs_authentication = True
-        else:
-            new_app.needs_authentication = False
 
+        new_app.needs_authentication = self.needs_authentication_based_on_feature_flags(feature_flags)
         new_app.save()
-
-        if forms is not None:
-            for f in forms:
-                new_app.forms.add(f)
-
-        if feature_flags is not None:
-            for f_f in feature_flags:
-                f_f_object = FeatureFlag.objects.get(code=f_f["code"])
-                new_app.feature_flags.add(f_f_object)
-            if needs_auth == True:  # Line should be removed when this field is removed
-                new_app.feature_flags.add(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
-            # else:
-            #     new_app.feature_flags.remove(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
+        self.set_forms_and_feature_flags(new_app, forms, feature_flags)
 
         return new_app
 
     def update(self, instance, validated_data):
         feature_flags = validated_data.pop("feature_flags", None)
-        needs_authentication = validated_data.pop("needs_authentication", None)
         forms = validated_data.pop("forms", None)
         app_id = validated_data.pop("app_id", None)
         name = validated_data.pop("name", None)
@@ -88,15 +90,21 @@ class AppSerializer(ProjectSerializer):
             instance.app_id = app_id
         if name is not None:
             instance.name = name
-        if needs_authentication is not None:  # Line should be removed when this field is removed
-            instance.needs_authentication = needs_authentication
-        if "REQUIRE_AUTHENTICATION" in list(f_f["code"] for f_f in feature_flags):
-            instance.needs_authentication = True
-        else:
-            instance.needs_authentication = False
 
+        instance.needs_authentication = self.needs_authentication_based_on_feature_flags(feature_flags)
         instance.save()
+        self.set_forms_and_feature_flags(instance, forms, feature_flags)
 
+        return instance
+
+    @staticmethod
+    def needs_authentication_based_on_feature_flags(feature_flags):
+        if feature_flags:
+            return REQUIRE_AUTHENTICATION_FEATURE_FLAG in list(f_f["code"] for f_f in feature_flags)
+        return False
+
+    @staticmethod
+    def set_forms_and_feature_flags(instance, forms, feature_flags):
         if forms is not None:
             instance.forms.clear()
             for f in forms:
@@ -107,7 +115,3 @@ class AppSerializer(ProjectSerializer):
             for f_f in feature_flags:
                 f_f_object = FeatureFlag.objects.get(code=f_f["code"])
                 instance.feature_flags.add(f_f_object)
-            if needs_authentication == True:  # Line should be removed when this field is removed
-                instance.feature_flags.add(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
-
-        return instance

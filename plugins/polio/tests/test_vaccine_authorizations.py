@@ -205,7 +205,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
                 "status": "validated",
-                "comment": "new update",
+                "comment": "validated auth",
                 "expiration_date": "2024-03-01",
             },
         )
@@ -216,7 +216,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
                 "status": "ongoing",
-                "comment": "en cours.",
+                "comment": "next validation date",
                 "expiration_date": "2024-04-01",
             },
         )
@@ -224,8 +224,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0]["comment"], "en cours.")
-        self.assertEqual(response.data[0]["status"], "ongoing")
+        self.assertEqual(response.data[0]["comment"], "validated auth")
+        self.assertEqual(response.data[0]["status"], "validated")
         self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2024, 3, 1))
         self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 4, 1))
 

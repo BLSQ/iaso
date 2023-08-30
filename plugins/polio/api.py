@@ -9,15 +9,15 @@ from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
 from django.contrib.gis.geos import Polygon
-from django.db.models.functions import RowNumber
+from django.db.models.functions import RowNumber, Coalesce
 from django.db.models.query import QuerySet
 from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Q, Max, Min
+from django.db.models import Q, Max, Min, Case
 from django.db.models import Value, TextField, UUIDField
-from django.db.models.expressions import RawSQL, OuterRef, Subquery, F, Window
+from django.db.models.expressions import RawSQL, OuterRef, Subquery, F, Window, When
 from django.http import FileResponse
 from django.http import HttpResponse, StreamingHttpResponse
 from django.http import JsonResponse
@@ -2109,70 +2109,6 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class RecentVaccineAuthorizationSerializer(serializers.ModelSerializer):
-    country = CountryField(queryset=OrgUnit.objects.filter(org_unit_type__name="COUNTRY"))
-    current_expiration_date = serializers.SerializerMethodField()
-    next_expiration_date = serializers.SerializerMethodField()
-    quantity = serializers.IntegerField()
-    status = serializers.CharField()
-    comment = serializers.CharField()
-
-    class Meta:
-        model = VaccineAuthorization
-        fields = ["country", "current_expiration_date", "next_expiration_date", "quantity", "status", "comment"]
-
-        read_only_fields = [
-            "country",
-            "current_expiration_date",
-            "next_expiration_date",
-            "quantity",
-            "status",
-            "comment",
-        ]
-
-        current_expiration_date = TimestampField(read_only=True)
-        next_expiration_date = TimestampField(read_only=True)
-
-    def get_current_expiration_date(self, obj):
-        latest_expired_or_validated = (
-            VaccineAuthorization.objects.filter(
-                country=obj.country,
-                status__in=["validated", "expired"],
-            )
-            .order_by("-expiration_date")
-            .first()
-        )
-
-        if latest_expired_or_validated:
-            return latest_expired_or_validated.expiration_date
-        else:
-            return None
-
-    def get_next_expiration_date(self, obj):
-        ongoing_authorizations = VaccineAuthorization.objects.filter(
-            country=obj.country,
-            status__in=["ongoing", "signature"],
-        ).order_by("expiration_date")[:1]
-
-        if ongoing_authorizations:
-            return ongoing_authorizations[0].expiration_date
-        else:
-            return obj.expiration_date
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        country = representation.pop("country")
-        representation = {
-            "country": country,
-            "current_expiration_date": representation.pop("current_expiration_date"),
-            "next_expiration_date": representation.pop("next_expiration_date"),
-            "quantity": representation.pop("quantity"),
-            "status": representation.pop("status"),
-            "comment": representation.pop("comment"),
-        }
-        return representation
-
-
 class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
@@ -2219,7 +2155,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if country_id:
             queryset = queryset.filter(country__pk=country_id)
         if block_country:
-            queryset = queryset.filter(country__pk__in=Group.objects.get(pk=str(block_country)).org_units.all())
+            queryset = queryset.filter(country__pk__in=Group.objects.get(pk=block_country).org_units.all())
         if search:
             queryset = queryset.filter(country__name__icontains=search)
         if auth_status:
@@ -2241,24 +2177,50 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     @action(detail=False, methods=["POST", "GET"])
     def get_most_recent_authorizations(self, request):
         queryset = self.get_queryset()
+        country_list = []
+        response = []
 
-        most_recent_expiration_per_country = (
-            VaccineAuthorization.objects.filter(country=OuterRef("country"))
-            .order_by("-expiration_date")
-            .values("expiration_date")[:1]
-        )
+        for auth in queryset:
+            if auth.country not in country_list:
+                country_list.append(auth.country)
 
-        queryset = queryset.annotate(most_recent_expiration_date=Subquery(most_recent_expiration_per_country)).filter(
-            expiration_date=F("most_recent_expiration_date")
-        )
+        for country in country_list:
+            last_entry = (
+                queryset.filter(country=country, status__in=["validated", "expired"])
+                .order_by("-expiration_date")
+                .first()
+            )
 
-        page = self.paginate_queryset(queryset)
+            next_expiration_date = (
+                queryset.filter(country=country, status__in=["ongoing", "signature"])
+                .order_by("-expiration_date")
+                .first()
+                .expiration_date
+            )
+
+            vacc_auth = {
+                "id": last_entry.id,
+                "country": {
+                    "id": last_entry.country.pk,
+                    "name": last_entry.country.name,
+                },
+                "current_expiration_date": last_entry.expiration_date,
+                "next_expiration_date": next_expiration_date
+                if next_expiration_date > last_entry.expiration_date
+                else None,
+                "quantity": last_entry.quantity,
+                "status": last_entry.status,
+                "comment": last_entry.comment,
+            }
+
+            response.append(vacc_auth)
+
+        page = self.paginate_queryset(response)
+
         if page:
-            serializer = RecentVaccineAuthorizationSerializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-        serializer = RecentVaccineAuthorizationSerializer(queryset, many=True)
-        serialized_data = serializer.data
-        return Response(serialized_data)
+            return self.get_paginated_response(page)
+
+        return Response(response)
 
 
 router = routers.SimpleRouter()

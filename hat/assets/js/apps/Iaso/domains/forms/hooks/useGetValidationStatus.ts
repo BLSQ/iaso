@@ -1,7 +1,7 @@
 import { UseQueryResult } from 'react-query';
 import { defineMessages } from 'react-intl';
 
-import { useSafeIntl, Pagination } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { DropdownOptions } from '../../../types/utils';
@@ -14,11 +14,11 @@ const MESSAGES = defineMessages({
     },
     REJECTED: {
         defaultMessage: 'Rejected',
-        id: 'iaso.forms.rejected',
+        id: 'iaso.forms.rejectedCap',
     },
     NEW: {
         defaultMessage: 'New',
-        id: 'iaso.forms.new',
+        id: 'iaso.forms.newCap',
     },
     VALID: {
         defaultMessage: 'Validated',

@@ -63,7 +63,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.storages',
     },
     info: {
-        defaultMessage: 'Information',
+        defaultMessage: 'Informations',
         id: 'iaso.instance.infos',
     },
     storage: {

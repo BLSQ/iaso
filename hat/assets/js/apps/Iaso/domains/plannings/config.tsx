@@ -106,7 +106,7 @@ export const planningColumns = (
                             message={{
                                 ...MESSAGES.deleteWarning,
                                 values: {
-                                    planningName: settings.row.original.name,
+                                    name: settings.row.original.name,
                                 },
                             }}
                             disabled={false}

@@ -22,6 +22,7 @@ from typing import Any, List, Optional, Union
 from hat.api.export_utils import Echo, iter_items, generate_xlsx
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
+from iaso.api.bulk_create_users import COLUMNS_LIST
 from iaso.api.common import FileFormatEnum, CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
 from iaso.models import Profile, OrgUnit, UserRole, Project
 
@@ -269,19 +270,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def list_export(
         queryset: "QuerySet[Profile]", file_format: FileFormatEnum
     ) -> Union[HttpResponse, StreamingHttpResponse]:
-        columns = [
-            {"title": "username"},
-            {"title": "password"},
-            {"title": "email"},
-            {"title": "first_name"},
-            {"title": "last_name"},
-            {"title": "orgunit"},
-            {"title": "profile_language"},
-            {"title": "dhis2_id"},
-            {"title": "permissions"},
-            {"title": "user_roles"},
-            {"title": "projects"},
-        ]
+        columns = [{"title": column} for column in COLUMNS_LIST]
 
         def get_row(profile: Profile, **_) -> List[Any]:
             return [

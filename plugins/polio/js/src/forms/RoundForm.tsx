@@ -7,6 +7,7 @@ import MESSAGES from '../constants/messages';
 import { DateInput, TextInput } from '../components/Inputs';
 import { Campaign } from '../constants/types';
 import { RoundDates } from '../components/Rounds/RoundDates/RoundDates';
+import { LqasDistrictsPassed } from '../components/Rounds/LqasDistrictsPassed/LqasDistrictsPassed';
 
 type Props = { roundNumber: number };
 
@@ -70,23 +71,19 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                     />
                 </Grid>
                 <Grid xs={12} md={6} item>
+                    <LqasDistrictsPassed
+                        lqasDistrictsFailing={
+                            rounds[roundIndex].lqas_district_failing
+                        }
+                        lqasDistrictsPassing={
+                            rounds[roundIndex].lqas_district_passing
+                        }
+                    />
                     <Field
                         label={formatMessage(
                             MESSAGES.percentage_covered_target_population,
                         )}
                         name={`rounds[${roundIndex}].percentage_covered_target_population`}
-                        component={TextInput}
-                        className={classes.input}
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.lqas_district_passing)}
-                        name={`rounds[${roundIndex}].lqas_district_passing`}
-                        component={TextInput}
-                        className={classes.input}
-                    />
-                    <Field
-                        label={formatMessage(MESSAGES.lqas_district_failing)}
-                        name={`rounds[${roundIndex}].lqas_district_failing`}
                         component={TextInput}
                         className={classes.input}
                     />

@@ -22,7 +22,7 @@ from typing import Any, List, Optional, Union
 from hat.api.export_utils import Echo, iter_items, generate_xlsx
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.api.bulk_create_users import COLUMNS_LIST
+from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import FileFormatEnum, CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
 from iaso.models import Profile, OrgUnit, UserRole, Project
 
@@ -270,7 +270,7 @@ class ProfilesViewSet(viewsets.ViewSet):
     def list_export(
         queryset: "QuerySet[Profile]", file_format: FileFormatEnum
     ) -> Union[HttpResponse, StreamingHttpResponse]:
-        columns = [{"title": column} for column in COLUMNS_LIST]
+        columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
 
         def get_row(profile: Profile, **_) -> List[Any]:
             return [
@@ -279,12 +279,12 @@ class ProfilesViewSet(viewsets.ViewSet):
                 profile.user.email,
                 profile.user.first_name,
                 profile.user.last_name,
-                ",".join(str(item.pk) for item in profile.org_units.all()),
+                ",".join(str(item.pk) for item in profile.org_units.all().order_by("id")),
                 profile.language,
                 profile.dhis2_id,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),
-                ",".join(str(item.pk) for item in profile.user_roles.all()),
-                ",".join(str(item.pk) for item in profile.projects.all()),
+                ",".join(str(item.pk) for item in profile.user_roles.all().order_by("id")),
+                ",".join(str(item.pk) for item in profile.projects.all().order_by("id")),
             ]
 
         filename = "users"

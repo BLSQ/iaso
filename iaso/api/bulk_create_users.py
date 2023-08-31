@@ -19,7 +19,7 @@ from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Proje
 from hat.menupermissions import models as permission
 
 
-COLUMNS_LIST = [
+BULK_CREATE_USER_COLUMNS_LIST = [
     "username",
     "password",
     "email",
@@ -148,8 +148,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             orgunits_hierarchy = OrgUnit.objects.hierarchy(user_access_ou)
 
             for i, row in enumerate(reader):
-                if i > 0 and not set(COLUMNS_LIST).issubset(csv_indexes):
-                    missing_elements = set(COLUMNS_LIST) - set(csv_indexes)
+                if i > 0 and not set(BULK_CREATE_USER_COLUMNS_LIST).issubset(csv_indexes):
+                    missing_elements = set(BULK_CREATE_USER_COLUMNS_LIST) - set(csv_indexes)
                     raise serializers.ValidationError(
                         {
                             "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."

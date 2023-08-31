@@ -40,3 +40,21 @@ def get_powerbi_report_token(group_id, report_id):
         config["tenant_id"], config["client_id"], config["secret_value"]
     )
     return get_powerbi_report_token_with_sp(sp_access_token, group_id, report_id)
+
+
+def launch_dataset_refresh(group_id, data_set_id):
+    # FIXME : import is not extra but will do till we move this model
+    from plugins.polio.models import Config
+
+    conf = get_object_or_404(Config, slug="powerbi_sp")
+    config = conf.content
+
+    sp_access_token = get_powerbi_service_principal_token(
+        config["tenant_id"], config["client_id"], config["secret_value"]
+    )
+    body = {"accessLevel": "View"}
+    url = "https://api.powerbi.com/v1.0/myorg/groups/%s/datasets/%s/refreshes" % (group_id, data_set_id)
+    headers = {"Content-Type": "application/json", "Authorization": "Bearer %s" % sp_access_token}
+
+    r = requests.post(url=url, json=body, headers=headers)
+    r.raise_for_status()

@@ -21,6 +21,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_first_name = serializers.CharField(max_length=30, required=False)
     user_last_name = serializers.CharField(max_length=150, required=False)
     password = serializers.CharField(required=True)
+    user_manual_path = serializers.CharField(required=False)
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -44,7 +45,11 @@ class SetupAccountSerializer(serializers.Serializer):
             first_name=validated_data.get("user_first_name", ""),
             last_name=validated_data.get("user_last_name", ""),
         )
-        account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
+        account = Account.objects.create(
+            name=validated_data["account_name"],
+            default_version=source_version,
+            user_manual_path=validated_data.get("user_manual_path"),
+        )
 
         # Create a setup_account project with an app_id represented by the account name
         initial_project = Project.objects.create(

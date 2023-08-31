@@ -110,6 +110,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.workflow',
         defaultMessage: 'Workflow',
     },
+    beneficiaries: {
+        id: 'iaso.label.beneficiaries',
+        defaultMessage: 'Beneficiaries',
+    },
 });
 
 export default MESSAGES;

@@ -160,10 +160,165 @@ class CompletenessStatsAPITestCase(APITestCase):
         response = self.client.get("/api/v2/completeness_stats/")
         self.assertEqual(response.status_code, 403)
 
-    def test_base_row_listing(self):
+    def test_base_map_results(self):
         self.client.force_authenticate(self.user)
 
         response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        j = self.assertJSONResponse(response, 200)
+        expected_result = {
+            "results": [
+                {
+                    "name": "LaLaland",
+                    "id": 1,
+                    "form_stats": {
+                        # "Hydroponics study 1" applies to OUt "District" and "Hospital"
+                        f"form_{self.form_hs_1.id}": {
+                            "name": "Hydroponics study 1",
+                            "percent": 33.333333333333336,
+                            "descendants": 3,
+                            # 2 OUs of type "District" and 1 of type "Hospital" in the tree with LalaLand on top
+                            "itself_target": 0,
+                            "descendants_ok": 1,
+                            "total_instances": 1,  # Only one form instance for "Hospital"
+                            "itself_has_instances": 0,
+                            # No forms/instances are directly associated to "LaLaland" (only to its children)
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_2.id}": {
+                            "name": "Hydroponics study 2",
+                            "percent": 0,
+                            "descendants": 1,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_4.id}": {
+                            "name": "Hydroponics study 4",
+                            "percent": 33.333333333333336,
+                            "descendants": 3,
+                            "itself_target": 1,
+                            "descendants_ok": 1,
+                            "total_instances": 2,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                    },
+                    "has_geo_json": True,
+                    "geo_json": {
+                        "type": "FeatureCollection",
+                        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": 1,
+                                "geometry": {
+                                    "type": "MultiPolygon",
+                                    "coordinates": [
+                                        [
+                                            [
+                                                [4.394863, 50.68188],
+                                                [4.6674, 50.696023],
+                                                [4.913351, 50.345253],
+                                                [4.219994, 50.343499],
+                                                [4.394863, 50.68188],
+                                            ]
+                                        ]
+                                    ],
+                                },
+                                "properties": {},
+                            }
+                        ],
+                    },
+                    "latitude": None,
+                    "longitude": None,
+                    "altitude": None,
+                    "org_unit_type": {"name": "Country", "id": 1},
+                    "parent_org_unit": None,
+                    "has_children": True,
+                },
+                {
+                    "name": "Not yet validated country",
+                    "id": 9,
+                    "form_stats": {
+                        f"form_{self.form_hs_1.id}": {
+                            "name": "Hydroponics study 1",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_2.id}": {
+                            "name": "Hydroponics study 2",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 0,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                        f"form_{self.form_hs_4.id}": {
+                            "name": "Hydroponics study 4",
+                            "percent": 0,
+                            "descendants": 0,
+                            "itself_target": 1,
+                            "descendants_ok": 0,
+                            "total_instances": 0,
+                            "itself_has_instances": 0,
+                            "itself_instances_count": 0,
+                        },
+                    },
+                    "has_geo_json": True,
+                    "geo_json": {
+                        "type": "FeatureCollection",
+                        "crs": {"type": "name", "properties": {"name": "EPSG:4326"}},
+                        "features": [
+                            {
+                                "type": "Feature",
+                                "id": 9,
+                                "geometry": {
+                                    "type": "MultiPolygon",
+                                    "coordinates": [
+                                        [
+                                            [
+                                                [4.394863, 50.68188],
+                                                [4.6674, 50.696023],
+                                                [4.913351, 50.345253],
+                                                [4.219994, 50.343499],
+                                                [4.394863, 50.68188],
+                                            ]
+                                        ]
+                                    ],
+                                },
+                                "properties": {},
+                            }
+                        ],
+                    },
+                    "latitude": None,
+                    "longitude": None,
+                    "altitude": None,
+                    "org_unit_type": {"name": "Country", "id": 1},
+                    "parent_org_unit": None,
+                    "has_children": False,
+                },
+            ],
+        }
+        self.assertAlmostEqualRecursive(
+            expected_result,
+            j,
+        )
+
+    def test_base_row_listing(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get(
+            "/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW", "limit": 10}
+        )
         j = self.assertJSONResponse(response, 200)
         expected_result = {
             "forms": [
@@ -214,6 +369,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
                     "parent_org_unit": None,
+                    "has_children": True,
                 },
                 {
                     "name": "Not yet validated country",
@@ -253,6 +409,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                     },
                     "org_unit_type": {"name": "Country", "id": 1},
                     "parent_org_unit": None,
+                    "has_children": False,
                 },
             ],
             "has_next": False,
@@ -270,7 +427,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """No filters are used: only the heads OU (countries) are returned"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/")
+        response = self.client.get("/api/v2/completeness_stats/?limit=10")
         json = response.json()
         for result in json["results"]:
             # There are lower-levels OUs in fixtures, but they shouldn't appear here
@@ -280,7 +437,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Filtering by form type"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/")
+        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
         json = self.assertJSONResponse(response, 200)
         # Without filtering, we  also have results for form_hs_2 and form_hs_4 just like in test_base_row_listing()
         self.assertEqual(len(json["forms"]), 3)
@@ -288,7 +445,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             self.assertIn(form["id"], [self.form_hs_1.id, self.form_hs_2.id, self.form_hs_4.id])
 
         # with filtering
-        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}")
+        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}&limit=10")
         json = self.assertJSONResponse(response, 200)
         self.assertEqual(len(json["forms"]), 1)
         for form in json["forms"]:
@@ -302,7 +459,9 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Filtering by multiple form types"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_1.id}, {self.form_hs_4.id}")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?limit=10&form_id={self.form_hs_1.id}, {self.form_hs_4.id}"
+        )
         json = response.json()
         self.assertEqual(len(json["forms"]), 2)
         for form in json["forms"]:
@@ -316,7 +475,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Only forms from the account are returned"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?form_id={self.form_hs_3.id}")
+        response = self.client.get(f"/api/v2/completeness_stats/?limit=10&form_id={self.form_hs_3.id}")
         j = self.assertJSONResponse(response, 400)
         # Error because the form is not in the user's account
         self.assertIn("form_id", j)
@@ -326,7 +485,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         """OUs with a non-valid status are excluded from the API"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/")
+        response = self.client.get(f"/api/v2/completeness_stats/?limit=10")
         json = response.json()
         ou_ids = [result["org_unit"]["id"] for result in json["results"]]
         # Those two OUs have a non-valid status
@@ -337,7 +496,9 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_filter_by_org_unit_type(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/?org_unit_type_ids={self.org_unit_type_hopital.id}")
+        response = self.client.get(
+            f"/api/v2/completeness_stats/?limit=10&org_unit_type_ids={self.org_unit_type_hopital.id}"
+        )
         json = response.json()
         for result in json["results"]:
             self.assertEqual(result["org_unit_type"]["id"], self.org_unit_type_hopital.id)
@@ -347,7 +508,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_hopital.id}, {self.org_unit_type_aire_sante.id}"
+            f"/api/v2/completeness_stats/?limit=10&org_unit_type_id={self.org_unit_type_hopital.id}, {self.org_unit_type_aire_sante.id}"
         )
         json = response.json()
         for result in json["results"]:
@@ -372,7 +533,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response_with_filter = self.client.get(
-            f"/api/v2/completeness_stats/?org_unit_type_id={self.org_unit_type_country.id}",
+            f"/api/v2/completeness_stats/?limit=10&org_unit_type_id={self.org_unit_type_country.id}",
             {"org_unit_validation_status": "VALID,NEW"},
         )
 
@@ -380,7 +541,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         results_with_filter = json["results"]
         self.assertEqual(len(results_with_filter), 2)
         response_without_filter = self.client.get(
-            f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"}
+            f"/api/v2/completeness_stats/?limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         results_without_filter = self.assertJSONResponse(response_without_filter, 200)["results"]
         self.assertListEqual(results_with_filter, results_without_filter)
@@ -389,7 +550,7 @@ class CompletenessStatsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
-            f"/api/v2/completeness_stats/?parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
+            f"/api/v2/completeness_stats/?limit=10&parent_org_unit_id=1&org_unit_validation_status=VALID,NEW"
         )
         json = response.json()
         # All the rows we get are direct children of the Country (region A and B)
@@ -418,14 +579,26 @@ class CompletenessStatsAPITestCase(APITestCase):
         """Test that the default limit parameter is 10"""
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        response = self.client.get(
+            "/api/v2/completeness_stats/",
+            {
+                "org_unit_validation_status": "VALID,NEW",
+                "limit": 10,
+            },
+        )
         json = self.assertJSONResponse(response, 200)
         self.assertEqual(json["limit"], 10)
 
     def test_row_count(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get(f"/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        response = self.client.get(
+            f"/api/v2/completeness_stats/",
+            {
+                "org_unit_validation_status": "VALID,NEW",
+                "limit": 10,
+            },
+        )
         json = response.json()
         # Two OU, 3 forms => 2 rows
         self.assertEqual(len(json["results"]), 2)
@@ -435,7 +608,12 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We request a form/OU combination that has no forms to fill.
         response = self.client.get(
-            f"/api/v2/completeness_stats/", {"parent_org_unit_id": self.as_abb_ou.id, "form_id": self.form_hs_2.id}
+            f"/api/v2/completeness_stats/",
+            {
+                "parent_org_unit_id": self.as_abb_ou.id,
+                "form_id": self.form_hs_2.id,
+                "limit": 10,
+            },
         )
         j = self.assertJSONResponse(response, expected_status_code=200)
         json = response.json()
@@ -452,7 +630,7 @@ class CompletenessStatsAPITestCase(APITestCase):
 
         # We filter to get only the district A.A
         response = self.client.get(
-            f"/api/v2/completeness_stats/?parent_org_unit_id=4", {"org_unit_validation_status": "VALID,NEW"}
+            f"/api/v2/completeness_stats/?parent_org_unit_id=4&limit=10", {"org_unit_validation_status": "VALID,NEW"}
         )
         j = self.assertJSONResponse(response, 200)
         self.assertEqual(len(j["results"]), 2)
@@ -468,6 +646,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             f"/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "limit": 10,
                 "form_id": self.form_hs_4.id,
                 "org_unit_validation_status": "VALID,NEW",
             },
@@ -502,6 +681,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
+                "limit": 10,
                 "org_unit_validation_status": "VALID,NEW",
             },
         )
@@ -535,6 +715,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             f"/api/v2/completeness_stats/",
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
+                "limit": 10,
                 "form_id": self.form_hs_4.id,
                 "without_submissions": "false",
             },
@@ -549,6 +730,7 @@ class CompletenessStatsAPITestCase(APITestCase):
             {
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
+                "limit": 10,
             },
         )
 
@@ -562,6 +744,7 @@ class CompletenessStatsAPITestCase(APITestCase):
                 "parent_org_unit_id": self.as_abb_ou.parent.id,
                 "form_id": self.form_hs_4.id,
                 "without_submissions": "true",
+                "limit": 10,
             },
         )
 

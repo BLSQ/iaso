@@ -516,10 +516,14 @@ Timeline tracker Automated message
         log_campaign_modification(campaign, old_campaign_dump, request_user)
 
         return Response({"message": "email sent"})
+
     # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
     # But Patching the campign directly is very much error prone, so we disable it indirectly
     def partial_update(self):
-        """Don't PATCH this way, it won't do anything"""
+        """Don't PATCH this way, it won't do anything
+        We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+        But Patching the campign directly is very much error prone, so we disable it indirectly
+        """
         pass
 
     @action(methods=["PATCH"], detail=False)
@@ -2099,9 +2103,10 @@ class RoundViewset(ModelViewSet):
     serializer_class = RoundSerializer
     model = Round
 
-    # Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
     def partial_update(self):
-        """Don't PATCH this way, it will not do anything"""
+        """Don't PATCH this way, it will not do anything
+        Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
+        """
         pass
 
     # Endpoint used to update lqas passed and failed fields by OpenHexa pipeline

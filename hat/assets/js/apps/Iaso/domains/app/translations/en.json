@@ -814,6 +814,8 @@
     "iaso.permissions.polio_budget": "Polio budget validation",
     "iaso.permissions.polio_budget_admin": "Polio budget admin",
     "iaso.permissions.polio_config": "Polio campaign admin",
+    "iaso.permissions.polio_vaccine_authorizations_admin": "Polio Vaccine Authorizations: Admin",
+    "iaso.permissions.polio_vaccine_authorizations_read_only": "Polio Vaccine Authorizations: Read Only",
     "iaso.permissions.projects": "Projects",
     "iaso.permissions.sources": "Sources",
     "iaso.permissions.submissions": "Form submissions",

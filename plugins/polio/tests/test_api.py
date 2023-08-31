@@ -318,8 +318,8 @@ class PolioAPITestCase(APITestCase):
                 {
                     "number": 1,
                     "started_at": "2021-02-01",
-                    "lqas_district_failing":100
-                    # Removed that line to test that empty field in payload 
+                    "lqas_district_failing": 100
+                    # Removed that line to test that empty field in payload
                     # will not overwrite existing field in DB
                     # "ended_at": "2021-02-20",
                 },
@@ -335,10 +335,10 @@ class PolioAPITestCase(APITestCase):
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         self.assertEqual(campaign.rounds.count(), 2, campaign.rounds)
-        self.assertEqual(campaign.rounds.get(number=1).number,1)
-        self.assertEqual(campaign.rounds.get(number=1).ended_at,date(2021, 1, 20))
-        self.assertEqual(campaign.rounds.get(number=1).lqas_district_failing,100)
-        self.assertEqual(campaign.rounds.get(number=1).lqas_district_passing,None)
+        self.assertEqual(campaign.rounds.get(number=1).number, 1)
+        self.assertEqual(campaign.rounds.get(number=1).ended_at, date(2021, 1, 20))
+        self.assertEqual(campaign.rounds.get(number=1).lqas_district_failing, 100)
+        self.assertEqual(campaign.rounds.get(number=1).lqas_district_passing, None)
 
     def test_patch_campaign_remove_round(self):
         self.client.force_authenticate(self.yoda)

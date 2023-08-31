@@ -68,15 +68,23 @@ export const usePeriodOptions = (): DropdownOptions<SelectPeriod>[] => {
     }, [formatMessage]);
 };
 
-export const useLegendItems = (): {
+export const useLegendItems = (
+    displayedShape: string,
+): {
     label: string;
     value: string;
     color: string;
 }[] => {
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
-        const passed = formatMessage(MESSAGES.passing);
-        const failed = formatMessage(MESSAGES.failing);
+        const passed =
+            displayedShape === 'country'
+                ? formatMessage(MESSAGES.countryPassing)
+                : formatMessage(MESSAGES.passing);
+        const failed =
+            displayedShape === 'country'
+                ? formatMessage(MESSAGES.countryFailing)
+                : formatMessage(MESSAGES.failing);
         return [
             {
                 label: passed,
@@ -89,5 +97,5 @@ export const useLegendItems = (): {
                 color: FAIL_COLOR,
             },
         ];
-    }, [formatMessage]);
+    }, [displayedShape, formatMessage]);
 };

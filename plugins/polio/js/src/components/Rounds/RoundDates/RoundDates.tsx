@@ -14,6 +14,7 @@ import { RoundDatesHistoryModal } from '../RoundDatesHistory/RoundDatesHistoryMo
 
 type Props = {
     roundIndex: number;
+    roundNumber: number;
     setParentFieldValue: (
         // eslint-disable-next-line no-unused-vars
         field: string,
@@ -27,6 +28,7 @@ type Props = {
 
 export const RoundDates: FunctionComponent<Props> = ({
     roundIndex,
+    roundNumber,
     setParentFieldValue,
     parentFieldValue,
     // TODO pass parentFieldValue to allow spreading
@@ -38,9 +40,13 @@ export const RoundDates: FunctionComponent<Props> = ({
     } = useFormikContext<Campaign>();
     const currentStartDate = rounds?.[roundIndex]?.started_at;
     const currentEndDate = rounds?.[roundIndex]?.ended_at;
+    // For initial data, wee need to perform a find, because if we're adding round 0
+    // We'll be addinga round at the start of the rounds array which will lead to index related errors
     const hasInitialData = Boolean(
-        initialValues.rounds?.[roundIndex]?.started_at &&
-            initialValues.rounds?.[roundIndex]?.ended_at,
+        initialValues.rounds.find(round => round.number === roundNumber)
+            ?.started_at &&
+            initialValues.rounds.find(round => round.number === roundNumber)
+                ?.ended_at,
     );
     const save = ({ startDate, endDate, reason }, helpers) => {
         setParentFieldValue(`rounds[${roundIndex}]`, {

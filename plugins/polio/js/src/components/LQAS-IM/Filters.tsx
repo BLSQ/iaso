@@ -1,20 +1,15 @@
-import React, {
-    FunctionComponent,
-    useCallback,
-    useMemo,
-    useState,
-} from 'react';
+import React, { FunctionComponent, useMemo, useState } from 'react';
 // @ts-ignore
 import { Select, useSafeIntl } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
-import RefreshIcon from '@material-ui/icons/Refresh';
+// Uncomment when OpenHExa pipeline is available for IM
+// import RefreshIcon from '@material-ui/icons/Refresh';
 
-import { Box, Grid, IconButton, Button } from '@material-ui/core';
+import { Box, Grid, IconButton } from '@material-ui/core';
 
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
-import { useQueryClient } from 'react-query';
 import MESSAGES from '../../constants/messages';
 import { makeCampaignsDropDown } from '../../utils/index';
 import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
@@ -84,12 +79,12 @@ const Filters: FunctionComponent<Props> = ({
     const campaignLink = campaignObj
         ? `/dashboard/polio/list/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
-
-    const queryClient = useQueryClient();
-    const handleRefresh = useCallback(
-        () => queryClient.resetQueries(),
-        [queryClient],
-    );
+    // Uncomment when OpenHExa pipeline is available for IM
+    // const queryClient = useQueryClient();
+    // const handleRefresh = useCallback(
+    //     () => queryClient.resetQueries(),
+    //     [queryClient],
+    // );
     return (
         <Box mt={2} width="100%">
             <Grid container item spacing={2}>
@@ -130,7 +125,8 @@ const Filters: FunctionComponent<Props> = ({
                         </IconButton>
                     </Grid>
                 )}
-                <Grid item md={campaignLink ? 3 : 4}>
+                {/* Uncomment when OpenHexa pipeline will ba active for IM */}
+                {/* <Grid item md={campaignLink ? 3 : 4}>
                     <Box display="flex" justifyContent="flex-end" width="100%">
                         <Button
                             size="small"
@@ -144,7 +140,7 @@ const Filters: FunctionComponent<Props> = ({
                             {formatMessage(MESSAGES.refreshPage)}
                         </Button>
                     </Box>
-                </Grid>
+                </Grid> */}
             </Grid>
         </Box>
     );

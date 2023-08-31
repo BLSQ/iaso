@@ -24,6 +24,7 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
             <Grid container spacing={2}>
                 <Grid xs={12} md={6} item>
                     <RoundDates
+                        roundNumber={roundNumber}
                         roundIndex={roundIndex}
                         setParentFieldValue={setFieldValue}
                         parentFieldValue={rounds[roundIndex]}

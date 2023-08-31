@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     actions: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     dataSources: {
@@ -190,7 +190,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitTypes: {
         id: 'iaso.datasources.label.orgUnitTypes',
-        defaultMessage: 'OrgUnit types',
+        defaultMessage: 'Org Unit Types',
     },
     status: {
         id: 'iaso.datasources.label.status',

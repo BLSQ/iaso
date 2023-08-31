@@ -1,6 +1,7 @@
 import { Paginated, UrlParams } from 'bluesquare-components';
 import { NameAndId } from '../../types/utils';
 import { OrgUnitStatus } from '../orgUnits/types/orgUnit';
+import { Shape } from '../orgUnits/types/shapes';
 
 export type FormDesc = {
     id: number;
@@ -26,11 +27,33 @@ export type CompletenessStats = {
     org_unit_type?: NameAndId;
     org_unit: NameAndId;
     form_stat: FormStat;
+    has_children: boolean;
 };
 
 // Api add some metadata to help column creation
 export type CompletenessApiResponse = Paginated<CompletenessStats> & {
     forms: FormDesc[];
+};
+
+export type ParentOrgUnit = { name: string; id: number; parent: NameAndId };
+/* eslint-disable camelcase */
+export type CompletenessMapStats = {
+    altitude?: number;
+    form_stats: Record<string, FormStat>;
+    geo_json?: Shape | undefined;
+    has_geo_json: boolean;
+    id: number;
+    is_root?: boolean;
+    latitude?: number;
+    longitude?: number;
+    name: string;
+    org_unit_type?: NameAndId;
+    parent_org_unit?: ParentOrgUnit;
+    has_children: boolean;
+};
+// Api add some metadata to help column creation
+export type CompletenessMapApiResponse = {
+    results: CompletenessMapStats[];
 };
 
 export type FormStatRow = {
@@ -44,4 +67,6 @@ export type CompletenessRouterParams = UrlParams & {
     groupId?: string;
     parentId?: string;
     accountId?: string;
+    tab?: 'list' | 'map';
+    showDirectCompleteness: 'true' | 'false';
 };

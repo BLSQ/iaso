@@ -30,7 +30,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.completenessStats.title',
     },
     actions: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     seeChildren: {
@@ -80,11 +80,11 @@ const MESSAGES = defineMessages({
     },
     rejected: {
         defaultMessage: 'Rejected',
-        id: 'iaso.forms.rejected',
+        id: 'iaso.forms.rejectedCap',
     },
     new: {
         defaultMessage: 'New',
-        id: 'iaso.forms.new',
+        id: 'iaso.forms.newCap',
     },
     validated: {
         defaultMessage: 'Validated',
@@ -95,8 +95,48 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.validationStatus',
     },
     viewInstances: {
-        defaultMessage: 'View instances',
+        defaultMessage: 'View submission(s)',
         id: 'iaso.forms.viewInstances',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
+    },
+    name: {
+        defaultMessage: 'Name',
+        id: 'iaso.label.name',
+    },
+    count: {
+        defaultMessage: 'Instance(s) count',
+        id: 'iaso.completenessStats.count',
+    },
+    completeness: {
+        defaultMessage: 'Completeness',
+        id: 'iaso.completenessStats.completeness',
+    },
+    directCompleteness: {
+        defaultMessage: 'Form filled at org unit',
+        id: 'iaso.completenessStats.directCompleteness',
+    },
+    childrenCompleteness: {
+        defaultMessage: 'Children completeness',
+        id: 'iaso.completenessStats.childrenCompleteness',
+    },
+    completed: {
+        defaultMessage: 'Completed',
+        id: 'iaso.completenessStats.completed',
+    },
+    notCompleted: {
+        defaultMessage: 'Not completed',
+        id: 'iaso.completenessStats.notCompleted',
     },
 });
 

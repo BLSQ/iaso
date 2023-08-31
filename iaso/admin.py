@@ -268,7 +268,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
-    list_display = ("code", "name")
+    list_display = ("code", "name", "requires_authentication")
 
 
 @admin_attr_decorator

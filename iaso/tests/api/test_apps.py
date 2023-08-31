@@ -11,6 +11,7 @@ class AppsAPITestCase(APITestCase):
     flag_1: m.FeatureFlag
     flag_2: m.FeatureFlag
     flag_3: m.FeatureFlag
+    flag_4: m.FeatureFlag
 
     @classmethod
     def setUpTestData(cls):
@@ -28,6 +29,12 @@ class AppsAPITestCase(APITestCase):
             code="REQUIRE_AUTHENTICATION",
             name="Exige l'authentification pour télécharger",
             description="Exige l'authentification pour télécharger",
+        )
+        cls.flag_4 = m.FeatureFlag.objects.create(
+            code="FEATURE_FLAG_THAT_REQUIRES_AUTHENTICATION",
+            name="Has a dependency on 'REQUIRE_AUTHENTICATION'",
+            requires_authentication=True,
+            description="Cannot be added to a project without the feature flag 'REQUIRE_AUTHENTICATION'",
         )
         cls.project_2.feature_flags.set([cls.flag_1, cls.flag_2])
 
@@ -145,8 +152,6 @@ class AppsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(f"/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
-        response_data = response.json()
-        print("response_data", response_data)
 
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
         candidated_app = {
@@ -219,6 +224,35 @@ class AppsAPITestCase(APITestCase):
         self.assertValidAppData(response_data)
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
         self.assertEqual(True, response_data["needs_authentication"])
+
+    def test_app_update_with_flag_that_requires_authentication_has_it(self) -> None:
+        candidate_app = {
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [
+                {"id": self.flag_4.id, "name": self.flag_4.name, "code": self.flag_4.code},
+            ],
+        }
+        self.client.force_authenticate(self.yoda)
+        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
+        self.assertJSONResponse(response, 400)
+
+        candidate_app = {
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [
+                {"id": self.flag_3.id, "name": self.flag_3.name, "code": self.flag_3.code},
+                {"id": self.flag_4.id, "name": self.flag_4.name, "code": self.flag_4.code},
+            ],
+        }
+        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidate_app, format="json")
+        self.assertJSONResponse(response, 200)
+        response_data = response.json()
+        self.assertValidAppData(response_data)
+        self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
+        self.assertTrue(
+            "FEATURE_FLAG_THAT_REQUIRES_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"])
+        )
 
     def assertValidAppData(self, app_data: typing.Mapping) -> None:
         self.assertHasField(app_data, "id", str)

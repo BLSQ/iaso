@@ -2182,6 +2182,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     list: /api/polio/vaccintauthorizations
     action: /api/polio/get_most_recent_authorizations
     """
+
     permission_classes = [HassVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"

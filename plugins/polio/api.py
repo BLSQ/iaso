@@ -2155,20 +2155,35 @@ class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
             return False
 
 
-def handle_none(item, ordering):
+def handle_none_and_country(item, ordering):
+    """
+    This function handle the None cases to order the response of get_most_recent_authorizations
+    and country nested dict.
+    """
+
+    if ordering == "country":
+        country_dict = item.get("country")
+        country_name = country_dict.get("name")
+        return country_name if country_name is not None else ""
+
     if "date" in ordering:
         item = item.get(ordering)
         return item if item is not None else dt.date(1, 1, 1)
 
-    if "date" not in "current_expiration_date":
+    if "date" not in ordering:
         item = item.get(ordering)
         return item if item is not None else float("inf")
 
 
 @swagger_auto_schema(tags=["vaccineauthorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
+    """
+    Vaccine Authorizations API
+    list: /api/polio/vaccintauthorizations
+    action: /api/polio/get_most_recent_authorizations
+    """
     permission_classes = [HassVaccineAuthorizationsPermissions]
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend, CustomFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
@@ -2221,6 +2236,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
     @action(detail=False, methods=["POST", "GET", "PUT", "DELETE"])
     def get_most_recent_authorizations(self, request):
+        """
+        Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
+        """
         queryset = self.get_queryset()
         country_list = []
         response = []
@@ -2279,7 +2297,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 response.append(vacc_auth)
 
         if ordering:
-            response = sorted(response, key=lambda x: handle_none(x, ordering))
+            response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
 
         page = self.paginate_queryset(response)
 
@@ -2313,6 +2331,6 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
 router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
-router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")

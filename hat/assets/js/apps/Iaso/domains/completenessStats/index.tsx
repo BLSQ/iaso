@@ -68,7 +68,8 @@ export const CompletenessStats: FunctionComponent<Props> = ({
         completenessStats,
     );
     const csvUrl = useMemo(
-        () => `/api/v2/completeness_stats.csv?${buildQueryString(params)}`,
+        () =>
+            `/api/v2/completeness_stats.csv?${buildQueryString(params, true)}`,
         [params],
     );
     const theme = useTheme();

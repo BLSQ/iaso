@@ -516,6 +516,11 @@ Timeline tracker Automated message
         log_campaign_modification(campaign, old_campaign_dump, request_user)
 
         return Response({"message": "email sent"})
+    # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+    # But Patching the campign directly is very much error prone, so we disable it indirectly
+    def partial_update(self):
+        """Don't PATCH this way, it won't do anything"""
+        pass
 
     @action(methods=["PATCH"], detail=False)
     def restore_deleted_campaigns(self, request):

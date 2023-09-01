@@ -2166,7 +2166,7 @@ def handle_none_and_country(item, ordering):
     and country nested dict.
     """
 
-    if ordering == "country":
+    if "country" in ordering:
         country_dict = item.get("country")
         country_name = country_dict.get("name")
         return country_name if country_name is not None else ""
@@ -2304,7 +2304,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         if ordering:
             response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
-
+            #dirty hack to fix country ordering
+            if ordering == "-country":
+                response.reverse()
         page = self.paginate_queryset(response)
 
         if page:

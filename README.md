@@ -130,7 +130,7 @@ __docker daemon__.
 
 If you use an Apple Silicon Mac, ensure `export DOCKER_DEFAULT_PLATFORM=linux/amd64` is set.
 
-A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository
+A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository.
 
 ### 1. Environment variables
 
@@ -337,7 +337,7 @@ You can also have a dhis2 and db_dhis2 docker, refer to section below.
 
 ### note : docker-compose run VS docker-compose exec
 
-Run launch a new docker container, Exec launch a command it the existing container.
+Run launch a new docker container, Exec launch a command in the existing container.
 
 So `run` will ensure the dependencies like the database are up before executing. `exec` main advantage is that it is faster
 but the containers must already be running (launched manually) 

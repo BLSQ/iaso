@@ -1,4 +1,5 @@
 from datetime import date
+from unittest import skip
 
 from django.contrib.auth.models import User, Permission
 from django.utils.timezone import now
@@ -302,6 +303,7 @@ class PolioAPITestCase(APITestCase):
         self.assertNotEqual(r["round_two"], None, r)
         self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -340,6 +342,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(campaign.rounds.get(number=1).lqas_district_failing, 100)
         self.assertEqual(campaign.rounds.get(number=1).lqas_district_passing, None)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign_remove_round(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -375,6 +378,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(2, rounds.count())
         self.assertQuerysetEqual(rounds, [1, 2], lambda r: r.number)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign_remove_all_rounds(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -545,6 +549,7 @@ class PolioAPITestCase(APITestCase):
             ],
         )
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_update_campaign_with_vaccine_data(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -768,9 +773,8 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         self.assertEqual(self.user.is_superuser, False)
         self.user.user_permissions.add(Permission.objects.get(codename="iaso_polio"))
-
         payload = {"obr_name": "test2"}
-        response = self.client.patch(f"/api/polio/campaigns/{self.c.id}/", payload, format="json")
+        response = self.client.put(f"/api/polio/campaigns/{self.c.id}/", payload, format="json")
         self.assertJSONResponse(response, 200)
 
         self.assertEqual(Modification.objects.count(), 1)

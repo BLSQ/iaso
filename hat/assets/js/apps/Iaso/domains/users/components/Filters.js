@@ -25,7 +25,7 @@ import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
-import {useGetTeamsDropdown} from "../../teams/hooks/requests/useGetTeams";
+import { useGetTeamsDropdown } from '../../teams/hooks/requests/useGetTeams';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -62,7 +62,8 @@ const Filters = ({ baseUrl, params }) => {
         useGetOrgUnitTypes();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
-    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeamsDropdown();
+    const { data: teamsDropdown, isFetching: isFetchingTeams } =
+        useGetTeamsDropdown();
 
     const orgUnitTypeDropdown = useMemo(() => {
         if (!orgUnitTypes?.length) return orgUnitTypes;

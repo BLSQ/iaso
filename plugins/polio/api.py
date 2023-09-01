@@ -5,9 +5,12 @@ import json
 import numpy as np
 from collections import defaultdict
 from datetime import timedelta, datetime
+
 from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
+
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import Polygon
 from django.db.models.functions import RowNumber, Coalesce
 from django.db.models.query import QuerySet
@@ -51,7 +54,7 @@ from iaso.api.common import (
     HasPermission,
     Paginator,
 )
-from iaso.models import OrgUnit, Group
+from iaso.models import OrgUnit, Group, Team
 from iaso.utils.powerbi import launch_dataset_refresh
 from plugins.polio.serializers import (
     ConfigSerializer,
@@ -2256,48 +2259,58 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 country_list.append(auth.country)
 
         for country in country_list:
-            last_entry = (
-                queryset.filter(country=country, status__in=["validated", "expired"])
+            last_validated_or_expired = (
+                queryset.filter(country=country, status__in=["validated", "expired"], deleted_at__isnull=True)
                 .order_by("-expiration_date")
                 .first()
             )
 
             next_expiration_auth = (
-                queryset.filter(country=country, status__in=["ongoing", "signature"])
+                queryset.filter(country=country, status__in=["ongoing", "signature"], deleted_at__isnull=True)
                 .order_by("-expiration_date")
                 .first()
             )
 
-            if last_entry is not None:
+            last_entry = queryset.filter(country=country, deleted_at__isnull=True).last()
+
+            last_entry_date_check = VaccineAuthorization.objects.filter(
+                country=country, account=self.request.user.iaso_profile.account, deleted_at__isnull=True
+            ).last()
+
+            if last_entry_date_check and last_entry:
+                if last_entry_date_check.expiration_date > last_entry.expiration_date:
+                    return Response(response)
+
+            if last_validated_or_expired and next_expiration_auth:
                 vacc_auth = {
                     "id": last_entry.id,
                     "country": {
                         "id": last_entry.country.pk,
                         "name": last_entry.country.name,
                     },
-                    "current_expiration_date": last_entry.expiration_date,
+                    "current_expiration_date": last_validated_or_expired.expiration_date,
                     "next_expiration_date": next_expiration_auth.expiration_date
-                    if next_expiration_auth.expiration_date > last_entry.expiration_date
+                    if next_expiration_auth.expiration_date > last_validated_or_expired.expiration_date
                     else None,
-                    "quantity": last_entry.quantity,
-                    "status": next_expiration_auth.status if next_expiration_auth is not None else last_entry.status,
+                    "quantity": last_validated_or_expired.quantity,
+                    "status": last_entry.status,
                     "comment": last_entry.comment,
                 }
 
                 response.append(vacc_auth)
 
-            if last_entry is None and next_expiration_auth:
+            if last_validated_or_expired is None and next_expiration_auth:
                 vacc_auth = {
-                    "id": next_expiration_auth.id,
+                    "id": last_entry.id,
                     "country": {
-                        "id": next_expiration_auth.country.pk,
-                        "name": next_expiration_auth.country.name,
+                        "id": last_entry.country.pk,
+                        "name": last_entry.country.name,
                     },
                     "current_expiration_date": None,
                     "next_expiration_date": next_expiration_auth.expiration_date,
                     "quantity": None,
-                    "status": next_expiration_auth.status,
-                    "comment": next_expiration_auth.comment,
+                    "status": last_entry.status,
+                    "comment": last_entry.comment,
                 }
 
                 response.append(vacc_auth)

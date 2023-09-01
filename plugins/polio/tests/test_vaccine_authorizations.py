@@ -224,7 +224,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0]["comment"], "validated auth")
+        self.assertEqual(response.data[0]["comment"], "next validation date")
         self.assertEqual(response.data[0]["status"], "ongoing")
         self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2024, 3, 1))
         self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 4, 1))

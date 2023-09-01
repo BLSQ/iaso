@@ -1501,3 +1501,14 @@ class UserRole(models.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
+
+
+class Module(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+
+
+class ModulePermission(models.Model):
+    permission = models.OneToOneField(
+        auth.models.Permission, on_delete=models.CASCADE, related_name="iaso_module_permission", null=False, blank=False
+    )
+    module = models.ForeignKey(Module, on_delete=models.DO_NOTHING, null=True, blank=True)

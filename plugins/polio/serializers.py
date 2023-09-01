@@ -539,6 +539,11 @@ class PreparednessPreviewSerializer(serializers.Serializer):
         return instance
 
 
+class PowerBIRefreshSerializer(serializers.Serializer):
+    group_id = serializers.UUIDField()
+    data_set_id = serializers.UUIDField()
+
+
 class OrgUnitSerializer(serializers.ModelSerializer):
     country_parent = serializers.SerializerMethodField()
     root = serializers.SerializerMethodField()  # type: ignore

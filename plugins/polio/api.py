@@ -35,6 +35,8 @@ from rest_framework.exceptions import PermissionDenied
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
+from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
+from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework import routers, filters, viewsets, serializers, permissions, status, pagination
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -50,11 +52,13 @@ from iaso.api.common import (
     Paginator,
 )
 from iaso.models import OrgUnit, Group
+from iaso.utils.powerbi import launch_dataset_refresh
 from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
     RoundDateHistoryEntrySerializer,
+    PowerBIRefreshSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -83,6 +87,7 @@ from .helpers import (
     CustomFilterBackend,
     calculate_country_status,
     determine_status_for_district,
+    make_safe_bbox,
 )
 from .vaccines_email import send_vaccines_notification_email
 from .models import (
@@ -1423,6 +1428,23 @@ def format_caregiver_stats(campaign_stats):
                 district["care_giver_stats"] = caregivers_dict
 
 
+@swagger_auto_schema()
+class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
+    serializer_class = PowerBIRefreshSerializer
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data_set_id = serializer.validated_data["data_set_id"]
+        group_id = serializer.validated_data["group_id"]
+        # Perform actions using uuid1 and uuid2
+        response_data = {"message": f"Received data_set_id: {data_set_id}, group_id: {group_id}"}
+        launch_dataset_refresh(group_id, data_set_id)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -1762,7 +1784,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
-        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom=None)
+        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
 
     def list(self, request):
         results = []
@@ -1868,8 +1890,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1879,7 +1901,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         # TODO see if we need to filter per user as with Campaign
         return (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
@@ -1888,8 +1910,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
         bounds = json.loads(request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1938,7 +1960,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
             districts = (
                 scope.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
-                .exclude(simplified_geom=None)
+                .exclude(simplified_geom__isnull=True)
                 .filter(simplified_geom__intersects=bounds_as_polygon)
             )
             data_for_country = data_store.content
@@ -2002,8 +2024,8 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -2013,7 +2035,7 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
         # TODO see if we need to filter per user as with Campaign
         return (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
@@ -2138,15 +2160,41 @@ class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
             return False
 
 
+def handle_none_and_country(item, ordering):
+    """
+    This function handle the None cases to order the response of get_most_recent_authorizations
+    and country nested dict.
+    """
+
+    if ordering == "country":
+        country_dict = item.get("country")
+        country_name = country_dict.get("name")
+        return country_name if country_name is not None else ""
+
+    if "date" in ordering:
+        item = item.get(ordering)
+        return item if item is not None else dt.date(1, 1, 1)
+
+    if "date" not in ordering:
+        item = item.get(ordering)
+        return item if item is not None else float("inf")
+
+
 @swagger_auto_schema(tags=["vaccineauthorizations"])
 class VaccineAuthorizationViewSet(ModelViewSet):
+    """
+    Vaccine Authorizations API
+    list: /api/polio/vaccintauthorizations
+    action: /api/polio/get_most_recent_authorizations
+    """
+
     permission_classes = [HassVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
     remove_results_key_if_paginated = True
     serializer_class = VaccineAuthorizationSerializer
     pagination_class = Paginator
-    ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date"]
+    ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date", "quantity"]
 
     def get_queryset(self):
         user = self.request.user
@@ -2161,7 +2209,19 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if country_id:
             queryset = queryset.filter(country__pk=country_id)
         if block_country:
-            queryset = queryset.filter(country__pk__in=Group.objects.get(pk=block_country).org_units.all())
+            block_country = block_country.split(",")
+            block_country = Group.objects.filter(pk__in=block_country)
+            org_units = [
+                ou_queryset
+                for ou_queryset in [
+                    ou_group_queryset for ou_group_queryset in [country.org_units.all() for country in block_country]
+                ]
+            ]
+            ou_pk_list = []
+            for ou_q in org_units:
+                for ou in ou_q:
+                    ou_pk_list.append(ou.pk)
+            queryset = queryset.filter(country__pk__in=ou_pk_list)
         if search:
             queryset = queryset.filter(country__name__icontains=search)
         if auth_status:
@@ -2180,11 +2240,16 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         return super().create(request)
 
-    @action(detail=False, methods=["POST", "GET"])
+    @action(detail=False, methods=["POST", "GET", "PUT", "DELETE"])
     def get_most_recent_authorizations(self, request):
+        """
+        Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
+        """
         queryset = self.get_queryset()
         country_list = []
         response = []
+
+        ordering = request.query_params.get("order", None)
 
         for auth in queryset:
             if auth.country not in country_list:
@@ -2197,11 +2262,10 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 .first()
             )
 
-            next_expiration_date = (
+            next_expiration_auth = (
                 queryset.filter(country=country, status__in=["ongoing", "signature"])
                 .order_by("-expiration_date")
                 .first()
-                .expiration_date
             )
 
             if last_entry is not None:
@@ -2212,8 +2276,8 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "name": last_entry.country.name,
                     },
                     "current_expiration_date": last_entry.expiration_date,
-                    "next_expiration_date": next_expiration_date
-                    if next_expiration_date > last_entry.expiration_date
+                    "next_expiration_date": next_expiration_auth.expiration_date
+                    if next_expiration_auth.expiration_date > last_entry.expiration_date
                     else None,
                     "quantity": last_entry.quantity,
                     "status": last_entry.status,
@@ -2221,6 +2285,25 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 }
 
                 response.append(vacc_auth)
+
+            if last_entry is None and next_expiration_auth:
+                vacc_auth = {
+                    "id": next_expiration_auth.id,
+                    "country": {
+                        "id": next_expiration_auth.country.pk,
+                        "name": next_expiration_auth.country.name,
+                    },
+                    "current_expiration_date": None,
+                    "next_expiration_date": next_expiration_auth.expiration_date,
+                    "quantity": None,
+                    "status": next_expiration_auth.status,
+                    "comment": next_expiration_auth.comment,
+                }
+
+                response.append(vacc_auth)
+
+        if ordering:
+            response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
 
         page = self.paginate_queryset(response)
 
@@ -2255,3 +2338,5 @@ router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasm
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
 router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
+router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
+router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")

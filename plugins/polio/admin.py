@@ -125,6 +125,11 @@ class ConfigAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+class VaccineAuthorizationsAdmin(admin.ModelAdmin):
+    model = VaccineAuthorization
+    raw_id_fields = ("country",)
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
@@ -136,4 +141,4 @@ admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)
 admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)
 admin.site.register(WorkflowModel, WorkflowAdmin)
-admin.site.register(VaccineAuthorization)
+admin.site.register(VaccineAuthorization, VaccineAuthorizationsAdmin)

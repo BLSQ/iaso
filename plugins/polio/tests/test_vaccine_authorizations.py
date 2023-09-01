@@ -369,3 +369,27 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
+
+    def test_get_recent_without_expired_or_validated_data_must_return_ongoing_or_signature(self):
+        def test_get_most_recent_authorizations(self):
+            self.client.force_authenticate(self.user_1)
+            self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+            self.client.post(
+                "/api/polio/vaccineauthorizations/",
+                data={
+                    "country": self.org_unit_DRC.pk,
+                    "quantity": 12346,
+                    "status": "ongoing",
+                    "comment": "waiting for approval.",
+                    "expiration_date": "2024-02-01",
+                },
+            )
+
+            response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
+
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.data[0]["comment"], "waiting for approval.")
+            self.assertEqual(response.data[0]["status"], "ongoing")
+            self.assertEqual(response.data[0]["current_expiration_date"], None)
+            self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 2, 1))

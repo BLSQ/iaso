@@ -2318,9 +2318,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.quantity',
         defaultMessage: 'Quantity',
     },
+    currentAuthorisedQuantity: {
+        id: 'iaso.polio.label.currentAuthorisedQuantity',
+        defaultMessage: 'Current authorised quantity',
+    },
     expirationDate: {
         id: 'iaso.polio.label.expirationDate',
         defaultMessage: 'Expiration date',
+    },
+    currentExpirationDate: {
+        id: 'iaso.polio.label.currentExpirationDate',
+        defaultMessage: 'Current expiration date',
     },
     nextExpirationDate: {
         id: 'iaso.polio.label.nextExpirationDate',
@@ -2329,6 +2337,10 @@ const MESSAGES = defineMessages({
     dateForExpired: {
         id: 'iaso.polio.error.dateForExpired',
         defaultMessage: 'Expired authorisations can only have past dates',
+    },
+    mostRecentAuthStatus: {
+        id: 'iaso.polio.table.label.mostRecentAuthStatus',
+        defaultMessage: 'Most recent authorisation status',
     },
 });
 

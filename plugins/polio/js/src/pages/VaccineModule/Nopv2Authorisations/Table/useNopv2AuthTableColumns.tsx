@@ -22,14 +22,14 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                 sortable: true,
             },
             {
-                Header: formatMessage(MESSAGES.expirationDate),
+                Header: formatMessage(MESSAGES.currentExpirationDate),
                 accessor: 'current_expiration_date',
                 sortable: true,
                 Cell: DateCell,
             },
 
             {
-                Header: formatMessage(MESSAGES.quantity),
+                Header: formatMessage(MESSAGES.currentAuthorisedQuantity),
                 accessor: 'quantity',
                 Cell: settings => (
                     <span>
@@ -38,7 +38,7 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                 ),
             },
             {
-                Header: formatMessage(MESSAGES.status),
+                Header: formatMessage(MESSAGES.mostRecentAuthStatus),
                 accessor: 'status',
                 Cell: settings => (
                     <span

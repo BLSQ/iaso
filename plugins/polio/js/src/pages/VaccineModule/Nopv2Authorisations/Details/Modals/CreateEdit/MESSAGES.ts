@@ -13,9 +13,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.quantity',
         defaultMessage: 'Quantity',
     },
-    expirationDate: {
-        id: 'iaso.polio.label.expirationDate',
-        defaultMessage: 'Expiration date',
+    currentExpirationDate: {
+        id: 'iaso.polio.label.currentExpirationDate',
+        defaultMessage: 'Current expiration date',
     },
     status: {
         id: 'iaso.polio.table.label.status',

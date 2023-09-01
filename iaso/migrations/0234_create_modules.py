@@ -16,7 +16,7 @@ MODULES_NAMES = [
 ]
 
 
-def create_module(apps, schema_editor):
+def create_modules(apps, schema_editor):
     for module in MODULES_NAMES:
         Module.objects.get_or_create(name=module)
 
@@ -30,4 +30,6 @@ class Migration(migrations.Migration):
         ("iaso", "0233_create_module_permission_for_each_permission"),
     ]
 
-    operations = []
+    operations = [
+        migrations.RunPython(create_modules, reverse_create_modules),
+    ]

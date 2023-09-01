@@ -25,6 +25,7 @@ import { stringToBoolean } from '../../../utils/dataManipulation.ts';
 import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown.ts';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+import {useGetTeamsDropdown} from "../../teams/hooks/requests/useGetTeams";
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -49,6 +50,7 @@ const Filters = ({ baseUrl, params }) => {
         ouChildren: params.ouParent,
         projectsIds: params.projectsIds,
         userRoles: params.userRoles,
+        teamsIds: params.teamsIds,
     });
 
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.location);
@@ -60,6 +62,7 @@ const Filters = ({ baseUrl, params }) => {
         useGetOrgUnitTypes();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
+    const { data: teamsDropdown, isFetching: isFetchingTeams } = useGetTeamsDropdown();
 
     const orgUnitTypeDropdown = useMemo(() => {
         if (!orgUnitTypes?.length) return orgUnitTypes;
@@ -148,6 +151,18 @@ const Filters = ({ baseUrl, params }) => {
                         label={MESSAGES.userRoles}
                         loading={isFetchingUserRoles}
                         onEnterPressed={handleSearchUserRoles}
+                    />
+                    <InputComponent
+                        keyValue="teamsIds"
+                        onChange={handleChange}
+                        value={filters.teamsIds}
+                        type="select"
+                        options={teamsDropdown}
+                        label={MESSAGES.teams}
+                        loading={isFetchingTeams}
+                        onEnterPressed={handleSearchPerms}
+                        clearable
+                        multi
                     />
                 </Grid>
                 <Grid item xs={12} md={3}>

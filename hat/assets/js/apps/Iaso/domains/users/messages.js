@@ -275,6 +275,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_page_write',
         defaultMessage: 'Edit page',
     },
+    teams: {
+        defaultMessage: 'Teams',
+        id: 'iaso.label.teams',
+    },
 });
 
 export default MESSAGES;

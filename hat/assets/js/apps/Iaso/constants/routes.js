@@ -730,6 +730,10 @@ export const usersPath = {
             isRequired: false,
             key: 'userRoles',
         },
+        {
+            isRequired: false,
+            key: 'teamsIds',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

@@ -89,13 +89,6 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
         useGetProjectsDropDown();
     const { data: profliesDropdown, isFetching: isFetchingProfiles } =
         useGetProfilesDropdown();
-    const { data: teamsDropdown = [], isFetching: isFetchingTeams } =
-        useGetTeamsDropdown(
-            {
-                project,
-            },
-            id,
-        );
     const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
     const {

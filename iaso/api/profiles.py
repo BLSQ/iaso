@@ -75,6 +75,7 @@ def get_filtered_profiles(
     children_ou: Optional[bool] = False,
     projects: Optional[List[int]] = None,
     user_roles: Optional[List[int]] = None,
+    teams: Optional[List[int]] = None,
     managed_users_only: Optional[bool] = False,
     ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
@@ -151,6 +152,10 @@ def get_filtered_profiles(
 
     if user_roles:
         queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles)
+
+    if teams:
+        queryset = queryset.filter(user__teams__id__in=teams).distinct()
+
     if ids:
         queryset = queryset.filter(user__id__in=ids.split(","))
     if managed_users_only:
@@ -226,6 +231,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         if user_roles:
             user_roles = user_roles.split(",")
         managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
+        teams = request.GET.get("teams", None)
+        if teams:
+            teams = teams.split(",")
+        managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
         queryset = get_filtered_profiles(
             queryset=self.get_queryset(),
             user=request.user,
@@ -237,6 +246,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             children_ou=children_ou,
             projects=projects,
             user_roles=user_roles,
+            teams=teams,
             managed_users_only=managed_users_only,
             ids=ids,
         )

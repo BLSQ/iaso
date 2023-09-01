@@ -4,7 +4,7 @@ export const convertObjectToString = (value: Record<string, unknown>): string =>
         .map(([key, entry]) => `${key}-${String(entry)}`)
         .toString();
 
-export const stringToBoolean = str => {
+export const stringToBoolean = (str: string): boolean | undefined => {
     if (str === 'true') return true;
     if (str === 'false') return false;
     return undefined;

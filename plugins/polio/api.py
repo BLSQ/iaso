@@ -2143,7 +2143,12 @@ class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
                 or request.user.is_superuser
             )
             return can_get
-        elif request.method == "POST" or request.method == "PUT" or request.method == "DELETE":
+        elif (
+            request.method == "POST"
+            or request.method == "PUT"
+            or request.method == "PATCH"
+            or request.method == "DELETE"
+        ):
             can_post = (
                 request.user
                 and request.user.is_authenticated

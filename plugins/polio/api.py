@@ -2280,7 +2280,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                     if next_expiration_auth.expiration_date > last_entry.expiration_date
                     else None,
                     "quantity": last_entry.quantity,
-                    "status": last_entry.status,
+                    "status": next_expiration_auth.status if next_expiration_auth is not None else last_entry.status,
                     "comment": last_entry.comment,
                 }
 

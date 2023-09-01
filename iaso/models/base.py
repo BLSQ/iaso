@@ -1505,6 +1505,7 @@ class UserRole(models.Model):
 
 class Module(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
+    codename = models.CharField(max_length=100, null=False, blank=False)
 
 
 class ModulePermission(models.Model):

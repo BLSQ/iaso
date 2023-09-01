@@ -3,22 +3,22 @@
 from django.db import migrations
 from iaso.models import Module
 
-MODULES_NAMES = [
-    "Data collection - Forms",
-    "Default",
-    "DHIS2 mapping",
-    "Embedded links",
-    "Entities",
-    "External storage",
-    "Planning",
-    "Polio project",
-    "Registry",
+MODULES = [
+    {"name": "Data collection - Forms", "codename": "DATA_COLLECTION_FORMS"},
+    {"name": "Default", "codename": "DEFAULT"},
+    {"name": "DHIS2 mapping", "codename": "DHIS2_MAPPING"},
+    {"name": "Embedded links", "codename": "EMBEDDED_LINKS"},
+    {"name": "Entities", "codename": "ENTITIES"},
+    {"name": "External storage", "codename": "EXTERNAL_STORAGE"},
+    {"name": "Planning", "codename": "PLANNING"},
+    {"name": "Polio project", "codename": "POLIO_PROJECT"},
+    {"name": "Registry", "codename": "REGISTRY"},
 ]
 
 
 def create_modules(apps, schema_editor):
-    for module in MODULES_NAMES:
-        Module.objects.get_or_create(name=module)
+    for module in MODULES:
+        Module.objects.get_or_create(name=module["name"], codename=module["codename"])
 
 
 def reverse_create_modules(apps, schema_editor):

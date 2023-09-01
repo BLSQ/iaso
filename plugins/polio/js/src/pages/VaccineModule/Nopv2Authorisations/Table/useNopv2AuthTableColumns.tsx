@@ -18,7 +18,7 @@ export const useNopv2AuthTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.country),
                 accessor: 'country.name',
-                id: 'country__name',
+                id: 'country',
                 sortable: true,
             },
             {

@@ -2304,7 +2304,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         if ordering:
             response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
-            #dirty hack to fix country ordering
+            # dirty hack to fix country ordering
             if ordering == "-country":
                 response.reverse()
         page = self.paginate_queryset(response)

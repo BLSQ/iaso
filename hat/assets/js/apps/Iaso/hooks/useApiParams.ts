@@ -2,12 +2,12 @@ import { ApiParams, UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { cleanupParams } from '../utils/requests';
 
-type FormattedParams = ApiParams & Record<string, any>;
+export type FormattedApiParams = ApiParams & Record<string, any>;
 
 export const useApiParams = (
     params: Partial<UrlParams>,
     defaults?: { order?: string; limit?: number; page?: number },
-): FormattedParams => {
+): FormattedApiParams => {
     return useMemo(() => {
         const formattedParams: Record<string, any> = cleanupParams(params);
         if (!params.order && defaults?.order) {
@@ -25,6 +25,6 @@ export const useApiParams = (
         } else if (!params.page) {
             formattedParams.page = 1;
         }
-        return formattedParams as FormattedParams;
+        return formattedParams as FormattedApiParams;
     }, [defaults?.limit, defaults?.order, defaults?.page, params]);
 };

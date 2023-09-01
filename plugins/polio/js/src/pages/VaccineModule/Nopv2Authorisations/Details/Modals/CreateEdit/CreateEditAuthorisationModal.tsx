@@ -9,7 +9,6 @@ import {
 import { Field, FormikProvider, useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import { Box, Divider } from '@material-ui/core';
-import { useCurrentUser } from '../../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import { DateInput } from '../../../../../../components/Inputs/DateInput';
 import { useCreateEditNopv2Authorisation } from '../../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
@@ -19,12 +18,12 @@ import { NumberInput } from '../../../../../../components/Inputs';
 import { MultilineText } from '../../../../../../components/Inputs/MultilineText';
 import { SingleSelect } from '../../../../../../components/Inputs/SingleSelect';
 import { useStatusOptions } from '../../../hooks/statuses';
-import { AuthorisationData } from '../../../types';
+import { AuthorisationAPIData } from '../../../types';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
-    authorisationData?: AuthorisationData;
+    authorisationData?: AuthorisationAPIData;
     countryName: string;
     countryId: number;
 };
@@ -40,7 +39,6 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const options = useStatusOptions();
     const { mutate: confirm } = useCreateEditNopv2Authorisation();
-    const currentUser = useCurrentUser();
     const schema = useNopv2AuthorisationsSchema();
 
     const formik = useFormik({
@@ -48,7 +46,6 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
             expiration_date: authorisationData?.expiration_date,
             quantity: authorisationData?.quantity,
             country: countryId,
-            account: currentUser.account.id,
             comment: authorisationData?.comment,
             status: authorisationData?.status,
             id: authorisationData?.id,

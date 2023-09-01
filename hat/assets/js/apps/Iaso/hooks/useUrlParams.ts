@@ -2,7 +2,7 @@ import { UrlParams } from 'bluesquare-components';
 import { useMemo } from 'react';
 import { cleanupParams } from '../utils/requests';
 
-type FormattedParams = UrlParams & Record<string, any>;
+export type FormattedUrlParams = UrlParams & Record<string, any>;
 
 export const useUrlParams = (
     params: Partial<UrlParams>,
@@ -11,7 +11,7 @@ export const useUrlParams = (
         pageSize: 20,
         page: 1,
     },
-): FormattedParams => {
+): FormattedUrlParams => {
     return useMemo(() => {
         const formattedParams: Record<string, any> = cleanupParams(params);
         if (!params.order && defaults?.order) {
@@ -25,6 +25,6 @@ export const useUrlParams = (
         } else if (!params.page) {
             formattedParams.page = 1;
         }
-        return formattedParams as FormattedParams;
+        return formattedParams as FormattedUrlParams;
     }, [defaults?.order, defaults?.page, defaults?.pageSize, params]);
 };

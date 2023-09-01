@@ -8,10 +8,21 @@ export type AuthorisationData = {
     comment?: string;
     quantity?: number;
     status: Nopv2AuthStatus;
-    created_at: string;
-    updated_at: string;
     expiration_date: string;
     country: NameAndId;
+};
+
+export type AuthorisationAPIData = AuthorisationData & {
+    created_at: string;
+    updated_at: string;
+};
+
+export type AuthorisationAPIResponse = {
+    results: AuthorisationAPIData[];
+    count: number;
+    limit: number;
+    page: number;
+    pages: number;
 };
 
 export type VaccineAuthParams = UrlParams & {

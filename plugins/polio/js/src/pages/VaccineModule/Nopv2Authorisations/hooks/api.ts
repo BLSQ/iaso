@@ -1,5 +1,9 @@
-import { UseMutationResult, useQueryClient } from 'react-query';
-import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
+import { UseMutationResult, UseQueryResult, useQueryClient } from 'react-query';
+import { ApiParams, UrlParams } from 'bluesquare-components';
+import {
+    FormattedUrlParams,
+    useUrlParams,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import {
     useSnackMutation,
@@ -11,19 +15,32 @@ import {
     patchRequest,
     postRequest,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import {
+    AuthorisationAPIResponse,
+    AuthorisationData,
+    VaccineAuthParams,
+} from '../types';
 
 const listUrl =
     '/api/polio/vaccineauthorizations/get_most_recent_authorizations/';
 const baseUrl = '/api/polio/vaccineauthorizations/';
 
-const getVaccineAuthorisationsList = params => {
+type GetListParams = VaccineAuthParams & Partial<ApiParams>;
+
+const getVaccineAuthorisationsList = (
+    params: GetListParams,
+): Promise<AuthorisationAPIResponse> => {
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`${listUrl}?${queryString}`);
 };
 
-export const useGetLatestAuthorisations = params => {
-    const safeParams = useUrlParams(params);
-    const apiParams = useApiParams(safeParams);
+type GetLatestAuthParams = VaccineAuthParams & Partial<UrlParams>;
+
+export const useGetLatestAuthorisations = (
+    params: GetLatestAuthParams,
+): UseQueryResult<AuthorisationAPIResponse, any> => {
+    const safeParams = useUrlParams(params as Partial<UrlParams>);
+    const apiParams = useApiParams(safeParams) as GetListParams;
     return useSnackQuery({
         queryKey: [
             'latest-nopv2-auth',
@@ -38,7 +55,10 @@ export const useGetLatestAuthorisations = params => {
             staleTime: 1000 * 60 * 15, // in MS
             cacheTime: 1000 * 60 * 5,
             select: data => {
-                if (!data) return { results: [] };
+                if (!data)
+                    return {
+                        results: [],
+                    } as unknown as AuthorisationAPIResponse;
                 return data;
             },
         },
@@ -50,7 +70,9 @@ const getAuthorisations = params => {
     return getRequest(`${baseUrl}?${queryString}`);
 };
 
-export const useGetAuthorisations = params => {
+export const useGetAuthorisations = (
+    params: FormattedUrlParams,
+): UseQueryResult<AuthorisationAPIResponse, any> => {
     const apiParams = useApiParams(params);
     return useSnackQuery({
         queryKey: ['nopv2-auth', params],
@@ -67,7 +89,7 @@ export const useGetAuthorisations = params => {
     });
 };
 
-const deleteNopv2Authorisation = authorisationId => {
+const deleteNopv2Authorisation = (authorisationId: number) => {
     return deleteRequest(`${baseUrl}${authorisationId}`);
 };
 
@@ -86,7 +108,7 @@ export const useDeleteNopv2Authorisation = (): UseMutationResult => {
     });
 };
 
-const createEditNopv2Authorisation = body => {
+const createEditNopv2Authorisation = (body: AuthorisationData) => {
     if (body.id) {
         return patchRequest(`${baseUrl}${body.id}/`, body);
     }

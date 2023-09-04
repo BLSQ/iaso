@@ -876,6 +876,12 @@ class BudgetFiles(models.Model):
         return str(self.event)
 
 
+class VaccineAuthorizationStatus(models.TextChoices):
+    PENDING = "ONGOING", _("Ongoing")
+    VALIDATED = "VALIDATED", _("Sent for signature")
+    IGNORED = "SIGNATURE", _("Ignored")
+
+
 class VaccineAuthorization(SoftDeletableModel):
     STATUS = (
         ("ongoing", "Ongoing"),
@@ -892,7 +898,7 @@ class VaccineAuthorization(SoftDeletableModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     quantity = models.IntegerField(blank=True, null=True)
-    status = models.CharField(choices=STATUS, max_length=200)
+    status = models.CharField(null=True, blank=True, choices=VaccineAuthorizationStatus.choices, max_length=200)
     comment = models.TextField(max_length=250, blank=True, null=True)
 
     def __str__(self):

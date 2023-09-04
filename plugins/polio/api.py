@@ -2243,7 +2243,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         return super().create(request)
 
-    @action(detail=False, methods=["POST", "GET", "PUT", "DELETE"])
+    @action(detail=False, methods=["GET"])
     def get_most_recent_authorizations(self, request):
         """
         Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
@@ -2257,7 +2257,6 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         for auth in queryset:
             if auth.country not in country_list:
                 country_list.append(auth.country)
-
 
         for country in country_list:
             last_validated_or_expired = (

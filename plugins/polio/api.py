@@ -2260,13 +2260,13 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         for country in country_list:
             last_validated_or_expired = (
-                queryset.filter(country=country, status__in=["validated", "expired"], deleted_at__isnull=True)
+                queryset.filter(country=country, status__in=["VALIDATED", "EXPIRED"], deleted_at__isnull=True)
                 .order_by("-expiration_date")
                 .first()
             )
 
             next_expiration_auth = (
-                queryset.filter(country=country, status__in=["ongoing", "signature"], deleted_at__isnull=True)
+                queryset.filter(country=country, status__in=["ONGOING", "SIGNATURE"], deleted_at__isnull=True)
                 .order_by("-expiration_date")
                 .first()
             )
@@ -2355,7 +2355,7 @@ def vaccine_authorizations_60_days_expiration_email_alert():
     for obj in vaccine_auths:
         next_vaccine_auth = (
             VaccineAuthorization.objects.filter(
-                country=obj.country, status__in=["ongoing", "signature"], deleted_at__isnull=True
+                country=obj.country, status__in=["ONGOING", "SIGNATURE"], deleted_at__isnull=True
             )
             .order_by("-expiration_date")
             .first()

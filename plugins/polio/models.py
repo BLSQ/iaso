@@ -878,18 +878,12 @@ class BudgetFiles(models.Model):
 
 class VaccineAuthorizationStatus(models.TextChoices):
     PENDING = "ONGOING", _("Ongoing")
-    VALIDATED = "VALIDATED", _("Sent for signature")
-    IGNORED = "SIGNATURE", _("Ignored")
+    VALIDATED = "VALIDATED", _("Validated")
+    IGNORED = "SIGNATURE", _("Sent for signature")
+    EXPIRED = "EXPIRED", _("Expired")
 
 
 class VaccineAuthorization(SoftDeletableModel):
-    STATUS = (
-        ("ongoing", "Ongoing"),
-        ("signature", "Sent for signature"),
-        ("validated", "Validated"),
-        ("expired", "Expired"),
-    )
-
     country = models.ForeignKey(
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
     )

@@ -91,7 +91,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "ONGOING",
                 "comment": "waiting for approval.",
                 "expiration_date": "2024-02-01",
             },
@@ -100,7 +100,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
         self.assertEqual(response.data["expiration_date"], "2024-02-01"),
-        self.assertEqual(response.data["status"], "ongoing")
+        self.assertEqual(response.data["status"], "ONGOING")
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)
 
@@ -188,23 +188,25 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-        self.client.post(
+        response_p = self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "expired",
+                "status": "EXPIRED",
                 "comment": "waiting for approval.",
                 "expiration_date": "2024-02-01",
             },
         )
+
+        print(response_p)
 
         self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "validated",
+                "status": "VALIDATED",
                 "comment": "validated auth",
                 "expiration_date": "2024-03-01",
             },
@@ -215,7 +217,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "ONGOING",
                 "comment": "next validation date",
                 "expiration_date": "2024-04-01",
             },
@@ -223,9 +225,11 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
+        print(response.data)
+
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0]["comment"], "next validation date")
-        self.assertEqual(response.data[0]["status"], "ongoing")
+        self.assertEqual(response.data[0]["status"], "ONGOING")
         self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2024, 3, 1))
         self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 4, 1))
 
@@ -239,7 +243,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "ONGOING",
                 "comment": "waiting for approval.",
                 "expiration_date": "2024-02-01",
             },
@@ -250,7 +254,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "ONGOING",
                 "comment": "new update",
                 "expiration_date": "2024-03-01",
             },
@@ -261,7 +265,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_ALGERIA.pk,
                 "quantity": 12346,
-                "status": "validated",
+                "status": "VALIDATED",
                 "comment": "Approved.",
                 "expiration_date": "2024-04-01",
             },
@@ -272,7 +276,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_SOMALIA.pk,
                 "quantity": 12346,
-                "status": "validated",
+                "status": "VALIDATED",
                 "comment": "Approved.",
                 "expiration_date": "2024-04-01",
             },
@@ -286,7 +290,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(len(response.data), 2)
 
         # retrieve by status
-        response = self.client.get("/api/polio/vaccineauthorizations/?auth_status=validated")
+        response = self.client.get("/api/polio/vaccineauthorizations/?auth_status=VALIDATED")
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
@@ -331,7 +335,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_DRC.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "ONGOING",
                 "comment": "waiting for approval.",
                 "expiration_date": "2024-02-01",
             },
@@ -342,7 +346,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_ALGERIA.pk,
                 "quantity": 12346,
-                "status": "ongoing",
+                "status": "ONGOING",
                 "comment": "new update",
                 "expiration_date": "2024-03-01",
             },
@@ -353,7 +357,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             data={
                 "country": self.org_unit_SOMALIA.pk,
                 "quantity": 12346,
-                "status": "validated",
+                "status": "VALIDATED",
                 "comment": "Approved.",
                 "expiration_date": "2024-04-01",
             },
@@ -380,7 +384,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 data={
                     "country": self.org_unit_DRC.pk,
                     "quantity": 12346,
-                    "status": "ongoing",
+                    "status": "ONGOING",
                     "comment": "waiting for approval.",
                     "expiration_date": "2024-02-01",
                 },

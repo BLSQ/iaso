@@ -1,7 +1,8 @@
 from functools import reduce
 import json
+import datetime as dt
 from datetime import datetime, timedelta
-
+from django.db.models.expressions import Subquery
 import requests
 from django.db.models import Q
 from django.utils.timezone import now
@@ -10,7 +11,7 @@ from iaso.models.data_store import JsonDataStore
 from rest_framework import filters
 
 from iaso.models import OrgUnitType, OrgUnit
-from plugins.polio.models import URLCache
+from plugins.polio.models import Campaign, Round, URLCache
 from logging import getLogger
 
 logger = getLogger(__name__)
@@ -194,3 +195,38 @@ class LqasAfroViewset(ModelViewSet):
         queryset = self.get_queryset()
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
         return JsonDataStore.objects.filter(slug__in=countries)
+
+    def get_latest_active_campaign_and_rounds(self, org_unit, start_date_after, end_date_before):
+        today = dt.date.today()
+        latest_active_round_qs = Round.objects.filter(campaign__country=org_unit)
+        if start_date_after is not None:
+            latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=start_date_after)
+        if end_date_before is not None:
+            latest_active_round_qs = latest_active_round_qs.filter(ended_at__lte=end_date_before)
+
+        # filter out rounds that start in the future
+        # Filter by finished rounds and lqas dates ended. If no lqas end date, using end date +10 days (as in pipeline)
+        latest_active_round_qs = latest_active_round_qs.filter(
+            (Q(lqas_ended_at__lte=today))
+            | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
+        ).order_by("-started_at")[:1]
+
+        latest_active_campaign = (
+            Campaign.objects.filter(id__in=Subquery(latest_active_round_qs.values("campaign")))
+            .filter(deleted_at=None)
+            .exclude(is_test=True)
+            .prefetch_related("rounds")
+            .first()
+        )
+        if latest_active_campaign is None:
+            return None, None
+        # Filter by finished rounds and lqas dates ended
+        latest_active_campaign_rounds = (
+            latest_active_campaign.rounds.filter(ended_at__lte=today)
+            .filter(
+                (Q(lqas_ended_at__lte=today))
+                | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
+            )
+            .order_by("-number")
+        )
+        return latest_active_campaign, latest_active_campaign_rounds

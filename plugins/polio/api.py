@@ -2258,6 +2258,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
             if auth.country not in country_list:
                 country_list.append(auth.country)
 
+
         for country in country_list:
             last_validated_or_expired = (
                 queryset.filter(country=country, status__in=["validated", "expired"], deleted_at__isnull=True)
@@ -2315,6 +2316,22 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
                 response.append(vacc_auth)
 
+            if last_validated_or_expired and next_expiration_auth is None:
+                vacc_auth = {
+                    "id": last_validated_or_expired.id,
+                    "country": {
+                        "id": last_validated_or_expired.country.pk,
+                        "name": last_validated_or_expired.country.name,
+                    },
+                    "current_expiration_date": last_validated_or_expired.expiration_date,
+                    "next_expiration_date": None,
+                    "quantity": last_validated_or_expired.quantity,
+                    "status": last_validated_or_expired.status,
+                    "comment": last_validated_or_expired.comment,
+                }
+
+                response.append(vacc_auth)
+
         if ordering:
             response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
             # dirty hack to fix country ordering
@@ -2326,6 +2343,34 @@ class VaccineAuthorizationViewSet(ModelViewSet):
             return self.get_paginated_response(page)
 
         return Response(response)
+
+
+def vaccine_authorizations_60_days_expiration_email_alert():
+    future_date = dt.date.today() + timedelta(days=60)
+    vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=future_date)
+
+    team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
+
+    mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+
+    for obj in vaccine_auths:
+        next_vaccine_auth = (
+            VaccineAuthorization.objects.filter(
+                country=obj.country, status__in=["ongoing", "signature"], deleted_at__isnull=True
+            )
+            .order_by("-expiration_date")
+            .first()
+        )
+
+        if obj.expiration_date < next_vaccine_auth.expiration_date:
+            pass
+
+        send_mail(
+            f"ALERT: Vaccine Authorization {obj} arrives to expiration date in 2 months",
+            "",
+            settings.DEFAULT_FROM_EMAIL,
+            mailing_list,
+        )
 
 
 router = routers.SimpleRouter()

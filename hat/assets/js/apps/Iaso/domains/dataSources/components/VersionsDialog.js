@@ -111,7 +111,12 @@ const tableColumns = (source, forceRefreshParent) => [
         sortable: false,
     },
     {
-        Header: <FormattedMessage id="iaso.label.actions" />,
+        Header: (
+            <FormattedMessage
+                id="iaso.label.actions"
+                defaultMessage="Action(s)"
+            />
+        ),
         accessor: 'actions',
         sortable: false,
         width: 200,
@@ -236,7 +241,10 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
             renderActions={({ closeDialog }) => (
                 <DialogActions className={classes.action}>
                     <Button onClick={closeDialog} color="primary">
-                        <FormattedMessage id="iaso.label.close" />
+                        <FormattedMessage
+                            id="iaso.label.close"
+                            defaultMessage="Close"
+                        />
                     </Button>
                 </DialogActions>
             )}

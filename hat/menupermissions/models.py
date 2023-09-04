@@ -29,6 +29,7 @@ _DATASTORE_READ = "iaso_datastore_read"
 _DATASTORE_WRITE = "iaso_datastore_write"
 _DATA_TASKS = "iaso_data_tasks"
 _ENTITIES = "iaso_entities"
+_ENTITY_TYPE_WRITE = "iaso_entity_type_write"
 _ENTITIES_DUPLICATE_READ = "iaso_entity_duplicates_read"
 _ENTITIES_DUPLICATE_WRITE = "iaso_entity_duplicates_write"
 _FORMS = "iaso_forms"
@@ -66,6 +67,7 @@ DATASTORE_READ = _PREFIX + _DATASTORE_READ
 DATASTORE_WRITE = _PREFIX + _DATASTORE_WRITE
 DATA_TASKS = _PREFIX + _DATA_TASKS
 ENTITIES = _PREFIX + _ENTITIES
+ENTITY_TYPE_WRITE = _PREFIX + _ENTITY_TYPE_WRITE
 ENTITIES_DUPLICATE_READ = _PREFIX + _ENTITIES_DUPLICATE_READ
 ENTITIES_DUPLICATE_WRITE = _PREFIX + _ENTITIES_DUPLICATE_WRITE
 FORMS = _PREFIX + _FORMS
@@ -145,6 +147,7 @@ class CustomPermissionSupport(models.Model):
             (_ASSIGNMENTS, _("Attributions")),
             (_POLIO_BUDGET, _("Budget Polio")),
             (_ENTITIES, _("Entities")),
+            (_ENTITY_TYPE_WRITE, _("Write entity type")),
             (_STORAGE, _("Storages")),
             (_COMPLETENESS_STATS, _("Completeness stats")),
             (_WORKFLOW, _("Workflows")),
@@ -178,5 +181,5 @@ class CustomPermissionSupport(models.Model):
 
     @staticmethod
     def assert_right_to_assign(user, permission_codename: str):
-        if user.has_perm(USERS_MANAGED) and permission_codename == _USERS_ADMIN:
-            raise PermissionDenied(f"User with {USERS_MANAGED} cannot grant {USERS_ADMIN} permission")
+        if not user.has_perm(USERS_ADMIN) and permission_codename == _USERS_ADMIN:
+            raise PermissionDenied(f"Only users with {USERS_ADMIN} permission can grant {USERS_ADMIN} permission")

@@ -300,10 +300,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.verificationScore',
         defaultMessage: 'Verification Score (/20)',
     },
-    verification_score: {
-        id: 'iaso.polio.form.label.verificationScore',
-        defaultMessage: 'Verif',
-    },
     fieldInvestigationDate: {
         id: 'iaso.polio.form.label.fieldInvestigationDate',
         defaultMessage: 'Field Investigation Date',
@@ -323,10 +319,6 @@ const MESSAGES = defineMessages({
     detection_responsible: {
         id: 'iaso.polio.label.detection_responsible',
         defaultMessage: 'Detection responsible',
-    },
-    risk_assessment_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/ORPG-Approval',
     },
     ag_nopv_group_met_at: {
         id: 'iaso.polio.form.label.agNopvGroup',
@@ -589,11 +581,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Status',
     },
     sync_status: {
-        id: 'iaso.polio.table.label.status',
+        id: 'iaso.polio.table.label.sync_status',
         defaultMessage: 'Synchronisation',
     },
     preperadness_sync_status: {
-        id: 'iaso.polio.table.label.status',
+        id: 'iaso.polio.table.label.sync_status',
         defaultMessage: 'Synchronisation',
     },
     import: {
@@ -1262,7 +1254,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Test campaign',
     },
     is_test: {
-        id: 'iaso.polio.label.testCampaign',
+        id: 'iaso.polio.label.is_test',
         defaultMessage: 'Test campaigns/On hold status',
     },
     testCampaigns: {
@@ -1847,7 +1839,7 @@ const MESSAGES = defineMessages({
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
-        defaultMessage: 'Modified By',
+        defaultMessage: 'Modified by',
     },
     seeLogDetail: {
         id: 'iaso.polio.campaign.seeLogDetail',
@@ -1960,6 +1952,10 @@ const MESSAGES = defineMessages({
     rrtOprttApproval: {
         id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/OPRTT Approval',
+    },
+    risk_assessment_rrt_oprtt_approval_at: {
+        id: 'iaso.polio.form.label.risk_assessment_rrt_oprtt_approval_at',
+        defaultMessage: 'RRT/ORPG-Approval',
     },
     loading: {
         id: 'iaso.label.loading',
@@ -2217,6 +2213,10 @@ const MESSAGES = defineMessages({
     SECURITY_CONTEXT: {
         id: 'iaso.polio.label.SECURITY_CONTEXT',
         defaultMessage: 'Security context',
+    },
+    CAMPAIGN_MOVED_FORWARD_BY_MOH: {
+        id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
+        defaultMessage: 'Campaign moved forward by MOH',
     },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',

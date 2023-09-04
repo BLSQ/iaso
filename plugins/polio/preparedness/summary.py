@@ -145,7 +145,7 @@ def _make_prep(c: Campaign, round: Round):
     return campaign_prep
 
 
-TIMEOUT_PREPAREDNESS = 60 * 60 * 24
+TIMEOUT_PREPAREDNESS = 60 * 60 * 24 * 365 * 5  # 5 years timeout
 "set as 24h since we run the cron once per day"
 
 

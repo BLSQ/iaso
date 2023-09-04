@@ -1,10 +1,14 @@
 import typing
 
+import numpy as np
+import pandas as pd
+
 from django.conf import settings
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.contrib.sites.models import Site
 from django.core import mail
 from django.contrib.auth.models import Group, Permission
+
 from iaso import models as m
 from iaso.models import Profile
 from iaso.test import APITestCase
@@ -16,18 +20,6 @@ class ProfileAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.ghi = m.Account.objects.create(name="Global Health Initiative")
         cls.another_account = m.Account.objects.create(name="Another account")
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.ghi, permissions=[permission._FORMS])
-        cls.john = cls.create_user_with_profile(username="johndoe", account=cls.ghi, is_superuser=True)
-        cls.jim = cls.create_user_with_profile(
-            username="jim", account=cls.ghi, permissions=[permission._FORMS, permission._USERS_ADMIN]
-        )
-        cls.jam = cls.create_user_with_profile(
-            username="jam",
-            account=cls.ghi,
-            permissions=[permission._USERS_MANAGED],
-        )
-        cls.jom = cls.create_user_with_profile(username="jom", account=cls.ghi, permissions=[])
-        cls.jum = cls.create_user_with_profile(username="jum", account=cls.ghi, permissions=[])
 
         # TODO : make the org unit creations shorter and reusable
         cls.project = m.Project.objects.create(
@@ -100,6 +92,21 @@ class ProfileAPITestCase(APITestCase):
         cls.user_role_another_account = m.UserRole.objects.create(
             group=cls.group_another_account, account=cls.another_account
         )
+
+        # Users.
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=cls.ghi, permissions=[permission._FORMS])
+        cls.john = cls.create_user_with_profile(username="johndoe", account=cls.ghi, is_superuser=True)
+        cls.jim = cls.create_user_with_profile(
+            username="jim", account=cls.ghi, permissions=[permission._FORMS, permission._USERS_ADMIN]
+        )
+        cls.jam = cls.create_user_with_profile(
+            username="jam",
+            account=cls.ghi,
+            permissions=[permission._USERS_MANAGED],
+            language="en",
+        )
+        cls.jom = cls.create_user_with_profile(username="jom", account=cls.ghi, permissions=[], language="fr")
+        cls.jum = cls.create_user_with_profile(username="jum", account=cls.ghi, permissions=[], projects=[cls.project])
 
     def test_can_delete_dhis2_id(self):
         self.client.force_authenticate(self.john)
@@ -182,6 +189,98 @@ class ProfileAPITestCase(APITestCase):
         response = self.client.get("/api/profiles/")
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 6)
+
+    def test_profile_list_export_as_csv(self):
+        self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?csv=true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "text/csv")
+
+        response_csv = response.getvalue().decode("utf-8")
+
+        expected_csv = (
+            "username,"
+            "password,"
+            "email,"
+            "first_name,"
+            "last_name,"
+            "orgunit,"
+            "profile_language,"
+            "dhis2_id,"
+            "permissions,"
+            "user_roles,"
+            "projects\r\n"
+        )
+        expected_csv += "janedoe,,,,,,,,iaso_forms,,\r\n"
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",,,,,\r\n'
+        expected_csv += 'jim,,,,,,,,"iaso_forms,iaso_users",,\r\n'
+        expected_csv += "jam,,,,,,en,,iaso_users_managed,,\r\n"
+        expected_csv += "jom,,,,,,fr,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,{self.project.id}\r\n"
+
+        self.assertEqual(response_csv, expected_csv)
+
+    def test_profile_list_export_as_xlsx(self):
+        self.john.iaso_profile.org_units.set([self.jedi_squad_1, self.jedi_council_corruscant])
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get("/api/profiles/?xlsx=true")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+        excel_data = pd.read_excel(response.content, engine="openpyxl")
+
+        excel_columns = list(excel_data.columns.ravel())
+        self.assertEqual(
+            excel_columns,
+            [
+                "username",
+                "password",
+                "email",
+                "first_name",
+                "last_name",
+                "orgunit",
+                "profile_language",
+                "dhis2_id",
+                "permissions",
+                "user_roles",
+                "projects",
+            ],
+        )
+
+        data_dict = excel_data.replace({np.nan: None}).to_dict()
+        self.assertDictEqual(
+            data_dict,
+            {
+                "username": {0: "janedoe", 1: "johndoe", 2: "jim", 3: "jam", 4: "jom", 5: "jum"},
+                "password": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "email": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "first_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "last_name": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "orgunit": {
+                    0: None,
+                    1: f"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",
+                    2: None,
+                    3: None,
+                    4: None,
+                    5: None,
+                },
+                "profile_language": {0: None, 1: None, 2: None, 3: "en", 4: "fr", 5: None},
+                "dhis2_id": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "permissions": {
+                    0: "iaso_forms",
+                    1: None,
+                    2: "iaso_forms,iaso_users",
+                    3: "iaso_users_managed",
+                    4: None,
+                    5: None,
+                },
+                "user_roles": {0: None, 1: None, 2: None, 3: None, 4: None, 5: None},
+                "projects": {0: None, 1: None, 2: None, 3: None, 4: None, 5: self.project.id},
+            },
+        )
 
     def test_profile_list_user_admin_ok(self):
         """GET /profiles/ with auth (user has user admin permissions)"""

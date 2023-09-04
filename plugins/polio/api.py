@@ -27,28 +27,35 @@ from django.utils.timezone import now, make_aware
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
+from hat.menupermissions import models as permission
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
+from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from iaso.api.common import (
     CSVExportMixin,
+    HasPermission,
     ModelViewSet,
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
 )
 from iaso.models import OrgUnit, Group
+from iaso.utils.powerbi import launch_dataset_refresh
 from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
+    LqasDistrictsUpdateSerializer,
     RoundDateHistoryEntrySerializer,
+    PowerBIRefreshSerializer,
+    RoundSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -77,6 +84,7 @@ from .helpers import (
     CustomFilterBackend,
     calculate_country_status,
     determine_status_for_district,
+    make_safe_bbox,
 )
 from .vaccines_email import send_vaccines_notification_email
 from .models import (
@@ -508,6 +516,15 @@ Timeline tracker Automated message
         log_campaign_modification(campaign, old_campaign_dump, request_user)
 
         return Response({"message": "email sent"})
+
+    # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+    # But Patching the campign directly is very much error prone, so we disable it indirectly
+    def partial_update(self):
+        """Don't PATCH this way, it won't do anything
+        We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+        But Patching the campign directly is very much error prone, so we disable it indirectly
+        """
+        pass
 
     @action(methods=["PATCH"], detail=False)
     def restore_deleted_campaigns(self, request):
@@ -1415,6 +1432,23 @@ def format_caregiver_stats(campaign_stats):
                 district["care_giver_stats"] = caregivers_dict
 
 
+@swagger_auto_schema()
+class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
+    serializer_class = PowerBIRefreshSerializer
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data_set_id = serializer.validated_data["data_set_id"]
+        group_id = serializer.validated_data["group_id"]
+        # Perform actions using uuid1 and uuid2
+        response_data = {"message": f"Received data_set_id: {data_set_id}, group_id: {group_id}"}
+        launch_dataset_refresh(group_id, data_set_id)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -1754,7 +1788,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
-        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom=None)
+        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
 
     def list(self, request):
         results = []
@@ -1860,8 +1894,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1871,7 +1905,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         # TODO see if we need to filter per user as with Campaign
         return (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
@@ -1880,8 +1914,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
         bounds = json.loads(request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1930,7 +1964,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
             districts = (
                 scope.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
-                .exclude(simplified_geom=None)
+                .exclude(simplified_geom__isnull=True)
                 .filter(simplified_geom__intersects=bounds_as_polygon)
             )
             data_for_country = data_store.content
@@ -1994,8 +2028,8 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -2005,7 +2039,7 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
         # TODO see if we need to filter per user as with Campaign
         return (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
@@ -2061,6 +2095,40 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
             )
 
 
+@swagger_auto_schema(tags=["rounds"], request_body=LqasDistrictsUpdateSerializer)
+class RoundViewset(ModelViewSet):
+    # Patch should be in the list to allow updatelqasfields to work
+    http_method_names = ["patch"]
+    permission_classes = [HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
+    serializer_class = RoundSerializer
+    model = Round
+
+    def partial_update(self):
+        """Don't PATCH this way, it will not do anything
+        Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
+        """
+        pass
+
+    # Endpoint used to update lqas passed and failed fields by OpenHexa pipeline
+    @action(detail=False, methods=["patch"], serializer_class=LqasDistrictsUpdateSerializer)
+    def updatelqasfields(self, request):
+        round_number = request.data.get("number", None)
+        obr_name = request.data.get("obr_name", None)
+        if obr_name is None:
+            raise serializers.ValidationError({"obr_name": "This field is required"})
+        if round_number is None:
+            raise serializers.ValidationError({"round_number": "This field is required"})
+        try:
+            round_instance = Round.objects.get(campaign__obr_name=obr_name, number=round_number)
+            serializer = LqasDistrictsUpdateSerializer(data=request.data, context={"request": request}, partial=True)
+            serializer.is_valid(raise_exception=True)
+            res = serializer.update(round_instance, serializer.validated_data)
+            serialized_data = RoundSerializer(res).data
+            return Response(serialized_data)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -2085,3 +2153,6 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
+router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
+router.register(r"polio/rounds", RoundViewset, basename="rounds")

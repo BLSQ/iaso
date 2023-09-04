@@ -32,6 +32,9 @@ const goToPage = (
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
     });
+    cy.intercept('GET', '/api/microplanning/teams/*', {
+        fixture: 'teams/list.json',
+    });
     const options = {
         method: 'GET',
         pathname: '/api/profiles/',
@@ -292,6 +295,29 @@ describe('Users', () => {
             cy.get('[data-test="search-button"]').click();
             cy.wait('@getUsersSearch').then(() => {
                 cy.wrap(interceptFlag).should('eq', true);
+            });
+        });
+        it('should be called with a `teamsIds` search param', () => {
+            goToPage(superUser, {}, emptyFixture);
+            interceptFlag = false;
+            cy.fillMultiSelect('#teamsIds', [0, 1], false);
+            cy.intercept('GET', '/api/profiles/**/*', req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: emptyFixture,
+                });
+            }).as('getUsersSearch');
+            cy.get('[data-test="search-button"]').click();
+            cy.wait('@getUsersSearch').then(xhr => {
+                cy.wrap(interceptFlag).should('eq', true);
+                cy.wrap(xhr.request.query).should('deep.equal', {
+                    limit: '20',
+                    managedUsersOnly: 'true',
+                    order: 'user__username',
+                    page: '1',
+                    teams: '25,26',
+                });
             });
         });
     });

@@ -55,7 +55,7 @@ def export_workflow_real(workflow: Workflow) -> typing.Dict:
             }
             version_data["changes"].append(change_data)  # type: ignore
 
-        workflow_data["versions"].append(version_data)
+        workflow_data["versions"].append(version_data)  # type: ignore
 
     return workflow_data
 

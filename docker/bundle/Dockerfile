@@ -52,8 +52,8 @@ RUN pip install -r requirements-dev.txt
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app
-RUN SECRET_KEY=NOT_SO_SECRET PLUGINS=wfp python manage.py collectstatic
-RUN SECRET_KEY=NOT_SO_SECRET PLUGINS=wfp python manage.py compilemessages
+RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic
+RUN SECRET_KEY=NOT_SO_SECRET python manage.py compilemessages
 
 FROM base as dev
 # Tell iaso backend to Use the assets build by webpack
@@ -73,7 +73,7 @@ USER root
 RUN pip install gunicorn
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 # Migrations are run by the start_gunicorn
-RUN SECRET_KEY=NOT_SO_SECRET PLUGINS=wfp python manage.py collectstatic --noinput
+RUN SECRET_KEY=NOT_SO_SECRET python manage.py collectstatic --noinput
 EXPOSE 8081
 ENTRYPOINT ["./entrypoint.sh"]
 CMD ["start_gunicorn"]

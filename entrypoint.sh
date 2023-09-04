@@ -20,7 +20,6 @@ show_help() {
 
 export PYTHONPATH="/opt/app:$PYTHONPATH"
 export DJANGO_SETTINGS_MODULE=hat.settings
-export PLUGINS=wfp
 
 case "$1" in
   "start")
@@ -73,7 +72,7 @@ case "$1" in
     celery -A hat worker -l info
   ;;
   "start_webpack" )
-    # if TEST_PROD, make a static js bundle otherwhise launch js dev server
+    # if TEST_PROD, make a static js bundle otherwise launch js dev server
     if [ -n "$TEST_PROD" ]; then
       npm run webpack-prod
       exit 0

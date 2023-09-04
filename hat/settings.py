@@ -63,6 +63,11 @@ DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENTRY_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
 
+# There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
+# If you have such plugin, you can activate the use of celery by setting this env variable to "true"
+USE_CELERY = os.environ.get("USE_CELERY", "")
+
+
 ALLOWED_HOSTS = ["*"]
 
 # Tell django to view requests as secure(ssl) that have this header set
@@ -167,6 +172,7 @@ INSTALLED_APPS = [
     "django_json_widget",
     "django_celery_beat",
     "django_celery_results",
+    "django_json_widget"
 ]
 
 # needed because we customize the comment model

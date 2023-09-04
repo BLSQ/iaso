@@ -206,9 +206,9 @@ class LqasAfroViewset(ModelViewSet):
 
         # filter out rounds that start in the future
         # Filter by finished rounds and lqas dates ended. If no lqas end date, using end date +10 days (as in pipeline)
+        buffer = today - timedelta(days=10)
         latest_active_round_qs = latest_active_round_qs.filter(
-            (Q(lqas_ended_at__lte=today))
-            | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
+            Q(lqas_ended_at__lte=today) | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=buffer))
         ).order_by("-started_at")[:1]
 
         latest_active_campaign = (

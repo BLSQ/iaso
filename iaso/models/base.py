@@ -101,6 +101,14 @@ class AccountFeatureFlag(models.Model):
         return f"{self.name} ({self.code})"
 
 
+class Module(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+    codename = models.CharField(max_length=100, null=False, blank=False)
+
+    def __str__(self):
+        return f"{self.name} ({self.codename})"
+
+
 class Account(models.Model):
     """Account represent a tenant (=roughly a client organisation or a country)"""
 
@@ -110,7 +118,7 @@ class Account(models.Model):
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
     user_manual_path = models.TextField(null=True, blank=True)
-    modules = ArrayField(models.CharField(max_length=200), blank=True, null=True)
+    modules = models.ManyToManyField(Module, related_name="account_modules")
 
     def as_dict(self):
         return {
@@ -1501,11 +1509,6 @@ class UserRole(models.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
-
-
-class Module(models.Model):
-    name = models.CharField(max_length=100, null=False, blank=False)
-    codename = models.CharField(max_length=100, null=False, blank=False)
 
 
 class ModulePermission(models.Model):

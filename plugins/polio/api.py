@@ -33,6 +33,7 @@ from requests import HTTPError
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
+from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
@@ -45,11 +46,13 @@ from iaso.api.common import (
     CONTENT_TYPE_CSV,
 )
 from iaso.models import OrgUnit, Group
+from iaso.utils.powerbi import launch_dataset_refresh
 from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
     RoundDateHistoryEntrySerializer,
+    PowerBIRefreshSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -78,6 +81,7 @@ from .helpers import (
     CustomFilterBackend,
     calculate_country_status,
     determine_status_for_district,
+    make_safe_bbox,
 )
 from .vaccines_email import send_vaccines_notification_email
 from .models import (
@@ -1416,6 +1420,23 @@ def format_caregiver_stats(campaign_stats):
                 district["care_giver_stats"] = caregivers_dict
 
 
+@swagger_auto_schema()
+class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
+    serializer_class = PowerBIRefreshSerializer
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data_set_id = serializer.validated_data["data_set_id"]
+        group_id = serializer.validated_data["group_id"]
+        # Perform actions using uuid1 and uuid2
+        response_data = {"message": f"Received data_set_id: {data_set_id}, group_id: {group_id}"}
+        launch_dataset_refresh(group_id, data_set_id)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -1849,8 +1870,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1859,8 +1880,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         )
         # TODO see if we need to filter per user as with Campaign
         return (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
-            # .filter(id=29720)
+            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
@@ -1869,8 +1890,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         requested_round = self.request.GET.get("round", "latest")
         queryset = self.get_queryset()
         bounds = json.loads(request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1975,8 +1996,8 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1984,13 +2005,11 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
             )
         )
         # TODO see if we need to filter per user as with Campaign
-        qs = (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
-            # .filter(id=29720)/
+        return (
+            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
-        print("Query", qs.query)
-        return qs
 
     def list(self, request):
         org_units = self.get_queryset()
@@ -2069,3 +2088,5 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
+router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")

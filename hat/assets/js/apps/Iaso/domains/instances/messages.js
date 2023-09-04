@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     title: {
         defaultMessage: 'Submissions for the form',
-        id: 'iaso.instance.form',
+        id: 'iaso.instance.formSubmissions',
     },
     titleMulti: {
         defaultMessage: 'Form submissions',
@@ -123,7 +123,7 @@ const MESSAGES = defineMessages({
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
-        defaultMessage: 'Modified By',
+        defaultMessage: 'Modified by',
     },
     files: {
         id: 'iaso.instance.files',
@@ -220,7 +220,7 @@ const MESSAGES = defineMessages({
     },
     error: {
         defaultMessage: 'Error',
-        id: 'iaso.label.instanceStatus.errorMulti',
+        id: 'iaso.label.instanceStatus.errorSingleCap',
     },
     duplicated: {
         defaultMessage: 'Error (duplicated)',

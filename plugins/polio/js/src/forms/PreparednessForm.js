@@ -48,7 +48,10 @@ export const PreparednessForm = () => {
                         key={round.number}
                         className={classes.tabPanel}
                     >
-                        <PreparednessConfig roundNumber={round.number} />
+                        <PreparednessConfig
+                            roundNumber={round.number}
+                            campaignName={values.obr_name}
+                        />
                     </TabPanel>
                 ))}
             </TabContext>

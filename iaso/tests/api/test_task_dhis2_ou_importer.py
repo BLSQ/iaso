@@ -157,14 +157,3 @@ class ApiDhis2ouimporterTestCase(APITestCase):
         self.assertEqual(task.params["kwargs"]["url"], "override url")
         self.assertEqual(task.params["kwargs"]["login"], None)
         self.assertEqual(task.params["kwargs"]["password"], "override pwd")
-
-    def assertValidTaskAndInDB(self, jr, status="QUEUED", name=None):
-        task_dict = jr["task"]
-        self.assertEqual(task_dict["status"], status, task_dict)
-
-        task = m.Task.objects.get(id=task_dict["id"])
-        self.assertTrue(task)
-        if name:
-            self.assertEqual(task.name, name)
-
-        return task

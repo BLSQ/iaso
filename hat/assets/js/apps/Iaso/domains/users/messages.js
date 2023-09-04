@@ -54,7 +54,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.infos',
     },
     location: {
-        defaultMessage: 'location',
+        defaultMessage: 'Location',
         id: 'iaso.map.location',
     },
     cancel: {
@@ -94,8 +94,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.add',
     },
     orgUnitsType: {
-        id: 'iaso.orgUnits.type',
-        defaultMessage: 'Org Unit type',
+        id: 'iaso.label.orgUnitsType',
+        defaultMessage: 'Org unit type',
     },
     locale: {
         defaultMessage: 'Language',
@@ -139,8 +139,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchPermissions',
     },
     userRolesDropDownError: {
-        defaultMessage: 'Error while making user roles drop down',
-        id: 'iaso.snackBar.fetchPermissions',
+        defaultMessage: 'An error occurred while fetching user roles',
+        id: 'iaso.snackBar.fetchUserRoles',
     },
     homePage: {
         defaultMessage: 'Home page',
@@ -257,7 +257,7 @@ const MESSAGES = defineMessages({
     },
     taskLaunched: {
         id: 'iaso.snackBar.copyVersionSuccessMessage',
-        defaultMessage: 'The task has been created"',
+        defaultMessage: 'The task has been created',
     },
     addLocations: {
         id: 'iaso.users.addLocations',

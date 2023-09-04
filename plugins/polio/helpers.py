@@ -127,6 +127,13 @@ def calculate_country_status(country_data, scope, roundNumber):
     return "3lqasFail"
 
 
+# Using this custom function because Polygon.from_bbox will change the bounding box if the longitude coordinates cover more than 180°
+# which will cause hard to track bugs
+# This very plain solution required investigation from 3 people and caused the utterance of many curse words.
+def make_safe_bbox(x_min, y_min, x_max, y_max):
+    return ((x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max), (x_min, y_min))
+
+
 class LqasAfroViewset(ModelViewSet):
     def compute_reference_dates(self):
         start_date_after = self.request.GET.get("startDate", None)

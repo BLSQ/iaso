@@ -10,6 +10,7 @@ import { appId } from '../../../../constants/app';
 import { useGetGroupDropdown } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/orgUnits/hooks/requests/useGetGroups';
 import { useStatusOptions } from '../hooks/statuses';
 import { VaccineAuthParams } from '../types';
+import { CreateAuthorisationModal } from '../Details/Modals/CreateEdit/CreateEditAuthorisationModal';
 
 const baseUrl = NOPV2_AUTH;
 type Props = { params: VaccineAuthParams };
@@ -50,19 +51,25 @@ export const Nopv2AuthorisationsFilters: FunctionComponent<Props> = ({
                     labelString={formatMessage(MESSAGES.status)}
                 />
             </Grid>
-            <Grid
-                container
-                item
-                xs={12}
-                md={4}
-                lg={6}
-                justifyContent="flex-end"
-            >
-                <Box mt={2}>
-                    <FilterButton
-                        disabled={!filtersUpdated}
-                        onFilter={handleSearch}
-                    />
+            <Grid container item xs={12} md={4} lg={6}>
+                <Box
+                    display="flex"
+                    justifyContent="flex-end"
+                    alignItems="end"
+                    flexDirection="column"
+                    width="100%"
+                >
+                    <Box mt={2}>
+                        <FilterButton
+                            disabled={!filtersUpdated}
+                            onFilter={handleSearch}
+                        />
+                    </Box>
+                    <Box mt={2} mb={2}>
+                        <CreateAuthorisationModal
+                            iconProps={{ message: MESSAGES.addAuthorisation }}
+                        />
+                    </Box>
                 </Box>
             </Grid>
         </Grid>

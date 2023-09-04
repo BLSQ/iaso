@@ -1,11 +1,18 @@
 import typing
-from iaso.models import Account
+
+from rest_framework import permissions
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+
+from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission
+from iaso.models import Account, Workflow
 from iaso.models.entity import EntityType
 from iaso.models.forms import Form
 from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, WorkflowVersion
 
 
-def export_workflow(workflow: Workflow) -> typing.Dict:
+def export_workflow_real(workflow: Workflow) -> typing.Dict:
     """Exports the given workflow as a dict
     This version implies that an entity type with the same name and the same reference form exists.
     It also implies that the forms in the follow ups and changes exist.
@@ -53,7 +60,7 @@ def export_workflow(workflow: Workflow) -> typing.Dict:
     return workflow_data
 
 
-def import_workflow(workflow_data: typing.Dict, account: Account) -> Workflow:
+def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workflow:
     """Imports a workflow from a dict and returns a Workflow object
     This version implies that an entity type with the same name and the same reference form exists.
     It also implies that the forms in the follow ups and changes exist.
@@ -96,7 +103,6 @@ def import_workflow(workflow_data: typing.Dict, account: Account) -> Workflow:
 
         for follow_up_data in version_data["follow_ups"]:
             fup = WorkflowFollowup.objects.create(
-                uuid=follow_up_data["uuid"],
                 order=follow_up_data["order"],
                 condition=follow_up_data["condition"],
                 workflow_version=version,
@@ -114,7 +120,6 @@ def import_workflow(workflow_data: typing.Dict, account: Account) -> Workflow:
             form = Form.objects.filter(projects__account=account).get(name=change_data["form"])
 
             WorkflowChange.objects.create(
-                uuid=change_data["uuid"],
                 form=form,
                 mapping=change_data["mapping"],
                 workflow_version=version,
@@ -123,3 +128,25 @@ def import_workflow(workflow_data: typing.Dict, account: Account) -> Workflow:
             )
 
     return workflow
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)])  # type: ignore
+def export_workflow(request, workflow_id):
+    """GET /api/workflows/export/{workflow_id}/
+    Exports the workflow version given by {version_id} as a JSON
+    """
+    workflow = Workflow.objects.get(pk=workflow_id)
+    workflow_data = export_workflow_real(workflow)
+    return Response(workflow_data)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)])  # type: ignore
+def import_workflow(request):
+    """POST /api/workflows/import/
+    Imports the workflow version given by from a JSON body containing an export workflow.
+    """
+    workflow_data = request.data
+    workflow = import_workflow_real(workflow_data, request.user.iaso_profile.account)
+    return Response({"status": f"Workflow {workflow.uuid} imported successfully"})

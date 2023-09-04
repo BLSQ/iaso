@@ -80,7 +80,7 @@ from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
-from .api.workflows.workflows import export_workflow, import_workflow
+from .api.workflows.import_export import export_workflow, import_workflow
 from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from .api.user_roles import UserRolesViewSet

@@ -41,6 +41,7 @@ class IasoTestCaseMixin:
 
         if language is not None:
             user.iaso_profile.language = language
+            user.iaso_profile.save()
 
         if projects is not None:
             user.iaso_profile.projects.set(projects)

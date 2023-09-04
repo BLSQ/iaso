@@ -44,7 +44,7 @@ def export_workflow_real(workflow: Workflow) -> typing.Dict:
                 "created_at": follow_up.created_at.isoformat(),
                 "updated_at": follow_up.updated_at.isoformat(),
             }
-            version_data["follow_ups"].append(follow_up_data)
+            version_data["follow_ups"].append(follow_up_data)  # type: ignore
 
         for change in version.changes.all():
             change_data = {
@@ -53,7 +53,7 @@ def export_workflow_real(workflow: Workflow) -> typing.Dict:
                 "created_at": change.created_at.isoformat(),
                 "updated_at": change.updated_at.isoformat(),
             }
-            version_data["changes"].append(change_data)
+            version_data["changes"].append(change_data)  # type: ignore
 
         workflow_data["versions"].append(version_data)
 

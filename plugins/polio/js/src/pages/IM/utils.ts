@@ -224,10 +224,11 @@ export const getLqasImMapLayer = ({
             status: shape.data ? determineStatus(shape.data) : IN_SCOPE,
         }));
     }
-    return shapesWithData
-        .filter(shape => Boolean(shape.data))
-        .map(shape => ({
-            ...shape,
-            status: determineStatus(shape.data),
-        }));
+    // return shapesWithData
+    //     .filter(shape => Boolean(shape.data))
+    //     .map(shape => ({
+    //         ...shape,
+    //         status: determineStatus(shape.data),
+    //     }));
+    return [];
 };

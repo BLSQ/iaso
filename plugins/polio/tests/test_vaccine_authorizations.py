@@ -188,7 +188,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-        response_p = self.client.post(
+        self.client.post(
             "/api/polio/vaccineauthorizations/",
             data={
                 "country": self.org_unit_DRC.pk,
@@ -198,8 +198,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "expiration_date": "2024-02-01",
             },
         )
-
-        print(response_p)
 
         self.client.post(
             "/api/polio/vaccineauthorizations/",
@@ -397,3 +395,39 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             self.assertEqual(response.data[0]["status"], "ongoing")
             self.assertEqual(response.data[0]["current_expiration_date"], None)
             self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 2, 1))
+
+    def test_can_edit_authorizations(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "quantity": 12346,
+                "status": "ONGOING",
+                "comment": "waiting for approval.",
+                "expiration_date": "2024-02-01",
+            },
+        )
+
+        response = self.client.get("/api/polio/vaccineauthorizations/")
+
+        self.assertEqual(response.data[0]["comment"], "waiting for approval.")
+
+        last_entry = VaccineAuthorization.objects.last()
+
+        data = {
+            "country": self.org_unit_DRC.pk,
+            "comment": "Approved",
+            "status": "VALIDATED",
+            "expiration_date": last_entry.expiration_date,
+        }
+
+        post_rep = self.client.put(f"/api/polio/vaccineauthorizations/{last_entry.pk}/", data=data)
+        print(post_rep.data)
+
+        response = self.client.get("/api/polio/vaccineauthorizations/")
+
+        self.assertEqual(response.data[0]["comment"], "Approved")
+        self.assertEqual(response.data[0]["status"], "VALIDATED")

@@ -16,3 +16,14 @@ drop-test-db:
 
 dbshell:
 	docker-compose exec iaso ./manage.py dbshell
+
+# Django.
+# =============================================================================
+
+.PHONY: django_admin
+
+# make django_admin
+# make django_admin COMMAND=shell_plus
+# make django_admin COMMAND=createsuperuser
+django_admin:
+	docker-compose exec -ti iaso ./manage.py $(COMMAND)

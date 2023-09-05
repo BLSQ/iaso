@@ -8,7 +8,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import IsAdminOrSuperUser
-from iaso.models import Account, DataSource, SourceVersion, Profile, Project, OrgUnitType
+from iaso.models import Account, DataSource, SourceVersion, Profile, Project, OrgUnitType, Module
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +23,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_last_name = serializers.CharField(max_length=150, required=False)
     password = serializers.CharField(required=True)
     user_manual_path = serializers.CharField(required=False)
+    modules = serializers.JSONField(required=True, initial=[module.codename for module in Module.objects.all()])
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -46,6 +47,9 @@ class SetupAccountSerializer(serializers.Serializer):
             first_name=validated_data.get("user_first_name", ""),
             last_name=validated_data.get("user_last_name", ""),
         )
+
+        modules = Module.objects.filter(codename__in=validated_data.get("modules"))
+
         account = Account.objects.create(
             name=validated_data["account_name"],
             default_version=source_version,
@@ -68,6 +72,7 @@ class SetupAccountSerializer(serializers.Serializer):
         data_source.projects.set([initial_project])
         data_source.default_version = source_version
         data_source.save()
+        account.modules.add(*modules)
 
         Profile.objects.create(account=account, user=user)
 

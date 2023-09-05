@@ -8,7 +8,6 @@ project_name = sys.argv[1]
 print(sys.argv)
 
 if len(sys.argv) > 2:
-
     if "*" in sys.argv[2]:
         model_selector = sys.argv[2].replace("*", "")
     else:
@@ -21,16 +20,16 @@ if len(sys.argv) > 3:
 else:
     model_file = f"{project_name}_model.md"
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"{project_name}.settings")
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", f"{project_name}.settings_local")
 django.setup()
 
 models_list = apps.get_models()
 
-# for model in models_list:
-#     print(str(model.__module__))
-#     print(model_selector)
-#     print(model_selector in str(model.__module__))
-#     print("---------")
+for model in models_list:
+    print(str(model.__module__))
+    print(model_selector)
+    print(model_selector in str(model.__module__))
+    print("---------")
 
 
 models_data = []
@@ -38,13 +37,9 @@ relations = []
 
 if model_selector is not None:
     if type(model_selector) == str:
-        models_list = [
-            model for model in models_list if model_selector in str(model.__module__)
-        ]
+        models_list = [model for model in models_list if model_selector in str(model.__module__)]
     else:
-        models_list = [
-            model for model in models_list if model.__name__ in model_selector
-        ]
+        models_list = [model for model in models_list if model.__name__ in model_selector]
 
 
 print(models_list)
@@ -79,7 +74,6 @@ with open("schemas/" + model_file, "w") as f:
         for model_name in model:
             f.write(model_name + "{\n")
             for field in model[model_name]:
-
                 try:
                     field_type = field.get_internal_type()
                 except AttributeError:
@@ -99,14 +93,7 @@ with open("schemas/" + model_file, "w") as f:
                         relationship = "}|--|{"
                     elif field_type == "OneToOneField":
                         relationship = "||--||"
-                    relations.append(
-                        field_model
-                        + relationship
-                        + field_related_model
-                        + " : "
-                        + field_name
-                        + "\n"
-                    )
+                    relations.append(field_model + relationship + field_related_model + " : " + field_name + "\n")
                 else:
                     f.write(f"{field_type} {field_name}\n")
             f.write("}\n")

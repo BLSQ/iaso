@@ -12,8 +12,11 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account, OrgUnitType, OrgUnit, Group, Team
 from iaso.test import APITestCase
-from plugins.polio.api import vaccine_authorizations_60_days_expiration_email_alert
 from plugins.polio.models import VaccineAuthorization
+from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
+    vaccine_authorizations_60_days_expiration_email_alert,
+    expired_vaccine_authorizations_email_alert,
+)
 
 
 class VaccineAuthorizationAPITestCase(APITestCase):
@@ -507,7 +510,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         from_email = settings.DEFAULT_FROM_EMAIL
 
-        response = vaccine_authorizations_60_days_expiration_email_alert()
+        response = expired_vaccine_authorizations_email_alert()
 
         self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
 

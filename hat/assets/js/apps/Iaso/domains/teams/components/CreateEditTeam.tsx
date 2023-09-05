@@ -94,7 +94,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
             },
             id,
         );
-    const { data: profliesDropdown, isFetching: isFetchingProfiles } =
+    const { data: profilesDropdown, isFetching: isFetchingProfiles } =
         useGetProfilesDropdown();
     const { mutateAsync: saveTeam } = useSaveTeam(dialogType);
 
@@ -219,7 +219,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                     errors={getErrors('manager')}
                     label={MESSAGES.manager}
                     required
-                    options={profliesDropdown}
+                    options={profilesDropdown}
                     loading={isFetchingProfiles}
                 />
                 <InputComponent
@@ -269,7 +269,7 @@ export const CreateEditTeam: FunctionComponent<Props> = ({
                         value={values.users}
                         errors={getErrors('users')}
                         label={MESSAGES.users}
-                        options={profliesDropdown}
+                        options={profilesDropdown}
                         loading={isFetchingProfiles}
                         multi
                     />

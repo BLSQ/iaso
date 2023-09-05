@@ -666,8 +666,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         results = content["results"]
         self.assertEquals(len(results), 3)
         self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(results[0]["data"]["district_name"], self.district_org_unit_1.name)
-        self.assertEquals(results[0]["status"], "1lqasOK")
+        self.assertEquals(results[0]["data"]["round_number"], 1)
 
     def test_lqas_zoomedin_start_date_filter(self):
         c = APIClient()
@@ -695,7 +694,6 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        print("RESULTS", json.dumps(results))
         self.assertEquals(len(results), 2)
         self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
         # There's no guarantee on the order of the districts

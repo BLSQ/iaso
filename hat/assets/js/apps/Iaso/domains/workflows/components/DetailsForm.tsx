@@ -1,12 +1,9 @@
 import React, { FunctionComponent, useState, useCallback } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { Box, Button, makeStyles } from '@material-ui/core';
 
 import InputComponent from '../../../components/forms/InputComponent';
-import { WorkflowVersionDetail } from '../types/workflows';
+import { WorkflowVersionDetail } from '../types';
 
 import { useUpdateWorkflowVersion } from '../hooks/requests/useUpdateWorkflowVersion';
 

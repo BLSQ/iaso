@@ -11,12 +11,13 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-let interceptFlagGroups = false;
-
-const search = 'mugen';
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/groups`;
+
+let interceptFlagGroups = false;
 
 let interceptFlag = false;
 let table;
@@ -145,14 +146,7 @@ describe('Groups', () => {
         beforeEach(() => {
             goToPage({});
         });
-        it('should enabled search button', () => {
-            cy.wait('@getGroups').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
-        });
+        testSearchField(search, searchWithForbiddenChars);
     });
 
     describe('Search button', () => {

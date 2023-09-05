@@ -4,8 +4,8 @@ branch-defaults:
 global:
   application_name: Iaso
   default_ec2_keyname: iaso-eb
-  default_platform: arn:aws:elasticbeanstalk:eu-central-1::platform/Python 3.6 running
-    on 64bit Amazon Linux/2.8.6
+  default_platform: arn:aws:elasticbeanstalk:eu-central-1::platform/Python 3.8 running
+    on 64bit Amazon Linux 2/3.3.1
   default_region: eu-central-1
   include_git_submodules: true
   instance_profile: null

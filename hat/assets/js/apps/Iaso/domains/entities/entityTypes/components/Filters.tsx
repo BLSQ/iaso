@@ -29,6 +29,7 @@ type Props = {
 
 const Filters: FunctionComponent<Props> = ({ params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
@@ -39,7 +40,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
-            const tempParams = {
+            const tempParams: Params = {
                 ...params,
                 ...filters,
             };
@@ -70,6 +71,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                        blockForbiddenChars
                     />
                 </Grid>
 
@@ -84,7 +87,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 >
                     <Button
                         data-test="search-button"
-                        disabled={!filtersUpdated}
+                        disabled={textSearchError || !filtersUpdated}
                         variant="contained"
                         className={classes.button}
                         color="primary"

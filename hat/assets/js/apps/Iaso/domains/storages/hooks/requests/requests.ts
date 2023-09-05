@@ -16,7 +16,7 @@ export const useGetStorageApiParams = (params: StorageParams): GetAPiParams => {
         status: params.status,
         type: params.type,
     };
-    const url = makeUrlWithParams('/api/storage/', apiParams);
+    const url = makeUrlWithParams('/api/storages/', apiParams);
     return {
         url,
         apiParams,

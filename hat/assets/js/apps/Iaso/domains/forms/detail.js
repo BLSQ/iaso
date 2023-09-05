@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { useQueryClient } from 'react-query';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import { Box, Button, makeStyles } from '@material-ui/core';
+import { Box, Button, makeStyles, Tabs, Tab } from '@material-ui/core';
 import mapValues from 'lodash/mapValues';
 import omit from 'lodash/omit';
 import isEqual from 'lodash/isEqual';
@@ -13,8 +13,7 @@ import {
     LoadingSpinner,
     useSafeIntl,
 } from 'bluesquare-components';
-import { fetchAllProjects } from '../projects/actions';
-import { redirectToReplace } from '../../routing/actions';
+import { redirectToReplace } from '../../routing/actions.ts';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';
@@ -32,9 +31,14 @@ import { useGetForm } from './requests';
 import { requiredFields } from './config';
 
 import { isFieldValid, isFormValid } from '../../utils/forms';
+import { FormAttachments } from './components/FormAttachments.tsx';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    tabs: {
+        ...commonStyles(theme).tabs,
+        padding: 0,
+    },
 }));
 
 const defaultForm = {
@@ -85,11 +89,10 @@ const formatFormData = value => {
 const FormDetail = ({ router, params }) => {
     const queryClient = useQueryClient();
     const prevPathname = useSelector(state => state.routerCustom.prevPathname);
-    // const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
-    const allProjects = useSelector(state => state.projects.allProjects);
     const { data: form, isLoading: isFormLoading } = useGetForm(params.formId);
     const [isLoading, setIsLoading] = useState(false);
     const [isSaved, setIsSaved] = useState(false);
+    const [tab, setTab] = useState(params.tab || 'versions');
     const [forceRefreshVersions, setForceRefreshVersions] = useState(false);
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
@@ -172,18 +175,17 @@ const FormDetail = ({ router, params }) => {
         },
         [isSaved, setFieldValue, setFieldErrors, formatMessage],
     );
-
-    useEffect(() => {
-        if (!allProjects) {
-            dispatch(fetchAllProjects());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-
+    const handleChangeTab = newTab => {
+        setTab(newTab);
+        const newParams = {
+            ...params,
+            tab: newTab,
+        };
+        dispatch(redirectToReplace(baseUrls.formDetail, newParams));
+    };
     useEffect(() => {
         setFormState(formatFormData(form));
     }, [form, setFormState]);
-
     return (
         <>
             <TopBar
@@ -228,12 +230,35 @@ const FormDetail = ({ router, params }) => {
                         <FormattedMessage {...MESSAGES.save} />
                     </Button>
                 </Box>
-                <FormVersions
-                    periodType={currentForm.period_type.value || undefined}
-                    forceRefresh={forceRefreshVersions}
-                    setForceRefresh={setForceRefreshVersions}
-                    formId={parseInt(params.formId, 10)}
-                />
+                <Box>
+                    <Tabs
+                        value={tab}
+                        classes={{
+                            root: classes.tabs,
+                        }}
+                        onChange={(_, newtab) => handleChangeTab(newtab)}
+                    >
+                        <Tab
+                            value="versions"
+                            label={formatMessage(MESSAGES.versions)}
+                        />
+                        <Tab
+                            value="attachments"
+                            label={formatMessage(MESSAGES.attachments)}
+                        />
+                    </Tabs>
+                </Box>
+                {tab === 'versions' && (
+                    <FormVersions
+                        periodType={currentForm.period_type.value || undefined}
+                        forceRefresh={forceRefreshVersions}
+                        setForceRefresh={setForceRefreshVersions}
+                        formId={parseInt(params.formId, 10)}
+                    />
+                )}
+                {tab === 'attachments' && (
+                    <FormAttachments formId={params.formId} params={params} />
+                )}
             </Box>
         </>
     );

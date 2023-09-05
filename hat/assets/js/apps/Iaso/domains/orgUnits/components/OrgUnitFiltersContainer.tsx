@@ -1,15 +1,13 @@
+/* eslint-disable react/no-array-index-key */
 import { Box, makeStyles, Button, AppBar } from '@material-ui/core';
 import Add from '@material-ui/icons/Add';
 import { useDispatch } from 'react-redux';
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     DynamicTabs,
-    // @ts-ignore
     useSkipEffectOnMount,
+    IntlFormatMessage,
 } from 'bluesquare-components';
 import React, {
     FunctionComponent,
@@ -31,7 +29,6 @@ import { OrgUnitParams } from '../types/orgUnit';
 import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
 
-import { IntlFormatMessage } from '../../../types/intl';
 import { Search } from '../types/search';
 import { DropdownOptions } from '../../../types/utils';
 import { Count } from '../hooks/requests/useGetOrgUnits';
@@ -100,21 +97,24 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
         () => currentUser?.account?.default_version?.data_source,
         [currentUser],
     );
-
     const [hasLocationLimitError, setHasLocationLimitError] =
         useState<boolean>(false);
     const [searches, setSearches] = useState<[Search]>(paramsSearches);
+    const [locationLimit, setLocationLimit] = useState<number>(
+        parseInt(params.locationLimit, 10),
+    );
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const currentSearchIndex = parseInt(params.searchTabIndex, 10);
 
     const handleSearch = useCallback(() => {
         const tempParams = {
             ...params,
+            locationLimit,
             page: 1,
             searches,
         };
         onSearch(tempParams);
-    }, [params, searches, onSearch]);
+    }, [params, locationLimit, searches, onSearch]);
 
     const handleChangeColor = useCallback(
         (color: string, searchIndex: number) => {
@@ -174,10 +174,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                     }}
                     paramKey="searches"
                     tabParamKey="searchTabIndex"
-                    baseUrl={baseUrl}
-                    redirectTo={(path, newParams) =>
-                        dispatch(redirectTo(path, newParams))
-                    }
                     onTabChange={newParams => {
                         dispatch(redirectTo(baseUrl, newParams));
                     }}
@@ -208,10 +204,11 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             setSearches={setSearches}
                             onChangeColor={handleChangeColor}
                             currentTab={currentTab}
-                            params={params}
                             setHasLocationLimitError={setHasLocationLimitError}
                             orgunitTypes={orgunitTypes}
                             isFetchingOrgunitTypes={isFetchingOrgunitTypes}
+                            locationLimit={locationLimit}
+                            setLocationLimit={setLocationLimit}
                         />
                     </Box>
                 ))}

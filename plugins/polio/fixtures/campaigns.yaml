@@ -72,7 +72,6 @@
     creation_email_send_at: null
     group: null
     onset_at: null
-    three_level_call_at: null
     cvdpv_notified_at: null
     cvdpv2_notified_at: null
     pv_notified_at: null
@@ -94,8 +93,6 @@
     doses_requested: null
     preperadness_spreadsheet_url: null
     preperadness_sync_status: FINISHED
-    surge_spreadsheet_url: null
-    country_name_in_surge_spreadsheet: null
     budget_status: null
     budget_responsible: null
     is_test: false
@@ -117,6 +114,7 @@
     is_preventive: false
     enable_send_weekly_email: false
     account_id: 4
+    outbreak_declaration_date: null
 - model: polio.countryusersgroup
   pk: 1
   fields:

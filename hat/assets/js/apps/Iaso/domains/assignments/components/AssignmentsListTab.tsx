@@ -2,10 +2,7 @@ import React, { FunctionComponent } from 'react';
 import { Box, Paper } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
-import {
-    // @ts-ignore
-    Table,
-} from 'bluesquare-components';
+import { Table } from 'bluesquare-components';
 
 import { AssignmentsApi, AssignmentParams } from '../types/assigment';
 import {
@@ -14,7 +11,7 @@ import {
     AssignmentUnit,
 } from '../types/locations';
 import { useColumns } from '../configs/AssignmentsListTabColumns';
-import { DropdownTeamsOptions, SubTeam, User } from '../types/team';
+import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
 import { Profile } from '../../../utils/usersUtils';
 
 import { baseUrls } from '../../../constants/urls';
@@ -53,6 +50,9 @@ type Props = {
     teams: DropdownTeamsOptions[];
     profiles: Profile[];
     selectedItem: SubTeam | User | undefined;
+    currentTeam?: Team;
+    // eslint-disable-next-line no-unused-vars
+    setParentSelected: (orgUnit: OrgUnitShape | undefined) => void;
 };
 
 const baseUrl = baseUrls.assignments;
@@ -65,8 +65,16 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
     profiles,
     selectedItem,
     params,
+    currentTeam,
+    setParentSelected,
 }: Props) => {
-    const columns = useColumns({ orgUnits, assignments, teams, profiles });
+    const columns = useColumns({
+        orgUnits,
+        assignments,
+        teams,
+        profiles,
+        currentTeam,
+    });
     const dispatch = useDispatch();
     return (
         <Paper>
@@ -91,7 +99,11 @@ export const AssignmentsListTab: FunctionComponent<Props> = ({
                     params={{ order: params.order }}
                     onRowClick={(row, event) => {
                         if (!event.target.href) {
-                            handleSaveAssignment(row);
+                            if (params.parentPicking === 'true') {
+                                setParentSelected(row.parent);
+                            } else {
+                                handleSaveAssignment(row);
+                            }
                         }
                     }}
                     onTableParamsChange={p => {

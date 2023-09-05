@@ -44,7 +44,7 @@ Each layer table must have the following columns:
 
 [1] It is possible to have OrgUnit without an attached Geometry.
 
-[2] When updating an element from an already existing source, you may want to reference a parent OrgUnit existing in Iaso DataSource. However this parent OrgUnit may not have a `source_ref` attribute. Instead, you can use the format `iaso#{db_id}` to point to it where `db_id`is the id of the parent OrgUnit in Iaso's database.
+[2] When updating an element from an already existing source, you may want to reference a parent OrgUnit existing in Iaso DataSource. However, this parent OrgUnit may not have a `source_ref` attribute. Instead, you can use the format `iaso#{db_id}` to point to it where `db_id`is the id of the parent OrgUnit in Iaso's database.
 
 
 ## Group table

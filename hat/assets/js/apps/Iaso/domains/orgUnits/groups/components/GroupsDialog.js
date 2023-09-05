@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import get from 'lodash/get';
 import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
-
+import { userHasPermission } from '../../../users/utils';
+import { useCurrentUser } from '../../../../utils/usersUtils.ts';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
-
 import MESSAGES from '../messages';
+import * as Permission from '../../../../utils/permissions.ts';
 
 const initialGroup = currentGroup => {
     return {
@@ -14,6 +15,10 @@ const initialGroup = currentGroup => {
         name: { value: get(currentGroup, 'name', ''), errors: [] },
         source_ref: {
             value: get(currentGroup, 'source_ref', ''),
+            errors: [],
+        },
+        block_of_countries: {
+            value: get(currentGroup, 'block_of_countries'),
             errors: [],
         },
     };
@@ -52,7 +57,9 @@ const GroupDialog = ({
             id: initialData?.id,
             name: group.name.value,
             source_ref: group.source_ref.value,
+            block_of_countries: group.block_of_countries.value,
         };
+
         saveGroup(currentGroup)
             .then(() => {
                 closeDialog();
@@ -76,7 +83,7 @@ const GroupDialog = ({
     const onClosed = () => {
         setGroup(initialGroup(initialData));
     };
-
+    const currentUser = useCurrentUser();
     return (
         <ConfirmCancelDialogComponent
             allowConfirm={allowConfirm}
@@ -108,6 +115,19 @@ const GroupDialog = ({
                         type="text"
                         label={MESSAGES.sourceRef}
                     />
+                    {userHasPermission(
+                        [Permission.POLIO, Permission.POLIO_CONFIG],
+                        currentUser,
+                    ) && (
+                        <InputComponent
+                            keyValue="block_of_countries"
+                            value={group.block_of_countries.value}
+                            onChange={(key, value) => setFieldValue(key, value)}
+                            type="checkbox"
+                            errors={group.block_of_countries.errors}
+                            label={MESSAGES.blockOfCountries}
+                        />
+                    )}
                 </Grid>
             </Grid>
         </ConfirmCancelDialogComponent>

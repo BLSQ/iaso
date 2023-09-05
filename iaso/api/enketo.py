@@ -1,37 +1,37 @@
-from bs4 import BeautifulSoup as Soup  # type: ignore
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-from django.shortcuts import get_object_or_404
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework import permissions
-from rest_framework.response import Response
-from rest_framework import status
-from django.utils.translation import gettext as _
+from logging import getLogger
+from uuid import uuid4
 
+from bs4 import BeautifulSoup as Soup  # type: ignore
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, HttpRequest
+from django.shortcuts import get_object_or_404
+from django.utils.translation import gettext as _
+from rest_framework import permissions
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from hat.audit.models import log_modification, INSTANCE_API
 from iaso.api.common import HasPermission
 from iaso.dhis2.datavalue_exporter import InstanceExportError
+from iaso.enketo import calculate_file_md5
 from iaso.enketo import (
     enketo_settings,
     enketo_url_for_edition,
     enketo_url_for_creation,
     to_xforms_xml,
-    inject_userid_and_version,
     inject_instance_id_in_form,
-    inject_instance_id_in_instance,
     EnketoError,
 )
-from iaso.enketo import calculate_file_md5
+from iaso.enketo.enketo_xml import inject_xml_find_uuid
 from iaso.models import Form, Instance, InstanceFile, OrgUnit, Project, Profile
-
-from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
-from uuid import uuid4
-from logging import getLogger
+from hat.menupermissions import models as permission
 
 logger = getLogger(__name__)
 
 
-def public_url_for_enketo(request, path):
+def public_url_for_enketo(request: HttpRequest, path):
     """Utility function, used for giving Enketo an url by which they can contact our Iaso server,
     so they can download form definitions"""
 
@@ -51,12 +51,14 @@ def enketo_create_url(request):
     form_id = request.data.get("form_id")
     period = request.data.get("period", None)
     org_unit_id = request.data.get("org_unit_id")
+    return_url = request.data.get("return_url", None)
 
     uuid = str(uuid4())
     form = get_object_or_404(Form, id=form_id)
 
     i = Instance(
         form_id=form_id,
+        name=form.name,
         period=period,
         uuid=uuid,
         org_unit_id=org_unit_id,
@@ -68,10 +70,12 @@ def enketo_create_url(request):
     i.save()
 
     try:
+        if not return_url:
+            return_url = request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id)
         edit_url = enketo_url_for_creation(
             server_url=public_url_for_enketo(request, "/api/enketo"),
             uuid=uuid,
-            return_url=request.build_absolute_uri("/dashboard/forms/submission/instanceId/%s" % i.id),
+            return_url=return_url,
         )
 
         return JsonResponse({"edit_url": edit_url}, status=201)
@@ -161,6 +165,7 @@ def enketo_public_create_url(request):
         uuid = str(uuid4())
         instance = Instance.objects.create(
             form_id=form.id,
+            name=form.name,
             period=period,
             uuid=uuid,
             org_unit_id=org_unit.id,
@@ -190,6 +195,7 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     uuid = str(uuid4())
     i = Instance(
         form_id=form.id,
+        name=form.name,
         period=period,
         uuid=uuid,
         org_unit=org_unit,
@@ -207,43 +213,38 @@ def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
 
 
 def _build_url_for_edition(request, instance, user_id=None):
-    if user_id is None:
-        user_id = request.user.id
+    # Construct a modified XML from the initial one, with some custom value we want Enketo to pass around
+    # then send it as POST to enketo that will return an url for us
     instance_xml = instance.file.read()
-    soup = Soup(instance_xml, "xml")
-    instance_id = soup.meta.instanceID.contents[0].strip().replace("uuid:", "")
-
-    # inject editUserID in the meta section of the xml
-    # to allow assign Modification to the user
-    instance_xml = inject_userid_and_version(
-        instance_xml.decode("utf-8"), user_id, instance.form.latest_version.version_id
+    version_id = instance.form.latest_version.version_id
+    instance_uuid, new_xml = inject_xml_find_uuid(
+        instance_xml, instance_id=instance.id, version_id=version_id, user_id=user_id
     )
-    instance_xml = inject_instance_id_in_instance(instance_xml, instance.id)
 
     edit_url = enketo_url_for_edition(
         public_url_for_enketo(request, "/api/enketo"),
         form_id_string=instance.uuid,
-        instance_xml=instance_xml,
-        instance_id=instance_id,
+        instance_xml=new_xml,
+        instance_id=instance_uuid,
         return_url=request.GET.get("return_url", public_url_for_enketo(request, "")),
     )
     return edit_url
 
 
 @api_view(["GET"])
-@permission_classes([HasPermission("menupermissions.iaso_update_submission")])  # type: ignore
+@permission_classes([HasPermission(permission.SUBMISSIONS_UPDATE)])  # type: ignore
 def enketo_edit_url(request, instance_uuid):
     """Used by Edit submission feature in Iaso Dashboard.
     Restricted to user with the `update submission` permission, to submissions in their account.
 
-    Return an in Enketo service that the front end will redirect to."""
+    Return an url  in the Enketo service that the front end will redirect to."""
     instance = Instance.objects.filter(uuid=instance_uuid, project__account=request.user.iaso_profile.account).first()
 
     if instance is None:
         return JsonResponse({"error": "No such instance or not allowed"}, status=404)
     try:
         instance.to_export = False  # could be controlled but, by default, for a normal edit, no auto export
-        edit_url = _build_url_for_edition(request, instance)
+        edit_url = _build_url_for_edition(request, instance, request.user.id)
     except EnketoError as error:
         print(error)
         return JsonResponse({"error": str(error)}, status=409)
@@ -256,6 +257,8 @@ def enketo_edit_url(request, instance_uuid):
 def enketo_form_list(request):
     """Called by Enketo to get the list of form.
 
+    Implement https://docs.getodk.org/openrosa-form-list/#the-manifest-document
+
     Require a param `formID` which is actually an Instance UUID"""
     form_id_str = request.GET["formID"]
     try:
@@ -264,16 +267,25 @@ def enketo_form_list(request):
         logger.exception("Instance duplicate  uuid when editing")
         # Prioritize instance with a json content, and then the more recently updated
         i = Instance.objects.exclude(deleted=True).filter(uuid=form_id_str).order_by("json", "-updated_at").first()
+    assert i is not None
 
     latest_form_version = i.form.latest_version
-    # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
+    # Only add a manifest if we actually have attachment so it doesn't make more unecessary request
+    if i.form.attachments.exists():
+        # pass the app_id so it can be accessed anonymously from Enketo
+        project = i.form.projects.first()
+        app_id = project.app_id if project else ""
+        manifest_url = public_url_for_enketo(request, f"/api/forms/{i.form_id}/manifest/?app_id={app_id}")
+    else:
+        manifest_url = None
 
     if request.method == "GET":
         xforms = to_xforms_xml(
             i.form,
             download_url=downloadurl,
             version=latest_form_version.version_id,
+            manifest_url=manifest_url,
             md5checksum=calculate_file_md5(latest_form_version.file),
             new_form_id=form_id_str,
         )
@@ -289,7 +301,7 @@ def enketo_form_download(request):
     """Called by Enketo to Download the form definition as an XML file (the list of question and so on)
 
     Require a param `formID` which is actually an Instance UUID.
-    We insert the instance.id In the form definition so the "Form" is unique per instance.
+    We insert the instance Id In the form definition so the "Form" is unique per instance.
     """
     uuid = request.GET.get("uuid")
     try:
@@ -343,10 +355,11 @@ class EnketoSubmissionAPIView(APIView):
                     instance.created_by = user
 
             instance.file = main_file
+            instance.name = instance.form.name
             instance.json = {}
             instance.save()
 
-            # copy pasted from the create
+            # copy-pasted from the "create" code
             try:
                 instance.get_and_save_json_of_xml()
                 try:

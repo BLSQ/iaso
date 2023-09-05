@@ -3,24 +3,23 @@ import React, { ReactNode, FunctionComponent, useState } from 'react';
 import { useFormik, FormikProvider, FormikProps } from 'formik';
 import * as yup from 'yup';
 import {
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     IconButton as IconButtonComponent,
+    IntlFormatMessage,
+    IntlMessage,
 } from 'bluesquare-components';
 import { makeStyles, Box } from '@material-ui/core';
 import isEqual from 'lodash/isEqual';
 
 import InputComponent from '../../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
-import { IntlMessage, IntlFormatMessage } from '../../../../types/intl';
 import { EntityType } from '../types/entityType';
 
 import { baseUrls } from '../../../../constants/urls';
 
 import { useGetForms } from '../hooks/requests/forms';
 import { useTranslatedErrors } from '../../../../libs/validation';
-import { useGetPossibleFields } from '../../../forms/hooks/useGetPossibleFields';
+import { useGetPossibleFieldsForEntityTypes } from '../../../forms/hooks/useGetPossibleFields';
 import MESSAGES from '../messages';
 
 type RenderTriggerProps = {
@@ -60,8 +59,9 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
         id: undefined,
         name: undefined,
         reference_form: undefined,
-        fields_detail_info_view: [],
-        fields_list_view: [],
+        fields_detail_info_view: undefined,
+        fields_list_view: undefined,
+        fields_duplicate_search: undefined,
     },
     saveEntityType,
 }) => {
@@ -82,6 +82,20 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     .number()
                     .nullable()
                     .required(formatMessage(MESSAGES.referenceFormRequired)),
+                fields_list_view: yup
+                    .array()
+                    .of(yup.string())
+                    .nullable()
+                    .required(),
+                fields_detail_info_view: yup
+                    .array()
+                    .of(yup.string())
+                    .nullable()
+                    .required(),
+                fields_duplicate_search: yup
+                    .array()
+                    .of(yup.string())
+                    .nullable(),
             }),
         );
 
@@ -124,10 +138,11 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
     });
     const isNew = !initialData?.id;
     const { data: formsList, isFetching: isFetchingForms } = useGetForms(isNew);
-    const { possibleFields, isFetchingForm } = useGetPossibleFields(
-        isOpen ? values?.reference_form : undefined,
-    );
-
+    const { possibleFields, isFetchingForm } =
+        useGetPossibleFieldsForEntityTypes({
+            formId: values?.reference_form,
+            enabled: isOpen,
+        });
     return (
         <FormikProvider value={formik}>
             {/* @ts-ignore */}
@@ -149,8 +164,13 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                 dialogProps={{
                     classNames: classes.dialog,
                 }}
-                onOpen={() => setIsOpen(true)}
-                onClosed={() => setIsOpen(false)}
+                onOpen={() => {
+                    resetForm();
+                    setIsOpen(true);
+                }}
+                onClosed={() => {
+                    setIsOpen(false);
+                }}
             >
                 {!isNew && (
                     <Box className={classes.view}>
@@ -194,6 +214,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi
+                        required
                         disabled={isFetchingForm || !values.reference_form}
                         keyValue="fields_list_view"
                         onChange={(key, value) =>
@@ -214,6 +235,7 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                     <InputComponent
                         type="select"
                         multi
+                        required
                         disabled={isFetchingForm || !values.reference_form}
                         loading={isFetchingForm}
                         keyValue="fields_detail_info_view"
@@ -226,6 +248,30 @@ export const EntityTypesDialog: FunctionComponent<Props> = ({
                                 : []
                         }
                         label={MESSAGES.fieldsDetailInfoView}
+                        options={possibleFields.map(field => ({
+                            value: field.name,
+                            label: field.label,
+                        }))}
+                        helperText={
+                            isNew && !values.reference_form
+                                ? formatMessage(MESSAGES.selectReferenceForm)
+                                : undefined
+                        }
+                    />
+                    <InputComponent
+                        type="select"
+                        multi
+                        disabled={isFetchingForm || !values.reference_form}
+                        keyValue="fields_duplicate_search"
+                        onChange={(key, value) =>
+                            onChange(key, value ? value.split(',') : null)
+                        }
+                        value={
+                            !isFetchingForm
+                                ? values.fields_duplicate_search
+                                : []
+                        }
+                        label={MESSAGES.fieldsDuplicateSearch}
                         options={possibleFields.map(field => ({
                             value: field.name,
                             label: field.label,

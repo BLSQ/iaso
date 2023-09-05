@@ -2,19 +2,20 @@ from django.core.paginator import Paginator
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .common import HasPermission
 from iaso.models import Mapping
+from .common import HasPermission
+from hat.menupermissions import models as permission
 
 
 class MappingsViewSet(viewsets.ViewSet):
-    """Mappings API
+    f"""Mappings API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_mappings" permission
+    This API is restricted to authenticated users having the "{permission.MAPPINGS}" permission
 
     GET /api/mappings/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_mappings")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.MAPPINGS)]  # type: ignore
 
     def list(self, request):
         limit = request.GET.get("limit", None)

@@ -2,9 +2,9 @@ import { useMemo } from 'react';
 
 import { Planning } from '../types/planning';
 import { SubTeam, User, Team, DropdownTeamsOptions } from '../types/team';
-import { OrgUnitShape, Locations } from '../types/locations';
+import { Locations } from '../types/locations';
 import { DropdownOptions } from '../../../types/utils';
-import { ChildrenOrgUnits } from '../types/orgUnit';
+import { ChildrenOrgUnits, ParentOrgUnit } from '../types/orgUnit';
 import { AssignmentApi, SaveAssignmentQuery } from '../types/assigment';
 
 import { useGetTeams } from './requests/useGetTeams';
@@ -15,7 +15,7 @@ import {
 } from './requests/useSaveAssignment';
 import { useGetOrgUnitTypes } from './requests/useGetOrgUnitTypes';
 import { useGetOrgUnitsByParent } from './requests/useGetOrgUnitsByParent';
-import { useGetOrgUnits } from './requests/useGetOrgUnits';
+import { useGetOrgUnits, useGetOrgUnitsList } from './requests/useGetOrgUnits';
 import { useGetOrgUnitParentIds } from './useGetOrgUnitParentIds';
 import { useGetPlanning } from './requests/useGetPlanning';
 import {
@@ -24,13 +24,15 @@ import {
 } from './requests/useGetAssignments';
 
 import { useBoundState } from '../../../hooks/useBoundState';
+import { OrgUnit } from '../../orgUnits/types/orgUnit';
 
 type Props = {
     planningId: string;
     currentTeam: Team | undefined;
-    parentSelected: OrgUnitShape | undefined;
+    parentSelected: ParentOrgUnit | undefined;
     baseOrgunitType: string | undefined;
-    order: string;
+    order?: string;
+    search?: string;
     selectedItem: SubTeam | User | undefined;
 };
 
@@ -47,8 +49,10 @@ type Result = {
     orgunitTypes: DropdownOptions<string>[] | undefined;
     childrenOrgunits: ChildrenOrgUnits | undefined;
     orgUnits: Locations | undefined;
+    orgUnitsList: OrgUnit[] | undefined;
     sidebarData: SubTeam[] | User[] | undefined;
     isFetchingOrgUnits: boolean;
+    isFetchingOrgUnitsList: boolean;
     isLoadingPlanning: boolean;
     isSaving: boolean;
     isFetchingOrgunitTypes: boolean;
@@ -66,6 +70,7 @@ export const useGetAssignmentData = ({
     baseOrgunitType,
     order,
     selectedItem,
+    search,
 }: Props): Result => {
     const { data: dataProfiles = [] } = useGetProfiles();
     const {
@@ -130,8 +135,20 @@ export const useGetAssignmentData = ({
             profiles: profiles || [],
             currentType: currentTeam?.type,
             order,
+            search,
         });
-
+    const { data: orgUnitsList, isFetching: isFetchingOrgUnitsList } =
+        useGetOrgUnitsList({
+            orgUnitParentIds: useGetOrgUnitParentIds({
+                currentTeam,
+                allAssignments,
+                planning,
+                isLoadingAssignments,
+            }),
+            baseOrgunitType,
+            order,
+            search,
+        });
     const [orgUnits] = useBoundState<Locations | undefined>(
         undefined,
         dataOrgUnits,
@@ -181,8 +198,10 @@ export const useGetAssignmentData = ({
             orgunitTypes,
             childrenOrgunits,
             orgUnits,
+            orgUnitsList,
             sidebarData,
             isFetchingOrgUnits,
+            isFetchingOrgUnitsList,
             isLoadingPlanning,
             isSaving: isBulkSaving || isSaving,
             isFetchingOrgunitTypes,
@@ -200,12 +219,14 @@ export const useGetAssignmentData = ({
         isBulkSaving,
         isFetchingChildrenOrgunits,
         isFetchingOrgUnits,
+        isFetchingOrgUnitsList,
         isFetchingOrgunitTypes,
         isLoadingAssignments,
         isLoadingPlanning,
         isSaving,
         isTeamsFetched,
         orgUnits,
+        orgUnitsList,
         orgunitTypes,
         planning,
         profiles,

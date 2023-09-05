@@ -7,4 +7,7 @@ export type EntityType = {
     reference_form?: number;
     fields_detail_info_view?: string[];
     fields_list_view?: string[];
+    fields_duplicate_search?: string[];
+    entities_count: number;
+    instances_count: number;
 };

@@ -123,7 +123,7 @@ const MESSAGES = defineMessages({
     },
     deleteWarning: {
         id: 'iaso.label.deleteWarning',
-        defaultMessage: 'Are you sure you want to delete {planningName}?',
+        defaultMessage: 'Are you sure you want to delete {name}?',
     },
     planningAndOrgUnit: {
         id: 'iaso.error.label.planningAndOrgUnit',
@@ -136,6 +136,10 @@ const MESSAGES = defineMessages({
     planningAndTeams: {
         id: 'iaso.error.label.planningAndTeams',
         defaultMessage: 'Planning and teams must be in the same project',
+    },
+    planningsError: {
+        id: 'iaso.snackBar.fetchPlanningsError',
+        defaultMessage: 'An error occurred while fetching plannings list',
     },
     EndDateBeforeStartDate: {
         id: 'iaso.error.label.EndDateBeforeStartDate',

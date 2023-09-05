@@ -1,7 +1,5 @@
 import { useMemo } from 'react';
 
-import { useLqasIm } from '../pages/IM/requests';
-
 import { useDebugData } from './useDebugData';
 import { useConvertedLqasImData } from './useConvertedLqasImData';
 import { useVerticalChartData } from './useVerticalChartData';
@@ -10,21 +8,28 @@ import { useRfaTitle } from './useRfaTitle';
 import { useGetCampaigns } from './useGetCampaigns';
 
 import { formatForRfaChart, formatForNfmChart } from '../utils/LqasIm';
+import { LqasImData } from '../constants/types';
 
-export const useLqasData = (
-    campaign: string,
-    country: string,
-    selectedRounds: [number, number] = [1, 2],
-): Record<string, unknown> => {
-    const { data: LQASData, isFetching } = useLqasIm('lqas', country);
+type UseLQASDataParams = {
+    campaign: string;
+    country: string;
+    selectedRounds: [number, number];
+    LQASData?: LqasImData;
+};
 
+export const useLqasData = ({
+    campaign,
+    country,
+    selectedRounds = [1, 2],
+    LQASData,
+}: UseLQASDataParams): Record<string, unknown> => {
     const convertedData = useConvertedLqasImData(LQASData);
 
     const { data: campaigns = [], isFetching: campaignsFetching } =
         useGetCampaigns({
             countries: [country],
             enabled: Boolean(country),
-        }).query;
+        });
 
     const debugData = useDebugData(LQASData, campaign);
 
@@ -109,8 +114,6 @@ export const useLqasData = (
         ],
     );
     return {
-        LQASData,
-        isFetching,
         convertedData,
         campaigns,
         campaignsFetching,

@@ -12,17 +12,23 @@ import {
     Typography,
 } from '@material-ui/core';
 
+import classNames from 'classnames';
 import { useGetCampaignFieldLabel } from '../../hooks/useGetCampaignFieldLabel';
 
 type RowProps = {
     fieldKey?: string;
     value: any;
+    cellWithMargin?: boolean;
 };
 const useStyles = makeStyles((theme: Theme) => ({
     ...commonStyles(theme),
+    tableCell: {
+        ...commonStyles(theme).tableCell,
+        padding: '0 ! important',
+    },
     tableCellLabel: {
         ...commonStyles(theme).tableCell,
-        verticalAlign: 'top',
+        verticalAlign: 'middle',
     },
     value: {
         maxWidth: '300px',
@@ -35,6 +41,10 @@ const useStyles = makeStyles((theme: Theme) => ({
         display: 'flex',
         justifyContent: 'flex-start',
     },
+    noMargin: {
+        margin: 0,
+        padding: 0,
+    },
 }));
 
 const redirectToUrl = url => {
@@ -45,18 +55,27 @@ const truncate = (string, limit) => {
     return `${string.slice(0, limit)}...`;
 };
 
-export const Row: FunctionComponent<RowProps> = ({ fieldKey, value }) => {
+export const Row: FunctionComponent<RowProps> = ({
+    fieldKey,
+    value,
+    cellWithMargin = true,
+}) => {
     const classes: Record<string, string> = useStyles();
     const getLabel = useGetCampaignFieldLabel();
     const regex = '^(http|https):\\/\\/';
     return (
-        <TableRow className={classes.round}>
+        <TableRow>
             {fieldKey && (
-                <TableCell className={classes.tableCellLabel}>
+                <TableCell className={classes.tableCellLabel} width={300}>
                     {getLabel(fieldKey)}
                 </TableCell>
             )}
-            <TableCell className={classes.tableCell}>
+            <TableCell
+                className={classNames(
+                    classes.tableCell,
+                    !cellWithMargin && classes.noMargin,
+                )}
+            >
                 {typeof value === 'string' && value.match(regex) ? (
                     <Typography
                         className={classes.link}

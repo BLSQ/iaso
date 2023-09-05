@@ -1,4 +1,5 @@
-import React, { useContext } from 'react';
+/* eslint-disable react/jsx-props-no-spreading */
+import React from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import ExitIcon from '@material-ui/icons/ExitToApp';
@@ -21,19 +22,17 @@ import PropTypes from 'prop-types';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
-import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
+import { SIDEBAR_WIDTH } from '../../../constants/uiConstants.ts';
 
 import MenuItem from './MenuItemComponent';
 import { Logo } from './Logo.tsx';
 import LanguageSwitch from './LanguageSwitchComponent';
 
-import getMenuItems from '../../../constants/menu';
+import { useMenuItems } from '../../../constants/menu.tsx';
 
 import MESSAGES from './messages';
 
-import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 import { getDefaultSourceVersion } from '../../dataSources/utils';
-import { PluginsContext } from '../../../utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 
 const styles = theme => ({
@@ -52,6 +51,9 @@ const styles = theme => ({
     },
     list: {
         width: SIDEBAR_WIDTH,
+        '& a': {
+            textDecoration: 'none !important',
+        },
     },
     user: {
         marginTop: 'auto',
@@ -78,10 +80,13 @@ const styles = theme => ({
 });
 
 const localizedManualUrl = (locale, account) => {
-    if (locale === 'fr' && account === 'RDC') {
+    if (locale === 'fr' && account.name === 'RDC') {
         return 'https://docs.google.com/document/d/1lKyhbKDLZpHtAsf3K6pRs0_EAXWdSDsL76Ohv0cyZQc/edit';
     }
-    return 'https://docs.google.com/document/d/1qHCRIiYgbZYAKMqxXYOjBGL_nzlSDPhOLykiKXaw8fw/edit';
+
+    return account.user_manual_path
+        ? account.user_manual_path
+        : 'https://docs.google.com/document/d/12eXaHgQ0egNp1SMS86gv_X2j5vhpohU_Usagq4u_FAw/edit';
 };
 
 const SidebarMenu = ({
@@ -100,23 +105,8 @@ const SidebarMenu = ({
     };
     const currentUser = useCurrentUser();
 
-    const getMenuItem = menuItem => {
-        return (
-            <MenuItem
-                location={location}
-                key={menuItem.key}
-                menuItem={menuItem}
-                onClick={(path, url) => onClick(url)}
-                currentUser={currentUser}
-                url={menuItem.url}
-                target="_blank"
-            />
-        );
-    };
-
-    const { plugins } = useContext(PluginsContext);
     const defaultSourceVersion = getDefaultSourceVersion(currentUser);
-    const menuItems = getMenuItems(currentUser, plugins, defaultSourceVersion);
+    const menuItems = useMenuItems();
     const theme = useTheme();
     const isMobileLayout = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -135,13 +125,16 @@ const SidebarMenu = ({
             </div>
             <Divider />
             <List className={classes.list}>
-                {menuItems.map(menuItem => {
-                    const permissionsList = listMenuPermission(menuItem);
-                    if (userHasOneOfPermissions(permissionsList, currentUser)) {
-                        return getMenuItem(menuItem);
-                    }
-                    return null;
-                })}
+                {menuItems.map(menuItem => (
+                    <MenuItem
+                        location={location}
+                        key={menuItem.key}
+                        menuItem={menuItem}
+                        onClick={(_, url) => onClick(url)}
+                        url={menuItem.url}
+                        target="_blank"
+                    />
+                ))}
             </List>
             <Box className={classes.user}>
                 <LanguageSwitch />
@@ -198,7 +191,7 @@ const SidebarMenu = ({
                         <a
                             href={localizedManualUrl(
                                 activeLocale.code,
-                                currentUser.account.name,
+                                currentUser.account,
                             )}
                             target="_blank"
                             rel="noreferrer"

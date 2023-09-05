@@ -5,7 +5,7 @@ trigger:
 resources:
   containers:
     - container: postgis
-      image: mdillon/postgis:10
+      image: postgis/postgis:12-3.3
       env:
         POSTGRES_USER: postgres
         POSTGRES_PASSWORD: postgres
@@ -47,7 +47,7 @@ steps:
 
 - task: UsePythonVersion@0
   inputs:
-   versionSpec: '3.6'
+   versionSpec: '3.8'
    addToPath: true
    architecture: 'x64'
 
@@ -62,7 +62,7 @@ steps:
   displayName: 'install pip'
 
 - script: |
-    . ./venv/bin/activate && pip install -r requirements.txt
+    . ./venv/bin/activate && pip install -r requirements.txt  && pip install -r requirements-dev.txt
     pip install unittest-xml-reporting
   displayName: 'install requirements'
 
@@ -77,10 +77,14 @@ steps:
 # remove all env variables that start with SECRET_
 - script: |
     export SECRET_KEY=${SECRETKEY}
+    export DJANGO_SUPERUSER_PASSWORD=${DJANGO_SUPERUSER_PASSWORD}
+    export DJANGO_SUPERUSER_USERNAME=${DJANGO_SUPERUSER_USERNAME}
+    export DJANGO_SUPERUSER_EMAIL=${DJANGO_SUPERUSER_EMAIL}
     . ./venv/bin/activate &&  python manage.py migrate
     . ./venv/bin/activate &&  python manage.py createcachetable
     . ./venv/bin/activate &&  python manage.py test --testrunner xmlrunner.extra.djangotestrunner.XMLTestRunner --no-input
     . ./venv/bin/activate &&  python manage.py makemigrations --check
+    . ./venv/bin/activate &&  python manage.py createsuperuser --noinput
   displayName: 'Django tests'
   condition: succeededOrFailed()
   env:
@@ -96,6 +100,9 @@ steps:
     CACHE: false
     DEV_SERVER: true
     PLUGINS: polio
+    DJANGO_SUPERUSER_USERNAME: adm
+    DJANGO_SUPERUSER_EMAIL: adm@example.com
+    DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
 
 - task: PublishTestResults@2
   condition: succeededOrFailed()

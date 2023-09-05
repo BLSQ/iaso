@@ -1,10 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import {
-    // @ts-ignore
-    useSafeIntl,
-    // @ts-ignore
-    IconButton,
-} from 'bluesquare-components';
+import { useSafeIntl, IconButton } from 'bluesquare-components';
 
 import { Button } from '@material-ui/core';
 import PublishIcon from '@material-ui/icons/Publish';
@@ -13,6 +8,7 @@ import MESSAGES from '../messages';
 
 type Props = {
     onClick: () => void;
+    dataTestId?: string;
 };
 
 export const EditIconButton: FunctionComponent<Props> = ({ onClick }) => {
@@ -25,12 +21,15 @@ export const EditIconButton: FunctionComponent<Props> = ({ onClick }) => {
     );
 };
 
-export const PublishButton: FunctionComponent<Props> = ({ onClick }) => {
+export const PublishButton: FunctionComponent<Props> = ({
+    onClick,
+    dataTestId,
+}) => {
     const { formatMessage } = useSafeIntl();
     return (
         <Button
             color="primary"
-            data-test="save-name-button"
+            data-test={dataTestId}
             onClick={onClick}
             variant="contained"
         >
@@ -39,10 +38,14 @@ export const PublishButton: FunctionComponent<Props> = ({ onClick }) => {
     );
 };
 
-export const PublishIconButton: FunctionComponent<Props> = ({ onClick }) => {
+export const PublishIconButton: FunctionComponent<Props> = ({
+    onClick,
+    dataTestId,
+}) => {
     return (
         <IconButton
             onClick={onClick}
+            dataTestId={dataTestId}
             overrideIcon={PublishIcon}
             tooltipMessage={MESSAGES.publish}
             color="inherit"

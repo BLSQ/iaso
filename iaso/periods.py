@@ -21,7 +21,7 @@ def detect(dhis2_period: str):
         return PERIOD_TYPE_MONTH
     if len(dhis2_period) == 8:
         return PERIOD_TYPE_DAY
-    raise Exception("unsupported dhis2 period format for '" + dhis2_period + "'")
+    raise ValueError("unsupported dhis2 period format for '" + dhis2_period + "'")
 
 
 class Period:
@@ -237,9 +237,8 @@ class MonthPeriod(Period):
 
 
 class DayPeriod(Period):
-
-    LOWER_BOUND = None
-    HIGHER_BOUND = None
+    LOWER_BOUND = "20000101"
+    HIGHER_BOUND = "20301231"
 
     @staticmethod
     def from_parts(year, month, day):

@@ -4,6 +4,7 @@ import listFixture from '../../fixtures/entityTypes/list-paginated.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import formDetail from '../../fixtures/forms/detail.json';
 import formsList from '../../fixtures/forms/list.json';
+import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
@@ -28,21 +29,11 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept(
-        'GET',
-        // eslint-disable-next-line max-len
-        '/api/forms/7/?fields=possible_fields',
-        formDetail,
-    );
-    cy.intercept(
-        'GET',
-        // eslint-disable-next-line max-len
-        '/api/forms/?fields=id,name',
-        formsList,
-    );
+    cy.intercept('GET', '/api/forms/7/**', formDetail);
+    cy.intercept('GET', '/api/forms/?fields=id,name', formsList);
     const options = {
         method: 'GET',
-        pathname: '/api/entitytype',
+        pathname: '/api/entitytypes',
     };
     const query = {
         ...defaultQuery,
@@ -84,7 +75,7 @@ describe('Entities types', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 
@@ -155,7 +146,7 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 4);
+                cy.get('@actionCol').find('button').should('have.length', 5);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
@@ -179,7 +170,7 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 2);
+                cy.get('@actionCol').find('button').should('have.length', 3);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
                     .should('not.exist');
@@ -203,7 +194,7 @@ describe('Entities types', () => {
                     .eq(rowIndex)
                     .as('row');
                 cy.get('@row').find('td').last().as('actionCol');
-                cy.get('@actionCol').find('button').should('have.length', 3);
+                cy.get('@actionCol').find('button').should('have.length', 4);
                 cy.get('@actionCol')
                     .find(`#form-link-${listFixture.types[rowIndex].id}`)
                     .should('be.visible');
@@ -233,6 +224,7 @@ describe('Entities types', () => {
                 cy.testMultiSelect('#reference_form', []);
                 cy.testMultiSelect('#fields_detail_info_view', []);
                 cy.testMultiSelect('#fields_list_view', []);
+                cy.testMultiSelect('#fields_duplicate_search', []);
                 cy.get('[data-test="see-form-button"]').should('not.exist');
             });
         });
@@ -269,17 +261,19 @@ describe('Entities types', () => {
                 cy.testInputValue('#input-text-name', name);
                 cy.fillMultiSelect('#fields_list_view', [2, 3]);
                 cy.fillMultiSelect('#fields_detail_info_view', [2, 3]);
+                cy.fillMultiSelect('#fields_duplicate_search', [2], false);
                 interceptFlag = false;
                 cy.intercept(
                     {
                         method: 'PATCH',
-                        pathname: `/api/entitytype/${listFixture.types[entityTypeIndex].id}/`,
+                        pathname: `/api/entitytypes/${listFixture.types[entityTypeIndex].id}/`,
                     },
                     req => {
                         expect(req.body).to.deep.equal({
                             ...listFixture.types[entityTypeIndex],
                             fields_detail_info_view: ['firstname', 'name'],
                             fields_list_view: ['firstname', 'name'],
+                            fields_duplicate_search: ['firstname'],
                             name,
                         });
                         interceptFlag = true;
@@ -294,7 +288,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entitytype',
+                        pathname: '/api/entitytypes',
                         query: defaultQuery,
                     },
                     req => {
@@ -323,7 +317,7 @@ describe('Entities types', () => {
             table = cy.get('table');
             row = table.find('tbody').find('tr').eq(entityTypeIndex);
             const actionCol = row.find('td').last();
-            const deleteButton = actionCol.find('button').eq(2);
+            const deleteButton = actionCol.find('button').eq(3);
             deleteButton.click();
             cy.get('#delete-dialog-entityType-7').as('deleteDialog');
         });
@@ -339,7 +333,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'DELETE',
-                        pathname: `/api/entitytype/${listFixture.types[entityTypeIndex].id}/`,
+                        pathname: `/api/entitytypes/${listFixture.types[entityTypeIndex].id}/`,
                     },
                     req => {
                         interceptFlag = true;
@@ -352,7 +346,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entitytype',
+                        pathname: '/api/entitytypes',
                         query: defaultQuery,
                     },
                     req => {
@@ -390,6 +384,35 @@ describe('Entities types', () => {
         });
     });
 
+    it('User without write access should not be able to create,edit or delete a type', () => {
+        const unauthorizedUser = {
+            ...superUser,
+            permissions: [Permission.ENTITIES],
+            is_superuser: false,
+        };
+        goToPage(unauthorizedUser);
+        cy.wait('@getEntitiesTypes').then(() => {
+            cy.get('[data-test="add-entity-button"]').should('not.exist');
+
+            cy.get('table').as('table');
+
+            cy.get('#delete-button-entityType-7').should('not.exist');
+
+            cy.get('@table').find('tbody').find('tr').eq(0).as('row');
+            cy.get('@row').find('td').last().as('actionCol');
+            cy.get('@actionCol').find('button').should('have.length', 3);
+
+            cy.get('@table').find('tbody').find('tr').eq(1).as('row');
+            cy.get('@row').find('td').last().as('actionCol');
+            cy.get('@actionCol').find('button').should('have.length', 2);
+
+            cy.log('Type with form link');
+            cy.get('@table').find('tbody').find('tr').eq(3).as('row');
+            cy.get('@row').find('td').last().as('actionCol');
+            cy.get('@actionCol').find('button').should('have.length', 3);
+        });
+    });
+
     describe('Api', () => {
         it('should be called with base params', () => {
             goToPage(superUser, {}, emptyFixture);
@@ -404,7 +427,7 @@ describe('Entities types', () => {
                 cy.intercept(
                     {
                         method: 'GET',
-                        pathname: '/api/entitytype',
+                        pathname: '/api/entitytypes',
                         query: {
                             limit: '20',
                             order: 'name',

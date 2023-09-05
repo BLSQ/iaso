@@ -1,0 +1,57 @@
+{
+    "httpStatus": "Conflict",
+    "httpStatusCode": 409,
+    "status": "WARNING",
+    "message": "One more conflicts encountered, please check import summary.",
+    "response": {
+        "responseType": "ImportSummary",
+        "status": "WARNING",
+        "importOptions": {
+            "idSchemes": {},
+            "dryRun": false,
+            "async": false,
+            "importStrategy": "CREATE_AND_UPDATE",
+            "mergeMode": "REPLACE",
+            "reportMode": "FULL",
+            "skipExistingCheck": false,
+            "sharing": false,
+            "skipNotifications": false,
+            "skipAudit": false,
+            "datasetAllowsPeriods": false,
+            "strictPeriods": false,
+            "strictDataElements": false,
+            "strictCategoryOptionCombos": false,
+            "strictAttributeOptionCombos": false,
+            "strictOrganisationUnits": false,
+            "requireCategoryOptionCombo": false,
+            "requireAttributeOptionCombo": false,
+            "skipPatternValidation": false,
+            "ignoreEmptyCollection": false,
+            "force": false,
+            "firstRowIsHeader": false,
+            "skipLastUpdated": false,
+            "mergeDataValues": false,
+            "skipCache": false
+        },
+        "description": "Import process completed successfully",
+        "importCount": {
+            "imported": 0,
+            "updated": 355,
+            "ignored": 1,
+            "deleted": 0
+        },
+        "conflicts": [
+            {
+                "object": "nymNRxmnj4z",
+                "objects": {
+                    "dataElement": "nymNRxmnj4z",
+                    "value": "value_not_integer"
+                },
+                "value": "Value must match data element's `nymNRxmnj4z` type constraints: Data value is not an integer",
+                "errorCode": "E7619",
+                "property": "value"
+            }
+        ],
+        "dataSetComplete": "false"
+    }
+}

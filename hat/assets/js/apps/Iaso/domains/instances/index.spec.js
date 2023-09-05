@@ -10,7 +10,7 @@ import { withQueryClientProvider } from '../../../../test/utils';
 const formId = 1;
 const requests = [
     {
-        url: '/api/orgunittypes/',
+        url: '/api/v2/orgunittypes/',
         body: {
             orgUnitTypes: [],
         },
@@ -22,7 +22,7 @@ const requests = [
         },
     },
     {
-        url: '/api/devicesownership/',
+        url: '/api/devicesownerships/',
         body: {
             devicesownership: [],
         },

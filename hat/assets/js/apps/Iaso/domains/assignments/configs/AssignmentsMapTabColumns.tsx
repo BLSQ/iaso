@@ -1,19 +1,15 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { Box, Radio } from '@material-ui/core';
 import { Theme, useTheme } from '@material-ui/core/styles';
-import {
-    // @ts-ignore
-    useSafeIntl,
-} from 'bluesquare-components';
+import { useSafeIntl, Column, IntlFormatMessage } from 'bluesquare-components';
 
 import { ColorPicker } from '../../../components/forms/ColorPicker';
 
 import { AssignmentsApi } from '../types/assigment';
 import { DropdownTeamsOptions, SubTeam, User, Team } from '../types/team';
-import { Column } from '../../../types/table';
-import { IntlFormatMessage } from '../../../types/intl';
 
 import { Profile } from '../../../utils/usersUtils';
+import { AssignmentUnit } from '../types/locations';
 
 import { getTeamUserName } from '../utils';
 
@@ -31,6 +27,8 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
     currentTeam: Team | undefined;
+    orgUnits: Array<AssignmentUnit>;
+    isLoadingAssignments: boolean;
 };
 
 export const useColumns = ({
@@ -41,10 +39,44 @@ export const useColumns = ({
     selectedItem,
     setSelectedItem,
     currentTeam,
+    orgUnits,
+    isLoadingAssignments,
 }: Props): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     const theme: Theme = useTheme();
+    const getAssignationsCount = useCallback(
+        (rowId: number): number | string => {
+            return assignments.filter(assignment => {
+                if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+                    return (
+                        assignment.team === rowId &&
+                        orgUnits.some(
+                            orgUnit => orgUnit.id === assignment.org_unit,
+                        )
+                    );
+                }
+                return (
+                    assignment.user === rowId &&
+                    orgUnits.some(orgUnit => orgUnit.id === assignment.org_unit)
+                );
+            }).length;
+        },
+        [assignments, currentTeam?.type, orgUnits],
+    );
+
+    const getFullItem = useCallback(
+        (rowId: number): undefined | DropdownTeamsOptions | Profile => {
+            if (currentTeam?.type === 'TEAM_OF_USERS') {
+                return profiles.find(profile => profile.user_id === rowId);
+            }
+            if (currentTeam?.type === 'TEAM_OF_TEAMS') {
+                return teams.find(team => team.original.id === rowId);
+            }
+            return undefined;
+        },
+        [currentTeam?.type, profiles, teams],
+    );
     return useMemo(() => {
         return [
             {
@@ -94,43 +126,27 @@ export const useColumns = ({
                 id: 'color',
                 accessor: 'color',
                 Cell: settings => {
-                    let fullItem;
-                    if (currentTeam?.type === 'TEAM_OF_USERS') {
-                        fullItem = profiles.find(
-                            profile =>
-                                profile.user_id === settings.row.original.id,
-                        );
-                    }
-                    if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-                        fullItem = teams.find(
-                            team =>
-                                team.original.id === settings.row.original.id,
-                        );
-                    }
+                    const fullItem = getFullItem(settings.row.original.id);
                     return (
-                        <>
-                            <Box display="flex" justifyContent="center">
-                                <ColorPicker
-                                    currentColor={
-                                        fullItem?.color ??
-                                        theme.palette.grey[500]
-                                    }
-                                    colors={colors.filter(
-                                        color =>
-                                            !fullItem ||
-                                            (fullItem &&
-                                                color !== fullItem.color),
-                                    )}
-                                    displayLabel={false}
-                                    onChangeColor={color =>
-                                        setItemColor(
-                                            color,
-                                            settings.row.original.id,
-                                        )
-                                    }
-                                />
-                            </Box>
-                        </>
+                        <Box display="flex" justifyContent="center">
+                            <ColorPicker
+                                currentColor={
+                                    fullItem?.color ?? theme.palette.grey[500]
+                                }
+                                colors={colors.filter(
+                                    color =>
+                                        !fullItem ||
+                                        (fullItem && color !== fullItem.color),
+                                )}
+                                displayLabel={false}
+                                onChangeColor={color =>
+                                    setItemColor(
+                                        color,
+                                        settings.row.original.id,
+                                    )
+                                }
+                            />
+                        </Box>
                     );
                 },
             },
@@ -142,29 +158,19 @@ export const useColumns = ({
                 Cell: settings => {
                     return (
                         <div>
-                            {
-                                assignments.filter(assignment => {
-                                    if (currentTeam?.type === 'TEAM_OF_TEAMS') {
-                                        return (
-                                            assignment.team ===
-                                            settings.row.original.id
-                                        );
-                                    }
-                                    return (
-                                        assignment.user ===
-                                        settings.row.original.id
-                                    );
-                                }).length
-                            }
+                            {!isLoadingAssignments &&
+                                getAssignationsCount(settings.row.original.id)}
                         </div>
                     );
                 },
             },
         ];
     }, [
-        assignments,
         currentTeam,
         formatMessage,
+        getAssignationsCount,
+        getFullItem,
+        isLoadingAssignments,
         profiles,
         selectedItem?.id,
         setItemColor,

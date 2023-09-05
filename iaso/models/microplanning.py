@@ -68,7 +68,7 @@ class Team(SoftDeletableModel):
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
         # correct type for parent type
-        if self.parent and self.parent.type == None:
+        if self.parent and self.parent.type is None:
             self.parent.type = TeamType.TEAM_OF_TEAMS
             self.parent.save(skip_calculate_path=True)
 
@@ -130,7 +130,7 @@ class Planning(SoftDeletableModel):
     project = models.ForeignKey(Project, on_delete=models.PROTECT)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    forms = models.ManyToManyField(Form, related_name="teams")
+    forms = models.ManyToManyField(Form, related_name="plannings")
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     org_unit = models.ForeignKey(OrgUnit, on_delete=models.PROTECT)
     published_at = models.DateTimeField(null=True, blank=True)

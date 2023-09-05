@@ -1,7 +1,5 @@
 import React, { FunctionComponent } from 'react';
-// @ts-ignore
 import { makeStyles, Box } from '@material-ui/core';
-// @ts-ignore
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 
@@ -10,11 +8,11 @@ import { useGoBack } from '../../routing/useGoBack';
 import TopBar from '../../components/nav/TopBarComponent';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { Filters } from './components/Filters';
-import { AddVersionModal } from './components/AddVersionModal';
+import { AddVersionModal } from './components/versions/Modal';
 
 import { useGetWorkflowVersions } from './hooks/requests/useGetWorkflowVersions';
 import { useGetType } from '../entities/entityTypes/hooks/requests/entitiyTypes';
-import { WorkflowsParams } from './types/workflows';
+import { WorkflowsParams } from './types';
 
 import { redirectToReplace } from '../../routing/actions';
 
@@ -54,7 +52,12 @@ export const Workflows: FunctionComponent<Props> = ({ params, router }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
                 <Box mt={2} display="flex" justifyContent="flex-end">
-                    <AddVersionModal entityTypeId={entityTypeId} />
+                    <AddVersionModal
+                        entityTypeId={entityTypeId}
+                        iconProps={{
+                            dataTestId: 'add-workflow-version-button',
+                        }}
+                    />
                 </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}

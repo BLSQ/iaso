@@ -98,6 +98,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.entityTypes.fieldsListView',
         defaultMessage: 'List fields',
     },
+    fieldsDuplicateSearch: {
+        id: 'iaso.entityTypes.fieldsDuplicateSearch',
+        defaultMessage: 'Duplicate search fields',
+    },
     selectReferenceForm: {
         id: 'iaso.entityTypes.selectReferenceForm',
         defaultMessage: 'Select a reference form first',
@@ -105,6 +109,10 @@ const MESSAGES = defineMessages({
     workflow: {
         id: 'iaso.label.workflow',
         defaultMessage: 'Workflow',
+    },
+    beneficiaries: {
+        id: 'iaso.label.beneficiaries',
+        defaultMessage: 'Beneficiaries',
     },
 });
 

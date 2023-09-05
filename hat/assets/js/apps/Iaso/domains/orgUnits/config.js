@@ -4,31 +4,21 @@ import Color from 'color';
 import {
     IconButton as IconButtonComponent,
     Expander,
+    useSafeIntl,
 } from 'bluesquare-components';
 import { baseUrls } from '../../constants/urls';
 import OrgUnitTooltip from './components/OrgUnitTooltip';
 import getDisplayName from '../../utils/usersUtils.ts';
 import MESSAGES from './messages';
-import { getStatusMessage, getOrgUnitGroups } from './utils';
+import { useGetStatusMessage, getOrgUnitGroups } from './utils';
 import {
     DateTimeCell,
     DateTimeCellRfc,
 } from '../../components/Cells/DateTimeCell';
 
-export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
-    const getStatusColor = status => {
-        switch (status) {
-            case 'NEW': {
-                // value taken from /iaso/hat/assets/css/_iaso.scss
-                return classes.statusNew;
-            }
-            case 'REJECTED': {
-                return classes.statusRejected;
-            }
-            default:
-                return classes.statusValidated;
-        }
-    };
+export const useOrgUnitsTableColumns = searches => {
+    const { formatMessage } = useSafeIntl();
+    const getStatusMessage = useGetStatusMessage();
     const columns = [
         {
             Header: 'Id',
@@ -64,11 +54,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
         {
             Header: formatMessage(MESSAGES.status),
             accessor: 'validation_status',
-            Cell: settings => (
-                <span className={getStatusColor(settings.value)}>
-                    {getStatusMessage(settings.value, formatMessage)}
-                </span>
-            ),
+            Cell: settings => getStatusMessage(settings.value),
         },
         {
             Header: formatMessage(MESSAGES.instances_count),

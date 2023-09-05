@@ -17,7 +17,7 @@ import TopBar from 'Iaso/components/nav/TopBarComponent';
 import domToPdf from 'dom-to-pdf';
 import { CampaignsCalendar } from '../components/campaignCalendar';
 import { getCampaignColor } from '../constants/campaignsColors';
-import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap';
+import { CalendarMap } from '../components/campaignCalendar/map/CalendarMap.tsx';
 import {
     mapCampaigns,
     filterCampaigns,
@@ -28,7 +28,7 @@ import {
     dateFormat,
     defaultOrder,
 } from '../components/campaignCalendar/constants';
-import { useGetCampaigns } from '../hooks/useGetCampaigns';
+import { useGetCampaigns } from '../hooks/useGetCampaigns.ts';
 // @ts-ignore
 import MESSAGES from '../constants/messages';
 import { Filters } from '../components/campaignCalendar/Filters';
@@ -62,6 +62,7 @@ const Calendar = ({ params }) => {
             search: params.search,
             campaignType: params.campaignType,
             campaignGroups: params.campaignGroups,
+            orgUnitGroups: params.orgUnitGroups,
             fieldset: 'calendar',
         };
     }, [
@@ -69,6 +70,7 @@ const Calendar = ({ params }) => {
         params.campaignGroups,
         params.campaignType,
         params.countries,
+        params.orgUnitGroups,
         params.search,
     ]);
 
@@ -76,7 +78,7 @@ const Calendar = ({ params }) => {
         data: campaigns = [],
         isLoading,
         isFetching,
-    } = useGetCampaigns(queryOptions).query;
+    } = useGetCampaigns(queryOptions);
 
     const currentDate = params.currentDate
         ? moment(params.currentDate, dateFormat)
@@ -128,6 +130,7 @@ const Calendar = ({ params }) => {
         countries: params.countries,
         campaignType: params.campaignType,
         campaignGroups: params.campaignGroups,
+        orgUnitGroups: params.orgUnitGroups,
         search: params.search,
         order: params.order,
     };
@@ -176,7 +179,11 @@ const Calendar = ({ params }) => {
                 >
                     {!isPdf && (
                         <Box mb={4}>
-                            <Filters disableDates disableOnlyDeleted />
+                            <Filters
+                                disableDates
+                                disableOnlyDeleted
+                                isCalendar
+                            />
                         </Box>
                     )}
 

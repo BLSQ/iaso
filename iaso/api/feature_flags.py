@@ -1,14 +1,14 @@
-import typing
-from .common import ModelViewSet, TimestampField
-from iaso.models import FeatureFlag
 from rest_framework import serializers, permissions
+
+from iaso.models import FeatureFlag
+from .common import ModelViewSet, TimestampField
 
 
 class FeatureFlagsSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeatureFlag
 
-        fields = ["id", "code", "name", "description", "created_at", "updated_at"]
+        fields = ["id", "code", "name", "requires_authentication", "description", "created_at", "updated_at"]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)

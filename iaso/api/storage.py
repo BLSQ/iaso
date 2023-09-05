@@ -16,7 +16,6 @@ from hat.api.export_utils import generate_xlsx, iter_items, Echo, timestamp_to_u
 from iaso.api.entity import EntitySerializer
 from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import StorageLogEntry, StorageDevice, Instance, OrgUnit, Entity
-
 from .common import (
     TimestampField,
     HasPermission,
@@ -26,6 +25,7 @@ from .common import (
     EXPORTS_DATETIME_FORMAT,
 )
 from .instances import FileFormatEnum
+from hat.menupermissions import models as permission
 
 
 class EntityNestedSerializer(EntitySerializer):
@@ -216,7 +216,7 @@ def device_generate_export(
 
 
 class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_storages")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.STORAGE)]  # type: ignore
     serializer_class = StorageSerializer
 
     def get_queryset(self):
@@ -256,7 +256,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         """
         Endpoint used to list/search devices on the web interface
 
-        GET /api/storage/
+        GET /api/storages/
         """
         limit_str = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -303,7 +303,7 @@ class StorageViewSet(ListModelMixin, viewsets.GenericViewSet):
         """
         Endpoint used to blacklist a single device from the web interface
 
-        POST /api/storage/blacklisted/
+        POST /api/storages/blacklisted/
         """
 
         # 1. Get data from request/environment
@@ -349,7 +349,8 @@ class StorageLogViewSet(CreateModelMixin, viewsets.GenericViewSet):
 
     def create(self, request):
         """
-        POST /api/mobile/storage/logs
+        POST /api/mobile/storage/logs [Deprecated] will be removed in the future
+        POST /api/mobile/storages/logs
 
         This will also create a new StorageDevice if the storage_id / storage_type / account combination is not found
         """
@@ -478,7 +479,7 @@ def logs_for_device_generate_export(
 
 
 @api_view()
-@permission_classes([IsAuthenticated, HasPermission("menupermissions.iaso_storages")])  # type: ignore
+@permission_classes([IsAuthenticated, HasPermission(permission.STORAGE)])  # type: ignore
 def logs_per_device(request, storage_customer_chosen_id: str, storage_type: str):
     """Return a list of log entries for a given device"""
 
@@ -590,7 +591,8 @@ class StorageBlacklistedViewSet(ListModelMixin, viewsets.GenericViewSet):
 
     def list(self, request):
         """
-        GET /api/mobile/storage/blacklisted
+        GET /api/mobile/storages/blacklisted
+        GET /api/mobile/storage/blacklisted [Deprecated] will be removed in the future
 
         Returns a list of blacklisted devices
         """

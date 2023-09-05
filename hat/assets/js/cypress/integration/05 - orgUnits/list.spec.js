@@ -1,23 +1,28 @@
 /// <reference types="cypress" />
 import superUser from '../../fixtures/profiles/me/superuser.json';
 import orgUnits from '../../fixtures/orgunits/list.json';
-
 import { testPagination } from '../../support/testPagination';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
 const baseUrl = `${siteBaseUrl}/dashboard/orgunits/list`;
+
+const goToPage = () => {
+    cy.login();
+    cy.intercept('GET', '/api/profiles/me/**', {
+        fixture: 'profiles/me/superuser.json',
+    });
+    cy.intercept('GET', '/api/groups/**', {
+        fixture: 'groups/list.json',
+    });
+    cy.intercept('GET', '/sockjs-node/**');
+    cy.visit(baseUrl);
+};
 
 describe('OrgUnits', () => {
     beforeEach(() => {
-        cy.login();
-        cy.intercept('GET', '/api/profiles/me/**', {
-            fixture: 'profiles/me/superuser.json',
-        });
-        cy.intercept('GET', '/api/groups/**', {
-            fixture: 'groups/list.json',
-        });
-        cy.intercept('GET', '/sockjs-node/**');
+        goToPage();
     });
     describe('page', () => {
         it('page should not be accessible if user does not have permission', () => {
@@ -29,7 +34,14 @@ describe('OrgUnits', () => {
             cy.intercept('GET', '/api/profiles/me/**', fakeUser);
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
+        });
+
+        describe('Search field', () => {
+            beforeEach(() => {
+                goToPage();
+            });
+            testSearchField(search, searchWithForbiddenChars, 'orgunits');
         });
     });
     describe('table', () => {

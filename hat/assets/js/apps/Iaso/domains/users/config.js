@@ -1,14 +1,18 @@
-import React from 'react';
+import React, { useMemo } from 'react';
+import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { Switch } from '@material-ui/core';
 import {
-    IconButton as IconButtonComponent,
-    textPlaceholder,
-} from 'bluesquare-components';
-import UsersDialog from './components/UsersDialog';
+    HighlightOffOutlined as NotCheckedIcon,
+    CheckCircleOutlineOutlined as CheckedIcon,
+} from '@material-ui/icons';
+import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-
 import MESSAGES from './messages';
+import { userHasPermission } from './utils';
 
-const usersTableColumns = ({
+import * as Permission from '../../utils/permissions.ts';
+
+export const usersTableColumns = ({
     formatMessage,
     deleteProfile,
     params,
@@ -48,29 +52,95 @@ const usersTableColumns = ({
         sortable: false,
         Cell: settings => (
             <section>
-                <UsersDialog
-                    renderTrigger={({ openDialog }) => (
-                        <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
-                        />
-                    )}
+                <EditUsersDialog
                     initialData={settings.row.original}
                     titleMessage={MESSAGES.updateUser}
                     params={params}
                     saveProfile={saveProfile}
                 />
-                {currentUser.id !== settings.row.original.id && (
-                    <DeleteDialog
-                        disabled={settings.row.original.instances_count > 0}
-                        titleMessage={MESSAGES.deleteUserTitle}
-                        message={MESSAGES.deleteUserText}
-                        onConfirm={() => deleteProfile(settings.row.original)}
-                    />
-                )}
+                {currentUser.id !== settings.row.original.id &&
+                    userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                        <DeleteDialog
+                            disabled={settings.row.original.instances_count > 0}
+                            titleMessage={MESSAGES.deleteUserTitle}
+                            message={MESSAGES.deleteUserText}
+                            onConfirm={() =>
+                                deleteProfile(settings.row.original)
+                            }
+                        />
+                    )}
             </section>
         ),
     },
 ];
-export default usersTableColumns;
+
+export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
+    const { formatMessage } = useSafeIntl();
+    return useMemo(() => {
+        const columns = [
+            {
+                Header: formatMessage(MESSAGES.permissions),
+                id: 'permission',
+                accessor: 'permission',
+                sortable: false,
+                align: 'left',
+            },
+            {
+                Header: formatMessage(MESSAGES.userPermissions),
+                id: 'userPermission',
+                accessor: 'userPermission',
+                sortable: false,
+                Cell: settings => {
+                    return (
+                        <Switch
+                            className="permission-checkbox"
+                            id={`permission-checkbox-${settings.row.original.permissionCodeName}`}
+                            checked={Boolean(
+                                settings.row.original.userPermissions.find(
+                                    up =>
+                                        up ===
+                                        settings.row.original
+                                            .permissionCodeName,
+                                ),
+                            )}
+                            onChange={e =>
+                                setPermissions(
+                                    settings.row.original.permissionCodeName,
+                                    e.target.checked,
+                                )
+                            }
+                            name={settings.row.original.permissionCodeName}
+                            color="primary"
+                        />
+                    );
+                },
+            },
+        ];
+
+        currentUser.user_roles_permissions.value.forEach(role => {
+            columns.push({
+                Header: role.name,
+                id: role.id.toString(),
+                accessor: role.id.toString(),
+                sortable: false,
+                Cell: settings => {
+                    if (
+                        role.permissions.find(
+                            permission =>
+                                permission ===
+                                settings.row.original.permissionCodeName,
+                        )
+                    ) {
+                        return <CheckedIcon style={{ color: 'green' }} />;
+                    }
+                    return <NotCheckedIcon color="disabled" />;
+                },
+            });
+        });
+        return columns;
+    }, [
+        currentUser.user_roles_permissions.value,
+        formatMessage,
+        setPermissions,
+    ]);
+};

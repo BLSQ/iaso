@@ -1,15 +1,17 @@
 import operator
 import typing
 from functools import reduce
-from django.db import models, transaction
-from django.contrib.postgres.indexes import GistIndex
+
+import django_cte
+from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.postgres.indexes import GistIndex
+from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
+from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
-from django.utils.translation import ugettext_lazy as _
 from django_ltree.models import TreeModel  # type: ignore
 
 from iaso.models.data_source import SourceVersion
@@ -64,7 +66,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
     def countries(self):
         return self.filter(category="COUNTRY")
 
-    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: typing.Optional[str] = None
+    ):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -81,6 +85,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
                 return self.none()
 
         return queryset
+
+
+OrgUnitTypeManager = models.Manager.from_queryset(OrgUnitTypeQuerySet)
 
 
 class OrgUnitType(models.Model):
@@ -101,11 +108,13 @@ class OrgUnitType(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     category = models.CharField(max_length=8, choices=CATEGORIES, null=True, blank=True)
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
+    # Allow the creation of these sub org unit types only for mobile (IA-2153)"
+    allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
     reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
-    objects = OrgUnitTypeQuerySet.as_manager()
+    objects = OrgUnitTypeManager()
 
     def __str__(self):
         return "%s" % self.name
@@ -149,7 +158,7 @@ class OrgUnitType(models.Model):
 
 
 # noinspection PyTypeChecker
-class OrgUnitQuerySet(models.QuerySet):
+class OrgUnitQuerySet(django_cte.CTEQuerySet):
     def children(self, org_unit: "OrgUnit") -> "OrgUnitQuerySet":
         """Only the direct descendants"""
         # We need to cast PathValue instances to strings - this could be fixed upstream
@@ -207,8 +216,8 @@ class OrgUnitQuerySet(models.QuerySet):
             )
             queryset = queryset.filter(version_id__in=version_ids)
 
-            # If applicable, filter on the org units associated to the user
-            if user.iaso_profile.org_units.exists():
+            # If applicable, filter on the org units associated to the user but only when the user is not a super user
+            if user.iaso_profile.org_units.exists() and not user.is_superuser:
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
         if app_id is not None:
@@ -291,6 +300,11 @@ class OrgUnit(TreeModel):
                                     would be a burden, but the path needs to be set afterwards
         :param force_recalculate: use with caution - used to force recalculation of paths
         """
+        # work around https://code.djangoproject.com/ticket/33787
+        # where we had empty Z point in the database but couldn't save the OrgUnit back.
+        # because it was missing a dimension
+        if self.location is not None and self.location.empty:
+            self.location = None
 
         if skip_calculate_path:
             super().save(*args, **kwargs)
@@ -466,6 +480,13 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type": self.org_unit_type.name,
+        }
+
+    def as_dict_for_completeness_stats_with_parent(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "parent": self.parent.as_dict_for_completeness_stats() if self.parent else None,
         }
 
     def as_dict_for_completeness_stats(self):

@@ -75,7 +75,7 @@ addMethod(
 export const useBudgetStepValidation = (
     errors: ValidationError = {},
     payload: any,
-    requiredFields: string[] = ['links', 'comment'],
+    requiredFields: string[] = [],
 ): ObjectSchema<any> => {
     const { formatMessage } = useSafeIntl();
     const fieldRequired = formatMessage(MESSAGES.requiredField);

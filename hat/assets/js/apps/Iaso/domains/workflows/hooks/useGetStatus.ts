@@ -1,7 +1,4 @@
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
-import { IntlFormatMessage } from '../../../types/intl';
-
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import { DropdownOptions } from '../../../types/utils';
 
 import MESSAGES from '../messages';

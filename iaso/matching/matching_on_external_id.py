@@ -1,12 +1,12 @@
-from iaso.models import OrgUnit, MatchingAlgorithm, Link, AlgorithmRun
 from datetime import datetime
+
+from iaso.models import OrgUnit, MatchingAlgorithm, Link, AlgorithmRun
 
 
 class Algorithm:
     description = "ID Matching"
 
     def match(self, version_1, version_2, user=None):
-
         algo, created = MatchingAlgorithm.objects.get_or_create(
             name=__name__, defaults={"description": self.description}
         )

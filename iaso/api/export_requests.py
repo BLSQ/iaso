@@ -1,5 +1,5 @@
-import typing
 import logging
+import typing
 from datetime import timedelta
 
 from django.utils.timezone import now
@@ -31,7 +31,6 @@ class ExportRequestSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data: typing.MutableMapping):
-
         return parse_instance_filters(self.context["request"].data)
 
     def create(self, validated_data: typing.MutableMapping):
@@ -52,7 +51,6 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             force_export = self.context["request"].data.get("forceExport", False)
 
             logger.debug("ExportRequest to create", user, validated_data)
-            filters = validated_data
             selection = dict()
             selection["selected_ids"] = self.context["request"].data.get("selected_ids", None)
             selection["unselected_ids"] = self.context["request"].data.get("unselected_ids", None)

@@ -31,7 +31,7 @@ export const useGetOrgUnitsByParent = ({
     currentType,
     selectedItem,
 }: Props): UseQueryResult<ChildrenOrgUnits, Error> => {
-    const params = {
+    const params: Record<string, any> = {
         validation_status: 'all',
         order: 'id',
         orgUnitParentId,
@@ -39,7 +39,7 @@ export const useGetOrgUnitsByParent = ({
         orgUnitTypeId: baseOrgunitType,
     };
 
-    const url = makeUrlWithParams('/api/orgunits', params);
+    const url = makeUrlWithParams('/api/orgunits/', params);
 
     return useSnackQuery(
         ['geo_json', params, baseOrgunitType],

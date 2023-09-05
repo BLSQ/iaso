@@ -1,8 +1,10 @@
 import React, { FunctionComponent } from 'react';
+import { useDispatch } from 'react-redux';
 import { makeStyles } from '@material-ui/core';
+import classNames from 'classnames';
 import {
-    // @ts-ignore
     IconButton as IconButtonComponent,
+    useKeyPressListener,
 } from 'bluesquare-components';
 
 import { Link } from 'react-router';
@@ -11,49 +13,69 @@ import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { OrgUnit, ShortOrgUnit } from '../types/orgUnit';
 
-import MESSAGES from '../../assignments/messages';
+import { redirectTo, redirectToReplace } from '../../../routing/actions';
 
-const useStyles = makeStyles(theme => ({
-    root: {
-        textDecoration: 'none',
-        color: theme.palette.info.dark,
-        '&:hover': {
-            textDecoration: 'underline',
-        },
-    },
-}));
+import MESSAGES from '../../assignments/messages';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     orgUnit?: OrgUnit | ShortOrgUnit;
     useIcon?: boolean;
+    className?: string;
+    replace?: boolean;
+    iconSize?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
+    size?: 'small' | 'medium' | 'large' | 'default' | 'inherit';
 };
+
+const useStyles = makeStyles(() => ({
+    link: {
+        cursor: 'pointer',
+    },
+}));
 
 export const LinkToOrgUnit: FunctionComponent<Props> = ({
     orgUnit,
-    useIcon,
+    useIcon = false,
+    className = '',
+    replace = false,
+    iconSize = 'medium',
+    size = 'medium',
 }) => {
     const user = useCurrentUser();
+    const targetBlankEnabled = useKeyPressListener('Meta');
     const classes: Record<string, string> = useStyles();
-    if (userHasPermission('iaso_org_units', user) && orgUnit) {
+    const dispatch = useDispatch();
+    if (userHasPermission(Permission.ORG_UNITS, user) && orgUnit) {
         const url = `/${baseUrls.orgUnitDetails}/orgUnitId/${orgUnit.id}`;
+        const handleClick = () => {
+            if (targetBlankEnabled) {
+                window.open(`/dashboard${url}`, '_blank');
+            } else if (replace) {
+                dispatch(redirectToReplace(url));
+            } else {
+                dispatch(redirectTo(url));
+            }
+        };
         if (useIcon) {
             return (
                 <IconButtonComponent
-                    url={url}
+                    onClick={handleClick}
                     icon="remove-red-eye"
                     tooltipMessage={MESSAGES.details}
+                    iconSize={iconSize}
+                    size={size}
                 />
             );
         }
         return (
-            <Link className={classes.root} to={url}>
+            <Link
+                className={classNames(className, classes.link)}
+                onClick={handleClick}
+            >
                 {orgUnit.name}
             </Link>
         );
     }
+    if (useIcon) return null;
     return <>{orgUnit ? orgUnit.name : '-'}</>;
-};
-
-LinkToOrgUnit.defaultProps = {
-    useIcon: false,
 };

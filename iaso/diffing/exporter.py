@@ -1,9 +1,9 @@
 import json
+from pprint import pprint
 
 import dhis2.exceptions
 from dhis2 import Api
 from django.contrib.gis.geos import GEOSGeometry
-from pprint import pprint
 
 from iaso.models import generate_id_for_dhis_2
 from .comparisons import as_field_types
@@ -137,11 +137,10 @@ class Exporter:
         if comparison and comparison.after:
             point_or_shape = GEOSGeometry(comparison.after)
             geometry = json.loads(point_or_shape.geojson)
-            # No altitude in DHIS2, remove before exporting
-            # Note that [:2] works both for points and polygons: our polygons are built as a single shape of 2D points
-            # (example: [[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]])
-            # WARNING: this will break if we introduce compound shapes
-            geometry["coordinates"] = geometry["coordinates"][:2]
+            if json.loads(point_or_shape.geojson).get("type") == "Point":
+                # removing altitude, which is not supported by DHIS2
+                geometry["coordinates"] = geometry["coordinates"][:2]
+
             # if dhis2 >= 2.32
             payload["geometry"] = geometry
             # if dhis2 < 2.32
@@ -163,7 +162,6 @@ class Exporter:
             )
         index = 0
         for current_slice in slices:
-
             ids = list(map(lambda x: x.org_unit.source_ref, current_slice))
             filter_params = "id:in:[" + ",".join(ids) + "]"
             resp = api.get("organisationUnits?", params={"filter": filter_params, "fields": ":all"})

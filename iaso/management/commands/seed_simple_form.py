@@ -1,7 +1,9 @@
 from uuid import uuid4
+
+from django.conf import settings
 from django.core.files import File
 from django.core.management.base import BaseCommand, CommandError
-from django.conf import settings
+
 from iaso import periods
 from iaso.models import Form, FormVersion, OrgUnit, OrgUnitType, Project, Instance, Device, Account
 from iaso.odk import parsing

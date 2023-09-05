@@ -1,7 +1,7 @@
 import typing
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class OrgUnitTypesAPITestCase(APITestCase):
@@ -98,6 +98,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.esd.id],
                 "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
             },
             format="json",
         )
@@ -116,6 +117,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
                 "reference_form_id": 100,
             },
             format="json",
@@ -135,6 +137,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
                 "reference_form_id": self.reference_form.id,
             },
             format="json",
@@ -157,6 +160,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
                 "reference_form_id": self.reference_form_wrong_project.id,
             },
             format="json",
@@ -177,6 +181,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
             },
             format="json",
         )
@@ -198,6 +203,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id],
+                "allow_creating_sub_unit_type_ids": [],
             },
             format="json",
         )
@@ -220,6 +226,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
             },
             format="json",
         )
@@ -238,6 +245,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "depth": 1,
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
+                "allow_creating_sub_unit_type_ids": [],
                 "reference_form_id": self.reference_form_update.id,
             },
             format="json",

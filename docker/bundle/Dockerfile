@@ -2,7 +2,7 @@
 # Then transfert it in the filan django image
 ############ NPM Builder ######################################################################
 
-FROM node:14.19.1-stretch-slim as npmbuilder
+FROM node:14-bullseye-slim as npmbuilder
 ENV PROJECT_ROOT /opt
 
 WORKDIR /opt/app
@@ -35,7 +35,7 @@ RUN ls ./hat/assets
 
 
 ########### Django Builder ########################################################################
-FROM python:3.6 as base
+FROM python:3.8 as base
 
 RUN apt-get update && apt-get --yes  --no-install-recommends install \
     gettext \
@@ -46,7 +46,9 @@ RUN apt-get update && apt-get --yes  --no-install-recommends install \
 
 WORKDIR /opt/app
 COPY requirements.txt /opt/app/requirements.txt
+COPY requirements-dev.txt /opt/app/requirements-dev.txt
 RUN pip install -r requirements.txt
+RUN pip install -r requirements-dev.txt
 
 COPY --from=npmbuilder /opt/app/hat/assets /opt/app/hat/assets
 COPY . /opt/app

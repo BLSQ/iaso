@@ -1,12 +1,9 @@
 from django.core.management.base import BaseCommand
-
-from django.core import management
-
-from iaso.dhis2.datavalue_exporter import DataValueExporter
-from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
+from django.utils import timezone
 
 import iaso.models as m
-from django.utils import timezone
+from iaso.dhis2.datavalue_exporter import DataValueExporter
+from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
 
 # ./manage.py export_instances --user "testemail2.33.4" --formids "event_tracker2.33.4"

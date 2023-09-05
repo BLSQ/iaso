@@ -1,15 +1,7 @@
 /* eslint-disable react/jsx-props-no-spreading */
 import React, { FunctionComponent } from 'react';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 
-import {
-    fetchEditUrl as fetchEditUrlAction,
-    fetchInstanceDetail as fetchInstanceDetailAction,
-    restoreInstance as restoreInstanceAction,
-    setCurrentInstance as setCurrentInstanceAction,
-    softDeleteInstance as softDeleteAction,
-} from '../actions';
+import { LoadingSpinner } from 'bluesquare-components';
 import SpeedDialInstanceActions from './SpeedDialInstanceActions';
 import { userHasPermission } from '../../users/utils';
 import {
@@ -27,12 +19,15 @@ import {
     useLockAction,
 } from '../hooks/speedDialActions';
 import { useGetFormDefForInstance } from '../hooks/speeddials';
+import {
+    useDeleteInstance,
+    useRestoreInstance,
+} from '../hooks/requests/useDeleteInstance';
+import { useGetEnketoUrl } from '../../registry/hooks/useGetEnketoUrl';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     currentInstance: Instance;
-    fetchEditUrl: CallableFunction;
-    softDelete: CallableFunction;
-    restoreInstance: CallableFunction;
     params: {
         instanceId: string;
         referenceFormId?: string;
@@ -52,9 +47,15 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         SHOW_LINK_INSTANCE_REFERENCE,
     );
     const hasOrgUnitPermission = userHasPermission(
-        'iaso_org_units',
+        Permission.ORG_UNITS,
         currentUser,
     );
+
+    const hasUpdateSubmissionPermission = userHasPermission(
+        'iaso_update_submission',
+        currentUser,
+    );
+
     const isOrgUnitAlreadyLinked =
         currentInstance.org_unit?.reference_instance_id !== null;
     const {
@@ -96,16 +97,22 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         referenceFormId: referenceFormId ? parseInt(referenceFormId, 10) : null,
     });
 
+    const { mutate: softDeleteInstance, isLoading: isDeleting } =
+        useDeleteInstance();
+    const { mutate: restoreInstance, isLoading: isRestoring } =
+        useRestoreInstance();
+    const getEnketoUrl = useGetEnketoUrl(window.location.href, currentInstance);
     const onActionSelected = action => {
-        if (action.id === 'instanceEditAction' && props.currentInstance) {
-            props.fetchEditUrl(props.currentInstance, window.location);
-        }
-
-        if (action.id === 'instanceDeleteAction' && props.currentInstance) {
-            props.softDelete(props.currentInstance);
-        }
-        if (action.id === 'instanceRestoreAction' && props.currentInstance) {
-            props.restoreInstance(props.currentInstance);
+        if (currentInstance) {
+            if (action.id === 'instanceEditAction') {
+                getEnketoUrl();
+            }
+            if (action.id === 'instanceDeleteAction') {
+                softDeleteInstance(currentInstance.id);
+            }
+            if (action.id === 'instanceRestoreAction') {
+                restoreInstance(currentInstance.id);
+            }
         }
     };
 
@@ -121,26 +128,15 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         actions.push(linkOrgUnitAction);
     }
 
-    return currentInstance?.can_user_modify ? (
-        <SpeedDialInstanceActions
-            actions={actions}
-            onActionSelected={action => onActionSelected(action)}
-        />
+    return currentInstance?.can_user_modify && hasUpdateSubmissionPermission ? (
+        <>
+            {(isDeleting || isRestoring) && <LoadingSpinner />}
+            <SpeedDialInstanceActions
+                actions={actions}
+                onActionSelected={action => onActionSelected(action)}
+            />
+        </>
     ) : null;
 };
 
-const MapStateToProps = () => ({});
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators(
-        {
-            fetchInstanceDetail: fetchInstanceDetailAction,
-            fetchEditUrl: fetchEditUrlAction,
-            softDelete: softDeleteAction,
-            restoreInstance: restoreInstanceAction,
-            setCurrentInstance: setCurrentInstanceAction,
-        },
-        dispatch,
-    ),
-});
-
-export default connect(MapStateToProps, MapDispatchToProps)(SpeedDialInstance);
+export default SpeedDialInstance;

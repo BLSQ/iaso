@@ -1,2 +1,2 @@
-export const WHO_AFRO_PROCEDURE =
-    'https://docs.google.com/presentation/d/1h6eeYkRfXnRF-oKtMJJ9WmWGI2JwYNBO/edit#slide=id.p1';
+export const BUDGET_PROCEDURE_SCHEMA =
+    'https://whimsical.com/v2-budget-workflows-Rf683LaTB1RsCXEReHnzsW';

@@ -32,7 +32,7 @@ class DevicesPositionAPITestCase(APITestCase):
         cls.device_2.projects.set([cls.project_2])
 
     def test_post_ok_no_auth(self):
-        """POST /devicesposition/ without auth: should work"""
+        """POST /devicespositions/ without auth: should work"""
 
         devices_position_body = [
             {
@@ -47,7 +47,7 @@ class DevicesPositionAPITestCase(APITestCase):
             }
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_1.app_id}", devices_position_body, format="json"
+            f"/api/devicespositions/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
 
         self.assertJSONResponse(response, 201)
@@ -55,7 +55,7 @@ class DevicesPositionAPITestCase(APITestCase):
         self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
     def test_post_ok_no_auth_many(self):
-        """POST /devicesposition/ without auth and many positions"""
+        """POST /devicespositions/ without auth and many positions"""
 
         devices_position_body = [
             {
@@ -71,14 +71,14 @@ class DevicesPositionAPITestCase(APITestCase):
             for i in range(50)
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_1.app_id}", devices_position_body, format="json"
+            f"/api/devicespositions/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
         self.assertValidDevicePositionListData(response.json(), 50, with_result_key=False)
         self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
     def test_post_ko_no_auth(self):
-        """POST /devicesposition/ without auth for "authentication required" project"""
+        """POST /devicespositions/ without auth for "authentication required" project"""
 
         devices_position_body = [
             {
@@ -93,7 +93,7 @@ class DevicesPositionAPITestCase(APITestCase):
             }
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_2.app_id}", devices_position_body, format="json"
+            f"/api/devicespositions/?app_id={self.project_2.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
         self.assertDictEqual(response.json(), {"res": "a problem happened, but your data was saved"})
@@ -119,7 +119,7 @@ class DevicesPositionAPITestCase(APITestCase):
         ]
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_2.app_id}", devices_position_body, format="json"
+            f"/api/devicespositions/?app_id={self.project_2.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
         self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
@@ -138,7 +138,7 @@ class DevicesPositionAPITestCase(APITestCase):
             }
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_1.app_id}", devices_position_body, format="json"
+            f"/api/devicespositions/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
         self.assertDictEqual(response.json(), {"res": "a problem happened, but your data was saved"})

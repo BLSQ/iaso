@@ -43,7 +43,6 @@ const OrgUnitTypeFilterComponent = props => {
     const {
         orgUnitTypesSelected,
         setOrgUnitTypesSelected,
-        fitToBounds,
         orgUnitTypes,
         currentOrgUnit,
     } = props;
@@ -51,10 +50,7 @@ const OrgUnitTypeFilterComponent = props => {
     const [orgUnitTypesList, setOrgUnitTypesList] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
 
-    const updateOrgUnitTypesSelected = (
-        newOrgUnitTypesSelected,
-        fitToBoundsAction = true,
-    ) => {
+    const updateOrgUnitTypesSelected = newOrgUnitTypesSelected => {
         const promisesArray = [];
         const oldOrgUnitsTypes = [];
         newOrgUnitTypesSelected.forEach(ot => {
@@ -75,16 +71,12 @@ const OrgUnitTypeFilterComponent = props => {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
             setOrgUnitTypesSelected(orgUnitsTypesWithData);
             setIsLoading(false);
-            if (fitToBoundsAction) {
-                fitToBounds();
-            }
         });
     };
 
     const hanldeOnChange = selection => {
         if (!selection) {
             setOrgUnitTypesSelected([]);
-            fitToBounds();
         } else {
             updateOrgUnitTypesSelected(selection);
         }
@@ -155,7 +147,6 @@ OrgUnitTypeFilterComponent.propTypes = {
     orgUnitTypes: PropTypes.array,
     orgUnitTypesSelected: PropTypes.array,
     setOrgUnitTypesSelected: PropTypes.func.isRequired,
-    fitToBounds: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
 };
 

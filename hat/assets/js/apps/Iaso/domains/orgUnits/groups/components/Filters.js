@@ -20,6 +20,7 @@ const useStyles = makeStyles(theme => ({
 
 const Filters = ({ params }) => {
     const [filtersUpdated, setFiltersUpdated] = useState(false);
+    const [textSearchError, setTextSearchError] = useState(false);
     const classes = useStyles();
 
     const { formatMessage } = useSafeIntl();
@@ -61,6 +62,8 @@ const Filters = ({ params }) => {
                         type="search"
                         label={MESSAGES.search}
                         onEnterPressed={handleSearch}
+                        blockForbiddenChars
+                        onErrorChange={setTextSearchError}
                     />
                 </Grid>
 
@@ -75,7 +78,7 @@ const Filters = ({ params }) => {
                 >
                     <Button
                         data-test="search-button"
-                        disabled={!filtersUpdated}
+                        disabled={textSearchError || !filtersUpdated}
                         variant="contained"
                         className={classes.button}
                         color="primary"

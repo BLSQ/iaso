@@ -51,7 +51,7 @@ const testRowContent = (index, form = formsList.forms[index]) => {
         .find('td')
         .eq(8)
         .should('contain', form.latest_form_version.version_id);
-    cy.get('@row').find('td').last().find('button').should('have.length', 4);
+    cy.get('@row').find('td').last().find('button').should('have.length', 5);
 };
 
 const goToPage = () => {
@@ -199,8 +199,7 @@ describe('forms tab', () => {
 
     describe('Actions buttons', () => {
         it('should contain a link with the right href', () => {
-            const submissionsHref =
-                '/dashboard/forms/submissions/formIds/1/levels/1/tab/list';
+            const submissionsHref = `/dashboard/forms/submissions/formIds/1/levels/${orgUnit.id}/tab/list`;
 
             const formEditionHref = '/dashboard/forms/detail/formId/1';
 
@@ -223,7 +222,7 @@ describe('forms tab', () => {
                     .find('td')
                     .last()
                     .find('button')
-                    .eq(1)
+                    .eq(2)
                     .find('a')
                     .should('have.attr', 'href', formEditionHref);
 
@@ -231,7 +230,7 @@ describe('forms tab', () => {
                     .find('td')
                     .last()
                     .find('button')
-                    .eq(2)
+                    .eq(3)
                     .find('a')
                     .should('have.attr', 'href', dhisMappingsHref);
             });

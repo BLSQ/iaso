@@ -186,7 +186,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Validated',
     },
     rejected: {
-        id: 'iaso.forms.rejected',
+        id: 'iaso.forms.rejectedCap',
         defaultMessage: 'Rejected',
     },
     notValidated: {
@@ -202,7 +202,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'All',
     },
     new: {
-        id: 'iaso.forms.new',
+        id: 'iaso.forms.newCap',
         defaultMessage: 'New',
     },
     Prov: {
@@ -383,7 +383,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitsTypes: {
         id: 'iaso.label.orgUnitsTypes',
-        defaultMessage: 'Organisation unit types',
+        defaultMessage: 'Org unit types',
     },
     deviceField: {
         id: 'iaso.label.deviceField',
@@ -403,7 +403,11 @@ const MESSAGES = defineMessages({
     },
     noOptions: {
         id: 'iaso.label.noOptions',
-        defaultMessage: 'No results found',
+        defaultMessage: 'No result found',
+    },
+    planning: {
+        id: 'iaso.label.planning',
+        defaultMessage: 'Planning',
     },
     textSearch: {
         id: 'iaso.forms.textSearch',
@@ -528,6 +532,63 @@ const MESSAGES = defineMessages({
     formChangeLog: {
         id: 'iaso.form.label.formChangeLog',
         defaultMessage: 'Link to changes log',
+    },
+    attachments: {
+        id: 'iaso.form.attachments',
+        defaultMessage: 'Attachments',
+    },
+    attachment: {
+        id: 'iaso.form.attachment',
+        defaultMessage: 'Attachment',
+    },
+    file: {
+        id: 'iaso.instance.file',
+        defaultMessage: 'File',
+    },
+    deleteAttachment: {
+        id: 'iaso.label.deleteAttachment',
+        defaultMessage: 'Delete attachment : {attachmentName}',
+    },
+    deleteWarning: {
+        id: 'iaso.label.deleteWarning',
+        defaultMessage: 'Are you sure you want to delete {name}?',
+    },
+    download: {
+        id: 'iaso.label.download',
+        defaultMessage: 'Download',
+    },
+    confirm: {
+        id: 'iaso.mappings.confirm',
+        defaultMessage: 'Confirm',
+    },
+    addUpdate: {
+        id: 'iaso.form.addUpdate',
+        defaultMessage: 'Add / Update',
+    },
+    attachmentModalTitle: {
+        id: 'iaso.attachments.attachmentModalTitle',
+        defaultMessage: 'Upload file',
+    },
+    attachmentModalContent: {
+        id: 'iaso.attachments.attachmentModalContent',
+        defaultMessage:
+            'If a file with the same name already exists, it will be overridden. Once a file is overridden, it cannot be recovered',
+    },
+    uploadError: {
+        id: 'iaso.attachments.uploadError',
+        defaultMessage: 'Error uploading file',
+    },
+    uploadSuccess: {
+        id: 'iaso.attachments.uploadSuccess',
+        defaultMessage: 'File uploaded successfully',
+    },
+    addSubmissionForForm: {
+        id: 'iaso.forms.addSubmissionForForm',
+        defaultMessage: 'Add a submission for this form',
+    },
+    instanceCreationDialogTitle: {
+        defaultMessage: 'Create submission',
+        id: 'iaso.instance.instanceCreationDialogTitle',
     },
 });
 

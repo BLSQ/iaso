@@ -1,11 +1,12 @@
-from django.core.management.base import BaseCommand
 import csv
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project
-from django.contrib.gis.geos import Point
-from uuid import uuid4
-from django.db import models, transaction
-from unidecode import unidecode
 import json
+
+from django.contrib.gis.geos import Point
+from django.core.management.base import BaseCommand
+from django.db import transaction
+from unidecode import unidecode
+
+from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project
 
 DEFAULT_DATA_DICT = {
     "name": "Nom",
@@ -42,7 +43,6 @@ def get_or_create(
             org_unit = org_units.first()
 
     if org_unit is None:
-
         org_unit = OrgUnit()
         org_unit.org_unit_type = org_unit_type
         org_unit.name = name.strip()
@@ -127,7 +127,6 @@ class Command(BaseCommand):
             parent_units = []
             top_org_units = set([])
             print("Inserting all units")
-            index = 0
             with open(file_name, encoding="utf-8-sig") as csvfile:
                 csv_reader = csv.reader(csvfile, delimiter=";")
                 index = 1

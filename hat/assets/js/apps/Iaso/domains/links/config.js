@@ -14,7 +14,7 @@ import {
 import getDisplayName from '../../utils/usersUtils.ts';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
-import StarsComponent from '../../components/stars/StarsComponent';
+import { StarsComponent } from '../../components/stars/StarsComponent.tsx';
 
 import MESSAGES from './messages';
 import { DateTimeCell } from '../../components/Cells/DateTimeCell';
@@ -28,9 +28,9 @@ export const linksTableColumns = (formatMessage, validateLink) => [
         Cell: settings => (
             <Box display="flex" justifyContent="center">
                 <StarsComponent
-                    score={settings.row.original.similarity_score}
-                    bgColor={settings.row.index % 2 ? 'white' : '#f7f7f7'}
+                    maxScore={100}
                     displayCount
+                    score={settings.row.original.similarity_score}
                 />
             </Box>
         ),

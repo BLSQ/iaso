@@ -89,6 +89,126 @@ yup.addMethod(
     },
 );
 
+yup.addMethod(yup.date, 'isValidOnset', function isValidOnset(formatMessage) {
+    return this.test('insValidOnset', '', (value, context) => {
+        const { path, createError, parent } = context;
+        const newDate = value ? moment(value) : null;
+        const today = moment().endOf('day');
+
+        if (newDate === null) return true;
+        if (newDate.isAfter(today)) {
+            return createError({
+                path,
+                message: formatMessage(MESSAGES.futureDateError),
+            });
+        }
+        const virusNotification = parent.cvdpv2_notified_at
+            ? moment(parent.cvdpv2_notified_at)
+            : null;
+        if (virusNotification && newDate.isAfter(virusNotification)) {
+            return createError({
+                path,
+                message: formatMessage(MESSAGES.onsetAfterNotificationError),
+            });
+        }
+        const outbreakDeclaration = parent.outbreak_declaration_date
+            ? moment(parent.outbreak_declaration_date)
+            : null;
+
+        if (outbreakDeclaration && newDate.isAfter(outbreakDeclaration)) {
+            return createError({
+                path,
+                message: formatMessage(
+                    MESSAGES.onsetAfterOutbreakDeclarationError,
+                ),
+            });
+        }
+        return true;
+    });
+});
+yup.addMethod(
+    yup.date,
+    'isValidVirusNotification',
+    function isValidVirusNotification(formatMessage) {
+        return this.test('isValidVirusNotification', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const newDate = value ? moment(value) : null;
+            const today = moment().endOf('day');
+
+            if (newDate === null) return true;
+            if (newDate.isAfter(today)) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.futureDateError),
+                });
+            }
+            const onset = parent.onset_at ? moment(parent.onset_at) : null;
+            if (onset && newDate.isBefore(onset)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.onsetAfterNotificationError,
+                    ),
+                });
+            }
+
+            const outbreakDeclaration = parent.outbreak_declaration_date
+                ? moment(parent.outbreak_declaration_date)
+                : null;
+
+            if (outbreakDeclaration && newDate.isAfter(outbreakDeclaration)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.virusNotificationAfterOutbreakDeclarationError,
+                    ),
+                });
+            }
+            return true;
+        });
+    },
+);
+yup.addMethod(
+    yup.date,
+    'isValidOutbreakDeclaration',
+    function isValidOutbreakDeclaration(formatMessage) {
+        return this.test('isValidOutbreakDeclaration', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const newDate = value ? moment(value) : null;
+            const today = moment().endOf('day');
+
+            if (newDate === null) return true;
+            if (newDate.isAfter(today)) {
+                return createError({
+                    path,
+                    message: formatMessage(MESSAGES.futureDateError),
+                });
+            }
+            const onset = parent.onset_at ? moment(parent.onset_at) : null;
+            if (onset && newDate.isBefore(onset)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.onsetAfterOutbreakDeclarationError,
+                    ),
+                });
+            }
+            const virusNotification = parent.cvdpv2_notified_at
+                ? moment(parent.cvdpv2_notified_at)
+                : null;
+            if (virusNotification && newDate.isBefore(virusNotification)) {
+                return createError({
+                    path,
+                    message: formatMessage(
+                        MESSAGES.virusNotificationAfterOutbreakDeclarationError,
+                    ),
+                });
+            }
+            return true;
+        });
+    },
+);
+
 yup.addMethod(
     yup.number,
     'hasAllFormAFieldsNumber',
@@ -335,37 +455,31 @@ const useShipmentShape = () => {
     return yup.object().shape({
         vaccine_name: yup
             .string() // TODO restrict string value to vaccines
-            .trim()
-            .hasAllShipmentFieldsString(formatMessage),
+            .trim(),
         po_numbers: yup
             .number()
             .nullable()
             .integer()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllShipmentFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         vials_received: yup
             .number()
             .nullable()
             .integer()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllShipmentFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         reception_pre_alert: yup
             .date()
             .nullable()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .hasAllShipmentFieldsDate(formatMessage),
+            .typeError(formatMessage(MESSAGES.invalidDate)),
         estimated_arrival_date: yup
             .date()
             .nullable()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .hasAllShipmentFieldsDate(formatMessage),
+            .typeError(formatMessage(MESSAGES.invalidDate)),
         date_reception: yup
             .date()
             .nullable()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .hasAllShipmentFieldsDate(formatMessage),
+            .typeError(formatMessage(MESSAGES.invalidDate)),
         comment: yup.string().nullable(),
     });
 };
@@ -377,18 +491,15 @@ const useDestructionShape = () => {
             .nullable()
             .integer()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .destructionFieldsNumberCheck(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         date_report: yup
             .date()
             .nullable()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .destructionFieldsDateCheck(formatMessage),
+            .typeError(formatMessage(MESSAGES.invalidDate)),
         date_report_received: yup
             .date()
             .nullable()
-            .typeError(formatMessage(MESSAGES.invalidDate))
-            .destructionFieldsDateCheck(formatMessage),
+            .typeError(formatMessage(MESSAGES.invalidDate)),
         comment: yup.string().nullable(),
     });
 };
@@ -396,10 +507,7 @@ const useDestructionShape = () => {
 const useVaccineShape = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
-        name: yup
-            .string()
-            .trim()
-            .required(formatMessage(MESSAGES.fieldRequired)), // TODO restrict string value to vaccines
+        name: yup.string().trim(), // TODO restrict string value to vaccines
         wastage_ratio_forecast: yup
             .number()
             .nullable()
@@ -426,13 +534,13 @@ const useRoundShape = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
-            .required(formatMessage(MESSAGES.fieldRequired))
+            // .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundStartDate(formatMessage),
         ended_at: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
-            .required(formatMessage(MESSAGES.fieldRequired))
+            // .required(formatMessage(MESSAGES.fieldRequired))
             .isValidRoundEndDate(formatMessage),
         mop_up_started_at: yup
             .date()
@@ -470,7 +578,12 @@ const useRoundShape = () => {
                 yup.ref('lqas_started_at'),
                 formatMessage(MESSAGES.endDateBeforeStartDate),
             ),
-        target_population: yup.number().nullable().min(0).integer(),
+        target_population: yup
+            .number()
+            .nullable()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .integer()
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
         cost: yup.number().nullable().min(0).integer(),
         lqas_district_passing: yup
             .number()
@@ -509,22 +622,19 @@ const useRoundShape = () => {
             .integer()
             .nullable()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         forma_usable_vials: yup
             .number()
             .integer()
             .nullable()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         forma_missing_vials: yup
             .number()
             .integer()
             .nullable()
             .min(0)
-            .typeError(formatMessage(MESSAGES.positiveNumber))
-            .hasAllFormAFieldsNumber(formatMessage),
+            .typeError(formatMessage(MESSAGES.positiveNumber)),
         reporting_delays_hc_to_district: yup
             .number()
             .integer()
@@ -546,13 +656,11 @@ const useRoundShape = () => {
         forma_reception: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable()
-            .hasAllFormAFieldsDate(formatMessage),
+            .nullable(),
         forma_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
-            .nullable()
-            .hasAllFormAFieldsDate(formatMessage),
+            .nullable(),
         forma_comment: yup.string().nullable(),
         date_signed_vrf_received: yup
             .date()
@@ -561,6 +669,19 @@ const useRoundShape = () => {
         shipments: yup.array(shipment).nullable(),
         vaccines: yup.array(vaccine).nullable(),
         destructions: yup.array(destruction).nullable(),
+        percentage_covered_target_population: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0, formatMessage(MESSAGES.positiveRangeInteger))
+            .max(100, formatMessage(MESSAGES.positiveRangeInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
+        doses_requested: yup
+            .number()
+            .nullable()
+            .integer()
+            .min(0, formatMessage(MESSAGES.positiveInteger))
+            .typeError(formatMessage(MESSAGES.positiveInteger)),
     });
 };
 
@@ -572,46 +693,79 @@ export const useFormValidator = () => {
     return yup.object().shape({
         epid: yup.string().nullable(),
         obr_name: yup.string().trim().required(),
+        initial_org_unit: yup.number().positive().integer().required(),
         grouped_campaigns: yup.array(yup.number()).nullable(),
         description: yup.string().nullable(),
-        onset_at: yup.date().nullable(),
-        three_level_call_at: yup.date().nullable(),
+        onset_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .isValidOnset(formatMessage),
+        cvdpv2_notified_at: yup
+            .date()
+            .nullable()
+            .isValidVirusNotification(formatMessage),
+        outbreak_declaration_date: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .isValidOutbreakDeclaration(formatMessage),
 
         cvdpv_notified_at: yup.date().nullable(),
-        cvdpv2_notified_at: yup.date().nullable(),
-
-        pv_notified_at: yup.date().nullable(),
-        pv2_notified_at: yup.date().nullable(),
+        verification_score: yup.number().nullable().positive().integer(),
 
         detection_first_draft_submitted_at: yup.date().nullable(),
         detection_rrt_oprtt_approval_at: yup.date().nullable(),
 
-        investigation_at: yup.date().nullable(),
-        risk_assessment_first_draft_submitted_at: yup.date().nullable(),
-        risk_assessment_rrt_oprtt_approval_at: yup.date().nullable(),
-        ag_nopv_group_met_at: yup.date().nullable(),
-        dg_authorized_at: yup.date().nullable(),
+        investigation_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        risk_assessment_first_draft_submitted_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        risk_assessment_rrt_oprtt_approval_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        ag_nopv_group_met_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
+        dg_authorized_at: yup
+            .date()
+            .nullable()
+            .typeError(formatMessage(MESSAGES.invalidDate)),
         // Budget tab
-        budget_requested_at_WFEDITABLE: yup.date().nullable(),
         who_sent_budget_at_WFEDITABLE: yup.date().nullable(),
         unicef_sent_budget_at_WFEDITABLE: yup.date().nullable(),
-        gpei_consolidation_at_WFEDITABLE: yup.date().nullable(),
+        gpei_consolidated_budgets_at_WFEDITABLE: yup.date().nullable(),
         submitted_to_rrt_at_WFEDITABLE: yup.date().nullable(),
         feedback_sent_to_gpei_at_WFEDITABLE: yup.date().nullable(),
         re_submitted_to_rrt_at_WFEDITABLE: yup.date().nullable(),
-        submission_to_orpg_operations_1_at_WFEDITABLE: yup.date().nullable(),
+        submitted_to_orpg_operations1_at_WFEDITABLE: yup.date().nullable(),
         feedback_sent_to_rrt1_at_WFEDITABLE: yup.date().nullable(),
-        submitted_to_orpg_at_WFEDITABLE: yup.date().nullable(),
-        feedback_sent_to_rrt2_at_WFEDITABLE: yup.date().nullable(),
-        re_submitted_to_orpg_at_WFEDITABLE: yup.date().nullable(),
+        submitted_to_orpg_wider_at_WFEDITABLE: yup.date().nullable(),
         submission_to_orpg_operations_2_at_WFEDITABLE: yup.date().nullable(),
-        feedback_sent_to_rrt3_at_WFEDITABLE: yup.date().nullable(),
-        re_submission_to_orpg_operations_2_at_WFEDITABLE: yup.date().nullable(),
+        feedback_sent_to_rrt2_at_WFEDITABLE: yup.date().nullable(),
+        re_submitted_to_orpg_operations1_at_WFEDITABLE: yup.date().nullable(),
+        re_submitted_to_orpg_operations2_at_WFEDITABLE: yup.date().nullable(),
         submitted_for_approval_at_WFEDITABLE: yup.date().nullable(),
         approved_by_who_at_WFEDITABLE: yup.date().nullable(),
+        feedback_sent_to_orpg_operations_who_at_WFEDITABLE: yup
+            .date()
+            .nullable(),
+        feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE: yup
+            .date()
+            .nullable(),
         approved_by_unicef_at_WFEDITABLE: yup.date().nullable(),
         approved_at_WFEDITABLE: yup.date().nullable(),
-
+        approval_confirmed_at_WFEDITABLE: yup.date().nullable(),
+        unicef_disbursed_to_moh_at: yup.date().nullable(),
+        unicef_disbursed_to_co_at: yup.date().nullable(),
+        who_disbursed_to_moh_at: yup.date().nullable(),
+        who_disbursed_to_co_at: yup.date().nullable(),
         spreadsheet_url: yup.string().url().nullable(),
 
         eomg: yup.date().nullable(),

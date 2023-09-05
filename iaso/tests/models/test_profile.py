@@ -1,8 +1,6 @@
-from django.db import InternalError, connections
-
-from iaso.test import TestCase
 from iaso import models as m
 from iaso.models.microplanning import Team
+from iaso.test import TestCase
 
 
 class ProfileModelTestCase(TestCase):

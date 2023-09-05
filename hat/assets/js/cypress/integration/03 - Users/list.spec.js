@@ -2,10 +2,10 @@
 
 import listFixture from '../../fixtures/profiles/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
-const search = 'mario';
 const baseUrl = `${siteBaseUrl}/dashboard/settings/users`;
 
 let interceptFlag = false;
@@ -26,13 +26,29 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    cy.intercept('GET', '/api/userroles/**', {
+        fixture: 'userRoles/list.json',
+    });
+    cy.intercept('GET', '/api/projects/**', {
+        fixture: 'projects/list.json',
+    });
+    cy.intercept('GET', '/api/permissions', {
+        fixture: 'permissions/list.json',
+    });
+    cy.intercept('GET', '/api/v2/orgunittypes/**', {
+        fixture: 'orgunittypes/list.json',
+    });
+    cy.intercept('GET', '/api/microplanning/teams/*', {
+        fixture: 'teams/list.json',
+    });
     const options = {
         method: 'GET',
-        pathname: '/api/profiles',
+        pathname: '/api/profiles/',
     };
     const query = {
         ...defaultQuery,
         ...formQuery,
+        managedUsersOnly: 'true',
     };
     cy.intercept({ ...options, query }, req => {
         req.continue(res => {
@@ -45,7 +61,7 @@ const goToPage = (
 const openDialogForUserIndex = index => {
     table = cy.get('table');
     row = table.find('tbody').find('tr').eq(index);
-    const actionCol = row.find('td').last();
+    const actionCol = row.find('td').eq(4);
     const editButton = actionCol.find('button').first();
     editButton.click();
     cy.get('#user-profile-dialog').should('be.visible');
@@ -76,7 +92,7 @@ describe('Users', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 
@@ -84,16 +100,8 @@ describe('Users', () => {
         beforeEach(() => {
             goToPage();
         });
-        it('should enabled search button', () => {
-            cy.wait('@getUsers').then(() => {
-                cy.get('#search-search').type(search);
-                cy.get('[data-test="search-button"]')
-                    .invoke('attr', 'disabled')
-                    .should('equal', undefined);
-            });
-        });
+        testSearchField(search, searchWithForbiddenChars);
     });
-
     describe('Search button', () => {
         beforeEach(() => {
             goToPage();
@@ -131,7 +139,7 @@ describe('Users', () => {
                 table.should('have.length', 1);
                 const rows = table.find('tbody').find('tr');
                 rows.should('have.length', listFixture.profiles.length);
-                rows.eq(0).find('td').should('have.length', 5);
+                rows.eq(0).find('td').should('have.length', 6);
             });
         });
 
@@ -140,22 +148,17 @@ describe('Users', () => {
             cy.wait('@getUsers').then(() => {
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(1);
-                const actionCol = row.find('td').last();
+                const actionCol = row.find('td').eq(4);
                 actionCol.find('button').should('have.length', 2);
                 table = cy.get('table');
                 row = table.find('tbody').find('tr').eq(0);
-                const actionColCurrentUser = row.find('td').last();
+                const actionColCurrentUser = row.find('td').eq(4);
                 actionColCurrentUser.find('button').should('have.length', 1);
             });
         });
     });
 
     describe('User dialog', () => {
-        beforeEach(() => {
-            cy.intercept('GET', '/api/permissions', {
-                fixture: 'permissions/list.json',
-            });
-        });
         it('should display empty user infos', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
@@ -164,6 +167,8 @@ describe('Users', () => {
                 userInfosFields.forEach(f => {
                     cy.testInputValue(`#input-text-${f}`, '');
                 });
+                cy.testInputValue(`#projects`, '');
+                cy.testInputValue(`#user_roles`, '');
                 cy.testInputValue('#language', '');
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
                 cy.get('.permission-checkbox').each($el => {
@@ -184,6 +189,10 @@ describe('Users', () => {
                 });
                 cy.testInputValue('#language', 'English version');
 
+                cy.testMultiSelect(
+                    `#projects`,
+                    listFixture.profiles[userIndex].projects,
+                );
                 cy.get('#user-dialog-tabs').find('button').eq(1).click();
                 cy.get('#superuser-permission-message').should('be.visible');
 
@@ -209,7 +218,7 @@ describe('Users', () => {
         it('should call api list and api save', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
-                const userIndex = 0;
+                const userIndex = 2;
                 openDialogForUserIndex(userIndex);
                 const userName = 'superman';
                 cy.get('#input-text-user_name').clear().type(userName);
@@ -264,29 +273,41 @@ describe('Users', () => {
         });
         it('should be called with search params', () => {
             goToPage(superUser, {}, emptyFixture);
-            interceptFlag = false;
-            cy.intercept(
-                {
-                    method: 'GET',
-                    pathname: '/api/profiles',
-                    query: {
-                        limit: '20',
-                        order: 'user__username',
-                        page: '1',
-                        search,
-                    },
-                },
-                req => {
+            cy.wait('@getUsers').then(() => {
+                interceptFlag = false;
+
+                cy.intercept('GET', '/api/profiles/**/*', req => {
                     req.continue(res => {
                         interceptFlag = true;
                         res.send({ fixture: emptyFixture });
                     });
-                },
-            ).as('getUsersSearch');
-            cy.get('#search-search').type(search);
-            cy.get('[data-test="search-button"]').click();
-            cy.wait('@getUsersSearch').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
+                }).as('getUsersSearch');
+
+                cy.get('#search-search').type(search);
+                cy.fillMultiSelect('#permissions', [0, 1], false);
+                cy.fillSingleSelect('#orgUnitTypes', 1);
+                cy.fillMultiSelect('#projectsIds', [0, 1], false);
+                cy.fillMultiSelect('#userRoles', [0, 1], false);
+                cy.fillTreeView('#ou-tree-input', 2, false);
+                cy.fillMultiSelect('#teamsIds', [0, 1], false);
+
+                cy.get('[data-test="search-button"]').click();
+                cy.wait('@getUsersSearch').then(xhr => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                    cy.wrap(xhr.request.query).should('deep.equal', {
+                        limit: '20',
+                        location: '1233989',
+                        managedUsersOnly: 'true',
+                        order: 'user__username',
+                        orgUnitTypes: '11',
+                        page: '1',
+                        permissions: 'iaso_completeness,iaso_mappings',
+                        projects: '1,2',
+                        search: 'ZELDA',
+                        teams: '25,26',
+                        userRoles: '5,8',
+                    });
+                });
             });
         });
     });

@@ -1,10 +1,11 @@
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 import typing
 
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon, GEOSGeometry
 from django.db import connection
 
 from hat.audit.models import Modification
 from iaso import models as m
+from iaso.models import OrgUnitType, OrgUnit
 from iaso.test import APITestCase
 
 
@@ -20,7 +21,7 @@ class OrgUnitAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         cls.sw_version_1 = sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
 
@@ -106,7 +107,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
-            version=sw_version_2,
+            version=cls.sw_version_2,
             name="Brussels Jedi Council",
             geom=cls.mock_multipolygon,
             simplified_geom=cls.mock_multipolygon,
@@ -340,6 +341,50 @@ class OrgUnitAPITestCase(APITestCase):
             returned_ou_ids, {self.jedi_council_corruscant.id, self.jedi_council_endor.id, self.jedi_squad_endor_2.id}
         )
 
+    def test_org_units_tree_super_user(self):
+        """Search orgunits tree when the user is a super user"""
+        org_unit_country = m.OrgUnit.objects.create(
+            name="Country",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        super_user = self.create_user_with_profile(
+            username="superUser", is_superuser=True, account=self.star_wars, permissions=["iaso_org_units"]
+        )
+        super_user.iaso_profile.org_units.set([org_unit_country])
+        super_user.save()
+        super_user.refresh_from_db()
+        self.client.force_authenticate(super_user)
+
+        response = self.client.get(
+            "/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true"
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(jr["orgunits"]), 3)
+
+    def test_org_units_tree_user_manager(self):
+        """Search orgunits tree when the user is a user manager"""
+        org_unit_country = m.OrgUnit.objects.create(
+            name="Country",
+            org_unit_type=self.jedi_squad,
+            version=self.star_wars.default_version,
+        )
+
+        user_manager = self.create_user_with_profile(
+            username="userManager", account=self.star_wars, permissions=["iaso_org_units"]
+        )
+        user_manager.iaso_profile.org_units.set([org_unit_country])
+        user_manager.save()
+        user_manager.refresh_from_db()
+        self.client.force_authenticate(user_manager)
+
+        response = self.client.get(
+            "/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true"
+        )
+        jr = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(jr["orgunits"]), 1)
+
     def test_org_unit_instance_duplicate_search(self):
         """GET /orgunits/ with a search based on duplicates"""
 
@@ -537,7 +582,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.version, self.star_wars.default_version)
 
     def test_create_org_unit_fail_on_parent_not_found(self):
-        # returning a 404 is strange but it was the current behaviour
+        # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
@@ -553,7 +598,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNoCreation()
 
     def test_create_org_unit_fail_on_group_not_found(self):
-        # returning a 404 is strange but it was the current behaviour
+        # returning a 404 is strange, but it was the current behaviour
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/create_org_unit/",
@@ -665,7 +710,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.reference_instance, None)
 
     def test_edit_org_unit_retrieve_put(self):
-        """Retrieve a orgunit data and then resend back mostly unmodified and ensure that nothing burn
+        """Retrieve an orgunit data and then resend back mostly unmodified and ensure that nothing burn
 
         Note that a lot of the field we send will end up being unused"""
         old_ou = self.jedi_council_corruscant
@@ -692,7 +737,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
     def test_edit_org_unit_link_to_reference_instance(self):
-        """Retrieve a orgunit data and modify the reference_instance_id"""
+        """Retrieve an orgunit data and modify the reference_instance_id"""
         old_ou = self.jedi_council_corruscant
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/orgunits/{old_ou.id}/")
@@ -713,7 +758,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
 
     def test_edit_org_unit_not_link_to_reference_instance(self):
-        """Retrieve a orgunit data and modify the reference_instance_id with a no reference form"""
+        """Retrieve an orgunit data and modify the reference_instance_id with a no reference form"""
         old_ou = self.jedi_council_corruscant
         old_modification_date = old_ou.updated_at
         self.client.force_authenticate(self.yoda)
@@ -752,7 +797,7 @@ class OrgUnitAPITestCase(APITestCase):
             format="json",
             data=data,
         )
-        jr = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertGreater(ou.updated_at, old_modification_date)
@@ -762,10 +807,9 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
 
     def test_edit_org_unit_edit_bad_group_fail(self):
-        """FIXME this test Document current behaviour but we want to change how to handle this
-
-        If a org unit already has a bad group we can't edit it anymore from the interface
-        we should just not have this case"""
+        """Check for a previous bug if an org unit is already member of a bad group
+        it couldn't be  edited anymore from the interface
+        """
 
         old_ou = m.OrgUnit.objects.create(
             name="hey",
@@ -776,6 +820,7 @@ class OrgUnitAPITestCase(APITestCase):
         # group on wrong version
         bad_group = m.Group.objects.create(name="bad")
         old_ou.groups.set([bad_group, good_group])
+        old_modification_date = old_ou.updated_at
 
         self.old_counts = self.counts()
 
@@ -785,26 +830,28 @@ class OrgUnitAPITestCase(APITestCase):
 
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
+        data["name"] = "new name"
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
             data=data,
         )
-        self.assertJSONResponse(response, 400)
-        self.assertNoCreation()
+        self.assertJSONResponse(response, 200)
+        self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=old_ou.id)
-        # Verify Nothing has changed
+        # Verify group was not modified but the rest was modified
         self.assertQuerysetEqual(
             ou.groups.all().order_by("name"), ["<Group:  | Evil Empire  1 >", "<Group: bad | None >"]
         )
         self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.name, old_ou.name)
+        self.assertEqual(ou.name, "new name")
         self.assertEqual(ou.parent, old_ou.parent)
         self.assertEqual(ou.created_at, old_ou.created_at)
-        self.assertEqual(ou.updated_at, old_ou.updated_at)
+
+        self.assertNotEqual(ou.updated_at, old_modification_date)
 
     def test_edit_with_apply_directly_instance_gps_into_org_unit(self):
-        """Retrieve a orgunit data and push instance_gps_to_org_unit"""
+        """Retrieve an orgunit data and push instance_gps_to_org_unit"""
         org_unit = self.jedi_council_corruscant
         org_unit.latitude = 8.32842671
         org_unit.longitude = -11.681191
@@ -832,3 +879,205 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.as_dict()["latitude"], form_latitude)
         self.assertEqual(ou.as_dict()["longitude"], form_longitude)
         self.assertEqual(ou.as_dict()["altitude"], form_altitude)
+
+    def test_create_org_unit_from_different_level_from_mobile(self):
+        self.client.force_authenticate(self.yoda)
+
+        ou_type = OrgUnitType.objects.create(name="Test_type")
+        org_unit_parent = OrgUnit.objects.create(name="A_new_OU")
+        count_of_orgunits = OrgUnit.objects.all().count()
+
+        data = [
+            {
+                "id": "26668d58-7604-40bb-b783-71c2a2b3e6d1",
+                "name": "A",
+                "time": 1675099612000,
+                "accuracy": 1.5,
+                "altitude": 115.0,
+                "latitude": 50.82521833333333,
+                "longitude": 4.353595,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099611.938,
+                "updated_at": 1675099611.938,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "5738b6b9-88f7-49ee-a211-632030f68f46",
+                "name": "Bluesquare",
+                "time": 1674833629688,
+                "accuracy": 15.67,
+                "altitude": 127.80000305175781,
+                "latitude": 50.8369448,
+                "longitude": 4.3999539,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1674833640.146,
+                "updated_at": 1674833640.146,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "76097602-92ed-45dd-a15a-a81c3fa44461",
+                "name": "Saint+Luc",
+                "time": 1675099739000,
+                "accuracy": 2.2,
+                "altitude": 113.6,
+                "latitude": 50.825905,
+                "longitude": 4.351918333333333,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099740.112,
+                "updated_at": 1675099740.112,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "8818ed97-f238-4a9c-be90-19621af7edd5",
+                "name": "Martin's place",
+                "time": 1675099856000,
+                "accuracy": 2.1,
+                "altitude": 111.6,
+                "latitude": 50.826703333333334,
+                "longitude": 4.350505,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099855.568,
+                "updated_at": 1675099855.568,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "8c646641-499d-4d65-aafb-5c98ef997e45",
+                "name": "Delicelte",
+                "time": 1675079431779,
+                "accuracy": 11.483,
+                "altitude": 110.5999984741211,
+                "latitude": 50.8376697,
+                "longitude": 4.3963584,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079445.755,
+                "updated_at": 1675079445.755,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "98524cec-fc7d-4fcf-8353-b000786e765f",
+                "name": "Crayon",
+                "time": 1675099637000,
+                "accuracy": 2.6,
+                "altitude": 115.5,
+                "latitude": 50.82513166666666,
+                "longitude": 4.353408333333333,
+                "parent_id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "created_at": 1675099637.062,
+                "updated_at": 1675099637.062,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "b579bba1-622c-4001-90bb-62f85a4ffbd1",
+                "name": "mevan",
+                "time": 1675079921000,
+                "accuracy": 2.1,
+                "altitude": 115.30000000000001,
+                "latitude": 50.8376,
+                "longitude": 4.396518333333333,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079920.602,
+                "updated_at": 1675079920.602,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "b779e108-8f2a-48af-aa9e-7f1642cfe5bc",
+                "name": "Pizza Mniam Mniam",
+                "time": 1675079730000,
+                "accuracy": 1.5,
+                "altitude": 115.5,
+                "latitude": 50.837444999999995,
+                "longitude": 4.396443333333334,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675079729.65,
+                "updated_at": 1675079729.65,
+                "org_unit_type_id": ou_type.pk,
+            },
+            {
+                "id": "dd9360d0-3a2f-434d-a48f-298b3068b3a6",
+                "name": "Some_New_STUF",
+                "time": 1675099587000,
+                "accuracy": 1.9,
+                "altitude": 113.3,
+                "latitude": 50.82527666666667,
+                "longitude": 4.35383,
+                "parent_id": str(org_unit_parent.pk),
+                "created_at": 1675099586.754,
+                "updated_at": 1675099586.755,
+                "org_unit_type_id": ou_type.pk,
+            },
+        ]
+
+        response = self.client.post(
+            "/api/mobile/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=data, format="json"
+        )
+        orgunits = OrgUnit.objects.all().count()
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(orgunits, count_of_orgunits + 9)
+
+    def test_org_unit_search_only_direct_children_false(self):
+        self.client.force_authenticate(self.yoda)
+
+        jedi_squad_endor_2_children = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            parent=self.jedi_squad_endor_2,
+            version=self.sw_version_2,
+            name="Endor Jedi Squad 2 Children",
+            geom=self.mock_multipolygon,
+            simplified_geom=self.mock_multipolygon,
+            catchment=self.mock_multipolygon,
+            location=self.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        jedi_squad_endor_2_children.save()
+
+        response = self.client.get(
+            f"/api/orgunits/?&orgUnitParentId={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=false"
+        )
+
+        org_units = response.json()["orgunits"]
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 3)
+
+        ids_in_response = [ou["id"] for ou in org_units]
+
+        # list of all the indirect children of the jedi_council_endor OU
+        ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk, jedi_squad_endor_2_children.pk]
+
+        self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))
+
+    def test_org_unit_search_only_direct_children_true(self):
+        self.client.force_authenticate(self.yoda)
+
+        # this ou in the children of the children of the parent so it must not appear in the response.
+
+        jedi_squad_endor_2_children = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            parent=self.jedi_squad_endor_2,
+            version=self.sw_version_2,
+            name="Endor Jedi Squad 2 Children",
+            geom=self.mock_multipolygon,
+            simplified_geom=self.mock_multipolygon,
+            catchment=self.mock_multipolygon,
+            location=self.mock_point,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+        )
+
+        jedi_squad_endor_2_children.save()
+
+        response = self.client.get(
+            f"/api/orgunits/?&parent_id={self.jedi_council_endor.pk}&limit=10&page=1&order=name&validation_status=all&onlyDirectChildren=true"
+        )
+
+        org_units = response.json()["orgunits"]
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 2)
+
+        ids_in_response = [ou["id"] for ou in org_units]
+
+        # list of all direct children of the jedi_council_endor OU
+        ou_ids_list = [self.jedi_squad_endor.pk, self.jedi_squad_endor_2.pk]
+        self.assertEqual(sorted(ids_in_response), sorted(ou_ids_list))

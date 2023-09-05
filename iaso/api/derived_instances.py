@@ -1,10 +1,11 @@
 import typing
-from django.core.exceptions import PermissionDenied
+
 from rest_framework import serializers, permissions
 
-from .common import ModelViewSet, HasPermission
-from iaso.models import ExportRequest, Form, DERIVED
 from iaso.dhis2.derived_instance_generator import generate_instances  # type: ignore
+from iaso.models import ExportRequest, Form, DERIVED
+from .common import ModelViewSet, HasPermission
+from hat.menupermissions import models as permission
 
 
 class DerivedInstanceSerializer(serializers.Serializer):
@@ -16,7 +17,6 @@ class DerivedInstanceSerializer(serializers.Serializer):
         return {"periods": periods, "form_ids": form_ids}
 
     def create(self, validated_data):
-
         forms = Form.objects.filter(pk__in=validated_data["form_ids"])
         profile = self.context["request"].user.iaso_profile
         forms = forms.filter(projects__account=profile.account)
@@ -45,14 +45,14 @@ class DerivedInstanceSerializer(serializers.Serializer):
 
 
 class DerivedInstancesViewSet(ModelViewSet):
-    """Derived instances API
+    f"""Derived instances API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_completeness" permission
+    This API is restricted to authenticated users having the "{permission.COMPLETENESS}" permission
 
     POST /api/derivedinstances/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_completeness")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.COMPLETENESS)]  # type: ignore
     serializer_class = DerivedInstanceSerializer
     results_key = "export_instances"
     queryset = ExportRequest.objects.all()

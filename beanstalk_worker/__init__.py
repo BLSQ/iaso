@@ -1,10 +1,10 @@
-from functools import wraps
 import traceback
-from django.utils import timezone
-from lazy_services import LazyService  # type: ignore
-import sentry_sdk
+from functools import wraps
 from logging import getLogger
 
+import sentry_sdk
+from django.utils import timezone
+from lazy_services import LazyService  # type: ignore
 
 logger = getLogger(__name__)
 

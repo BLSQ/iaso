@@ -1,19 +1,19 @@
 import React, { useState } from 'react';
 import { Grid, Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
-import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
+import { LoadingSpinner } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';
 import MESSAGES from '../messages';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { EditableTextFields } from '../../../components/forms/EditableTextFields';
 import { Checkboxes } from '../../../components/forms/Checkboxes';
-import { redirectTo } from '../../../routing/actions';
+import { redirectTo } from '../../../routing/actions.ts';
 import { baseUrls } from '../../../constants/urls';
 import { sendDhisOuImporterRequest } from '../requests';
 import { useFormState } from '../../../hooks/form';
 import { useSnackMutation } from '../../../libs/apiHooks.ts';
-import InputComponent from '../../../components/forms/InputComponent';
+import { VersionDescription } from './VersionDescription.tsx';
 
 const initialFormState = sourceCredentials => {
     return {
@@ -32,7 +32,6 @@ const AddTask = ({
     sourceVersionNumber,
     sourceCredentials,
 }) => {
-    const { formatMessage } = useSafeIntl();
     // eslint-disable-next-line no-unused-vars
     const [form, setFormField, _, setFormState] = useFormState(
         initialFormState(sourceCredentials),
@@ -139,14 +138,9 @@ const AddTask = ({
         return (
             <>
                 {!versionNumber && (
-                    <InputComponent
-                        type="text"
-                        keyValue="versionDescription"
-                        labelString={formatMessage(
-                            MESSAGES.dataSourceDescription,
-                        )}
-                        value={form.versionDescription.value}
-                        onChange={(field, value) => {
+                    <VersionDescription
+                        formValue={form.versionDescription.value}
+                        onChangeDescription={(field, value) => {
                             setFormField(field, value);
                         }}
                     />

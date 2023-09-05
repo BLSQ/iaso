@@ -30,7 +30,7 @@ case "$1" in
   "start_gunicorn")
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
-    gunicorn hat.wsgi --bind=0.0.0.0:8081
+    gunicorn hat.wsgi --bind=0.0.0.0:8081 --timeout 600
   ;;
   "test" )
     export TESTING=true

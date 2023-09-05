@@ -23,11 +23,9 @@ import { useImData } from '../../hooks/useImData.ts';
 import MESSAGES from '../../constants/messages';
 import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { defaultRounds } from './constants.ts';
-
-const paperElevation = 2;
+import { defaultRounds, paperElevation } from './constants.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -91,6 +89,7 @@ export const ImStats = ({ imType, router }) => {
                     isFetching={isFetching}
                     campaigns={campaigns}
                     campaignsFetching={campaignsFetching}
+                    category="im"
                 />
                 <Grid container spacing={2} direction="row">
                     {selectedRounds.map((rnd, index) => (

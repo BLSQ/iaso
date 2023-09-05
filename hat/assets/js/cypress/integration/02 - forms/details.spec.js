@@ -31,7 +31,7 @@ describe('Forms details', () => {
         cy.login();
         cy.intercept('GET', '/sockjs-node/**');
         cy.intercept('GET', '/api/profiles/me/**', superUser);
-        cy.intercept('GET', '/api/orgunittypes/**', orgUnitTypes);
+        cy.intercept('GET', '/api/v2/orgunittypes/**', orgUnitTypes);
         cy.intercept('GET', '/api/projects/**', projects);
         // TODO paramatrise form_id
         cy.intercept(
@@ -49,12 +49,6 @@ describe('Forms details', () => {
     });
     describe.skip('Filters', () => {});
     describe('Form versions', () => {
-        it('Displays title', () => {
-            cy.getAndAssert('[data-test=form-versions-title]').should(
-                'have.text',
-                'Versions',
-            );
-        });
         describe('FormVersions table', () => {
             testTablerender({
                 baseUrl,

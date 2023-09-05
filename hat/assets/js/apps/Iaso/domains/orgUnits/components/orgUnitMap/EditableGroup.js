@@ -1,7 +1,7 @@
 import L from 'leaflet';
 import 'leaflet-draw';
 
-import { customMarker, polygonDrawOption } from '../../../../utils/mapUtils';
+import { customMarker, polygonDrawOption } from '../../../../utils/map/mapUtils';
 
 class EditableGroup {
     constructor() {
@@ -26,14 +26,15 @@ class EditableGroup {
         geoJson,
         classNames,
         tooltipMessage,
-        onAdd,
+        onAddShape,
+        onAddMarker,
     }) {
         this.groupKey = groupKey;
         this.onChangeLocation = onChangeLocation;
         this.onChangeShape = onChangeShape;
         this.paneString = `custom-shape-${groupKey}`;
-        this.createPanes(map, groupKey, onChangeShape, onChangeLocation);
-        this.addEvents(map, onAdd);
+        this.createPanes(map);
+        this.addEvents(map, onAddShape, onAddMarker);
         this.addDrawControl(map);
         if (geoJson) {
             this.updateShape(geoJson, classNames, tooltipMessage);
@@ -49,15 +50,20 @@ class EditableGroup {
         }
     }
 
-    addShape(map, className) {
+    addShape(map, className, theme) {
         this.shapeAdded = new L.Draw.Polygon(
             map,
-            polygonDrawOption(className, this.groupKey),
+            polygonDrawOption(className, this.groupKey, theme),
         );
         this.shapeAdded.enable();
     }
 
-    addEvents(map, onAdd) {
+    updateChanges(onChangeShape, onChangeLocation) {
+        this.onChangeLocation = onChangeLocation;
+        this.onChangeShape = onChangeShape;
+    }
+
+    addEvents(map, onAddShape, onAddMarker = () => null) {
         map.on('draw:created', e => {
             if (e.layerType === 'marker') {
                 // Set a default altitude for the newly created location
@@ -65,6 +71,7 @@ class EditableGroup {
                 this.onChangeLocation(e.layer.getLatLng());
                 this.toggleDrawMarker(false);
                 map.removeLayer(e.layer);
+                onAddMarker();
             } else if (
                 e.layerType === 'polygon' &&
                 e.layer.options.className.includes(this.groupKey)
@@ -72,7 +79,7 @@ class EditableGroup {
                 e.layer.addTo(this.group);
                 this.shapeAdded.disable();
                 this.onChangeShape(this.getGeoJson());
-                onAdd();
+                onAddShape();
             }
         });
     }

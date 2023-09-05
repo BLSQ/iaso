@@ -1,21 +1,26 @@
 // To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import PropTypes from 'prop-types';
-import { useSelector, useDispatch } from 'react-redux';
+import { Link } from 'react-router';
+import { History } from '@material-ui/icons';
+import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import {
     commaSeparatedIdsToArray,
     commaSeparatedIdsToStringArray,
 } from '../../../utils/forms';
-import { fetchAllOrgUnitTypes } from '../../orgUnits/orgUnitTypes/actions';
 
-import { formatLabel } from '../../instances/utils';
+import { useGetOrgUnitTypesDropdownOptions } from '../../orgUnits/orgUnitTypes/hooks/useGetOrgUnitTypesDropdownOptions.ts';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
+
+import { formatLabel } from '../../instances/utils/index.tsx';
 import { periodTypeOptions } from '../../periods/constants';
 import MESSAGES from '../messages';
+import { DisplayIfUserHasPerm } from '../../../components/DisplayIfUserHasPerm';
 
 const styles = theme => ({
     radio: {
@@ -28,11 +33,11 @@ const styles = theme => ({
         flex: '1',
         cursor: 'pointer',
     },
-    linkToChangesLog: {
-        color: theme.palette.primary.main,
-        textAlign: 'right',
-        flex: '1',
-        cursor: 'pointer',
+    // Align the icon with the text
+    linkWithIcon: {
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5em',
     },
 });
 
@@ -43,18 +48,15 @@ const formatBooleanForRadio = value => {
     return null;
 };
 
-const redirectToChangesLog = url => {
-    window.open(url);
-};
-
 const FormForm = ({ currentForm, setFieldValue }) => {
     const classes = useStyles();
     const intl = useSafeIntl();
-    const dispatch = useDispatch();
     const [showAdvancedSettings, setshowAdvancedSettings] = useState(false);
-    const allProjects = useSelector(state => state.projects.allProjects);
-    const allOrgUnitTypes = useSelector(state => state.orgUnitsTypes.allTypes);
-    const [isOuTypeLoading, setIsOuTypeLoading] = useState(true);
+
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
+    const { data: allOrgUnitTypes, isFetching: isOuTypeLoading } =
+        useGetOrgUnitTypesDropdownOptions();
     const setPeriodType = value => {
         setFieldValue('period_type', value);
         if (value === null) {
@@ -76,22 +78,6 @@ const FormForm = ({ currentForm, setFieldValue }) => {
         projects = currentForm.project_ids.value.join(',');
     }
     const logsUrl = `/${baseUrls.apiLogs}/?objectId=${currentForm.id.value}&contentType=iaso.form`;
-
-    useEffect(() => {
-        // if (!allProjects) {
-        //     dispatch(fetchAllProjects());
-        // }
-        if (!allOrgUnitTypes) {
-            dispatch(fetchAllOrgUnitTypes());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
-    useEffect(() => {
-        if (allOrgUnitTypes) {
-            setIsOuTypeLoading(false);
-        }
-    }, [allOrgUnitTypes]);
-
     return (
         <>
             <Grid container spacing={2} justifyContent="flex-start">
@@ -206,16 +192,10 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                         value={projects}
                         errors={currentForm.project_ids.errors}
                         type="select"
-                        options={
-                            allProjects
-                                ? allProjects.map(p => ({
-                                      label: p.name,
-                                      value: p.id,
-                                  }))
-                                : []
-                        }
+                        options={allProjects || []}
                         label={MESSAGES.projects}
                         required
+                        loading={isFetchingProjects}
                     />
                     <InputComponent
                         multi
@@ -227,14 +207,7 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                         value={orgUnitTypes}
                         errors={currentForm.org_unit_type_ids.errors}
                         type="select"
-                        options={
-                            allOrgUnitTypes
-                                ? allOrgUnitTypes.map(o => ({
-                                      label: o.name,
-                                      value: o.id,
-                                  }))
-                                : []
-                        }
+                        options={allOrgUnitTypes || []}
                         label={MESSAGES.orgUnitsTypes}
                         loading={isOuTypeLoading}
                     />
@@ -328,14 +301,24 @@ const FormForm = ({ currentForm, setFieldValue }) => {
                 </Grid>
             </Grid>
             {currentForm.id.value && (
-                <Grid justifyContent="space-between" container spacing={2}>
-                    <Typography
-                        className={classes.linkToChangesLog}
-                        variant="overline"
-                        onClick={() => redirectToChangesLog(logsUrl)}
-                    >
-                        {intl.formatMessage(MESSAGES.formChangeLog)}
-                    </Typography>
+                <Grid justifyContent="flex-end" container spacing={2}>
+                    <DisplayIfUserHasPerm permission="iaso_submissions">
+                        <Grid item>
+                            <Link
+                                className={classes.linkWithIcon}
+                                href={`/dashboard/forms/submissions/formIds/${currentForm.id.value}/tab/list`}
+                            >
+                                <FormatListBulleted />
+                                {intl.formatMessage(MESSAGES.records)}
+                            </Link>
+                        </Grid>
+                    </DisplayIfUserHasPerm>
+                    <Grid item>
+                        <Link href={logsUrl} className={classes.linkWithIcon}>
+                            <History />
+                            {intl.formatMessage(MESSAGES.formChangeLog)}
+                        </Link>
+                    </Grid>
                 </Grid>
             )}
         </>

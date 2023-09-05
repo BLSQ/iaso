@@ -1,6 +1,7 @@
-from django.db import transaction
-from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED, ALIVE_STATUSES
 from django.core.paginator import Paginator
+from django.db import transaction
+
+from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED, ALIVE_STATUSES
 
 
 class NothingToExportError(Exception):
@@ -77,7 +78,6 @@ class ExportRequestBuilder:
             # changes the number of records as the loop inserts records in it
             for instance in paginator.page(1).object_list:
                 for mapping_version in self.get_form_mapping_versions(instance):
-
                     if mapping_version.mapping.is_event_tracker() and force_export:
                         raise NotSupportedError(
                             f"{mapping_version} can't be forced to be exported, due to possible duplicates tracked entity or event for instance {instance.id}"

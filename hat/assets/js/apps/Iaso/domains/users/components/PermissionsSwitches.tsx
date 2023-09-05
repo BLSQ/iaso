@@ -1,20 +1,48 @@
-import React from 'react';
+import React, { useCallback } from 'react';
+import { Box, Typography, makeStyles } from '@material-ui/core';
 import {
-    FormControlLabel,
-    Switch,
-    Typography,
-    makeStyles,
-} from '@material-ui/core';
-// @ts-ignore
-import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
-
+    useSafeIntl,
+    LoadingSpinner,
+    Table,
+    Column,
+} from 'bluesquare-components';
+import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
+import { useUserPermissionColumns } from '../config';
+import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
+import { Permission } from '../../userRoles/types/userRoles';
+import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown';
+import { userHasPermission } from '../utils';
+import * as Permissions from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+
+const canAssignPermission = (user, permission): boolean => {
+    if (userHasPermission(Permissions.USERS_ADMIN, user)) {
+        return true;
+    }
+    return permission.codename !== Permissions.USERS_ADMIN;
+};
 
 const styles = theme => ({
     admin: {
         color: theme.palette.success.main,
+    },
+    tableCellStyle: {
+        border: '1px solid grey',
+    },
+    tableStyle: {
+        '& .MuiTableHead-root': {
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+        },
+        '& .MuiTableContainer-root': {
+            maxHeight: '59vh',
+            overflow: 'auto',
+            border: `1px solid ${theme.palette.border.main}`,
+        },
     },
 });
 
@@ -25,11 +53,8 @@ type Props = {
     currentUser: any;
     // eslint-disable-next-line no-unused-vars
     handleChange: (newValue: any) => void;
-};
-
-type Permission = {
-    id: number;
-    codename: string;
+    // eslint-disable-next-line no-unused-vars
+    setFieldValue: (fieldName, fieldError) => void;
 };
 
 type PermissionResult = {
@@ -40,19 +65,20 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
     isSuperUser,
     currentUser,
     handleChange,
+    setFieldValue,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { data, isLoading } = useSnackQuery<PermissionResult>(
-        ['permissions'],
-        () => getRequest('/api/permissions/'),
-        MESSAGES.fetchPermissionsError,
+    const { data, isLoading } = useSnackQuery<PermissionResult>({
+        queryKey: ['permissions'],
+        queryFn: () => getRequest('/api/permissions/'),
+        snackErrorMsg: MESSAGES.fetchPermissionsError,
         // Permission list is not displayed for superuser, no need to fetch it from server
-        { enabled: !isSuperUser },
-    );
+        options: { enabled: !isSuperUser },
+    });
 
     const setPermissions = (codeName: string, isChecked: boolean) => {
-        const newUserPerms = [...currentUser.permissions.value];
+        const newUserPerms = [...currentUser.user_permissions.value];
         if (!isChecked) {
             const permIndex = newUserPerms.indexOf(codeName);
             newUserPerms.splice(permIndex, 1);
@@ -61,16 +87,33 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         }
         handleChange(newUserPerms);
     };
+    const loggedInUser = useCurrentUser();
+    const allPermissions =
+        data?.permissions?.filter(permission =>
+            canAssignPermission(loggedInUser, permission),
+        ) ?? [];
+    const userPermissions = currentUser.user_permissions.value;
+    const { data: userRoles, isFetching } = useGetUserRolesDropDown();
+    const permissionsData = useGetUserPermissions(
+        allPermissions,
+        userPermissions,
+    );
+    // This is a problem with the type definition of Column is bluesquare-components
+    // @ts-ignore
+    const columns: Column[] = useUserPermissionColumns({
+        setPermissions,
+        currentUser,
+    });
 
-    // Get the translated label for the permission.
-    // or permission's codename if not translation exist
-    const permissionLabel = permissionCodeName => {
-        return MESSAGES[permissionCodeName]
-            ? formatMessage(MESSAGES[permissionCodeName])
-            : permissionCodeName;
-    };
-    const permissions = data?.permissions ?? [];
-
+    const handleChangeUserRoles = useCallback(
+        (_, value) => {
+            const newUserRoles = value
+                ? value.split(',').map(userRoleId => parseInt(userRoleId, 10))
+                : [];
+            setFieldValue('user_roles', newUserRoles);
+        },
+        [setFieldValue],
+    );
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -83,43 +126,39 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     {formatMessage(MESSAGES.isSuperUser)}
                 </Typography>
             )}
-            {!isSuperUser &&
-                permissions
-                    .sort((a, b) =>
-                        permissionLabel(a.codename).localeCompare(
-                            permissionLabel(b.codename),
-                            undefined,
-                            {
-                                sensitivity: 'accent',
-                            },
-                        ),
-                    )
-                    .map(p => (
-                        <div key={p.id}>
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        className="permission-checkbox"
-                                        id={`permission-checkbox-${p.codename}`}
-                                        checked={Boolean(
-                                            currentUser.permissions.value.find(
-                                                up => up === p.codename,
-                                            ),
-                                        )}
-                                        onChange={e =>
-                                            setPermissions(
-                                                p.codename,
-                                                e.target.checked,
-                                            )
-                                        }
-                                        name={p.codename}
-                                        color="primary"
-                                    />
-                                }
-                                label={permissionLabel(p.codename)}
-                            />
-                        </div>
-                    ))}
+
+            {!isSuperUser && (
+                <>
+                    <Box mb={2} width="50%">
+                        <InputComponent
+                            keyValue="user_roles"
+                            onChange={handleChangeUserRoles}
+                            value={currentUser.user_roles.value}
+                            type="select"
+                            multi
+                            label={MESSAGES.userRoles}
+                            options={userRoles}
+                            loading={isFetching}
+                            clearable
+                        />
+                    </Box>
+                    <Box className={classes.tableStyle}>
+                        <Table
+                            columns={columns}
+                            data={permissionsData}
+                            showPagination={false}
+                            countOnTop={false}
+                            marginTop={false}
+                            marginBottom={false}
+                            extraProps={{
+                                currentUser,
+                                columns,
+                            }}
+                            elevation={0}
+                        />
+                    </Box>
+                </>
+            )}
         </>
     );
 };

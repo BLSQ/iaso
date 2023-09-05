@@ -1,6 +1,6 @@
-from ...models import OrgUnit, OrgUnitType, Account, Project, SourceVersion, DataSource, Task
-from iaso.test import APITestCase
 from beanstalk_worker.services import TestTaskService
+from iaso.test import APITestCase
+from ...models import OrgUnit, OrgUnitType, Account, Project, SourceVersion, DataSource, Task
 
 
 class CopyVersionTestCase(APITestCase):
@@ -22,8 +22,16 @@ class CopyVersionTestCase(APITestCase):
         source.projects.add(cls.project)
         OrgUnit.objects.create(version=old_version, name="Myagi", org_unit_type=unit_type, source_ref="nomercy")
         cls.source = source
-        cls.johnny = cls.create_user_with_profile(username="johnny", account=account, permissions=["iaso_sources"])
+        cls.johnny = cls.create_user_with_profile(
+            username="johnny", account=account, permissions=["iaso_sources", "iaso_data_tasks"]
+        )
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
+        cls.user_with_data_sources_perms = cls.create_user_with_profile(
+            username="user_with_data_sources_perms", account=account, permissions=["iaso_sources"]
+        )
+        cls.user_with_data_tasks_perms = cls.create_user_with_profile(
+            username="user_with_data_tasks_perms", account=account, permissions=["iaso_data_tasks"]
+        )
 
     def test_copy_version(self):
         """Copying a version through the api"""
@@ -73,6 +81,18 @@ class CopyVersionTestCase(APITestCase):
         self.client.force_authenticate(self.miguel)
         response = self.client.post("/api/copyversion/", data={}, format="json")
         self.assertEqual(response.status_code, 403)
+
+    def test_user_with_only_data_sources_permissions(self):
+        # user needs  both data_sources and data_tasks permissions
+        self.client.force_authenticate(self.user_with_data_sources_perms)
+        response = self.client.post("/api/copyversion/", data={}, format="json")
+        self.assertEqual(response.status_code, 400)
+
+    def test_user_with_only_data_tasks_permissions(self):
+        # user needs  both data_sources and data_tasks permissions
+        self.client.force_authenticate(self.user_with_data_sources_perms)
+        response = self.client.post("/api/copyversion/", data={}, format="json")
+        self.assertEqual(response.status_code, 400)
 
     def test_self_copy(self):
         self.client.force_authenticate(self.johnny)

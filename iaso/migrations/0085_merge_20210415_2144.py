@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0084_form_deleted_at"),
         ("iaso", "0084_auto_20210402_1458"),

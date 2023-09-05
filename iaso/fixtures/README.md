@@ -7,12 +7,12 @@ See the Django documentation for more information:
 * [Testing tool. Loading data](https://docs.djangoproject.com/en/4.1/topics/testing/tools/#topics-testing-fixtures)
 
 We use these files in the automated unit test !
-<<<<<<< HEAD
+
     
 (this readme assume ./m is your manage.py)
 
 
-To create a temporary server with only the fixtures data:
+To create a temporary server with only the fixtures's data:
 ```
 ./m testserver --noinput iaso/fixtures/user.yaml  iaso/fixtures/orgunit.yaml
 ```
@@ -21,7 +21,7 @@ This will create a separate DB and load your data in it. Your existing data won'
 
 To load the fixture data in your current Database, use the loaddata command:
 ```
-/m loaddata plugins/polio/fixtures/campaign.yaml
+./m loaddata plugins/polio/fixtures/campaign.yaml
 ```
 
 WARNING This will override your existing data. Do not execute in a production environment
@@ -30,7 +30,7 @@ WARNING This will override your existing data. Do not execute in a production en
 
 To redump the OrgUnit data after modification. 
 ```
-/m dumpdata  --format yaml --natural-foreign --natural-primary --indent=2 --traceback  iaso.datasource iaso.sourceversion iaso.externalcredentials  iaso.orgunittype iaso.orgunit iaso.account --output iaso/fixtures/orgunit.yaml
+./m dumpdata  --format yaml --natural-foreign --natural-primary --indent=2 --traceback  iaso.datasource iaso.sourceversion iaso.externalcredentials  iaso.orgunittype iaso.orgunit iaso.account --output iaso/fixtures/orgunit.yaml
 ```
 This will take the data in your database and dump them in the file
 

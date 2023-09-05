@@ -24,11 +24,10 @@ import { useLqasData } from '../../hooks/useLqasData.ts';
 import MESSAGES from '../../constants/messages';
 import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { defaultRounds } from '../IM/constants.ts';
-
-const paperElevation = 2;
+import { defaultRounds, paperElevation } from '../IM/constants.ts';
+import { useLqasIm } from '../IM/requests.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -45,20 +44,19 @@ export const Lqas = ({ router }) => {
     const [selectedRounds, setSelectedRounds] = useState(
         rounds ? commaSeparatedIdsToArray(rounds) : defaultRounds,
     );
+    const { data: LQASData, isFetching } = useLqasIm('lqas', country);
 
     const {
-        LQASData,
-        isFetching,
         convertedData,
         campaigns,
         campaignsFetching,
         debugData,
         hasScope,
         chartData,
-    } = useLqasData(campaign, country, selectedRounds);
+    } = useLqasData({ campaign, country, selectedRounds, LQASData });
 
     const dropDownOptions = useMemo(() => {
-        return makeDropdownOptions(LQASData.stats, campaign, selectedRounds);
+        return makeDropdownOptions(LQASData?.stats, campaign, selectedRounds);
     }, [LQASData, campaign, selectedRounds]);
 
     const onRoundChange = useCallback(
@@ -92,12 +90,13 @@ export const Lqas = ({ router }) => {
                     isFetching={isFetching}
                     campaigns={campaigns}
                     campaignsFetching={campaignsFetching}
+                    category="lqas"
                 />
                 <Grid container spacing={2} direction="row">
                     {selectedRounds.map((rnd, index) => (
                         <Grid item xs={6} key={`round_${rnd}_${index}`}>
                             <MapContainer
-                                round={parseInt(rnd, 10)} // parsing the rnd because it willl be a string when coming from params
+                                round={parseInt(rnd, 10)} // parsing the rnd because it will be a string when coming from params
                                 campaign={campaign}
                                 campaigns={campaigns}
                                 country={country}

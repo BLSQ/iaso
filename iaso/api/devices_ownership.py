@@ -1,21 +1,22 @@
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .common import HasPermission
+from hat.menupermissions import models as permission
 from iaso.models import DeviceOwnership
+from .common import HasPermission
 
 
 class DevicesOwnershipViewSet(viewsets.ViewSet):
-    """Iaso Devices ownership API
+    f"""Iaso Devices ownership API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
+    This API is restricted to authenticated users having the "{permission.FORMS}" or "{permission.SUBMISSIONS}" permissions.
 
-    GET /api/devicesownership/
+    GET /api/devicesownerships/
     """
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
+        HasPermission(permission.FORMS, permission.SUBMISSIONS),  # type: ignore
     ]
 
     def list(self, request):

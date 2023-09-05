@@ -1,10 +1,10 @@
-import typing
 import tempfile
-
-from django.core.files.uploadedfile import UploadedFile
-from django.core.files import File
-from django.test import override_settings
+import typing
 from unittest import mock
+
+from django.core.files import File
+from django.core.files.uploadedfile import UploadedFile
+from django.test import override_settings
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -58,19 +58,6 @@ class FormsVersionAPITestCase(APITestCase):
         cls.project.forms.add(cls.form_2)
 
         cls.project.save()
-
-    def test_form_versions_list_without_auth(self):
-        """GET /formversions/: without auth: 403"""
-
-        response = self.client.get("/api/formversions/")
-        self.assertJSONResponse(response, 403)
-
-    def test_form_versions_list_wrong_permission(self):
-        """GET /formversions/: with auth but without the iaso_forms permission"""
-
-        self.client.force_authenticate(self.superman)
-        response = self.client.get("/api/formversions/")
-        self.assertJSONResponse(response, 403)
 
     def test_form_versions_list(self):
         """GET /formversions/: allowed"""

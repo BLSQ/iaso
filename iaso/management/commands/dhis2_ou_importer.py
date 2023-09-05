@@ -11,9 +11,9 @@ Example
     --version_number 1 \
     --org_unit_type_csv_file ./data/play_unit_types.csv (optional)
 
-the org_unit_type_csv_file file format is a csv WITHOUT headers with iaso_orgunit_type_id,dhis2_name,dhis2_parent_name
-the source will be created if missing
-if an import already exist with the number, a warning will be displayed, you can still force with -f
+The org_unit_type_csv_file file format is a csv WITHOUT headers with iaso_orgunit_type_id,dhis2_name,dhis2_parent_name.
+The source will be created if missing.
+If an import already exist with the number, a warning will be displayed, you can still force with -f
 
 """
 
@@ -22,13 +22,10 @@ import sys
 import time
 
 from django.core.management.base import BaseCommand
-
 from django.db import transaction
 
 from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
-
 from .command_logger import CommandLogger
-
 from ...tasks.dhis2_ou_importer import (
     get_api_config,
     get_api,
@@ -40,13 +37,16 @@ csv.field_size_limit(sys.maxsize)
 
 
 class FakeTask:
-    """Fake task so we can share code with the dhis2 task and have output"""
+    """Fake task, so we can share code with the dhis2 task and have output"""
 
     def __init__(self, iaso_logger):
         self.logger = iaso_logger
 
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
         self.logger.info(progress_message, progress_value, "/", end_value)
+
+    def report_success(self, message):
+        self.logger.info(message)
 
 
 def parse_type_dict(org_unit_type_file_name):
@@ -109,7 +109,7 @@ class Command(BaseCommand):
         start = time.time()
 
         # the transaction prevent tons of small commits, and improve performance
-        # moved to outside so we have proper stats
+        # moved to outside, so we have proper stats
         with transaction.atomic():
             source, _created = DataSource.objects.get_or_create(name=source_name)
             try:

@@ -11,9 +11,10 @@ import { testTablerender } from '../../support/testTableRender';
 import { testPagination } from '../../support/testPagination';
 import { testTableSort } from '../../support/testTableSort';
 import { testPageFilters } from '../../support/testPageFilters';
+import { testSearchField } from '../../support/testSearchField';
+import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
-
 const baseUrl = `${siteBaseUrl}/dashboard/forms/submissions/tab/list/mapResults/3000`;
 
 let interceptFlag = false;
@@ -95,7 +96,7 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/orgunittypes', {
+    cy.intercept('GET', '/api/v2/orgunittypes/', {
         fixture: 'orgunittypes/list.json',
     });
     cy.intercept(
@@ -106,7 +107,7 @@ const goToPage = (
         },
     );
     cy.intercept('GET', '/api/formversions/**', {
-        fixture: 'devicesownership/list.json',
+        fixture: 'devicesownerships/list.json',
     });
     const options = {
         method: 'GET',
@@ -147,14 +148,6 @@ describe('Submissions', () => {
         });
     });
     describe('page', () => {
-        it('should redirect to default columns param', () => {
-            goToPage();
-            cy.url().should(
-                'eq',
-                `${siteBaseUrl}/dashboard/forms/submissions/accountId/1/tab/list/columns/form__name,updated_at,period,org_unit__name,status/mapResults/3000`,
-            );
-        });
-
         it('page should not be accessible if user does not have permission', () => {
             goToPage({
                 ...superUser,
@@ -162,7 +155,14 @@ describe('Submissions', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
+        });
+        describe('Search field', () => {
+            beforeEach(() => {
+                goToPage();
+            });
+
+            testSearchField(search, searchWithForbiddenChars);
         });
     });
     describe('Table', () => {
@@ -280,10 +280,86 @@ describe('Submissions', () => {
         });
     });
 
+    it('select users should filter by user ids', () => {
+        cy.intercept('GET', '/api/profiles/?search=lui', {
+            fixture: 'profiles/search/lui.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=69', {
+            fixture: 'profiles/search/mario.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=999', {
+            fixture: 'profiles/search/lui.json',
+        });
+        cy.intercept('GET', '/api/profiles/?search=mario', {
+            fixture: 'profiles/search/mario.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=999%2C69', {
+            fixture: 'profiles/ids/69-999.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=69%2C999', {
+            fixture: 'profiles/ids/69-999.json',
+        });
+        goToPage();
+        cy.wait('@getSubmissions').then(() => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'GET',
+                    pathname: '/api/instances/**',
+                    query: {
+                        ...defaultQuery,
+                        userIds: '999',
+                    },
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: listFixture,
+                    });
+                },
+            ).as('Luigi');
+        });
+
+        cy.get('#userIds').type('lui');
+        cy.wait(800);
+        cy.get('#userIds').type('{downarrow}').type('{enter}');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@Luigi').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
+        });
+        interceptFlag = false;
+        cy.intercept(
+            {
+                method: 'GET',
+                pathname: '/api/instances/**',
+                query: {
+                    ...defaultQuery,
+                    userIds: '999,69',
+                },
+            },
+            req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: listFixture,
+                });
+            },
+        ).as('LuigiMario');
+
+        cy.get('#userIds').type('mario');
+        cy.wait(800);
+        cy.get('#userIds').type('{downarrow}').type('{enter}');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@LuigiMario').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
+        });
+    });
+
     it('change filters should deep link and call api with correct params', () => {
         cy.intercept(
             'GET',
-            '/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true',
+            '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
             {
                 fixture: 'orgunits/list.json',
             },
@@ -394,9 +470,64 @@ describe('Submissions', () => {
         };
         cy.wait('@getSubmissions').then(() => {
             // TODO: test new period type day
-            testPeriod(1, '201901', '202001');
-            testPeriod(2, '2019Q1', '2020Q1');
-            testPeriod(3, '2019', '2020');
+            testPeriod(1, '201401', '201501');
+            testPeriod(2, '2014Q1', '2015Q1');
+            testPeriod(3, '2014', '2015');
+        });
+    });
+
+    it('advanced settings should filter correctly', () => {
+        goToPage();
+        cy.get('[data-test="advanced-settings"]').click();
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="start-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('14/07/2023');
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="end-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('15/07/2023');
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="start-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('12/07/2023');
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="end-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('13/07/2023');
+        cy.wait('@getSubmissions')
+            .then(() => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'GET',
+                        pathname: '/api/instances/**',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: listFixture,
+                        });
+                    },
+                );
+            })
+            .as('getSubmissionsSearch');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@getSubmissionsSearch').then(xhr => {
+            cy.wrap(interceptFlag).should('eq', true);
+            cy.wrap(xhr.request.query).should('deep.equal', {
+                ...defaultQuery,
+                showDeleted: 'false',
+                modificationDateFrom: '2023-07-14',
+                modificationDateTo: '2023-07-15',
+                sentDateFrom: '2023-07-12',
+                sentDateTo: '2023-07-13',
+            });
         });
     });
 
@@ -425,17 +556,19 @@ describe('Submissions', () => {
             cy.get('#ColumnsSelectDrawer-search').type('form');
             cy.get('@selectColumnsList').find('li').should('have.length', 2);
             cy.get('#ColumnsSelectDrawer-search-empty').click();
-            cy.get('@selectColumnsList').find('li').should('have.length', 12);
-            const testIsActive = keyName => {
+            cy.get('@selectColumnsList').find('li').should('have.length', 13);
+            const testIsActive = (keyName, withUrl = true) => {
                 cy.get('table').as('table');
                 cy.get('@table').find('thead').find('th').as('thead');
                 cy.get(`[data-test-column-switch="${keyName}"]`).should(
                     'be.checked',
                 );
                 cy.get('@thead').should('contain', keyName);
-                cy.url().should(url => {
-                    expect(url.split('columns')[1]).to.contain(keyName);
-                });
+                if (withUrl) {
+                    cy.url().should(url => {
+                        expect(url.split('columns')[1]).to.contain(keyName);
+                    });
+                }
             };
             const tstIsInactiveActive = keyName => {
                 cy.get('table').as('table');
@@ -451,7 +584,7 @@ describe('Submissions', () => {
             possibleFields.possible_fields.forEach(pf => {
                 cy.get(`[data-test-column-switch="${pf.name}"]`).as('switch');
                 if (formDetail.label_keys.includes(pf.name)) {
-                    testIsActive(pf.name);
+                    testIsActive(pf.name, false);
                     cy.get(`@switch`).click();
                     tstIsInactiveActive(pf.name);
                 } else {

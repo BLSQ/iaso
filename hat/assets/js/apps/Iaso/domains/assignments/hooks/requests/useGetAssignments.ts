@@ -15,7 +15,7 @@ export type AssignmentsResult = {
 };
 
 const getAssignments = async (options: Option): Promise<AssignmentApi[]> => {
-    const url = makeUrlWithParams('/api/microplanning/assignments', options);
+    const url = makeUrlWithParams('/api/microplanning/assignments/', options);
     return getRequest(url) as Promise<AssignmentApi[]>;
 };
 

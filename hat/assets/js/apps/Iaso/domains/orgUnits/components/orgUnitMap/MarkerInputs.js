@@ -19,7 +19,14 @@ const useStyles = makeStyles(theme => ({
         width: '100%',
     },
 }));
-const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
+const MarkerInputs = ({
+    orgUnit,
+    onChangeLocation,
+    toggleAddMarker,
+    hasMarker,
+    actionBusy,
+    isCreatingMarker,
+}) => {
     const classes = useStyles();
     return (
         <>
@@ -28,20 +35,27 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                     <Box mb={2} mt={2}>
                         <Button
                             variant="outlined"
-                            onClick={() => addMarker()}
+                            disabled={actionBusy}
+                            onClick={() => toggleAddMarker()}
                             className={classes.button}
                             color="primary"
                         >
                             <AddLocation className={classes.buttonIcon} />
-                            <FormattedMessage {...MESSAGES.addLocation} />
+                            {!isCreatingMarker && (
+                                <FormattedMessage {...MESSAGES.addLocation} />
+                            )}
+                            {isCreatingMarker && (
+                                <FormattedMessage {...MESSAGES.done} />
+                            )}
                         </Button>
                     </Box>
                 )}
                 {hasMarker && (
                     <>
                         <InputComponent
+                            disabled={actionBusy}
                             keyValue="latitude"
-                            onChange={(key, latitude) => {
+                            onChange={(_, latitude) => {
                                 if (latitude) {
                                     onChangeLocation({
                                         lat: parseFloat(latitude),
@@ -53,6 +67,7 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                             label={MESSAGES.latitude}
                         />
                         <InputComponent
+                            disabled={actionBusy}
                             keyValue="longitude"
                             onChange={(key, longitude) => {
                                 if (longitude) {
@@ -66,6 +81,7 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                             label={MESSAGES.longitude}
                         />
                         <InputComponent
+                            disabled={actionBusy}
                             keyValue="altitude"
                             value={orgUnit.altitude}
                             type="number"
@@ -78,6 +94,7 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
                         />
                         <Box mb={2} mt={2}>
                             <Button
+                                disabled={actionBusy}
                                 variant="outlined"
                                 color="primary"
                                 className={classes.button}
@@ -101,9 +118,11 @@ const MarkerInputs = ({ orgUnit, onChangeLocation, addMarker, hasMarker }) => {
 };
 MarkerInputs.propTypes = {
     orgUnit: PropTypes.object.isRequired,
-    addMarker: PropTypes.func.isRequired,
+    toggleAddMarker: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
     hasMarker: PropTypes.bool.isRequired,
+    actionBusy: PropTypes.bool.isRequired,
+    isCreatingMarker: PropTypes.bool.isRequired,
 };
 
 export default MarkerInputs;

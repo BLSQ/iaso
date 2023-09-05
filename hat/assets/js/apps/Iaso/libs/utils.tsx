@@ -7,7 +7,7 @@
 // url should include closing slash
 export const makeUrlWithParams = (
     url: string,
-    urlParams: Record<string, string>,
+    urlParams: Record<string, string | number | undefined>,
 ): string => {
     // @ts-ignore
     const urlSearchParams = new URLSearchParams();
@@ -15,6 +15,8 @@ export const makeUrlWithParams = (
     Object.entries(urlParams).forEach(([k, v]) => {
         if (Array.isArray(v)) {
             v.forEach(p => urlSearchParams.append(k, p));
+        } else if (typeof v === 'number') {
+            urlSearchParams.append(k, v.toString());
         } else if (v !== undefined) {
             urlSearchParams.append(k, v);
         }

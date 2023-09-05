@@ -1,4 +1,5 @@
 from datetime import date
+from unittest import skip
 
 from django.contrib.auth.models import User, Permission
 from django.utils.timezone import now
@@ -302,6 +303,7 @@ class PolioAPITestCase(APITestCase):
         self.assertNotEqual(r["round_two"], None, r)
         self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -318,7 +320,10 @@ class PolioAPITestCase(APITestCase):
                 {
                     "number": 1,
                     "started_at": "2021-02-01",
-                    "ended_at": "2021-02-20",
+                    "lqas_district_failing": 100
+                    # Removed that line to test that empty field in payload
+                    # will not overwrite existing field in DB
+                    # "ended_at": "2021-02-20",
                 },
                 {
                     "number": 2,
@@ -332,7 +337,12 @@ class PolioAPITestCase(APITestCase):
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         self.assertEqual(campaign.rounds.count(), 2, campaign.rounds)
+        self.assertEqual(campaign.rounds.get(number=1).number, 1)
+        self.assertEqual(campaign.rounds.get(number=1).ended_at, date(2021, 1, 20))
+        self.assertEqual(campaign.rounds.get(number=1).lqas_district_failing, 100)
+        self.assertEqual(campaign.rounds.get(number=1).lqas_district_passing, None)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign_remove_round(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -368,6 +378,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(2, rounds.count())
         self.assertQuerysetEqual(rounds, [1, 2], lambda r: r.number)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign_remove_all_rounds(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -391,6 +402,80 @@ class PolioAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 0)
 
+    def test_create_campaign_with_scopes(self):
+        self.client.force_authenticate(self.yoda)
+        self.assertEqual(Campaign.objects.count(), 0)
+
+        payload = {
+            "account": self.account.pk,
+            "obr_name": "obr_name",
+            "separate_scopes_per_round": False,
+            "scopes": [
+                {"vaccine": "bOPV", "group": {"org_units": [self.org_unit.id]}},
+                {"vaccine": "mOPV2", "group": {"org_units": [self.child_org_unit.id]}},
+            ],
+            "rounds": [
+                {
+                    "number": 1,
+                    "started_at": "2021-02-01",
+                    "ended_at": "2021-02-20",
+                },
+                {
+                    "number": 2,
+                    "started_at": "2021-04-01",
+                    "ended_at": "2021-04-20",
+                },
+            ],
+        }
+
+        response = self.client.post("/api/polio/campaigns/", payload, format="json")
+
+        self.assertEqual(response.status_code, 201, response.content)
+        self.assertEqual(Campaign.objects.count(), 1)
+        c = Campaign.objects.first()
+        self.assertEqual(c.obr_name, "obr_name")
+        rounds = c.rounds.all().order_by("number")
+        self.assertEqual(2, rounds.count())
+        self.assertQuerysetEqual(rounds, [1, 2], lambda r: r.number)
+        self.assertQuerysetEqual(c.scopes.get(vaccine="bOPV").group.org_units.all(), [self.org_unit])
+        self.assertEqual(c.scopes.get(vaccine="bOPV").group.source_version, self.org_unit.version)
+        self.assertQuerysetEqual(c.scopes.get(vaccine="mOPV2").group.org_units.all(), [self.child_org_unit])
+        # check via the api
+        response = self.client.get(f"/api/polio/campaigns/{c.id}/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertNotEqual(r["round_one"], None, r)
+        # self.assertHasField(r["round_one"], "started_at", r)
+        self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
+        self.assertEqual(r["round_one"]["districts_count_calculated"], 2, r["round_one"])
+        self.assertEqual(len(r["rounds"]), 2)
+        self.assertNotEqual(r["round_two"], None, r)
+        self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
+        self.assertEqual(r["round_two"]["districts_count_calculated"], 2, r["round_two"])
+
+        scope_bOPV = c.scopes.get(vaccine="bOPV")
+        scope_mOPV2 = c.scopes.get(vaccine="mOPV2")
+        self.assertEqual(
+            r["scopes"],
+            [
+                {
+                    "vaccine": "bOPV",
+                    "group": {
+                        "name": scope_bOPV.group.name,
+                        "id": scope_bOPV.group.id,
+                        "org_units": [o.id for o in scope_bOPV.group.org_units.all()],
+                    },
+                },
+                {
+                    "vaccine": "mOPV2",
+                    "group": {
+                        "name": scope_mOPV2.group.name,
+                        "id": scope_mOPV2.group.id,
+                        "org_units": [o.id for o in scope_mOPV2.group.org_units.all()],
+                    },
+                },
+            ],
+        )
+
     def test_create_campaign_with_round_scopes(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -399,6 +484,7 @@ class PolioAPITestCase(APITestCase):
             "account": self.account.pk,
             "obr_name": "obr_name",
             "detection_status": "PENDING",
+            "separate_scopes_per_round": True,
             "rounds": [
                 {
                     "number": 1,
@@ -434,9 +520,11 @@ class PolioAPITestCase(APITestCase):
         self.assertNotEqual(r["round_one"], None, r)
         # self.assertHasField(r["round_one"], "started_at", r)
         self.assertEqual(r["round_one"]["started_at"], "2021-02-01", r)
+        self.assertEqual(r["round_one"]["districts_count_calculated"], 2, r["round_one"])
         self.assertEqual(len(r["rounds"]), 2)
         self.assertNotEqual(r["round_two"], None, r)
         self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
+        self.assertEqual(r["round_two"]["districts_count_calculated"], 0, r["round_two"])
         round_one = list(filter(lambda r: r["number"] == 1, r["rounds"]))[0]
 
         self.assertEqual(
@@ -445,7 +533,7 @@ class PolioAPITestCase(APITestCase):
                 {
                     "vaccine": "bOPV",
                     "group": {
-                        "name": "hidden roundScope",
+                        "name": "scope for round 1 campaign obr_name - bOPV",
                         "id": first_round.scopes.get(vaccine="bOPV").group.id,
                         "org_units": [o.id for o in first_round.scopes.get(vaccine="bOPV").group.org_units.all()],
                     },
@@ -453,7 +541,7 @@ class PolioAPITestCase(APITestCase):
                 {
                     "vaccine": "mOPV2",
                     "group": {
-                        "name": "hidden roundScope",
+                        "name": "scope for round 1 campaign obr_name - mOPV2",
                         "id": first_round.scopes.get(vaccine="mOPV2").group.id,
                         "org_units": [o.id for o in first_round.scopes.get(vaccine="mOPV2").group.org_units.all()],
                     },
@@ -461,6 +549,7 @@ class PolioAPITestCase(APITestCase):
             ],
         )
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_update_campaign_with_vaccine_data(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -613,7 +702,23 @@ class PreparednessAPITestCase(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(self.yoda)
 
-    def test_two_campaign_round(self):
+    def test_two_campaign_round_empty(self):
+        campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
+        campaign_a.rounds.create(number=1)
+        campaign_a.rounds.create(number=3)
+        Campaign.objects.create(obr_name="campaign B", account=self.account)
+        Campaign.objects.create(obr_name="campaign c", account=self.account)
+
+        response = self.client.get(f"/api/polio/campaigns/{campaign_a.id}/", format="json")
+
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r["rounds"]), 2)
+
+        response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
+        r = self.assertJSONResponse(response, 200)
+        self.assertEqual(len(r), 0)
+
+    def test_two_campaign_round_error(self):
         campaign_a = Campaign.objects.create(obr_name="campaign A", account=self.account)
         round_one = campaign_a.rounds.create(number=1)
         round_three = campaign_a.rounds.create(number=3)
@@ -625,9 +730,6 @@ class PreparednessAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(len(r["rounds"]), 2)
 
-        response = self.client.get(f"/api/polio/preparedness_dashboard/", format="json")
-        self.assertJSONResponse(response, 200)
-
         round_one.preparedness_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1"
         round_one.save()
         round_three.preparedness_spreadsheet_url = "https://docs.google.com/spreadsheets/d/1"
@@ -638,7 +740,13 @@ class PreparednessAPITestCase(APITestCase):
         self.assertEqual(len(r), 2)
         for campaign_round in r:
             self.assertEqual(campaign_round["status"], "not_sync")
-        print(r)
+
+        """[{'campaign_id': '6ecda204-2206-4ae2-a38a-5359684dccf6', 'campaign_obr_name': 'campaign A',
+          'indicators': {}, 'round': 'Round1', 'round_id': 44, 'round_start': None, 'round_end': None,
+          'status': 'not_sync', 'details': 'This spreadsheet has not been synchronised yet'}, {
+                'campaign_id': '6ecda204-2206-4ae2-a38a-5359684dccf6', 'campaign_obr_name': 'campaign A',
+                'indicators': {}, 'round': 'Round3', 'round_id': 45, 'round_start': None, 'round_end': None,
+                'status': 'not_sync', 'details': 'This spreadsheet has not been synchronised yet'}]"""
 
 
 class TeamAPITestCase(APITestCase):
@@ -665,9 +773,8 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         self.assertEqual(self.user.is_superuser, False)
         self.user.user_permissions.add(Permission.objects.get(codename="iaso_polio"))
-
         payload = {"obr_name": "test2"}
-        response = self.client.patch(f"/api/polio/campaigns/{self.c.id}/", payload, format="json")
+        response = self.client.put(f"/api/polio/campaigns/{self.c.id}/", payload, format="json")
         self.assertJSONResponse(response, 200)
 
         self.assertEqual(Modification.objects.count(), 1)

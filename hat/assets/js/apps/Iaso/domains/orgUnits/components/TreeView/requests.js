@@ -4,9 +4,9 @@ import { dispatch } from '../../../../redux/store';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../../../constants/snackBars';
 
-export const getChildrenData = id => {
+export const getChildrenData = (id, validationStatus = 'all') => {
     return getRequest(
-        `/api/orgunits/?&parent_id=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`,
+        `/api/orgunits/treesearch/?&parent_id=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`,
     )
         .then(response => {
             return response.orgunits.map(orgUnit => {
@@ -29,19 +29,19 @@ export const getChildrenData = id => {
         });
 };
 
-const makeUrl = (id, type) => {
+const makeUrl = (id, type, validationStatus = 'all') => {
     if (id) {
         if (type === 'version')
-            return `/api/orgunits/?&rootsForUser=true&version=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+            return `/api/orgunits/treesearch/?&rootsForUser=true&version=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
         if (type === 'source')
-            return `/api/orgunits/?&rootsForUser=true&source=${id}&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+            return `/api/orgunits/treesearch/?&rootsForUser=true&source=${id}&validation_status=${validationStatus}&ignoreEmptyNames=true`;
     }
-    return `/api/orgunits/?&rootsForUser=true&defaultVersion=true&validation_status=all&treeSearch=true&ignoreEmptyNames=true`;
+    return `/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=${validationStatus}&ignoreEmptyNames=true`;
 };
 
 // mapping the request result here i.o in the useRootData hook to keep the hook more generic
-export const getRootData = (id, type = 'source') => {
-    return getRequest(makeUrl(id, type))
+export const getRootData = (id, type = 'source', validationStatus = 'all') => {
+    return getRequest(makeUrl(id, type, validationStatus))
         .then(response => {
             return response.orgunits.map(orgUnit => {
                 return {
@@ -117,3 +117,33 @@ export const useGetOrgUnit = OrgUnitId =>
             enabled: OrgUnitId !== undefined && OrgUnitId !== null,
         },
     );
+
+const getOrgUnits = (orgUnitsIds, validationStatus = 'all') => {
+    const idsString = Array.isArray(orgUnitsIds)
+        ? orgUnitsIds?.join(',')
+        : orgUnitsIds;
+    const searchParam = `[{"validation_status":"${validationStatus}","search": "ids:${idsString}" }]`;
+    return getRequest(`/api/orgunits/?limit=10&searches=${searchParam}`);
+};
+
+/**
+ * Use this hook with for the TreeviewModal in multiselect mode
+ *
+ */
+
+export const useGetMultipleOrgUnits = (
+    orgUnitsIds,
+    validationStatus = 'all',
+) => {
+    return useSnackQuery({
+        queryKey: ['orgunits', orgUnitsIds, validationStatus],
+        queryFn: () => getOrgUnits(orgUnitsIds, validationStatus),
+        options: {
+            enabled: Boolean(orgUnitsIds?.length),
+            select: data => {
+                if (!data) return {};
+                return data.orgunits;
+            },
+        },
+    });
+};

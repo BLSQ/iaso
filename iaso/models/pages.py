@@ -1,6 +1,6 @@
-from django.db import models
 from django.contrib.auth.models import User
-from django.utils.translation import ugettext_lazy as _
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 
 from iaso.models import Account
 
@@ -40,7 +40,15 @@ class Page(models.Model):
 
     powerbi_group_id = models.TextField(blank=True, null=True)
     powerbi_report_id = models.TextField(blank=True, null=True)
+    powerbi_dataset_id = models.TextField(blank=True, null=True)
     powerbi_filters = models.JSONField(blank=True, null=True)
+    # see https://learn.microsoft.com/en-us/javascript/api/overview/powerbi/configure-report-settings#locale-settings
+    powerbi_language = models.CharField(
+        max_length=20,
+        blank=True,
+        null=True,
+        help_text="Language and locale for the PowerBI embedded report e.g en-us or fr-be",
+    )
 
     def __str__(self):
         return "%s " % (self.name,)

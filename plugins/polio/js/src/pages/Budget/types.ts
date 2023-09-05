@@ -7,6 +7,27 @@ import {
 export type Timeline = {
     categories: Categories;
 };
+export type Params = {
+    campaignId: string;
+    previousStep: string;
+    quickTransition?: string;
+    campaignName?: string;
+    page?: string;
+    order?: string;
+    pageSize?: string;
+};
+export type Item = {
+    label: string;
+    step_id?: number;
+    cancelled?: boolean;
+    skipped?: boolean;
+    performed_at?: string; // datetime
+    performed_by?: {
+        username;
+        first_name;
+        last_name;
+    };
+};
 
 export type Categories = {
     key: string;
@@ -14,19 +35,10 @@ export type Categories = {
     color: string; // css string
     active: boolean;
     completed: boolean;
-    items: {
-        label: string;
-        step_id?: number;
-        performed_at?: string; // datetime
-        performed_by?: {
-            username;
-            first_name;
-            last_name;
-        }; // User
-    }[];
+    items: Item[];
 }[];
 
-export type NextTransition = {
+export type Transition = {
     key: string;
     label: string;
     color: Nullable<'primary' | 'green' | 'red'>;
@@ -48,7 +60,7 @@ export type Budget = {
         label: string;
     };
     // -> optional: need to pass a param for the API to return it
-    next_transitions?: NextTransition[];
+    next_transitions?: Transition[];
     // -> optional: need to pass a param for the API to return it
     possible_states?: {
         key: string;

@@ -1,7 +1,6 @@
-from time import time
 from copy import deepcopy
+from time import time
 from typing import Optional, List
-
 
 from django.db import transaction
 
@@ -38,7 +37,7 @@ def update_single_unit_from_bulk(
 
 @task_decorator(task_name="org_unit_bulk_update")
 def org_units_bulk_update(
-    app_id: Optional[int],
+    app_id: Optional[str],
     select_all: bool,
     selected_ids: List[int],
     unselected_ids: List[int],
@@ -55,8 +54,7 @@ def org_units_bulk_update(
 
     # Restrict qs to org units accessible to the user
     user = task.launcher
-    # TODO: investigate type error on next line
-    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)  # type: ignore
+    queryset = OrgUnit.objects.filter_for_user_and_app_id(user, app_id)
 
     if not select_all:
         queryset = queryset.filter(pk__in=selected_ids)
@@ -66,7 +64,7 @@ def org_units_bulk_update(
             # TODO: investigate: can the user be anonymous on next line?
             profile = user.iaso_profile  # type: ignore
             base_queryset = queryset
-            queryset = OrgUnit.objects.none()
+            queryset = OrgUnit.objects.none()  # type: ignore
             for search in searches:
                 search_queryset = build_org_units_queryset(base_queryset, search, profile)
                 queryset = queryset.union(search_queryset)
@@ -75,7 +73,7 @@ def org_units_bulk_update(
         raise Exception("No matching org unit found")
 
     # Assure that none of the OrgUnit we are modifying is in a read only data source
-    # ? Should not this be done in the save() or in a constraint?
+    # ? Shouldn't this be done in the save() or in a constraint?
     read_only_data_sources = DataSource.objects.filter(
         id__in=queryset.values_list("version__data_source", flat=True), read_only=True
     )

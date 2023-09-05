@@ -1,11 +1,13 @@
 import gspread  # type: ignore
 import gspread.utils  # type: ignore
-import gspread.utils  # type: ignore
 
 
 class CachedSpread:
     def __init__(self, cache_dict):
         self.c = cache_dict
+        ranges = self.c.get("named_ranges", [])
+        range_dict = {named_range["name"]: named_range for named_range in ranges}
+        self.range_dict = range_dict
 
     @staticmethod
     def from_spread(spread: gspread.Spreadsheet):
@@ -13,6 +15,7 @@ class CachedSpread:
         dict_spread["title"] = spread.title
         dict_spread["id"] = spread.id
         dict_spread["properties"] = spread._properties
+        dict_spread["named_ranges"] = spread.list_named_ranges()
         dict_spread["sheets"] = sheets = []
         for sheet in spread.worksheets():
             # Google sheet has some kind of special "chart" as a sheet
@@ -35,6 +38,13 @@ class CachedSpread:
     @property
     def title(self):
         return self.c["title"]
+
+    def get_range_row_col(self, name):
+        "get start of range, useful for range of size one"
+        r = self.range_dict[name]
+        row = r["range"]["startRowIndex"] + 1
+        col = r["range"]["startColumnIndex"] + 1
+        return row, col
 
     def worksheets(self):
         return [CachedSheet(cd) for cd in self.c["sheets"]]

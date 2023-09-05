@@ -1,8 +1,9 @@
-import typing
 from .common import ModelViewSet, HasPermission, TimestampField
-from rest_framework import serializers, viewsets, permissions
-from rest_framework.response import Response
+from rest_framework import serializers, permissions
+
 from iaso.models import Device, DeviceOwnership, Instance
+from .common import ModelViewSet, HasPermission, TimestampField
+from hat.menupermissions import models as permission
 
 
 class DeviceSerializer(serializers.ModelSerializer):
@@ -29,9 +30,9 @@ class DeviceSerializer(serializers.ModelSerializer):
 
 
 class DevicesViewSet(ModelViewSet):
-    """Iaso Devices API
+    f"""Iaso Devices API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
+    This API is restricted to authenticated users having the "{permission.FORMS}" or "{permission.SUBMISSIONS}" permissions.
 
     GET /api/devices/
     GET /api/devices/<id>
@@ -39,7 +40,7 @@ class DevicesViewSet(ModelViewSet):
 
     permission_classes = [
         permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
+        HasPermission(permission.FORMS, permission.SUBMISSIONS),  # type: ignore
     ]
     serializer_class = DeviceSerializer
     results_key = "devices"

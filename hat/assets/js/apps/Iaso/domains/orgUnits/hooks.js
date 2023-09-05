@@ -13,6 +13,7 @@ export const useOrgUnitDetailData = (
     isNewOrgunit,
     orgUnitId,
     setCurrentOrgUnit,
+    levels,
 ) => {
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
@@ -24,11 +25,10 @@ export const useOrgUnitDetailData = (
                 onSuccess: ou => setCurrentOrgUnit(ou),
             },
         );
-
     const groupsUrl = useMemo(() => {
         const basUrl = '/api/groups/';
         if (isNewOrgunit) {
-            return `${basUrl}?&defaultVersion=true'`;
+            return `${basUrl}?&defaultVersion=true`;
         }
         if (originalOrgUnit?.source_id) {
             return `${basUrl}?&dataSource=${originalOrgUnit.source_id}`;
@@ -47,6 +47,7 @@ export const useOrgUnitDetailData = (
             isFetching: isFetchingAssociatedDataSources,
         },
         { data: sources = [], isFetching: isFetchingPlainSources },
+        { data: parentOrgUnit },
     ] = useSnackQueries([
         {
             queryKey: ['algorithms'],
@@ -64,7 +65,6 @@ export const useOrgUnitDetailData = (
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
-                enabled: Boolean(originalOrgUnit),
             },
         },
         {
@@ -77,7 +77,7 @@ export const useOrgUnitDetailData = (
         },
         {
             queryKey: ['orgUnitTypes'],
-            queryFn: () => getRequest('/api/orgunittypes/'),
+            queryFn: () => getRequest('/api/v2/orgunittypes/'),
             snackErrorMsg: MESSAGES.fetchOrgUnitTypesError,
             options: {
                 select: data =>
@@ -125,6 +125,17 @@ export const useOrgUnitDetailData = (
                 enabled: !isNewOrgunit,
             },
         },
+        {
+            queryKey: ['parentOrgUnit', orgUnitId],
+            queryFn: () => getRequest(`/api/orgunits/${levels}/`),
+            snackErrorMsg: MESSAGES.fetchOrgUnitError,
+            options: {
+                enabled:
+                    Boolean(levels) &&
+                    isNewOrgunit &&
+                    levels.split(',').length === 1,
+            },
+        },
     ]);
 
     const isFetchingSources = isNewOrgunit
@@ -151,6 +162,7 @@ export const useOrgUnitDetailData = (
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
+        parentOrgUnit,
     };
 };
 

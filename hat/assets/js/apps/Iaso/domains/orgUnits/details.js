@@ -19,8 +19,8 @@ import {
     onlyChildrenParams,
     orgUnitFiltersWithPrefix,
 } from '../../constants/filters';
+import { redirectTo, redirectToReplace } from '../../routing/actions.ts';
 import { baseUrls } from '../../constants/urls';
-import { redirectTo, redirectToReplace } from '../../routing/actions';
 import {
     deleteForm,
     fetchAssociatedOrgUnits,
@@ -33,20 +33,22 @@ import formsTableColumns from '../forms/config';
 import LinksDetails from '../links/components/LinksDetailsComponent';
 import { linksTableColumns } from '../links/config';
 import { resetOrgUnits } from './actions';
-import { OrgUnitForm } from './components/OrgUnitForm';
-import OrgUnitMap from './components/orgUnitMap/OrgUnitMapComponent';
+import { OrgUnitForm } from './components/OrgUnitForm.tsx';
+import { OrgUnitMap } from './components/orgUnitMap/OrgUnitMap/OrgUnitMap.tsx';
 import { OrgUnitsMapComments } from './components/orgUnitMap/OrgUnitsMapComments';
-import { orgUnitsTableColumns } from './config';
+import { useOrgUnitsTableColumns } from './config';
 import {
     useOrgUnitDetailData,
     useRefreshOrgUnit,
     useSaveOrgUnit,
 } from './hooks';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus.ts';
 import MESSAGES from './messages';
 import {
     getAliasesArrayFromString,
     getLinksSources,
     getOrgUnitsTree,
+    getOrgUnitsUrl,
 } from './utils';
 import { useCurrentUser } from '../../utils/usersUtils.ts';
 
@@ -108,12 +110,11 @@ const tabs = [
 const OrgUnitDetail = ({ params, router }) => {
     const classes = useStyles();
     const dispatch = useDispatch();
-
     const { mutateAsync: saveOu, isLoading: savingOu } = useSaveOrgUnit();
     const queryClient = useQueryClient();
     const { formatMessage } = useSafeIntl();
     const refreshOrgUnitQueryCache = useRefreshOrgUnit();
-
+    const childrenColumns = useOrgUnitsTableColumns(classes);
     const prevPathname =
         useSelector(state => state.routerCustom.prevPathname) || null;
     const currentUser = useCurrentUser();
@@ -132,6 +133,11 @@ const OrgUnitDetail = ({ params, router }) => {
         () => params.orgUnitId === '0',
         [params.orgUnitId],
     );
+
+    const {
+        data: validationStatusOptions,
+        isLoading: isLoadingValidationStatusOptions,
+    } = useGetValidationStatus(true);
 
     const title = useMemo(() => {
         if (isNewOrgunit) {
@@ -197,34 +203,40 @@ const OrgUnitDetail = ({ params, router }) => {
         [params, dispatch],
     );
 
-    const handleChangeShape = (geoJson, key) => {
-        setOrgUnitLocationModified(true);
-        setCurrentOrgUnit({
-            ...currentOrgUnit,
-            [key]: geoJson,
-        });
-    };
+    const handleChangeShape = useCallback(
+        (geoJson, key) => {
+            setOrgUnitLocationModified(true);
+            setCurrentOrgUnit({
+                ...currentOrgUnit,
+                [key]: geoJson,
+            });
+        },
+        [currentOrgUnit],
+    );
 
-    const handleChangeLocation = location => {
-        // TODO not sure why, perhaps to remove decimals
-        const convert = pos =>
-            pos !== null ? parseFloat(pos.toFixed(8)) : null;
-        const newPos = {
-            altitude: location.alt ? convert(location.alt) : 0,
-        };
-        // only update dimensions that are presents
-        if (location.lng !== undefined) {
-            newPos.longitude = convert(location.lng);
-        }
-        if (location.lat !== undefined) {
-            newPos.latitude = convert(location.lat);
-        }
-        setOrgUnitLocationModified(true);
-        setCurrentOrgUnit({
-            ...currentOrgUnit,
-            ...newPos,
-        });
-    };
+    const handleChangeLocation = useCallback(
+        location => {
+            // TODO not sure why, perhaps to remove decimals
+            const convert = pos =>
+                pos !== null ? parseFloat(pos.toFixed(8)) : null;
+            const newPos = {
+                altitude: location.alt ? convert(location.alt) : 0,
+            };
+            // only update dimensions that are presents
+            if (location.lng !== undefined) {
+                newPos.longitude = convert(location.lng);
+            }
+            if (location.lat !== undefined) {
+                newPos.latitude = convert(location.lat);
+            }
+            setOrgUnitLocationModified(true);
+            setCurrentOrgUnit({
+                ...currentOrgUnit,
+                ...newPos,
+            });
+        },
+        [currentOrgUnit],
+    );
 
     const {
         algorithms,
@@ -239,7 +251,13 @@ const OrgUnitDetail = ({ params, router }) => {
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
-    } = useOrgUnitDetailData(isNewOrgunit, params.orgUnitId, setCurrentOrgUnit);
+        parentOrgUnit,
+    } = useOrgUnitDetailData(
+        isNewOrgunit,
+        params.orgUnitId,
+        setCurrentOrgUnit,
+        params.levels,
+    );
 
     const goToRevision = useCallback(
         (orgUnitRevision, onSuccess) => {
@@ -265,7 +283,7 @@ const OrgUnitDetail = ({ params, router }) => {
     );
 
     const handleSaveOrgUnit = useCallback(
-        (newOrgUnit = {}, onSuccess, onError) => {
+        (newOrgUnit = {}, onSuccess = () => {}, onError = () => {}) => {
             let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
             orgUnitPayload = {
                 ...orgUnitPayload,
@@ -277,6 +295,7 @@ const OrgUnitDetail = ({ params, router }) => {
             };
             saveOu(orgUnitPayload)
                 .then(ou => {
+                    setCurrentOrgUnit(ou);
                     setOrgUnitLocationModified(false);
                     dispatch(resetOrgUnits());
                     if (isNewOrgunit) {
@@ -303,11 +322,17 @@ const OrgUnitDetail = ({ params, router }) => {
     );
 
     useEffect(() => {
-        if (isNewOrgunit) {
-            setCurrentOrgUnit(initialOrgUnit);
+        if (isNewOrgunit && !currentOrgUnit) {
+            if (params.levels && parentOrgUnit) {
+                setCurrentOrgUnit({
+                    ...initialOrgUnit,
+                    parent: parentOrgUnit,
+                });
+            } else if (!params.levels) {
+                setCurrentOrgUnit(initialOrgUnit);
+            }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [parentOrgUnit, isNewOrgunit, params.levels, currentOrgUnit]);
 
     // Set levels params in the url
     useEffect(() => {
@@ -365,7 +390,6 @@ const OrgUnitDetail = ({ params, router }) => {
         isNewOrgunit,
         sourcesSelected,
     ]);
-
     return (
         <section className={classes.root}>
             <TopBar
@@ -378,9 +402,7 @@ const OrgUnitDetail = ({ params, router }) => {
                         }, 300);
                     } else {
                         dispatch(
-                            redirectTo(baseUrls.orgUnits, {
-                                accountId: params.accountId,
-                            }),
+                            redirectTo(getOrgUnitsUrl(params.accountId), {}),
                         );
                     }
                 }}
@@ -507,6 +529,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                             user: currentUser,
                                             deleteForm: handleDeleteForm,
                                             orgUnitId: params.orgUnitId,
+                                            dispatch,
                                         })}
                                         forceRefresh={forceSingleTableRefresh}
                                         onForceRefreshDone={() =>
@@ -538,16 +561,15 @@ const OrgUnitDetail = ({ params, router }) => {
                                         formatMessage,
                                         groups,
                                         orgUnitTypes,
+                                        validationStatusOptions,
+                                        isLoadingValidationStatusOptions,
                                     )}
                                     params={params}
                                     paramsPrefix="childrenParams"
                                     baseUrl={baseUrl}
                                     endPointPath="orgunits"
                                     fetchItems={fetchOrgUnitsList}
-                                    columns={orgUnitsTableColumns(
-                                        formatMessage,
-                                        classes,
-                                    )}
+                                    columns={childrenColumns}
                                 />
                             </div>
                             <div

@@ -1,13 +1,12 @@
-from django.core.management.base import BaseCommand
 import csv
 import json
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Project, Instance, Form
-from django.contrib.gis.geos import Point
-from uuid import uuid4
-import math
-from django.db import models, transaction
-from uuid import uuid4
 from collections import defaultdict
+from uuid import uuid4
+
+from django.core.management.base import BaseCommand
+from django.db import transaction
+
+from iaso.models import OrgUnit, Instance, Form
 
 
 class Command(BaseCommand):
@@ -56,7 +55,6 @@ class Command(BaseCommand):
                 option_csv_reader = csv.reader(optionfile, delimiter=",")
                 for row in list(option_csv_reader)[1:]:
                     print(row)
-                    t = row[0]
                     option = row[1]
                     form_value = row[2]
                     xls_values = [v for v in row[3:] if v]
@@ -113,13 +111,12 @@ class Command(BaseCommand):
 
                                         data[m["xls_form_id"]] = int(value)
                                         # print(formula, value)
-                                    except Exception as e:
+                                    except Exception:
                                         pass
                                         # print("problems with values", v1, data[v1], v2, data[v2], e)
 
                                     # print(formula)
                                 elif t == "select":
-
                                     value = row[col_indices[key]]
                                     if value:
                                         value = value.strip()
@@ -177,9 +174,7 @@ class Command(BaseCommand):
 
                                         data[m["xls_form_id"]] = value
                                         # print("value for %s %s %s" % (key, m['xls_form_id'], value, ))
-                                    except Exception as e:
-                                        # print("qmslkdjf EXCEPTION", e)
-                                        # print("value for %s %s %s" % (key, m['xls_form_id'], value,))
+                                    except Exception:  # FIXME: too broad exception
                                         pass
                                 uuid = str(uuid4())
                                 data["instanceID"] = "uuid:%s" % uuid

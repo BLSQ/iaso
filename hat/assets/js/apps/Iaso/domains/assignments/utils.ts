@@ -87,15 +87,20 @@ export const getTeamUserName = (
     let fullItem;
     let displayString = '';
     if (selectedItem) {
+        displayString = '';
         if (currentTeam?.type === 'TEAM_OF_USERS') {
             fullItem = profiles.find(
                 profile => profile.user_id === selectedItem.id,
             );
-            displayString = getDisplayName(fullItem);
+            if (fullItem) {
+                displayString = getDisplayName(fullItem);
+            }
         }
         if (currentTeam?.type === 'TEAM_OF_TEAMS') {
             fullItem = teams.find(team => team.original.id === selectedItem.id);
-            displayString = fullItem.label;
+            if (fullItem) {
+                displayString = fullItem.label;
+            }
         }
     }
     return displayString;

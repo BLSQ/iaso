@@ -43,9 +43,11 @@ const goToPage = (
         ...formQuery,
     };
     cy.intercept({ ...options, query }, req => {
-        req.continue(res => {
-            interceptFlag = true;
-            res.send({ fixture });
+        req.on('response', response => {
+            if (response.statusMessage === 'OK') {
+                interceptFlag = true;
+                response.send({ fixture });
+            }
         });
     }).as('getProjects');
     cy.visit(baseUrl);
@@ -124,7 +126,7 @@ describe('Projects', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 

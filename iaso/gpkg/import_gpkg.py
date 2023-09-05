@@ -1,3 +1,4 @@
+import math
 import sqlite3
 from copy import deepcopy
 from typing import Dict, List, Optional, Tuple, Union
@@ -6,6 +7,7 @@ import fiona  # type: ignore
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.db import transaction
+
 from hat.audit import models as audit_models
 from iaso.models import DataSource, Group, OrgUnit, OrgUnitType, Project, SourceVersion
 from iaso.models.org_unit import get_or_create_org_unit_type
@@ -55,7 +57,12 @@ def convert_to_geography(geom_type: str, coordinates: list):
     geom_type = geom_type.lower()
     geom: Union[Point, MultiPolygon]
     if geom_type == "point":
+        if any(math.isnan(coordinate) for coordinate in coordinates):
+            # the lib return Nan for empty point, we don't want to store it in that case
+            # and geom.empty don't work at that point (it only work after we get it back from the db).
+            return None
         # For some reason point in iaso are in 3D
+
         if len(coordinates) == 2:
             geom = Point(*coordinates, z=0)  # type: ignore
         else:
@@ -66,6 +73,8 @@ def convert_to_geography(geom_type: str, coordinates: list):
         geom = MultiPolygon(*[Polygon(*coord) for coord in coordinates])
     else:
         raise Exception(f"Unhandled geom type {geom_type}")
+    if geom.empty:
+        return None
     return geom
 
 
@@ -97,7 +106,8 @@ def create_or_update_orgunit(
 
     orgunit.name = props["name"]
     orgunit.org_unit_type = data["type"]
-    orgunit.validation_status = validation_status
+    if orgunit.validation_status is None:
+        orgunit.validation_status = validation_status
     orgunit.source_ref = props["ref"]
     orgunit.version = source_version
 
@@ -107,7 +117,10 @@ def create_or_update_orgunit(
             orgunit.location = geom
         else:
             orgunit.geom = geom
-            orgunit.simplified_geom = geom
+            simplified_geom = geom.simplify(tolerance=0.002)
+            if type(simplified_geom) == Polygon:
+                simplified_geom = MultiPolygon(simplified_geom)
+            orgunit.simplified_geom = simplified_geom
 
     orgunit.save(skip_calculate_path=True)
 
@@ -140,7 +153,6 @@ def get_ref(inst: Union[OrgUnit, Group]) -> str:
 
 @transaction.atomic
 def import_gpkg_file(filename, project_id, source_name, version_number, validation_status, description):
-
     source, created = DataSource.objects.get_or_create(name=source_name)
     if source.read_only:
         raise Exception("Source is marked read only")

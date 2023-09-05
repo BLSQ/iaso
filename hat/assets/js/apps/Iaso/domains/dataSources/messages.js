@@ -2,7 +2,7 @@ import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
     actions: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     dataSources: {
@@ -190,7 +190,7 @@ const MESSAGES = defineMessages({
     },
     orgUnitTypes: {
         id: 'iaso.datasources.label.orgUnitTypes',
-        defaultMessage: 'OrgUnit types',
+        defaultMessage: 'Org Unit Types',
     },
     status: {
         id: 'iaso.datasources.label.status',
@@ -309,6 +309,56 @@ const MESSAGES = defineMessages({
     importGpkgError: {
         defaultMEssage: 'An error occurred while importing the gpkg file',
         id: 'iaso.snackBar.importGpkgError',
+    },
+    checkDhis2Success: {
+        defaultMEssage: 'Connection to server ok',
+        id: 'iaso.dataSources.checkDHIS2.success',
+    },
+    checkDhis2Error: {
+        defaultMEssage: 'Connection Error check settings',
+        id: 'iaso.dataSources.checkDHIS2.error',
+    },
+    newEmptyVersionSavedSuccess: {
+        defaultMessage: 'New empty version saved successfully',
+        id: 'iaso.snackBar.newEmptyVersionSavedSuccess',
+    },
+    newEmptyVersionError: {
+        defaultMessage:
+            'An error occurred while creating the new empty version',
+        id: 'iaso.snackBar.newEmptyVersionError',
+    },
+    newEmptyVersion: {
+        defaultMessage: 'Create a new empty version',
+        id: 'iaso.sourceVersion.label.createNewEmptyVersion',
+    },
+    newEmptyVersionDescription: {
+        defaultMessage: 'It will directly create a new empty version.',
+        id: 'iaso.sourceVersion.label.createEmptyVersionDescription',
+    },
+    viewDataSource: {
+        id: 'iaso.dataSources.viewDataSource',
+        defaultMessage: 'View data source',
+    },
+    dataSourceDetailsTitle: {
+        id: 'iaso.dataSources.dataSourceDetailsTitle',
+        defaultMessage: 'Data source',
+    },
+    dataSourceInformationTitle: {
+        id: 'iaso.dataSources.dataSourceInformations',
+        defaultMessage: 'Data source informations',
+    },
+    dataSourceVersionTitle: {
+        id: 'iaso.dataSources.versionOnSourceTitle',
+        defaultMessage: 'Versions',
+    },
+    dataSourceNoVersion: {
+        id: 'iaso.dataSources.dataSourceNoVersion',
+        defaultMessage: 'This datasource is empty, there are no versions',
+    },
+    dataSourceVersionSortingWarn: {
+        id: 'iaso.dataSources.dataSourceVersionSortingWarn',
+        defaultMessage:
+            'Sort error, there must be a wrong parameter. Received: {sortBy}, {sortFocus}. Expected a combination of asc|desc and number|org_units_count',
     },
 });
 

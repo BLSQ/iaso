@@ -1,8 +1,6 @@
 version: "3"
 services:
   iaso:
-    stdin_open: true
-    tty: true
     build:
       context: .
       dockerfile: docker/django/Dockerfile
@@ -14,11 +12,11 @@ services:
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
       - ./beanstalk_worker:/opt/app/beanstalk_worker
+      - ./django_sql_dashboard_export:/opt/app/django_sql_dashboard_export
       - ./media:/opt/app/media
       - ./plugins:/opt/app/plugins
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
-      - ./docs:/opt/app/docs
       - ./README.md:/opt/app/README.md
       - ./tsconfig.json:/opt/app/tsconfig.json
       - ./babel-register.js:/opt/app/babel-register.js
@@ -63,6 +61,10 @@ services:
       ENKETO_URL: http://enketo:8005/
       EMAIL_BACKEND: "django.core.mail.backends.console.EmailBackend"
       LIVE_COMPONENTS:
+      WFP_AUTH_CLIENT_ID:
+      WFP_AUTH_ACCOUNT:
+      WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT:
+      SERVER_URL:
     # Limit logging in dev to not overflow terminal
     logging: &iaso_logging
       driver: "json-file"
@@ -87,6 +89,7 @@ services:
   # the webpack dev server
   webpack:
     image: iaso-webpack
+    platform: linux/amd64
     build:
       context: .
       dockerfile: docker/webpack/Dockerfile

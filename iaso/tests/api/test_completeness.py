@@ -1,8 +1,8 @@
 from django.contrib.gis.geos import Point
 from django.utils import timezone
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class CompletenessAPITestCase(APITestCase):
@@ -38,7 +38,6 @@ class CompletenessAPITestCase(APITestCase):
         cls.form = form
 
     def build_instance(self, org_unit, instance_uuid, period):
-
         instance = m.Instance()
         instance.uuid = instance_uuid
         instance.export_id = "EVENT_DHIS2_UID"

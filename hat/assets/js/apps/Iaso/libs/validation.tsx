@@ -3,8 +3,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { UseMutateAsyncFunction } from 'react-query';
 import { TestConfig, TestContext } from 'yup';
 import { isEqual } from 'lodash';
+import { IntlFormatMessage, IntlMessage } from 'bluesquare-components';
 import { ApiError } from './Api';
-import { IntlFormatMessage, IntlMessage } from '../types/intl';
 import { ValidationError } from '../types/utils';
 
 /**
@@ -84,7 +84,12 @@ export const useApiErrorValidation = <
                     const errorKeys = Object.keys(e.details);
                     const errorsDict = {};
                     errorKeys.forEach(errorKey => {
-                        errorsDict[errorKey] = e.details[errorKey].join(', ');
+                        if (Array.isArray(e.details[errorKey])) {
+                            errorsDict[errorKey] =
+                                e.details[errorKey].join(', ');
+                        } else {
+                            errorsDict[errorKey] = e.details[errorKey];
+                        }
                     });
                     const apiErrorsDict = convertError
                         ? convertError(errorsDict)

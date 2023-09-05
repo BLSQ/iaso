@@ -178,9 +178,12 @@ or
 Translations
 ============
 
-Translations are extracted on the first webpack build. Just like the django
-translation strings; translations are downloaded for every `Travis CI <https://travis-ci.com>`__
-build, and uploaded on the ``development`` branch.
+Run `./scripts/update_trads.py` it will automatically extract translations and populate the translation json with the new ones.
+
+Then search for CHECKME in your editor for the string to validate and translate. Remove the CHECKME when you check them.
+
+Re run the script until all strings are translated.
+
 
 Set up VSCode for front-end development
 =======================================

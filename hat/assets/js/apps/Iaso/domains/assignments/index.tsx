@@ -8,15 +8,13 @@ import { Box, makeStyles, Tabs, Tab, Grid } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
 import {
-    // @ts-ignore
     commonStyles,
-    // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
     LoadingSpinner,
+    useSkipEffectOnMount,
 } from 'bluesquare-components';
 
-import { redirectTo } from '../../routing/actions';
+import { redirectTo, redirectToReplace } from '../../routing/actions';
 import { baseUrls } from '../../constants/urls';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -25,10 +23,12 @@ import { AssignmentsFilters } from './components/AssignmentsFilters';
 import { AssignmentsMapTab } from './components/AssignmentsMapTab';
 import { AssignmentsListTab } from './components/AssignmentsListTab';
 import { Sidebar } from './components/AssignmentsSidebar';
+import { ParentDialog } from './components/ParentDialog';
 
 import { AssignmentParams, AssignmentApi } from './types/assigment';
 import { Team, SubTeam, User } from './types/team';
-import { OrgUnitShape, AssignmentUnit } from './types/locations';
+import { AssignmentUnit } from './types/locations';
+import { ParentOrgUnit } from './types/orgUnit';
 
 import { useGetAssignmentData } from './hooks/useGetAssignmentData';
 
@@ -60,7 +60,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
     const [tab, setTab] = useState(params.tab ?? 'map');
     const [currentTeam, setCurrentTeam] = useState<Team>();
     const [parentSelected, setParentSelected] = useState<
-        OrgUnitShape | undefined
+        ParentOrgUnit | undefined
     >();
     const [selectedItem, setSelectedItem] = useState<
         SubTeam | User | undefined
@@ -88,8 +88,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         orgunitTypes,
         childrenOrgunits,
         orgUnits,
+        orgUnitsList,
         sidebarData,
         isFetchingOrgUnits,
+        isFetchingOrgUnitsList,
         isLoadingPlanning,
         isSaving,
         isFetchingOrgunitTypes,
@@ -103,9 +105,9 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
         parentSelected,
         baseOrgunitType,
         order: params.order || 'name',
+        search: params.search,
         selectedItem,
     });
-
     const isLoading =
         isLoadingPlanning || isSaving || isFetchingChildrenOrgunits;
 
@@ -143,7 +145,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 ...params,
                 baseOrgunitType: newBaseOrgUnitType,
             };
-            dispatch(redirectTo(baseUrl, newParams));
+            dispatch(redirectTo(baseUrl, newParams as Record<string, any>));
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [assignments]);
@@ -179,13 +181,54 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                             ...params,
                             baseOrgunitType: newBaseOrgUnitType,
                         };
-                        dispatch(redirectTo(baseUrl, newParams));
+                        dispatch(
+                            redirectTo(
+                                baseUrl,
+                                newParams as Record<string, any>,
+                            ),
+                        );
                     }
                 }
             }
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentTeamId, teams]);
+
+    useEffect(() => {
+        if (params.order) {
+            const redirect = (to: string): void => {
+                const tempParams = {
+                    ...params,
+                    order: `${params.order?.startsWith('-') ? '-' : ''}${to}`,
+                };
+                dispatch(redirectToReplace(baseUrl, tempParams));
+            };
+            if (
+                params.order?.includes('assignment__team__name') &&
+                currentTeam?.type === 'TEAM_OF_USERS'
+            ) {
+                redirect('assignment__user__username');
+            }
+            if (
+                params.order?.includes('assignment__user__username') &&
+                currentTeam?.type === 'TEAM_OF_TEAMS'
+            ) {
+                redirect('assignment__team__name');
+            }
+        }
+    }, [params, currentTeam?.type, dispatch]);
+
+    useSkipEffectOnMount(() => {
+        // Change order if baseOrgunitType or team changed and current order is on a parent column that will probably disappear
+        if (params.order?.includes('parent__name')) {
+            dispatch(
+                redirectToReplace(baseUrl, {
+                    ...params,
+                    order: 'name',
+                }),
+            );
+        }
+    }, [params.baseOrgunitType, params.team]);
 
     useEffect(() => {
         if (planning && currentTeam) {
@@ -218,6 +261,18 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                     <Tab value="list" label={formatMessage(MESSAGES.list)} />
                 </Tabs>
             </TopBar>
+            <ParentDialog
+                childrenOrgunits={childrenOrgunits}
+                parentSelected={parentSelected}
+                setParentSelected={setParentSelected}
+                selectedItem={selectedItem}
+                currentTeam={currentTeam}
+                teams={teams || []}
+                profiles={profiles}
+                planning={planning}
+                saveMultiAssignments={saveMultiAssignments}
+                isFetchingChildrenOrgunits={isFetchingChildrenOrgunits}
+            />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {isLoading && <LoadingSpinner />}
                 <AssignmentsFilters
@@ -236,6 +291,7 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     data={sidebarData || []}
                                     assignments={assignments}
                                     selectedItem={selectedItem}
+                                    orgUnits={orgUnitsList || []}
                                     setSelectedItem={setSelectedItem}
                                     currentTeam={currentTeam}
                                     setItemColor={setItemColor}
@@ -245,7 +301,10 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                     isFetchingOrgUnitTypes={
                                         isFetchingOrgunitTypes
                                     }
-                                    showMapSelector={tab === 'map'}
+                                    isLoadingAssignments={
+                                        isLoadingAssignments ||
+                                        isFetchingOrgUnitsList
+                                    }
                                 />
                             </Grid>
                             <Grid item xs={7}>
@@ -269,14 +328,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 setParentSelected={
                                                     setParentSelected
                                                 }
-                                                childrenOrgunits={
-                                                    childrenOrgunits
-                                                }
-                                                parentSelected={parentSelected}
-                                                saveMultiAssignments={
-                                                    saveMultiAssignments
-                                                }
-                                                selectedItem={selectedItem}
                                                 locations={orgUnits}
                                                 isFetchingLocations={
                                                     isFetchingOrgUnits
@@ -287,9 +338,6 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                                 isLoadingAssignments={
                                                     isLoadingAssignments
                                                 }
-                                                isFetchingChildrenOrgunits={
-                                                    isFetchingChildrenOrgunits
-                                                }
                                             />
                                         )}
                                     </Box>
@@ -299,16 +347,19 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                                             params={params}
                                             teams={teams || []}
                                             profiles={profiles}
-                                            orgUnits={orgUnits?.all || []}
+                                            currentTeam={currentTeam}
+                                            orgUnits={orgUnitsList || []}
                                             handleSaveAssignment={
                                                 handleSaveAssignment
                                             }
                                             isFetchingOrgUnits={
                                                 isLoadingAssignments ||
-                                                isFetchingOrgUnits ||
-                                                !orgUnits
+                                                isFetchingOrgUnitsList
                                             }
                                             selectedItem={selectedItem}
+                                            setParentSelected={
+                                                setParentSelected
+                                            }
                                         />
                                     )}
                                 </Box>

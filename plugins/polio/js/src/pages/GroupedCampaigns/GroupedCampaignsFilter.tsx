@@ -11,7 +11,7 @@ import { Box, Button, Grid } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 // import { useGetCountries } from '../../hooks/useGetCountries';
@@ -33,6 +33,7 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
     const [showOnlyDeleted, setShowOnlyDeleted] = useState(
         params.showOnlyDeleted === 'true',
     );
+    const [textSearchError, setTextSearchError] = useState(false);
     const dispatch = useDispatch();
     // const { data, isFetching: isFetchingCountries } = useGetCountries();
     // const countriesList = data?.orgUnits ?? [];
@@ -68,6 +69,8 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
                             type="search"
                             label={MESSAGES.search}
                             onEnterPressed={handleSearch}
+                            blockForbiddenChars
+                            onErrorChange={setTextSearchError}
                         />
                         {!disableOnlyDeleted && (
                             <InputComponent
@@ -105,7 +108,7 @@ const GroupedCampaignsFilter: FunctionComponent<Props> = ({
             <Box display="inline-flex" width="15%" justifyContent="flex-end">
                 <Box position="relative" top={16}>
                     <Button
-                        disabled={!filtersUpdated}
+                        disabled={textSearchError || !filtersUpdated}
                         variant="contained"
                         color="primary"
                         onClick={handleSearch}

@@ -1,10 +1,11 @@
-from hat.audit.models import Modification, INSTANCE_API
 from django.core.files import File
-from iaso.test import TestCase
-from django.utils.timezone import now
 from django.core.files.uploadedfile import UploadedFile
+from django.utils.timezone import now
+
+from hat.audit.models import Modification, INSTANCE_API
 from iaso import models as m
 from iaso.odk import parsing
+from iaso.test import TestCase
 
 
 class InstanceModelTestCase(TestCase):
@@ -153,8 +154,70 @@ class InstanceModelTestCase(TestCase):
         instance_with_status = m.Instance.objects.with_status().get(pk=instance.pk)
         self.assertEqual(instance_with_status.status, status)
 
-    def test_xml_to_json_should_contains_version(self):
+    def test_xml_to_json_should_contains_chars_encoding(self):
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_coruscant,
+            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload_with_encoding.xml")),
+        )
 
+        json_instance = instance.get_and_save_json_of_xml()
+        self.assertEqual(json_instance["_version"], "201911280919")
+        # assert flattened and  lowered case keys
+        self.assertEqual(
+            json_instance,
+            {
+                "uuid": "385689b3b55f4739b80dcba5540c5f87",
+                "start": "2019-12-02T14:07:52.465+01:00",
+                "end": "2019-12-02T14:10:11.380+01:00",
+                "today": "2019-12-02",
+                "deviceid": "358544083104930",
+                "subscriberid": "206300001285696",
+                "imei": "358544083104930",
+                "simserial": "8932030000106638166",
+                "phonenumber": "",
+                "user_name": "Tttt",
+                "region": "UnCrC8p12UN",
+                "prefecture": "IJoQdfGfYsC",
+                "district": "tSs16aZvMD4",
+                "sous-prefecture": "drMs7e3pDFZ",
+                "fosa": "FeNjVewpswJ",
+                "year": "2019",
+                "quarter": "1",
+                "Ident_type_structure": "ce",
+                "Ident_type_services": "serv_prot",
+                "Ident_type_serv_medical": "0",
+                "Ident_type_serv_protect": "1",
+                "Ident_type_serv_jurid": "0",
+                "Ident_type_serv_psycho": "0",
+                "Ident_type_serv_educ": "0",
+                "Ident_type_serv_recope": "0",
+                "Ident_type_serv_club": "0",
+                "Ident_statut": "ong",
+                "Ident_eau_courante": "1",
+                "Ident_electricite": "0",
+                "Ident_nom_responsable": "MAÏGA Encoding",
+                "Ident_telephone": "256",
+                "fermeture_structure": "sam",
+                "Ident_ferm_lundi": "0",
+                "Ident_ferm_mardi": "0",
+                "Ident_ferm_mercredi": "0",
+                "Ident_ferm_jeudi": "0",
+                "Ident_ferm_vendredi": "0",
+                "Ident_ferm_samedi": "1",
+                "Ident_ferm_dim": "0",
+                "Ident_ferm_aucun": "0",
+                "Ident_serv_cout": "0",
+                "Ident_type_batiment": "sem_dur",
+                "imgUrl": "1575292156137.jpg",
+                "gps": "50.8367386 4.40093901 123.56201171875 49.312",
+                "instanceID": "uuid:7ff9b3b4-9404-4702-bbe4-efe2407aef02",
+                "_version": "201911280919",
+            },
+        )
+
+    def test_xml_to_json_should_contains_version(self):
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
@@ -281,7 +344,6 @@ class InstanceModelTestCase(TestCase):
         )
 
     def test_xml_to_json_should_support_xml_without_version(self):
-
         instance = m.Instance.objects.create(
             form=self.form_1,
             period="202001",
@@ -293,7 +355,6 @@ class InstanceModelTestCase(TestCase):
         self.assertTrue("_version" not in json_instance)
 
     def test_xml_to_json_should_omit_older_answers(self):
-
         with open("iaso/tests/fixtures/edit_existing_submission_xlsform.xlsx", "rb") as form_1_version_1_file:
             survey = parsing.parse_xls_form(form_1_version_1_file)
             form_version = m.FormVersion.objects.create_for_form_and_survey(

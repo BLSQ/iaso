@@ -7,6 +7,8 @@ import { usePrettyPeriod } from '../periods/utils';
 import { OrgUnitLabel } from '../orgUnits/utils';
 import MESSAGES from './messages';
 import { LinkToForm } from '../forms/components/LinkToForm.tsx';
+import { LinkToPlanning } from '../plannings/components/LinkToPlanning.tsx';
+import getDisplayName from '../../utils/usersUtils.ts';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -45,6 +47,25 @@ export const INSTANCE_METAS_FIELDS = [
         },
     },
     {
+        key: 'planning',
+        type: 'info',
+        renderValue: data => {
+            if (data.planning_id) {
+                return (
+                    <LinkToPlanning
+                        planning={{
+                            id: data.planning_id,
+                            name: data.planning_name,
+                            team: data.team_id,
+                        }}
+                    />
+                );
+            }
+            return '--';
+        },
+    },
+
+    {
         key: 'version',
         accessor: 'formVersion',
         active: false,
@@ -72,6 +93,25 @@ export const INSTANCE_METAS_FIELDS = [
         render: value => displayDateFromTimestamp(value),
         tableOrder: 5,
         type: 'info',
+    },
+    {
+        key: 'created_by__username',
+        accessor: 'created_by__username',
+        translationKey: 'created_by',
+        active: false,
+        tableOrder: 6,
+        type: 'info',
+        Cell: settings => {
+            const data = settings.row.original;
+            return (
+                <>{data.created_by ? getDisplayName(data.created_by) : '--'}</>
+            );
+        },
+        renderValue: data => {
+            return (
+                <>{data.created_by ? getDisplayName(data.created_by) : '--'}</>
+            );
+        },
     },
     {
         key: 'device_id',
@@ -103,14 +143,6 @@ export const INSTANCE_METAS_FIELDS = [
         type: 'location',
     },
     {
-        key: 'latitude',
-        type: 'location',
-    },
-    {
-        key: 'longitude',
-        type: 'location',
-    },
-    {
         key: 'period',
         render: value => <PrettyPeriod value={value} />,
         tableOrder: 3,
@@ -120,7 +152,7 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'status',
         render: value =>
-            value ? (
+            value && MESSAGES[value.toLowerCase()] ? (
                 <FormattedMessage {...MESSAGES[value.toLowerCase()]} />
             ) : (
                 '-'
@@ -147,5 +179,11 @@ export const filtersKeys = [
     'search',
     'levels',
     'dateFrom',
+    'planningIds',
+    'userIds',
+    'modificationDateFrom',
+    'modificationDateTo',
+    'sentDateFrom;',
+    'sentDateTo',
     'dateTo',
 ];

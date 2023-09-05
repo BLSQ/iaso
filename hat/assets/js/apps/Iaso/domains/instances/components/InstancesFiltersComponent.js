@@ -2,15 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
 import { useDispatch, useSelector } from 'react-redux';
 
-import {
-    Box,
-    Button,
-    Grid,
-    makeStyles,
-    Typography,
-    useMediaQuery,
-    useTheme,
-} from '@material-ui/core';
+import { Box, Button, Grid, makeStyles, Typography } from '@material-ui/core';
 
 import Search from '@material-ui/icons/Search';
 import {
@@ -31,21 +23,25 @@ import { Period } from '../../periods/models.ts';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated } from '../actions';
 
-import { useGetFormDescriptor } from '../compare/hooks/useGetInstanceLogs.ts';
+import { useGetFormDescriptor } from '../../forms/fields/hooks/useGetFormDescriptor.ts';
 import { useGetForms, useInstancesFiltersData } from '../hooks';
 import { getInstancesFilterValues, useFormState } from '../../../hooks/form';
-import {
-    useGetQueryBuildersFields,
-    useGetQueryBuilderListToReplace,
-} from '../hooks/queryBuilder.ts';
+import { useGetQueryBuildersFields } from '../../forms/fields/hooks/useGetQueryBuildersFields.ts';
+import { useGetQueryBuilderListToReplace } from '../../forms/fields/hooks/useGetQueryBuilderListToReplace.ts';
 import { parseJson } from '../utils/jsonLogicParse.ts';
 
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from '../../orgUnits/components/TreeView/OrgUnitTreeviewModal';
 import { useGetOrgUnit } from '../../orgUnits/components/TreeView/requests';
+import { Popper } from '../../forms/fields/components/Popper.tsx';
 
 import { LocationLimit } from '../../../utils/map/LocationLimit';
 import { UserOrgUnitRestriction } from './UserOrgUnitRestriction.tsx';
+import { ColumnSelect } from './ColumnSelect.tsx';
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings.ts';
+import { getUsersDropDown } from '../hooks/requests/getUsersDropDown.tsx';
+import { AsyncSelect } from '../../../components/forms/AsyncSelect.tsx';
+import { useGetProfilesDropdown } from '../hooks/useGetProfilesDropdown.tsx';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,
@@ -54,6 +50,13 @@ export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
+    advancedSettings: {
+        color: theme.palette.primary.main,
+        alignSelf: 'center',
+        textAlign: 'right',
+        flex: '1',
+        cursor: 'pointer',
+    },
 }));
 
 const filterDefault = params => ({
@@ -66,6 +69,14 @@ const InstancesFiltersComponent = ({
     params,
     onSearch,
     possibleFields,
+    setFormIds,
+    periodType,
+    setTableColumns,
+    baseUrl,
+    labelKeys,
+    formDetails,
+    tableColumns,
+    tab,
 }) => {
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
@@ -73,22 +84,31 @@ const InstancesFiltersComponent = ({
 
     const [hasLocationLimitError, setHasLocationLimitError] = useState(false);
     const [fetchingOrgUnitTypes, setFetchingOrgUnitTypes] = useState(false);
+    const [showAdvancedSettings, setShowAdvancedSettings] = useState(false);
 
     const defaultFilters = useMemo(() => {
         const filters = { ...params };
         delete filters.pageSize;
         delete filters.order;
         delete filters.page;
+        filters.showDeleted = filters.showDeleted === 'true';
         return filters;
     }, [params]);
     const [formState, setFormState] = useFormState(
         filterDefault(defaultFilters),
     );
+    const [textSearchError, setTextSearchError] = useState(false);
     const [initialOrgUnitId, setInitialOrgUnitId] = useState(params?.levels);
     const { data: initialOrgUnit } = useGetOrgUnit(initialOrgUnitId);
+    const { data: planningsDropdownOptions, isFetching: fetchingPlannings } =
+        useGetPlanningsOptions();
     useSkipEffectOnMount(() => {
         Object.entries(params).forEach(([key, value]) => {
-            setFormState(key, value);
+            if (key === 'showDeleted') {
+                setFormState(key, value === 'true');
+            } else {
+                setFormState(key, value);
+            }
         });
         setInitialOrgUnitId(params?.levels);
     }, [defaultFilters]);
@@ -104,6 +124,7 @@ const InstancesFiltersComponent = ({
         formState.formIds.value?.split(',').length === 1
             ? formState.formIds.value.split(',')[0]
             : undefined;
+
     const { data: formDescriptor } = useGetFormDescriptor(formId);
     const fields = useGetQueryBuildersFields(formDescriptor, possibleFields);
     const queryBuilderListToReplace = useGetQueryBuilderListToReplace();
@@ -151,6 +172,7 @@ const InstancesFiltersComponent = ({
             // checking only as value can be null or false
             if (key === 'formIds') {
                 setFormState('fieldsSearch', null);
+                setFormIds(value ? value.split(',') : undefined);
             }
             if (key) {
                 setFormState(key, value);
@@ -165,7 +187,7 @@ const InstancesFiltersComponent = ({
             }
             dispatch(setInstancesFilterUpdated(true));
         },
-        [dispatch, setFormState],
+        [dispatch, setFormState, setFormIds],
     );
 
     const startPeriodError = useMemo(() => {
@@ -199,6 +221,9 @@ const InstancesFiltersComponent = ({
         }
         return false;
     }, [formState.startPeriod, formState.endPeriod]);
+    const { data: selectedUsers } = useGetProfilesDropdown(
+        formState.userIds.value,
+    );
 
     const handleChangeQueryBuilder = value => {
         let parsedValue;
@@ -213,13 +238,26 @@ const InstancesFiltersComponent = ({
         );
     };
 
-    const theme = useTheme();
-    const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
+    const joinValuesBeforeHandleFormChange = useCallback(
+        (keyValue, newValue) => {
+            const joined = newValue?.map(r => r.value)?.join(',');
+            handleFormChange(keyValue, joined);
+        },
+        [handleFormChange],
+    );
+
     const fieldsSearchJson = formState.fieldsSearch.value
         ? JSON.parse(formState.fieldsSearch.value)
         : undefined;
+    const isSearchDisabled =
+        !isInstancesFilterUpdated ||
+        periodError ||
+        startPeriodError ||
+        endPeriodError ||
+        hasLocationLimitError;
+
     return (
-        <div className={classes.marginBottomBig}>
+        <div className={classes.marginBottom}>
             <UserOrgUnitRestriction />
 
             <Grid container spacing={2}>
@@ -231,6 +269,8 @@ const InstancesFiltersComponent = ({
                         type="search"
                         label={MESSAGES.textSearch}
                         onEnterPressed={() => handleSearch()}
+                        onErrorChange={setTextSearchError}
+                        blockForbiddenChars
                     />
                     <InputComponent
                         keyValue="formIds"
@@ -260,15 +300,18 @@ const InstancesFiltersComponent = ({
                                 onClear: () =>
                                     handleFormChange('fieldsSearch', undefined),
                             }}
+                            InfoPopper={<Popper />}
                         />
                     )}
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={handleFormChange}
-                        value={formState.showDeleted.value}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
+                    <Box mt={2} height={40}>
+                        <InputComponent
+                            keyValue="showDeleted"
+                            onChange={handleFormChange}
+                            value={formState.showDeleted.value}
+                            type="checkbox"
+                            label={MESSAGES.showDeleted}
+                        />
+                    </Box>
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
@@ -334,6 +377,16 @@ const InstancesFiltersComponent = ({
                         label={MESSAGES.org_unit_type_id}
                         loading={fetchingOrgUnitTypes}
                     />
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="planningIds"
+                        onChange={handleFormChange}
+                        value={formState.planningIds.value || null}
+                        options={planningsDropdownOptions}
+                        label={MESSAGES.planning}
+                        loading={fetchingPlannings}
+                    />
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <DatesRange
@@ -389,8 +442,84 @@ const InstancesFiltersComponent = ({
                             </Typography>
                         </Box>
                     )}
+                    <Box mt={2}>
+                        <AsyncSelect
+                            keyValue="userIds"
+                            label={MESSAGES.user}
+                            value={selectedUsers ?? ''}
+                            onChange={joinValuesBeforeHandleFormChange}
+                            debounceTime={500}
+                            multi
+                            fetchOptions={input => getUsersDropDown(input)}
+                        />
+                    </Box>
                 </Grid>
             </Grid>
+
+            <Box mt={-2}>
+                {!showAdvancedSettings && (
+                    <Box mt={2}>
+                        <Typography
+                            data-test="advanced-settings"
+                            className={classes.advancedSettings}
+                            variant="overline"
+                            onClick={() => setShowAdvancedSettings(true)}
+                        >
+                            {formatMessage(MESSAGES.showAdvancedSettings)}
+                        </Typography>
+                    </Box>
+                )}
+                {showAdvancedSettings && (
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={6}>
+                            <Box data-test="modificationDate">
+                                <DatesRange
+                                    xs={12}
+                                    sm={12}
+                                    md={12}
+                                    lg={6}
+                                    keyDateFrom="modificationDateFrom"
+                                    keyDateTo="modificationDateTo"
+                                    onChangeDate={handleFormChange}
+                                    dateFrom={
+                                        formState.modificationDateFrom.value
+                                    }
+                                    dateTo={formState.modificationDateTo.value}
+                                    labelFrom={MESSAGES.modificationDateFrom}
+                                    labelTo={MESSAGES.modificationDateTo}
+                                />
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} md={6}>
+                            <Box data-test="sentDate">
+                                <DatesRange
+                                    xs={12}
+                                    sm={12}
+                                    md={12}
+                                    lg={6}
+                                    keyDateFrom="sentDateFrom"
+                                    keyDateTo="sentDateTo"
+                                    onChangeDate={handleFormChange}
+                                    dateFrom={formState.sentDateFrom.value}
+                                    dateTo={formState.sentDateTo.value}
+                                    labelFrom={MESSAGES.sentDateFrom}
+                                    labelTo={MESSAGES.sentDateTo}
+                                />
+                            </Box>
+                        </Grid>
+                        <Box ml={1}>
+                            <Typography
+                                data-test="advanced-settings"
+                                className={classes.advancedSettings}
+                                variant="overline"
+                                onClick={() => setShowAdvancedSettings(false)}
+                            >
+                                {formatMessage(MESSAGES.hideAdvancedSettings)}
+                            </Typography>
+                        </Box>
+                    </Grid>
+                )}
+            </Box>
             <Grid container spacing={2}>
                 <Grid
                     item
@@ -399,15 +528,28 @@ const InstancesFiltersComponent = ({
                     justifyContent="flex-end"
                     alignItems="center"
                 >
-                    <Box mt={isLargeLayout ? 0 : 2}>
+                    <Box mt={2}>
+                        {tab === 'list' && (
+                            <Box mr={2} display="inline-block">
+                                <ColumnSelect
+                                    params={params}
+                                    disabled={
+                                        params.formIds !==
+                                        formState.formIds.value
+                                    }
+                                    periodType={periodType}
+                                    setTableColumns={newCols =>
+                                        setTableColumns(newCols)
+                                    }
+                                    baseUrl={baseUrl}
+                                    labelKeys={labelKeys}
+                                    formDetails={formDetails}
+                                    tableColumns={tableColumns}
+                                />
+                            </Box>
+                        )}
                         <Button
-                            disabled={
-                                !isInstancesFilterUpdated ||
-                                periodError ||
-                                startPeriodError ||
-                                endPeriodError ||
-                                hasLocationLimitError
-                            }
+                            disabled={textSearchError || isSearchDisabled}
                             variant="contained"
                             className={classes.button}
                             color="primary"
@@ -426,12 +568,22 @@ const InstancesFiltersComponent = ({
 
 InstancesFiltersComponent.defaultProps = {
     possibleFields: [],
+    periodType: undefined,
+    formDetails: undefined,
 };
 
 InstancesFiltersComponent.propTypes = {
     params: PropTypes.object.isRequired,
     onSearch: PropTypes.func.isRequired,
+    setFormIds: PropTypes.func.isRequired,
+    setTableColumns: PropTypes.func.isRequired,
+    baseUrl: PropTypes.string.isRequired,
+    tab: PropTypes.string.isRequired,
+    tableColumns: PropTypes.array.isRequired,
+    labelKeys: PropTypes.array.isRequired,
+    periodType: PropTypes.string,
     possibleFields: PropTypes.array,
+    formDetails: PropTypes.object,
 };
 
 export default InstancesFiltersComponent;

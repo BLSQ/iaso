@@ -1,6 +1,6 @@
-from django.test import tag
-from django.core.files import File
 from unittest import mock
+
+from django.core.files import File
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -9,7 +9,6 @@ from iaso.test import APITestCase
 class TokenAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-
         data_source = m.DataSource.objects.create(name="counsil")
         version = m.SourceVersion.objects.create(data_source=data_source, number=1)
         star_wars = m.Account.objects.create(name="Star Wars", default_version=version)

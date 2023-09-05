@@ -102,7 +102,6 @@ function getDisplayedValue(descriptor, data, activeLocale) {
     if (value === undefined) {
         return textPlaceholder;
     }
-
     switch (descriptor.type) {
         case 'select_one':
         case 'select one': {
@@ -187,9 +186,6 @@ function FormChild({ descriptor, data, showQuestionKey, showNote }) {
                     showQuestionKey={showQuestionKey}
                 />
             );
-        case 'start':
-        case 'end':
-        case 'today':
         case 'deviceid':
         case 'subscriberid':
         case 'simserial':
@@ -426,8 +422,8 @@ function Label({ descriptor, value, tooltip, showQuestionKey }) {
             {showQuestionKey
                 ? showNameHint && (
                       <div className={classes.tableCellLabelName}>
-                          {descriptor.name}
-                      </div>
+                    {descriptor.name}
+                </div>
                   )
                 : null}
         </div>

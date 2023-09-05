@@ -1,31 +1,34 @@
 import csv
 import datetime
 import io
+import math
 from time import strftime, gmtime
 from typing import List, Any, Union
 
 import xlsxwriter  # type: ignore
 from django.core.paginator import Paginator
-from django.db.models import Max, Q
+from django.db.models import Max, Q, Count
 from django.http import JsonResponse, HttpResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters
-from rest_framework import serializers
+from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.api.common import (
-    TimestampField,
-    ModelViewSet,
-    DeletionFilterBackend,
-    CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
+    CONTENT_TYPE_XLSX,
     EXPORTS_DATETIME_FORMAT,
+    DeletionFilterBackend,
+    HasPermission,
+    ModelViewSet,
+    TimestampField,
 )
-from iaso.models import Entity, Instance, EntityType
+from iaso.models import Entity, EntityType, Instance
+from iaso.models.deduplication import ValidationStatus
+from hat.menupermissions import models as permission
 
 
 class EntityTypeSerializer(serializers.ModelSerializer):
@@ -41,6 +44,7 @@ class EntityTypeSerializer(serializers.ModelSerializer):
             "account",
             "fields_detail_info_view",
             "fields_list_view",
+            "fields_duplicate_search",
         ]
 
     created_at = TimestampField(read_only=True)
@@ -67,12 +71,14 @@ class EntitySerializer(serializers.ModelSerializer):
             "instances",
             "submitter",
             "org_unit",
+            "duplicates",
         ]
 
     entity_type_name = serializers.SerializerMethodField()
     attributes = serializers.SerializerMethodField()
     submitter = serializers.SerializerMethodField()
     org_unit = serializers.SerializerMethodField()
+    duplicates = serializers.SerializerMethodField()
 
     def get_attributes(self, entity: Entity):
         if entity.attributes:
@@ -92,12 +98,21 @@ class EntitySerializer(serializers.ModelSerializer):
             submitter = None
         return submitter
 
+    def get_duplicates(self, entity: Entity):
+        return get_duplicates(entity)
+
     @staticmethod
     def get_entity_type_name(obj: Entity):
         return obj.entity_type.name if obj.entity_type else None
 
 
 class EntityTypeViewSet(ModelViewSet):
+    """Entity Type API
+    /api/entitytypes
+    /api/mobile/entitytypes
+    /api/mobile/entitytype [Deprecated] will be removed in the future
+    """
+
     results_key = "types"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
@@ -112,21 +127,85 @@ class EntityTypeViewSet(ModelViewSet):
             queryset = queryset.filter(name__icontains=search)
         return queryset
 
+    def partial_update(self, request, pk=None):
+        """
+        PATCH /api/entitytypes/{id}/
+        Provides an API to edit an Entity Type
+        Needs iaso_entity_type_write permission
+        """
+
+        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        name = request.data.get("name", None)
+        if name is None:
+            raise serializers.ValidationError({"name": "This field is required"})
+        try:
+            entity_type = EntityType.objects.get(pk=pk)
+            entity_type.name = name
+            entity_type.fields_duplicate_search = request.data.get("fields_duplicate_search", None)
+            entity_type.fields_list_view = request.data.get("fields_list_view", None)
+            entity_type.fields_detail_info_view = request.data.get("fields_detail_info_view", None)
+            entity_type.save()
+            return Response(entity_type.as_dict())
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+    def create(self, request, pk=None):
+        """
+        POST /api/entitytypes/
+        Provides an API to create an Entity Type
+        Needs iaso_entity_type_write permission
+        """
+
+        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+        entity_type_serializer = EntityTypeSerializer(data=request.data, context={"request": request})
+        entity_type_serializer.is_valid(raise_exception=True)
+        entity_type = entity_type_serializer.save()
+        return Response(entity_type.as_dict(), status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, pk=None, *args, **kwargs):
+        """
+        DELETE /api/entitytypes/{id}/
+        Provides an API to delete the an entity type
+        Needs iaso_entity_type_write permission
+        """
+        if not request.user.has_perm(permission.ENTITY_TYPE_WRITE):
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
+        obj = get_object_or_404(pk=pk)
+
+        obj.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+def get_duplicates(entity):
+    results = []
+    e1qs = entity.duplicates1.filter(validation_status=ValidationStatus.PENDING)
+    e2qs = entity.duplicates2.filter(validation_status=ValidationStatus.PENDING)
+    if e1qs.count() > 0:
+        results = results + list(map(lambda x: x.entity2.id, e1qs.all()))
+    elif e2qs.count() > 0:
+        results = results + list(map(lambda x: x.entity1.id, e2qs.all()))
+    return results
+
 
 class EntityViewSet(ModelViewSet):
     """Entity API
 
-    list: /api/entity
+    list: /api/entities
 
-    list entity by entity type: /api/entity/?entity_type_id=ids
+    list entity by entity type: /api/entities/?entity_type_id=ids
 
-    details =/api/entity/<id>
+    details =/api/entities/<id>
 
-    export entity list: /api/entity/?xlsx=true
+    export entity list: /api/entities/?xlsx=true
 
-    export entity by entity type: /api/entity/entity_type_ids=ids&?xlsx=true
+    export entity by entity type: /api/entities/entity_type_ids=ids&?xlsx=true
 
-    export entity submissions list: /api/entity/export_entity_submissions_list/?id=id
+    export entity submissions list: /api/entities/export_entity_submissions_list/?id=id
 
     **replace xlsx by csv to export as csv
     """
@@ -134,6 +213,7 @@ class EntityViewSet(ModelViewSet):
     results_key = "entities"
     remove_results_key_if_paginated = True
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES)]  # type: ignore
 
     def get_serializer_class(self):
         return EntitySerializer
@@ -259,6 +339,16 @@ class EntityViewSet(ModelViewSet):
 
         entities = entities.order_by(*new_order_columns)
 
+        if limit:
+            limit_int = int(limit)
+            page_offset = int(page_offset)
+            start_int = (page_offset - 1) * limit_int
+            end_int = start_int + limit_int
+            total_count = entities.count()
+            num_pages = math.ceil(total_count / limit_int)
+            entities = entities[start_int:end_int]
+            results_count = entities.count()
+
         if entity_type_ids is None or (entity_type_ids is not None and len(entity_type_ids.split(",")) > 1):
             for entity in entities:
                 attributes = entity.attributes
@@ -274,6 +364,7 @@ class EntityViewSet(ModelViewSet):
                     attributes_ou = entity.attributes.org_unit.as_location(with_parents=True)  # type: ignore
                 name = None
                 program = None
+
                 if file_content is not None:
                     name = file_content.get("name")
                     program = file_content.get("program")
@@ -289,6 +380,7 @@ class EntityViewSet(ModelViewSet):
                     "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "org_unit": attributes_ou,
                     "program": program,
+                    "duplicates": get_duplicates(entity),
                 }
                 result_list.append(result)
         else:
@@ -326,6 +418,7 @@ class EntityViewSet(ModelViewSet):
                     # FIXME: investigate typing error on next line
                     "last_saved_instance": entity.last_saved_instance,  # type: ignore
                     "program": program,
+                    "duplicates": get_duplicates(entity),
                 }
 
                 # Get data from xlsform
@@ -393,23 +486,16 @@ class EntityViewSet(ModelViewSet):
             return response
 
         if limit:
-            limit_int = int(limit)
-            page_offset = int(page_offset)
-            paginator = Paginator(result_list, limit_int)
-
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
             return Response(
                 {
-                    "count": paginator.count,
-                    "has_next": page.has_next(),
-                    "has_previous": page.has_previous(),
+                    "count": total_count,
+                    "has_next": end_int < total_count,
+                    "has_previous": start_int > 0,
                     "page": page_offset,
-                    "pages": paginator.num_pages,
+                    "pages": num_pages,
                     "limit": limit_int,
                     "columns": columns_list,
-                    "result": map(lambda x: x, page.object_list),
+                    "result": result_list,
                 }
             )
 

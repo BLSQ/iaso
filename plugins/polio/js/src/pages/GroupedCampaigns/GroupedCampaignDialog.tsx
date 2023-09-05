@@ -4,11 +4,11 @@ import React, {
     useCallback,
     useState,
     useMemo,
+    ReactNode,
 } from 'react';
 import { Box, Divider, Grid } from '@material-ui/core';
 // @ts-ignore
 import ConfirmCancelDialogComponent from 'Iaso/components/dialogs/ConfirmCancelDialogComponent';
-// @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
@@ -21,13 +21,12 @@ import {
 import { commaSeparatedIdsToStringArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 
 type Props = {
-    // titleMessage: IntlMessage;
     name?: string;
     campaigns?: string[];
     type: 'create' | 'edit';
     id?: string;
     // eslint-disable-next-line no-unused-vars
-    renderTrigger: (openDialog: { openDialog: () => void }) => Element;
+    renderTrigger: (openDialog: { openDialog: () => void }) => ReactNode;
 };
 
 const GROUPED_CAMPAIGN_NAME = 'groupedCampaignName';
@@ -36,7 +35,6 @@ const CHILDREN_CAMPAIGNS = 'childrenCampaigns';
 const emptyCampaigns = [];
 
 export const GroupedCampaignDialog: FunctionComponent<Props> = ({
-    // titleMessage,
     name = '',
     campaigns = emptyCampaigns,
     type,
@@ -49,7 +47,7 @@ export const GroupedCampaignDialog: FunctionComponent<Props> = ({
     const [campaignsToLink, setCampaignsToLink] = useState<string[]>(campaigns);
     // TODO refactor this hook to make more flexible
     const { data: allCampaigns, isFetching: isFetchingCamaigns } =
-        useGetCampaigns().query;
+        useGetCampaigns();
     const allCampaignsDropdown = useMemo(
         () => makeCampaignsDropDownWithUUID(allCampaigns),
         [allCampaigns],

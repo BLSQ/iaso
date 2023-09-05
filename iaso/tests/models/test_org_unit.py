@@ -1,7 +1,8 @@
+from django.contrib.gis.geos import Point
 from django.db import InternalError, connections
 
-from iaso.test import TestCase
 from iaso import models as m
+from iaso.test import TestCase
 
 
 class OrgUnitTypeModelTestCase(TestCase):
@@ -187,8 +188,8 @@ class OrgUnitModelDbTestCase(TestCase):
     def activate_constraints(self):
         """Active constraints inside the test, so that it raise in real time
 
-        Kind of a hack but need to check the constraints, otherwise django only check them
-        at teardown and we can't catch them.
+        Kind of a hack but need to check the constraints, otherwise Django only check them
+        at teardown, and we can't catch them.
 
         This will be automatically reversed in teardown. Only tested with postgres
         Note that the transaction will be blocked once an error occur
@@ -233,3 +234,15 @@ class OrgUnitModelDbTestCase(TestCase):
             "Constraint violation iaso_group_org_units_same_source_version_constraint",
         ):
             orgunit.groups.set([group])
+
+    def test_empty_geom(self):
+        #  regression test for IA-1326
+        ou = m.OrgUnit.objects.create(name="test", location=Point(float("nan"), float("nan"), z=0))
+
+        # DB return an empty 2D point, and not POINT Z EMPTY which is 3D
+        ous = m.OrgUnit.objects.filter(id=ou.id).extra(select={"raw_location": "ST_AsEWKT(location)"})
+        self.assertEqual("SRID=4326;POINT EMPTY", ous.first().raw_location)
+
+        ou.refresh_from_db()
+        ou.name = "test2"
+        ou.save()

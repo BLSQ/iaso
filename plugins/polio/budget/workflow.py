@@ -1,13 +1,13 @@
-from dataclasses import dataclass, field
 from typing import Union, List, Optional, Tuple
 
+from dataclasses import dataclass, field
 from django.db.models import Q, QuerySet
 
-from iaso.models.microplanning import Team, TeamType
-import plugins.polio.models
-
 # Move to typing import Literal when upgrading to python 3.8
-from typing_extensions import Literal
+from typing import Literal
+
+import plugins.polio.models
+from iaso.models.microplanning import Team, TeamType
 
 # from plugins.polio.models import Campaign
 # attachment is either file or a links
@@ -90,6 +90,10 @@ class Workflow:
 
     def _get_nodes_in_category(self, category_key):
         nodes = [node for node in self.nodes if node.category_key == category_key]
+        return nodes
+
+    def get_nodes_after(self, order):
+        nodes = [node for node in self.nodes if node.order > order]
         return nodes
 
     def __init__(self, transitions, nodes, categories):

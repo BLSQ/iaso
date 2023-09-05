@@ -5,12 +5,22 @@ Development environment - Cypress e2e tests
 
 Cypress is now used to test the user interface.
 
+Prerequisites
+-------------
+
+Before you can run Cypress, you must have a version of Node.js and npm that matches the current Dockerfile:
+
+- Install [nvm](https://github.com/nvm-sh/nvm) locally
+- `nvm install 14.17`
+- `nvm use 14`
+- `npm install -g npm@8.5`
+
 Setup
 -----
 
 - Run `npm ci` to install it locally
 
-- To run the backend on a fresh database instance with a test user you can launch a django testserver.  alternatively see below to run on your current database.
+- To run the backend on a fresh database instance with a test user you can launch a django testserver. Alternatively see below to run on your current database.
   - in docker:
 ```
 docker-compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000 --noinput iaso/fixtures/user.yaml
@@ -25,7 +35,7 @@ docker-compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000
 CYPRESS_USERNAME=test CYPRESS_PASSWORD=test CYPRESS_BASE_URL="http://localhost:8000" npm run cypress:open
 ```
 
-you can also set the variable in the .env file, to not have to repeat them see below.
+You can also set the variable in the .env file, to not have to repeat them see below.
 
 The database is deleted and recreated each time `testserver` is rerun.
 This method is used in the CI, so use it when you need to reproduce an error in the CI.
@@ -52,7 +62,7 @@ Config
 - Cypress files are located here: hat/assets/js/cypress
 - cypress config file is at the root of the project ([doc](https://docs.cypress.io/guides/references/configuration#cypress-json))
   
-    > for now we are only changing the default folder of cypress, changing the default viewport and use session support that allows us to save a session between tests
+    > for now, we are only changing the default folder of cypress, changing the default viewport and use session support that allows us to save a session between tests
 
 ### 1. Fixtures  `hat/assets/js/cypress/fixtures`
 All the dummy data needed to test the app in JSON format.
@@ -69,14 +79,14 @@ Authentication is also tested, it is considered as a domain.
 
 ### 3. Plugins `hat/assets/js/cypress/plugins/index.js`
 
-For now we are extending Cypress config with the custom env variables described in "Setup".
+For now, we are extending Cypress config with the custom env variables described in "Setup".
 
 You can also install extra [plugins](https://docs.cypress.io/plugins/directory) to use while testing.
 
 [Doc](https://docs.cypress.io/guides/tooling/plugins-guide)
 
 ### 4. Support  `hat/assets/js/cypress/support/index.js`
-By default Cypress will automatically include the support file.
+By default, Cypress will automatically include the support file.
 This file runs before every single spec file.
 
 We are using it to preserve cookies between tests.
@@ -126,7 +136,7 @@ Testing
 
 - Run `cypress:open` to launch cypress GUI
 - Run `test:e2e` to launch cypress tests with node
-    > This one need to be implemented in [github actions](https://docs.cypress.io/guides/continuous-integration/github-actions)
+    > This one need to be implemented in [GitHub actions](https://docs.cypress.io/guides/continuous-integration/github-actions)
 
 - You can find a good example of tests in `hat/assets/js/cypress/integration/2 - forms/list.spec.js`
 

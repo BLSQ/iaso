@@ -1,9 +1,11 @@
-from ..models import OrgUnit, Form, Instance, OrgUnitType, Account, Project, SourceVersion, DataSource
-from math import floor
-from rest_framework.test import APIClient
 import json
-from ..test import APITestCase
 import typing
+from math import floor
+
+from rest_framework.test import APIClient
+
+from ..models import OrgUnit, Form, Instance, OrgUnitType, Account, Project, SourceVersion, DataSource
+from ..test import APITestCase
 
 
 class BasicAPITestCase(APITestCase):
@@ -328,8 +330,15 @@ class BasicAPITestCase(APITestCase):
             exception_contains_string="Could not find project for user",
         )
 
-    def test_fetch_org_unit_type(self):
+    def test_fetch_org_unit_type_v1(self):
         """Fetch Org Unit Types through the API"""
+        out = OrgUnitType.objects.get(name="Hospital")
+        cds = OrgUnitType.objects.get(name="CDS", short_name="CDS")
+        out.allow_creating_sub_unit_types.set([cds])
+
+        out.sub_unit_types.clear()
+        out.save()
+
         c = APIClient()
 
         response = c.get(
@@ -341,6 +350,36 @@ class BasicAPITestCase(APITestCase):
 
         response = c.get(
             "/api/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
+        )  # this should have 2 results
+        json_response = json.loads(response.content)
+        org_unit_types = json_response["orgUnitTypes"]
+        self.assertEqual(len(org_unit_types), 2)
+
+        found = False
+        for org_unit_type_data in org_unit_types:
+            self.assertValidOrgUnitTypeData(org_unit_type_data)
+            if org_unit_type_data["name"] == "Hospital":
+                self.assertLess(org_unit_type_data["created_at"], org_unit_type_data["updated_at"])
+                self.assertEqual(len(org_unit_type_data["sub_unit_types"]), 1)
+                for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
+                    self.assertValidOrgUnitTypeData(sub_org_unit_type_data)
+                found = True
+
+        self.assertTrue(found)
+
+    def test_fetch_org_unit_type_v2(self):
+        """Fetch Org Unit Types through the API"""
+        c = APIClient()
+
+        response = c.get(
+            "/api/v2/orgunittypes/?app_id=com.pascallegitimus.iaso", accept="application/json"
+        )  # this should have 0 result
+        json_response = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(json_response["orgUnitTypes"]), 0)
+
+        response = c.get(
+            "/api/v2/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
         )  # this should have 2 results
         json_response = json.loads(response.content)
         org_unit_types = json_response["orgUnitTypes"]

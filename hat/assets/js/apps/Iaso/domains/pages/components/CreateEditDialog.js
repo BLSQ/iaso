@@ -106,6 +106,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
         contentLabel = formatMessage(MESSAGES.text);
         contentComponent = Rte;
     }
+    const isNewPage = !initialValues.id;
     return (
         <Dialog
             fullWidth
@@ -122,8 +123,8 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
             }}
         >
             <DialogTitle className={classes.title}>
-                {initialValues.id && formatMessage(MESSAGES.editPage)}
-                {!initialValues.id && formatMessage(MESSAGES.createPage)}
+                {!isNewPage && formatMessage(MESSAGES.editPage)}
+                {isNewPage && formatMessage(MESSAGES.createPage)}
             </DialogTitle>
             <DialogContent className={classes.content}>
                 <FormikProvider value={formik}>
@@ -169,6 +170,7 @@ const CreateEditDialog = ({ isOpen, onClose, selectedPage }) => {
                                             )}
                                             name="users"
                                             component={UsersSelect}
+                                            isNewPage={isNewPage}
                                             className={classes.input}
                                         />
                                     </Grid>

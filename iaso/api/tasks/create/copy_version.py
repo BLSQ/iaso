@@ -1,12 +1,14 @@
+import logging
+
+from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
 
-from iaso.tasks.copy_version import copy_version
-from iaso.api.tasks import TaskSerializer
-from iaso.models import DataSource, SourceVersion, Task, OrgUnit
-from rest_framework import viewsets, permissions, serializers
 from iaso.api.common import HasPermission
-from django.shortcuts import get_object_or_404
-import logging
+from iaso.api.tasks import TaskSerializer
+from iaso.models import DataSource, SourceVersion, OrgUnit
+from iaso.tasks.copy_version import copy_version
+from hat.menupermissions import models as permission
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +21,6 @@ class CopyVersionSerializer(serializers.Serializer):
     force = serializers.BooleanField(required=False, default=False)
 
     def validate(self, attrs):
-
         validated_data = super().validate(attrs)
         request = self.context["request"]
         user = request.user
@@ -59,7 +60,7 @@ class CopyVersionSerializer(serializers.Serializer):
 
 
 class CopyVersionViewSet(viewsets.ViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_sources")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.SOURCES)]  # type: ignore
     serializer_class = CopyVersionSerializer
 
     def create(self, request):

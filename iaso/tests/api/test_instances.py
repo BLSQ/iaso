@@ -1,21 +1,23 @@
 import datetime
 import json
 import typing
+from unittest import mock
+from unittest.mock import patch
 from uuid import uuid4
 
 import pytz
 from django.contrib.gis.geos import Point
 from django.core.files import File
-from unittest import mock
-
 from django.utils import timezone
 from django.utils.timezone import now
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from iaso import models as m
-from iaso.models import OrgUnit, Instance, InstanceLock
-from iaso.test import APITestCase
 from hat.audit.models import Modification
+from iaso import models as m
+from iaso.api import query_params as query
+from iaso.models.microplanning import Planning, Team
+from iaso.models import Instance, InstanceLock, FormVersion
+from iaso.test import APITestCase
 
 MOCK_DATE = datetime.datetime(2020, 2, 2, 2, 2, 2, tzinfo=pytz.utc)
 
@@ -42,16 +44,27 @@ class InstancesAPITestCase(APITestCase):
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="Coruscant Jedi Council",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
+            validation_status="VALID",
         )
         cls.ou_top_1 = m.OrgUnit.objects.create(
-            name="ou_top_1", source_ref="jedi_council_corruscant_ref", version=sw_version
+            name="ou_top_1",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
         )
         cls.ou_top_2 = m.OrgUnit.objects.create(
-            name="ou_top_2", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_1, version=sw_version
+            name="ou_top_2",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_1,
+            version=sw_version,
         )
         cls.ou_top_3 = m.OrgUnit.objects.create(
-            name="ou_top_3", source_ref="jedi_council_corruscant_ref", parent=cls.ou_top_2, version=sw_version
+            name="ou_top_3",
+            source_ref="jedi_council_corruscant_ref",
+            parent=cls.ou_top_2,
+            version=sw_version,
         )
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             name="Endor Jedi Council", source_ref="jedi_council_endor_ref"
@@ -68,18 +81,38 @@ class InstancesAPITestCase(APITestCase):
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
-        cls.create_form_instance(
-            form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202002", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
-        cls.create_form_instance(
-            form=cls.form_1, period="202003", org_unit=cls.jedi_council_corruscant, project=cls.project
-        )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_1 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202001",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.yoda,
+            )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 1, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_2 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202002",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.guest,
+            )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 3, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_3 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202002",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.supervisor,
+            )
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 5, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_4 = cls.create_form_instance(
+                form=cls.form_1,
+                period="202003",
+                org_unit=cls.jedi_council_corruscant,
+                project=cls.project,
+                created_by=cls.yoda,
+            )
 
         cls.form_2 = m.Form.objects.create(
             name="Hydroponic public survey",
@@ -113,24 +146,39 @@ class InstancesAPITestCase(APITestCase):
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(
-            form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project
+        cls.instance_5 = cls.create_form_instance(
+            form=cls.form_2,
+            period="202001",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            created_by=cls.yoda,
         )
         cls.form_2.save()
 
         # Instance saved without period
         cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_3.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(form=cls.form_3, org_unit=cls.jedi_council_corruscant, project=cls.project)
+        cls.instance_6 = cls.create_form_instance(
+            form=cls.form_3, org_unit=cls.jedi_council_corruscant, project=cls.project, created_by=cls.supervisor
+        )
         cls.form_3.save()
 
         # A deleted Instance
         cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
         cls.form_4.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(
-            form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, project=cls.project, deleted=True
+        cls.instance_7 = cls.create_form_instance(
+            form=cls.form_4,
+            period="2020Q1",
+            org_unit=cls.jedi_council_corruscant,
+            project=cls.project,
+            deleted=True,
+            created_by=cls.yoda,
         )
         cls.form_4.save()
+
+        with patch("django.utils.timezone.now", lambda: datetime.datetime(2020, 2, 10, 0, 0, 5, tzinfo=pytz.UTC)):
+            cls.instance_5.save()
+            cls.instance_6.save()
 
         cls.project.unit_types.add(cls.jedi_council)
         cls.project.forms.add(cls.form_1)
@@ -151,7 +199,7 @@ class InstancesAPITestCase(APITestCase):
         response = self.client.get(f"/api/instances/?form_id={self.form_1.pk}")
         self.assertJSONResponse(response, 403)
 
-    def test_instance_create_anonymous(self):
+    def test_instance_create_planning(self):
         """POST /api/instances/ happy path (anonymous)"""
 
         instance_uuid = str(uuid4())
@@ -197,6 +245,57 @@ class InstancesAPITestCase(APITestCase):
         # )
         self.assertEqual(self.form_1, last_instance.form)
         self.assertIsNotNone(last_instance.project)
+
+    def test_instance_create_anonymous_planning(self):
+        """POST /api/instances/ happy path (anonymous)"""
+        team = Team.objects.create(project=self.project, manager=self.yoda)
+        planning = Planning.objects.create(org_unit=self.jedi_council_corruscant, project=self.project, team=team)
+
+        instance_uuid = str(uuid4())
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "planningId": planning.id,
+                "name": "1",
+            }
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        last_instance = m.Instance.objects.last()
+        self.assertEqual(instance_uuid, last_instance.uuid)
+        self.assertEquals("RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name)
+        self.assertEqual("202002", last_instance.period)
+        self.assertIsInstance(last_instance.location, Point)
+        self.assertEqual(10, last_instance.accuracy)
+        self.assertEqual(4.4, last_instance.location.x)
+        self.assertEqual(50.2, last_instance.location.y)
+        self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertEqual(timestamp_to_utc_datetime(1565258153704), last_instance.created_at)
+        self.assertEqual(datetime.datetime(2019, 8, 8, 9, 55, 53, tzinfo=timezone.utc), last_instance.created_at)
+        # TODO: the assertion below will fail because our API does not store properly the updated_at property
+        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
+        # self.assertEqual(
+        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
+        # )
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertEqual(last_instance.project, self.project)
+        self.assertEqual(last_instance.planning, planning)
 
     def test_instance_create_anonymous_microsecond(self):
         """POST /api/instances/ happy path (anonymous)
@@ -380,6 +479,21 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidInstanceListData(response.json(), 4)
+
+    def test_instance_filter_by_org_unit_status(self):
+        """GET /instances/?org_unit_status={status}"""
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=VALID")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 6)
+
+        response = self.client.get(f"/api/instances/?org_unit_status=REJECTED")
+        self.assertJSONResponse(response, 200)
+
+        self.assertValidInstanceListData(response.json(), 0)
 
     def test_instance_list_by_form_id_ok_soft_deleted(self):
         """GET /instances/?form_id=form_id"""
@@ -655,7 +769,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(True, dup.deleted)
         self.assertEqual(1, Modification.objects.count())
         # check status is ready again
-        response = self.client.get(f"/api/instances/", {"form_id": form.id})
+        self.client.get(f"/api/instances/", {"form_id": form.id})
 
         response = self.client.get(f"/api/instances/", {"form_id": form.id})
         res = self.assertJSONResponse(response, 200)
@@ -893,7 +1007,12 @@ class InstancesAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
         self.assertEqual(
             r["data"],
-            [{"index": 0, "name": "2020-02-02", "period": "2020-02-02T00:00:00.000Z", "total": 6, "value": 6}],
+            [
+                {"index": 0, "name": "2020-02-01", "period": "2020-02-01T00:00:00.000Z", "total": 2, "value": 2},
+                {"index": 1, "name": "2020-02-02", "period": "2020-02-02T00:00:00.000Z", "total": 4, "value": 2},
+                {"index": 2, "name": "2020-02-03", "period": "2020-02-03T00:00:00.000Z", "total": 5, "value": 1},
+                {"index": 3, "name": "2020-02-05", "period": "2020-02-05T00:00:00.000Z", "total": 6, "value": 1},
+            ],
         )
 
         self.assertEqual(
@@ -954,7 +1073,7 @@ class InstancesAPITestCase(APITestCase):
             ],
         )
         response = self.client.get(f"/api/instances/stats_sum/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
     @mock.patch("django.utils.timezone.now", lambda: MOCK_DATE)
     def test_stats_dup_deleted(self):
@@ -1005,7 +1124,7 @@ class InstancesAPITestCase(APITestCase):
         )
 
         response = self.client.get(f"/api/instances/stats_sum/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
     def test_lock_instance(self):
         self.client.force_authenticate(self.yoda)
@@ -1148,12 +1267,12 @@ class InstancesAPITestCase(APITestCase):
             format="json",
         )
         if can_user_modify:
-            j = self.assertJSONResponse(response, 200)
+            self.assertJSONResponse(response, 200)
         else:
-            j = self.assertJSONResponse(response, 403)
+            self.assertJSONResponse(response, 403)
 
     def test_instance_create_entity(self):
-        """POST /api/instances/ with an entity that don't exist in db, it create it"""
+        """POST /api/instances/ with an entity that don't exist in db, it creates it"""
 
         instance_uuid = str(uuid4())
         entity_uuid = str(uuid4())
@@ -1198,7 +1317,7 @@ class InstancesAPITestCase(APITestCase):
         entity_uuid = str(uuid4())
         entity_type = m.EntityType.objects.create(account=self.star_wars)
 
-        entity = m.Entity.objects.create(
+        m.Entity.objects.create(
             account=self.star_wars,
             entity_type=entity_type,
             uuid=entity_uuid,
@@ -1274,3 +1393,252 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(instance.entity, entity)
         self.assertEqual(entity.entity_type, entity_type)
         self.assertEqual(entity.account, self.star_wars)
+
+    def test_assign_form_version_id_on_save(self):
+        instance_uuid = str(uuid4())
+        entity_uuid = str(uuid4())
+        entity_type = m.EntityType.objects.create(account=self.star_wars)
+
+        body = [
+            {
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "entityUuid": entity_uuid,
+                "entityTypeId": entity_type.id,
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=body, format="json"
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # Check if the instance created without FormVersion has form_version = None
+
+        self.client.force_authenticate(self.yoda)
+
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        response = self.client.get(f"/api/instances/{instance.pk}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["form_version_id"], None)
+
+        # Check that once the FormVersion is created and instance.json updated with a "_version" instance.form_version_id is properly updated
+
+        form_version = FormVersion.objects.create(version_id="2022112301", form_id=instance.form.id)
+
+        instance.json = {
+            "end": "2022-11-23T12:12:45.803+01:00",
+            "start": "2022-11-23T12:12:25.930+01:00",
+            "_version": "2022112301",
+            "ou_region": "30015",
+            "instanceID": "uuid:381e988e-87b5-4758-b31a-eb1dac1430a7",
+            "ou_country": "29694",
+            "admin_doses": "66",
+            "ou_district": "32128",
+            "insert_obr_name": "",
+            "insert_doses_requested": "",
+        }
+        instance.save()
+
+    def test_instances_list_planning(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/", headers={"Content-Type": "application/json"})
+        self.assertEqual(response.status_code, 200)
+        self.assertValidInstanceListData(response.json(), 6)
+
+        team = Team.objects.create(project=self.project, manager=self.yoda)
+        orgunit = m.OrgUnit.objects.create(name="Org Unit 1")
+        instance_1 = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=orgunit, project=self.project
+        )
+        instance_2 = self.create_form_instance(
+            form=self.form_1, period="202002", org_unit=orgunit, project=self.project
+        )
+        planning_1 = Planning.objects.create(name="Planning 1", org_unit=orgunit, project=self.project, team=team)
+        planning_2 = Planning.objects.create(name="Planning 2", org_unit=orgunit, project=self.project, team=team)
+
+        instance_1.planning = planning_1
+        instance_1.save()
+
+        # it should return only instance_1
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/", {"planningIds": planning_1.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 1)
+        self.assertEqual(response.json()["instances"][0]["id"], instance_1.id)
+        # it should return all of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/instances/?order=-id", headers={"Content-Type": "application/json"})
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 8)
+
+        self.assertEqual(response.json()["instances"][0]["id"], instance_2.id)
+        self.assertEqual(response.json()["instances"][1]["id"], instance_1.id)
+        # it should return none of the instances
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/", {"planningIds": planning_2.id}, headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 0)
+
+    def test_instances_list_user(self):
+        self.client.force_authenticate(self.yoda)
+        response_yoda = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.yoda.id},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_yoda.status_code, 200)
+        self.assertValidInstanceListData(response_yoda.json(), 3)
+        instances = response_yoda.json()["instances"]
+        self.assertEqual(self.instance_1.id, instances[0].get("id"))
+        self.assertEqual(self.instance_4.id, instances[1].get("id"))
+        self.assertEqual(self.instance_5.id, instances[2].get("id"))
+
+        self.client.force_authenticate(self.yoda)
+        response_yoda_deleted = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.yoda.id, query.SHOW_DELETED: True},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_yoda_deleted.status_code, 200)
+        self.assertValidInstanceListData(response_yoda_deleted.json(), 1)
+        instances = response_yoda_deleted.json()["instances"]
+        self.assertEqual(self.instance_7.id, instances[0].get("id"))
+
+        response_guest = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.guest.id},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_guest.status_code, 200)
+        self.assertValidInstanceListData(response_guest.json(), 1)
+        instances = response_guest.json()["instances"]
+        self.assertEqual(self.instance_2.id, instances[0].get("id"))
+
+        response_supervisor = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: self.supervisor.id},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_supervisor.status_code, 200)
+        self.assertValidInstanceListData(response_supervisor.json(), 2)
+        instances = response_supervisor.json()["instances"]
+        self.assertEqual(self.instance_3.id, instances[0].get("id"))
+        self.assertEqual(self.instance_6.id, instances[1].get("id"))
+
+        response_yoda_guest = self.client.get(
+            "/api/instances/",
+            {query.USER_IDS: f"{self.yoda.id},{self.guest.id}"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertEqual(response_yoda_guest.status_code, 200)
+        self.assertValidInstanceListData(response_yoda_guest.json(), 4)
+        instances = response_yoda_guest.json()["instances"]
+        self.assertEqual(self.instance_1.id, instances[0].get("id"))
+        self.assertEqual(self.instance_4.id, instances[1].get("id"))
+        self.assertEqual(self.instance_5.id, instances[2].get("id"))
+        self.assertEqual(self.instance_2.id, instances[3].get("id"))
+
+    def test_instances_bad_sent_date_from(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.SENT_DATE_FROM: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_bad_sent_date_to(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.SENT_DATE_TO: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_sent_date(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.SENT_DATE_FROM: "2020-02-01",
+                query.SENT_DATE_TO: "2020-02-01",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 2)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_1.id, instances[0].get("id"))
+        self.assertEqual(self.instance_2.id, instances[1].get("id"))
+
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.SENT_DATE_FROM: "2020-02-03",
+                query.SENT_DATE_TO: "2020-02-03",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 1)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_3.id, instances[0].get("id"))
+
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.SENT_DATE_FROM: "2020-02-05",
+                query.SENT_DATE_TO: "2020-02-05",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 1)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_4.id, instances[0].get("id"))
+
+    def test_instances_bad_modification_date_from(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.MODIFICATION_DATE_FROM: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_bad_modification_date_to(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {query.MODIFICATION_DATE_TO: "2020-0201"},
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 400)
+
+    def test_instances_modification_date(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(
+            "/api/instances/",
+            {
+                query.MODIFICATION_DATE_FROM: "2020-02-10",
+                query.MODIFICATION_DATE_TO: "2020-02-10",
+            },
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidInstanceListData(response.json(), 2)
+        instances = response.json()["instances"]
+        self.assertEqual(self.instance_5.id, instances[0].get("id"))
+        self.assertEqual(self.instance_6.id, instances[1].get("id"))

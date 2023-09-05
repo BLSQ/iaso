@@ -75,9 +75,6 @@ export const useStyles = makeStyles(() => ({
         '& thead tr th': {
             boxShadow: `2px 2px ${theme.palette.ligthGray.main}`,
         },
-        '& .MuiSvgIcon-root': {
-            color: theme.palette.gray.main,
-        },
         '& tbody tr:hover': {
             backgroundColor: theme.palette.action.hover,
         },
@@ -204,5 +201,25 @@ export const useStyles = makeStyles(() => ({
         width: 175,
         position: 'relative',
         left: -16,
+    },
+    tab: {
+        '& .MuiTab-wrapper': {
+            display: 'flex',
+            flexDirection: 'row-reverse',
+        },
+    },
+    tabError: {
+        color: `${theme.palette.error.main} !important`,
+    },
+    tabDisabled: {
+        color: `${theme.palette.text.disabled} !important`,
+        cursor: 'default',
+    },
+    tabIcon: {
+        position: 'relative',
+        top: 1,
+        left: theme.spacing(0.5),
+        color: theme.palette.primary.main,
+        cursor: 'pointer',
     },
 }));

@@ -1,21 +1,28 @@
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.auth.views import redirect_to_login
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render, resolve_url
 
-from django.contrib.auth.views import redirect_to_login
-from django.conf import settings
-from iaso.models import Page, Account, TEXT, IFRAME, POWERBI
-
-from hat.__version__ import DEPLOYED_ON, DEPLOYED_BY, VERSION
+from hat.__version__ import DEPLOYED_BY, DEPLOYED_ON, VERSION
+from iaso.models import IFRAME, POWERBI, TEXT, Account, Page
 from iaso.utils.powerbi import get_powerbi_report_token
-from django.http import HttpResponse, JsonResponse
 
 
-def load_powerbi_config_for_page(page):
+def load_powerbi_config_for_page(page: Page):
     group_id = page.powerbi_group_id
     report_id = page.powerbi_report_id
     filters = page.powerbi_filters
+    language = page.powerbi_language
 
     report_access_token = get_powerbi_report_token(group_id, report_id)
-    config = {"token": report_access_token, "report_id": report_id, group_id: "group_id", "filters": filters}
+    config = {
+        "token": report_access_token,
+        "report_id": report_id,
+        "group_id": group_id,
+        "language": language,
+        "filters": filters,
+    }
     return config
 
 
@@ -26,14 +33,16 @@ def page(request, page_slug):
     if page.needs_authentication and ((not request.user.is_authenticated) or (request.user not in page.users.all())):
         return redirect_to_login(path, resolved_login_url, "next")
     if page.type == IFRAME:
-        return render(request, "iaso/pages/iframe.html", {"src": page.content, "title": page.name})
-    if page.type == TEXT:
-        return render(request, "iaso/pages/text.html", {"text": page.content, "title": page.name})
-    if page.type == POWERBI:
+        response = render(request, "iaso/pages/iframe.html", {"src": page.content, "title": page.name, "page": page})
+    elif page.type == TEXT:
+        response = render(request, "iaso/pages/text.html", {"text": page.content, "title": page.name})
+    elif page.type == POWERBI:
         config = load_powerbi_config_for_page(page)
-        return render(request, "iaso/pages/powerbi.html", {"config": config, "title": page.name})
-
-    return HttpResponse(page.content)
+        response = render(request, "iaso/pages/powerbi.html", {"config": config, "title": page.name, "page": page})
+    else:
+        response = HttpResponse(page.content)
+    response["X-Frame-Options"] = "ALLOW"
+    return response
 
 
 def health(request):

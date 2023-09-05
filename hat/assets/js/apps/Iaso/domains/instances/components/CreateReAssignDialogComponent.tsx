@@ -1,6 +1,11 @@
 import React, { FunctionComponent, useState } from 'react';
 // @ts-ignore
-import { ConfirmCancelModal, useSafeIntl } from 'bluesquare-components';
+import {
+    ConfirmCancelModal,
+    useSafeIntl,
+    AddButton,
+    makeFullModal,
+} from 'bluesquare-components';
 import { Period } from '../../periods/models';
 import { isValidPeriod } from '../../periods/utils';
 import MESSAGES from '../messages';
@@ -47,7 +52,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const [fieldValue, setFieldValue] = useState(() => {
         let initialPeriod: string | undefined;
-        let initialPeriodErrors: string[] = [];
+        const initialPeriodErrors: string[] = [];
         if (currentInstance) {
             initialPeriod = currentInstance.period;
             const isOriginalPeriodValid = isValidPeriod(
@@ -93,6 +98,7 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
     };
 
     return (
+        // @ts-ignore
         <ConfirmCancelModal
             titleMessage={titleMessage}
             onConfirm={onConfirm}
@@ -146,3 +152,10 @@ export const CreateReAssignDialogComponent: FunctionComponent<Props> = ({
         </ConfirmCancelModal>
     );
 };
+
+const CreateReAssignDialog = makeFullModal(
+    CreateReAssignDialogComponent,
+    AddButton,
+);
+
+export { CreateReAssignDialog };

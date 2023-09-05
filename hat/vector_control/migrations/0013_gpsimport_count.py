@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [("vector_control", "0012_apiimport_json_body")]
 
     operations = [

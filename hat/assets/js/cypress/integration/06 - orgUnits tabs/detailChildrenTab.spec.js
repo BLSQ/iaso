@@ -18,10 +18,10 @@ const interceptList = [
     'profiles',
     'algorithms',
     'algorithmsruns',
-    'orgunittypes',
+    // 'orgunittypes',
 ];
 const defaultQuery = {
-    parent_id: '1',
+    parent_id: '2',
     limit: '10',
     order: 'name',
     validation_status: 'all',
@@ -155,7 +155,10 @@ const goToPage = () => {
         });
     });
 
-    cy.intercept('GET', `/api/groups/?&dataSource=${orgUnit.source_id}`, {
+    cy.intercept('GET', '/api/v2/orgunittypes/', {
+        fixture: `orgunittypes/list.json`,
+    });
+    cy.intercept('GET', '/api/groups/', {
         fixture: `groups/list.json`,
     });
     cy.intercept(

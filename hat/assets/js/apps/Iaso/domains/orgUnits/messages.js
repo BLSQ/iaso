@@ -10,7 +10,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.new',
     },
     action: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     multiEditTitle: {
@@ -44,6 +44,10 @@ const MESSAGES = defineMessages({
     rejected: {
         id: 'iaso.forms.rejected',
         defaultMessage: 'rejected',
+    },
+    closed: {
+        id: 'iaso.forms.closed',
+        defaultMessage: 'Closed',
     },
     editValidation: {
         defaultMessage: 'Edit validation',
@@ -404,7 +408,7 @@ const MESSAGES = defineMessages({
     },
     ouParent: {
         id: 'iaso.label.parentOu',
-        defaultMessage: 'Parent org Unit',
+        defaultMessage: 'Parent Org unit',
     },
     ouLinked: {
         id: 'iaso.orgUnits.sourcesHelperTextSingular',
@@ -513,6 +517,15 @@ const MESSAGES = defineMessages({
     depth: {
         id: 'iaso.orgUnits.depth',
         defaultMessage: 'Depth',
+    },
+    useGPSFromSubmission: {
+        id: 'iaso.orgUnits.useGPSFromSubmission',
+        defaultMessage: 'Use GPS coordinates from form submission',
+    },
+    GPSWarning: {
+        id: 'iaso.orgUnits.GPSWarning',
+        defaultMessage:
+            'GPS coordinates will NOT be updated for org units that already have coordinates or a shape',
     },
 });
 

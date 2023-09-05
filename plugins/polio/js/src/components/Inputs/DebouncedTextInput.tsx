@@ -11,6 +11,7 @@ import { useDebounce } from 'use-debounce';
 // @ts-ignore
 import { useSkipEffectOnMount } from 'bluesquare-components';
 import InputComponent from '../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { isTouched } from '../../utils';
 
 type Props = {
     field: any;
@@ -40,7 +41,7 @@ export const DebouncedTextInput: FunctionComponent<Props> = ({
     } = form;
     const hasError =
         form.errors &&
-        Boolean(get(form.errors, field.name) && get(touched, field.name));
+        Boolean(get(form.errors, field.name) && isTouched(touched));
     const errors = useMemo(
         () => (hasError ? [get(formErrors, name)] : []),
         [formErrors, hasError, name],

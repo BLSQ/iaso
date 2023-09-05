@@ -11,12 +11,14 @@ import {
 } from '@material-ui/core';
 import Public from '@material-ui/icons/Public';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import AddBox from '@mui/icons-material/AddBoxOutlined';
 import { FormattedMessage } from 'react-intl';
 import {
     commonStyles,
     DHIS2Svg,
     IconButton as IconButtonComponent,
     Table,
+    useSafeIntl,
 } from 'bluesquare-components';
 import 'react-table';
 import { CopySourceVersion } from './CopySourceVersion/CopySourceVersion.tsx';
@@ -25,10 +27,21 @@ import DialogComponent from '../../../components/dialogs/DialogComponent';
 import MESSAGES from '../messages';
 import { AddTask } from './AddTaskComponent';
 import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
+import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { EditSourceVersion } from './EditSourceVersion.tsx';
+import {
+    getSortedSourceVersions,
+    handleSort,
+    handleTableParamsChange,
+    getTableParams,
+    getTablePages,
+} from '../utils';
 
 const useStyles = makeStyles(theme => ({
+    spanStyle: {
+        marginLeft: '4px',
+    },
     ...commonStyles(theme),
 }));
 
@@ -98,7 +111,12 @@ const tableColumns = (source, forceRefreshParent) => [
         sortable: false,
     },
     {
-        Header: <FormattedMessage id="iaso.label.actions" />,
+        Header: (
+            <FormattedMessage
+                id="iaso.label.actions"
+                defaultMessage="Action(s)"
+            />
+        ),
         accessor: 'actions',
         sortable: false,
         width: 200,
@@ -150,56 +168,17 @@ const tableColumns = (source, forceRefreshParent) => [
     },
 ];
 
-const sortByNumberAsc = (sourceA, sourceB) => {
-    return sourceA.number - sourceB.number;
-};
-const sortByNumberDesc = (sourceA, sourceB) => {
-    return sourceB.number - sourceA.number;
-};
-const sortByOrgUnitsAsc = (sourceA, sourceB) => {
-    return sourceA.org_units_count - sourceB.org_units_count;
-};
-const sortByOrgUnitsDesc = (sourceA, sourceB) => {
-    return sourceB.org_units_count - sourceA.org_units_count;
-};
-
-const VersionsDialog = ({ renderTrigger, source }) => {
-    const classes = useStyles();
+const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
+    const { spanStyle, ...classes } = useStyles();
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [sortBy, setSortBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState('number');
-    const [resetPageToOne, setResetPageToOne] = useState(`${rowsPerPage}`);
     const dataForTable = useMemo(
         () => source?.versions ?? [],
         [source?.versions],
     );
-    const handleSort = useCallback(
-        focus => {
-            if (sortFocus !== focus) {
-                setSortFocus(focus);
-                setSortBy('asc');
-            } else if (sortBy === 'asc') {
-                setSortBy('desc');
-            } else {
-                setSortBy('asc');
-            }
-        },
-        [sortBy, sortFocus],
-    );
-
-    const handleTableParamsChange = params => {
-        if (params.order) {
-            handleSort(params.order.replace('-', ''));
-        }
-        if (params.pageSize) {
-            setResetPageToOne(`${params.pageSize}`);
-            setRowsPerPage(parseInt(params.pageSize, 10));
-        }
-        if (params.page) {
-            setPage(parseInt(params.page, 10) - 1);
-        }
-    };
+    const { formatMessage } = useSafeIntl();
 
     const formatDataForTable = useCallback(
         (tableData, sortFunc) =>
@@ -208,38 +187,32 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                 .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage),
         [page, rowsPerPage],
     );
+
     const sortedData = useMemo(() => {
-        if (sortFocus === 'number' && sortBy === 'asc') {
-            return formatDataForTable(dataForTable, sortByNumberAsc);
-        }
-        if (sortFocus === 'number' && sortBy === 'desc') {
-            return formatDataForTable(dataForTable, sortByNumberDesc);
-        }
-        if (sortFocus === 'org_units_count' && sortBy === 'asc') {
-            return formatDataForTable(dataForTable, sortByOrgUnitsAsc);
-        }
-        if (sortFocus === 'org_units_count' && sortBy === 'desc') {
-            return formatDataForTable(dataForTable, sortByOrgUnitsDesc);
-        }
-        console.warn(
-            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and number|org_units_count`,
+        return getSortedSourceVersions(
+            dataForTable,
+            sortFocus,
+            sortBy,
+            formatDataForTable,
+            formatMessage,
         );
-        return [];
-    }, [sortBy, sortFocus, dataForTable, formatDataForTable]);
+    }, [dataForTable, sortFocus, sortBy, formatDataForTable, formatMessage]);
 
-    const pages = useMemo(() => {
-        return dataForTable.length
-            ? Math.ceil(dataForTable.length / rowsPerPage)
-            : 0;
-    }, [dataForTable.length, rowsPerPage]);
-
-    const params = useMemo(
-        () => ({
-            pageSize: rowsPerPage,
-            page,
-        }),
-        [rowsPerPage, page],
+    const handleSortFunction = useCallback(
+        focus => {
+            handleSort(focus, sortFocus, sortBy, setSortFocus, setSortBy);
+        },
+        [sortBy, sortFocus],
     );
+
+    const handleTableParamsChangeFunction = tableParams => {
+        handleTableParamsChange(
+            tableParams,
+            handleSortFunction,
+            setRowsPerPage,
+            setPage,
+        );
+    };
 
     const titleMessage = (
         <FormattedMessage
@@ -250,6 +223,13 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             }}
         />
     );
+    const params = useMemo(() => {
+        return getTableParams(rowsPerPage, page);
+    }, [page, rowsPerPage]);
+
+    const pages = useMemo(() => {
+        return getTablePages(dataForTable, rowsPerPage);
+    }, [dataForTable, rowsPerPage]);
 
     return (
         <DialogComponent
@@ -261,21 +241,23 @@ const VersionsDialog = ({ renderTrigger, source }) => {
             renderActions={({ closeDialog }) => (
                 <DialogActions className={classes.action}>
                     <Button onClick={closeDialog} color="primary">
-                        <FormattedMessage id="iaso.label.close" />
+                        <FormattedMessage
+                            id="iaso.label.close"
+                            defaultMessage="Close"
+                        />
                     </Button>
                 </DialogActions>
             )}
         >
             <Table
                 data={sortedData}
-                columns={tableColumns(source)}
-                redirectTo={() => {}}
+                columns={tableColumns(source, forceRefreshParent)}
                 params={params}
-                resetPageToOne={resetPageToOne}
+                page={page}
                 pages={pages}
                 elevation={0}
                 count={source?.versions.length ?? 0}
-                onTableParamsChange={handleTableParamsChange}
+                onTableParamsChange={handleTableParamsChangeFunction}
             />
             {source.versions.length === 0 && (
                 <Typography style={{ padding: 5 }}>
@@ -290,11 +272,12 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
                             <DHIS2Svg />
-                            &nbsp;
-                            <FormattedMessage
-                                id="iaso.versionsDialog.label.newVersionDhis2"
-                                defaultMessage="New version from DHIS2"
-                            />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newVersionDhis2"
+                                    defaultMessage="New version from DHIS2"
+                                />
+                            </span>
                         </Button>
                     )}
                     sourceId={source.id}
@@ -304,16 +287,33 @@ const VersionsDialog = ({ renderTrigger, source }) => {
                     renderTrigger={({ openDialog }) => (
                         <Button onClick={openDialog}>
                             <Public />
-                            &nbsp;
-                            <FormattedMessage
-                                id="iaso.versionsDialog.label.newVersionGpkg"
-                                defaultMessage="New version from a Geopackage"
-                            />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newVersionGpkg"
+                                    defaultMessage="New version from a Geopackage"
+                                />
+                            </span>
                         </Button>
                     )}
                     sourceId={source.id}
                     sourceName={source.name}
                     projects={source.projects.flat()}
+                />
+
+                <AddNewEmptyVersion
+                    renderTrigger={({ openDialog }) => (
+                        <Button onClick={openDialog}>
+                            <AddBox />
+                            <span className={spanStyle}>
+                                <FormattedMessage
+                                    id="iaso.versionsDialog.label.newEmptyVersion"
+                                    defaultMessage="New empty version"
+                                />
+                            </span>
+                        </Button>
+                    )}
+                    sourceId={source.id}
+                    forceRefreshParent={forceRefreshParent}
                 />
             </Grid>
         </DialogComponent>
@@ -329,6 +329,7 @@ VersionsDialog.propTypes = {
         credentials: PropTypes.object,
         projects: PropTypes.array.isRequired,
     }).isRequired,
+    forceRefreshParent: PropTypes.func.isRequired,
 };
 VersionsDialog.defaultProps = {};
 

@@ -1,6 +1,7 @@
 import json
-import responses
 import logging
+
+import responses
 
 logger = logging.getLogger(__name__)
 from django.core.files.uploadedfile import UploadedFile
@@ -65,7 +66,6 @@ def dump_attributes(obj):
 
 class DataValueExporterTests(TestCase):
     def build_instance(self, form):
-
         instance = Instance()
         instance.export_id = "EVENT_DHIS2_UID"
 
@@ -157,12 +157,10 @@ class DataValueExporterTests(TestCase):
         testcases = ["event-create-error-" + version + ".json" for version in versions]
 
         for testcase in testcases:
-
             exception = EventHandler().handle_exception(load_dhis2_fixture(testcase), "error")
             self.assertIsNotNone(exception)
 
     def test_event_mapping_works(self):
-
         event, errors = EventHandler().map_to_values(self.build_instance(self.form), build_form_mapping())
 
         self.assertEquals(
@@ -223,7 +221,6 @@ class DataValueExporterTests(TestCase):
 
     @responses.activate
     def test_event_export_works(self):
-
         mapping_version = MappingVersion(
             name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
@@ -242,9 +239,6 @@ class DataValueExporterTests(TestCase):
             responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
         )
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
-
         DataValueExporter().export_instances(export_request)
         self.expect_logs(EXPORTED)
 
@@ -253,7 +247,6 @@ class DataValueExporterTests(TestCase):
 
     @responses.activate
     def test_event_export_handle_errors(self):
-
         mapping_version = MappingVersion(
             name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
@@ -276,9 +269,6 @@ class DataValueExporterTests(TestCase):
         )
 
         with self.assertRaises(InstanceExportError) as context:
-            # excercice
-            instances_qs = Instance.objects.order_by("id").all()
-
             DataValueExporter().export_instances(export_request)
             self.expect_logs("exported")
 

@@ -1,17 +1,19 @@
+from copy import deepcopy
+from time import gmtime, strftime
+
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.http import StreamingHttpResponse, HttpResponse
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
 
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.audit.models import log_modification, ORG_UNIT_API
 from iaso.api.common import CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from iaso.models import Link, OrgUnit, DataSource
-from django.core.paginator import Paginator
-from django.shortcuts import get_object_or_404
-from django.db.models import Q
-from copy import deepcopy
-from hat.audit.models import log_modification, ORG_UNIT_API
-from time import gmtime, strftime
-from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.utils import geojson_queryset
+from hat.menupermissions import models as permission
 
 
 class LinkSerializer(serializers.ModelSerializer):
@@ -38,9 +40,9 @@ class LinkSerializer(serializers.ModelSerializer):
 
 
 class LinkViewSet(viewsets.ViewSet):
-    """Links API
+    f"""Links API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
+    This API is restricted to authenticated users having the "{permission.LINKS}" permission
 
     GET /api/links/
     POST /api/links/

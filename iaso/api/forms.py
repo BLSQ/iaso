@@ -1,20 +1,26 @@
-from datetime import timedelta
 import typing
+from copy import copy
+from datetime import timedelta
+from xml.sax.saxutils import escape
+
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions, status
-from rest_framework.request import Request
+from rest_framework.decorators import action
+from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.generics import get_object_or_404
-from rest_framework.response import Response
-from copy import copy
+from rest_framework.request import Request
 
-from iaso.models import Form, Project, OrgUnitType, Profile, OrgUnit
-from iaso.utils import timestamp_to_datetime
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import log_modification, FORM_API
+from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilter
+from iaso.utils import timestamp_to_datetime
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
+from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
+from .query_params import APP_ID
+from hat.menupermissions import models as permission
 
 
 class HasFormPermission(permissions.BasePermission):
@@ -22,14 +28,25 @@ class HasFormPermission(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+        return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
 
     def has_object_permission(self, request, view, obj):
         if not self.has_permission(request, view):
             return False
-        return obj in Form.objects_include_deleted.filter_for_user_and_app_id(
-            request.user, request.query_params.get("app_id")
+        return (
+            Form.objects_include_deleted.filter_for_user_and_app_id(request.user, request.query_params.get("app_id"))
+            .filter(id=obj.id)
+            .exists()
         )
+
+
+class FormPredefinedFilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FormPredefinedFilter
+        fields = ["id", "name", "short_name", "json_logic", "created_at", "updated_at"]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
 
 class FormSerializer(DynamicFieldsModelSerializer):
@@ -82,6 +99,8 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "derived",
             "possible_fields",
             "label_keys",
+            "predefined_filters",
+            "has_attachments",
         ]
         read_only_fields = [
             "id",
@@ -94,6 +113,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "updated_at",
             "possible_fields",
             "fields",
+            "has_attachments",
         ]
 
     org_unit_types = serializers.SerializerMethodField()
@@ -107,9 +127,11 @@ class FormSerializer(DynamicFieldsModelSerializer):
     latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
+    predefined_filters = FormPredefinedFilterSerializer(many=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     deleted_at = TimestampField(allow_null=True, required=False)
+    has_attachments = serializers.SerializerMethodField()
 
     @staticmethod
     def get_latest_form_version(obj: Form):
@@ -118,6 +140,10 @@ class FormSerializer(DynamicFieldsModelSerializer):
     @staticmethod
     def get_org_unit_types(obj: Form):
         return [t.as_dict() for t in obj.org_unit_types.all()]
+
+    @staticmethod
+    def get_has_attachments(obj: Form):
+        return len(obj.attachments.all()) > 0
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
@@ -158,10 +184,10 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
 
 class FormsViewSet(ModelViewSet):
-    """Forms API
+    f"""Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "menupermissions.iaso_forms"  permission.
+    having the "{permission.FORMS}"  permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -199,6 +225,10 @@ class FormsViewSet(ModelViewSet):
         org_unit_id = self.request.query_params.get("orgUnitId", None)
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)
+
+        planning_ids = self.request.query_params.get("planning", None)
+        if planning_ids:
+            queryset = queryset.filter(plannings__id__in=planning_ids.split(","))
 
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 
@@ -314,6 +344,45 @@ class FormsViewSet(ModelViewSet):
         destroyed_form = Form.objects_only_deleted.get(pk=original.id)
         log_modification(original, destroyed_form, FORM_API, user=request.user)
         return response
+
+    FORM_PK = "form_pk"
+
+    @action(detail=True, methods=["get"])
+    def manifest(self, request, *args, **kwargs):
+        """Returns a xml manifest file in the openrosa format for the Form
+
+        This is used for the mobile app and Enketo to fetch the list of file attached to the Form
+        see https://docs.getodk.org/openrosa-form-list/#the-manifest-document
+        """
+        form = self.get_object()
+        attachments = form.attachments.all()
+        media_files = []
+        for attachment in attachments:
+            attachment_file_url: str = attachment.file.url
+            if not attachment_file_url.startswith("http"):
+                # Needed for local dev
+                attachment_file_url = public_url_for_enketo(request, attachment_file_url)
+
+            media_files.append(
+                f"""<mediaFile>
+    <filename>{escape(attachment.name)}</filename>
+    <hash>md5:{attachment.md5}</hash>
+    <downloadUrl>{escape(attachment_file_url)}</downloadUrl>
+</mediaFile>"""
+            )
+
+        nl = "\n"  # Backslashes are not allowed in f-string ¯\_(ツ)_/¯
+        return HttpResponse(
+            status=status.HTTP_200_OK,
+            content_type="text/xml",
+            headers={
+                "X-OpenRosa-Version": "1.0",
+            },
+            content=f"""<?xml version="1.0" encoding="UTF-8"?>
+<manifest xmlns="http://openrosa.org/xforms/xformsManifest">
+{nl.join(media_files)}
+</manifest>""",
+        )
 
 
 class MobileFormViewSet(FormsViewSet):

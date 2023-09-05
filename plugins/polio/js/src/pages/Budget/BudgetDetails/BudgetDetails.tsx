@@ -10,6 +10,7 @@ import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
 
 import { useDispatch, useSelector } from 'react-redux';
 import { groupBy } from 'lodash';
+import { Paginated } from 'bluesquare-components';
 import TopBar from '../../../../../../../hat/assets/js/apps/Iaso/components/nav/TopBarComponent';
 import { useStyles } from '../../../styles/theme';
 import { BUDGET, BUDGET_DETAILS } from '../../../constants/routes';
@@ -20,7 +21,6 @@ import { Optional } from '../../../../../../../hat/assets/js/apps/Iaso/types/uti
 import { handleTableDeepLink } from '../../../../../../../hat/assets/js/apps/Iaso/utils/table';
 import { useGetBudgetForCampaign } from '../hooks/api/useGetBudget';
 import { useGetBudgetDetails } from '../hooks/api/useGetBudgetDetails';
-import { Paginated } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BudgetStep } from '../types';
 
 import { BudgetDetailsCardsLayout } from './mobile/BudgetDetailsCardsLayout';
@@ -65,19 +65,26 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
 
     const nextSteps = useMemo(() => {
         const regular = budgetInfos?.next_transitions?.filter(
-            transition => transition.key !== 'override',
+            transition =>
+                transition.key !== 'override' &&
+                !transition.key.includes('repeat'),
+        );
+        const repeat = budgetInfos?.next_transitions?.filter(
+            step => step.key.includes('repeat') && step.allowed,
         );
         const toDisplay = new Set(
             regular
                 ?.filter(transition => !transition.key.includes('repeat'))
                 .map(transition => transition.label),
         );
-        return { regular, toDisplay };
+        return { regular, toDisplay, repeat };
     }, [budgetInfos?.next_transitions]);
 
     const { resetPageToOne, columns } = useTableState({
         events: budgetDetails?.results,
         params,
+        budgetDetails,
+        repeatTransitions: nextSteps.repeat || [],
     });
     const [page, setPage] = useBoundState<Optional<number | string>>(
         1,
@@ -95,7 +102,6 @@ export const BudgetDetails: FunctionComponent<Props> = ({ router }) => {
     ).map(([label, items]) => {
         return { label, value: items.map(i => i.key).join(',') };
     });
-
     return (
         <>
             <TopBar

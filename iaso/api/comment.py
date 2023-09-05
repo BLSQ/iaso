@@ -1,8 +1,9 @@
-from django.contrib.auth.models import User
+from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.sites.models import Site
 from django.utils.encoding import smart_str
-from rest_framework import viewsets, serializers, mixins, permissions
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers, mixins, permissions
 from rest_framework.exceptions import ValidationError, PermissionDenied
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.relations import RelatedField
@@ -11,7 +12,6 @@ from rest_framework.viewsets import GenericViewSet
 from iaso.api.common import UserSerializer
 from iaso.models import OrgUnit
 from iaso.models.comment import CommentIaso
-from django.utils.translation import ugettext_lazy as _
 
 
 class ContentTypeField(RelatedField):

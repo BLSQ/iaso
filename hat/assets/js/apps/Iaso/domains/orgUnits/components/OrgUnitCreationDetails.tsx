@@ -1,19 +1,11 @@
 import moment from 'moment';
 import React, { FunctionComponent, ReactNode } from 'react';
-import {
-    makeStyles,
-    Table,
-    TableBody,
-    TableRow,
-    TableCell,
-} from '@material-ui/core';
+import { Table, TableBody, TableRow, TableCell } from '@material-ui/core';
 import GpsFixedIcon from '@material-ui/icons/GpsFixed';
 import GpsOffIcon from '@material-ui/icons/GpsOff';
 import {
     // @ts-ignore
     useSafeIntl,
-    // @ts-ignore
-    commonStyles,
     // @ts-ignore
     LoadingSpinner,
 } from 'bluesquare-components';
@@ -22,14 +14,6 @@ import { OrgUnit } from '../types/orgUnit';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import MESSAGES from '../messages';
 
-const useStyles = makeStyles(theme => ({
-    mapContainer: {
-        ...commonStyles(theme).mapContainer,
-        height: '60vh',
-        marginBottom: 0,
-    },
-}));
-
 type RowProps = {
     label: string | ReactNode;
     value?: string | ReactNode;
@@ -37,10 +21,9 @@ type RowProps = {
 };
 
 const Row: FunctionComponent<RowProps> = ({ label, value, dataTestId }) => {
-    const classes: Record<string, string> = useStyles();
     return (
         <TableRow>
-            <TableCell className={classes.leftCell}>{label}</TableCell>
+            <TableCell>{label}</TableCell>
             <TableCell data-test={dataTestId}>{value}</TableCell>
         </TableRow>
     );
@@ -87,7 +70,7 @@ export const OrgUnitCreationDetails: FunctionComponent<Props> = ({
                         />
                         <Row
                             label={formatMessage(MESSAGES.creator)}
-                            value={orgUnit.creator.value ?? '-'}
+                            value={orgUnit.creator ?? '-'}
                             dataTestId="creator"
                         />
                         <Row

@@ -1,6 +1,10 @@
 import React, { FunctionComponent, useMemo, useEffect, useState } from 'react';
-// @ts-ignore
-import { AddButton, useSafeIntl, IconButton } from 'bluesquare-components';
+import {
+    AddButton,
+    useSafeIntl,
+    IconButton,
+    IntlFormatMessage,
+} from 'bluesquare-components';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 import { useFormik, FormikProvider, Field } from 'formik';
 import { isEqual } from 'lodash';
@@ -21,7 +25,6 @@ import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 import { usePlanningValidation } from '../hooks/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { IntlFormatMessage } from '../../../types/intl';
 import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
 import {
     useApiErrorValidation,
@@ -328,6 +331,7 @@ export const CreateEditPlanning: FunctionComponent<Props> = ({
                                         MESSAGES.selectOrgUnit,
                                     )}
                                     name="selectedOrgUnit"
+                                    errors={getErrors('selectedOrgUnit')}
                                 />
                             </Box>
                         </Grid>

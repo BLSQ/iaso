@@ -12,7 +12,7 @@ class OrgUnitsBulkUpdate(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated, HasOrgUnitPermission]
 
     def create(self, request):
-        select_all = request.data.get("select_all", None)
+        select_all = request.data.get("select_all", False)
         validation_status = request.data.get("validation_status", None)
         org_unit_type_id = request.data.get("org_unit_type", None)
         groups_ids_added = request.data.get("groups_added", None)
@@ -24,7 +24,7 @@ class OrgUnitsBulkUpdate(viewsets.ViewSet):
         user = self.request.user
         app_id = self.request.query_params.get("app_id")
 
-        # a=a is a bit redundant but it will allow a bit more verbosity in queue and edit log
+        # a=a is a bit redundant, but it will allow a bit more verbosity in queue and edit log
         task = org_units_bulk_update(
             app_id=app_id,
             select_all=select_all,

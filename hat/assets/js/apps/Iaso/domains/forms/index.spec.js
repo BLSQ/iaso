@@ -3,31 +3,17 @@ import nock from 'nock';
 import { AddButton as AddButtonComponent } from 'bluesquare-components';
 
 import { expect } from 'chai';
+import { withQueryClientProvider } from '../../../../test/utils';
 import Forms from './index';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
 import { renderWithStore } from '../../../../test/utils/redux';
 import { mockGetRequestsList } from '../../../../test/utils/requests';
+import * as Permission from '../../utils/permissions.ts';
 
 const redirectActions = require('../../routing/actions');
 
-const baseRequests = [
-    {
-        url: '/api/projects/',
-        body: {
-            projects: [],
-        },
-    },
-    {
-        url: '/api/orgunittypes/',
-        body: {
-            orgUnitTypes: [],
-        },
-    },
-];
-
 const requests = [
-    ...baseRequests,
     {
         url: '/api/forms/?&all=true&limit=10&page=1&order=-created_at',
         body: {
@@ -38,7 +24,6 @@ const requests = [
 ];
 
 const requestsForArchivedForms = [
-    ...baseRequests,
     {
         url: '/api/forms/?&all=true&showDeleted=true&limit=10&page=1&order=-created_at',
         body: {
@@ -49,7 +34,6 @@ const requestsForArchivedForms = [
 ];
 
 const requestForDeletedForms = [
-    ...baseRequests,
     {
         url: '/api/forms/?&order=instance_updated_at&page=1&showDeleted=true&searchActive=true&all=true&limit=50&undefined=true',
         body: {
@@ -64,16 +48,18 @@ const userWithFormPermission = {
         current: {
             id: 1,
             account: { name: '' },
-            permissions: ['iaso_forms'],
+            permissions: [Permission.FORMS],
         },
     },
 };
 
 const forms = ({ withPermissions, showOnlyDeleted = false }) =>
     mount(
-        renderWithStore(
-            <Forms params={{}} showOnlyDeleted={showOnlyDeleted} />,
-            withPermissions ? userWithFormPermission : null,
+        withQueryClientProvider(
+            renderWithStore(
+                <Forms params={{}} showOnlyDeleted={showOnlyDeleted} />,
+                withPermissions ? userWithFormPermission : null,
+            ),
         ),
     );
 

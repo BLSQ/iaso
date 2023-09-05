@@ -1,17 +1,19 @@
 import typing
+from typing import Optional
 
-from rest_framework import serializers, parsers, permissions, exceptions
+from django.db.models import BooleanField
+from django.db.models import Value, Count, TextField
+from django.db.models.expressions import Case, When
+from django.db.models.functions import Concat
+from rest_framework import serializers, parsers, exceptions
 from rest_framework.fields import Field
 
 from iaso.models import Form, FormVersion
-from django.db.models.functions import Concat
-from django.db.models import Value, Count, TextField
-from django.db.models import BooleanField
-from django.db.models.expressions import Case, When
-
 from iaso.odk import parsing
+from iaso.api.query_params import APP_ID
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
+from hat.menupermissions import models as permission
 
 
 # noinspection PyMethodMayBeStatic
@@ -48,6 +50,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "start_period",
             "end_period",
             "mapping_versions",
+            "possible_fields",
         ]
         read_only_fields = [
             "id",
@@ -59,6 +62,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
             "descriptor",
+            "possible_fields",
         ]
 
     form_id: Field = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
@@ -133,10 +137,22 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         return form_version
 
 
-class FormVersionsViewSet(ModelViewSet):
-    """Form versions API
+class HasFormVersionPermission(HasFormPermission):
+    def has_object_permission(self, request, view, obj) -> bool:
+        if not self.has_permission(request, view):
+            return False
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_forms" or "menupermissions.iaso_submissions" permissions.
+        ok_forms = Form.objects_include_deleted.filter_for_user_and_app_id(
+            request.user, request.query_params.get("app_id")
+        )
+
+        return ok_forms.filter(id=obj.form_id).exists()
+
+
+class FormVersionsViewSet(ModelViewSet):
+    f"""Form versions API
+
+    This API is restricted to authenticated users having the "{permission.FORMS}" or "{permission.SUBMISSIONS}" permissions.
 
     GET /api/formversions/
     GET /api/formversions/<id>
@@ -145,10 +161,7 @@ class FormVersionsViewSet(ModelViewSet):
     """
 
     serializer_class = FormVersionSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms", "menupermissions.iaso_submissions"),  # type: ignore
-    ]
+    permission_classes = [HasFormVersionPermission]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser, parsers.JSONParser)
@@ -158,9 +171,19 @@ class FormVersionsViewSet(ModelViewSet):
         orders = self.request.query_params.get("order", "full_name").split(",")
         mapped_filter = self.request.query_params.get("mapped", "")
 
-        profile = self.request.user.iaso_profile
-        queryset = FormVersion.objects.filter(form__projects__account=profile.account)
+        if self.request.user.is_anonymous:
+            app_id = self.request.query_params.get(APP_ID)
+            if app_id is not None:
+                queryset = FormVersion.objects.filter(form__projects__app_id=app_id)
+            else:
+                queryset = FormVersion.objects.none()
 
+        else:
+            profile = self.request.user.iaso_profile
+            queryset = FormVersion.objects.filter(form__projects__account=profile.account)
+
+        # We don't send versions for deleted forms
+        queryset = queryset.filter(form__deleted_at=None)
         search_name = self.request.query_params.get("search_name", None)
         if search_name:
             queryset = queryset.filter(form__name__icontains=search_name)

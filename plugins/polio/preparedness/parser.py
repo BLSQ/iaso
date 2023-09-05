@@ -1,6 +1,8 @@
 from enum import Enum
 from typing import Optional, Dict, Any
 
+from gspread.utils import absolute_range_name, rowcol_to_a1
+
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.client import get_client
 from plugins.polio.preparedness.exceptions import InvalidFormatError
@@ -46,7 +48,6 @@ REGIONAL_DISTRICT_INDICATORS = {
     "vaccine_and_droppers_received": 34,
     "vaccine_cold_chain_assessment": 33,
     "vaccine_monitors_training_and_deployment": 35,
-    "ppe_materials_and_others_supply": 37,
     "penmarkers_supply": 36,  # date
     "sia_training": 17,
     "sia_micro_planning": 26,
@@ -56,6 +57,29 @@ REGIONAL_DISTRICT_INDICATORS = {
     "aefi_easi_protocol": 51,
     "pharmacovigilance_committee": 50,
 }
+
+
+indicators = [
+    (1, "operational_fund", "Operational funds", "number"),
+    (2, "vaccine_and_droppers_received", "Vaccines and droppers received", "number"),
+    (3, "vaccine_cold_chain_assessment", "Vaccine cold chain assessment  ", "number"),
+    (4, "vaccine_monitors_training_and_deployment", "Vaccine monitors training & deployment  ", "number"),
+    (5, "penmarkers_supply", "Penmarkers  ", "number"),
+    (6, "sia_training", "Supervisor training & deployment  ", "number"),
+    (7, "sia_micro_planning", "Micro/Macro plan  ", "number"),
+    (8, "communication_sm_fund", "SM funds --> 2 weeks  ", "number"),
+    (9, "communication_sm_activities", "SM activities  ", "percent"),
+    (10, "communication_c4d", "C4d", "date"),
+    (0, "status_score", "Total score", "percent"),
+    # not used atm
+    # (0, "training_score", "training_score", "number"),
+    # (0, "monitoring_score", "monitoring_score", "number"),
+    # (3, "vaccine_score", "vaccine_score", "number"),
+    # (4, "advocacy_score", "advocacy_score", "number"),
+    # (5, "adverse_score", "adverse_score", "number"),
+    # (7, "region", "region", "number"),
+]
+"sn, key, title, kind"
 
 
 def _get_scores(sheet: CachedSheet, cell_pos):
@@ -137,7 +161,6 @@ def get_national_level_preparedness(spread: CachedSpread):
 
 
 def get_regional_level_preparedness(spread: CachedSpread):
-
     """Parse the region sheet
     There is two section we parse the General table, and the score table. They are not aligned.
     for the first table we assume it's always in the same place only the number of district change
@@ -160,6 +183,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
             "Résumé du niveau de préparation Lomé Commune",
             "Résumé de la préparation au niveau régional",
             "Resumo da preparação em Nível Regional",
+            "Summary of district Level Preparedness",
         )
         if not cell:
             print(f"No regional data found on worksheet: {sheet.title}")
@@ -181,6 +205,7 @@ def get_regional_level_preparedness(spread: CachedSpread):
         region_districts = region_districts[:-1]
         districts_indicators: Dict[str, Any] = {}
 
+        # noinspection SpellCheckingInspection
         for rownum, colnum, name in region_districts:
             if not name:
                 continue
@@ -219,38 +244,150 @@ def get_regional_level_preparedness(spread: CachedSpread):
     return {"regions": regions, "districts": districts}
 
 
+def get_regional_level_preparedness_v2(spread: CachedSpread):
+    """Parse the region sheet
+    There is two section we parse the General table, and the score table. They are not aligned.
+    for the first table we assume it's always in the same place only the number of district change
+    but for the second we actually search for the start of the box, via the magic strings
+    also in some sheet for the score table there is a gap between the region and the district, which is why we ignore
+    empty district_name
+    """
+    regions = {}
+    districts = {}
+
+    sheet: CachedSheet
+    for sheet in spread.worksheets():
+        if sheet.is_hidden:
+            continue
+        # detect if we are in a Regional Spreadsheet form the title
+        # and find position of the total score box
+        cell = sheet.find_one_of(
+            "Summary of Regional Level Preparedness",
+            "Résumé du niveau de préparation",
+            "Résumé du niveau de préparation Lomé Commune",
+            "Résumé de la préparation au niveau régional",
+            "Resumo da preparação em Nível Regional",
+        )
+        if not cell:
+            print(f"No regional data found on worksheet: {sheet.title}")
+            continue
+        print(f"Regional Data found on worksheet: {sheet.title}")
+
+        regional_name_range = absolute_range_name(sheet.title, "regional_name").replace("''", "'")
+        if regional_name_range in spread.range_dict:
+            start_region = spread.get_range_row_col(regional_name_range)
+        else:
+            start_region = sheet.find_formula("=C4")
+            if not start_region:
+                start_region = sheet.find_formula("=C5")
+            if not start_region:
+                print(f"start of data for region not found in {sheet.title}, using hard coded")
+                start_region = (7, 5)
+
+        print(start_region)
+        regional_name = sheet.get_rc(*start_region)
+        # for indicators
+        # Detect List of districts, and in which column they are
+        region_districts = sheet.get_line_start(start_region[0], start_region[1])
+        # ignore last column since it is the comments
+        region_districts = region_districts[:-1]
+        districts_indicators: Dict[str, Any] = {}
+        region_indicators: Dict[str, Any] = {}
+        for _, indicator_key, _, kind in indicators:
+            range_name = f"regional_{indicator_key}"
+            regional_name_range = absolute_range_name(sheet.title, range_name).replace("''", "'")
+            if regional_name_range not in spread.range_dict:
+                regional_name_range = regional_name_range.replace("!", "_")
+            if regional_name_range not in spread.range_dict:
+                regional_name_range = range_name
+            if regional_name_range not in spread.range_dict:
+                for _, _, district_region_name in region_districts:
+                    districts_indicators.setdefault(district_region_name, {})[indicator_key] = "Error"
+
+            indicator_row, indicator_col = spread.get_range_row_col(regional_name_range)
+            for i, (_, district_col, district_region_name) in enumerate(region_districts):
+                # take un-alignement of tables into account (for the score box that don't start on the same column)
+                col = (indicator_col - start_region[1]) + district_col
+                value = sheet.get_rc(indicator_row, col)
+                if kind == "percent":
+                    value = from_percent(value)
+                if i == 0:  # first column is the region
+                    # this new logic avoid the problem where there was a district with the same name as the region
+                    region_indicators[indicator_key] = value
+                else:
+                    districts_indicators.setdefault(district_region_name, {})[indicator_key] = value
+
+        regions[regional_name] = {**region_indicators}
+        # Find district box
+        # start juste after the region
+        col_district = sheet.get_line_start(cell[0], cell[1] + 2)
+        for row_num, col_num, district_name in col_district:
+            if not district_name:
+                continue
+            district_scores = _get_scores(sheet, (row_num, col_num - 1))
+            districts[district_name] = {**district_scores, "region": regional_name}
+
+        # merge both dict
+        for district_name, values in districts_indicators.items():
+            if district_name in districts:
+                districts[district_name].update(values)
+            else:
+                districts[district_name] = values
+
+    if not regions:
+        raise InvalidFormatError("Summary of Regional Level Preparedness` was not found in this document")
+    return {"regions": regions, "districts": districts}
+
+
+def get_national_level_preparedness_v2(spread: CachedSpread):
+    for worksheet in spread.worksheets():
+        if worksheet.is_hidden:
+            continue
+        cell = worksheet.find_one_of(
+            "Summary of National Level Preparedness",
+            "Résumé du niveau de préparation au niveau national ",
+            "Résumé de la préparation au niveau national",
+            "Resumo da preparação em Nível Central",
+        )
+        if not cell:
+            continue
+
+        print(f"Data found on worksheet: {worksheet.title}")
+        kv = {}
+        for i, indicator_key, _, kind in indicators:
+            range_name = f"national_{indicator_key}"
+            rc = spread.get_range_row_col(range_name)
+            value = worksheet.get_rc(*rc)
+            if kind == "percent":
+                value = from_percent(value)
+            kv[indicator_key] = value
+            print(indicator_key, value, rowcol_to_a1(*rc))
+
+        kv["round"] = RoundNumber.unknown
+        return kv
+    raise Exception(
+        "Summary of National Level Preparedness or Summary of Regional Level Preparedness was not found in this document"
+    )
+
+
+def parse_prepardness_v2(spread: CachedSpread):
+    preparedness_data = {
+        "national": get_national_level_preparedness_v2(spread),
+        **get_regional_level_preparedness_v2(spread),
+        "format": "v3.3",
+    }
+    preparedness_data["totals"] = get_preparedness_score(preparedness_data)
+    return preparedness_data
+
+
 def get_preparedness(spread: CachedSpread):
+    #  use New system with named range
+    if "national_status_score" in spread.range_dict:
+        return parse_prepardness_v2(spread)
+    # old system with hard code emplacement
     preparedness_data = {
         "national": get_national_level_preparedness(spread),
         **get_regional_level_preparedness(spread),
     }
     preparedness_data["totals"] = get_preparedness_score(preparedness_data)
     return preparedness_data
-
-
-# Layout of surge spreadsheet, there is only one worksheet
-# one row per country and one indicator per column: e.g
-# country name | Total surge approved - WHO | Total Surge Recruited -WHO
-# ALGERIA      | 5                          | 3
-# In surge spreadsheet. Which indicator is on which column
-SURGE_KEY_COL = {
-    "who_recruitment": 2,  # Total Surge Approved -WHO
-    "who_completed_recruitment": 3,  # Total Surge Recruited -WHO
-    "unicef_recruitment": 6,  # Total Surge Approved -UNICEF
-    "unicef_completed_recruitment": 7,  # Total Surge Recruited -UNICEF
-}
-
-
-def surge_indicator_for_country(cs: CachedSpread, country_name):
-    r = {"title": cs.title}
-
-    sheet = cs.worksheets()[0]
-    cell = sheet.find(country_name)
-    if not cell:
-        raise Exception("Country not found in spreadsheet")
-    row_num = cell[0]
-
-    for key, col_num in SURGE_KEY_COL.items():
-        value = sheet.get_rc(row_num, col_num)
-        r[key] = value
-    return r

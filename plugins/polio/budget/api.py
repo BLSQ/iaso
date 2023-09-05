@@ -1,5 +1,4 @@
 from typing import Type
-
 from django.db.models import QuerySet, Max
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -11,10 +10,11 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from iaso.api.common import ModelViewSet, DeletionFilterBackend, HasPermission
+from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
+    ExportCampaignBudgetSerializer,
     TransitionToSerializer,
     BudgetStepSerializer,
     UpdateBudgetStepSerializer,
@@ -23,12 +23,13 @@ from plugins.polio.budget.serializers import (
 )
 from plugins.polio.helpers import CustomFilterBackend
 from plugins.polio.models import Campaign
+from hat.menupermissions import models as permission
 
 
 # FIXME maybe: Maybe we should inherit from CampaignViewSet directly to not duplicate all the order and filter logic
 # But then we would inherit all the other actions too
 @swagger_auto_schema(tags=["budget"])
-class BudgetCampaignViewSet(ModelViewSet):
+class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     """
     Campaign endpoint with budget information.
 
@@ -36,7 +37,10 @@ class BudgetCampaignViewSet(ModelViewSet):
     """
 
     serializer_class = CampaignBudgetSerializer
-    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    exporter_serializer_class = ExportCampaignBudgetSerializer
+    export_filename = "campaigns_budget_list_{date}.csv"
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    use_field_order = True
 
     # Make this read only
     # FIXME : remove POST
@@ -56,6 +60,11 @@ class BudgetCampaignViewSet(ModelViewSet):
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
+
+        org_unit_groups = self.request.query_params.get("orgUnitGroups")
+        if org_unit_groups:
+            queryset = queryset.filter(country__groups__in=org_unit_groups.split(","))
+
         return queryset
 
     ordering_fields = [
@@ -125,7 +134,7 @@ class BudgetStepViewSet(ModelViewSet):
             return UpdateBudgetStepSerializer
         return BudgetStepSerializer
 
-    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
 
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [
@@ -192,7 +201,7 @@ class WorkflowViewSet(ViewSet):
     This endpoint is currently used to show the possible state in the filter
     """
 
-    permission_classes = [HasPermission("menupermissions.iaso_polio_budget")]  # type: ignore
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
 
     # At the moment I only implemented retrieve /current hardcode because we only support one workflow at the time
     # to keep the design simple, change if/when we want to support multiple workflow.

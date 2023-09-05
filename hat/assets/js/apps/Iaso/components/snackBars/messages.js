@@ -259,7 +259,7 @@ const MESSAGES = defineMessages({
     },
 
     patchTaskError: {
-        defaultMessage: 'An error occurred while updating the task.',
+        defaultMessage: 'An error occurred while updating the task',
         id: 'iaso.snackBar.patchTaskError',
     },
     patchTaskSuccess: {
@@ -295,7 +295,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching mappings',
     },
     retrieveTaskError: {
-        id: 'iaso.snackBar.fetchMappingsError',
+        id: 'iaso.snackBar.retrieveTaskError',
         defaultMessage: 'An error occurred while fetching task',
     },
     generateCSVError: {
@@ -314,6 +314,10 @@ const MESSAGES = defineMessages({
     searchOrgUnitsError: {
         id: 'iaso.snackBar.searchOrgUnitsError',
         defaultMessage: 'An error occurred while searching org units',
+    },
+    goToEntity: {
+        id: 'iaso.snackBar.goToEntity',
+        defaultMessage: 'Go to entity',
     },
 });
 

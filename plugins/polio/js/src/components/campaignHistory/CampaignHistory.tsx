@@ -1,5 +1,5 @@
 /* eslint-disable camelcase */
-import React, { useState, useEffect, useMemo, FunctionComponent } from 'react';
+import React, { useState, useEffect, FunctionComponent } from 'react';
 
 import {
     // @ts-ignore
@@ -13,7 +13,7 @@ import { useSelector, useDispatch } from 'react-redux';
 
 import { Box, Grid, makeStyles, Theme, Typography } from '@material-ui/core';
 
-import { CampaignLogDetail, Result } from './CampaignLogDetail';
+import { CampaignLogDetail } from './CampaignLogDetail';
 
 import WidgetPaper from '../../../../../../hat/assets/js/apps/Iaso/components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../../../hat/assets/js/apps/Iaso/components/papers/ErrorPaperComponent';
@@ -29,6 +29,8 @@ import MESSAGES from '../../constants/messages';
 import {
     useGetCampaignLogs,
     useGetCampaignLogDetail,
+    CampaignLogDetailResult,
+    initialLogDetail,
 } from '../../hooks/useGetCampaignHistory';
 
 type RouterCustom = {
@@ -67,24 +69,18 @@ export const CampaignHistory: FunctionComponent<Props> = ({
         isFetching: boolean;
         isError: boolean;
     } = useGetCampaignLogs(params.campaignId);
-
     const {
-        data,
+        data: {
+            user: campaignUser,
+            logDetail: campaignLogDetail,
+        } = initialLogDetail,
         isLoading: isCampaignLogLoading,
         isError: isCampaignLogError,
     }: {
-        data?: Result | undefined;
+        data?: CampaignLogDetailResult;
         isLoading: boolean;
         isError: boolean;
-    } = useGetCampaignLogDetail(params.logId);
-
-    const { user: campaignUser } = useMemo(() => {
-        if (!data) {
-            return { user: undefined, logDetail: undefined };
-        }
-
-        return data;
-    }, [data]);
+    } = useGetCampaignLogDetail(initialLogDetail, params.logId);
 
     const { formatMessage } = useSafeIntl();
 
@@ -175,6 +171,10 @@ export const CampaignHistory: FunctionComponent<Props> = ({
                                 <Typography variant="body1" color="inherit">
                                     {formatMessage(MESSAGES.last_modified_by)} :{' '}
                                     {campaignUser?.user_name}
+                                </Typography>
+                                <Typography variant="body1" color="inherit">
+                                    {formatMessage(MESSAGES.obr_name)} :{' '}
+                                    {campaignLogDetail?.obr_name}
                                 </Typography>
                             </WidgetPaper>
                         </Box>

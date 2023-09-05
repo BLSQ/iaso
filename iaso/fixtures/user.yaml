@@ -60,8 +60,6 @@
     created_at: 2021-10-15 10:42:13.542692+00:00
     updated_at: 2021-10-15 10:42:13.542709+00:00
     default_version: null
-    users:
-    - - test
     feature_flags: []
 - model: iaso.profile
   pk: 21

@@ -1,6 +1,6 @@
 /* eslint-disable camelcase */
+import { Pagination } from 'bluesquare-components';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
-import { Pagination } from '../../../types/table';
 import { User } from '../../../utils/usersUtils';
 
 type Lock = {
@@ -11,7 +11,6 @@ type Lock = {
         name: string;
     };
 };
-
 export type Instance = {
     uuid: string;
     id: number;
@@ -25,6 +24,7 @@ export type Instance = {
     latitude: number;
     longitude: number;
     altitude: number;
+    accuracy: number;
     files: Array<string>;
     status: string;
     export_statuses: Array<string>;
@@ -32,7 +32,7 @@ export type Instance = {
     deleted: boolean;
     org_unit: OrgUnit;
     period?: string;
-    file_content: Record<string, string>;
+    file_content: Record<string, any>;
     form_descriptor: unknown;
     last_export_success_at: unknown;
     instance_locks: Lock[];

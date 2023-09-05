@@ -24,7 +24,7 @@ describe('Tasks', () => {
             cy.intercept('GET', '/api/profiles/me/**', fakeUser);
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
     describe('Table', () => {
@@ -40,13 +40,13 @@ describe('Tasks', () => {
             }).as('firstFetch');
 
             cy.visit(baseUrl);
-            cy.wait(['@firstFetch']);
-
-            cy.intercept('/api/tasks/**', {
-                fixture: 'tasks/empty-list.json',
-            }).as('secondFetch');
-            cy.get('#refresh-button').click();
-            cy.wait(['@secondFetch']);
+            cy.wait(['@firstFetch']).then(() => {
+                cy.intercept('/api/tasks/**', {
+                    fixture: 'tasks/empty-list.json',
+                }).as('secondFetch');
+                cy.get('#refresh-button').click();
+                cy.wait(['@secondFetch']);
+            });
         });
         it('should render results', () => {
             cy.intercept('/api/tasks/**', { fixture: 'tasks/list.json' });

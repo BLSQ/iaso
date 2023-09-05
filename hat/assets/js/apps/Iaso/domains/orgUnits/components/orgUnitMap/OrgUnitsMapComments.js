@@ -9,7 +9,7 @@ import { Box, Typography, makeStyles } from '@material-ui/core';
 
 import { useSelector } from 'react-redux';
 import PropTypes from 'prop-types';
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
+import { useSnackMutation } from 'Iaso/libs/apiHooks.ts';
 import { useGetComments, sendComment } from '../../../../utils/requests';
 
 import MESSAGES from '../../messages';

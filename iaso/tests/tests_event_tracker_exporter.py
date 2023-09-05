@@ -1,7 +1,8 @@
 import json
+import logging
+
 import responses
 from django.core.files.uploadedfile import UploadedFile
-import logging
 
 logger = logging.getLogger(__name__)
 from django.test import TestCase
@@ -32,7 +33,7 @@ from django.core.files import File
 
 import os
 from datetime import datetime
-from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError, EventTrackerHandler
+from iaso.dhis2.datavalue_exporter import DataValueExporter, EventTrackerHandler
 from ..dhis2.export_request_builder import ExportRequestBuilder
 
 
@@ -223,7 +224,6 @@ def dump_attributes(obj):
 
 class DataValueExporterTests(TestCase):
     def build_instance(self, form, json):
-
         instance = Instance()
         instance.export_id = "EVENT_DHIS2_UID"
 
@@ -239,7 +239,7 @@ class DataValueExporterTests(TestCase):
         instance.project = self.project
         instance.save()
         # force to past creation date
-        # looks the the first save don't take it
+        # looks the first save don't take it
         instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.save()
         return instance
@@ -559,7 +559,6 @@ class DataValueExporterTests(TestCase):
 
     @responses.activate
     def test_event_export_works_on_existing_tracked_entity(self):
-
         mapping_version = MappingVersion(
             name="event tracker", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
@@ -601,9 +600,6 @@ class DataValueExporterTests(TestCase):
             responses.PUT, "https://dhis2.com/api/trackedEntityInstances/WfMWd9YYL4d", callback=request_callback
         )
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
-
         DataValueExporter().export_instances(export_request)
 
         self.expect_logs(EXPORTED)
@@ -615,7 +611,6 @@ class DataValueExporterTests(TestCase):
     def test_event_export_works_on_non_existing_tracked_entity_with_related_program(
         self,
     ):
-
         mapping_version = MappingVersion(
             name="event tracker", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
@@ -704,7 +699,6 @@ class DataValueExporterTests(TestCase):
         sent_create = []
 
         def request_callback(request):
-            request_payload = json.loads(request.body)
             sent_create.append(json.loads(request.body))
             resp = load_dhis2_fixture("event-tracker-tei-create.json")
             resp["response"]["importSummaries"][0]["reference"] = "TEI-" + str(len(sent_create))
@@ -725,9 +719,6 @@ class DataValueExporterTests(TestCase):
         responses.add_callback(
             responses.POST, "https://dhis2.com/api/relationships", callback=request_relation_ship_callback
         )
-
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
 
         DataValueExporter().export_instances(export_request)
 
@@ -883,7 +874,6 @@ class DataValueExporterTests(TestCase):
 
     @responses.activate
     def test_event_export_handle_409_error(self):
-
         mapping_version = MappingVersion(
             name="event tracker", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
@@ -931,9 +921,6 @@ class DataValueExporterTests(TestCase):
         responses.add_callback(
             responses.POST, "https://dhis2.com/api/trackedEntityInstances", callback=request_callback
         )
-
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
 
         DataValueExporter().export_instances(export_request)
 

@@ -2,9 +2,8 @@
 /* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl, UrlParams } from 'bluesquare-components';
 import { Box, Grid, useMediaQuery, useTheme } from '@material-ui/core';
-import { UrlParams } from '../../../../../../../hat/assets/js/apps/Iaso/types/table';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import InputComponent from '../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useFilterState } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
@@ -60,7 +59,7 @@ export const BudgetDetailsFilters: FunctionComponent<Props> = ({
                         options={stepsList}
                         multi={false}
                         value={filters.transition_key}
-                        label={MESSAGES.step}
+                        label={MESSAGES.filter}
                     />
                     <InputComponent
                         type="checkbox"

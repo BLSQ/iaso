@@ -1,7 +1,7 @@
-import { IntlMessage } from '../../../../../hat/assets/js/apps/Iaso/types/intl';
-import { Pagination } from '../../../../../hat/assets/js/apps/Iaso/types/table';
+import { Pagination, IntlFormatMessage } from 'bluesquare-components';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { ReasonForDelay } from '../components/Rounds/ReasonForDelayModal/hooks/reasons';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {
@@ -54,9 +54,6 @@ export type ConvertedLqasImData = {
     rounds: { number: number; data: LqasImDistrictDataWithNameAndRegion[] }[];
 };
 
-// eslint-disable-next-line no-unused-vars
-export type IntlFormatMessage = (message: IntlMessage) => string;
-
 export type LqasIMtype = 'imGlobal' | 'imIHH' | 'imOHH' | 'lqas';
 
 export type LqasImMapLegendData = {
@@ -99,42 +96,6 @@ export type CampaignStatus =
     | 'ROUND2START'
     | 'ROUND2DONE';
 
-export type BudgetStatus =
-    | 'all'
-    | 'validated'
-    | 'validation_ongoing'
-    | 'noBudgetSubmitted';
-
-export type BudgetEventType =
-    | 'submission'
-    | 'validation'
-    | 'comments'
-    | 'request'
-    | 'transmission'
-    | 'feedback'
-    | 'review';
-
-export type BudgetEvent = {
-    id: number;
-    campaign: string;
-    author: number;
-    type: BudgetEventType;
-    status: BudgetStatus;
-    created_at: string;
-    updated_at: string;
-    deleted_at: Nullable<string>;
-    // legacy. should be deleted backend side
-    cc_emails: null;
-    comment: Nullable<string>;
-    links: Nullable<string>;
-    is_finalized: boolean;
-    is_email_sent: boolean;
-    target_teams: number[];
-    files: any;
-    internal: boolean;
-    amount?: number;
-};
-
 export type CampaignLogDetail = {
     id: number;
     content_type: string;
@@ -149,8 +110,8 @@ export type CampaignLogsDetail = Pagination & {
 };
 
 export type CampaignLogData = {
-    user: Profile;
-    new_value: Record<string, any>;
+    user?: Profile;
+    new_value?: Record<string, any>;
 };
 
 export type CampaignFieldType =
@@ -232,7 +193,7 @@ export type BudgetStatusDeprecated =
     | 'SUBMITTED'
     | 'REVIEWED';
 
-export type PaymentMode = 'DIRECT' | 'DFC';
+export type PaymentMode = 'DIRECT' | 'DFC' | 'MOBILE_PAYMENT';
 
 export type Translations = {
     messages: Record<
@@ -272,8 +233,18 @@ export type Destruction = {
     comment: Nullable<string>;
 };
 
+export type RoundDateHistoryEntry = {
+    previous_started_at: string; // DATE
+    previous_ended_at: string; // DATE
+    started_at: string; // DATE
+    ended_at: string; // DATE
+    reason: ReasonForDelay;
+    user: { first_name: string; last_name: string; username: string };
+    created_at: string; // DATE
+};
+
 export type Round = {
-    id: string;
+    id: number;
     started_at: string;
     ended_at: string;
     mop_up_started_at: Nullable<string>; // date
@@ -312,15 +283,8 @@ export type Round = {
     forma_unusable_vials: Nullable<number>;
     forma_usable_vials: Nullable<number>;
     campaign: Nullable<string>; // uuid
-};
-
-export type Surge = {
-    created_at: string;
-    title: string;
-    who_recruitment: number; // These appear to be dates as unix stamps
-    who_completed_recruitment: number; // These appear to be dates as unix stamps
-    unicef_recruitment: number; // These appear to be dates as unix stamps
-    unicef_completed_recruitment: number; // These appear to be dates as unix stamps
+    percentage_covered_target_population: Nullable<number>;
+    datelogs: RoundDateHistoryEntry[];
 };
 
 export type Campaign = {
@@ -350,7 +314,6 @@ export type Campaign = {
     account: number;
     // Maybe vaccine name can be typed more strictly
     scopes: Scope[];
-    last_surge: Nullable<Surge>;
     obr_name: string;
     vaccines: string;
     epid: Nullable<string>;
@@ -360,7 +323,7 @@ export type Campaign = {
     separate_scopes_per_round: boolean;
     creation_email_sent_at: Nullable<string>; // date time
     onset_at: Nullable<string>; // date
-    three_level_call_at: Nullable<string>; // date
+    outbreak_declaration_date: Nullable<string>; // date
     cvdpv_notified_at: Nullable<string>; // date
     cvdpv2_notified_at: Nullable<string>; // date
     pv_notified_at: Nullable<string>; // date
@@ -382,8 +345,6 @@ export type Campaign = {
     doses_requested: Nullable<number>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: PreparednessSyncStatus;
-    surge_spreadsheet_url: Nullable<string>;
-    country_name_in_surge_spreadsheet: Nullable<string>;
     budget_status: Nullable<BudgetStatusDeprecated>;
     budget_responsible: Nullable<ResponsibleLevel>;
     is_test: boolean;
@@ -461,4 +422,12 @@ export type Shape = {
     short_name: string;
     source_id: number;
     source_name: string;
+    data?: Record<string, any>;
+};
+
+export type MapColor = {
+    color: string;
+    weight: string; // a number as string: "2"
+    opacity: string; // a number as string: "2"
+    zIndex: number;
 };

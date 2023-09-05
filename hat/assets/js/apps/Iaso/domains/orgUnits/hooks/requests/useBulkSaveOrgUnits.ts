@@ -6,9 +6,28 @@ import { SaveData } from '../../types/saveMulti';
 
 import MESSAGES from '../../messages';
 
-const saveBulkOgrUnits = (data: SaveData) => {
+const saveBulkOrgUnits = (data: SaveData) => {
     const url = '/api/tasks/create/orgunitsbulkupdate/';
     return postRequest(url, data);
+};
+
+const saveBulkOrgUnitsGPS = (data: SaveData) => {
+    const url = '/api/tasks/create/orgunitsbulklocationset/';
+    return postRequest(url, data);
+};
+
+type SaveDataWithOptions = SaveData & {
+    saveGPS: boolean;
+    saveOtherField: boolean;
+};
+
+const saveMulti = async (args: SaveDataWithOptions): Promise<void> => {
+    if (args.saveGPS) {
+        await saveBulkOrgUnitsGPS(args);
+    }
+    if (args.saveOtherField) {
+        await saveBulkOrgUnits(args);
+    }
 };
 
 export const useBulkSaveOrgUnits = (
@@ -16,7 +35,7 @@ export const useBulkSaveOrgUnits = (
 ): UseMutationResult => {
     const onSuccess = () => callback();
     return useSnackMutation({
-        mutationFn: saveBulkOgrUnits,
+        mutationFn: saveMulti,
         options: { onSuccess },
         showSucessSnackBar: true,
         snackSuccessMessage: MESSAGES.saveMultiEditOrgUnitsLaunched,

@@ -1,13 +1,14 @@
 import React from 'react';
-import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import OrgUnitPopupComponent from './components/OrgUnitPopupComponent';
-import MarkersListComponent from '../../components/maps/markers/MarkersListComponent';
-import {
-    circleColorMarkerOptions,
-    orderOrgUnitsByDepth,
-} from '../../utils/mapUtils';
+
+import { textPlaceholder, useSafeIntl, createUrl } from 'bluesquare-components';
+import { getChipColors } from '../../constants/chipColors';
+import { baseUrls } from '../../constants/urls';
+
+import { locationLimitMax } from './constants/orgUnitConstants';
+import { orderOrgUnitsByDepth } from '../../utils/map/mapUtils';
 
 import MESSAGES from './messages';
+import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 
 export const fetchLatestOrgUnitLevelId = levels => {
     if (levels) {
@@ -71,7 +72,7 @@ export const orgUnitLabelString = (
     return message;
 };
 
-export const OrgUnitLabel = ({ orgUnit, withType, withSource }) => {
+export const OrgUnitLabel = ({ orgUnit, withType, withSource = false }) => {
     const intl = useSafeIntl();
     return orgUnitLabelString(
         orgUnit,
@@ -190,17 +191,12 @@ export const getOrgUnitAncestors = orgUnit => {
     return result;
 };
 
-export const getStatusMessage = (status, formatMessage) => {
-    switch (status) {
-        case 'NEW': {
-            return formatMessage(MESSAGES.new);
-        }
-        case 'REJECTED': {
-            return formatMessage(MESSAGES.rejected);
-        }
-        default:
-            return formatMessage(MESSAGES.validated);
-    }
+export const useGetStatusMessage = () => {
+    const { data: validationStatusOptions } = useGetValidationStatus();
+    if (!validationStatusOptions) return () => '';
+    const getStatusMessage = status =>
+        validationStatusOptions.find(option => option.value === status)?.label;
+    return getStatusMessage;
 };
 
 export const getOrgUnitGroups = orgUnit => (
@@ -211,33 +207,6 @@ export const getOrgUnitGroups = orgUnit => (
         {(!orgUnit.groups || orgUnit.groups.length === 0) && textPlaceholder}
     </span>
 );
-
-export const getMarkerList = ({
-    locationsList,
-    fetchDetail,
-    color,
-    keyId,
-    useOrgUnitLocation,
-    PopupComponent = OrgUnitPopupComponent,
-}) => {
-    return (
-        <MarkersListComponent
-            key={keyId}
-            items={locationsList}
-            onMarkerClick={fetchDetail}
-            PopupComponent={PopupComponent}
-            popupProps={() => ({
-                displayUseLocation: true,
-                replaceLocation: selectedOrgUnit =>
-                    useOrgUnitLocation(selectedOrgUnit),
-            })}
-            isCircle
-            markerProps={() => ({
-                ...circleColorMarkerOptions(color),
-            })}
-        />
-    );
-};
 
 export const getLinksSources = (links, coloredSources, currentOrgUnit) => {
     let sources = [];
@@ -278,3 +247,19 @@ export const compareGroupVersions = (a, b) => {
     }
     return comparison;
 };
+
+export const getOrgUnitsUrl = accountId =>
+    `${baseUrls.orgUnits}${createUrl(
+        {
+            accountId,
+            locationLimit: locationLimitMax,
+            order: 'id',
+            pageSize: 50,
+            page: 1,
+            searchTabIndex: 0,
+            searches: `[{"validation_status":"all", "color":"${getChipColors(
+                0,
+            ).replace('#', '')}"}]`,
+        },
+        '',
+    )}`;

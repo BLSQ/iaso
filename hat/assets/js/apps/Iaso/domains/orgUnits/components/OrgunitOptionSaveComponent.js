@@ -18,13 +18,12 @@ const styles = theme => ({
 });
 
 function OrgunitOptionSaveComponent(props) {
-    const { orgUnitLocationModified, classes, resetOrgUnit, saveOrgUnit } =
-        props;
+    const { saveDisabled, classes, resetOrgUnit, saveOrgUnit } = props;
     return (
         <>
             <Button
                 className={classes.button}
-                disabled={!orgUnitLocationModified}
+                disabled={saveDisabled}
                 variant="contained"
                 onClick={() => {
                     resetOrgUnit();
@@ -33,7 +32,7 @@ function OrgunitOptionSaveComponent(props) {
                 <FormattedMessage {...MESSAGES.cancel} />
             </Button>
             <Button
-                disabled={!orgUnitLocationModified}
+                disabled={saveDisabled}
                 variant="contained"
                 className={classes.button}
                 color="primary"
@@ -49,7 +48,7 @@ OrgunitOptionSaveComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     resetOrgUnit: PropTypes.func.isRequired,
-    orgUnitLocationModified: PropTypes.bool.isRequired,
+    saveDisabled: PropTypes.bool.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
 };
 

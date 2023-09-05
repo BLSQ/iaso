@@ -1,15 +1,17 @@
+import itertools
+import json
+import logging
+from timeit import default_timer as timer
+
+from dhis2 import Api
+from dhis2 import RequestException
 from django.core.paginator import Paginator
 from django.utils import timezone
-from dhis2 import RequestException
-from dhis2 import Api
-from .value_formatter import format_value
-import json
-from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
+
 import iaso.models as models
-from timeit import default_timer as timer
-import itertools
+from iaso.models import OrgUnit, MappingVersion, ExportLog, RUNNING, ERRORED, EXPORTED
 from .api_logger import ApiLogger  # type: ignore
-import logging
+from .value_formatter import format_value
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +70,15 @@ class AggregateHandler(BaseHandler):
                 descriptions.append(response["description"])
             if "message" in response:
                 descriptions.append(response["message"])
+
+        # version < 2.38, a normal payload is sent with 200
         if "conflicts" in response:
             descriptions = [m["value"] for m in response["conflicts"]]
+
+        # 2.38 nesting conflicts in response with 409
+        if "response" in response and "conflicts" in response["response"]:
+            descriptions = [m["value"] for m in response["response"]["conflicts"]]
+
         descriptions = uniquify(descriptions)
         if len(descriptions) > 0:
             self.logger.warn(
@@ -198,10 +207,8 @@ class AggregateHandler(BaseHandler):
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
-            resp = {}
             try:
                 resp = json.loads(dhis2_exception.description)
-
             except:
                 resp = {"status": "ERROR", "description": "non json response return by server"}
 
@@ -221,7 +228,6 @@ class AggregateHandler(BaseHandler):
 
 class EventHandler(BaseHandler):
     def map_to_values(self, instance, form_mapping, export_status=None):
-
         event = {
             "program": form_mapping["program_id"],
             "event": instance.export_id,
@@ -236,7 +242,7 @@ class EventHandler(BaseHandler):
         event_errors = []
         question_mappings = form_mapping["question_mappings"]
 
-        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref == None:
+        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref is None:
             errored = True
             event_errors.append(
                 [
@@ -357,7 +363,6 @@ class EventTrackerHandler(BaseHandler):
         return status
 
     def map_to_values(self, instance, form_mapping, export_status=None, related_data=None):
-
         answers = related_data if related_data else instance.json
 
         question_mappings = form_mapping["question_mappings"]
@@ -451,7 +456,6 @@ class EventTrackerHandler(BaseHandler):
     def find_tracked_entity(
         self, api, country_dhis2_id, tracked_entity_type, unique_number_attribute_id, unique_number
     ):
-
         resp = api.get(
             "trackedEntityInstances",
             params={
@@ -552,7 +556,7 @@ class EventTrackerHandler(BaseHandler):
                                     unique_number_attribute_id,
                                     country_dhis2_id,
                                 )
-                                # create relation ship
+                                # create relationship
                                 if "relationship_type" in subform_mapping:
                                     relation_ship = {
                                         "relationshipType": subform_mapping["relationship_type"],
@@ -566,7 +570,6 @@ class EventTrackerHandler(BaseHandler):
                 self.flag_as_exported(export_status, stats, export_logs)
 
             except RequestException as dhis2_exception:
-
                 export_logs = api.pop_export_logs()
                 for export_log in export_logs:
                     export_log.save()
@@ -607,7 +610,6 @@ class EventTrackerHandler(BaseHandler):
                 api, country_dhis2_id, form_mapping["tracked_entity_type"], unique_number_attribute_id, unique_number
             )
             if tracked_entity_dhis2:
-
                 # copy the new events in the first enrollment
                 for event in tracked_entity_iaso["enrollments"][0]["events"]:
                     tracked_entity_dhis2["enrollments"][0]["events"].append(event)
@@ -616,7 +618,6 @@ class EventTrackerHandler(BaseHandler):
             else:
                 raise Exception(f"error : no tracked entity with unique number : {unique_number}")
         else:
-
             unique_number = self.generate_unique_number(api, unique_number_attribute_id, instance.org_unit)
 
             self.logger.debug(str(instance.id) + "unique number ?" + str(unique_number))
@@ -682,7 +683,6 @@ class EventTrackerHandler(BaseHandler):
             return InstanceExportError(message, counts, descriptions)
 
     def flag_as_errored(self, export_status, message, stats):
-
         stats["errored_count"] += 1
         export_status.status = ERRORED
         export_status.last_error_message = message
@@ -700,7 +700,6 @@ class DataValueExporter:
         }
 
     def get_api(self, mapping_version):
-
         if not mapping_version.id in self.api_cache:
             credentials = mapping_version.mapping.data_source.credentials
             self.api_cache[mapping_version.id] = Api(credentials.url, credentials.login, credentials.password)

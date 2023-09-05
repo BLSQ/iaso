@@ -53,7 +53,6 @@ class Differ:
         org_unit_types_ref=None,
         field_names=None,
     ):
-
         if field_names is None:
             field_names = ["name", "geometry", "parent"]
         if not ignore_groups:
@@ -133,7 +132,6 @@ class Differ:
             dhis2_value = field.access(orgunit_dhis2)
             ref_value = field.access(orgunit_ref)
 
-            status = None
             same = field.is_same(dhis2_value, ref_value)
             if same:
                 status = "same"

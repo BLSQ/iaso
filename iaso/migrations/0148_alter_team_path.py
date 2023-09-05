@@ -5,7 +5,6 @@ import django_ltree.fields
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0147_calculate_team_path"),
     ]

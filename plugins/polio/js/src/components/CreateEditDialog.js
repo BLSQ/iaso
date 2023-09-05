@@ -13,32 +13,32 @@ import {
     DialogContent,
     DialogTitle,
     Grid,
-    Tab,
-    Tabs,
     Typography,
-    Tooltip,
     Box,
 } from '@material-ui/core';
-
-import { FormattedMessage } from 'react-intl';
 
 import {
     useSafeIntl,
     LoadingSpinner,
     IconButton as IconButtonComponent,
+    BackdropClickModal,
 } from 'bluesquare-components';
 import { convertEmptyStringToNull } from '../utils/convertEmptyStringToNull';
-import { PreparednessForm } from '../forms/PreparednessForm';
 import { useFormValidator } from '../hooks/useFormValidator';
-import { BaseInfoForm } from '../forms/BaseInfoForm';
-import { DetectionForm } from '../forms/DetectionForm';
-import { RiskAssessmentForm } from '../forms/RiskAssessmentForm';
-import { ScopeForm } from '../forms/ScopeForm.tsx';
-import { BudgetForm } from '../forms/BudgetForm';
+import { BaseInfoForm, baseInfoFormFields } from '../forms/BaseInfoForm';
+import {
+    RiskAssessmentForm,
+    riskAssessmentFormFields,
+} from '../forms/RiskAssessmentForm';
+import { ScopeForm, scopeFormFields } from '../forms/ScopeForm.tsx';
+import { BudgetForm, budgetFormFields } from '../forms/BudgetForm.tsx';
+import { PreparednessForm } from '../forms/PreparednessForm';
 import { Form } from '../forms/Form';
-import { RoundsForm } from '../forms/RoundsForm';
-import { VaccineManagementForm } from '../forms/VaccineManagementForm.tsx';
-import { RoundsEmptyDates } from './Rounds/RoundsEmptyDates.tsx';
+import { RoundsForm, roundFormFields } from '../forms/RoundsForm';
+import {
+    VaccineManagementForm,
+    vaccineManagementFormFields,
+} from '../forms/VaccineManagementForm.tsx';
 
 import { useSaveCampaign } from '../hooks/useSaveCampaign';
 import { useGetCampaignLogs } from '../hooks/useGetCampaignHistory.ts';
@@ -48,10 +48,12 @@ import { CAMPAIGN_HISTORY_URL } from '../constants/routes';
 import { useStyles } from '../styles/theme';
 import MESSAGES from '../constants/messages';
 import { useGetCampaign } from '../hooks/useGetCampaign';
+import { compareArraysValues } from '../utils/compareArraysValues.ts';
+import { PolioDialogTabs } from './MainDialog/PolioDialogTabs.tsx';
 
 const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
     const { mutate: saveCampaign } = useSaveCampaign();
-    const { data: selectedCampaign, isFetching: isFetching } = useGetCampaign(
+    const { data: selectedCampaign, isFetching } = useGetCampaign(
         isOpen && campaignId,
     );
 
@@ -59,7 +61,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         selectedCampaign?.id,
         isOpen,
     );
-
+    const [isBackdropOpen, setIsBackdropOpen] = useState(false);
     const schema = useFormValidator();
     const { formatMessage } = useSafeIntl();
 
@@ -73,6 +75,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             },
             onError: error => {
                 helpers.setErrors(error.details);
+                helpers.setSubmitting(false);
             },
         });
     };
@@ -87,6 +90,10 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         is_preventive: false,
         is_test: false,
         enable_send_weekly_email: true,
+        has_data_in_budget_tool: false,
+        budget_current_state_key: '-',
+        detection_status: 'PENDING',
+        risk_assessment_status: 'TO_SUBMIT',
     };
 
     // Merge inplace default values with the one we get from the campaign.
@@ -101,8 +108,12 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         enableReinitialize: true,
         validateOnBlur: true,
         validationSchema: schema,
-        onSubmit: handleSubmit,
+        onSubmit: (values, helpers) => {
+            helpers.setSubmitting(true);
+            handleSubmit(values, helpers);
+        },
     });
+    const { touched } = formik;
 
     const handleClose = () => {
         formik.resetForm();
@@ -113,14 +124,29 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             {
                 title: formatMessage(MESSAGES.baseInfo),
                 form: BaseInfoForm,
+                hasTabError: compareArraysValues(
+                    baseInfoFormFields,
+                    formik.errors,
+                ),
+                key: 'baseInfo',
             },
             {
-                title: formatMessage(MESSAGES.detection),
-                form: DetectionForm,
+                title: formatMessage(MESSAGES.rounds),
+                form: RoundsForm,
+                key: 'rounds',
+                hasTabError: compareArraysValues(
+                    roundFormFields(selectedCampaign?.rounds ?? []),
+                    formik.errors,
+                ),
             },
             {
                 title: formatMessage(MESSAGES.riskAssessment),
                 form: RiskAssessmentForm,
+                hasTabError: compareArraysValues(
+                    riskAssessmentFormFields,
+                    formik.errors,
+                ),
+                key: 'riskAssessment',
             },
             {
                 title: formatMessage(MESSAGES.scope),
@@ -128,35 +154,44 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                 disabled:
                     !formik.values.initial_org_unit ||
                     formik.values.rounds.length === 0,
+                hasTabError: compareArraysValues(
+                    scopeFormFields,
+                    formik.errors,
+                ),
+                key: 'scope',
             },
             {
                 title: formatMessage(MESSAGES.budget),
                 form: BudgetForm,
+                hasTabError: compareArraysValues(
+                    budgetFormFields(selectedCampaign?.rounds ?? []),
+                    formik.errors,
+                ),
+                key: 'budget',
             },
             {
                 title: formatMessage(MESSAGES.preparedness),
                 form: PreparednessForm,
-            },
-            {
-                title: formatMessage(MESSAGES.rounds),
-                form: RoundsForm,
+                key: 'preparedness',
             },
             {
                 title: formatMessage(MESSAGES.vaccineManagement),
                 form: VaccineManagementForm,
+                key: 'vaccineManagement',
+                hasTabError: compareArraysValues(
+                    vaccineManagementFormFields(selectedCampaign?.rounds ?? []),
+                    formik.errors,
+                ),
             },
         ];
     }, [
         formatMessage,
+        formik.errors,
         formik.values.initial_org_unit,
         formik.values.rounds.length,
+        selectedCampaign?.rounds,
     ]);
-
     const [selectedTab, setSelectedTab] = useState(0);
-
-    const handleChange = (_event, newValue) => {
-        setSelectedTab(newValue);
-    };
 
     const CurrentForm = tabs[selectedTab].form;
 
@@ -165,10 +200,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
         setSelectedTab(0);
     }, [isOpen]);
 
-    const [isFormChanged, setIsFormChanged] = useState(false);
-    useEffect(() => {
-        setIsFormChanged(!isEqual(formik.values, formik.initialValues));
-    }, [formik]);
+    const isFormChanged = !isEqual(formik.values, formik.initialValues);
     const saveDisabled =
         !isFormChanged ||
         (isFormChanged && !formik.isValid) ||
@@ -180,7 +212,9 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             maxWidth="xl"
             open={isOpen}
             onClose={(_event, reason) => {
-                if (reason === 'backdropClick') {
+                if (reason === 'backdropClick' && !isEqual(touched, {})) {
+                    setIsBackdropOpen(true);
+                } else if (reason === 'backdropClick' && isEqual(touched, {})) {
                     handleClose();
                 }
             }}
@@ -188,6 +222,11 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             className={classes.mainModal}
         >
             {isFetching && <LoadingSpinner absolute />}
+            <BackdropClickModal
+                open={isBackdropOpen}
+                closeDialog={() => setIsBackdropOpen(false)}
+                onConfirm={() => handleClose()}
+            />
 
             <Grid container>
                 <Grid item xs={12} md={6}>
@@ -217,49 +256,13 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
             </Grid>
 
             <DialogContent className={classes.content}>
-                <Tabs
-                    value={selectedTab}
-                    className={classes.tabs}
-                    textColor="primary"
-                    onChange={handleChange}
-                    aria-label="disabled tabs example"
-                    variant="scrollable"
-                    scrollButtons="auto"
-                >
-                    {tabs.map(({ title, disabled }) => {
-                        if (
-                            disabled &&
-                            title === formatMessage(MESSAGES.scope)
-                        ) {
-                            return (
-                                <Tab
-                                    key={title}
-                                    style={{ pointerEvents: 'auto' }}
-                                    label={
-                                        <Tooltip
-                                            key={title}
-                                            title={
-                                                <FormattedMessage
-                                                    {...MESSAGES.scopeUnlockConditions}
-                                                />
-                                            }
-                                        >
-                                            <span>{title}</span>
-                                        </Tooltip>
-                                    }
-                                    disabled={disabled || false}
-                                />
-                            );
-                        }
-                        return (
-                            <Tab
-                                key={title}
-                                label={title}
-                                disabled={disabled || false}
-                            />
-                        );
-                    })}
-                </Tabs>
+                <PolioDialogTabs
+                    tabs={tabs}
+                    selectedTab={selectedTab}
+                    handleChange={(_event, newValue) => {
+                        setSelectedTab(newValue);
+                    }}
+                />
                 <FormikProvider value={formik}>
                     <Form>
                         <CurrentForm />
@@ -275,12 +278,13 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
                             )}
                         </Grid>
                     </Grid>
-                    {formik.errors?.rounds && (
+                    {/* TO DO / SPECIFIC COMMIT TO REMOVE ERRORS ROUND */}
+                    {/* {formik.errors?.rounds && (
                         <RoundsEmptyDates
                             roundErrors={formik.errors.rounds}
                             roundValues={formik.values.rounds}
                         />
-                    )}
+                    )} */}
                 </FormikProvider>
             </DialogContent>
             <DialogActions className={classes.action}>
@@ -306,7 +310,7 @@ const CreateEditDialog = ({ isOpen, onClose, campaignId }) => {
 };
 
 CreateEditDialog.defaultProps = {
-    selectedCampaign: undefined,
+    campaignId: undefined,
 };
 
 CreateEditDialog.propTypes = {

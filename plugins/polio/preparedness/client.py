@@ -22,8 +22,8 @@ SCOPES = [
 class QuotaLimiter:
     """This class allow limiting the number of call to an API within the allowed quota.
 
-    Just call the function and then it will wait before returning if we are over the rate.
-    The limit on the google sheet API is 60 call per seconds per project, we will limit to half that
+    Just call the function, and then it will wait before returning if we are over the rate.
+    The limit on the Google sheet API is 60 call per minute per project, we will limit to half that
     because we may not be the only sessions using the API Key"""
 
     RANGE_SECONDS = 60

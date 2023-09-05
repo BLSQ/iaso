@@ -2,10 +2,12 @@
 
 import listFixture from '../../fixtures/forms/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import { search, searchWithForbiddenChars } from '../../constants/search';
+import { testSearchField } from '../../support/testSearchField';
+import * as Permission from '../../../apps/Iaso/utils/permissions.ts';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 
-const search = 'ZELDA';
 const baseUrl = `${siteBaseUrl}/dashboard/forms/list/`;
 
 let interceptFlag = false;
@@ -28,9 +30,11 @@ const goToPage = (
     };
     if (formQuery) {
         cy.intercept({ ...options, query: formQuery }, req => {
-            req.continue(res => {
-                interceptFlag = true;
-                res.send({ fixture });
+            req.on('response', response => {
+                if (response.statusMessage === 'OK') {
+                    interceptFlag = true;
+                    response.send({ fixture });
+                }
             });
         }).as('getForms');
     } else {
@@ -40,7 +44,7 @@ const goToPage = (
         }).as('getForms');
     }
 
-    cy.intercept('GET', '/api/orgunittypes/**', {
+    cy.intercept('GET', '/api/v2/orgunittypes/**', {
         fixture: 'orgunittypes/list.json',
     }).as('getTypes');
     cy.intercept('GET', '/api/projects/**', {
@@ -58,7 +62,7 @@ describe('Forms', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', 'Awaiting Access Permissions');
         });
 
         it('click on create button should redirect to form creation url', () => {
@@ -74,13 +78,7 @@ describe('Forms', () => {
             beforeEach(() => {
                 goToPage();
             });
-            it('should enabled search button', () => {
-                cy.get('[data-test="search-button"]')
-                    .as('search-button')
-                    .should('be.disabled');
-                cy.get('#search-search').type(search);
-                cy.get('@search-button').should('not.be.disabled');
-            });
+            testSearchField(search, searchWithForbiddenChars);
         });
         describe('Show deleted checkbox', () => {
             beforeEach(() => {
@@ -148,12 +146,12 @@ describe('Forms', () => {
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 4);
+                    actionCol.find('button').should('have.length', 5);
                 });
                 it('should display 3 buttons if user has iaso_forms permission', () => {
                     goToPage({
                         ...superUser,
-                        permissions: ['iaso_forms'],
+                        permissions: [Permission.FORMS],
                         is_superuser: false,
                     });
                     table = cy.get('table');
@@ -161,16 +159,16 @@ describe('Forms', () => {
                     const actionCol = row.find('td').last();
                     actionCol.find('button').should('have.length', 3);
                 });
-                it('should display 1 buttons if user has iaso_submissions permission', () => {
+                it('should display 2 buttons if user has iaso_submissions permission', () => {
                     goToPage({
                         ...superUser,
-                        permissions: ['iaso_submissions'],
+                        permissions: [Permission.SUBMISSIONS],
                         is_superuser: false,
                     });
                     table = cy.get('table');
                     row = table.find('tbody').find('tr').eq(0);
                     const actionCol = row.find('td').last();
-                    actionCol.find('button').should('have.length', 1);
+                    actionCol.find('button').should('have.length', 2);
                 });
             });
         });

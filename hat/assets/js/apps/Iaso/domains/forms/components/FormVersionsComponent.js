@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
-import { Box, Typography } from '@material-ui/core';
+import { Box } from '@material-ui/core';
 import {
     useSafeIntl,
     AddButton as AddButtonComponent,
@@ -33,14 +32,26 @@ const FormVersionsComponent = ({
     if (!formId) return null;
 
     return (
-        <Box mt={4}>
-            <Typography
-                color="primary"
-                variant="h5"
-                data-test="form-versions-title"
+        <Box>
+            <Box
+                mb={2}
+                justifyContent="flex-end"
+                alignItems="center"
+                display="flex"
             >
-                <FormattedMessage {...MESSAGES.versions} />
-            </Typography>
+                <FormVersionsDialog
+                    formId={formId}
+                    periodType={periodType}
+                    titleMessage={MESSAGES.createFormVersion}
+                    renderTrigger={({ openDialog }) => (
+                        <AddButtonComponent
+                            onClick={openDialog}
+                            message={MESSAGES.createFormVersion}
+                        />
+                    )}
+                    onConfirmed={() => setForceRefresh(true)}
+                />
+            </Box>
             <SingleTable
                 isFullHeight={false}
                 baseUrl={baseUrl}
@@ -79,22 +90,6 @@ const FormVersionsComponent = ({
                 forceRefresh={forceRefresh}
                 onForceRefreshDone={() => setForceRefresh(false)}
             />
-            <Box
-                mt={2}
-                justifyContent="flex-end"
-                alignItems="center"
-                display="flex"
-            >
-                <FormVersionsDialog
-                    formId={formId}
-                    periodType={periodType}
-                    titleMessage={MESSAGES.createFormVersion}
-                    renderTrigger={({ openDialog }) => (
-                        <AddButtonComponent onClick={openDialog} />
-                    )}
-                    onConfirmed={() => setForceRefresh(true)}
-                />
-            </Box>
         </Box>
     );
 };

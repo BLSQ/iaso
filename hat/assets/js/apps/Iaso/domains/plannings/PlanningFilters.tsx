@@ -1,14 +1,12 @@
 import { Box, Grid } from '@material-ui/core';
-import React, { FunctionComponent } from 'react';
-// @ts-ignore
-import { useSafeIntl } from 'bluesquare-components';
+import React, { FunctionComponent, useState } from 'react';
+import { useSafeIntl, IntlFormatMessage } from 'bluesquare-components';
 import { FilterButton } from '../../components/FilterButton';
 import DatesRange from '../../components/filters/DatesRange';
 import InputComponent from '../../components/forms/InputComponent';
 import { useFilterState } from '../../hooks/useFilterState';
 import { PlanningParams } from './types';
 import MESSAGES from './messages';
-import { IntlFormatMessage } from '../../types/intl';
 import { publishingStatuses } from './constants';
 import { baseUrls } from '../../constants/urls';
 
@@ -28,6 +26,7 @@ const baseUrl = baseUrls.planning;
 export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const { formatMessage } = useSafeIntl();
 
     return (
@@ -42,6 +41,8 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                             type="search"
                             label={MESSAGES.search}
                             onEnterPressed={handleSearch}
+                            onErrorChange={setTextSearchError}
+                            blockForbiddenChars
                         />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -67,7 +68,7 @@ export const PlanningFilters: FunctionComponent<Props> = ({ params }) => {
                     <Grid container item xs={12} justifyContent="flex-end">
                         <Box mt={2} mb={2}>
                             <FilterButton
-                                disabled={!filtersUpdated}
+                                disabled={textSearchError || !filtersUpdated}
                                 onFilter={handleSearch}
                             />
                         </Box>

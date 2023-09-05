@@ -1,12 +1,12 @@
 import typing
 from unittest import mock
 
-from django.contrib.contenttypes.models import ContentType
-from django.core.files import File
-from django.test import TestCase as BaseTestCase
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
+from django.core.files import File
 from django.http import StreamingHttpResponse, HttpResponse
+from django.test import TestCase as BaseTestCase
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
 from hat.menupermissions.models import CustomPermissionSupport
@@ -17,7 +17,15 @@ from iaso import models as m
 class IasoTestCaseMixin:
     @staticmethod
     def create_user_with_profile(
-        *, username: str, account: m.Account, permissions=None, org_units: typing.Sequence[m.OrgUnit] = None, **kwargs
+        *,
+        username: str,
+        account: m.Account,
+        permissions=None,
+        org_units: typing.Sequence[m.OrgUnit] = None,
+        language: str = None,
+        projects: typing.Sequence[m.Project] = None,
+        user_roles: typing.Sequence[m.UserRole] = None,
+        **kwargs,
     ):
         User = get_user_model()
 
@@ -30,6 +38,16 @@ class IasoTestCaseMixin:
 
         if org_units is not None:
             user.iaso_profile.org_units.set(org_units)
+
+        if language is not None:
+            user.iaso_profile.language = language
+            user.iaso_profile.save()
+
+        if projects is not None:
+            user.iaso_profile.projects.set(projects)
+
+        if user_roles is not None:
+            user.iaso_profile.user_roles.set(user_roles)
 
         return user
 
@@ -173,3 +191,14 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertHasField(project_data, "created_at", float)
         self.assertHasField(project_data, "updated_at", float)
         self.assertHasField(project_data, "needs_authentication", bool)
+
+    def assertValidTaskAndInDB(self, jr, status="QUEUED", name=None):
+        task_dict = jr["task"]
+        self.assertEqual(task_dict["status"], status, task_dict)
+
+        task = m.Task.objects.get(id=task_dict["id"])
+        self.assertTrue(task)
+        if name:
+            self.assertEqual(task.name, name)
+
+        return task

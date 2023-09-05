@@ -1,7 +1,7 @@
-import { useSnackMutation } from 'Iaso/libs/apiHooks';
-import { postRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { getRequest } from 'Iaso/libs/Api';
+/* eslint-disable camelcase */
+// @ts-ignore
+import { useSnackMutation, useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { postRequest, getRequest } from 'Iaso/libs/Api';
 
 export const useGetPreparednessData = (campaignId, roundKey) => {
     const url = `/api/polio/campaigns/${campaignId}/preparedness?round=${roundKey}`;
@@ -15,16 +15,20 @@ export const useGetPreparednessData = (campaignId, roundKey) => {
     );
 };
 
+const refreshPreparedness = ({ googleSheetURL, campaignName }) => {
+    // launch task to refresh endpoint for preparedness dashboard
+    postRequest('/api/tasks/create/refreshpreparedness/', {
+        obr_name: campaignName,
+    });
+    return postRequest('/api/polio/campaigns/preview_preparedness/', {
+        google_sheet_url: googleSheetURL,
+    });
+};
+
 // This retrieve data but since it contact data from an external service this is
 // implemented as a post. This fetch and parse the Google spreadsheet
 export const useFetchPreparedness = () => {
-    return useSnackMutation(
-        googleSheetURL =>
-            postRequest('/api/polio/campaigns/preview_preparedness/', {
-                google_sheet_url: googleSheetURL,
-            }),
-        null,
-    );
+    return useSnackMutation(refreshPreparedness, null);
 };
 
 export const useGeneratePreparednessSheet = campaign_id => {
@@ -35,14 +39,5 @@ export const useGeneratePreparednessSheet = campaign_id => {
                 round_number: roundNumber,
             },
         ),
-    );
-};
-
-// This retrieve data but since it contact data from an external service this is
-// implemented as a post
-export const useFetchSurgeData = () => {
-    return useSnackMutation(
-        body => postRequest('/api/polio/campaigns/preview_surge/', body),
-        null,
     );
 };

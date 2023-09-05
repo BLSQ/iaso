@@ -1,5 +1,6 @@
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 
+export const LQAS_DATASTORE_URL = '/api/datastore/lqas_';
 export const IM_POC_URL = '/api/polio/imstats/';
 // Including number in the name so it can be used with parseInt for Table sorting.
 // FIXME there should be a cleaner way to do this
@@ -11,28 +12,34 @@ export const LQAS_PASS = '1lqasOK';
 export const LQAS_DISQUALIFIED = '2lqasDisqualified';
 export const LQAS_FAIL = '3lqasFail';
 export const IN_SCOPE = 'inScope';
-
+export const paperElevation = 2;
 export const imDistrictColors = {
     [IM_PASS]: {
-        color: OK_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: OK_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [IM_WARNING]: {
-        color: WARNING_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: WARNING_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [IM_FAIL]: {
-        color: FAIL_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: FAIL_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [IN_SCOPE]: {
-        color: 'grey',
+        color: '#5e5e5e',
         opacity: '1',
         fillColor: 'grey',
         weight: '2',
@@ -42,25 +49,31 @@ export const imDistrictColors = {
 
 export const lqasDistrictColors = {
     [LQAS_PASS]: {
-        color: OK_COLOR,
+        color: '#5e5e5e',
         weight: '2',
         opacity: '1',
+        fillColor: OK_COLOR,
+        fillOpacity: 0.8,
         zIndex: 999,
     },
     [LQAS_DISQUALIFIED]: {
-        color: WARNING_COLOR,
+        color: '#5e5e5e',
+        fillColor: WARNING_COLOR,
+        fillOpacity: 0.8,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [LQAS_FAIL]: {
-        color: FAIL_COLOR,
+        color: '#5e5e5e',
+        fillColor: FAIL_COLOR,
+        fillOpacity: 0.8,
         weight: '2',
         opacity: '1',
         zIndex: 999,
     },
     [IN_SCOPE]: {
-        color: 'grey',
+        color: '#5e5e5e',
         opacity: '1',
         fillColor: 'grey',
         weight: '2',

@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("iaso", "0093_importgpkg"),
         ("iaso", "0093_commentiaso"),

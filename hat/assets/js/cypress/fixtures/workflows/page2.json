@@ -1,0 +1,46 @@
+{
+    "count": 12,
+    "workflow_versions": [
+        {
+            "version_id": 2,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_2",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        },
+        {
+            "version_id": 1,
+            "status": "UNPUBLISHED",
+            "name": "workflow_versions_1",
+            "entity_type": {
+                "id": 3,
+                "name": "Entity type3",
+                "reference_form": 7
+            },
+            "reference_form": {
+                "id": 7,
+                "name": "reference_form"
+            },
+            "created_at": "2023-01-31T11:04:21.105977Z",
+            "updated_at": "2023-01-31T11:04:21.105993Z",
+            "changes": [],
+            "follow_ups": []
+        }
+    ],
+    "has_next": false,
+    "has_previous": true,
+    "page": 2,
+    "pages": 2,
+    "limit": 10
+}

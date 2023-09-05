@@ -1,8 +1,8 @@
-from hat.audit.models import log_modification
-
-from iaso.test import APITestCase
-from iaso import models as m
 from copy import deepcopy
+
+from hat.audit.models import log_modification
+from iaso import models as m
+from iaso.test import APITestCase
 
 
 class LogsAPITestCase(APITestCase):
@@ -66,7 +66,7 @@ class LogsAPITestCase(APITestCase):
         )
 
     def test_logs_list_with_superuser_with_data_without_param(self):
-        """GET /logs/ with super user should return an empty paginated list if no modification in db"""
+        """GET /logs/ with superuser should return an empty paginated list if no modification in db"""
         self.maxDiff = None
         self.jane.is_superuser = True
         self.jane.save()
@@ -184,7 +184,7 @@ class LogsAPITestCase(APITestCase):
 
         self.client.force_authenticate(user_with_instance_perm)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         self.client.force_authenticate(user_no_instance_perm)
         response = self.client.get(f"/api/logs/{modification.id}/")
@@ -193,4 +193,4 @@ class LogsAPITestCase(APITestCase):
 
         self.client.force_authenticate(user_superuser)
         response = self.client.get(f"/api/logs/{modification.id}/")
-        r = self.assertJSONResponse(response, 200)
+        self.assertJSONResponse(response, 200)

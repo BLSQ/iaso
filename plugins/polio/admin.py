@@ -9,7 +9,7 @@ from django.utils.safestring import mark_safe
 from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
 from .models import (
     Campaign,
-    Surge,
+    RoundDateHistoryEntry,
     Round,
     Config,
     CountryUsersGroup,
@@ -17,6 +17,8 @@ from .models import (
     SpreadSheetImport,
     CampaignGroup,
 )
+
+from iaso.admin import IasoJSONEditorWidget
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -26,11 +28,26 @@ class CampaignAdmin(admin.ModelAdmin):
     }
     list_filter = ["virus", "detection_status", "risk_assessment_status", "budget_status"]
 
+    def save_model(self, request, obj: Campaign, form, change):
+        obj.update_geojson_field()
+        super().save_model(request, obj, form, change)
+
+    @admin.action(description="Force update of geojson field")
+    def force_update_campaign_shape(self, request, queryset):
+        c: Campaign
+        for c in queryset:
+            c.update_geojson_field()
+            c.save()
+        self.message_user(request, f"GeoJson of {queryset.count()} campaign updated")
+
+    actions = [force_update_campaign_shape]
+
 
 class SpreadSheetImportAdmin(admin.ModelAdmin):
     list_filter = ["spread_id", "created_at"]
     list_display = ["spread_id", "title", "created_at", "url"]
     readonly_fields = ["title", "table"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
     def title(self, obj: SpreadSheetImport):
         return obj.content["title"]
@@ -99,24 +116,19 @@ class BudgetStepAdmin(admin.ModelAdmin):
 
 
 class WorkflowAdmin(admin.ModelAdmin):
-    readonly_fields = [
-        "pretty_json",
-    ]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
-    def pretty_json(self, obj: WorkflowModel):
-        try:
-            d = json.dumps(obj.definition, indent=2)
-            html = f"<pre>{d}</pre>"
-            return mark_safe(html)
-        except Exception as e:
-            print(e)
+
+class ConfigAdmin(admin.ModelAdmin):
+    raw_id_fields = ["users"]
+    formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
-admin.site.register(Config)
-admin.site.register(Surge)
+admin.site.register(Config, ConfigAdmin)
 admin.site.register(Round)
+admin.site.register(RoundDateHistoryEntry)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)
 admin.site.register(SpreadSheetImport, SpreadSheetImportAdmin)

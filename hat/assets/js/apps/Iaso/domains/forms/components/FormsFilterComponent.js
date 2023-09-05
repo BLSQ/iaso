@@ -25,19 +25,24 @@ export const FormsFilterComponent = ({
     const forms = useMemo(() => {
         const newForms = [];
         if (data?.instances) {
+            const uniqueFormIds = new Set(data.instances.map(i => i.form_id));
+
             data.instances.forEach(i => {
-                const exisitingFormIndex = newForms.findIndex(
-                    f => f.id === i.form_id,
-                );
-                if (exisitingFormIndex) {
-                    newForms.push({
-                        id: i.form_id,
-                        name: i.form_name,
-                        color: getChipColors(newForms.length, true),
-                        instances: [i],
-                    });
-                } else {
-                    newForms[exisitingFormIndex].instances.push(i);
+                if (uniqueFormIds.has(i.form_id)) {
+                    const exisitingFormIndex = newForms.findIndex(
+                        f => f.id === i.form_id,
+                    );
+                    if (exisitingFormIndex) {
+                        newForms.push({
+                            id: i.form_id,
+                            name: i.form_name,
+                            color: getChipColors(newForms.length, true),
+                            instances: [i],
+                        });
+                    } else {
+                        newForms[exisitingFormIndex].instances.push(i);
+                    }
+                    uniqueFormIds.delete(i.form_id);
                 }
             });
         }

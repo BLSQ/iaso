@@ -12,18 +12,19 @@ from django.db import transaction
 from django.db.models import Q, Count, QuerySet
 from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.timezone import now
-from django_stubs_ext import WithAnnotations
 from rest_framework import serializers, status
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
+from typing_extensions import Annotated, TypedDict
 
 import iaso.periods as periods
 from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from hat.audit.models import log_modification, INSTANCE_API
 from hat.common.utils import queryset_iterator
+from iaso.api.serializers import OrgUnitSerializer
 from iaso.models import (
     Instance,
     OrgUnit,
@@ -35,10 +36,10 @@ from iaso.models import (
 )
 from iaso.utils import timestamp_to_datetime
 from . import common
+from .comment import UserSerializerForComment
 from .common import safe_api_import, TimestampField, FileFormatEnum, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .instance_filters import parse_instance_filters, get_form_from_instance_filters
-from .comment import UserSerializerForComment
-from iaso.api.serializers import OrgUnitSerializer
+from hat.menupermissions import models as permission
 
 
 class InstanceSerializer(serializers.ModelSerializer):
@@ -80,8 +81,9 @@ class HasInstancePermission(permissions.BasePermission):
             return True
 
         return request.user.is_authenticated and (
-            request.user.has_perm("menupermissions.iaso_forms")
-            or request.user.has_perm("menupermissions.iaso_submissions")
+            request.user.has_perm(permission.FORMS)
+            or request.user.has_perm(permission.SUBMISSIONS)
+            or request.user.has_perm(permission.REGISTRY)
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
@@ -129,16 +131,22 @@ class UnlockSerializer(serializers.Serializer):
     # we will  check that the user can access from the directly in remove_lock()
 
 
+class LockAnnotation(TypedDict):
+    count_lock_applying_to_user: int
+    count_active_lock: int
+
+
 class InstancesViewSet(viewsets.ViewSet):
-    """Instances API
+    f"""Instances API
 
     Posting instances can be done anonymously (if the project allows it), all other methods are restricted
-    to authenticated users having the "menupermissions.iaso_forms" permission.
+    to authenticated users having the "{permission.FORMS}" permission.
 
     GET /api/instances/
     GET /api/instances/<id>
     DELETE /api/instances/<id>
     POST /api/instances/
+    PATCH /api/instances/<id>
     """
 
     permission_classes = [HasInstancePermission]
@@ -174,6 +182,8 @@ class InstancesViewSet(viewsets.ViewSet):
             {"title": "Export id", "width": 20},
             {"title": "Latitude", "width": 40},
             {"title": "Longitude", "width": 20},
+            {"title": "Altitude", "width": 20},
+            {"title": "Précision", "width": 20},
             {"title": "Période", "width": 20},
             {"title": "Date de création", "width": 20},
             {"title": "Date de modification", "width": 20},
@@ -232,6 +242,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 idict.get("export_id"),
                 idict.get("latitude"),
                 idict.get("longitude"),
+                idict.get("altitude"),
+                idict.get("accuracy"),
                 idict.get("period"),
                 created_at,
                 updated_at,
@@ -291,6 +303,8 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         filters = parse_instance_filters(request.GET)
+        org_unit_status = request.GET.get("org_unit_status", None)  # "NEW", "VALID", "REJECTED"
+        with_descriptor = request.GET.get("with_descriptor", "false")
 
         file_export = False
         if csv_format is not None or xlsx_format is not None:
@@ -316,6 +330,9 @@ class InstancesViewSet(viewsets.ViewSet):
         #       exports, paginated or not, as small dict or not)
         #  - 2) the limit and asSmallDict parameters are independent from each other (the consumer can choose to use
         #       one, both or None and get predictable results)
+        if org_unit_status:
+            queryset = queryset.filter(org_unit__validation_status=org_unit_status)
+
         if not file_export:
             if limit:
                 limit = int(limit)
@@ -329,8 +346,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
 
-                def as_dict_formatter(instance: WithAnnotations[Instance]) -> Dict:
-                    d = instance.as_dict()
+                def as_dict_formatter(instance: Annotated[Instance, LockAnnotation]) -> Dict:
+                    d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
                     reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None  # type: ignore
@@ -357,7 +374,14 @@ class InstancesViewSet(viewsets.ViewSet):
                 )
                 return Response([instance.as_small_dict() for instance in queryset])
             else:
-                return Response({"instances": [instance.as_dict() for instance in queryset]})
+                return Response(
+                    {
+                        "instances": [
+                            instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
+                            for instance in queryset
+                        ]
+                    }
+                )
         else:  # This is a CSV/XLSX file export
             return self.list_file_export(filters=filters, queryset=queryset, file_format=file_format_export)
 
@@ -372,7 +396,6 @@ class InstancesViewSet(viewsets.ViewSet):
     # @action(detail=False, methods=["POST"], serializer_class = UnlockSerializer)
     @action(detail=False, methods=["POST"])
     def unlock_lock(self, request):
-
         serializer = UnlockSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         lock = serializer.validated_data["lock"]
@@ -425,7 +448,7 @@ class InstancesViewSet(viewsets.ViewSet):
         response["instance_locks"] = InstanceLockSerializer(all_instance_locks, many=True).data
         # To display the Lock or unlock icon when the use has access to the two actions
         response["can_user_modify"] = instance.can_user_modify(request.user)
-        # To display either the unlock or lock icon depending on if the instance is already lock or not
+        # To display either the "unlock" or the "lock" icon depending on if the instance is already lock or not
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
 
         return Response(response)
@@ -452,6 +475,9 @@ class InstancesViewSet(viewsets.ViewSet):
         if instance.org_unit not in access_ou:
             raise serializers.ValidationError({"error": "You don't have the permission to modify this instance."})
 
+        # If the org unit change but the instance was marked as the reference_instance for this org unit,
+        # remove the reference as reference instance
+        # FIXME we should log the modification on org unit
         if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
             previous_orgunit = original.org_unit
             previous_orgunit.reference_instance = None
@@ -483,7 +509,6 @@ class InstancesViewSet(viewsets.ViewSet):
             self.check_object_permissions(request, instance)
 
         try:
-
             with transaction.atomic():
                 for instance in instances_query.iterator():
                     if is_deletion == True:
@@ -592,6 +617,8 @@ def import_data(instances, user, app_id):
 
         instance.form_id = instance_data.get("formId")
 
+        # TODO: check that planning_id is valid
+        instance.planning_id = instance_data.get("planningId", None)
         entityUuid = instance_data.get("entityUuid", None)
         entityTypeId = instance_data.get("entityTypeId", None)
         if entityUuid and entityTypeId:

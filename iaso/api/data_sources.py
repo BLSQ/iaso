@@ -2,15 +2,15 @@ import logging
 
 import dhis2
 import requests
+from rest_framework import serializers, permissions
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from .common import ModelViewSet, HasPermission
 from iaso.models import DataSource, OrgUnit, SourceVersion, ExternalCredentials
-from rest_framework import serializers, permissions
-from rest_framework.generics import get_object_or_404
-
+from .common import ModelViewSet
 from ..tasks.dhis2_ou_importer import get_api
+from hat.menupermissions import models as permission
 
 
 class DataSourceSerializer(serializers.ModelSerializer):
@@ -163,7 +163,7 @@ class TestCredentialSerializer(serializers.Serializer):
                 print(err)
                 raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
             raise serializers.ValidationError({"dhis2_password": [err.description]})
-        except requests.exceptions.ConnectionError as err:
+        except requests.exceptions.ConnectionError:
             raise serializers.ValidationError({"dhis2_url": ["Could not connect to server"]})
         except Exception as err:
             logging.exception(err)
@@ -175,12 +175,12 @@ class DataSourcePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         # see permission logic on view
         read_perms = (
-            "menupermissions.iaso_mappings",
-            "menupermissions.iaso_org_units",
-            "menupermissions.iaso_links",
-            "menupermissions.iaso_sources",
+            permission.MAPPINGS,
+            permission.ORG_UNITS,
+            permission.LINKS,
+            permission.SOURCES,
         )
-        write_perms = ("menupermissions.iaso_sources",)
+        write_perms = (permission.SOURCE_WRITE,)
 
         if (
             request.method in permissions.SAFE_METHODS
@@ -194,12 +194,12 @@ class DataSourcePermission(permissions.BasePermission):
 
 
 class DataSourceViewSet(ModelViewSet):
-    """Data source API
+    f"""Data source API
 
     This API is restricted to authenticated users:
-    Read permission are restricted to user with at least one of the "menupermissions.iaso_sources",
-        "menupermissions.iaso_mappings","menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
-    Write permission are restricted to user having the iaso_sources permissions.
+    Read permission are restricted to user with at least one of the "{permission.SOURCES}",
+        "{permission.MAPPINGS}","{permission.ORG_UNITS}", and "{permission.LINKS}" permissions
+    Write permission are restricted to user having the "{permission.SOURCES}" permissions.
 
     GET /api/datasources/
     GET /api/datasources/<id>

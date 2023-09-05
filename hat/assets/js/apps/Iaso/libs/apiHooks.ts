@@ -14,9 +14,10 @@ import {
     QueryFunction,
 } from 'react-query';
 import { defineMessages } from 'react-intl';
+import { IntlMessage } from 'bluesquare-components';
+import { isArray } from 'lodash';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
-import { IntlMessage } from '../types/intl';
 
 const MESSAGES = defineMessages({
     defaultMutationApiError: {
@@ -66,6 +67,19 @@ type SnackMutationDict<Data, Error, Variables, Context> = {
         | undefined;
     ignoreErrorCodes?: number[];
     showSucessSnackBar?: boolean;
+    successSnackBar?: (
+        // eslint-disable-next-line no-unused-vars
+        msg: IntlMessage,
+        // eslint-disable-next-line no-unused-vars
+        data: any,
+    ) => {
+        messageKey: string;
+        messageObject: any;
+        options: {
+            variant: string;
+            persist: boolean;
+        };
+    };
 };
 
 const useBaseSnackMutation = <
@@ -86,6 +100,19 @@ const useBaseSnackMutation = <
         | undefined = {},
     showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
+    successSnackBar: (
+        // eslint-disable-next-line no-unused-vars
+        msg: IntlMessage,
+        // eslint-disable-next-line no-unused-vars
+        data: any,
+    ) => {
+        messageKey: string;
+        messageObject: any;
+        options: {
+            variant: string;
+            persist: boolean;
+        };
+    } = msg => succesfullSnackBar(undefined, msg),
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
@@ -110,13 +137,17 @@ const useBaseSnackMutation = <
         onSuccess: (data, variables, context) => {
             if (snackSuccessMessage && showSucessSnackBar) {
                 dispatch(
-                    enqueueSnackbar(
-                        succesfullSnackBar(undefined, snackSuccessMessage),
-                    ),
+                    enqueueSnackbar(successSnackBar(snackSuccessMessage, data)),
                 );
             }
             if (invalidateQueryKey) {
-                queryClient.invalidateQueries(invalidateQueryKey);
+                if (isArray(invalidateQueryKey)) {
+                    invalidateQueryKey.forEach(queryKey =>
+                        queryClient.invalidateQueries(queryKey),
+                    );
+                } else {
+                    queryClient.invalidateQueries(invalidateQueryKey);
+                }
             }
             if (options.onSuccess) {
                 return options.onSuccess(data, variables, context);
@@ -148,6 +179,19 @@ export const useSnackMutation = <
         | undefined = {},
     showSucessSnackBar = true,
     ignoreErrorCodes: number[] = [],
+    successSnackBar: (
+        // eslint-disable-next-line no-unused-vars
+        msg: IntlMessage,
+        // eslint-disable-next-line no-unused-vars
+        data: any,
+    ) => {
+        messageKey: string;
+        messageObject: any;
+        options: {
+            variant: string;
+            persist: boolean;
+        };
+    } = msg => succesfullSnackBar(undefined, msg),
 ): UseMutationResult<Data, Error, Variables, Context> => {
     let arg1;
     let arg2;
@@ -156,6 +200,7 @@ export const useSnackMutation = <
     let arg5;
     let arg6;
     let arg7;
+    let arg8;
     // Checking if the first argument passed is a dictionary
     const keys = Object.keys(mutationArg) ?? [];
     if (keys.length > 0 && keys.includes('mutationFn')) {
@@ -180,6 +225,9 @@ export const useSnackMutation = <
         arg7 = (
             mutationArg as SnackMutationDict<Data, Error, Variables, Context>
         ).ignoreErrorCodes;
+        arg8 = (
+            mutationArg as SnackMutationDict<Data, Error, Variables, Context>
+        ).successSnackBar;
     } else {
         arg1 = mutationArg;
         arg2 = snackSuccessMessage;
@@ -188,6 +236,7 @@ export const useSnackMutation = <
         arg5 = options;
         arg6 = showSucessSnackBar;
         arg7 = ignoreErrorCodes;
+        arg8 = successSnackBar;
     }
     return useBaseSnackMutation<Data, Error, Variables, Context>(
         arg1,
@@ -197,6 +246,7 @@ export const useSnackMutation = <
         arg5,
         arg6,
         arg7,
+        arg8,
     );
 };
 
@@ -308,9 +358,9 @@ export const useSnackQueries = <QueryFnData>(
     queries: {
         queryKey: QueryKey;
         queryFn: QueryFunction<QueryFnData>;
-        snackErrorMsg: IntlMessage;
+        snackErrorMsg?: IntlMessage;
         options: UseQueryOptions;
-        dispatchOnError: boolean;
+        dispatchOnError?: boolean;
     }[],
 ): Array<UseQueryResult<unknown, unknown>> => {
     const dispatch = useDispatch();

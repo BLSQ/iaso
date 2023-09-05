@@ -16,6 +16,8 @@ import { Profile } from '../../../utils/usersUtils';
 
 import { useColumns } from '../configs/AssignmentsMapTabColumns';
 
+import { AssignmentUnit } from '../types/locations';
+
 type Props = {
     data: SubTeam[] | User[];
     assignments: AssignmentsApi;
@@ -30,7 +32,8 @@ type Props = {
     selectedItem: SubTeam | User | undefined;
     // eslint-disable-next-line no-unused-vars
     setSelectedItem: (newSelectedTeam: SubTeam) => void;
-    showMapSelector: boolean;
+    orgUnits: Array<AssignmentUnit>;
+    isLoadingAssignments: boolean;
 };
 
 export const Sidebar: FunctionComponent<Props> = ({
@@ -45,7 +48,8 @@ export const Sidebar: FunctionComponent<Props> = ({
     currentTeam,
     selectedItem,
     setSelectedItem,
-    showMapSelector,
+    orgUnits,
+    isLoadingAssignments,
 }) => {
     const columns = useColumns({
         assignments,
@@ -55,6 +59,8 @@ export const Sidebar: FunctionComponent<Props> = ({
         selectedItem,
         setSelectedItem,
         currentTeam,
+        orgUnits,
+        isLoadingAssignments,
     });
     return (
         <Paper>
@@ -76,18 +82,17 @@ export const Sidebar: FunctionComponent<Props> = ({
                         profiles,
                         assignments,
                         loading: !currentTeam,
+                        orgUnits,
                     }}
                 />
             </Box>
-            {showMapSelector && (
-                <Box px={2}>
-                    <AssignmentsMapSelectors
-                        params={params}
-                        orgunitTypes={orgunitTypes}
-                        isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
-                    />
-                </Box>
-            )}
+            <Box px={2}>
+                <AssignmentsMapSelectors
+                    params={params}
+                    orgunitTypes={orgunitTypes}
+                    isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
+                />
+            </Box>
         </Paper>
     );
 };

@@ -1,14 +1,15 @@
+import { isEqual } from 'lodash';
+import { IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
 import {
     BarChartData,
     ConvertedLqasImData,
     FormatForNFMArgs,
-    IntlFormatMessage,
     LqasImCampaign,
     LqasImDistrictData,
 } from '../../constants/types';
-import { IM_PASS, IM_FAIL, IM_WARNING, imNfmKeys } from './constants';
-import { makeLegendItem } from '../../utils';
+import { IM_PASS, IM_FAIL, IM_WARNING, imNfmKeys, IN_SCOPE } from './constants';
+import { findDataForShape, findScopeIds, makeLegendItem } from '../../utils';
 import { OK_COLOR, WARNING_COLOR, FAIL_COLOR } from '../../styles/constants';
 import {
     sortGraphKeys,
@@ -17,6 +18,8 @@ import {
     accessNfmStats,
     accessArrayRound,
 } from '../../utils/LqasIm';
+
+import { determineStatusForDistrict as lqasDistrictStatus } from '../LQAS/utils';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -179,4 +182,52 @@ export const sumChildrenCheckedIm = (
         (total, current) => total + current.total_child_checked,
         0,
     );
+};
+type GetMapLayerArgs = {
+    selectedCampaign?: string;
+    data: Record<string, ConvertedLqasImData>;
+    type: 'lqas' | 'imOHH' | 'imGlobal' | 'imIHH';
+    campaigns: any[];
+    round: number;
+    shapes: any[];
+};
+
+export const getLqasImMapLayer = ({
+    data,
+    selectedCampaign,
+    type,
+    campaigns,
+    round,
+    shapes,
+}: GetMapLayerArgs): any[] => {
+    if (isEqual(data, {})) return [];
+    if (!selectedCampaign) return [];
+    const determineStatus =
+        type === 'lqas' ? lqasDistrictStatus : determineStatusForDistrict;
+    const scopeIds = findScopeIds(selectedCampaign, campaigns, round);
+    const hasScope = scopeIds.length > 0;
+    const shapesInScope = hasScope
+        ? shapes.filter(shape => scopeIds.includes(shape.id))
+        : shapes;
+    const shapesWithData = shapesInScope.map(shape => ({
+        ...shape,
+        data: findDataForShape({
+            shape,
+            data,
+            round,
+            campaign: selectedCampaign,
+        }),
+    }));
+    if (hasScope) {
+        return shapesWithData.map(shape => ({
+            ...shape,
+            status: shape.data ? determineStatus(shape.data) : IN_SCOPE,
+        }));
+    }
+    return shapesWithData
+        .filter(shape => Boolean(shape.data))
+        .map(shape => ({
+            ...shape,
+            status: determineStatus(shape.data),
+        }));
 };

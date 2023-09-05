@@ -2,13 +2,11 @@ from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 
-
-from iaso import models as m
-from hat.audit import models as am
-from iaso.test import APITestCase
-from iaso.models import Task, QUEUED
-
 from beanstalk_worker.services import TestTaskService
+from hat.audit import models as am
+from iaso import models as m
+from iaso.models import Task, QUEUED
+from iaso.test import APITestCase
 
 
 class OrgUnitsBulkUpdateAPITestCase(APITestCase):
@@ -23,7 +21,7 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=2)
         star_wars.default_version = sw_version_1
         star_wars.save()
 
@@ -97,11 +95,15 @@ class OrgUnitsBulkUpdateAPITestCase(APITestCase):
             validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_org_units"])
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_org_units", "iaso_data_tasks"]
+        )
         cls.luke = cls.create_user_with_profile(
             username="luke", account=star_wars, permissions=["iaso_org_units"], org_units=[cls.jedi_council_endor]
         )
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_org_units"])
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=["iaso_org_units", "iaso_data_tasks"]
+        )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 

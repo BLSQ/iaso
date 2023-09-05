@@ -142,6 +142,15 @@ class OrgUnitSearchParentSerializer(OrgUnitSerializer):
         fields = ["id", "name", "parent"]
 
 
+class OrgUnitDropdownSerializer(OrgUnitSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["value", "label"]
+
+    label = serializers.CharField(source="name", read_only=True)  # type: ignore
+    value = serializers.IntegerField(source="id", read_only=True)
+
+
 # noinspection PyMethodMayBeStatic
 class OrgUnitSearchSerializer(OrgUnitSerializer):
     parent = OrgUnitSearchParentSerializer()
@@ -186,13 +195,16 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
         ]
 
 
-class OrgUnitTreeSearchSerializer(OrgUnitSerializer):
+# noinspection PyMethodMayBeStatic
+class OrgUnitTreeSearchSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
+    # If in a subclass this will correctly use the subclass own serializer
+
     has_children = serializers.SerializerMethodField()
 
-    # probably a way to optimize that
-    def get_has_children(self, org_unit):
-        return org_unit.children().exists() if org_unit.path else False
+    @classmethod
+    def get_has_children(cls, org_unit):
+        return org_unit.children_count > 0
 
     class Meta:
         model = OrgUnit
-        fields = ["id", "name", "parent", "has_children", "validation_status", "org_unit_type_id"]
+        fields = ["id", "name", "validation_status", "has_children", "org_unit_type_id"]

@@ -1,3 +1,4 @@
+/* eslint-disable react/jsx-props-no-spreading */
 import React from 'react';
 import Forms from '../domains/forms';
 import FormDetail from '../domains/forms/detail';
@@ -12,16 +13,18 @@ import CompareSubmissions from '../domains/instances/compare/index.tsx';
 import InstanceDetail from '../domains/instances/details.tsx';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
-import Users from '../domains/users';
+import { Users } from '../domains/users/index.tsx';
+import { UserRoles } from '../domains/userRoles/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
+import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
 import Tasks from '../domains/tasks';
 import Devices from '../domains/devices';
-import { CompletessStats } from '../domains/completenessStats/index.tsx';
+import { CompletenessStats } from '../domains/completenessStats/index.tsx';
 import Groups from '../domains/orgUnits/groups';
-import Types from '../domains/orgUnits/orgUnitTypes';
-import { Beneficiaries } from '../domains/entities/beneficiaries/index.tsx';
-import { Details as BeneficiaryDetail } from '../domains/entities/beneficiaries/details.tsx';
+import Types from '../domains/orgUnits/orgUnitTypes/index.tsx';
+import { Beneficiaries } from '../domains/entities/index.tsx';
+import { Details as BeneficiaryDetail } from '../domains/entities/details.tsx';
 import { EntityTypes } from '../domains/entities/entityTypes/index.tsx';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
@@ -36,10 +39,14 @@ import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
 import { Details as StorageDetails } from '../domains/storages/details.tsx';
 import { Assignments } from '../domains/assignments/index.tsx';
 import { CompareInstanceLogs } from '../domains/instances/compare/components/CompareInstanceLogs.tsx';
-
+import { Registry } from '../domains/registry/index.tsx';
+import { Details as RegistryDetail } from '../domains/registry/details.tsx';
 import { SHOW_PAGES } from '../utils/featureFlags';
-import { paginationPathParams } from '../routing/common';
-import { VisitDetails } from '../domains/entities/visit/VisitDetails.tsx';
+import { paginationPathParams } from '../routing/common.ts';
+import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
+import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
+import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
+import * as Permission from '../utils/permissions.ts';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -73,7 +80,7 @@ export const getPath = path => {
 
 export const formsPath = {
     baseUrl: baseUrls.forms,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
     params: [
         {
             isRequired: false,
@@ -92,6 +99,10 @@ export const formsPath = {
             isRequired: false,
             key: 'showDeleted',
         },
+        {
+            isRequired: false,
+            key: 'planning',
+        },
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
@@ -99,7 +110,7 @@ export const formsPath = {
 
 export const pagesPath = {
     baseUrl: baseUrls.pages,
-    permissions: ['iaso_pages'],
+    permissions: [Permission.PAGES],
     featureFlag: SHOW_PAGES,
     params: [
         {
@@ -113,7 +124,7 @@ export const pagesPath = {
 
 export const formDetailPath = {
     baseUrl: baseUrls.formDetail,
-    permissions: ['iaso_forms', 'iaso_submissions'],
+    permissions: [Permission.FORMS, Permission.SUBMISSIONS],
     component: props => <FormDetail {...props} />,
     params: [
         {
@@ -124,13 +135,18 @@ export const formDetailPath = {
             isRequired: true,
             key: 'formId',
         },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
         ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('attachments'),
     ],
 };
 
 export const formsStatsPath = {
     baseUrl: baseUrls.formsStats,
-    permissions: ['iaso_forms'],
+    permissions: [Permission.FORMS],
     component: () => <FormsStats />,
     params: [
         {
@@ -142,7 +158,7 @@ export const formsStatsPath = {
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <Instances {...props} />,
     params: [
         {
@@ -230,12 +246,36 @@ export const instancesPath = {
             isRequired: false,
             key: 'fieldsSearch',
         },
+        {
+            isRequired: false,
+            key: 'planningIds',
+        },
+        {
+            isRequired: false,
+            key: 'userIds',
+        },
+        {
+            isRequired: false,
+            key: 'modificationDateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'modificationDateTo',
+        },
+        {
+            isRequired: false,
+            key: 'sentDateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'sentDateTo',
+        },
     ],
 };
 
 export const instanceDetailPath = {
     baseUrl: baseUrls.instanceDetail,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <InstanceDetail {...props} />,
     params: [
         {
@@ -255,7 +295,7 @@ export const instanceDetailPath = {
 
 export const compareInstanceLogsPath = {
     baseUrl: baseUrls.compareInstanceLogs,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <CompareInstanceLogs {...props} />,
     params: [
         {
@@ -279,7 +319,7 @@ export const compareInstanceLogsPath = {
 
 export const compareInstancesPath = {
     baseUrl: baseUrls.compareInstances,
-    permissions: ['iaso_submissions'],
+    permissions: [Permission.SUBMISSIONS],
     component: props => <CompareSubmissions {...props} />,
     params: [
         {
@@ -295,7 +335,7 @@ export const compareInstancesPath = {
 
 export const mappingsPath = {
     baseUrl: baseUrls.mappings,
-    permissions: ['iaso_mappings'],
+    permissions: [Permission.MAPPINGS],
     component: props => <Mappings {...props} />,
     params: [
         {
@@ -315,7 +355,7 @@ export const mappingsPath = {
 
 export const mappingDetailPath = {
     baseUrl: baseUrls.mappingDetail,
-    permissions: ['iaso_mappings'],
+    permissions: [Permission.MAPPINGS],
     component: props => <MappingDetails {...props} />,
     params: [
         {
@@ -335,7 +375,7 @@ export const mappingDetailPath = {
 
 export const orgUnitsPath = {
     baseUrl: baseUrls.orgUnits,
-    permissions: ['iaso_org_units'],
+    permissions: [Permission.ORG_UNITS],
     component: props => <OrgUnits {...props} />,
     params: [
         {
@@ -371,7 +411,7 @@ export const orgUnitsPath = {
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
-    permissions: ['iaso_org_units'],
+    permissions: [Permission.ORG_UNITS],
     component: props => <OrgUnitDetail {...props} />,
     params: [
         {
@@ -416,9 +456,71 @@ export const orgUnitsDetailsPath = {
     ],
 };
 
+export const registryPath = {
+    baseUrl: baseUrls.registry,
+    permissions: [Permission.REGISTRY],
+    component: props => <Registry {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+    ],
+};
+export const registryDetailPath = {
+    baseUrl: baseUrls.registryDetail,
+    permissions: [Permission.REGISTRY],
+    component: props => <RegistryDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'orgUnitId',
+        },
+        {
+            isRequired: false,
+            key: 'formIds',
+        },
+        {
+            isRequired: false,
+            key: 'columns',
+        },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitListTab',
+        },
+        {
+            isRequired: false,
+            key: 'submissionId',
+        },
+        {
+            isRequired: false,
+            key: 'missingSubmissionVisible',
+        },
+        {
+            isRequired: false,
+            key: 'showTooltip',
+        },
+        {
+            isRequired: false,
+            key: 'isFullScreen',
+        },
+        ...paginationPathParams,
+        ...paginationPathParamsWithPrefix('orgUnitList'),
+        ...paginationPathParamsWithPrefix('missingSubmissions'),
+    ],
+};
+
 export const linksPath = {
     baseUrl: baseUrls.links,
-    permissions: ['iaso_links'],
+    permissions: [Permission.LINKS],
     component: props => <Links {...props} />,
     params: [
         {
@@ -483,7 +585,7 @@ export const linksPath = {
 
 export const algosPath = {
     baseUrl: baseUrls.algos,
-    permissions: ['iaso_links'],
+    permissions: [Permission.LINKS],
     component: props => <Runs {...props} />,
     params: [
         {
@@ -524,7 +626,7 @@ export const algosPath = {
 
 export const completenessPath = {
     baseUrl: baseUrls.completeness,
-    permissions: ['iaso_completeness'],
+    permissions: [Permission.COMPLETENESS],
     component: props => <Completeness {...props} />,
     params: [
         {
@@ -536,14 +638,18 @@ export const completenessPath = {
 
 export const completenessStatsPath = {
     baseUrl: baseUrls.completenessStats,
-    permissions: ['iaso_completeness_stats'],
-    component: props => <CompletessStats {...props} />,
+    permissions: [Permission.COMPLETENESS_STATS],
+    component: props => <CompletenessStats {...props} />,
     params: [
         {
             isRequired: false,
             key: 'accountId',
         },
         ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'tab',
+        },
         {
             isRequired: false,
             key: 'orgUnitId',
@@ -558,14 +664,34 @@ export const completenessStatsPath = {
         },
         {
             isRequired: false,
+            key: 'period',
+        },
+        {
+            isRequired: false,
             key: 'parentId',
+        },
+        {
+            isRequired: false,
+            key: 'planningId',
+        },
+        {
+            isRequired: false,
+            key: 'groupId',
+        },
+        {
+            isRequired: false,
+            key: 'orgunitValidationStatus',
+        },
+        {
+            isRequired: false,
+            key: 'showDirectCompleteness',
         },
     ],
 };
 
 export const usersPath = {
     baseUrl: baseUrls.users,
-    permissions: ['iaso_users'],
+    permissions: [Permission.USERS_ADMIN, Permission.USERS_MANAGEMENT],
     component: props => <Users {...props} />,
     params: [
         {
@@ -596,6 +722,18 @@ export const usersPath = {
             isRequired: false,
             key: 'ouChildren',
         },
+        {
+            isRequired: false,
+            key: 'projectsIds',
+        },
+        {
+            isRequired: false,
+            key: 'userRoles',
+        },
+        {
+            isRequired: false,
+            key: 'teamsIds',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,
@@ -603,9 +741,29 @@ export const usersPath = {
     ],
 };
 
+export const userRolesPath = {
+    baseUrl: baseUrls.userRoles,
+    permissions: [Permission.USER_ROLES],
+    component: props => <UserRoles {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: false,
+        })),
+    ],
+};
+
 export const projectsPath = {
     baseUrl: baseUrls.projects,
-    permissions: ['iaso_projects'],
+    permissions: [Permission.PROJECTS],
     component: props => <Projects {...props} />,
     params: [
         {
@@ -618,7 +776,7 @@ export const projectsPath = {
 
 export const dataSourcesPath = {
     baseUrl: baseUrls.sources,
-    permissions: ['iaso_sources'],
+    permissions: [Permission.SOURCES],
     component: props => <DataSources {...props} />,
     params: [
         {
@@ -629,9 +787,26 @@ export const dataSourcesPath = {
     ],
 };
 
+export const dataSourceDetailsPath = {
+    baseUrl: baseUrls.sourceDetails,
+    permissions: ['iaso_sources'],
+    component: props => <DataSourceDetail {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: true,
+            key: 'sourceId',
+        },
+        ...paginationPathParams,
+    ],
+};
+
 export const tasksPath = {
     baseUrl: baseUrls.tasks,
-    permissions: ['iaso_data_tasks'],
+    permissions: [Permission.DATA_TASKS],
     component: props => <Tasks {...props} />,
     params: [
         {
@@ -644,7 +819,7 @@ export const tasksPath = {
 
 export const devicesPath = {
     baseUrl: baseUrls.devices,
-    permissions: ['iaso_data_devices'],
+    permissions: [Permission.DATA_DEVICES],
     component: props => <Devices {...props} />,
     params: [
         {
@@ -657,7 +832,7 @@ export const devicesPath = {
 
 export const groupsPath = {
     baseUrl: baseUrls.groups,
-    permissions: ['iaso_org_units'],
+    permissions: [Permission.ORG_UNIT_GROUPS],
     component: props => <Groups {...props} />,
     params: [
         {
@@ -677,7 +852,7 @@ export const groupsPath = {
 
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
-    permissions: ['iaso_org_units'],
+    permissions: [Permission.ORG_UNIT_TYPES],
     component: props => <Types {...props} />,
     params: [
         {
@@ -696,7 +871,7 @@ export const orgUnitTypesPath = {
 };
 export const entitiesPath = {
     baseUrl: baseUrls.entities,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <Beneficiaries {...props} />,
     params: [
         {
@@ -743,7 +918,7 @@ export const entitiesPath = {
 };
 export const entityDetailsPath = {
     baseUrl: baseUrls.entityDetails,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <BeneficiaryDetail {...props} />,
     params: [
         {
@@ -760,7 +935,7 @@ export const entityDetailsPath = {
 
 export const entitySubmissionDetailPath = {
     baseUrl: baseUrls.entitySubmissionDetail,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <VisitDetails {...props} />,
     params: [
         {
@@ -780,7 +955,7 @@ export const entitySubmissionDetailPath = {
 
 export const entityTypesPath = {
     baseUrl: baseUrls.entityTypes,
-    permissions: ['iaso_entities'],
+    permissions: [Permission.ENTITIES],
     component: props => <EntityTypes {...props} />,
     params: [
         {
@@ -797,10 +972,108 @@ export const entityTypesPath = {
         })),
     ],
 };
+export const entityDuplicatesPath = {
+    baseUrl: baseUrls.entityDuplicates,
+    permissions: [
+        Permission.ENTITIES_DUPLICATE_READ,
+        Permission.ENTITIES_DUPLICATE_WRITE,
+    ],
+    component: props => <Duplicates {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'algorithm',
+        },
+        {
+            isRequired: false,
+            key: 'similarity',
+        },
+        {
+            isRequired: false,
+            key: 'entity_type',
+        },
+        {
+            isRequired: false,
+            key: 'org_unit',
+        },
+        {
+            isRequired: false,
+            key: 'start_date',
+        },
+        {
+            isRequired: false,
+            key: 'end_date',
+        },
+        {
+            isRequired: false,
+            key: 'submitter',
+        },
+        {
+            isRequired: false,
+            key: 'submitter_team',
+        },
+        {
+            isRequired: false,
+            key: 'ignored',
+        },
+        {
+            isRequired: false,
+            key: 'merged',
+        },
+
+        {
+            isRequired: false,
+            key: 'fields',
+        },
+        {
+            isRequired: false,
+            key: 'form',
+        },
+        {
+            isRequired: false,
+            key: 'entity_id',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+export const entityDuplicatesDetailsPath = {
+    baseUrl: baseUrls.entityDuplicateDetails,
+    permissions: [
+        Permission.ENTITIES_DUPLICATE_READ,
+        Permission.ENTITIES_DUPLICATE_WRITE,
+    ],
+    component: props => <DuplicateDetails {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        // ...paginationPathParams.map(p => ({
+        //     ...p,
+        //     isRequired: true,
+        // })),
+        {
+            isRequired: false,
+            key: 'entities',
+        },
+    ],
+};
 export const planningPath = {
     baseUrl: baseUrls.planning,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_planning'],
+    permissions: [Permission.PLANNINGS],
     component: props => <Planning {...props} />,
     params: [
         {
@@ -832,7 +1105,7 @@ export const planningPath = {
 export const assignmentsPath = {
     baseUrl: baseUrls.assignments,
     // FIXME use planning permissions when they exist
-    permissions: ['iaso_assignments'],
+    permissions: [Permission.PLANNINGS],
     component: props => <Assignments {...props} />,
     params: [
         {
@@ -867,11 +1140,15 @@ export const assignmentsPath = {
             isRequired: false,
             key: 'order',
         },
+        {
+            isRequired: false,
+            key: 'search',
+        },
     ],
 };
 export const teamsPath = {
     baseUrl: baseUrls.teams,
-    permissions: ['iaso_teams'],
+    permissions: [Permission.TEAMS],
     component: props => <Teams {...props} />,
     params: [
         {
@@ -890,7 +1167,7 @@ export const teamsPath = {
 };
 export const storagesPath = {
     baseUrl: baseUrls.storages,
-    permissions: ['iaso_storages'],
+    permissions: [Permission.STORAGES],
     component: props => <Storages {...props} />,
     params: [
         {
@@ -921,7 +1198,7 @@ export const storagesPath = {
 };
 export const storageDetailPath = {
     baseUrl: baseUrls.storageDetail,
-    permissions: ['iaso_storages'],
+    permissions: [Permission.STORAGES],
     component: props => <StorageDetails {...props} />,
     params: [
         {
@@ -949,7 +1226,7 @@ export const storageDetailPath = {
 };
 export const workflowsPath = {
     baseUrl: baseUrls.workflows,
-    permissions: ['iaso_workflows'],
+    permissions: [Permission.WORKFLOWS],
     component: props => <Workflows {...props} />,
     params: [
         {
@@ -976,7 +1253,7 @@ export const workflowsPath = {
 };
 export const workflowsDetailPath = {
     baseUrl: baseUrls.workflowDetail,
-    permissions: ['iaso_workflows'],
+    permissions: [Permission.WORKFLOWS],
     component: props => <WorkflowDetails {...props} />,
     params: [
         {
@@ -999,6 +1276,12 @@ export const workflowsDetailPath = {
 export const page401 = {
     baseUrl: baseUrls.error401,
     component: () => <PageError errorCode="401" />,
+    params: [],
+};
+
+export const page403 = {
+    baseUrl: baseUrls.error403,
+    component: () => <PageError errorCode="403" />,
     params: [],
 };
 
@@ -1031,8 +1314,10 @@ export const routeConfigs = [
     completenessPath,
     completenessStatsPath,
     usersPath,
+    userRolesPath,
     projectsPath,
     dataSourcesPath,
+    dataSourceDetailsPath,
     tasksPath,
     devicesPath,
     groupsPath,
@@ -1040,6 +1325,8 @@ export const routeConfigs = [
     entityTypesPath,
     pagesPath,
     page401,
+    page403,
+    page404,
     page500,
     teamsPath,
     planningPath,
@@ -1047,8 +1334,12 @@ export const routeConfigs = [
     entitiesPath,
     entityDetailsPath,
     entitySubmissionDetailPath,
+    entityDuplicatesPath,
+    entityDuplicatesDetailsPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,
     workflowsDetailPath,
+    registryPath,
+    registryDetailPath,
 ];

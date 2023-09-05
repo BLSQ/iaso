@@ -4,7 +4,7 @@ locally and how the connexion between the two works.
 This package contain utilities functions to interact with the ENKETO server. A part of the logic is in the API in `iaso/api/enketo.py`.
 See main README for more information.
 
-TODO: Document which Enketo version we support and have tested with.
+Iaso is compatible and tested with Enketo version 4 and 5.
 
 # Running Enketo in you dev environment
 See the Enketo directory section from the Main readme.md on how to launch Enketo in your docker compose environment. You shouldn't need any special configuration.
@@ -109,7 +109,7 @@ sequenceDiagram
 
 # HOW TO manually test Enketo public_create_url
 
-Ensure you have a usable project, form (with form version etc..) and an orgunit in iaso. And Enketo is working. You should be able to make a submission from the web interface. Do it to verify everything
+Ensure you have a usable project, form (with form version etc...) and an orgunit in iaso. And Enketo is working. You should be able to make a submission from the web interface. Do it to verify everything
 
 Edit the Project in Django admin. And copy the external token
 It's automatically generated, so you should always have one
@@ -137,9 +137,9 @@ Fill the form.
 To test the export, add the `to_export=true` argument. You will need FormMapping and a DHIS2 configuration to test the full export
 
 # Create and edit form from iaso
-For the Edit in Enketo feature it use `/enketo/create/` and `/enketo/edit/<instance_uuid>/` instead of `/enketo/public_create_url/` . It  behave nearly in the same way but not 100% exactly. It's restricted to currently logged in user and embed the current user in the form definition. 
+For the Edit in Enketo feature it use `/enketo/create/` and `/enketo/edit/<instance_uuid>/` instead of `/enketo/public_create_url/` . It behaves nearly in the same way but not 100% exactly. It's restricted to currently logged in user and embed the current user in the form definition. 
 
-Other differences it take the internal iaso form_id and not the one from the XML, idem for Org Unit etc..
+Other differences it take the internal iaso form_id and not the one from the XML, idem for Org Unit etc...
 
 To confirm but normally from Step "4" to Step "14" in the flow diagram would be the same.
 

@@ -12,14 +12,26 @@ age,... Because entities can be of very different natures, we avoid hardcoding t
 has a foreign key to a reference form, and each entity has a foreign key (attributes) to an instance/submission of that
 form.
 """
-from django.db import models
-from django.contrib.postgres.fields import ArrayField, CITextField
+import typing
 import uuid
+import json
 
-## TODO: Remove blank=True, null=True on FK once the models are sets and validated
+from django.contrib.auth.models import AnonymousUser, User
+from django.contrib.postgres.fields import ArrayField, CITextField
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Prefetch
 
-from iaso.models import Instance, Form, Account
-from iaso.utils.models.soft_deletable import SoftDeletableModel
+from iaso.models import Account, Form, Instance, OrgUnit, Project
+from iaso.utils.jsonlogic import jsonlogic_to_q
+from iaso.utils.models.soft_deletable import (
+    DefaultSoftDeletableManager,
+    IncludeDeletedSoftDeletableManager,
+    OnlyDeletedSoftDeletableManager,
+    SoftDeletableModel,
+)
+
+# TODO: Remove blank=True, null=True on FK once the models are sets and validated
 
 
 class EntityType(models.Model):
@@ -36,6 +48,8 @@ class EntityType(models.Model):
     fields_list_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
     # Fields (subset of the fields from the reference form) that will be shown in the UI - entity detail view
     fields_detail_info_view = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
+    # Fields (subset of the fields from the reference form) that will be used to search for duplicate entities
+    fields_duplicate_search = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
     class Meta:
         unique_together = ["name", "account"]
@@ -51,6 +65,74 @@ class EntityType(models.Model):
             "reference_form": self.reference_form.as_dict(),
             "account": self.account.as_dict(),
         }
+
+
+class InvalidLimitDateError(ValidationError):
+    pass
+
+
+class InvalidJsonContentError(ValidationError):
+    pass
+
+
+class UserNotAuthError(ValidationError):
+    pass
+
+
+class ProjectNotFoundError(ValidationError):
+    pass
+
+
+class EntityQuerySet(models.QuerySet):
+    def filter_for_mobile_entity(self, limit_date=None, json_content=None):
+        if limit_date:
+            try:
+                self = self.filter(instances__updated_at__gte=limit_date)
+            except ValidationError:
+                raise InvalidLimitDateError(f"Invalid limit date {limit_date}")
+
+        if json_content:
+            try:
+                q = jsonlogic_to_q(jsonlogic=json.loads(json_content), field_prefix="attributes__json__")  # type: ignore
+                self = self.filter(q)
+            except ValidationError:
+                raise InvalidJsonContentError(f"Invalid Json Content {json_content}")
+
+        p = Prefetch(
+            "instances",
+            queryset=Instance.objects.filter(
+                deleted=False, org_unit__validation_status=OrgUnit.VALIDATION_VALID
+            ).exclude(file=""),
+        )
+
+        self = self.filter(attributes__isnull=False).filter(instances__isnull=False)
+
+        self = self.prefetch_related(p).prefetch_related("instances__form")
+
+        return self
+
+    def filter_for_user_and_app_id(
+        self, user: typing.Optional[typing.Union[User, AnonymousUser]], app_id: typing.Optional[str]
+    ):
+        if not user or not user.is_authenticated:
+            raise UserNotAuthError(f"User not Authentified")
+
+        self = self.filter(account=user.iaso_profile.account)
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                if project.account is None:
+                    raise ProjectNotFoundError(f"Project Account is None for app_id {app_id}")  # Should be a 401
+
+                self = self.filter(
+                    account=project.account, instances__project=project, attributes__project=project
+                ).distinct("id")
+            except Project.DoesNotExist:
+                raise ProjectNotFoundError(f"Project Not Found for app_id {app_id}")
+
+        return self
 
 
 class Entity(SoftDeletableModel):
@@ -70,6 +152,12 @@ class Entity(SoftDeletableModel):
         Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes", blank=True, null=True
     )
     account = models.ForeignKey(Account, on_delete=models.PROTECT)
+
+    objects = DefaultSoftDeletableManager.from_queryset(EntityQuerySet)()
+
+    objects_only_deleted = OnlyDeletedSoftDeletableManager.from_queryset(EntityQuerySet)()
+
+    objects_include_deleted = IncludeDeletedSoftDeletableManager.from_queryset(EntityQuerySet)()
 
     class Meta:
         verbose_name_plural = "Entities"

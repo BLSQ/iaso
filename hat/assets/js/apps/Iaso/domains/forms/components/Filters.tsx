@@ -17,9 +17,8 @@ import { useFilterState } from '../../../hooks/useFilterState';
 
 import MESSAGES from '../messages';
 
-import { containsForbiddenCharacter } from '../../../constants/filters';
-
 import { baseUrl } from '../config';
+import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -31,68 +30,59 @@ type Params = {
     page: string;
     search?: string;
     showDeleted?: string;
+    planning?: string;
 };
 
 type Props = {
     params: Params;
-    // eslint-disable-next-line no-unused-vars
-    onErrorChange: (hasError: boolean) => void;
-    hasErrors: boolean;
 };
 
-const Filters: FunctionComponent<Props> = ({
-    params,
-    onErrorChange,
-    hasErrors,
-}) => {
+const Filters: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
-    const [textSearchErrors, setTextSearchErrors] = useState<Array<string>>([]);
-    const [hasError, setHasError] = useState<boolean>(false);
+    const [textSearchError, setTextSearchError] = useState<boolean>(false);
     const [showDeleted, setShowDeleted] = useState<boolean>(
         filters.showDeleted === 'true',
     );
+    const { data: planningsDropdownOptions } = useGetPlanningsOptions();
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
 
-    useEffect(() => {
-        if (filters.search !== undefined) {
-            const hasForbiddenChar = containsForbiddenCharacter(filters.search);
-            setHasError(hasForbiddenChar);
-            const newErrors = hasForbiddenChar
-                ? [formatMessage(MESSAGES.forbiddenChars)]
-                : [];
-            setTextSearchErrors(newErrors);
-        }
-    }, [filters.search, formatMessage]);
-
-    useEffect(() => {
-        onErrorChange(hasError);
-    }, [hasError, onErrorChange]);
-
     return (
         <>
             <Grid container spacing={2}>
-                <Grid item xs={12} sm={6} md={3}>
+                <Grid item xs={12} md={3}>
                     <InputComponent
                         keyValue="search"
                         onChange={handleChange}
                         value={filters.search}
                         type="search"
                         label={MESSAGES.search}
-                        onEnterPressed={!hasError ? handleSearch : null}
-                        errors={textSearchErrors}
+                        blockForbiddenChars
+                        onEnterPressed={handleSearch}
+                        onErrorChange={setTextSearchError}
+                    />
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        multi
+                        keyValue="planning"
+                        onChange={handleChange}
+                        value={filters.planning}
+                        label={MESSAGES.planning}
+                        options={planningsDropdownOptions}
                     />
                 </Grid>
 
                 <Grid
                     item
                     xs={12}
-                    sm={6}
-                    md={9}
+                    md={6}
                     container
                     justifyContent="flex-end"
                     alignItems="center"
@@ -101,7 +91,8 @@ const Filters: FunctionComponent<Props> = ({
                         <Button
                             data-test="search-button"
                             disabled={
-                                (!showDeleted && !filtersUpdated) || hasErrors
+                                (!showDeleted && !filtersUpdated) ||
+                                textSearchError
                             }
                             variant="contained"
                             className={classes.button}

@@ -12,6 +12,8 @@ import PageError from '../../../components/errors/PageError';
 import { switchLocale } from '../../app/actions';
 import { hasFeatureFlag } from '../../../utils/featureFlags';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { WrongAccountModal } from './WrongAccountModal.tsx';
+import PageNoPerms from '../../../components/errors/PageNoPerms.tsx';
 
 const ProtectedRoute = ({
     routeConfig,
@@ -23,6 +25,10 @@ const ProtectedRoute = ({
     const { featureFlag, permissions, isRootUrl, baseUrl } = routeConfig;
     const currentUser = useCurrentUser();
     const dispatch = useDispatch();
+
+    const isWrongAccount = Boolean(
+        params.accountId && params.accountId !== `${currentUser.account.id}`,
+    );
 
     useEffect(() => {
         if (!params.accountId && currentUser.account) {
@@ -57,7 +63,7 @@ const ProtectedRoute = ({
                 allRoutes,
             );
             if (newBaseUrl) {
-                dispatch(redirectTo(newBaseUrl, {}));
+                dispatch(redirectToReplace(newBaseUrl, {}));
             }
         }
     }, [
@@ -68,14 +74,24 @@ const ProtectedRoute = ({
         isRootUrl,
         permissions,
     ]);
+
+    // this should kick in if the above effect didn't redirect the user to a better page
+    const hasNoPermWarning =
+        isRootUrl &&
+        (!currentUser.permissions ||
+            (currentUser.permissions.length === 0 && !isAuthorized));
     if (!currentUser) {
         return null;
     }
     return (
         <>
             <SidebarMenu location={location} />
+            <WrongAccountModal isOpen={isWrongAccount} />
             {isAuthorized && component}
-            {!isAuthorized && <PageError errorCode="401" />}
+            {hasNoPermWarning && <PageNoPerms />}
+            {!isAuthorized && !hasNoPermWarning && (
+                <PageError errorCode="403" />
+            )}
         </>
     );
 };

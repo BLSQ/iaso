@@ -1,9 +1,9 @@
-from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, ERRORED
-from beanstalk_worker import task_decorator
-from django.utils.translation import gettext as _
-
 import logging
 
+from django.utils.translation import gettext as _
+
+from beanstalk_worker import task_decorator
+from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, ERRORED
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +17,6 @@ def copy_version(
     force=False,
     task=None,
 ):
-
     the_task = task
     source_source = DataSource.objects.get(id=source_source_id)
     source_version = SourceVersion.objects.get(number=source_version_number, data_source=source_source)

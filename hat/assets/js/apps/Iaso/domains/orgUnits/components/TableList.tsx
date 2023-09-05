@@ -5,20 +5,18 @@ import React, {
     useCallback,
 } from 'react';
 import { Box } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
-import { UseMutateAsyncFunction } from 'react-query';
+import EditIcon from '@material-ui/icons/Settings';
 import {
-    // @ts-ignore
     useSafeIntl,
     // @ts-ignore
     selectionInitialState,
     // @ts-ignore
     setTableSelection,
-    // @ts-ignore
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 
 // COMPONENTS
+import { UseMutateAsyncFunction } from 'react-query';
 import { TableWithDeepLink } from '../../../components/tables/TableWithDeepLink';
 import { OrgUnitsMultiActionsDialog } from './OrgUnitsMultiActionsDialog';
 // COMPONENTS

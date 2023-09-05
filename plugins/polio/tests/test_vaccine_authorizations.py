@@ -2,13 +2,17 @@ import datetime
 from datetime import date
 
 from django.contrib.auth.models import User, Permission
+from django.contrib.sites.models import Site
+from django.core import mail
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 
+from hat import settings
 from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import Account, OrgUnitType, OrgUnit, Group
+from iaso.models import Account, OrgUnitType, OrgUnit, Group, Team
 from iaso.test import APITestCase
+from plugins.polio.api import vaccine_authorizations_60_days_expiration_email_alert
 from plugins.polio.models import VaccineAuthorization
 
 
@@ -32,6 +36,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             username="user_1",
             account=cls.account,
             permissions=["iaso_polio_vaccine_authorizations_admin", "iaso_polio_vaccine_authorizations_read_only"],
+            email="XlfeeekfdpppZ@somemailzz.io",
         )
         cls.user_2 = cls.create_user_with_profile(
             username="user_2", account=cls.account, permissions=["iaso_polio_vaccine_authorizations_read_only"]
@@ -431,3 +436,82 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         self.assertEqual(response.data[0]["comment"], "Approved")
         self.assertEqual(response.data[0]["status"], "VALIDATED")
+
+    def test_vaccine_authorizations_60_days_expiration_email_alert(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        team = Team.objects.create(name="nOPV2 vaccine authorization alerts", project=self.project, manager=self.user_1)
+        team.users.set([self.user_1])
+
+        sixty_days_date = datetime.date.today() + datetime.timedelta(days=60)
+
+        sixty_days_expiration_auth = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=sixty_days_date,
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="ONGOING",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=datetime.date.today() + datetime.timedelta(days=100),
+        )
+
+        from_email = settings.DEFAULT_FROM_EMAIL
+
+        response = vaccine_authorizations_60_days_expiration_email_alert()
+
+        self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(
+            mail.outbox[0].subject,
+            f"ALERT: Vaccine Authorization {sixty_days_expiration_auth} arrives to expiration date in 2 months",
+        )
+        self.assertEqual(mail.outbox[0].from_email, from_email)
+        self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
+
+    def test_expired_vaccine_authorizations_email_alert(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
+
+        team = Team.objects.create(name="nOPV2 vaccine authorization alerts", project=self.project, manager=self.user_1)
+        team.users.set([self.user_1])
+
+        past_date = datetime.date.today() - datetime.timedelta(days=1)
+
+        past_vacc_auth = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=past_date,
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="ONGOING",
+            quantity=1000000,
+            comment="Validated for 1M",
+            expiration_date=datetime.date.today() + datetime.timedelta(days=100),
+        )
+
+        from_email = settings.DEFAULT_FROM_EMAIL
+
+        response = vaccine_authorizations_60_days_expiration_email_alert()
+
+        self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, f"ALERT: Vaccine Authorization {past_vacc_auth} has expired.")
+        self.assertEqual(mail.outbox[0].from_email, from_email)
+        self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])

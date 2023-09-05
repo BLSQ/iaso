@@ -2352,6 +2352,8 @@ def vaccine_authorizations_60_days_expiration_email_alert():
 
     mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
 
+    mail_sent = False
+
     for obj in vaccine_auths:
         next_vaccine_auth = (
             VaccineAuthorization.objects.filter(
@@ -2376,6 +2378,8 @@ def vaccine_authorizations_60_days_expiration_email_alert():
                 settings.DEFAULT_FROM_EMAIL,
                 mailing_list,
             )
+
+            mail_sent = True
         else:
             send_mail(
                 f"ALERT: Vaccine Authorization {obj} arrives to expiration date in 2 months",
@@ -2391,6 +2395,10 @@ def vaccine_authorizations_60_days_expiration_email_alert():
                 settings.DEFAULT_FROM_EMAIL,
                 mailing_list,
             )
+
+            mail_sent = True
+
+    return {"vacc_auth_mail_sent_to": mailing_list} if mail_sent else "no_vacc_auth_mail_sent"
 
 
 def expired_vaccine_authorizations_email_alert():
@@ -2417,7 +2425,7 @@ def expired_vaccine_authorizations_email_alert():
                 ALERT, 
 
                 {obj.country} nOPV2 vaccines authorization has expired expired on {obj.expiration_date}.
-                A new authorization is {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
+                A new authorization is ongoing {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
                 Please take appropriate action as needed. 
                 Link to the platform vaccine authorization page
                 RRT team

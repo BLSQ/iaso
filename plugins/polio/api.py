@@ -1892,7 +1892,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
         )
         # TODO see if we need to filter per user as with Campaign
         return (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
+            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
@@ -2023,7 +2024,8 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
         )
         # TODO see if we need to filter per user as with Campaign
         qs = (
-            OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
+            OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
         print("Query", qs.query)

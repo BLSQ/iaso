@@ -1812,17 +1812,13 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
             ).filter(id=org_unit.id)
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
 
-            latest_active_campaign, latest_active_campaign_rounds = self.get_latest_active_campaign_and_rounds(
-                org_unit, start_date_after, end_date_before
-            )
+            (
+                latest_active_campaign,
+                latest_active_campaign_rounds,
+                round_numbers,
+            ) = self.get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
 
             if latest_active_campaign is None:
-                result = {
-                    "id": int(country_id),
-                    "data": {"country_name": org_unit.name},
-                    "geo_json": shapes,
-                    "status": "inScope",
-                }
                 continue
 
             # Get data from json datastore
@@ -1846,6 +1842,8 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     )
                 else:
                     round_number = int(round_number)
+                    if round_number not in round_numbers:
+                        continue
 
                 if latest_active_campaign.separate_scopes_per_round:
                     scope = latest_active_campaign.get_districts_for_round_number(round_number)
@@ -1919,9 +1917,11 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
             except JsonDataStore.DoesNotExist:
                 continue
 
-            latest_active_campaign, latest_active_campaign_rounds = self.get_latest_active_campaign_and_rounds(
-                org_unit, start_date_after, end_date_before
-            )
+            (
+                latest_active_campaign,
+                latest_active_campaign_rounds,
+                round_numbers,
+            ) = self.get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
 
             if latest_active_campaign is None:
                 continue
@@ -1935,6 +1935,8 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 )
             else:
                 round_number = int(requested_round)
+                if round_number not in round_numbers:
+                    continue
             if latest_active_campaign.separate_scopes_per_round:
                 scope = latest_active_campaign.get_districts_for_round_number(round_number)
 

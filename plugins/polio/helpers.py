@@ -230,14 +230,17 @@ class LqasAfroViewset(ModelViewSet):
             .first()
         )
         if latest_active_campaign is None:
-            return None, None
+            return None, None, None
         # Filter by finished rounds and lqas dates ended
-        latest_active_campaign_rounds = (
-            latest_active_campaign.rounds.filter(ended_at__lte=today)
-            .filter(
-                (Q(lqas_ended_at__lte=today))
-                | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
-            )
-            .order_by("-number")
+        latest_active_campaign_rounds = latest_active_campaign.rounds.filter(ended_at__lte=today).filter(
+            (Q(lqas_ended_at__lte=today))
+            | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
         )
-        return latest_active_campaign, latest_active_campaign_rounds
+        if start_date_after is not None:
+            latest_active_campaign_rounds = latest_active_campaign_rounds.filter(started_at__gte=start_date_after)
+        if end_date_before is not None:
+            latest_active_campaign_rounds = latest_active_campaign_rounds.filter(ended_at__lte=end_date_before)
+        latest_active_campaign_rounds = latest_active_campaign_rounds.order_by("-number")
+        round_numbers = latest_active_campaign_rounds.values_list("number", flat=True)
+
+        return latest_active_campaign, latest_active_campaign_rounds, round_numbers

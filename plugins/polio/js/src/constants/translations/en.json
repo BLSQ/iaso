@@ -246,6 +246,7 @@
     "iaso.polio.label.displayedName": "Displayed name",
     "iaso.polio.label.disqualified": "Disqualified",
     "iaso.polio.label.districtScore": "District",
+    "iaso.polio.label.districtsInScope": "Districts in scope",
     "iaso.polio.label.districtsNeedMatching": "Some districts need to be matched by an admin and are not shown. Please contact an admin for more information",
     "iaso.polio.label.districtsNotFound": "Districts not found",
     "iaso.polio.label.districtToRegionalLevel": "District to regional level",

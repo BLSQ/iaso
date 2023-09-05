@@ -40,6 +40,11 @@ export const useNopv2AuthorisationsSchema = () => {
             // ts-compiler doesn't recognize the added method
             // @ts-ignore
             .checkDateForExpired(formatMessage),
+        country: yup
+            .number()
+            .positive()
+            .nullable()
+            .required(formatMessage(MESSAGES.fieldRequired)),
         quantity: yup.number().positive().nullable(),
         status: yup
             .string()

@@ -8,6 +8,7 @@ import {
 import { NOPV2_AUTH_DETAILS } from '../../../../constants/routes';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../../../constants/messages';
+import { Nopv2AuthorisationsStatusCell } from './Nopv2AuthorisationsStatusCell';
 
 const baseUrl = NOPV2_AUTH_DETAILS;
 
@@ -40,19 +41,10 @@ export const useNopv2AuthTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.mostRecentAuthStatus),
                 accessor: 'status',
-                Cell: settings => (
-                    <span
-                        style={
-                            settings.row.original.status === 'expired'
-                                ? { color: 'red' }
-                                : undefined
-                        }
-                    >
-                        {formatMessage(
-                            MESSAGES[settings.row.original.status],
-                        ).toUpperCase()}
-                    </span>
-                ),
+                Cell: settings => {
+                    const { status } = settings.row.original;
+                    return <Nopv2AuthorisationsStatusCell status={status} />;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.nextExpirationDate),

@@ -19,13 +19,14 @@ import { MultilineText } from '../../../../../../components/Inputs/MultilineText
 import { SingleSelect } from '../../../../../../components/Inputs/SingleSelect';
 import { useStatusOptions } from '../../../hooks/statuses';
 import { AuthorisationAPIData } from '../../../types';
+import { useGetCountries } from '../../../../../../hooks/useGetCountries';
 
 type Props = {
     isOpen: boolean;
     closeDialog: () => void;
     authorisationData?: AuthorisationAPIData;
-    countryName: string;
-    countryId: number;
+    countryName?: string;
+    countryId?: number;
 };
 
 const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
@@ -41,6 +42,9 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
     const { mutate: confirm } = useCreateEditNopv2Authorisation();
     const schema = useNopv2AuthorisationsSchema();
 
+    const { data, isFetching: isFetchingCountries } = useGetCountries();
+
+    const countriesList = (data && data.orgUnits) || [];
     const formik = useFormik({
         initialValues: {
             expiration_date: authorisationData?.expiration_date,
@@ -58,13 +62,15 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
         },
     });
     const isFormChanged = !isEqual(formik.values, formik.initialValues);
-
     const allowConfirm =
         !formik.isSubmitting && formik.isValid && isFormChanged;
 
-    const title = authorisationData?.id
+    let title = authorisationData?.id
         ? `${formatMessage(MESSAGES.editAuth)}`
-        : `${formatMessage(MESSAGES.addAuthorisation)} - ${countryName}`;
+        : `${formatMessage(MESSAGES.addAuthorisation)}`;
+    if (countryName) {
+        title = `${title} - ${countryName}`;
+    }
     return (
         <FormikProvider value={formik}>
             <ConfirmCancelModal
@@ -83,12 +89,31 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                 <Box mb={2}>
                     <Divider />
                 </Box>
+                {!countryId && (
+                    <Box mb={2}>
+                        <Field
+                            label={formatMessage(MESSAGES.country)}
+                            name="country"
+                            component={SingleSelect}
+                            fullWidth
+                            clearable={false}
+                            required
+                            loading={isFetchingCountries}
+                            options={countriesList.map(c => ({
+                                label: c.name,
+                                value: c.id,
+                            }))}
+                            withMarginTop
+                        />
+                    </Box>
+                )}
                 <Field
                     label={formatMessage(MESSAGES.currentExpirationDate)}
                     name="expiration_date"
                     component={DateInput}
                     fullWidth
                     clearable
+                    withMarginTop
                 />
                 <Field
                     label={formatMessage(MESSAGES.quantity)}

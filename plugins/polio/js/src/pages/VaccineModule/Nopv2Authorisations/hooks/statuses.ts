@@ -5,10 +5,10 @@ import MESSAGES from '../../../../constants/messages';
 import { Nopv2AuthStatus } from '../types';
 
 const statuses: Nopv2AuthStatus[] = [
-    'ongoing',
-    'signature',
-    'validated',
-    'expired',
+    'ONGOING',
+    'SIGNATURE',
+    'VALIDATED',
+    'EXPIRED',
 ];
 
 export const useStatusOptions = (): DropdownOptions<string>[] => {
@@ -17,7 +17,9 @@ export const useStatusOptions = (): DropdownOptions<string>[] => {
         return statuses.map(status => {
             return {
                 value: status,
-                label: formatMessage(MESSAGES[status]),
+                label: MESSAGES[status.toLowerCase()]
+                    ? formatMessage(MESSAGES[status.toLowerCase()])
+                    : status,
             };
         });
     }, [formatMessage]);

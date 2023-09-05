@@ -33,5 +33,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.title.editAuth',
         defaultMessage: 'Edit authorisation',
     },
+    country: {
+        id: 'iaso.polio.table.label.country',
+        defaultMessage: 'Country',
+    },
 });
 export default MESSAGES;

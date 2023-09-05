@@ -75,6 +75,8 @@ def expired_vaccine_authorizations_email_alert():
 
     mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
 
+    mail_sent = False
+
     for obj in vaccine_auths:
         next_vaccine_auth = (
             VaccineAuthorization.objects.filter(
@@ -99,6 +101,7 @@ def expired_vaccine_authorizations_email_alert():
                 settings.DEFAULT_FROM_EMAIL,
                 mailing_list,
             )
+            mail_sent = True
         else:
             send_mail(
                 f"ALERT: Vaccine Authorization {obj} has expired.",
@@ -114,3 +117,6 @@ def expired_vaccine_authorizations_email_alert():
                 settings.DEFAULT_FROM_EMAIL,
                 mailing_list,
             )
+            mail_sent = True
+
+    return {"vacc_auth_mail_sent_to": mailing_list} if mail_sent else "no_vacc_auth_mail_sent"

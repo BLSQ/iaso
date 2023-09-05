@@ -214,27 +214,35 @@ describe('Forms', () => {
             });
         });
         it('should be called with search params', () => {
-            goToPage(
-                superUser,
-                {
-                    order: 'instance_updated_at',
-                    page: '1',
-                    search,
-                    showDeleted: 'true',
-                    all: 'true',
-                    limit: '50',
-                },
-                'forms/empty.json',
-            );
-            cy.get('#search-search').type(search);
-            cy.get('#check-box-showDeleted').check();
-            cy.get('[data-test="search-button"]').click();
+            goToPage(superUser, null, 'forms/list.json');
             cy.wait('@getForms').then(() => {
-                // TODO remove this cf hat/assets/js/apps/Iaso/components/tables/SingleTable.js l 80
-                cy.intercept('GET', '/api/forms/**', {
-                    fixture: 'forms/empty.json',
+                interceptFlag = false;
+                cy.intercept('GET', '/api/forms/**/*', req => {
+                    req.continue(res => {
+                        interceptFlag = true;
+                        res.send({ fixture: 'forms/list.json' });
+                    });
+                }).as('getFormSearch');
+
+                cy.get('#search-search').type(search);
+                // cy.fillSingleSelect('#planning', 1);
+                cy.fillMultiSelect('#projectsIds', [0, 1], false);
+                cy.get('#check-box-showDeleted').check();
+
+                cy.get('[data-test="search-button"]').click();
+
+                cy.wait('@getFormSearch').then(xhr => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                    cy.wrap(xhr.request.query).should('deep.equal', {
+                        all: 'true',
+                        limit: '50',
+                        order: 'instance_updated_at',
+                        page: '1',
+                        projectsIds: '1,2',
+                        search: 'ZELDA',
+                        showDeleted: 'true',
+                    });
                 });
-                cy.wrap(interceptFlag).should('eq', true);
             });
         });
     });

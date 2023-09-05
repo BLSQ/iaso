@@ -2297,53 +2297,54 @@ const MESSAGES = defineMessages({
     districtsInScope: {
         id: 'iaso.polio.label.districtsInScope',
         defaultMessage: 'Districts in scope',
-    vaccinemodule: {
-        id: 'iaso.polio.title.vaccinemodule',
-        defaultMessage: 'Vaccine module',
-    },
-    nopv2Auth: {
-        id: 'iaso.polio.title.nopv2Auth',
-        defaultMessage: 'NOPV2 authorisations',
-    },
-    editAuth: {
-        id: 'iaso.polio.title.editAuth',
-        defaultMessage: 'Edit authorisation',
-    },
-    signature: {
-        id: 'iaso.polio.label.signature',
-        defaultMessage: 'Signature',
-    },
-    expired: {
-        id: 'iaso.polio.label.expired',
-        defaultMessage: 'Expired',
-    },
-    quantity: {
-        id: 'iaso.polio.label.quantity',
-        defaultMessage: 'Quantity',
-    },
-    currentAuthorisedQuantity: {
-        id: 'iaso.polio.label.currentAuthorisedQuantity',
-        defaultMessage: 'Current authorised quantity',
-    },
-    expirationDate: {
-        id: 'iaso.polio.label.expirationDate',
-        defaultMessage: 'Expiration date',
-    },
-    currentExpirationDate: {
-        id: 'iaso.polio.label.currentExpirationDate',
-        defaultMessage: 'Current expiration date',
-    },
-    nextExpirationDate: {
-        id: 'iaso.polio.label.nextExpirationDate',
-        defaultMessage: 'Next expiration date',
-    },
-    dateForExpired: {
-        id: 'iaso.polio.error.dateForExpired',
-        defaultMessage: 'Expired authorisations can only have past dates',
-    },
-    mostRecentAuthStatus: {
-        id: 'iaso.polio.table.label.mostRecentAuthStatus',
-        defaultMessage: 'Most recent authorisation status',
+        vaccinemodule: {
+            id: 'iaso.polio.title.vaccinemodule',
+            defaultMessage: 'Vaccine module',
+        },
+        nopv2Auth: {
+            id: 'iaso.polio.title.nopv2Auth',
+            defaultMessage: 'NOPV2 authorisations',
+        },
+        editAuth: {
+            id: 'iaso.polio.title.editAuth',
+            defaultMessage: 'Edit authorisation',
+        },
+        signature: {
+            id: 'iaso.polio.label.signature',
+            defaultMessage: 'Signature',
+        },
+        expired: {
+            id: 'iaso.polio.label.expired',
+            defaultMessage: 'Expired',
+        },
+        quantity: {
+            id: 'iaso.polio.label.quantity',
+            defaultMessage: 'Quantity',
+        },
+        currentAuthorisedQuantity: {
+            id: 'iaso.polio.label.currentAuthorisedQuantity',
+            defaultMessage: 'Current authorised quantity',
+        },
+        expirationDate: {
+            id: 'iaso.polio.label.expirationDate',
+            defaultMessage: 'Expiration date',
+        },
+        currentExpirationDate: {
+            id: 'iaso.polio.label.currentExpirationDate',
+            defaultMessage: 'Current expiration date',
+        },
+        nextExpirationDate: {
+            id: 'iaso.polio.label.nextExpirationDate',
+            defaultMessage: 'Next expiration date',
+        },
+        dateForExpired: {
+            id: 'iaso.polio.error.dateForExpired',
+            defaultMessage: 'Expired authorisations can only have past dates',
+        },
+        mostRecentAuthStatus: {
+            id: 'iaso.polio.table.label.mostRecentAuthStatus',
+            defaultMessage: 'Most recent authorisation status',
+        },
     },
 });
 

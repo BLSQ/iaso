@@ -4,6 +4,7 @@ import MESSAGES from '../../../../constants/messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DeleteAuthorisationModal } from './Modals/Delete/DeleteAuthorisationModal';
 import { EditAuthorisationModal } from './Modals/CreateEdit/CreateEditAuthorisationModal';
+import { Nopv2AuthorisationsStatusCell } from '../Table/Nopv2AuthorisationsStatusCell';
 
 export const useNopv2AuthDetailsTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -38,19 +39,10 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.status),
                 accessor: 'status',
-                Cell: settings => (
-                    <span
-                        style={
-                            settings.row.original.status === 'expired'
-                                ? { color: 'red' }
-                                : undefined
-                        }
-                    >
-                        {formatMessage(
-                            MESSAGES[settings.row.original.status],
-                        ).toUpperCase()}
-                    </span>
-                ),
+                Cell: settings => {
+                    const { status } = settings.row.original;
+                    return <Nopv2AuthorisationsStatusCell status={status} />;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.comment),

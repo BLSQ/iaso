@@ -2,7 +2,7 @@
 import { UrlParams } from 'bluesquare-components';
 import { NameAndId } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 
-export type Nopv2AuthStatus = 'ongoing' | 'signature' | 'validated' | 'expired';
+export type Nopv2AuthStatus = 'ONGOING' | 'SIGNATURE' | 'VALIDATED' | 'EXPIRED';
 export type AuthorisationData = {
     id: number;
     comment?: string;

@@ -11,6 +11,7 @@ from django.contrib.auth.models import Group, Permission
 
 from iaso import models as m
 from iaso.models import Profile
+from iaso.models.microplanning import Team
 from iaso.test import APITestCase
 from hat.menupermissions import models as permission
 
@@ -663,6 +664,18 @@ class ProfileAPITestCase(APITestCase):
     def test_search_by_ids(self):
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/profiles/", {"ids": f"{self.jane.id},{self.jim.id}"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.json()["profiles"]), 2)
+        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
+        self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+
+    def test_search_by_teams(self):
+        self.client.force_authenticate(self.jane)
+        team1 = Team.objects.create(project=self.project, name="team1", manager=self.jane)
+        team1.users.add(self.jane)
+        team2 = Team.objects.create(project=self.project, name="team2", manager=self.jim)
+        team2.users.add(self.jim)
+        response = self.client.get(f"/api/profiles/", {"teams": f"{team1.pk},{team2.pk}"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()["profiles"]), 2)
         self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")

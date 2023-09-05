@@ -18,6 +18,7 @@ export const useGetProfilesApiParams = params => {
               ouChildren: params.ouChildren,
               projects: params.projectsIds,
               userRoles: params.userRoles,
+              teams: params.teamsIds,
           }
         : {};
 

@@ -1,5 +1,5 @@
 /* eslint-disable react/require-default-props */
-import { Box, Typography, Grid } from '@material-ui/core';
+import { Box, Typography, Grid, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
@@ -75,7 +75,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         direction="row"
                         className={classes.containerGrid}
                     >
-                        <Grid item xs={3}>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -89,7 +89,10 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.passed}`}
                             </Typography>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -103,7 +106,10 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${summary.failed}`}
                             </Typography>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -117,7 +123,10 @@ export const LqasSummary: FunctionComponent<Props> = ({
                                 {`${scopeCount}`}
                             </Typography>
                         </Grid>
-                        <Grid item xs={3}>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}

@@ -1,7 +1,7 @@
 import datetime
 import json
 from typing import List
-from unittest import mock
+from unittest import mock, skip
 from unittest.mock import patch
 
 import jwt  # type: ignore
@@ -139,6 +139,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json()), 1)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_add_group_to_existing_campaign_without_group(self):
         """
         Ensure a group will be created when updating an existing campaign without a group

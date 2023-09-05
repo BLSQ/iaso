@@ -31,6 +31,7 @@ from django.utils.timezone import now, make_aware
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
+from hat.menupermissions import models as permission
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
 from rest_framework.exceptions import PermissionDenied
@@ -46,6 +47,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from iaso.api.common import (
     CSVExportMixin,
+    HasPermission,
     ModelViewSet,
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
@@ -60,8 +62,10 @@ from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
+    LqasDistrictsUpdateSerializer,
     RoundDateHistoryEntrySerializer,
     PowerBIRefreshSerializer,
+    RoundSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -524,6 +528,15 @@ Timeline tracker Automated message
         log_campaign_modification(campaign, old_campaign_dump, request_user)
 
         return Response({"message": "email sent"})
+
+    # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+    # But Patching the campign directly is very much error prone, so we disable it indirectly
+    def partial_update(self):
+        """Don't PATCH this way, it won't do anything
+        We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+        But Patching the campign directly is very much error prone, so we disable it indirectly
+        """
+        pass
 
     @action(methods=["PATCH"], detail=False)
     def restore_deleted_campaigns(self, request):
@@ -2094,6 +2107,38 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
             )
 
 
+@swagger_auto_schema(tags=["rounds"], request_body=LqasDistrictsUpdateSerializer)
+class RoundViewset(ModelViewSet):
+    # Patch should be in the list to allow updatelqasfields to work
+    http_method_names = ["patch"]
+    permission_classes = [HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
+    serializer_class = RoundSerializer
+    model = Round
+
+    def partial_update(self):
+        """Don't PATCH this way, it will not do anything
+        Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
+        """
+        pass
+
+    # Endpoint used to update lqas passed and failed fields by OpenHexa pipeline
+    @action(detail=False, methods=["patch"], serializer_class=LqasDistrictsUpdateSerializer)
+    def updatelqasfields(self, request):
+        round_number = request.data.get("number", None)
+        obr_name = request.data.get("obr_name", None)
+        if obr_name is None:
+            raise serializers.ValidationError({"obr_name": "This field is required"})
+        if round_number is None:
+            raise serializers.ValidationError({"round_number": "This field is required"})
+        try:
+            round_instance = Round.objects.get(campaign__obr_name=obr_name, number=round_number)
+            serializer = LqasDistrictsUpdateSerializer(data=request.data, context={"request": request}, partial=True)
+            serializer.is_valid(raise_exception=True)
+            res = serializer.update(round_instance, serializer.validated_data)
+            serialized_data = RoundSerializer(res).data
+            return Response(serialized_data)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 class CountryForVaccineSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
@@ -2371,3 +2416,4 @@ router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundView
 router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
 router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
+router.register(r"polio/rounds", RoundViewset, basename="rounds")

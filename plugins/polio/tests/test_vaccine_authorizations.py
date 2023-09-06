@@ -541,3 +541,170 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         self.assertEqual(expired_entry.status, "EXPIRED")
         self.assertEqual(valid_entry.status, "VALIDATED")
+
+    def test_order_get_recent_vacc(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk, self.org_unit_SOMALIA, self.org_unit_ALGERIA])
+
+        first = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=100,
+            expiration_date=date.today(),
+        )
+
+        second = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="EXPIRED",
+            quantity=200,
+            expiration_date=date.today() + datetime.timedelta(days=10),
+        )
+
+        third = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_ALGERIA,
+            status="VALIDATED",
+            quantity=300,
+            expiration_date=date.today() + datetime.timedelta(days=20),
+        )
+
+        fourth = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_SOMALIA,
+            status="VALIDATED",
+            quantity=400,
+            expiration_date=date.today() + datetime.timedelta(days=30),
+        )
+
+        """
+        ORDER BY COUNTRY
+        """
+        # Ascendant
+
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=country/")
+
+        self.assertEqual(response.data[0]["country"]["name"], third.country.name)
+        self.assertEqual(response.data[1]["country"]["name"], second.country.name)
+        self.assertEqual(response.data[2]["country"]["name"], fourth.country.name)
+
+        # Descendant
+
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-country/")
+
+        self.assertEqual(response.data[0]["country"]["name"], fourth.country.name)
+        self.assertEqual(response.data[1]["country"]["name"], second.country.name)
+        self.assertEqual(response.data[2]["country"]["name"], third.country.name)
+
+        """
+        ORDER BY current_expiration_date
+        """
+
+        # Ascendant
+
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=current_expiration_date/"
+        )
+
+        self.assertEqual(response.data[0]["current_expiration_date"], second.expiration_date)
+        self.assertEqual(response.data[1]["current_expiration_date"], third.expiration_date)
+        self.assertEqual(response.data[2]["current_expiration_date"], fourth.expiration_date)
+
+        # Descendant
+
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-current_expiration_date"
+        )
+
+        self.assertEqual(response.data[0]["current_expiration_date"], fourth.expiration_date)
+        self.assertEqual(response.data[1]["current_expiration_date"], third.expiration_date)
+        self.assertEqual(response.data[2]["current_expiration_date"], second.expiration_date)
+
+        """
+        ORDER BY status
+        """
+
+        # Ascendant
+
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=status/")
+
+        self.assertEqual(response.data[0]["status"], second.status)
+        self.assertEqual(response.data[1]["status"], third.status)
+        self.assertEqual(response.data[2]["status"], fourth.status)
+
+        # Descendant
+
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-status")
+
+        self.assertEqual(response.data[0]["status"], fourth.status)
+        self.assertEqual(response.data[1]["status"], third.status)
+        self.assertEqual(response.data[2]["status"], second.status)
+
+        """
+        ORDER BY Quantity
+        """
+
+        # Ascendant
+
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=quantity/")
+
+        self.assertEqual(response.data[0]["status"], second.status)
+        self.assertEqual(response.data[1]["status"], third.status)
+        self.assertEqual(response.data[2]["status"], fourth.status)
+
+        # Descendant
+
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-quantity")
+
+        self.assertEqual(response.data[0]["status"], fourth.status)
+        self.assertEqual(response.data[1]["status"], third.status)
+        self.assertEqual(response.data[2]["status"], second.status)
+
+        """
+                ORDER BY next_expiration_date
+        """
+
+        fifth = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="ONGOING",
+            quantity=200,
+            expiration_date=date.today() + datetime.timedelta(days=100),
+        )
+
+        sixth = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_ALGERIA,
+            status="ONGOING",
+            quantity=300,
+            expiration_date=date.today() + datetime.timedelta(days=200),
+        )
+
+        seventh = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_SOMALIA,
+            status="ONGOING",
+            quantity=400,
+            expiration_date=date.today() + datetime.timedelta(days=300),
+        )
+
+        # Ascendant
+
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=next_expiration_date/"
+        )
+
+        self.assertEqual(response.data[0]["next_expiration_date"], fifth.expiration_date)
+        self.assertEqual(response.data[1]["next_expiration_date"], sixth.expiration_date)
+        self.assertEqual(response.data[2]["next_expiration_date"], seventh.expiration_date)
+
+        # Descendant
+
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=-next_expiration_date"
+        )
+
+        self.assertEqual(response.data[0]["next_expiration_date"], seventh.expiration_date)
+        self.assertEqual(response.data[1]["next_expiration_date"], sixth.expiration_date)
+        self.assertEqual(response.data[2]["next_expiration_date"], fifth.expiration_date)

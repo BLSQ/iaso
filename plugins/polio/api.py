@@ -2215,19 +2215,16 @@ def handle_none_and_country(item, ordering):
     This function handle the None cases to order the response of get_most_recent_authorizations
     and country nested dict.
     """
-
     if "country" in ordering:
         country_dict = item.get("country")
         country_name = country_dict.get("name")
         return country_name if country_name is not None else ""
-
     if "date" in ordering:
-        item = item.get(ordering)
-        return item if item is not None else dt.date(1, 1, 1)
-
-    if "date" not in ordering:
-        item = item.get(ordering)
-        return item if item is not None else float("inf")
+        date_field = item.get(ordering)
+        return date_field if date_field else dt.date(1, 1, 1)
+    if ordering != "date":
+        item_value = item.get(ordering)
+        return item_value if item_value is not None else float("inf")
 
 
 @swagger_auto_schema(tags=["vaccineauthorizations"])
@@ -2379,10 +2376,10 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 response.append(vacc_auth)
 
         if ordering:
-            response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
-            # dirty hack to fix country ordering
-            if ordering == "-country":
-                response.reverse()
+            if ordering[0] == "-":
+                response = sorted(response, key=lambda x: handle_none_and_country(x, ordering[1:]), reverse=True)
+            else:
+                response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
         page = self.paginate_queryset(response)
 
         if page:

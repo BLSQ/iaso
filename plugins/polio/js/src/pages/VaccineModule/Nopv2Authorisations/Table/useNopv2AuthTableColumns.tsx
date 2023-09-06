@@ -34,7 +34,9 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                 accessor: 'quantity',
                 Cell: settings => (
                     <span>
-                        {formatThousand(settings.row.original.quantity)}
+                        {formatThousand(settings.row.original.quantity) > 0
+                            ? formatThousand(settings.row.original.quantity)
+                            : '--'}
                     </span>
                 ),
             },

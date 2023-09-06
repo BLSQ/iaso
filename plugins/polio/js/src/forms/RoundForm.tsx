@@ -73,10 +73,10 @@ export const RoundForm: FunctionComponent<Props> = ({ roundNumber }) => {
                 <Grid xs={12} md={6} item>
                     <LqasDistrictsPassed
                         lqasDistrictsFailing={
-                            rounds[roundIndex].lqas_district_failing
+                            rounds?.[roundIndex]?.lqas_district_failing
                         }
                         lqasDistrictsPassing={
-                            rounds[roundIndex].lqas_district_passing
+                            rounds?.[roundIndex]?.lqas_district_passing
                         }
                     />
                     <Field

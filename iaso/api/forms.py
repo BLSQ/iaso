@@ -8,19 +8,17 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import log_modification, FORM_API
+from hat.menupermissions import models as permission
 from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilter
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
-from .query_params import APP_ID
-from hat.menupermissions import models as permission
 
 
 class HasFormPermission(permissions.BasePermission):
@@ -229,6 +227,10 @@ class FormsViewSet(ModelViewSet):
         planning_ids = self.request.query_params.get("planning", None)
         if planning_ids:
             queryset = queryset.filter(plannings__id__in=planning_ids.split(","))
+
+        org_unit_type_ids = self.request.query_params.get("orgUnitTypeIds")
+        if org_unit_type_ids:
+            queryset = queryset.filter(org_unit_types__id__in=org_unit_type_ids.split(","))
 
         projects_ids = self.request.query_params.get("projectsIds")
         if projects_ids:

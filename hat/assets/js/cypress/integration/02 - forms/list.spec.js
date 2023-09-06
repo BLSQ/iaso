@@ -225,6 +225,7 @@ describe('Forms', () => {
                 }).as('getFormSearch');
 
                 cy.get('#search-search').type(search);
+                cy.fillMultiSelect('#orgUnitTypeIds', [0, 1], false);
                 cy.fillMultiSelect('#projectsIds', [0, 1], false);
                 cy.get('#check-box-showDeleted').check();
 
@@ -236,6 +237,7 @@ describe('Forms', () => {
                         all: 'true',
                         limit: '50',
                         order: 'instance_updated_at',
+                        orgUnitTypeIds: '47,11',
                         page: '1',
                         projectsIds: '1,2',
                         search: 'ZELDA',

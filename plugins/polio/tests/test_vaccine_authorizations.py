@@ -16,6 +16,7 @@ from plugins.polio.models import VaccineAuthorization
 from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
     vaccine_authorizations_60_days_expiration_email_alert,
     expired_vaccine_authorizations_email_alert,
+    vaccine_authorization_update_expired_entries,
 )
 
 
@@ -231,8 +232,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
-        print(response.data)
-
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data[0]["comment"], "next validation date")
         self.assertEqual(response.data[0]["status"], "ONGOING")
@@ -433,7 +432,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         }
 
         post_rep = self.client.put(f"/api/polio/vaccineauthorizations/{last_entry.pk}/", data=data)
-        print(post_rep.data)
 
         response = self.client.get("/api/polio/vaccineauthorizations/")
 
@@ -518,3 +516,28 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(mail.outbox[0].subject, f"ALERT: Vaccine Authorization {past_vacc_auth} has expired.")
         self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
+
+    def test_vaccine_authorization_update_expired_entries(self):
+        expired_entry = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=5000000,
+            expiration_date=date.today() - datetime.timedelta(days=1),
+        )
+
+        valid_entry = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=5000000,
+            expiration_date=date.today(),
+        )
+
+        vaccine_authorization_update_expired_entries()
+
+        expired_entry.refresh_from_db()
+        valid_entry.refresh_from_db()
+
+        self.assertEqual(expired_entry.status, "EXPIRED")
+        self.assertEqual(valid_entry.status, "VALIDATED")

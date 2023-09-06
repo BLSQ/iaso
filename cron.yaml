@@ -12,3 +12,6 @@ cron:
  - name: "expired_vaccine_authorizations_email_alert"
    url: "/tasks/launch_task/plugins.polio.tasks.vaccine_authorizations_mail_alerts/expired_vaccine_authorizations_email_alert/"
    schedule: "0 0 * * *"
+ - name: "vaccine_authorization_update_expired_entries"
+   url: "/tasks/launch_task/plugins.polio.tasks.vaccine_authorizations_mail_alerts/vaccine_authorization_update_expired_entries/"
+   schedule: "0 0 * * *"

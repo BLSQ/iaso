@@ -1,3 +1,4 @@
+import datetime
 import datetime as dt
 from datetime import timedelta
 
@@ -120,3 +121,11 @@ def expired_vaccine_authorizations_email_alert():
             mail_sent = True
 
     return {"vacc_auth_mail_sent_to": mailing_list} if mail_sent else "no_vacc_auth_mail_sent"
+
+
+def vaccine_authorization_update_expired_entries():
+    expired_vacc_auth = VaccineAuthorization.objects.filter(expiration_date=datetime.date.today() - timedelta(days=1))
+
+    for vacc_auth in expired_vacc_auth:
+        vacc_auth.status = "EXPIRED"
+        vacc_auth.save()

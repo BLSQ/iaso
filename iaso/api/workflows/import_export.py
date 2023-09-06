@@ -62,8 +62,8 @@ def export_workflow_real(workflow: Workflow) -> typing.Dict:
 
 def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workflow:
     """Imports a workflow from a dict and returns a Workflow object
-    This version implies that an entity type with the same name and the same reference form exists.
-    It also implies that the forms in the follow ups and changes exist.
+    This version assumes that an entity type with the same name and the same reference form exists.
+    It also assumes that the forms in the follow-ups and changes exist.
     """
     entity_type_name = workflow_data["entity_type"]
     entity_type = EntityType.objects.get(name=entity_type_name)

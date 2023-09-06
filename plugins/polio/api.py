@@ -5,18 +5,22 @@ import json
 import numpy as np
 from collections import defaultdict
 from datetime import timedelta, datetime
+
 from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
+
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import Polygon
+from django.db.models.functions import RowNumber, Coalesce
 from django.db.models.query import QuerySet
 from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Q, Max, Min
+from django.db.models import Q, Max, Min, Case
 from django.db.models import Value, TextField, UUIDField
-from django.db.models.expressions import RawSQL
+from django.db.models.expressions import RawSQL, OuterRef, Subquery, F, Window, When
 from django.http import FileResponse
 from django.http import HttpResponse, StreamingHttpResponse
 from django.http import JsonResponse
@@ -30,11 +34,14 @@ from gspread.utils import extract_id_from_url  # type: ignore
 from hat.menupermissions import models as permission
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
+from rest_framework.exceptions import PermissionDenied
+
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
+from rest_framework import routers, filters, viewsets, serializers, permissions, status, pagination
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -45,8 +52,11 @@ from iaso.api.common import (
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
+    TimestampField,
+    HasPermission,
+    Paginator,
 )
-from iaso.models import OrgUnit, Group
+from iaso.models import OrgUnit, Group, Team
 from iaso.utils.powerbi import launch_dataset_refresh
 from plugins.polio.serializers import (
     ConfigSerializer,
@@ -96,11 +106,13 @@ from .models import (
     CampaignScope,
     RoundDateHistoryEntry,
     RoundScope,
+    VaccineAuthorization,
 )
 from hat.api.export_utils import Echo, iter_items
 from time import gmtime, strftime
 from .models import CountryUsersGroup
 from .preparedness.summary import get_or_set_preparedness_cache_for_round
+from hat.menupermissions import models as permission
 
 logger = getLogger(__name__)
 
@@ -2129,6 +2141,253 @@ class RoundViewset(ModelViewSet):
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 
+class CountryForVaccineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+
+
+class CountryField(serializers.PrimaryKeyRelatedField):
+    def to_representation(self, value):
+        country = OrgUnit.objects.get(pk=value.pk)
+        serializer = CountryForVaccineSerializer(country)
+        return serializer.data
+
+
+class VaccineAuthorizationSerializer(serializers.ModelSerializer):
+    country = CountryField(queryset=OrgUnit.objects.filter(org_unit_type__name="COUNTRY"))
+
+    class Meta:
+        model = VaccineAuthorization
+        fields = [
+            "id",
+            "country",
+            "expiration_date",
+            "created_at",
+            "updated_at",
+            "quantity",
+            "status",
+            "comment",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
+        created_at = TimestampField(read_only=True)
+        updated_at = TimestampField(read_only=True)
+        expiration_date = TimestampField(read_only=True)
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["account"] = user.iaso_profile.account
+
+        return super().create(validated_data)
+
+
+class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+        write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+        if request.method == "GET":
+            can_get = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(read_perm)
+                or request.user.is_superuser
+            )
+            return can_get
+        elif (
+            request.method == "POST"
+            or request.method == "PUT"
+            or request.method == "PATCH"
+            or request.method == "DELETE"
+        ):
+            can_post = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(write_perm)
+                or request.user.is_superuser
+            )
+            return can_post
+        else:
+            return False
+
+
+def handle_none_and_country(item, ordering):
+    """
+    This function handle the None cases to order the response of get_most_recent_authorizations
+    and country nested dict.
+    """
+    if "country" in ordering:
+        country_dict = item.get("country")
+        country_name = country_dict.get("name")
+        return country_name if country_name is not None else ""
+    if "date" in ordering:
+        date_field = item.get(ordering)
+        return date_field if date_field else dt.date(1, 1, 1)
+    if ordering != "date":
+        item_value = item.get(ordering)
+        return item_value if item_value is not None else float("inf")
+
+
+@swagger_auto_schema(tags=["vaccineauthorizations"])
+class VaccineAuthorizationViewSet(ModelViewSet):
+    """
+    Vaccine Authorizations API
+    list: /api/polio/vaccintauthorizations
+    action: /api/polio/get_most_recent_authorizations
+    """
+
+    permission_classes = [HassVaccineAuthorizationsPermissions]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    results_key = "results"
+    remove_results_key_if_paginated = True
+    serializer_class = VaccineAuthorizationSerializer
+    pagination_class = Paginator
+    ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date", "quantity"]
+
+    def get_queryset(self):
+        user = self.request.user
+        user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+        user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
+        country_id = self.request.query_params.get("country", None)
+        queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
+        block_country = self.request.query_params.get("block_country", None)
+        search = self.request.query_params.get("search", None)
+        auth_status = self.request.query_params.get("auth_status", None)
+
+        if country_id:
+            queryset = queryset.filter(country__pk=country_id)
+        if block_country:
+            block_country = block_country.split(",")
+            block_country = Group.objects.filter(pk__in=block_country)
+            org_units = [
+                ou_queryset
+                for ou_queryset in [
+                    ou_group_queryset for ou_group_queryset in [country.org_units.all() for country in block_country]
+                ]
+            ]
+            ou_pk_list = []
+            for ou_q in org_units:
+                for ou in ou_q:
+                    ou_pk_list.append(ou.pk)
+            queryset = queryset.filter(country__pk__in=ou_pk_list)
+        if search:
+            queryset = queryset.filter(country__name__icontains=search)
+        if auth_status:
+            auth_status = auth_status.split(",")
+            queryset = queryset.filter(status__in=auth_status)
+
+        return queryset
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        country = self.request.data.get("country")
+        if not self.request.user.is_superuser:
+            if country not in [
+                str(ou.id) for ou in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None)
+            ]:
+                raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
+
+        return super().create(request)
+
+    @action(detail=False, methods=["GET"])
+    def get_most_recent_authorizations(self, request):
+        """
+        Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
+        """
+        queryset = self.get_queryset()
+        country_list = []
+        response = []
+
+        ordering = request.query_params.get("order", None)
+
+        for auth in queryset:
+            if auth.country not in country_list:
+                country_list.append(auth.country)
+
+        for country in country_list:
+            last_validated_or_expired = (
+                queryset.filter(country=country, status__in=["VALIDATED", "EXPIRED"], deleted_at__isnull=True)
+                .order_by("-expiration_date")
+                .first()
+            )
+
+            next_expiration_auth = (
+                queryset.filter(country=country, status__in=["ONGOING", "SIGNATURE"], deleted_at__isnull=True)
+                .order_by("-expiration_date")
+                .first()
+            )
+
+            last_entry = queryset.filter(country=country, deleted_at__isnull=True).last()
+
+            last_entry_date_check = VaccineAuthorization.objects.filter(
+                country=country, account=self.request.user.iaso_profile.account, deleted_at__isnull=True
+            ).last()
+
+            if last_entry_date_check and last_entry:
+                if last_entry_date_check.expiration_date > last_entry.expiration_date:
+                    return Response(response)
+
+            if last_validated_or_expired and next_expiration_auth:
+                vacc_auth = {
+                    "id": last_entry.id,
+                    "country": {
+                        "id": last_entry.country.pk,
+                        "name": last_entry.country.name,
+                    },
+                    "current_expiration_date": last_validated_or_expired.expiration_date,
+                    "next_expiration_date": next_expiration_auth.expiration_date
+                    if next_expiration_auth.expiration_date > last_validated_or_expired.expiration_date
+                    else None,
+                    "quantity": last_validated_or_expired.quantity,
+                    "status": last_entry.status,
+                    "comment": last_entry.comment,
+                }
+
+                response.append(vacc_auth)
+
+            if last_validated_or_expired is None and next_expiration_auth:
+                vacc_auth = {
+                    "id": last_entry.id,
+                    "country": {
+                        "id": last_entry.country.pk,
+                        "name": last_entry.country.name,
+                    },
+                    "current_expiration_date": None,
+                    "next_expiration_date": next_expiration_auth.expiration_date,
+                    "quantity": None,
+                    "status": last_entry.status,
+                    "comment": last_entry.comment,
+                }
+
+                response.append(vacc_auth)
+
+            if last_validated_or_expired and next_expiration_auth is None:
+                vacc_auth = {
+                    "id": last_validated_or_expired.id,
+                    "country": {
+                        "id": last_validated_or_expired.country.pk,
+                        "name": last_validated_or_expired.country.name,
+                    },
+                    "current_expiration_date": last_validated_or_expired.expiration_date,
+                    "next_expiration_date": None,
+                    "quantity": last_validated_or_expired.quantity,
+                    "status": last_validated_or_expired.status,
+                    "comment": last_validated_or_expired.comment,
+                }
+
+                response.append(vacc_auth)
+
+        if ordering:
+            if ordering[0] == "-":
+                response = sorted(response, key=lambda x: handle_none_and_country(x, ordering[1:]), reverse=True)
+            else:
+                response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
+        page = self.paginate_queryset(response)
+
+        if page:
+            return self.get_paginated_response(page)
+
+        return Response(response)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -2153,6 +2412,7 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
 router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
 router.register(r"polio/rounds", RoundViewset, basename="rounds")

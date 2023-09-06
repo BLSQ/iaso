@@ -14,8 +14,8 @@ from iaso.models.workflow import Workflow, WorkflowChange, WorkflowFollowup, Wor
 
 def export_workflow_real(workflow: Workflow) -> typing.Dict:
     """Exports the given workflow as a dict
-    This version implies that an entity type with the same name and the same reference form exists.
-    It also implies that the forms in the follow ups and changes exist.
+    This version assumes that an entity type with the same name and the same reference form exists.
+    It also assumes that the forms in the follow-ups and changes exist.
     """
     workflow_data = {
         "entity_type": workflow.entity_type.name,

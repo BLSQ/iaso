@@ -138,6 +138,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Not completed',
         id: 'iaso.completenessStats.notCompleted',
     },
+    formsInfos: {
+        defaultMessage:
+            'Please select one form to enable completeness map view',
+        id: 'iaso.completenessStats.formsInfos',
+    },
 });
 
 export default MESSAGES;

@@ -108,7 +108,7 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 <Field
-                    label={formatMessage(MESSAGES.currentExpirationDate)}
+                    label={formatMessage(MESSAGES.expirationDate)}
                     name="expiration_date"
                     component={DateInput}
                     fullWidth

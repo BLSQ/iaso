@@ -16,7 +16,7 @@ yup.addMethod(
 
             let errorMessage;
 
-            if (newExpiryDate?.isAfter(now) && status === 'expired') {
+            if (newExpiryDate?.isAfter(now) && status === 'EXPIRED') {
                 errorMessage = formatMessage(MESSAGES.dateForExpired);
             }
             if (errorMessage) {

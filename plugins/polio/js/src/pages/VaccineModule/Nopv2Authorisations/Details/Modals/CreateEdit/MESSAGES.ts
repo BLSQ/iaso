@@ -37,5 +37,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.country',
         defaultMessage: 'Country',
     },
+    expirationDate: {
+        id: 'iaso.polio.label.expirationDate',
+        defaultMessage: 'Expiration date',
+    },
 });
 export default MESSAGES;

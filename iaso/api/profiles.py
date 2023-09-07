@@ -8,7 +8,7 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.core.mail import send_mail
 from django.core.paginator import Paginator
 from django.db.models import Q, QuerySet
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
 from django.urls import reverse
 from django.utils.encoding import force_bytes
@@ -19,10 +19,13 @@ from django.template import Context, Template
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
-from typing import Optional, List
-from iaso.models import Profile, OrgUnit, UserRole, Project
+from typing import Any, List, Optional, Union
+from hat.api.export_utils import Echo, iter_items, generate_xlsx
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
+from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
+from iaso.api.common import FileFormatEnum, CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
+from iaso.models import Profile, OrgUnit, UserRole, Project
 
 PK_ME = "me"
 
@@ -73,6 +76,7 @@ def get_filtered_profiles(
     children_ou: Optional[bool] = False,
     projects: Optional[List[int]] = None,
     user_roles: Optional[List[int]] = None,
+    teams: Optional[List[int]] = None,
     managed_users_only: Optional[bool] = False,
     ids: Optional[str] = None,
 ) -> QuerySet[Profile]:
@@ -149,6 +153,10 @@ def get_filtered_profiles(
 
     if user_roles:
         queryset = queryset.filter(user__iaso_profile__user_roles__pk__in=user_roles)
+
+    if teams:
+        queryset = queryset.filter(user__teams__id__in=teams).distinct()
+
     if ids:
         queryset = queryset.filter(user__id__in=ids.split(","))
     if managed_users_only:
@@ -224,6 +232,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         if user_roles:
             user_roles = user_roles.split(",")
         managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
+        teams = request.GET.get("teams", None)
+        if teams:
+            teams = teams.split(",")
+        managed_users_only = request.GET.get("managedUsersOnly", None) == "true"
         queryset = get_filtered_profiles(
             queryset=self.get_queryset(),
             user=request.user,
@@ -235,9 +247,15 @@ class ProfilesViewSet(viewsets.ViewSet):
             children_ou=children_ou,
             projects=projects,
             user_roles=user_roles,
+            teams=teams,
             managed_users_only=managed_users_only,
             ids=ids,
         )
+
+        if request.GET.get("csv"):
+            return self.list_export(queryset=queryset, file_format=FileFormatEnum.CSV)
+        if request.GET.get("xlsx"):
+            return self.list_export(queryset=queryset, file_format=FileFormatEnum.XLSX)
 
         if limit:
             queryset = queryset.order_by(*orders)
@@ -258,6 +276,47 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
+
+    @staticmethod
+    def list_export(
+        queryset: "QuerySet[Profile]", file_format: FileFormatEnum
+    ) -> Union[HttpResponse, StreamingHttpResponse]:
+        columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
+
+        def get_row(profile: Profile, **_) -> List[Any]:
+            return [
+                profile.user.username,
+                "",  # Password is left empty on purpose.
+                profile.user.email,
+                profile.user.first_name,
+                profile.user.last_name,
+                ",".join(str(item.pk) for item in profile.org_units.all().order_by("id")),
+                profile.language,
+                profile.dhis2_id,
+                ",".join(item.codename for item in profile.user.user_permissions.all()),
+                ",".join(str(item.pk) for item in profile.user_roles.all().order_by("id")),
+                ",".join(str(item.pk) for item in profile.projects.all().order_by("id")),
+            ]
+
+        filename = "users"
+        response: Union[HttpResponse, StreamingHttpResponse]
+
+        if file_format == FileFormatEnum.XLSX:
+            filename = filename + ".xlsx"
+            response = HttpResponse(
+                generate_xlsx("Users", columns, queryset, get_row),
+                content_type=CONTENT_TYPE_XLSX,
+            )
+        elif file_format == FileFormatEnum.CSV:
+            filename = f"{filename}.csv"
+            response = StreamingHttpResponse(
+                streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type=CONTENT_TYPE_CSV
+            )
+        else:
+            raise ValueError(f"Unknown file format requested: {file_format}")
+
+        response["Content-Disposition"] = "attachment; filename=%s" % filename
+        return response
 
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
@@ -437,13 +496,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         )
 
         rendered_html_email = html_email_template.render(html_email_context)
-        html_email_to_send = strip_tags(rendered_html_email)
+
         send_mail(
             email_subject_text,
             email_message_text,
             from_email,
             [profile.user.email],
-            html_message=strip_tags(html_email_to_send),
+            html_message=rendered_html_email,
         )
 
     @staticmethod

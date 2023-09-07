@@ -69,7 +69,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                         onErrorChange={setTextSearchError}
                     />
+                    <InputComponent
+                        keyValue="showDeleted"
+                        onChange={(_key, value) => {
+                            handleChange('showDeleted', !showDeleted);
+                            setShowDeleted(value);
+                        }}
+                        value={showDeleted}
+                        type="checkbox"
+                        label={MESSAGES.showDeleted}
+                    />
                 </Grid>
+
                 <Grid item xs={12} md={3}>
                     <InputComponent
                         type="select"
@@ -95,8 +106,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         multi
                     />
                 </Grid>
-                <Grid container item xs={12} md={12} justifyContent="flex-end">
-                    <Box mt={isLargeLayout ? 2 : 0}>
+                <Grid container item xs={12} md={3} justifyContent="flex-end">
+                    <Box mt={isLargeLayout ? 3 : 0}>
                         <Button
                             data-test="search-button"
                             disabled={
@@ -112,18 +123,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                             {formatMessage(MESSAGES.search)}
                         </Button>
                     </Box>
-                </Grid>
-                <Grid item xs={12} md={3}>
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={(_key, value) => {
-                            handleChange('showDeleted', !showDeleted);
-                            setShowDeleted(value);
-                        }}
-                        value={showDeleted}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
                 </Grid>
             </Grid>
         </>

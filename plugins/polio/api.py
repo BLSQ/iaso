@@ -2126,7 +2126,6 @@ class RoundViewset(ModelViewSet):
                 campaign__obr_name__in=Subquery(campaigns_for_user.values("obr_name"))
             )
             round_instance = round_instance.get(campaign__obr_name=obr_name, number=round_number)
-            # round_instance  = Round.objects.get(campaign__obr_name=obr_name, number=round_number)
             serializer = LqasDistrictsUpdateSerializer(data=request.data, context={"request": request}, partial=True)
             serializer.is_valid(raise_exception=True)
             res = serializer.update(round_instance, serializer.validated_data)

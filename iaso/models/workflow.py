@@ -1,4 +1,5 @@
 import typing
+import uuid
 
 from django.contrib.auth.models import User, AnonymousUser
 from django.db import models
@@ -25,6 +26,8 @@ class Workflow(SoftDeletableModel):
         on_delete=models.CASCADE,
         related_name="workflow",
     )
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -85,6 +88,8 @@ class WorkflowVersion(SoftDeletableModel):
     """
 
     workflow = models.ForeignKey(Workflow, on_delete=models.CASCADE, related_name="workflow_versions")
+
+    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
 
     name = models.CharField(max_length=50, default="No Name")
     status = models.CharField(

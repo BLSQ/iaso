@@ -230,6 +230,10 @@ class FormsViewSet(ModelViewSet):
         if planning_ids:
             queryset = queryset.filter(plannings__id__in=planning_ids.split(","))
 
+        projects_ids = self.request.query_params.get("projectsIds")
+        if projects_ids:
+            queryset = queryset.filter(projects__id__in=projects_ids.split(","))
+
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 
         if not self.request.user.is_anonymous:

@@ -225,7 +225,6 @@ describe('Forms', () => {
                 }).as('getFormSearch');
 
                 cy.get('#search-search').type(search);
-                // cy.fillSingleSelect('#planning', 1);
                 cy.fillMultiSelect('#projectsIds', [0, 1], false);
                 cy.get('#check-box-showDeleted').check();
 

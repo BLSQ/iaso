@@ -20,6 +20,7 @@ from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, 
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
 from .query_params import APP_ID
+from hat.menupermissions import models as permission
 
 
 class HasFormPermission(permissions.BasePermission):
@@ -27,7 +28,7 @@ class HasFormPermission(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
+        return request.user.is_authenticated and request.user.has_perm(permission.FORMS)
 
     def has_object_permission(self, request, view, obj):
         if not self.has_permission(request, view):
@@ -183,10 +184,10 @@ class FormSerializer(DynamicFieldsModelSerializer):
 
 
 class FormsViewSet(ModelViewSet):
-    """Forms API
+    f"""Forms API
 
     Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
-    having the "menupermissions.iaso_forms"  permission.
+    having the "{permission.FORMS}"  permission.
 
     GET /api/forms/
     GET /api/forms/<id>
@@ -228,6 +229,10 @@ class FormsViewSet(ModelViewSet):
         planning_ids = self.request.query_params.get("planning", None)
         if planning_ids:
             queryset = queryset.filter(plannings__id__in=planning_ids.split(","))
+
+        projects_ids = self.request.query_params.get("projectsIds")
+        if projects_ids:
+            queryset = queryset.filter(projects__id__in=projects_ids.split(","))
 
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 

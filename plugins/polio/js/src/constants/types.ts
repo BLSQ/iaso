@@ -261,8 +261,8 @@ export type Round = {
     im_percentage_children_missed_in_plus_out_household: Nullable<string>;
     awareness_of_campaign_plannning: Nullable<string>;
     main_awareness_problem: Nullable<string>;
-    lqas_districts_passing: Nullable<number>;
-    lqas_districts_failing: Nullable<number>;
+    lqas_district_passing: Nullable<number>;
+    lqas_district_failing: Nullable<number>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: Nullable<PreparednessSyncStatus>;
     scopes: Scope[];
@@ -422,4 +422,12 @@ export type Shape = {
     short_name: string;
     source_id: number;
     source_name: string;
+    data?: Record<string, any>;
+};
+
+export type MapColor = {
+    color: string;
+    weight: string; // a number as string: "2"
+    opacity: string; // a number as string: "2"
+    zIndex: number;
 };

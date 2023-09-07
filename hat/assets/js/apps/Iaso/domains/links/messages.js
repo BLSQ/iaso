@@ -54,7 +54,7 @@ export const MESSAGES = defineMessages({
         id: 'iaso.forms.validated',
     },
     notValidated: {
-        defaultMessage: 'Not validate',
+        defaultMessage: 'Not validated',
         id: 'iaso.forms.notValidated',
     },
     details: {
@@ -130,11 +130,11 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Status',
     },
     rejected: {
-        id: 'iaso.forms.rejected',
+        id: 'iaso.forms.rejectedCap',
         defaultMessage: 'Rejected',
     },
     new: {
-        id: 'iaso.forms.new',
+        id: 'iaso.forms.newCap',
         defaultMessage: 'New',
     },
 });

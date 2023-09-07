@@ -17,6 +17,7 @@ import { redirectTo } from '../../../../routing/actions';
 import { useCurrentUser } from '../../../../utils/usersUtils';
 import { userHasPermission } from '../../../users/utils';
 import { DuplicateInfosTable } from './DuplicateInfosTable';
+import * as Permission from '../../../../utils/permissions';
 
 type Props = {
     isLoading: boolean;
@@ -103,7 +104,7 @@ export const DuplicateInfos: FunctionComponent<Props> = ({
                     </WidgetPaper>
                 </Grid>
                 {userHasPermission(
-                    'iaso_entity_duplicates_write',
+                    Permission.ENTITIES_DUPLICATE_WRITE,
                     currentUser,
                 ) && (
                     <Grid

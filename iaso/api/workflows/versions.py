@@ -1,14 +1,16 @@
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from drf_yasg.utils import swagger_auto_schema, no_body
+from drf_yasg.utils import no_body, swagger_auto_schema
 from rest_framework import filters, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 import iaso.api.workflows.serializers as ser
 import iaso.api.workflows.utils as utils
-from iaso.api.common import ModelViewSet, HasPermission
+
+from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission, ModelViewSet
 from iaso.models import WorkflowVersion
 
 
@@ -20,7 +22,7 @@ class WorkflowVersionViewSet(ModelViewSet):
     Else returns a paginated list of all the workflow versions.
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_workflows")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.WORKFLOW)]  # type: ignore
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     ordering_fields = ["name", "created_at", "updated_at", "id", "status"]
     serializer_class = ser.WorkflowVersionDetailSerializer

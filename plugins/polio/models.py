@@ -1,3 +1,5 @@
+from datetime import date
+import datetime
 import json
 from typing import Union
 from uuid import uuid4
@@ -14,7 +16,7 @@ from gspread.utils import extract_id_from_url  # type: ignore
 from iaso.models import Group, OrgUnit
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
-from plugins.polio.preparedness.parser import open_sheet_by_url, surge_indicator_for_country
+from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences
@@ -84,6 +86,8 @@ class DelayReasons(models.TextChoices):
     FUNDS_NOT_ARRIVED_IN_COUNTRY = "FUNDS_NOT_ARRIVED_IN_COUNTRY", _("funds_not_arrived_in_country")
     VACCINES_NOT_DELIVERED_OPS_LEVEL = "VACCINES_NOT_DELIVERED_OPS_LEVEL", _("vaccines_not_delivered_ops_level")
     VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
+    SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
+    CAMPAIGN_MOVED_FORWARD_BY_MOH = "CAMPAIGN_MOVED_FORWARD_BY_MOH", _("campaign_moved_forward_by_moh")
 
 
 def make_group_round_scope():
@@ -230,6 +234,34 @@ class Round(models.Model):
 
     def get_item_by_key(self, key):
         return getattr(self, key)
+
+    @staticmethod
+    def is_round_over(round):
+        if not round.ended_at:
+            return False
+        return round.ended_at < date.today()
+
+    def vaccine_names(self):
+        # only take into account scope which have orgunit attached
+        campaign = self.campaign
+        if campaign.separate_scopes_per_round:
+            return ", ".join(
+                scope.vaccine
+                for scope in self.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
+        else:
+            return ",".join(
+                scope.vaccine
+                for scope in campaign.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
+                    orgunits_count__gte=1
+                )
+            )
+
+    @property
+    def districts_count_calculated(self):
+        return self.campaign.get_districts_for_round(self).count()
 
 
 class CampaignQuerySet(models.QuerySet):
@@ -404,9 +436,6 @@ class Campaign(SoftDeletableModel):
     preperadness_spreadsheet_url = models.URLField(null=True, blank=True)
     # DEPRECATED -> Moved to round.
     preperadness_sync_status = models.CharField(max_length=10, default="FINISHED", choices=PREPAREDNESS_SYNC_STATUS)
-    # Surge recruitment. Not really used anymore
-    surge_spreadsheet_url = models.URLField(null=True, blank=True)
-    country_name_in_surge_spreadsheet = models.CharField(null=True, blank=True, max_length=256)
     # Budget
     budget_status = models.CharField(max_length=100, null=True, blank=True)
     # Deprecated
@@ -551,19 +580,32 @@ class Campaign(SoftDeletableModel):
             )
         return self.get_campaign_scope_districts()
 
-    def last_surge(self):
-        spreadsheet_url = self.surge_spreadsheet_url
-        ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
-        if not ssi:
-            return None
-        cs = ssi.cached_spreadsheet
+    # Returning date.min if ended_at has no value so the method can be used with `sorted`
+    def get_last_round_end_date(self):
+        sorted_rounds = sorted(
+            list(self.rounds.all()),
+            key=lambda round: round.ended_at if round.ended_at else date.min,
+            reverse=True,
+        )
+        return sorted_rounds[0].ended_at if sorted_rounds[0].ended_at else date.min
 
-        surge_country_name = self.country_name_in_surge_spreadsheet
-        if not surge_country_name:
-            return None
-        response = surge_indicator_for_country(cs, surge_country_name)
-        response["created_at"] = ssi.created_at
-        return response
+    def is_started(self, reference_date=None):
+        if reference_date is None:
+            reference_date = datetime.datetime.now()
+        started_rounds = self.rounds.filter(started_at__lte=reference_date)
+        return started_rounds.count() > 0
+
+    def find_rounds_with_date(self, date_type="start", round_number=None):
+        rounds = self.rounds.all()
+        if round_number is not None:
+            rounds = rounds.filter(number=round_number)
+        if date_type == "start":
+            return rounds.exclude(started_at=None).order_by("-started_at")
+        if date_type == "end":
+            return rounds.exclude(ended_at=None).order_by("-ended_at")
+
+    def find_last_round_with_date(self, date_type="start", round_number=None):
+        return self.find_rounds_with_date(date_type, round_number).first()
 
     def save(self, *args, **kwargs):
         if self.initial_org_unit is not None:
@@ -577,6 +619,7 @@ class Campaign(SoftDeletableModel):
 
     @property
     def vaccines(self):
+        # only take into account scope which have orgunit attached
         if self.separate_scopes_per_round:
             vaccines = set()
             for round in self.rounds.all():
@@ -679,29 +722,6 @@ class Preparedness(models.Model):
     national_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("National Score"))
     regional_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Regional Score"))
     district_score = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("District Score"))
-
-    payload = models.JSONField()
-
-    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
-
-    def __str__(self) -> str:
-        return f"{self.campaign} - {self.created_at}"
-
-
-# Deprecated
-class Surge(models.Model):
-    id = models.UUIDField(default=uuid4, primary_key=True, editable=False)
-    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
-    spreadsheet_url = models.URLField()
-    surge_country_name = models.CharField(max_length=250, null=True, default=True)
-    who_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment WHO"))
-    who_completed_recruitment = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Completed for WHO")
-    )
-    unicef_recruitment = models.DecimalField(max_digits=10, decimal_places=2, verbose_name=_("Recruitment UNICEF"))
-    unicef_completed_recruitment = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name=_("Completed for UNICEF")
-    )
 
     payload = models.JSONField()
 
@@ -854,3 +874,26 @@ class BudgetFiles(models.Model):
 
     def __str__(self):
         return str(self.event)
+
+
+class VaccineAuthorizationStatus(models.TextChoices):
+    PENDING = "ONGOING", _("Ongoing")
+    VALIDATED = "VALIDATED", _("Validated")
+    IGNORED = "SIGNATURE", _("Sent for signature")
+    EXPIRED = "EXPIRED", _("Expired")
+
+
+class VaccineAuthorization(SoftDeletableModel):
+    country = models.ForeignKey(
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
+    )
+    account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
+    expiration_date = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    quantity = models.IntegerField(blank=True, null=True)
+    status = models.CharField(null=True, blank=True, choices=VaccineAuthorizationStatus.choices, max_length=200)
+    comment = models.TextField(max_length=250, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.country}-{self.expiration_date}"

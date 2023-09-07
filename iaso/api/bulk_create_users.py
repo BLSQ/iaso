@@ -19,7 +19,7 @@ class BulkCreateUserSerializer(serializers.ModelSerializer):
 
 class HasUserPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if not request.user.has_perm("menupermissions.iaso_users"):
+        if not request.user.has_perm(permission.USERS_ADMIN):
             return False
         return True
 
@@ -27,15 +27,15 @@ class HasUserPermission(permissions.BasePermission):
 class BulkCreateUserFromCsvViewSet(ModelViewSet):
     """Api endpoint to bulkcreate users and profiles from a CSV File.
 
-    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions", "user_role"]
+    Mandatory columns are : ["username", "password", "email", "first_name", "last_name", "orgunit", "profile_language", "dhis2_id", "projects", "permissions", "user_roles", "projects"]
 
-    Email, dhis2_id, permissions, user_role, profile_language and org_unit are not mandatory, but you must keep the columns.
+    Email, dhis2_id, permissions, profile_language and org_unit are not mandatory, but you must keep the columns.
 
     Sample csv input:
 
-    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id,a_user_role
+    username,password,email,first_name,last_name,orgunit,profile_language,permissions,dhis2_id,user_role,projects
 
-    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3
+    john,j0hnDoei5f@mous#,johndoe@bluesquarehub.com,John,D.,KINSHASA,fr,"iaso_submissions, iaso_forms",Enc73jC3, manager, "oms, RDC"
 
     You can add multiples permissions for the same user : "iaso_submissions, iaso_forms"
     You can add multiples org_units for the same user by ID or Name : "28334, Bas Uele, 9999"

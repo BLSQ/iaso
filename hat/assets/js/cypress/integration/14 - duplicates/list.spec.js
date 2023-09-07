@@ -21,7 +21,7 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/entitytypes', entityTypes);
+    cy.intercept('GET', '/api/entitytypes/?order=name', entityTypes);
     cy.intercept('GET', '/api/profiles', profilesList);
 
     cy.intercept(
@@ -74,7 +74,7 @@ describe('Duplicate entities list', () => {
             });
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 

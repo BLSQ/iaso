@@ -26,16 +26,29 @@ const goToPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
+    cy.intercept('GET', '/api/userroles/**', {
+        fixture: 'userRoles/list.json',
+    });
     cy.intercept('GET', '/api/projects/**', {
         fixture: 'projects/list.json',
     });
+    cy.intercept('GET', '/api/permissions', {
+        fixture: 'permissions/list.json',
+    });
+    cy.intercept('GET', '/api/v2/orgunittypes/**', {
+        fixture: 'orgunittypes/list.json',
+    });
+    cy.intercept('GET', '/api/microplanning/teams/*', {
+        fixture: 'teams/list.json',
+    });
     const options = {
         method: 'GET',
-        pathname: '/api/profiles',
+        pathname: '/api/profiles/',
     };
     const query = {
         ...defaultQuery,
         ...formQuery,
+        managedUsersOnly: 'true',
     };
     cy.intercept({ ...options, query }, req => {
         req.continue(res => {
@@ -79,7 +92,7 @@ describe('Users', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
     });
 
@@ -146,11 +159,6 @@ describe('Users', () => {
     });
 
     describe('User dialog', () => {
-        beforeEach(() => {
-            cy.intercept('GET', '/api/permissions', {
-                fixture: 'permissions/list.json',
-            });
-        });
         it('should display empty user infos', () => {
             goToPage();
             cy.wait('@getUsers').then(() => {
@@ -265,29 +273,41 @@ describe('Users', () => {
         });
         it('should be called with search params', () => {
             goToPage(superUser, {}, emptyFixture);
-            interceptFlag = false;
-            cy.intercept(
-                {
-                    method: 'GET',
-                    pathname: '/api/profiles',
-                    query: {
-                        limit: '20',
-                        order: 'user__username',
-                        page: '1',
-                        search,
-                    },
-                },
-                req => {
+            cy.wait('@getUsers').then(() => {
+                interceptFlag = false;
+
+                cy.intercept('GET', '/api/profiles/**/*', req => {
                     req.continue(res => {
                         interceptFlag = true;
                         res.send({ fixture: emptyFixture });
                     });
-                },
-            ).as('getUsersSearch');
-            cy.get('#search-search').type(search);
-            cy.get('[data-test="search-button"]').click();
-            cy.wait('@getUsersSearch').then(() => {
-                cy.wrap(interceptFlag).should('eq', true);
+                }).as('getUsersSearch');
+
+                cy.get('#search-search').type(search);
+                cy.fillMultiSelect('#permissions', [0, 1], false);
+                cy.fillSingleSelect('#orgUnitTypes', 1);
+                cy.fillMultiSelect('#projectsIds', [0, 1], false);
+                cy.fillMultiSelect('#userRoles', [0, 1], false);
+                cy.fillTreeView('#ou-tree-input', 2, false);
+                cy.fillMultiSelect('#teamsIds', [0, 1], false);
+
+                cy.get('[data-test="search-button"]').click();
+                cy.wait('@getUsersSearch').then(xhr => {
+                    cy.wrap(interceptFlag).should('eq', true);
+                    cy.wrap(xhr.request.query).should('deep.equal', {
+                        limit: '20',
+                        location: '1233989',
+                        managedUsersOnly: 'true',
+                        order: 'user__username',
+                        orgUnitTypes: '11',
+                        page: '1',
+                        permissions: 'iaso_completeness,iaso_mappings',
+                        projects: '1,2',
+                        search: 'ZELDA',
+                        teams: '25,26',
+                        userRoles: '5,8',
+                    });
+                });
             });
         });
     });

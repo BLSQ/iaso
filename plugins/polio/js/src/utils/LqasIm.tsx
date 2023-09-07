@@ -36,8 +36,12 @@ export const accessDictRound = (
 };
 export const accessArrayRound = (
     data: ConvertedLqasImData,
-    round: number,
+    round: number | 'latest',
 ): LqasImDistrictDataWithNameAndRegion[] => {
+    if (round === 'latest') {
+        if (data.rounds.length === 0) return [];
+        return data.rounds[data.rounds.length - 1].data;
+    }
     return data.rounds.find(rnd => rnd.number === round)?.data ?? [];
 };
 
@@ -56,10 +60,6 @@ export const accessNfmAbsStats = (
 };
 
 export const convertStatToPercent = (data = 0, total = 1): string => {
-    if (data > total)
-        throw new Error(
-            `data can't be greater than total. data: ${data}, total: ${total}`,
-        );
     // using safeTotal, because 0 can still be passed as arg and override default value
     const safeTotal = total || 1;
     const ratio = (100 * data) / safeTotal;
@@ -351,8 +351,8 @@ export const makeDropdownOptions = (
     data: Record<string, LqasImCampaign>,
     campaign: string,
 ): DropdownOptions<number>[] => {
-    if (!campaign || !data[campaign]) return [];
-    return data[campaign].rounds
+    if (!campaign || !data?.[campaign]) return [];
+    return data?.[campaign]?.rounds
         .sort((a, b) => a.number - b.number)
         .map(round => {
             return {

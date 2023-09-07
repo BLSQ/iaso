@@ -40,7 +40,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
     const handleSearch = useCallback(() => {
         if (filtersUpdated) {
             setFiltersUpdated(false);
-            const tempParams = {
+            const tempParams: Params = {
                 ...params,
                 ...filters,
             };

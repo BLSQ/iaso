@@ -98,7 +98,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.instanceStatus.exportedSingle',
     },
     actions: {
-        defaultMessage: 'Actions',
+        defaultMessage: 'Action(s)',
         id: 'iaso.label.actions',
     },
     generateDerivedInstances: {

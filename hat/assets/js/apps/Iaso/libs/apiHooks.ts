@@ -15,6 +15,7 @@ import {
 } from 'react-query';
 import { defineMessages } from 'react-intl';
 import { IntlMessage } from 'bluesquare-components';
+import { isArray } from 'lodash';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 
@@ -140,7 +141,13 @@ const useBaseSnackMutation = <
                 );
             }
             if (invalidateQueryKey) {
-                queryClient.invalidateQueries(invalidateQueryKey);
+                if (isArray(invalidateQueryKey)) {
+                    invalidateQueryKey.forEach(queryKey =>
+                        queryClient.invalidateQueries(queryKey),
+                    );
+                } else {
+                    queryClient.invalidateQueries(invalidateQueryKey);
+                }
             }
             if (options.onSuccess) {
                 return options.onSuccess(data, variables, context);
@@ -351,9 +358,9 @@ export const useSnackQueries = <QueryFnData>(
     queries: {
         queryKey: QueryKey;
         queryFn: QueryFunction<QueryFnData>;
-        snackErrorMsg: IntlMessage;
+        snackErrorMsg?: IntlMessage;
         options: UseQueryOptions;
-        dispatchOnError: boolean;
+        dispatchOnError?: boolean;
     }[],
 ): Array<UseQueryResult<unknown, unknown>> => {
     const dispatch = useDispatch();

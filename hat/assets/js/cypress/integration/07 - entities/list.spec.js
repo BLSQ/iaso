@@ -25,7 +25,7 @@ const mockPage = (
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    cy.intercept('GET', '/api/entitytypes', {
+    cy.intercept('GET', '/api/entitytypes/?order=name', {
         fixture: 'entityTypes/list.json',
     }).as('getEntitiesTypes');
     cy.intercept('GET', '/api/microplanning/teams/*', {
@@ -65,7 +65,6 @@ describe('Entities', () => {
                 query: {
                     ...defaultQuery,
                     search,
-                    entityTypeIds: '1,2',
                     dateFrom: '10-03-2022',
                     dateTo: '20-03-2022',
                     created_by_team_id: '25',
@@ -97,7 +96,6 @@ describe('Entities', () => {
             fixture: 'orgunits/details.json',
         });
         cy.get('#search-search').type(search);
-        cy.fillMultiSelect('#entityTypeIds', [0, 1], false);
         cy.get('[data-test="start-date"] input').type('10032022');
         cy.get('[data-test="end-date"] input').type('20032022');
         cy.fillSingleSelect('#submitterTeamId', 0);
@@ -109,7 +107,7 @@ describe('Entities', () => {
             cy.get('[data-test="search-button"]').click();
             cy.url().should(
                 'contain',
-                `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/entityTypeIds/1,2`,
+                `/search/${search}/location/3/dateFrom/10-03-2022/dateTo/20-03-2022/submitterId/5/submitterTeamId/25/`,
             );
 
             cy.wait('@getEntities').then(() => {
@@ -153,7 +151,7 @@ describe('Entities', () => {
             });
             cy.visit(baseUrl);
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
         it.skip('click on a row button should open entity detail page', () => {
             mockPage();
@@ -214,17 +212,14 @@ describe('Entities', () => {
         });
 
         it('action should deep link search', () => {
-            cy.wait('@getEntities').then(() => {
-                cy.wait('@getEntitiesTypes').then(() => {
-                    cy.get('#search-search').type(search);
-                    cy.fillSingleSelect('#entityTypeIds', 0);
+            cy.wait(['@getEntities', '@getEntitiesTypes']).then(() => {
+                cy.get('#search-search').type(search);
 
-                    cy.get('[data-test="search-button"]').click();
-                    cy.url().should(
-                        'contain',
-                        `${baseUrl}/accountId/1/search/${search}/entityTypeIds/1`,
-                    );
-                });
+                cy.get('[data-test="search-button"]').click();
+                cy.url().should(
+                    'contain',
+                    `${baseUrl}/accountId/1/search/${search}/`,
+                );
             });
         });
     });

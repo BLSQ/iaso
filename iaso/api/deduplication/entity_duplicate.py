@@ -1,7 +1,6 @@
 import math
 import xml.etree.ElementTree as ET
 from copy import deepcopy
-from pprint import pprint
 from typing import Dict, Optional
 from uuid import UUID, uuid4
 
@@ -12,7 +11,7 @@ from django.utils.text import slugify
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import filters, permissions, serializers, status, viewsets
+from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -23,19 +22,7 @@ from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
-
-
-def var_dump(what):
-    if type(what) is dict:
-        pprint(what)
-    elif type(what) is list:
-        for t in what:
-            pprint(t)
-    else:
-        try:
-            pprint(what.__dict__)
-        except:
-            pprint(what)
+from hat.menupermissions import models as permission
 
 
 class EntityDuplicateNestedFormSerializer(serializers.ModelSerializer):
@@ -402,14 +389,15 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         dedup_filters.FormFilterBackend,
         dedup_filters.OrgUnitFilterBackend,
         dedup_filters.StartEndDateFilterBackend,
-        filters.OrderingFilter,
+        dedup_filters.CustomOrderingFilter,
         DjangoFilterBackend,
+        # filters.OrderingFilter,
     ]
 
-    ordering_fields = ["created_at", "similarity_score", "id"]
+    ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
     remove_results_key_if_paginated = False
     results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
     serializer_class = EntityDuplicateSerializer
     results_key = "results"
     model = EntityDuplicate
@@ -541,6 +529,18 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         version1 = duplicate.entity1.attributes.get_form_version()
         version2 = duplicate.entity2.attributes.get_form_version()
 
+        if version1 is None:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": f"No form version for attibutes of entity {duplicate.entity1.pk}"},
+            )
+
+        if version2 is None:
+            return Response(
+                status=status.HTTP_404_NOT_FOUND,
+                data={"error": f"No form version for attibutes of entity {duplicate.entity2.pk}"},
+            )
+
         return_data = {
             "fields": fields_data,
             "descriptor1": version1.get_or_save_form_descriptor(),
@@ -569,7 +569,6 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         in the body
         Provides an API to merge duplicate entities or to ignore the match
         """
-        var_dump(request.data)
 
         serializer = EntityDuplicatePostSerializer(data=request.data, context={"request": request})
 

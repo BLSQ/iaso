@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { FormControlLabel, Switch } from '@material-ui/core';
+import { Box, FormControlLabel, Switch, makeStyles } from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
@@ -7,6 +7,19 @@ import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
 import { Permission } from '../types/userRoles';
+import PERMISSIONS_MESSAGES from '../../users/permissionsMessages';
+
+const styles = theme => ({
+    container: {
+        marginTop: theme.spacing(2),
+        padding: theme.spacing(1),
+        maxHeight: '60vh',
+        overflow: 'scroll',
+        border: `1px solid ${theme.palette.border.main}`,
+    },
+});
+
+const useStyles = makeStyles(styles);
 
 type Props = {
     userRolePermissions: Permission[];
@@ -19,6 +32,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     handleChange,
 }) => {
     const { formatMessage } = useSafeIntl();
+    const classes = useStyles();
     const { data, isLoading } = useSnackQuery<{ permissions: Permission[] }>(
         ['permissions'],
         () => getRequest('/api/permissions/'),
@@ -42,8 +56,8 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 
     const getPermissionLabel = permissionCodeName => {
-        return MESSAGES[permissionCodeName]
-            ? formatMessage(MESSAGES[permissionCodeName])
+        return PERMISSIONS_MESSAGES[permissionCodeName]
+            ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
             : permissionCodeName;
     };
     const permissions = useMemo(
@@ -52,7 +66,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     );
 
     return (
-        <>
+        <Box className={classes.container}>
             {isLoading && <LoadingSpinner />}
 
             {permissions
@@ -88,6 +102,6 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                         />
                     </div>
                 ))}
-        </>
+        </Box>
     );
 };

@@ -1,0 +1,35 @@
+{% if page.powerbi_dataset_id %}
+    <script>
+      function refreshDataSet () {
+        var data = { 'data_set_id': "{{page.powerbi_dataset_id}}", 'group_id': "{{ page.powerbi_group_id }}" }
+        fetch('/api/polio/powerbirefresh/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        })
+        var label = document.getElementById('refreshingLabel')
+        label.style.display = 'block'
+        var button = document.getElementById('refreshButton')
+        button.style.display = 'none'
+      }
+
+      fetch('/api/profiles/me/', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(response => response.json())
+        .then(responseData => {
+          if (!(responseData.user_permissions.includes('iaso_polio_config') || responseData.is_superuser) ) {
+            var button = document.getElementById('refreshButton')
+            button.style.display = 'none'
+
+          }
+        })
+    </script>
+    <input id="refreshButton" type="submit" value="Launch refresh" onclick="refreshDataSet()"/>
+    <p id="refreshingLabel" style="display:none;">Refreshing on PowerBI servers. Wait a few minutes and reload this
+        page.</p>
+{% endif %}

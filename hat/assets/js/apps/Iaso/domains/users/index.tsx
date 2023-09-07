@@ -22,21 +22,24 @@ import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
-import { useGetProfiles } from './hooks/useGetProfiles';
+import { useGetProfilesApiParams, useGetProfiles } from './hooks/useGetProfiles';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
 
 import { usersTableColumns } from './config';
 import MESSAGES from './messages';
 
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
+import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
 import { redirectTo } from '../../routing/actions';
 import { useCurrentUser } from '../../utils/usersUtils';
-import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
 
 import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
 import { UsersMultiActionsDialog } from './components/UsersMultiActionsDialog';
 import { useBulkSaveProfiles } from './hooks/useBulkSaveProfiles';
+import { userHasPermission } from './utils';
+import * as Permission from '../../utils/permissions';
 
 const baseUrl = baseUrls.users;
 
@@ -101,6 +104,8 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
     const isLoading =
         fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
+    const apiParams = useGetProfilesApiParams(params);
+
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -120,26 +125,33 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
             <Box className={classes.containerFullHeightNoTabPadded}>
                 {multiActionPopupOpen && 'SHOW MODALE'}
                 <Filters baseUrl={baseUrl} params={params} />
-                <Grid
-                    container
-                    spacing={0}
-                    justifyContent="flex-end"
-                    alignItems="center"
-                    className={classes.marginTop}
-                >
-                    <AddUsersDialog
-                        titleMessage={MESSAGES.create}
-                        saveProfile={saveProfile}
-                        allowSendEmailInvitation
-                        iconProps={{
-                            dataTestId: 'add-user-button',
-                        }}
-                    />
-                    <Box ml={2}>
-                        {/* @ts-ignore */}
-                        <BulkImportUsersDialog />
-                    </Box>
-                </Grid>
+                {userHasPermission(Permission.USERS_ADMIN, currentUser) && (
+                    <Grid
+                        container
+                        spacing={0}
+                        justifyContent='flex-end'
+                        alignItems='center'
+                        className={classes.marginTop}
+                    >
+                        <AddUsersDialog
+                            titleMessage={MESSAGES.create}
+                            saveProfile={saveProfile}
+                            allowSendEmailInvitation
+                            iconProps={{
+                                dataTestId: 'add-user-button',
+                            }}
+                        />
+                        <Box ml={2}>
+                            {/* @ts-ignore */}
+                            <BulkImportUsersDialog />
+                        </Box>
+                        <DownloadButtonsComponent
+                            csvUrl={`${apiParams.url}&csv=true`}
+                            xlsxUrl={`${apiParams.url}&xlsx=true`}
+                            disabled={isLoading}
+                        />
+                    </Grid>
+                )}
                 <Table
                     data={data?.profiles ?? []}
                     pages={data?.pages ?? 1}

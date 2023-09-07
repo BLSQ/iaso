@@ -14,14 +14,17 @@ const queryParamsMap = new Map([
 ]);
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
-
-export const buildQueryString = (
-    params: CompletenessRouterParams,
-): URLSearchParams => {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { pageSize, orgUnitTypeIds, formId, ...urlParams } = params;
-    const apiParams = { ...urlParams, limit: pageSize ?? 10 };
-    const queryParams = {};
+const getParams = (params: CompletenessRouterParams, forExport?: boolean) => {
+    const { pageSize, ...urlParams } = params;
+    const apiParams: Record<string, any> = {
+        ...urlParams,
+        limit: pageSize ?? 10,
+    };
+    if (forExport) {
+        apiParams.limit = undefined;
+        apiParams.page = undefined;
+    }
+    const queryParams: Record<string, string> = {};
     apiParamsKeys.forEach(apiParamKey => {
         const apiParam = apiParams[apiParamKey];
         if (apiParam !== undefined) {
@@ -34,7 +37,15 @@ export const buildQueryString = (
             queryParams[value] = params[key];
         }
     });
-    const queryString = new URLSearchParams(queryParams);
+    delete queryParams.tab;
+    return queryParams;
+};
+
+export const buildQueryString = (
+    params: CompletenessRouterParams,
+    forExport?: boolean,
+): URLSearchParams => {
+    const queryString = new URLSearchParams(getParams(params, forExport));
     return queryString;
 };
 
@@ -49,7 +60,7 @@ export const useGetCompletenessStats = (
     params: CompletenessRouterParams,
 ): UseBaseQueryResult<CompletenessApiResponse, unknown> => {
     return useSnackQuery({
-        queryKey: ['completenessStats', params],
+        queryKey: ['completenessStats', getParams(params)],
         queryFn: () => getCompletenessStats(params),
         options: {
             retry: 0,

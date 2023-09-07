@@ -14,7 +14,9 @@ export type ReasonForDelay =
     | 'FUNDS_NOT_RECEIVED_OPS_LEVEL'
     | 'FUNDS_NOT_ARRIVED_IN_COUNTRY'
     | 'VACCINES_NOT_DELIVERED_OPS_LEVEL'
-    | 'VACCINES_NOT_ARRIVED_IN_COUNTRY';
+    | 'VACCINES_NOT_ARRIVED_IN_COUNTRY'
+    | 'SECURITY_CONTEXT'
+    | 'CAMPAIGN_MOVED_FORWARD_BY_MOH';
 
 export const reasonsForDateChange: ReasonForDelay[] = [
     // 'INITIAL_DATA', // users should not have access to that option in the dropdown
@@ -28,6 +30,8 @@ export const reasonsForDateChange: ReasonForDelay[] = [
     'FUNDS_NOT_ARRIVED_IN_COUNTRY',
     'VACCINES_NOT_DELIVERED_OPS_LEVEL',
     'VACCINES_NOT_ARRIVED_IN_COUNTRY',
+    'SECURITY_CONTEXT',
+    'CAMPAIGN_MOVED_FORWARD_BY_MOH',
 ];
 
 export const useReasonsForDateChangeOptions =

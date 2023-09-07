@@ -5,12 +5,22 @@ Development environment - Cypress e2e tests
 
 Cypress is now used to test the user interface.
 
+Prerequisites
+-------------
+
+Before you can run Cypress, you must have a version of Node.js and npm that matches the current Dockerfile:
+
+- Install [nvm](https://github.com/nvm-sh/nvm) locally
+- `nvm install 14.17`
+- `nvm use 14`
+- `npm install -g npm@8.5`
+
 Setup
 -----
 
 - Run `npm ci` to install it locally
 
-- To run the backend on a fresh database instance with a test user you can launch a django testserver.  alternatively see below to run on your current database.
+- To run the backend on a fresh database instance with a test user you can launch a django testserver. Alternatively see below to run on your current database.
   - in docker:
 ```
 docker-compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000 --noinput iaso/fixtures/user.yaml
@@ -25,7 +35,7 @@ docker-compose run   -p 8000:8000 iaso manage testserver --addrport 0.0.0.0:8000
 CYPRESS_USERNAME=test CYPRESS_PASSWORD=test CYPRESS_BASE_URL="http://localhost:8000" npm run cypress:open
 ```
 
-you can also set the variable in the .env file, to not have to repeat them see below.
+You can also set the variable in the .env file, to not have to repeat them see below.
 
 The database is deleted and recreated each time `testserver` is rerun.
 This method is used in the CI, so use it when you need to reproduce an error in the CI.

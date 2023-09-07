@@ -1,17 +1,24 @@
 from typing import Dict, Any
 
+from django.contrib.gis.db.models import GeometryField
+from django.contrib.gis.db.models.aggregates import Extent
+from django.contrib.gis.db.models.functions import GeomOutputGeoFunc
 from django.contrib.gis.geos import Point
 from django.core.cache import cache
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Cast
 from rest_framework import permissions
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
 from rest_framework.serializers import ModelSerializer, JSONField
+from rest_framework.decorators import action
+from typing import Optional
 
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.models import OrgUnit, Project, FeatureFlag
+from hat.menupermissions import models as permission
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -89,9 +96,9 @@ class HasOrgUnitPermission(permissions.BasePermission):
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm("menupermissions.iaso_forms")
-                or request.user.has_perm("menupermissions.iaso_org_units")
-                or request.user.has_perm("menupermissions.iaso_submissions")
+                request.user.has_perm(permission.FORMS)
+                or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.SUBMISSIONS)
             )
         ):
             return False
@@ -102,6 +109,24 @@ class HasOrgUnitPermission(permissions.BasePermission):
         account_ids = [p.account_id for p in projects]
 
         return user_account.id in account_ids
+
+
+BUFFER_FOR_POINT = 0.008 * 3  # 0.008 degrees is around 3km at the equator
+
+
+# Define a GIS function, GeoDjango will map it to ST_BUFFER in postgis (using the class name)
+class Buffer(GeomOutputGeoFunc):
+    """Computes a POLYGON or MULTIPOLYGON that represents all points whose distance from a geometry/geography is less
+    than or equal to a given distance.
+
+    https://postgis.net/docs/ST_Buffer.html
+
+    arguments are:
+        - geography g1 or geometry g1
+        - float radius_of_buffer
+    """
+
+    arity = 2
 
 
 class MobileOrgUnitViewSet(ModelViewSet):
@@ -178,7 +203,7 @@ class MobileOrgUnitViewSet(ModelViewSet):
 
         include_geo_json = self.check_include_geo_json()
 
-        cache_key = f"{app_id}-{page_size}-{page_number}-{'geo_json' if include_geo_json else '' }--{roots_key}"
+        cache_key = f"{app_id}-{page_size}-{page_number}-{'geo_json' if include_geo_json else ''}--{roots_key}"
         cached_response = cache.get(cache_key)
         if cached_response is None:
             super_response = super().list(request, *args, **kwargs)
@@ -194,6 +219,45 @@ class MobileOrgUnitViewSet(ModelViewSet):
     def create(self, _, request):
         new_org_units = import_data(request.data, request.user, request.query_params.get(APP_ID))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
+
+    @action(detail=False, methods=["GET"])
+    def boundingbox(self, request):
+        qs = self.get_queryset()
+
+        aggregate = qs.aggregate(
+            bbox_location=Extent(Buffer(Cast("location", GeometryField(dim=3)), BUFFER_FOR_POINT)),
+            bbox_geom=Extent(Cast("simplified_geom", GeometryField())),
+        )
+        bbox_location = aggregate["bbox_location"]
+        bbox_geom = aggregate["bbox_geom"]
+        bbox = bbox_merge(bbox_location, bbox_geom)
+        results = []
+        if bbox:
+            results.append(
+                {
+                    "northern": bbox[0],
+                    "east": bbox[1],
+                    "south": bbox[2],
+                    "west": bbox[3],
+                }
+            )
+        # merge the bbox
+        return Response(data={"results": results})
+
+
+def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:
+    if not a and not b:
+        return None
+    if not a:
+        return b
+    if not b:
+        return a
+    return (
+        max(a[0], b[0]),
+        min(a[1], b[1]),
+        min(a[2], b[2]),
+        max(a[3], b[3]),
+    )
 
 
 def import_data(org_units, user, app_id):

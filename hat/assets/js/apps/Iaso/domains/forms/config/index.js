@@ -13,6 +13,7 @@ import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { YesNoCell } from '../../../components/Cells/YesNoCell';
 import { CreateSubmissionModal } from '../components/CreateSubmissionModal/CreateSubmissionModal.tsx';
 import { createInstance } from '../../instances/actions';
+import * as Permission from '../../../utils/permissions.ts';
 
 export const baseUrl = baseUrls.forms;
 
@@ -89,10 +90,10 @@ const formsTableColumns = ({
     const getActionsColWidth = () => {
         const baseWidth = 50;
         let width = baseWidth * 2;
-        if (userHasPermission('iaso_submissions', user)) {
+        if (userHasPermission(Permission.SUBMISSIONS, user)) {
             width += baseWidth;
         }
-        if (userHasPermission('iaso_forms', user)) {
+        if (userHasPermission(Permission.FORMS, user)) {
             width += baseWidth * 3;
         }
         return width;
@@ -210,7 +211,7 @@ const formsTableColumns = ({
                         {!showDeleted && (
                             <>
                                 {userHasPermission(
-                                    'iaso_submissions',
+                                    Permission.SUBMISSIONS,
                                     user,
                                 ) && (
                                     <IconButtonComponent
@@ -220,7 +221,7 @@ const formsTableColumns = ({
                                     />
                                 )}
                                 {userHasPermission(
-                                    'iaso_submissions',
+                                    Permission.SUBMISSIONS,
                                     user,
                                 ) && (
                                     <CreateSubmissionModal
@@ -252,21 +253,21 @@ const formsTableColumns = ({
                                         }
                                     />
                                 )}
-                                {userHasPermission('iaso_forms', user) && (
+                                {userHasPermission(Permission.FORMS, user) && (
                                     <IconButtonComponent
                                         url={`${baseUrls.formDetail}/formId/${settings.row.original.id}`}
                                         icon="edit"
                                         tooltipMessage={MESSAGES.edit}
                                     />
                                 )}
-                                {userHasPermission('iaso_forms', user) && (
+                                {userHasPermission(Permission.FORMS, user) && (
                                     <IconButtonComponent
                                         url={`/forms/mappings/formId/${settings.row.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
                                         icon="dhis"
                                         tooltipMessage={MESSAGES.dhis2Mappings}
                                     />
                                 )}
-                                {userHasPermission('iaso_forms', user) && (
+                                {userHasPermission(Permission.FORMS, user) && (
                                     <DeleteDialog
                                         titleMessage={MESSAGES.deleteFormTitle}
                                         onConfirm={closeDialog =>

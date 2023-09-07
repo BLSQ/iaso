@@ -87,6 +87,9 @@ class OrgUnitTypeQuerySet(models.QuerySet):
         return queryset
 
 
+OrgUnitTypeManager = models.Manager.from_queryset(OrgUnitTypeQuerySet)
+
+
 class OrgUnitType(models.Model):
     """A type of org unit, such as a country, a province, a district, a health facility, etc.
 
@@ -111,7 +114,7 @@ class OrgUnitType(models.Model):
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
-    objects = OrgUnitTypeQuerySet.as_manager()
+    objects = OrgUnitTypeManager()
 
     def __str__(self):
         return "%s" % self.name
@@ -213,8 +216,8 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
             )
             queryset = queryset.filter(version_id__in=version_ids)
 
-            # If applicable, filter on the org units associated to the user
-            if user.iaso_profile.org_units.exists():
+            # If applicable, filter on the org units associated to the user but only when the user is not a super user
+            if user.iaso_profile.org_units.exists() and not user.is_superuser:
                 queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
         if app_id is not None:
@@ -477,6 +480,13 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type": self.org_unit_type.name,
+        }
+
+    def as_dict_for_completeness_stats_with_parent(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "parent": self.parent.as_dict_for_completeness_stats() if self.parent else None,
         }
 
     def as_dict_for_completeness_stats(self):

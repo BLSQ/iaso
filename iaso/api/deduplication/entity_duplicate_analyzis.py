@@ -10,6 +10,7 @@ from iaso.models import Entity, EntityDuplicateAnalyzis, EntityType, Form
 from iaso.tasks.run_deduplication_algo import run_deduplication_algo
 
 from .algos import POSSIBLE_ALGORITHMS  # type: ignore
+from hat.menupermissions import models as permission
 
 
 def field_exists(f: Form, field_name: str) -> bool:
@@ -108,7 +109,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
     ]
     ordering_fields = ["created_at", "finished_at", "id"]
     results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
     serializer_class = EntityDuplicateAnalyzisSerializer
     pagination_class = Paginator
 
@@ -191,7 +192,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
         Needs iaso_entity_duplicates_write permission
         """
 
-        if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):
+        if not request.user.has_perm(permission.ENTITIES_DUPLICATE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -223,7 +224,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
         Provides an API to delete the possible duplicates of an analyze
         Needs iaso_entity_duplicates_write permission
         """
-        if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):
+        if not request.user.has_perm(permission.ENTITIES_DUPLICATE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -253,7 +254,7 @@ class EntityDuplicateAnalyzisViewSet(viewsets.GenericViewSet):
         Needs iaso_entity_duplicates_write permission
         """
 
-        if not request.user.has_perm("menupermissions.iaso_entity_duplicates_write"):
+        if not request.user.has_perm(permission.ENTITIES_DUPLICATE_WRITE):
             return Response(status=status.HTTP_403_FORBIDDEN)
 
         serializer = AnalyzePostBodySerializer(data=request.data)

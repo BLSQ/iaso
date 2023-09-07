@@ -21,6 +21,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_first_name = serializers.CharField(max_length=30, required=False)
     user_last_name = serializers.CharField(max_length=150, required=False)
     password = serializers.CharField(required=True)
+    user_manual_path = serializers.CharField(required=False)
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -45,13 +46,18 @@ class SetupAccountSerializer(serializers.Serializer):
             first_name=validated_data.get("user_first_name", ""),
             last_name=validated_data.get("user_last_name", ""),
         )
-        account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
+        account = Account.objects.create(
+            name=validated_data["account_name"],
+            default_version=source_version,
+            user_manual_path=validated_data.get("user_manual_path"),
+        )
 
-        profile = Profile.objects.create(account=account, user=user)
+        Profile.objects.create(account=account, user=user)
 
-        permissions_to_add = CustomPermissionSupport.DEFAULT_PERMISSIONS_FOR_NEW_ACCOUNT_USER
+        permissions_to_add = CustomPermissionSupport.get_full_permission_list()
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
+
         return validated_data
 
 

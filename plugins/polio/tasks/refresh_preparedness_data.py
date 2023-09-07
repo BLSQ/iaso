@@ -14,11 +14,17 @@ logger = logging.getLogger(__name__)
 @task_decorator(task_name="refresh_data")
 def refresh_data(
     campaigns=None,
+    date_filter=None,
     task=None,
 ):
     started_at = datetime.now()
+    if date_filter is None:
+        date_filter = now() - timedelta(days=180)
+    elif type(date_filter) == str:
+        date_filter = datetime.fromisoformat(date_filter)
+
     round_qs = Round.objects.filter(preparedness_spreadsheet_url__isnull=False).prefetch_related("campaign")
-    round_qs = round_qs.filter(started_at__gte=now() - timedelta(days=180))
+    round_qs = round_qs.filter(started_at__gte=date_filter)
     round_qs = round_qs.exclude(campaign__isnull=True)
     round_qs = round_qs.filter(campaign__deleted_at__isnull=True)
     round_qs = round_qs.order_by("-started_at")
@@ -57,21 +63,6 @@ def refresh_data(
     # only take round that are going to start, not old one
     upcoming_rounds = round_qs.filter(started_at__gte=now() - timedelta(days=1)).filter(campaign__isnull=False)
     warning_email.send_warning_email(upcoming_rounds)
-
-    # remove to old campaign
-    campaigns_with_surge = (
-        Campaign.objects.exclude(surge_spreadsheet_url__isnull=True)
-        .filter(rounds__started_at__gte=now() - timedelta(100))
-        .distinct()
-    )
-    surge_urls = [c.surge_spreadsheet_url for c in campaigns_with_surge]
-    surge_urls = set(surge_urls)
-    for url in surge_urls:
-        try:
-            logger.info(f"Importing surge file {url}")
-            SpreadSheetImport.create_for_url(url)
-        except Exception as e:
-            logger.exception(e)
 
     finished_at = datetime.now()
     the_duration = (finished_at - started_at).total_seconds()

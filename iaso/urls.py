@@ -54,6 +54,7 @@ from .api.links import LinkViewSet
 from .api.logs import LogsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from .api.mappings import MappingsViewSet
+from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
@@ -79,6 +80,7 @@ from .api.workflows.changes import WorkflowChangeViewSet
 from .api.workflows.followups import WorkflowFollowupViewSet
 from .api.workflows.mobile import MobileWorkflowViewSet
 from .api.workflows.versions import WorkflowVersionViewSet
+from .api.workflows.import_export import export_workflow, import_workflow
 from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from .api.user_roles import UserRolesViewSet
@@ -148,6 +150,7 @@ router.register(r"mobile/storages?/blacklisted", StorageBlacklistedViewSet, base
 router.register(r"mobile/storages?/passwords", MobileStoragePasswordViewSet, basename="storagepasswords")
 
 router.register(r"workflowversions", WorkflowVersionViewSet, basename="workflowversions")
+
 router.register(r"workflowfollowups", WorkflowFollowupViewSet, basename="workflowfollowups")
 router.register(r"workflowchanges", WorkflowChangeViewSet, basename="workflowchanges")
 router.register(r"mobile/workflows", MobileWorkflowViewSet, basename="mobileworkflows")
@@ -157,6 +160,8 @@ router.register(r"userroles", UserRolesViewSet, basename="userroles")
 
 router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
+
+router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
 
 router.registry.extend(plugins_router.registry)
 
@@ -197,6 +202,8 @@ urlpatterns = urlpatterns + [
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("storages/<str:storage_type>/<str:storage_customer_chosen_id>/logs", logs_per_device),
+    path("workflows/export/<workflow_id>/", export_workflow, name="export_workflow"),
+    path("workflows/import/", import_workflow, name="import_workflow"),
     path("", include(router.urls)),
 ]
 # External Auth
@@ -204,7 +211,6 @@ urlpatterns = urlpatterns + [
     path("dhis2/<dhis2_slug>/login/", dhis2_callback, name="dhis2_callback"),
     path("token_auth/", token_auth),
 ]
-
 
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)

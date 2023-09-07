@@ -10,9 +10,12 @@ class DataSourcesAPITestCase(APITestCase):
         # read perms
         cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_mappings"])
         # write perms
-        cls.joe = cls.create_user_with_profile(username="joe", account=ghi, permissions=["iaso_sources"])
+        cls.joe = cls.create_user_with_profile(username="joe", account=ghi, permissions=["iaso_write_sources"])
         # no perms
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=ghi)
+
+        # with read but no write perms
+        cls.john = cls.create_user_with_profile(username="johnny", account=ghi, permissions=["iaso_sources"])
 
         cls.ghi_project = m.Project.objects.create(name="ghi_project", account=ghi)
 
@@ -96,6 +99,28 @@ class DataSourcesAPITestCase(APITestCase):
             },
         )
         self.assertJSONResponse(response, 201)
+
+    def test_datasource_put_with_read_but_no_write_perms(self):
+        """Can not create the data source with no write permission"""
+
+        self.client.force_authenticate(self.john)
+        response = self.client.post(
+            "/api/datasources/",
+            format="json",
+            data={
+                "name": "test_name",
+                "read_only": True,
+                "description": "test_description",
+                "project_ids": [self.ghi_project.id],
+                "credentials": {
+                    "dhis_name": "test_name",
+                    "dhis_login": "test_login",
+                    "dhis_url": "test_url",
+                    "dhis_password": "test_password",
+                },
+            },
+        )
+        self.assertJSONResponse(response, 403)
 
     def test_datasource_create_delete_fail_ok(self):
         """Create, read, delete fail, delete ok"""

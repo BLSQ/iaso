@@ -23,6 +23,7 @@ from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSeri
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
 from iaso.utils import geojson_queryset
+from hat.menupermissions import models as permission
 
 
 # noinspection PyMethodMayBeStatic
@@ -31,11 +32,11 @@ class HasOrgUnitPermission(permissions.BasePermission):
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm("menupermissions.iaso_forms")
-                or request.user.has_perm("menupermissions.iaso_org_units")
-                or request.user.has_perm("menupermissions.iaso_submissions")
-                or request.user.has_perm("menupermissions.iaso_registry")
-                or request.user.has_perm("menupermissions.iaso_polio")
+                request.user.has_perm(permission.FORMS)
+                or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.SUBMISSIONS)
+                or request.user.has_perm(permission.REGISTRY)
+                or request.user.has_perm(permission.POLIO)
             )
         ):
             return False
@@ -52,11 +53,11 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 # noinspection PyMethodMayBeStatic
 class OrgUnitViewSet(viewsets.ViewSet):
-    """Org units API
+    f"""Org units API
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
     projects that require authentication). Actions on specific org units are restricted to authenticated users with the
-    "menupermissions.iaso_forms", "menupermissions.iaso_org_units" or "menupermissions.iaso_submissions" permission.
+    "{permission.FORMS}", "{permission.ORG_UNITS}" or "{permission.SUBMISSIONS}" permission.
 
     GET /api/orgunits/
     GET /api/orgunits/<id>
@@ -191,7 +192,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.select_related("org_unit_type")
                 return Response({"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]})
         elif gpkg_format:
-            return self.list_to_gpkg(queryset)
+            user_account_name = profile.account.name if profile else ""
+            environment = settings.ENVIRONMENT
+            filename = "org_units"
+            filename = "%s-%s-%s-%s" % (environment, user_account_name, filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+            return self.list_to_gpkg(queryset, filename)
         else:
             # When filtering the org units by group, the values_list will return the groups also filtered.
             #  In order to get the all groups independently of filters, we should get the groups
@@ -287,9 +292,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
-    def list_to_gpkg(self, queryset):
+    def list_to_gpkg(self, queryset, filename):
         response = HttpResponse(org_units_to_gpkg_bytes(queryset), content_type="application/octet-stream")
-        filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
+        filename = f"{filename}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
 
         return response
@@ -325,7 +330,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if roots_for_user:
             org_unit_for_profile = request.user.iaso_profile.org_units.only("id")
-            if org_unit_for_profile:
+            if org_unit_for_profile and not request.user.is_superuser:
                 queryset = queryset.filter(id__in=org_unit_for_profile)
             else:
                 queryset = queryset.filter(parent__isnull=True)

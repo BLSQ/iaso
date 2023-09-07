@@ -1,3 +1,4 @@
+import datetime
 import operator
 import random
 import re
@@ -107,6 +108,7 @@ class Account(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
+    user_manual_path = models.TextField(null=True, blank=True)
 
     def as_dict(self):
         return {
@@ -116,6 +118,7 @@ class Account(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "default_version": self.default_version.as_dict() if self.default_version else None,
             "feature_flags": [flag.code for flag in self.feature_flags.all()],
+            "user_manual_path": self.user_manual_path,
         }
 
     def __str__(self):
@@ -660,11 +663,15 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         to_date=None,
         show_deleted=None,
         entity_id=None,
+        user_ids=None,
+        modification_date_from=None,
+        modification_date_to=None,
+        sent_date_from=None,
+        sent_date_to=None,
         json_content=None,
         planning_ids=None,
     ):
         queryset = self
-
         if from_date:
             queryset = queryset.filter(created_at__gte=from_date)
 
@@ -750,9 +757,34 @@ class InstanceQuerySet(django_cte.CTEQuerySet):
         # add status annotation
         queryset = queryset.with_status()
 
+        def range_from(date: datetime.date):
+            return (
+                datetime.datetime.combine(date, datetime.time.min),
+                datetime.datetime.max,
+            )
+
+        def range_to(date: datetime.date):
+            return (
+                datetime.datetime.min,
+                datetime.datetime.combine(date, datetime.time.max),
+            )
+
+        if modification_date_from:
+            queryset = queryset.filter(updated_at__range=range_from(modification_date_from))
+        if modification_date_to:
+            queryset = queryset.filter(updated_at__range=range_to(modification_date_to))
+
+        if sent_date_from:
+            queryset = queryset.filter(created_at__range=range_from(sent_date_from))
+        if sent_date_to:
+            queryset = queryset.filter(created_at__range=range_to(sent_date_to))
+
         if status:
             statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
+
+        if user_ids:
+            queryset = queryset.filter(created_by__id__in=user_ids.split(","))
 
         if json_content:
             q = jsonlogic_to_q(jsonlogic=json_content, field_prefix="json__")
@@ -1321,6 +1353,7 @@ class FeatureFlag(models.Model):
         (
             TAKE_GPS_ON_FORM,
             "Mobile: take GPS on new form",
+            False,
             _("GPS localization on start of instance on mobile"),
         ),
         (
@@ -1331,12 +1364,14 @@ class FeatureFlag(models.Model):
         (
             FORMS_AUTO_UPLOAD,
             "",
+            False,
             _(
                 "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
             ),
         ),
         (
             LIMIT_OU_DOWNLOAD_TO_ROOTS,
+            False,
             "Mobile: Limit download of orgunit to what the user has access to",
             _(
                 "Mobile: Limit download of orgunit to what the user has access to",
@@ -1344,8 +1379,9 @@ class FeatureFlag(models.Model):
         ),
     }
 
-    code = models.CharField(max_length=30, null=False, blank=False, unique=True)
+    code = models.CharField(max_length=100, null=False, blank=False, unique=True)
     name = models.CharField(max_length=100, null=False, blank=False)
+    requires_authentication = models.BooleanField(default=False)
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1398,16 +1434,23 @@ class UserRole(models.Model):
     def as_short_dict(self):
         return {
             "id": self.id,
-            "name": self.group.name,
+            "name": self.remove_user_role_name_prefix(self.group.name),
             "group_id": self.group.id,
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
 
+    # This method will remove a given prefix from a string
+    def remove_user_role_name_prefix(self, str):
+        prefix = str.split("_")[0] + "_"
+        if str.startswith(prefix):
+            return str[len(prefix) :]
+        return str
+
     def as_dict(self):
         return {
             "id": self.id,
-            "name": self.group.name,
+            "name": self.remove_user_role_name_prefix(self.group.name),
             "group_id": self.group.id,
             "permissions": list(
                 self.group.permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)

@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Select region',
         id: 'iaso.polio.button.label.addRegion',
     },
+    addAuthorisation: {
+        defaultMessage: 'Add authorisation',
+        id: 'iaso.polio.button.label.addAuthorisation',
+    },
     confirm: {
         defaultMessage: 'Confirm',
         id: 'iaso.label.confirm',
@@ -300,10 +304,6 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.form.label.verificationScore',
         defaultMessage: 'Verification Score (/20)',
     },
-    verification_score: {
-        id: 'iaso.polio.form.label.verificationScore',
-        defaultMessage: 'Verif',
-    },
     fieldInvestigationDate: {
         id: 'iaso.polio.form.label.fieldInvestigationDate',
         defaultMessage: 'Field Investigation Date',
@@ -323,10 +323,6 @@ const MESSAGES = defineMessages({
     detection_responsible: {
         id: 'iaso.polio.label.detection_responsible',
         defaultMessage: 'Detection responsible',
-    },
-    risk_assessment_rrt_oprtt_approval_at: {
-        id: 'iaso.polio.form.label.rrtOprttApproval',
-        defaultMessage: 'RRT/ORPG-Approval',
     },
     ag_nopv_group_met_at: {
         id: 'iaso.polio.form.label.agNopvGroup',
@@ -589,11 +585,11 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Status',
     },
     sync_status: {
-        id: 'iaso.polio.table.label.status',
+        id: 'iaso.polio.table.label.sync_status',
         defaultMessage: 'Synchronisation',
     },
     preperadness_sync_status: {
-        id: 'iaso.polio.table.label.status',
+        id: 'iaso.polio.table.label.sync_status',
         defaultMessage: 'Synchronisation',
     },
     import: {
@@ -812,6 +808,14 @@ const MESSAGES = defineMessages({
     passing: {
         id: 'iaso.polio.label.passed',
         defaultMessage: 'Passed',
+    },
+    countryPassing: {
+        id: 'iaso.polio.label.countryPassing',
+        defaultMessage: '80% or more districts passed',
+    },
+    countryFailing: {
+        id: 'iaso.polio.label.countryFailing',
+        defaultMessage: 'Less than 80% districts passed',
     },
     '1lqasOK': {
         id: 'iaso.polio.label.passed',
@@ -1254,7 +1258,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Test campaign',
     },
     is_test: {
-        id: 'iaso.polio.label.testCampaign',
+        id: 'iaso.polio.label.is_test',
         defaultMessage: 'Test campaigns/On hold status',
     },
     testCampaigns: {
@@ -1537,6 +1541,10 @@ const MESSAGES = defineMessages({
     cannotDisplayMap: {
         id: 'iaso.polio.label.cannotDisplayMap',
         defaultMessage: 'Cannot display map',
+    },
+    map: {
+        id: 'iaso.polio.label.map',
+        defaultMessage: 'Map',
     },
     amount: {
         id: 'iaso.polio.label.amount',
@@ -1835,7 +1843,7 @@ const MESSAGES = defineMessages({
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
-        defaultMessage: 'Modified By',
+        defaultMessage: 'Modified by',
     },
     seeLogDetail: {
         id: 'iaso.polio.campaign.seeLogDetail',
@@ -1948,6 +1956,10 @@ const MESSAGES = defineMessages({
     rrtOprttApproval: {
         id: 'iaso.polio.form.label.rrtOprttApproval',
         defaultMessage: 'RRT/OPRTT Approval',
+    },
+    risk_assessment_rrt_oprtt_approval_at: {
+        id: 'iaso.polio.form.label.risk_assessment_rrt_oprtt_approval_at',
+        defaultMessage: 'RRT/ORPG-Approval',
     },
     loading: {
         id: 'iaso.label.loading',
@@ -2202,6 +2214,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.PUBLIC_HOLIDAY',
         defaultMessage: 'Delayed to observe public holiday',
     },
+    SECURITY_CONTEXT: {
+        id: 'iaso.polio.label.SECURITY_CONTEXT',
+        defaultMessage: 'Security context',
+    },
+    CAMPAIGN_MOVED_FORWARD_BY_MOH: {
+        id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
+        defaultMessage: 'Campaign moved forward by MOH',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',
@@ -2229,6 +2249,102 @@ const MESSAGES = defineMessages({
     mobilePayment: {
         id: 'iaso.polio.campaign.mobilePayment',
         defaultMessage: 'Mobile Payment',
+    },
+    lqasMap: {
+        id: 'iaso.polio.campaign.lqasMap',
+        defaultMessage: 'LQAS map',
+    },
+    byCountry: {
+        id: 'iaso.polio.campaign.byCountry',
+        defaultMessage: 'By country',
+    },
+    penultimate: {
+        id: 'iaso.polio.lqasim.penultimate',
+        defaultMessage: 'Penultimate',
+    },
+    legend: {
+        id: 'iaso.polio.label.legend',
+        defaultMessage: 'Legend',
+    },
+    '3months': {
+        id: 'iaso.polio.label.3months',
+        defaultMessage: '3 months',
+    },
+    '6months': {
+        id: 'iaso.polio.label.6months',
+        defaultMessage: '6 months',
+    },
+    '9months': {
+        id: 'iaso.polio.label.9months',
+        defaultMessage: '9 months',
+    },
+    '12months': {
+        id: 'iaso.polio.label.12months',
+        defaultMessage: '12 months',
+    },
+    selectPeriod: {
+        id: 'iaso.polio.label.selectPeriod',
+        defaultMessage: 'Select period',
+    },
+    chooseDates: {
+        id: 'iaso.polio.label.chooseDates',
+        defaultMessage: 'Choose dates',
+    },
+    refreshPage: {
+        id: 'iaso.polio.label.refreshPage',
+        defaultMessage: 'Refresh page',
+    },
+    districtsInScope: {
+        id: 'iaso.polio.label.districtsInScope',
+        defaultMessage: 'Districts in scope',
+    },
+    vaccinemodule: {
+        id: 'iaso.polio.title.vaccinemodule',
+        defaultMessage: 'Vaccine module',
+    },
+    nopv2Auth: {
+        id: 'iaso.polio.title.nopv2Auth',
+        defaultMessage: 'NOPV2 authorisations',
+    },
+    editAuth: {
+        id: 'iaso.polio.title.editAuth',
+        defaultMessage: 'Edit authorisation',
+    },
+    signature: {
+        id: 'iaso.polio.label.signature',
+        defaultMessage: 'Signature',
+    },
+    expired: {
+        id: 'iaso.polio.label.expired',
+        defaultMessage: 'Expired',
+    },
+    quantity: {
+        id: 'iaso.polio.label.quantity',
+        defaultMessage: 'Quantity',
+    },
+    currentAuthorisedQuantity: {
+        id: 'iaso.polio.label.currentAuthorisedQuantity',
+        defaultMessage: 'Current authorised quantity',
+    },
+    expirationDate: {
+        id: 'iaso.polio.label.expirationDate',
+        defaultMessage: 'Expiration date',
+    },
+    currentExpirationDate: {
+        id: 'iaso.polio.label.currentExpirationDate',
+        defaultMessage: 'Current expiration date',
+    },
+    nextExpirationDate: {
+        id: 'iaso.polio.label.nextExpirationDate',
+        defaultMessage: 'Next expiration date',
+    },
+    dateForExpired: {
+        id: 'iaso.polio.error.dateForExpired',
+        defaultMessage: 'Expired authorisations can only have past dates',
+    },
+    mostRecentAuthStatus: {
+        id: 'iaso.polio.table.label.mostRecentAuthStatus',
+        defaultMessage: 'Most recent authorisation status',
     },
 });
 

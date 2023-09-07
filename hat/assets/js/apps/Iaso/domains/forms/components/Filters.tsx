@@ -20,6 +20,7 @@ import MESSAGES from '../messages';
 import { baseUrl } from '../config';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -49,6 +50,8 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         filters.showDeleted === 'true',
     );
     const { data: planningsDropdownOptions } = useGetPlanningsOptions();
+    const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
+        useGetOrgUnitTypes();
     const { data: allProjects, isFetching: isFetchingProjects } =
         useGetProjectsDropdownOptions();
 
@@ -94,6 +97,18 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                 </Grid>
                 <Grid item xs={12} md={3}>
                     <InputComponent
+                        type="select"
+                        onChange={handleChange}
+                        keyValue="orgUnitTypeIds"
+                        multi
+                        label={MESSAGES.orgUnitsTypes}
+                        value={filters.orgUnitTypeIds}
+                        loading={isFetchingOuTypes}
+                        options={orgUnitTypes ?? []}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
                         keyValue="projectsIds"
                         onChange={handleChange}
                         value={filters.projectsIds}
@@ -106,7 +121,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         multi
                     />
                 </Grid>
-                <Grid container item xs={12} md={3} justifyContent="flex-end">
+                <Grid container item xs={12} md={12} justifyContent="flex-end">
                     <Box mt={isLargeLayout ? 3 : 0}>
                         <Button
                             data-test="search-button"

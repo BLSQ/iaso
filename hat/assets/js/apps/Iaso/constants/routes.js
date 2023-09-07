@@ -105,6 +105,10 @@ export const formsPath = {
         },
         {
             isRequired: false,
+            key: 'orgUnitTypeIds',
+        },
+        {
+            isRequired: false,
             key: 'projectsIds',
         },
     ],

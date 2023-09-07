@@ -83,6 +83,23 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
 
+    def test_forms_list_filtered_by_org_unit_type(self):
+        self.client.force_authenticate(self.yoda)
+        # Filter by org_unit type `jedi_council` and `jedi_academy`.
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk}&{self.jedi_academy.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+        # Filter by org_unit type `sith_guild`.
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.sith_guild.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 0)
+
     def test_forms_list_filtered_by_project(self):
         """GET /forms/ filtered by project"""
         self.client.force_authenticate(self.yoda)

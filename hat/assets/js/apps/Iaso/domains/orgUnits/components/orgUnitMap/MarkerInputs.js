@@ -55,30 +55,36 @@ const MarkerInputs = ({
                         <InputComponent
                             disabled={actionBusy}
                             keyValue="latitude"
-                            onChange={(_, latitude) => {
-                                if (latitude) {
+                            onChange={(_, lat) => {
+                                if (lat) {
                                     onChangeLocation({
-                                        lat: parseFloat(latitude),
+                                        lat,
                                     });
                                 }
                             }}
                             value={orgUnit.latitude}
                             type="number"
                             label={MESSAGES.latitude}
+                            min={-90}
+                            max={90}
+                            step={0.00000001}
                         />
                         <InputComponent
                             disabled={actionBusy}
                             keyValue="longitude"
-                            onChange={(key, longitude) => {
-                                if (longitude) {
+                            onChange={(_, lng) => {
+                                if (lng) {
                                     onChangeLocation({
-                                        lng: parseFloat(longitude),
+                                        lng,
                                     });
                                 }
                             }}
                             value={orgUnit.longitude}
                             type="number"
                             label={MESSAGES.longitude}
+                            min={-180}
+                            max={180}
+                            step={0.00000001}
                         />
                         <InputComponent
                             disabled={actionBusy}
@@ -86,11 +92,14 @@ const MarkerInputs = ({
                             value={orgUnit.altitude}
                             type="number"
                             label={MESSAGES.altitude}
-                            onChange={(key, altitude) => {
-                                onChangeLocation({
-                                    alt: altitude ? parseFloat(altitude) : null,
-                                });
+                            onChange={(_, alt) => {
+                                if (alt) {
+                                    onChangeLocation({
+                                        alt,
+                                    });
+                                }
                             }}
+                            step={0.00000001}
                         />
                         <Box mb={2} mt={2}>
                             <Button

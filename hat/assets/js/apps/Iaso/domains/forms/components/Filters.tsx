@@ -121,7 +121,7 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         multi
                     />
                 </Grid>
-                <Grid container item xs={12} md={3} justifyContent="flex-end">
+                <Grid container item xs={12} md={12} justifyContent="flex-end">
                     <Box mt={isLargeLayout ? 3 : 0}>
                         <Button
                             data-test="search-button"

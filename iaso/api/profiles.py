@@ -14,11 +14,12 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from django.utils.html import strip_tags
+from django.template import Context, Template
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from typing import Optional, List
-
 from iaso.models import Profile, OrgUnit, UserRole, Project
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
@@ -406,7 +407,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         site_name = current_site.name
         domain = current_site.domain
         from_email = settings.DEFAULT_FROM_EMAIL
-        account = self.request.user.iaso_profile.account
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(profile.user)
 
@@ -420,13 +420,30 @@ class ProfilesViewSet(viewsets.ViewSet):
             protocol=protocol,
             domain=domain,
             site_name=site_name,
-            account_name=account.name,
+            account_name=profile.account.name,
         )
 
         email_subject_text = email_subject.format(dns_domain=f"{site_name}")
+        html_email_template = Template(email_html_message)
+        html_email_context = Context(
+            {
+                "protocol": protocol,
+                "domain": domain,
+                "account_name": profile.account.name,
+                "userName": profile.user.username,
+                "url": f"{protocol}://{domain}{create_password_path}",
+                "site_name": site_name,
+            }
+        )
 
+        rendered_html_email = html_email_template.render(html_email_context)
+        html_email_to_send = strip_tags(rendered_html_email)
         send_mail(
-            email_subject_text, email_message_text, from_email, [profile.user.email], html_message=email_html_message
+            email_subject_text,
+            email_message_text,
+            from_email,
+            [profile.user.email],
+            html_message=strip_tags(html_email_to_send),
         )
 
     @staticmethod
@@ -546,21 +563,21 @@ The {site_name} Team.
 
     CREATE_PASSWORD_HTML_MESSAGE_EN = """<p>Hello,<br><br>
 
-You have been invited to access IASO - <a href="{protocol}://{domain}" target="_blank">{account_name}</a>.<br><br>
+You have been invited to access IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
 
-Username: <strong>{userName}</strong><br><br>
+Username: <strong>{{userName}}</strong><br><br>
 
 Please click on the link below to create your password:<br><br>
 
-<a href="{url}" target="_blank">{url}</a><br><br>
+<a href="{{url}}" target="_blank">{{url}}</a><br><br>
 
 If clicking the link above doesn't work, please copy and paste the URL in a new browser<br>
 window instead.<br><br>
 
-If you did not request an account on {account_name}, you can ignore this e-mail - no password will be created.<br><br>
+If you did not request an account on {{account_name}}, you can ignore this e-mail - no password will be created.<br><br>
 
 Sincerely,<br>
-The {site_name} Team.</p>
+The {{site_name}} Team.</p>
     """
 
     CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
@@ -583,20 +600,20 @@ L'équipe {site_name}.
 
     CREATE_PASSWORD_HTML_MESSAGE_FR = """<p>Bonjour,<br><br>
 
-Vous avez été invité à accéder à l'IASO - <a href="{protocol}://{domain}" target="_blank">{account_name}</a>.<br><br>
+Vous avez été invité à accéder à l'IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
 
-Nom d'utilisateur: <strong>{userName}</strong><br><br>
+Nom d'utilisateur: <strong>{{userName}}</strong><br><br>
 
 Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :<br><br>
 
-<a href="{url}" target="_blank">{url}</a><br><br>
+<a href="{{url}}" target="_blank">{{url}}</a><br><br>
 
 Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.<br><br>
 
-Si vous n'avez pas demandé de compte sur {account_name}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.<br><br>
+Si vous n'avez pas demandé de compte sur {{account_name}}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.<br><br>
 
 Cordialement,<br>
-L'équipe {site_name}.</p>
+L'équipe {{site_name}}.</p>
     """
 
     EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {dns_domain}"

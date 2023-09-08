@@ -233,7 +233,6 @@ describe('Duplicate entities list', () => {
                 cy.get('[data-test="search-button"]').click();
                 cy.wait('@getDuplicateSearch').then(xhr => {
                     cy.wrap(interceptFlag).should('eq', true);
-                    console.log('xhr.request.query', xhr.request.query);
                     cy.wrap(xhr.request.query).should('deep.equal', {
                         search: 'mario',
                         submitter_team: '26',

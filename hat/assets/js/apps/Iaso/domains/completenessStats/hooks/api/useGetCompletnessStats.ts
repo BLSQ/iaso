@@ -14,9 +14,16 @@ const queryParamsMap = new Map([
 ]);
 
 const apiParamsKeys = ['order', 'page', 'limit', 'search', 'period'];
-const getParams = (params: CompletenessRouterParams) => {
+const getParams = (params: CompletenessRouterParams, forExport?: boolean) => {
     const { pageSize, ...urlParams } = params;
-    const apiParams = { ...urlParams, limit: pageSize ?? 10 };
+    const apiParams: Record<string, any> = {
+        ...urlParams,
+        limit: pageSize ?? 10,
+    };
+    if (forExport) {
+        apiParams.limit = undefined;
+        apiParams.page = undefined;
+    }
     const queryParams: Record<string, string> = {};
     apiParamsKeys.forEach(apiParamKey => {
         const apiParam = apiParams[apiParamKey];
@@ -36,8 +43,9 @@ const getParams = (params: CompletenessRouterParams) => {
 
 export const buildQueryString = (
     params: CompletenessRouterParams,
+    forExport?: boolean,
 ): URLSearchParams => {
-    const queryString = new URLSearchParams(getParams(params));
+    const queryString = new URLSearchParams(getParams(params, forExport));
     return queryString;
 };
 

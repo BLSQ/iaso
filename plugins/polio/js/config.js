@@ -5,6 +5,7 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import SettingsIcon from '@material-ui/icons/Settings';
 import CalendarToday from '@material-ui/icons/CalendarToday';
 import AssessmentIcon from '@material-ui/icons/Assessment';
+import MenuBookIcon from '@material-ui/icons/MenuBook';
 import PublicIcon from '@material-ui/icons/Public';
 import DonutSmallIcon from '@material-ui/icons/DonutSmall';
 import GroupWork from '@material-ui/icons/GroupWork';
@@ -13,6 +14,7 @@ import PhotoSizeSelectActualIcon from '@material-ui/icons/PhotoSizeSelectActual'
 import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
+import ExtensionIcon from '@material-ui/icons/Extension';
 import { Dashboard } from './src/pages/Dashboard';
 import { Calendar } from './src/pages/Calendar';
 import { CampaignHistory } from './src/components/campaignHistory/CampaignHistory.tsx';
@@ -31,6 +33,8 @@ import {
     BUDGET,
     BUDGET_DETAILS,
     LQAS_AFRO_MAP_URL,
+    NOPV2_AUTH,
+    NOPV2_AUTH_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -41,6 +45,8 @@ import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.
 import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
 import { BudgetList } from './src/pages/Budget/index.tsx';
 import { LqasAfroOverview } from './src/pages/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
+import { Nopv2Authorisations } from './src/pages/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
+import { Nopv2AuthorisationsDetails } from './src/pages/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 
 const campaignsFilters = [
     {
@@ -351,6 +357,38 @@ const routes = [
         ],
     },
     {
+        baseUrl: NOPV2_AUTH,
+        component: props => <Nopv2Authorisations {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'auth_status',
+            },
+            {
+                isRequired: false,
+                key: 'block_country',
+            },
+        ],
+    },
+    {
+        baseUrl: NOPV2_AUTH_DETAILS,
+        component: props => <Nopv2AuthorisationsDetails {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            ...paginationPathParams,
+            {
+                isRequired: false,
+                key: 'country',
+            },
+            {
+                isRequired: false,
+                key: 'countryName',
+            },
+        ],
+    },
+    {
         baseUrl: CONFIG_BASE_URL,
         component: () => <CountryNotificationsConfig />,
         permissions: ['iaso_polio_config'],
@@ -466,6 +504,19 @@ const menu = [
                 key: 'budget',
                 permissions: ['iaso_polio_budget'],
                 icon: props => <AccountBalanceWalletIcon {...props} />,
+            },
+            {
+                label: MESSAGES.vaccinemodule,
+                key: 'vaccinemodule',
+                icon: props => <ExtensionIcon {...props} />,
+                subMenu: [
+                    {
+                        label: MESSAGES.nopv2Auth,
+                        key: 'nopv2authorisation',
+                        permissions: ['iaso_polio'],
+                        icon: props => <MenuBookIcon {...props} />,
+                    },
+                ],
             },
             {
                 label: MESSAGES.configuration,

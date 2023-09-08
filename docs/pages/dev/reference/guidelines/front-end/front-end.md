@@ -1,4 +1,5 @@
-# Front-end guidelines
+Front-end guidelines
+====================
 
 ## Prerequisite
 

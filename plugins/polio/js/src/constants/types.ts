@@ -261,8 +261,8 @@ export type Round = {
     im_percentage_children_missed_in_plus_out_household: Nullable<string>;
     awareness_of_campaign_plannning: Nullable<string>;
     main_awareness_problem: Nullable<string>;
-    lqas_districts_passing: Nullable<number>;
-    lqas_districts_failing: Nullable<number>;
+    lqas_district_passing: Nullable<number>;
+    lqas_district_failing: Nullable<number>;
     preparedness_spreadsheet_url: Nullable<string>;
     preparedness_sync_status: Nullable<PreparednessSyncStatus>;
     scopes: Scope[];

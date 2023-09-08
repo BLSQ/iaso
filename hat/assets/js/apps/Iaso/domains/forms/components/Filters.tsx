@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent, useEffect } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 
 import {
     Grid,
@@ -19,6 +19,8 @@ import MESSAGES from '../messages';
 
 import { baseUrl } from '../config';
 import { useGetPlanningsOptions } from '../../plannings/hooks/requests/useGetPlannings';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
+import { useGetOrgUnitTypes } from '../../orgUnits/hooks/requests/useGetOrgUnitTypes';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -31,6 +33,7 @@ type Params = {
     search?: string;
     showDeleted?: string;
     planning?: string;
+    projectsIds?: string;
 };
 
 type Props = {
@@ -47,6 +50,10 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
         filters.showDeleted === 'true',
     );
     const { data: planningsDropdownOptions } = useGetPlanningsOptions();
+    const { data: orgUnitTypes, isFetching: isFetchingOuTypes } =
+        useGetOrgUnitTypes();
+    const { data: allProjects, isFetching: isFetchingProjects } =
+        useGetProjectsDropdownOptions();
 
     const theme = useTheme();
     const isLargeLayout = useMediaQuery(theme.breakpoints.up('md'));
@@ -65,6 +72,16 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         onEnterPressed={handleSearch}
                         onErrorChange={setTextSearchError}
                     />
+                    <InputComponent
+                        keyValue="showDeleted"
+                        onChange={(_key, value) => {
+                            handleChange('showDeleted', !showDeleted);
+                            setShowDeleted(value);
+                        }}
+                        value={showDeleted}
+                        type="checkbox"
+                        label={MESSAGES.showDeleted}
+                    />
                 </Grid>
 
                 <Grid item xs={12} md={3}>
@@ -78,16 +95,34 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                         options={planningsDropdownOptions}
                     />
                 </Grid>
-
-                <Grid
-                    item
-                    xs={12}
-                    md={6}
-                    container
-                    justifyContent="flex-end"
-                    alignItems="center"
-                >
-                    <Box mt={isLargeLayout ? 2 : 0}>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        type="select"
+                        onChange={handleChange}
+                        keyValue="orgUnitTypeIds"
+                        multi
+                        label={MESSAGES.orgUnitsTypes}
+                        value={filters.orgUnitTypeIds}
+                        loading={isFetchingOuTypes}
+                        options={orgUnitTypes ?? []}
+                    />
+                </Grid>
+                <Grid item xs={12} md={3}>
+                    <InputComponent
+                        keyValue="projectsIds"
+                        onChange={handleChange}
+                        value={filters.projectsIds}
+                        type="select"
+                        options={allProjects}
+                        label={MESSAGES.projects}
+                        loading={isFetchingProjects}
+                        onEnterPressed={handleSearch}
+                        clearable
+                        multi
+                    />
+                </Grid>
+                <Grid container item xs={12} md={12} justifyContent="flex-end">
+                    <Box mt={isLargeLayout ? 3 : 0}>
                         <Button
                             data-test="search-button"
                             disabled={
@@ -103,20 +138,6 @@ const Filters: FunctionComponent<Props> = ({ params }) => {
                             {formatMessage(MESSAGES.search)}
                         </Button>
                     </Box>
-                </Grid>
-            </Grid>
-            <Grid container>
-                <Grid item xs={12}>
-                    <InputComponent
-                        keyValue="showDeleted"
-                        onChange={(key, value) => {
-                            handleChange('showDeleted', !showDeleted);
-                            setShowDeleted(value);
-                        }}
-                        value={showDeleted}
-                        type="checkbox"
-                        label={MESSAGES.showDeleted}
-                    />
                 </Grid>
             </Grid>
         </>

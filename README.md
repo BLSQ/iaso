@@ -130,7 +130,7 @@ __docker daemon__.
 
 If you use an Apple Silicon Mac, ensure `export DOCKER_DEFAULT_PLATFORM=linux/amd64` is set.
 
-A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository
+A `pgdata-iaso` folder, containing the database data, will be created in the parent directory of the git repository.
 
 ### 1. Environment variables
 
@@ -165,10 +165,13 @@ docker-compose build
 ``` bash
 docker-compose up db
 ```
+(if you get this message: "Database is uninitialized and superuser password is not specified. You must specify POSTGRES_PASSWORD"
+ you can set POSTGRES_PASSWORD=postgres in the .env file )
 
 ### 4. Run migrations
 
 In a separate bash (without closing yet the started db), launch the migrations
+
 
 ``` bash
 docker-compose run --rm iaso manage migrate
@@ -190,6 +193,21 @@ To start all the containers (backend, frontend, db)
 ``` bash
 docker-compose up
 ```
+If you get a message saying that entrypoint.sh cannot be find and working on **Windows**, the git repository has an entry point script with Unix line endings (\n). But when the repository was checked out on a windows machine, git decided to try and be clever and replace the line endings in the files with windows line endings (\r\n).
+The solution is to disable git's automatic conversion:
+``` bash
+git config --global core.autocrlf input
+```
+Reset the repo (make sure you don't have unpushed changes):
+``` bash
+git rm --cached -r .
+git reset --hard
+```
+And then rebuild:
+``` bash
+docker-compose build
+```
+
 
 The web server should be reachable at `http://localhost:8081` (you
 should see a login form).
@@ -337,7 +355,7 @@ You can also have a dhis2 and db_dhis2 docker, refer to section below.
 
 ### note : docker-compose run VS docker-compose exec
 
-Run launch a new docker container, Exec launch a command it the existing container.
+Run launch a new docker container, Exec launch a command in the existing container.
 
 So `run` will ensure the dependencies like the database are up before executing. `exec` main advantage is that it is faster
 but the containers must already be running (launched manually) 

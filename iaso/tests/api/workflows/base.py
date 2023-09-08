@@ -1,4 +1,3 @@
-from pprint import pprint
 from unittest import mock
 
 from django.contrib.auth.models import AnonymousUser
@@ -10,19 +9,7 @@ from iaso import models as m
 from iaso.models import Workflow, WorkflowVersion
 from iaso.models.workflow import WorkflowVersionsStatus, WorkflowChange, WorkflowFollowup
 from iaso.test import APITestCase
-
-
-def var_dump(what):
-    if type(what) is dict:
-        pprint(what)
-    elif type(what) is list:
-        for t in what:
-            pprint(t)
-    else:
-        try:
-            pprint(what.__dict__)
-        except:
-            pprint(what)
+from iaso.tests.utils.test_utils import var_dump
 
 
 class BaseWorkflowsAPITestCase(APITestCase):

@@ -5,10 +5,13 @@ import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../constants/messages';
+import { findScopeIds } from '../../utils';
 
 type Props = {
     campaign?: string;
     data: Record<string, { hasScope: boolean; districtsNotFound: string[] }>;
+    campaigns?: any;
+    round?: number;
 };
 
 const style = theme => ({
@@ -29,10 +32,14 @@ const useStyles = makeStyles(style);
 export const ScopeAndDNFDisclaimer: FunctionComponent<Props> = ({
     campaign = '',
     data,
+    campaigns,
+    round,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
-    const { hasScope, districtsNotFound } = data[campaign] ?? {};
+    const { districtsNotFound } = data[campaign] ?? {};
+    const scopeIds = findScopeIds(campaign, campaigns, round);
+    const hasScope = scopeIds.length > 0;
     const allDistrictsFound = districtsNotFound?.length === 0;
     return (
         <Grid container direction="column" className={classes.centerText}>

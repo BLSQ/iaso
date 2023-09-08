@@ -56,7 +56,7 @@ describe('Org unit types', () => {
 
     describe('When mounting', () => {
         testPermission(baseUrl);
-        testTopBar(baseUrl, 'Organisation unit types', false);
+        testTopBar(baseUrl, 'Org unit types', false);
         describe('Table', () => {
             beforeEach(() => {
                 cy.visit(baseUrl);

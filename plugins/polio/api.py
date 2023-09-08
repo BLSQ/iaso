@@ -5,6 +5,7 @@ import json
 import numpy as np
 from collections import defaultdict
 from datetime import timedelta, datetime
+from django.db.models.expressions import Subquery
 
 from functools import lru_cache
 from logging import getLogger
@@ -2126,12 +2127,17 @@ class RoundViewset(ModelViewSet):
     def updatelqasfields(self, request):
         round_number = request.data.get("number", None)
         obr_name = request.data.get("obr_name", None)
+        user = self.request.user
         if obr_name is None:
             raise serializers.ValidationError({"obr_name": "This field is required"})
         if round_number is None:
             raise serializers.ValidationError({"round_number": "This field is required"})
         try:
-            round_instance = Round.objects.get(campaign__obr_name=obr_name, number=round_number)
+            campaigns_for_user = Campaign.objects.filter_for_user(user)
+            round_instance = Round.objects.filter(
+                campaign__obr_name__in=Subquery(campaigns_for_user.values("obr_name"))
+            )
+            round_instance = round_instance.get(campaign__obr_name=obr_name, number=round_number)
             serializer = LqasDistrictsUpdateSerializer(data=request.data, context={"request": request}, partial=True)
             serializer.is_valid(raise_exception=True)
             res = serializer.update(round_instance, serializer.validated_data)

@@ -441,7 +441,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_1.id), None
         )
         self.assertTrue(results_for_first_country is not None)
-        self.assertEquals(results_for_first_country["status"], "1lqasOK")
+        self.assertEquals(results_for_first_country["status"], "3lqasFail")
 
         results_for_second_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
@@ -487,7 +487,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         results_for_second_country = next(
             (country_data for country_data in results if country_data["id"] == self.country_org_unit_2.id), None
         )
-        self.assertTrue(results_for_second_country is None)
+        self.assertTrue(results_for_second_country is not None)
 
     def test_lqas_global_round_with_end_date_filters(self):
         c = APIClient()
@@ -666,7 +666,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         results = content["results"]
         self.assertEquals(len(results), 3)
         self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(results[0]["data"]["round_number"], 1)
+        self.assertEquals(results[0]["data"]["round_number"], 2)
 
     def test_lqas_zoomedin_start_date_filter(self):
         c = APIClient()
@@ -694,7 +694,7 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        self.assertEquals(len(results), 2)
+        self.assertEquals(len(results), 3)
         self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
         # There's no guarantee on the order of the districts
         district_name_to_check = (

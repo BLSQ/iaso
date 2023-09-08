@@ -16,11 +16,7 @@ from django.utils.translation import gettext as _
 from beanstalk_worker import task_decorator
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, ERRORED
 
-
-@transaction.atomic
-# @task_decorator(task_name="bulk_create_users")
-def bulk_create_users(user_id=None, file_id=None, launch_task=None, task=None, user=None):
-    columns_list = [
+BULK_CREATE_USER_COLUMNS_LIST = [
         "username",
         "password",
         "email",
@@ -33,6 +29,11 @@ def bulk_create_users(user_id=None, file_id=None, launch_task=None, task=None, u
         "user_roles",
         "projects",
     ]
+
+
+@transaction.atomic
+# @task_decorator(task_name="bulk_create_users")
+def bulk_create_users(user_id=None, file_id=None, launch_task=None, task=None, user=None):
     request_user = User.objects.get(pk=user_id)
     user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request_user, None)
     user_created_count = 0
@@ -104,13 +105,13 @@ def bulk_create_users(user_id=None, file_id=None, launch_task=None, task=None, u
 
         if launch_task:
             the_task.report_progress_and_stop_if_killed(progress_message=_("Creating users"))
-        if i > 0 and not set(columns_list).issubset(csv_indexes):
-            missing_elements = set(columns_list) - set(csv_indexes)
+        if i > 0 and not set(BULK_CREATE_USER_COLUMNS_LIST).issubset(csv_indexes):
+            missing_elements = set(BULK_CREATE_USER_COLUMNS_LIST) - set(csv_indexes)
             raise serializers.ValidationError(
                 {
                     "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."
                     f" Your columns: {csv_indexes}"
-                    f"Expected columns: {columns_list}"
+                    f"Expected columns: {BULK_CREATE_USER_COLUMNS_LIST}"
                 }
             )
         org_units_list = []
@@ -147,6 +148,7 @@ def bulk_create_users(user_id=None, file_id=None, launch_task=None, task=None, u
                     try:
                         if int(ou):
                             try:
+                                print("OU: ", ou)
                                 ou = OrgUnit.objects.get(id=ou)
                                 if ou not in user_access_ou:
                                     raise Exception(

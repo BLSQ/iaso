@@ -18,11 +18,11 @@ from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from typing import Any, List, Optional, Union
+from iaso.bulk_create_users.import_users_from_csv import BULK_CREATE_USER_COLUMNS_LIST
 
 from hat.api.export_utils import Echo, iter_items, generate_xlsx
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import FileFormatEnum, CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
 from iaso.models import Profile, OrgUnit, UserRole, Project
 

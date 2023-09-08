@@ -4,6 +4,7 @@ from rest_framework import serializers, permissions
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from hat.menupermissions import models as permission
 
 from iaso.api.tasks import TaskSerializer
 from iaso.models import BulkCreateUserCsvFile

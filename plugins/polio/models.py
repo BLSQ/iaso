@@ -874,3 +874,26 @@ class BudgetFiles(models.Model):
 
     def __str__(self):
         return str(self.event)
+
+
+class VaccineAuthorizationStatus(models.TextChoices):
+    PENDING = "ONGOING", _("Ongoing")
+    VALIDATED = "VALIDATED", _("Validated")
+    IGNORED = "SIGNATURE", _("Sent for signature")
+    EXPIRED = "EXPIRED", _("Expired")
+
+
+class VaccineAuthorization(SoftDeletableModel):
+    country = models.ForeignKey(
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
+    )
+    account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
+    expiration_date = models.DateField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    quantity = models.IntegerField(blank=True, null=True)
+    status = models.CharField(null=True, blank=True, choices=VaccineAuthorizationStatus.choices, max_length=200)
+    comment = models.TextField(max_length=250, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.country}-{self.expiration_date}"

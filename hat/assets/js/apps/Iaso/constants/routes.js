@@ -103,6 +103,14 @@ export const formsPath = {
             isRequired: false,
             key: 'planning',
         },
+        {
+            isRequired: false,
+            key: 'orgUnitTypeIds',
+        },
+        {
+            isRequired: false,
+            key: 'projectsIds',
+        },
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,

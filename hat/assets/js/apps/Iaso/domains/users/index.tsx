@@ -22,16 +22,17 @@ import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
-import { useGetProfiles } from './hooks/useGetProfiles';
+import { useGetProfilesApiParams, useGetProfiles } from './hooks/useGetProfiles';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
 
 import { usersTableColumns } from './config';
 import MESSAGES from './messages';
 
+import DownloadButtonsComponent from '../../components/DownloadButtonsComponent';
+import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
 import { redirectTo } from '../../routing/actions';
 import { useCurrentUser } from '../../utils/usersUtils';
-import { BulkImportUsersDialog } from './components/BulkImportDialog/BulkImportDialog';
 
 import { Selection } from '../orgUnits/types/selection';
 import { Profile } from '../teams/types/profile';
@@ -103,6 +104,8 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
     const isLoading =
         fetchingProfiles || deletingProfile || savingProfile || savingProfiles;
 
+    const apiParams = useGetProfilesApiParams(params);
+
     return (
         <>
             {isLoading && <LoadingSpinner />}
@@ -142,6 +145,11 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                             {/* @ts-ignore */}
                             <BulkImportUsersDialog />
                         </Box>
+                        <DownloadButtonsComponent
+                            csvUrl={`${apiParams.url}&csv=true`}
+                            xlsxUrl={`${apiParams.url}&xlsx=true`}
+                            disabled={isLoading}
+                        />
                     </Grid>
                 )}
                 <Table

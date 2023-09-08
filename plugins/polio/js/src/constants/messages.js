@@ -2290,6 +2290,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.refreshPage',
         defaultMessage: 'Refresh page',
     },
+    districtsInScope: {
+        id: 'iaso.polio.label.districtsInScope',
+        defaultMessage: 'Districts in scope',
+    },
 });
 
 export default MESSAGES;

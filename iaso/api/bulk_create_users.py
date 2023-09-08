@@ -19,6 +19,21 @@ from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Proje
 from hat.menupermissions import models as permission
 
 
+BULK_CREATE_USER_COLUMNS_LIST = [
+    "username",
+    "password",
+    "email",
+    "first_name",
+    "last_name",
+    "orgunit",
+    "profile_language",
+    "dhis2_id",
+    "permissions",
+    "user_roles",
+    "projects",
+]
+
+
 class BulkCreateUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = BulkCreateUserCsvFile
@@ -90,19 +105,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @transaction.atomic
     def create(self, request, *args, **kwargs):
         user_created_count = 0
-        columns_list = [
-            "username",
-            "password",
-            "email",
-            "first_name",
-            "last_name",
-            "orgunit",
-            "profile_language",
-            "dhis2_id",
-            "permissions",
-            "user_roles",
-            "projects",
-        ]
         if request.FILES:
             user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
 
@@ -146,8 +148,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             orgunits_hierarchy = OrgUnit.objects.hierarchy(user_access_ou)
 
             for i, row in enumerate(reader):
-                if i > 0 and not set(columns_list).issubset(csv_indexes):
-                    missing_elements = set(columns_list) - set(csv_indexes)
+                if i > 0 and not set(BULK_CREATE_USER_COLUMNS_LIST).issubset(csv_indexes):
+                    missing_elements = set(BULK_CREATE_USER_COLUMNS_LIST) - set(csv_indexes)
                     raise serializers.ValidationError(
                         {
                             "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."

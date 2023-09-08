@@ -6,7 +6,7 @@ import { LqasImMap } from './LqasImMap';
 
 import { LqasSummary } from './LqasSummary';
 import { LqasImMapHeader, LqasImRefDate } from './LqasImMapHeader';
-import { ConvertedLqasImData } from '../../constants/types';
+import { Campaign, ConvertedLqasImData } from '../../constants/types';
 import { ImSummary } from './ImSummary';
 import { findCampaignRound } from '../../utils';
 import { DropdownOptions } from '../../../../../../hat/assets/js/apps/Iaso/types/utils';
@@ -62,6 +62,23 @@ const determineLqasImDates = (
     };
 };
 
+const aggregateScopes = scopes => {
+    return scopes.map(scope => scope.group.org_units).flat();
+};
+
+const computeScopeCounts = (
+    campaign?: Campaign,
+    roundNumber?: number,
+): number => {
+    if (!campaign) return 0;
+    if (campaign.separate_scopes_per_round) {
+        const round = campaign.rounds.find(r => r.number === roundNumber);
+        const scope = round ? aggregateScopes(round.scopes) : [];
+        return scope.length;
+    }
+    return aggregateScopes(campaign?.scopes ?? []).length;
+};
+
 export const MapContainer: FunctionComponent<Props> = ({
     round,
     campaign,
@@ -77,12 +94,13 @@ export const MapContainer: FunctionComponent<Props> = ({
 }) => {
     const campaignObject = campaigns.filter(
         (c: Record<string, unknown>) => c.obr_name === campaign,
-    )[0];
+    )[0] as Campaign;
     const { start: startDate, end: endDate } = determineLqasImDates(
         campaignObject,
         round,
         type,
     );
+    const scopeCount = computeScopeCounts(campaignObject, round);
     return (
         <Paper elevation={paperElevation}>
             <Box mb={2}>
@@ -96,7 +114,12 @@ export const MapContainer: FunctionComponent<Props> = ({
             </Box>
             <Divider />
             {type === 'lqas' && (
-                <LqasSummary round={round} campaign={campaign} data={data} />
+                <LqasSummary
+                    round={round}
+                    campaign={campaign}
+                    data={data}
+                    scopeCount={scopeCount}
+                />
             )}
             {type !== 'lqas' && (
                 <ImSummary

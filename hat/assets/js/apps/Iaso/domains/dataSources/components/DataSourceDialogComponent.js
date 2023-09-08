@@ -105,6 +105,12 @@ const formIsValid = form => {
     );
 };
 
+const translateErrors = (dhis2Credentials, formatMessage) => {
+    return dhis2Credentials?.errors.length > 0
+        ? new Array(formatMessage(MESSAGES[dhis2Credentials?.errors]))
+        : [];
+};
+
 export const DataSourceDialogComponent = ({
     defaultSourceVersion,
     initialData,
@@ -152,6 +158,14 @@ export const DataSourceDialogComponent = ({
         value: v.id,
     }));
 
+    const urlErrors = translateErrors(
+        form.credentials_dhis2_url,
+        formatMessage,
+    );
+    const userPasswordErrors = translateErrors(
+        form.credentials_dhis2_password,
+        formatMessage,
+    );
     return (
         <ConfirmCancelDialogComponent
             dataTestId="datasource-modal"
@@ -261,7 +275,7 @@ export const DataSourceDialogComponent = ({
                     <InputComponent
                         value={form.credentials.value.dhis_url}
                         keyValue="dhis_url"
-                        errors={form.credentials_dhis2_url?.errors}
+                        errors={urlErrors}
                         label={MESSAGES.dhisUrl}
                         onChange={setCredentials}
                     />
@@ -275,7 +289,7 @@ export const DataSourceDialogComponent = ({
                     <InputComponent
                         value={form.credentials.value.dhis_password}
                         keyValue="dhis_password"
-                        errors={form.credentials_dhis2_password?.errors}
+                        errors={userPasswordErrors}
                         label={MESSAGES.dhisPassword}
                         onChange={setCredentials}
                         password

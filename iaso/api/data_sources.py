@@ -138,11 +138,7 @@ class TestCredentialSerializer(serializers.Serializer):
     data_source = serializers.PrimaryKeyRelatedField(queryset=DataSource.objects.all(), required=False, allow_null=True)
 
     def raise_exception(self, field):
-        message = (
-            "Invalid user or password"
-            if field == "dhis2_password"
-            else "Could not connect to server, check the address"
-        )
+        message = "dhis2InvalideUserOrPasswordError" if field == "dhis2_password" else "dhis2ServerConnectionError"
         raise serializers.ValidationError({field: [message]})
 
     def test_api(self):
@@ -160,7 +156,7 @@ class TestCredentialSerializer(serializers.Serializer):
             password = ds.credentials.password
 
         if not password:
-            raise serializers.ValidationError({"dhis2_password": ["This field may not be blank."]})
+            raise serializers.ValidationError({"dhis2_password": ["dhis2PasswordBlankError"]})
 
         api = get_api(
             dhis2_url,

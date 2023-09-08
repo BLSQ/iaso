@@ -23,7 +23,7 @@ from ..models import Config, Round, RoundScope
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
-from ..serializers import CampaignSerializer
+from ..api.serializers import CampaignSerializer
 
 
 class PolioAPITestCase(APITestCase):

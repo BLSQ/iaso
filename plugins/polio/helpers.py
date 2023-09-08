@@ -2,6 +2,7 @@ from functools import reduce
 import json
 import datetime as dt
 from datetime import datetime, timedelta
+from enum import Enum
 from django.db.models.expressions import Subquery
 import requests
 from django.db.models import Q
@@ -77,13 +78,13 @@ class CustomFilterBackend(filters.BaseFilterBackend):
 
 def determine_status_for_district(district_data):
     if not district_data:
-        return "inScope"
+        return LQASStatus.InScope
     checked = district_data["total_child_checked"]
     marked = district_data["total_child_fmd"]
     if checked == 60:
         if marked > 56:
-            return "1lqasOK"
-    return "3lqasFail"
+            return LQASStatus.Pass
+    return LQASStatus.Fail
 
 
 def reduce_to_country_status(total, current):
@@ -109,9 +110,9 @@ def get_data_for_round(country_data, roundNumber):
 def calculate_country_status(country_data, scope, roundNumber):
     if len(country_data.get("rounds", [])) == 0:
         # TODO put in an enum
-        return "inScope"
+        return LQASStatus.InScope
     if scope.count() == 0:
-        return "inScope"
+        return LQASStatus.InScope
     data_for_round = get_data_for_round(country_data, roundNumber)
     district_statuses = [
         determine_status_for_district(district_data)
@@ -120,11 +121,11 @@ def calculate_country_status(country_data, scope, roundNumber):
     ]
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
-        return "inScope"
+        return LQASStatus.InScope
     passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
     if passing_ratio >= 80:
-        return "1lqasOK"
-    return "3lqasFail"
+        return LQASStatus.Pass
+    return LQASStatus.Fail
 
 
 # Using this custom function because Polygon.from_bbox will change the bounding box if the longitude coordinates cover more than 180°
@@ -132,6 +133,17 @@ def calculate_country_status(country_data, scope, roundNumber):
 # This very plain solution required investigation from 3 people and caused the utterance of many curse words.
 def make_safe_bbox(x_min, y_min, x_max, y_max):
     return ((x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max), (x_min, y_min))
+
+
+class RoundSelection(str, Enum):
+    Latest = "latest"
+    Penultimate = "penultimate"
+
+
+class LQASStatus(str, Enum):
+    Pass = "1lqasOK"
+    Fail = "3lqasFail"
+    InScope = "inScope"
 
 
 class LqasAfroViewset(ModelViewSet):

@@ -3,7 +3,6 @@ import datetime as dt
 import functools
 import json
 import numpy as np
-from enum import Enum
 from collections import defaultdict
 from datetime import timedelta, datetime
 from django.db.models.expressions import Subquery
@@ -93,6 +92,8 @@ from .forma import (
 )
 from .helpers import (
     LqasAfroViewset,
+    RoundSelection,
+    LQASStatus,
     get_url_content,
     CustomFilterBackend,
     calculate_country_status,
@@ -1795,11 +1796,6 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
         return RoundDateHistoryEntry.objects.filter_for_user(user)
 
 
-class RoundSelection(str, Enum):
-    Latest = "latest"
-    Penultimate = "penultimate"
-
-
 @swagger_auto_schema(tags=["lqasglobal"])
 class LQASIMGlobalMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
@@ -1887,7 +1883,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     "id": int(country_id),
                     "data": {"campaign": latest_active_campaign.obr_name, "country_name": org_unit.name},
                     "geo_json": shapes,
-                    "status": "inScope",
+                    "status": LQASStatus.InScope,
                 }
             results.append(result)
         return Response({"results": results})
@@ -2019,7 +2015,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "id": district.id,
                         "data": {"campaign": latest_active_campaign.obr_name, "district_name": district.name},
                         "geo_json": shapes,
-                        "status": "inScope",
+                        "status": LQASStatus.InScope,
                     }
                 results.append(result)
         return Response({"results": results})

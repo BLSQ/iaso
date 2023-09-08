@@ -3,6 +3,7 @@ import datetime as dt
 import functools
 import json
 import numpy as np
+from enum import Enum
 from collections import defaultdict
 from datetime import timedelta, datetime
 from functools import lru_cache
@@ -1768,6 +1769,11 @@ class RoundDateHistoryEntryViewset(ModelViewSet):
         return RoundDateHistoryEntry.objects.filter_for_user(user)
 
 
+class RoundSelection(str, Enum):
+    Latest = "latest"
+    Penultimate = "penultimate"
+
+
 @swagger_auto_schema(tags=["lqasglobal"])
 class LQASIMGlobalMapViewSet(LqasAfroViewset):
     http_method_names = ["get"]
@@ -1782,7 +1788,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
         results = []
 
         # Should be "lqas", "im_OHH", "im_HH"
-        requested_round = self.request.GET.get("round", "latest")
+        requested_round = self.request.GET.get("round", RoundSelection.Latest)
         queryset = self.get_queryset()
         data_stores = self.get_datastores()
         for org_unit in queryset:
@@ -1817,13 +1823,13 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                 stats = stats.get(latest_active_campaign.obr_name, None)
             if stats:
                 round_number = requested_round
-                if round_number == "latest":
+                if round_number == RoundSelection.Latest:
                     round_number = (
                         latest_active_campaign_rounds.first().number
                         if latest_active_campaign_rounds.count() > 0
                         else None
                     )
-                elif round_number == "penultimate":
+                elif round_number == RoundSelection.Penultimate:
                     round_number = (
                         latest_active_campaign_rounds[1].number if latest_active_campaign_rounds.count() > 1 else None
                     )
@@ -1886,7 +1892,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
 
     def list(self, request):
         results = []
-        requested_round = self.request.GET.get("round", "latest")
+        requested_round = self.request.GET.get("round", RoundSelection.Latest)
         queryset = self.get_queryset()
         bounds = json.loads(request.GET.get("bounds", None))
         bounds_as_polygon = Polygon(
@@ -1914,11 +1920,11 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
 
             if latest_active_campaign is None:
                 continue
-            if requested_round == "latest":
+            if requested_round == RoundSelection.Latest:
                 round_number = (
                     latest_active_campaign_rounds[0].number if latest_active_campaign_rounds.count() > 0 else None
                 )
-            elif requested_round == "penultimate":
+            elif requested_round == RoundSelection.Penultimate:
                 round_number = (
                     latest_active_campaign_rounds[1].number if latest_active_campaign_rounds.count() > 1 else None
                 )

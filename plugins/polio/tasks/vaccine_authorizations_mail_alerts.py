@@ -3,12 +3,15 @@ import datetime as dt
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from hat import settings
 from iaso.models import Team
 from plugins.polio.models import VaccineAuthorization
+
+vaccine_dashboard_link = f"{Site.objects.get_current()}/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/1/order/-current_expiration_date/pageSize/20/page/1"
 
 
 def vaccine_authorizations_60_days_expiration_email_alert():
@@ -39,7 +42,7 @@ def vaccine_authorizations_60_days_expiration_email_alert():
                 {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
                 A new authorization is {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
                 Please take appropriate action as needed. 
-                Link to the platform vaccine authorization page
+                Link to the platform vaccine authorization page : {vaccine_dashboard_link}
                 RRT team
                 """,
                 settings.DEFAULT_FROM_EMAIL,
@@ -56,7 +59,7 @@ def vaccine_authorizations_60_days_expiration_email_alert():
                             {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
                             No new authorization pending.
                             Please take appropriate action as needed. 
-                            Link to the platform vaccine authorization page
+                            Link to the platform vaccine authorization page : {vaccine_dashboard_link}
                             RRT team
                             """,
                 settings.DEFAULT_FROM_EMAIL,
@@ -96,7 +99,7 @@ def expired_vaccine_authorizations_email_alert():
                 {obj.country} nOPV2 vaccines authorization has expired expired on {obj.expiration_date}.
                 A new authorization is ongoing {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
                 Please take appropriate action as needed. 
-                Link to the platform vaccine authorization page
+                Link to the platform vaccine authorization page : {vaccine_dashboard_link}
                 RRT team
                 """,
                 settings.DEFAULT_FROM_EMAIL,
@@ -112,7 +115,7 @@ def expired_vaccine_authorizations_email_alert():
                             {obj.country} nOPV2 vaccines authorization has expired on {obj.expiration_date}.
                             No new authorization pending.
                             Please take appropriate action as needed. 
-                            Link to the platform vaccine authorization page
+                            Link to the platform vaccine authorization page : {vaccine_dashboard_link}
                             RRT team
                             """,
                 settings.DEFAULT_FROM_EMAIL,

@@ -52,12 +52,17 @@ class SetupAccountSerializer(serializers.Serializer):
         )
 
         # Create a setup_account project with an app_id represented by the account name
+        app_id = (
+            validated_data["account_name"]
+            if " " not in validated_data["account_name"]
+            else validated_data["account_name"].replace(" ", "-")
+        )
         initial_project = Project.objects.create(
-            name=validated_data["account_name"] + " project", account=account, app_id=validated_data["account_name"]
+            name=validated_data["account_name"] + " project", account=account, app_id=app_id
         )
 
         # Create an initial orgUnit type and link it to project
-        initial_orgunit_type = OrgUnitType.objects.create(name="COUNTRY", short_name="country", depth=1)
+        initial_orgunit_type = OrgUnitType.objects.create(name="Country", short_name="country", depth=1)
         initial_orgunit_type.projects.set([initial_project])
         initial_orgunit_type.save()
 

@@ -6,7 +6,7 @@ from iaso.models import OrgUnit
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
 from plugins.polio.api.common import LqasAfroViewset, calculate_country_status, LQASStatus, RoundSelection
-from plugins.polio.models import Campaign
+from plugins.polio.api.lqasim_zoom_in_map import get_latest_active_campaign_and_rounds
 
 
 @swagger_auto_schema(tags=["lqasglobal"])
@@ -44,7 +44,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                 latest_active_campaign,
                 latest_active_campaign_rounds,
                 round_numbers,
-            ) = self.get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
+            ) = get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
 
             if latest_active_campaign is None:
                 continue

@@ -107,7 +107,7 @@ const formIsValid = form => {
 
 const translateErrors = (dhis2Credentials, formatMessage) => {
     return dhis2Credentials?.errors.length > 0
-        ? new Array(formatMessage(MESSAGES[dhis2Credentials?.errors]))
+        ? [formatMessage(MESSAGES[dhis2Credentials?.errors])]
         : [];
 };
 

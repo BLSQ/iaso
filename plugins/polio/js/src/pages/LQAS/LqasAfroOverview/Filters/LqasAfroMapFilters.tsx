@@ -7,6 +7,7 @@ import {
     Switch,
 } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
+import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 import { LQAS_AFRO_MAP_URL } from '../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
 import DatesRange from '../../../../../../../../hat/assets/js/apps/Iaso/components/filters/DatesRange';
@@ -69,32 +70,39 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
         [filters, setFilters, setFiltersUpdated],
     );
 
+    const infos = formatMessage(MESSAGES.afroMapfilterInfo);
     return (
         <>
             <Grid container spacing={2}>
                 <Grid item xs={6} md={6}>
                     {chooseDates && (
-                        <DatesRange
-                            onChangeDate={handleDateChange}
-                            dateFrom={filters.startDate}
-                            dateTo={filters.endDate}
-                            labelFrom={MESSAGES.startDatefrom}
-                            labelTo={MESSAGES.endDateUntil}
-                            keyDateFrom="startDate"
-                            keyDateTo="endDate"
-                        />
+                        <InputWithInfos infos={infos}>
+                            <DatesRange
+                                onChangeDate={handleDateChange}
+                                dateFrom={filters.startDate}
+                                dateTo={filters.endDate}
+                                labelFrom={MESSAGES.latestCampaignFrom}
+                                labelTo={MESSAGES.latestCampaignUntil}
+                                keyDateFrom="startDate"
+                                keyDateTo="endDate"
+                            />
+                        </InputWithInfos>
                     )}
                     {!chooseDates && (
-                        <InputComponent
-                            type="select"
-                            multi={false}
-                            keyValue="period"
-                            clearable={false}
-                            value={filters.period ?? '6months'}
-                            onChange={handlePeriodChange}
-                            options={periodOptions}
-                            labelString={formatMessage(MESSAGES.selectPeriod)}
-                        />
+                        <InputWithInfos infos={infos}>
+                            <InputComponent
+                                type="select"
+                                multi={false}
+                                keyValue="period"
+                                clearable={false}
+                                value={filters.period ?? '6months'}
+                                onChange={handlePeriodChange}
+                                options={periodOptions}
+                                labelString={formatMessage(
+                                    MESSAGES.latestCampaignForPeriod,
+                                )}
+                            />
+                        </InputWithInfos>
                     )}
                 </Grid>
                 <Grid container item xs={12} md={6} justifyContent="flex-end">

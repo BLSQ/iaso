@@ -1372,4 +1372,5 @@ export const routeConfigs = [
     workflowsDetailPath,
     registryPath,
     registryDetailPath,
+    modulesPath,
 ];

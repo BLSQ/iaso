@@ -8,10 +8,8 @@ import { baseUrls } from '../../constants/urls';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { UserRoleParams } from './types/userRoles';
 import { useGetUserRolesColumns } from './config';
-import { useGetUserRoles } from './hooks/requests/useGetUserRoles';
+import { useGetModules } from './hooks/requests/useGetModules';
 import { redirectTo } from '../../routing/actions';
-import { useDeleteUserRole } from './hooks/requests/useDeleteUserRole';
-import { CreateUserRoleDialog } from './components/CreateEditUserRole';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -19,15 +17,14 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: UserRoleParams;
 };
-const baseUrl = baseUrls.userRoles;
+const baseUrl = baseUrls.Modules;
 export const Modules: FunctionComponent<Props> = ({ params }) => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
 
-    const { data, isFetching } = useGetUserRoles(params);
+    const { data, isFetching } = useGetModules(params);
     const { formatMessage } = useSafeIntl();
-    const { mutate: deleteUserRole } = useDeleteUserRole();
-    const columns = useGetUserRolesColumns(deleteUserRole);
+    const columns = useGetUserRolesColumns();
     return (
         <>
             <TopBar
@@ -35,9 +32,6 @@ export const Modules: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Box display="flex" justifyContent="flex-end">
-                    <CreateUserRoleDialog dialogType="create" iconProps={{}} />
-                </Box>
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}

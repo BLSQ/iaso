@@ -715,6 +715,8 @@
     "iaso.mappings.useInstanceProperty": "Use instance property to fill in this answer",
     "iaso.mappings.willNeverMap": "Will never map",
     "iaso.matching.title": "Matching",
+    "iaso.modules.status": "Status",
+    "iaso.modules.title": "Modules",
     "iaso.orgUnits.add": "Search org unit to add",
     "iaso.orgUnits.addForm": "Add form",
     "iaso.orgUnits.addOrgUnitType": "Add org unit type",

@@ -32,7 +32,7 @@ const getUserRoles = async (
 type UserRolesOptions = {
     results: UserRole[];
 };
-export const useGetUserRoles = (
+export const useGetModules = (
     options: UserRoleParams | UserRolesFilterParams,
 ): UseQueryResult<UserRolesList, Error> => {
     const { select } = options as Record<string, any>;

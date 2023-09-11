@@ -1,4 +1,4 @@
-import datetime as dt
+from datetime import datetime
 import json
 from time import gmtime, strftime
 from typing import Any, List, Union
@@ -975,11 +975,11 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
     @staticmethod
     def get_year(current_date):
         if current_date is not None:
-            current_date = dt.datetime.strptime(current_date, "%Y-%m-%d")
+            current_date = datetime.strptime(current_date, "%Y-%m-%d")
             current_date = current_date.date()
             return current_date.year
         else:
-            today = dt.date.today()
+            today = datetime.date.today()
             return today.year
 
     def get_calendar_data(self: "CampaignViewSet", year: int, params: Any) -> Any:
@@ -1058,8 +1058,8 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         return data_row
 
     def get_round(self: "CampaignViewSet", round: Round, campaign: Campaign, country: OrgUnit) -> dict:
-        started_at = dt.datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
-        ended_at = dt.datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
+        started_at = datetime.strftime(round.started_at, "%Y-%m-%d") if round.started_at is not None else None
+        ended_at = datetime.strftime(round.ended_at, "%Y-%m-%d") if round.ended_at is not None else None
         obr_name = campaign.obr_name if campaign.obr_name is not None else ""
         round_number = round.number if round.number is not None else ""
         # count all districts in the country
@@ -1253,7 +1253,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
                     s = SmallCampaignSerializer(c)
                     feature = {"type": "Feature", "geometry": json.loads(c.geom), "properties": s.data}
                     features.append(feature)
-        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": dt.utcnow().timestamp()}
+        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)
@@ -1264,7 +1264,7 @@ where polio_campaignscope.campaign_id = polio_campaign.id""",
         if not cached_response:
             return None
         parsed_cache_response = json.loads(cached_response)
-        cache_creation_date = make_aware(dt.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
+        cache_creation_date = make_aware(datetime.utcfromtimestamp(parsed_cache_response["cache_creation_date"]))
         for update_date in update_dates:
             if update_date and update_date > cache_creation_date:
                 return None
@@ -1362,7 +1362,7 @@ where group_id = polio_roundscope.group_id""",
                 }
                 features.append(feature)
 
-        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": dt.utcnow().timestamp()}
+        res = {"type": "FeatureCollection", "features": features, "cache_creation_date": datetime.utcnow().timestamp()}
 
         cache.set(key_name, json.dumps(res), 3600 * 24, version=CACHE_VERSION)
         return JsonResponse(res)

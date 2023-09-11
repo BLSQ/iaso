@@ -18,9 +18,8 @@ from rest_framework import viewsets
 
 from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
-from plugins.polio.api.common import convert_dicts_to_table, find_campaign_on_day
-from plugins.polio.forma import find_orgunit_in_cache, make_orgunits_cache
-from plugins.polio.helpers import get_url_content
+from plugins.polio.api.common import convert_dicts_to_table, find_campaign_on_day, get_url_content
+from plugins.polio.api.forma import find_orgunit_in_cache, make_orgunits_cache
 from plugins.polio.models import Campaign, Config
 from plugins.polio.vaccines_email import send_vaccines_notification_email
 

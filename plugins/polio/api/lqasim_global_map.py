@@ -1,10 +1,11 @@
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions
-from iaso.models.data_store import JsonDataStore
-from iaso.models import OrgUnit
-from iaso.utils import geojson_queryset
 from rest_framework.response import Response
-from plugins.polio.helpers import LqasAfroViewset, calculate_country_status
+
+from iaso.models import OrgUnit
+from iaso.models.data_store import JsonDataStore
+from iaso.utils import geojson_queryset
+from plugins.polio.api.common import LqasAfroViewset, calculate_country_status
 from plugins.polio.models import Campaign
 
 

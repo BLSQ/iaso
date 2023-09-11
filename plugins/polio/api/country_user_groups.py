@@ -2,10 +2,16 @@ from rest_framework import filters, serializers
 from rest_framework.fields import Field
 
 from iaso.api.common import ModelViewSet
+from iaso.api.serializers import UserSerializer
 from iaso.models import OrgUnit
 
 from ..models import CountryUsersGroup
-from .serializers import UserSerializerForPolio
+
+
+class UserSerializerForPolio(UserSerializer):
+    class Meta(UserSerializer.Meta):
+        fields = ["id", "username", "first_name", "last_name", "email"]
+        ref_name = "polio_user_serializer"
 
 
 class CountryUsersGroupSerializer(serializers.ModelSerializer):

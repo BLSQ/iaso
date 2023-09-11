@@ -1,9 +1,27 @@
 from rest_framework import routers
 
-from .api.campaigns import CampaignViewSet
-from .api.country_user_groups import CountryUsersGroupViewSet
-from .api.polio_org_units import PolioOrgunitViewSet
-from .budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
+from plugins.polio.api.campaign_groups import CampaignGroupViewSet
+from plugins.polio.api.campaigns import CampaignViewSet
+from plugins.polio.api.config import ConfigViewSet
+from plugins.polio.api.countries_with_lqas_im import CountriesWithLqasIMConfigViewSet
+from plugins.polio.api.country_user_groups import CountryUsersGroupViewSet
+from plugins.polio.api.forma import FormAStocksViewSetV2
+from plugins.polio.api.forma import FormAStocksViewSet
+from plugins.polio.api.im_stats import IMStatsViewSet
+from plugins.polio.api.launch_powerbi import LaunchPowerBIRefreshViewSet
+from plugins.polio.api.line_list_imports import LineListImportViewSet
+from plugins.polio.api.lqas_stats import LQASStatsViewSet
+from plugins.polio.api.lqasim_global_map import LQASIMGlobalMapViewSet
+from plugins.polio.api.lqasim_zoom_in_map import LQASIMZoominMapBackgroundViewSet, LQASIMZoominMapViewSet
+from plugins.polio.api.orgunits_per_campaigns import OrgUnitsPerCampaignViewset
+from plugins.polio.api.polio_org_units import PolioOrgunitViewSet
+from plugins.polio.api.preparedness_dashboard import PreparednessDashboardViewSet
+from plugins.polio.api.round import RoundViewset
+from plugins.polio.api.round_date_history import RoundDateHistoryEntryViewset
+from plugins.polio.api.vaccine_authorization import VaccineAuthorizationViewSet
+from plugins.polio.api.vaccine_stocks import VaccineStocksViewSet
+from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
+from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")

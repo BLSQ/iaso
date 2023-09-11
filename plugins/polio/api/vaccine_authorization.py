@@ -1,25 +1,17 @@
+import datetime as dt
+from typing import Any
+
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from drf_yasg.utils import swagger_auto_schema
-from iaso.api.common import (
-    DeletionFilterBackend,
-    ModelViewSet,
-)
 from rest_framework import filters, permissions, serializers
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
-from rest_framework.decorators import action
 
 from hat.menupermissions import models as permission
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField
 from iaso.models import OrgUnit
-from plugins.polio.models import VaccineAuthorization, Group
-from iaso.api.common import (
-    DeletionFilterBackend,
-    ModelViewSet,
-    Paginator,
-    TimestampField,
-)
-from typing import Any
-import datetime as dt
+from plugins.polio.models import Group, VaccineAuthorization
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):

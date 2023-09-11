@@ -6,11 +6,9 @@ from iaso.models.project import Project
 from iaso.test import APITestCase
 import json
 from iaso.models.base import Account, Group
-from plugins.polio.helpers import (
+from plugins.polio.api.common import determine_status_for_district, get_data_for_round, reduce_to_country_status
+from plugins.polio.api.common import (
     calculate_country_status,
-    determine_status_for_district,
-    get_data_for_round,
-    reduce_to_country_status,
 )
 from plugins.polio.models import Campaign, CampaignScope, Round, RoundScope
 from django.contrib.auth.models import User

@@ -2,8 +2,7 @@ from rest_framework import permissions
 
 from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
-
-from plugins.polio.api.serializers import OrgUnitSerializer
+from plugins.polio.api.shared_serializers import OrgUnitSerializer
 
 
 class PolioOrgunitViewSet(ModelViewSet):

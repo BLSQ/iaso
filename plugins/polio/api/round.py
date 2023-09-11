@@ -1,11 +1,18 @@
+from django.db.transaction import atomic
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from iaso.api.common import ModelViewSet
-from plugins.polio.models import Round, RoundScope, RoundVaccine, Shipment, Destruction, RoundDateHistoryEntry
-from plugins.polio.api.serializers import GroupSerializer, DestructionSerializer
+from plugins.polio.api.shared_serializers import (
+    DestructionSerializer,
+    GroupSerializer,
+    RoundDateHistoryEntrySerializer,
+    RoundVaccineSerializer,
+)
+from plugins.polio.models import Destruction, Round, RoundDateHistoryEntry, RoundScope, RoundVaccine, Shipment
+from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
 class RoundScopeSerializer(serializers.ModelSerializer):
@@ -14,12 +21,6 @@ class RoundScopeSerializer(serializers.ModelSerializer):
         fields = ["group", "vaccine"]
 
     group = GroupSerializer()
-
-
-class RoundVaccineSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RoundVaccine
-        fields = ["wastage_ratio_forecast", "doses_per_vial", "name", "id"]
 
 
 class ShipmentSerializer(serializers.ModelSerializer):

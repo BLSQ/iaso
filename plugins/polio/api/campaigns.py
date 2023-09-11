@@ -9,34 +9,60 @@ from django.core.mail import send_mail
 from django.db.models import Max, Min, Q
 from django.db.models.expressions import RawSQL
 from django.db.models.query import QuerySet
+from django.db.transaction import atomic
 from django.http import HttpResponse, JsonResponse, StreamingHttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from django.utils.timezone import make_aware, now
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
+from django.utils.translation import gettext as _
+from django_filters.rest_framework import DjangoFilterBackend
+from gspread.exceptions import APIError  # type: ignore
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from rest_framework import filters, permissions, serializers, status
 from rest_framework.decorators import action
+from rest_framework.fields import Field
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.validators import UniqueValidator
 
 from hat.api.export_utils import Echo, iter_items
-from iaso.api.common import CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX, CSVExportMixin, DeletionFilterBackend, ModelViewSet
-from iaso.models import OrgUnit
+from iaso.api.common import (
+    CONTENT_TYPE_CSV,
+    CONTENT_TYPE_XLSX,
+    CSVExportMixin,
+    CustomFilterBackend,
+    DeletionFilterBackend,
+    ModelViewSet,
+)
+from iaso.models import Group, OrgUnit
+from plugins.polio.api.campaigns_log import log_campaign_modification, serialize_campaign
 from plugins.polio.api.common import CACHE_VERSION
-from plugins.polio.api.serializers import (
-    CampaignPreparednessSpreadsheetSerializer,
-    ListCampaignSerializer,
-    PreparednessPreviewSerializer,
-    get_current_preparedness,
-    log_campaign_modification,
-    serialize_campaign,
+from plugins.polio.api.round import RoundScopeSerializer, RoundSerializer, ShipmentSerializer
+from plugins.polio.api.shared_serializers import (
+    DestructionSerializer,
+    GroupSerializer,
+    OrgUnitSerializer,
+    RoundDateHistoryEntrySerializer,
+    RoundVaccineSerializer,
 )
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
-from plugins.polio.helpers import CustomFilterBackend
-from plugins.polio.models import Campaign, CampaignScope, CountryUsersGroup, Round, RoundScope, Shipment
-from plugins.polio.api.round import RoundSerializer, RoundScopeSerializer, ShipmentSerializer
-from plugins.polio.api.serializers import GroupSerializer, DestructionSerializer
-from iaso.models import Group
+from plugins.polio.models import (
+    Campaign,
+    CampaignGroup,
+    CampaignScope,
+    CountryUsersGroup,
+    Destruction,
+    Round,
+    RoundDateHistoryEntry,
+    RoundScope,
+    RoundVaccine,
+    Shipment,
+    SpreadSheetImport,
+)
+from plugins.polio.preparedness.calculator import get_preparedness_score
+from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
+from plugins.polio.preparedness.spreadsheet_manager import Campaign, generate_spreadsheet_for_campaign
+from plugins.polio.preparedness.summary import preparedness_summary
 
 
 # Don't display the url for Anonymous users
@@ -52,6 +78,18 @@ class CampaignScopeSerializer(serializers.ModelSerializer):
         fields = ["group", "vaccine"]
 
     group = GroupSerializer()
+
+
+class CurrentAccountDefault:
+    """
+    May be applied as a `default=...` value on a serializer field.
+    Returns the current user's account.
+    """
+
+    requires_context = True
+
+    def __call__(self, serializer_field):
+        return serializer_field.context["request"].user.iaso_profile.account_id
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -262,6 +300,38 @@ class CampaignSerializer(serializers.ModelSerializer):
         exclude = ["geojson"]
 
         read_only_fields = ["preperadness_sync_status", "creation_email_send_at", "group"]
+
+
+class ListCampaignSerializer(CampaignSerializer):
+    "This serializer contains juste enough data for the List view in the web ui"
+
+    class NestedListRoundSerializer(RoundSerializer):
+        class Meta:
+            model = Round
+            fields = [
+                "id",
+                "number",
+                "started_at",
+                "ended_at",
+            ]
+
+    rounds = NestedListRoundSerializer(many=True, required=False)
+
+    class Meta:
+        model = Campaign
+        fields = [
+            "id",
+            "epid",
+            "obr_name",
+            "account",
+            "cvdpv2_notified_at",
+            "top_level_org_unit_name",
+            "top_level_org_unit_id",
+            "rounds",
+            "general_status",
+            "grouped_campaigns",
+        ]
+        read_only_fields = fields
 
 
 class AnonymousCampaignSerializer(CampaignSerializer):
@@ -640,6 +710,69 @@ class ExportCampaignSerializer(CampaignSerializer):
             "outbreak_declaration_date",
         ]
         read_only_fields = fields
+
+
+def preparedness_from_url(spreadsheet_url, force_refresh=False):
+    try:
+        if force_refresh:
+            ssi = SpreadSheetImport.create_for_url(spreadsheet_url)
+        else:
+            ssi = SpreadSheetImport.last_for_url(spreadsheet_url)
+        if not ssi:
+            return {}
+
+        cs = ssi.cached_spreadsheet
+        r = {}
+        preparedness_data = get_preparedness(cs)
+        r.update(preparedness_data)
+        r["title"] = cs.title
+        r["created_at"] = ssi.created_at
+        r.update(get_preparedness_score(preparedness_data))
+        r.update(preparedness_summary(preparedness_data))
+        return r
+    except InvalidFormatError as e:
+        raise serializers.ValidationError(e.args[0])
+    except APIError as e:
+        raise serializers.ValidationError(e.args[0].get("message"))
+
+
+class PreparednessPreviewSerializer(serializers.Serializer):
+    google_sheet_url = serializers.URLField()
+
+    def validate(self, attrs):
+        spreadsheet_url = attrs.get("google_sheet_url")
+        return preparedness_from_url(spreadsheet_url, force_refresh=True)
+
+    def to_representation(self, instance):
+        return instance
+
+
+def get_current_preparedness(campaign, roundNumber):
+    try:
+        round = campaign.rounds.get(number=roundNumber)
+    except Round.DoesNotExist:
+        return {"details": f"No round {roundNumber} on this campaign"}
+
+    if not round.preparedness_spreadsheet_url:
+        return {}
+    spreadsheet_url = round.preparedness_spreadsheet_url
+    return preparedness_from_url(spreadsheet_url)
+
+
+class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
+    """Serializer used to CREATE Preparedness spreadsheet from template"""
+
+    campaign = serializers.PrimaryKeyRelatedField(queryset=Campaign.objects.all(), write_only=True)
+    round_number = serializers.IntegerField(required=False)
+    url = serializers.URLField(read_only=True)
+
+    def create(self, validated_data):
+        campaign = validated_data.get("campaign")
+        round_number = validated_data.get("round_number")
+
+        spreadsheet = generate_spreadsheet_for_campaign(campaign, round_number)
+
+        return {"url": spreadsheet.url}
 
 
 class CampaignViewSet(ModelViewSet, CSVExportMixin):

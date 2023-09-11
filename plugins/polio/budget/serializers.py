@@ -10,7 +10,7 @@ from rest_framework import serializers
 from iaso.api.common import DynamicFieldsModelSerializer
 from iaso.models.microplanning import Team
 from plugins.polio.models import Campaign
-from plugins.polio.api.serializers import CampaignSerializer, UserSerializer
+from plugins.polio.api.shared_serializers import CampaignSerializer, UserSerializer
 from .models import BudgetStep, BudgetStepFile, BudgetStepLink, model_field_exists, send_budget_mails, get_workflow
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 

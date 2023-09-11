@@ -1,9 +1,9 @@
 import operator
 from collections import defaultdict
-from datetime import timedelta, date
+from datetime import date, timedelta
 from functools import lru_cache, reduce
 from logging import getLogger
-from typing import Dict, Callable, Any, Optional
+from typing import Any, Callable, Dict, Optional
 from uuid import UUID
 
 import pandas as pd
@@ -18,9 +18,9 @@ from rest_framework.decorators import action
 
 from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
-from plugins.polio.helpers import get_url_content
-from plugins.polio.models import Campaign
-from plugins.polio.models import Config
+from plugins.polio.api.common import get_url_content
+from plugins.polio.api.vaccine_stocks import handle_ona_request_with_key
+from plugins.polio.models import Campaign, Config
 
 logger = getLogger(__name__)
 
@@ -364,3 +364,13 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         else:
             r = df.to_json(orient="table")
             return HttpResponse(r, content_type="application/json")
+
+
+class FormAStocksViewSet(viewsets.ViewSet):
+    """
+    Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
+    sample config: [{"url": "https://afro.who.int/api/v1/data/yyy", "login": "d", "country": "hyrule", "password": "zeldarules", "country_id": 2115781}]
+    """
+
+    def list(self, request):
+        return handle_ona_request_with_key(request, "forma")

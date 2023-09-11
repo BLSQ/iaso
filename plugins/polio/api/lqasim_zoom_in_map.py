@@ -1,15 +1,23 @@
-from drf_yasg.utils import swagger_auto_schema
-from iaso.api.common import ModelViewSet
-from rest_framework import permissions
 import json
-from iaso.models.data_store import JsonDataStore
-from plugins.polio.helpers import make_safe_bbox
+
 from django.contrib.gis.geos import Polygon
-from iaso.models import OrgUnit
-from iaso.utils import geojson_queryset
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import permissions
 from rest_framework.response import Response
-from plugins.polio.helpers import LqasAfroViewset, determine_status_for_district
+
+from iaso.api.common import ModelViewSet
+from iaso.models import OrgUnit
+from iaso.models.data_store import JsonDataStore
+from iaso.utils import geojson_queryset
+from plugins.polio.api.common import LqasAfroViewset, determine_status_for_district
 from plugins.polio.models import Campaign
+
+
+# Using this custom function because Polygon.from_bbox will change the bounding box if the longitude coordinates cover more than 180°
+# which will cause hard to track bugs
+# This very plain solution required investigation from 3 people and caused the utterance of many curse words.
+def make_safe_bbox(x_min, y_min, x_max, y_max):
+    return ((x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max), (x_min, y_min))
 
 
 @swagger_auto_schema(tags=["lqaszoomin"])

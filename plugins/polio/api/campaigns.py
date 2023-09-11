@@ -15,7 +15,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.timezone import make_aware, now
 from django.utils.translation import gettext as _
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.exceptions import APIError  # type: ignore
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from rest_framework import filters, permissions, serializers, status

@@ -37,7 +37,7 @@ import rest_framework.renderers
 import rest_framework_csv.renderers
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import QuerySet, OrderBy
+from django.db.models import QuerySet, OrderBy, Q
 from django.db.models.expressions import RawSQL
 from django_cte import With
 from django_cte.raw import raw_cte_sql
@@ -170,6 +170,7 @@ class ParamSerializer(serializers.Serializer):
         help_text="Filter org unit on theses validation status"
         " (both for returned orgunit and count), can specify multiple status, separated by a ','",
     )
+    as_location = serializers.CharField(required=False, help_text="Filter only org units with geo locations")
 
     def validate_org_unit_validation_status(self, statuses):
         statuses = statuses.split(",")
@@ -228,6 +229,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         period = params.get("period", None)
         planning = params.get("planning", None)
         org_unit_validation_status = params["org_unit_validation_status"]
+        as_location = params.get("as_location", None)
 
         instance_qs = Instance.objects.all()
         if period:
@@ -398,6 +400,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         # convert to proper pagination
         page_offset = int(request.GET.get("page", "1"))
+
         if limit is not None:
             paginator = Paginator(ou_with_stats, int(limit))
             if page_offset > paginator.num_pages:
@@ -432,8 +435,13 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             }
 
             return Response(paginated_res)
-
-        object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
+        if as_location:
+            print("ICI")
+            print(as_location)
+            ou_with_stats = ou_with_stats.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
+            object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
+        else:
+            object_list = with_parent([to_dict(ou) for ou in ou_with_stats], True)
         return Response({"results": object_list})
 
     @action(methods=["GET"], detail=False)

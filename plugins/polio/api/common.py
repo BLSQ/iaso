@@ -1,17 +1,23 @@
+import datetime as dt
 import json
 from collections import defaultdict
 from datetime import datetime, timedelta
+from enum import Enum
 from functools import reduce
 from logging import getLogger
 from typing import Optional
-import pandas as pd
 
+import pandas as pd
 import requests
+from django.db.models import Q
+from django.db.models.expressions import Subquery
 from django.utils.timezone import now
+from rest_framework import filters
 
 from iaso.api.common import ModelViewSet
+from iaso.models import OrgUnit, OrgUnitType
 from iaso.models.data_store import JsonDataStore
-from plugins.polio.models import Round, URLCache
+from plugins.polio.models import Campaign, Round, URLCache
 
 logger = getLogger(__name__)
 
@@ -153,13 +159,13 @@ def get_url_content(url, login, password, minutes, prefer_cache: bool = False):
 
 def determine_status_for_district(district_data):
     if not district_data:
-        return "inScope"
+        return LQASStatus.InScope
     checked = district_data["total_child_checked"]
     marked = district_data["total_child_fmd"]
     if checked == 60:
         if marked > 56:
-            return "1lqasOK"
-    return "3lqasFail"
+            return LQASStatus.Pass
+    return LQASStatus.Fail
 
 
 def reduce_to_country_status(total, current):
@@ -185,9 +191,9 @@ def get_data_for_round(country_data, roundNumber):
 def calculate_country_status(country_data, scope, roundNumber):
     if len(country_data.get("rounds", [])) == 0:
         # TODO put in an enum
-        return "inScope"
+        return LQASStatus.InScope
     if scope.count() == 0:
-        return "inScope"
+        return LQASStatus.InScope
     data_for_round = get_data_for_round(country_data, roundNumber)
     district_statuses = [
         determine_status_for_district(district_data)
@@ -196,11 +202,29 @@ def calculate_country_status(country_data, scope, roundNumber):
     ]
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
-        return "inScope"
+        return LQASStatus.InScope
     passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
     if passing_ratio >= 80:
-        return "1lqasOK"
-    return "3lqasFail"
+        return LQASStatus.Pass
+    return LQASStatus.Fail
+
+
+# Using this custom function because Polygon.from_bbox will change the bounding box if the longitude coordinates cover more than 180°
+# which will cause hard to track bugs
+# This very plain solution required investigation from 3 people and caused the utterance of many curse words.
+def make_safe_bbox(x_min, y_min, x_max, y_max):
+    return ((x_min, y_min), (x_max, y_min), (x_max, y_max), (x_min, y_max), (x_min, y_min))
+
+
+class RoundSelection(str, Enum):
+    Latest = "latest"
+    Penultimate = "penultimate"
+
+
+class LQASStatus(str, Enum):
+    Pass = "1lqasOK"
+    Fail = "3lqasFail"
+    InScope = "inScope"
 
 
 class LqasAfroViewset(ModelViewSet):
@@ -305,3 +329,41 @@ def make_orgunits_cache(orgunits):
                 if not f.name.lower().strip() == a.lower().strip():
                     cache_dict[a.lower().strip()].append(f)
     return cache_dict
+
+
+def get_latest_active_campaign_and_rounds(self, org_unit, start_date_after, end_date_before):
+    today = dt.date.today()
+    latest_active_round_qs = Round.objects.filter(campaign__country=org_unit)
+    if start_date_after is not None:
+        latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=start_date_after)
+    if end_date_before is not None:
+        latest_active_round_qs = latest_active_round_qs.filter(ended_at__lte=end_date_before)
+
+    # filter out rounds that start in the future
+    # Filter by finished rounds and lqas dates ended. If no lqas end date, using end date +10 days (as in pipeline)
+    buffer = today - timedelta(days=10)
+    latest_active_round_qs = (
+        latest_active_round_qs.filter(
+            Q(lqas_ended_at__lte=today) | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=buffer))
+        )
+        .filter(campaign__deleted_at__isnull=True)
+        .exclude(campaign__is_test=True)
+        .order_by("-started_at")[:1]
+    )
+    latest_active_campaign = (
+        Campaign.objects.filter(id__in=Subquery(latest_active_round_qs.values("campaign")))
+        .filter(deleted_at=None)
+        .exclude(is_test=True)
+        .prefetch_related("rounds")
+        .first()
+    )
+    if latest_active_campaign is None:
+        return None, None, None
+    # Filter by finished rounds and lqas dates ended
+    latest_active_campaign_rounds = latest_active_campaign.rounds.filter(ended_at__lte=today).filter(
+        (Q(lqas_ended_at__lte=today)) | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
+    )
+    latest_active_campaign_rounds = latest_active_campaign_rounds.order_by("-number")
+    round_numbers = latest_active_campaign_rounds.values_list("number", flat=True)
+
+    return latest_active_campaign, latest_active_campaign_rounds, round_numbers

@@ -1,3 +1,4 @@
+from django.db.models.expressions import Subquery
 from django.db.transaction import atomic
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
@@ -12,7 +13,7 @@ from plugins.polio.api.shared_serializers import (
     RoundDateHistoryEntrySerializer,
     RoundVaccineSerializer,
 )
-from plugins.polio.models import Destruction, Round, RoundDateHistoryEntry, RoundScope, RoundVaccine, Shipment
+from plugins.polio.models import Destruction, Round, RoundDateHistoryEntry, RoundScope, RoundVaccine, Shipment, Campaign
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
@@ -224,12 +225,17 @@ class RoundViewset(ModelViewSet):
     def updatelqasfields(self, request):
         round_number = request.data.get("number", None)
         obr_name = request.data.get("obr_name", None)
+        user = self.request.user
         if obr_name is None:
             raise serializers.ValidationError({"obr_name": "This field is required"})
         if round_number is None:
             raise serializers.ValidationError({"round_number": "This field is required"})
         try:
-            round_instance = Round.objects.get(campaign__obr_name=obr_name, number=round_number)
+            campaigns_for_user = Campaign.objects.filter_for_user(user)
+            round_instance = Round.objects.filter(
+                campaign__obr_name__in=Subquery(campaigns_for_user.values("obr_name"))
+            )
+            round_instance = round_instance.get(campaign__obr_name=obr_name, number=round_number)
             serializer = LqasDistrictsUpdateSerializer(data=request.data, context={"request": request}, partial=True)
             serializer.is_valid(raise_exception=True)
             res = serializer.update(round_instance, serializer.validated_data)

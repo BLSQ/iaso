@@ -165,7 +165,7 @@
     "iaso.polio.label.addShipment": "Ajouter une livraison",
     "iaso.polio.label.addStep": "Ajouter étape",
     "iaso.polio.label.addVaccine": "Ajouter un vaccin",
-    "iaso.polio.label.afroMapfilterInfo": "La dernière campagne est la campagne liée au round avec la date de début la plus récente pour la période sélectionnée",
+    "iaso.polio.label.afroMapfilterInfo": "La dernière campagne est celle ayant le round actif le plus récent pour la période sélectionnée",
     "iaso.polio.label.all": "Tous",
     "iaso.polio.label.amount": "Montant",
     "iaso.polio.label.approval_ongoing": "Approbation en cours",

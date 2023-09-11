@@ -224,6 +224,7 @@ class Task(models.Model):
     queue_answer = models.JSONField(null=True, blank=True)
     progress_message = models.TextField(null=True, blank=True)
     should_be_killed = models.BooleanField(default=False)
+    external = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at"]

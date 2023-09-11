@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from functools import reduce
 from logging import getLogger
 from typing import Optional
+import pandas as pd
 
 import requests
 from django.utils.timezone import now
@@ -270,3 +271,37 @@ class LqasAfroViewset(ModelViewSet):
         queryset = self.get_queryset()
         countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
         return JsonDataStore.objects.filter(slug__in=countries)
+
+
+def find_orgunit_in_cache(cache_dict, name, parent_name=None):
+    if not name or pd.isna(name):
+        return None
+    name = name.lower().strip()
+    parent_name = parent_name.lower() if (parent_name and not pd.isna(parent_name)) else ""
+    matched_orgunits = cache_dict[name]
+
+    if len(matched_orgunits) == 0:
+        return
+    if len(matched_orgunits) == 1:
+        return matched_orgunits[0]
+    for f in matched_orgunits:
+        if f.parent.name.lower() == parent_name:
+            return f
+        if f.parent.aliases:
+            aliases = [alias.lower() for alias in f.parent.aliases]
+            if parent_name in aliases:
+                return f
+    # if no match found on parent, use the first since we put them before the aliases
+    return matched_orgunits[0]
+
+
+def make_orgunits_cache(orgunits):
+    cache_dict = defaultdict(list)
+    for f in orgunits:
+        cache_dict[f.name.lower().strip()].append(f)
+    for f in orgunits:
+        if f.aliases:
+            for a in f.aliases:
+                if not f.name.lower().strip() == a.lower().strip():
+                    cache_dict[a.lower().strip()].append(f)
+    return cache_dict

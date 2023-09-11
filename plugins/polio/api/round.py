@@ -4,7 +4,8 @@ from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from iaso.api.common import ModelViewSet
+from hat.menupermissions import models as permission
+from iaso.api.common import HasPermission, ModelViewSet
 from plugins.polio.api.shared_serializers import (
     DestructionSerializer,
     GroupSerializer,

@@ -1,8 +1,7 @@
 from rest_framework import filters, serializers
 from rest_framework.fields import Field
 
-from iaso.api.common import ModelViewSet
-from iaso.api.serializers import UserSerializer
+from iaso.api.common import ModelViewSet, UserSerializer
 from iaso.models import OrgUnit
 
 from ..models import CountryUsersGroup

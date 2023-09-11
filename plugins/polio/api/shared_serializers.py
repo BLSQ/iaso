@@ -3,7 +3,6 @@ from rest_framework import serializers
 from rest_framework.fields import Field
 
 from iaso.api.common import UserSerializer
-from iaso.api.serializers import UserSerializer
 from iaso.models import Group
 from plugins.polio.models import Destruction, RoundDateHistoryEntry, RoundVaccine
 from plugins.polio.preparedness.spreadsheet_manager import *

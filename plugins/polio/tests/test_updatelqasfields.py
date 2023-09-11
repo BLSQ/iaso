@@ -1,4 +1,5 @@
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
+
 from iaso import models as m
 from iaso.test import APITestCase
 from plugins.polio.models import Campaign, Round

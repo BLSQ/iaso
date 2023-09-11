@@ -1,9 +1,8 @@
 import operator
-from collections import defaultdict
-from datetime import timedelta, date
+from datetime import date, timedelta
 from functools import lru_cache, reduce
 from logging import getLogger
-from typing import Dict, Callable, Any, Optional
+from typing import Any, Callable, Dict, Optional
 from uuid import UUID
 
 import pandas as pd
@@ -18,9 +17,9 @@ from rest_framework.decorators import action
 
 from iaso.api.common import CONTENT_TYPE_CSV
 from iaso.models import OrgUnit
-from plugins.polio.helpers import get_url_content
-from plugins.polio.models import Campaign
-from plugins.polio.models import Config
+from plugins.polio.api.common import find_orgunit_in_cache, get_url_content, make_orgunits_cache
+from plugins.polio.api.vaccine_stocks import handle_ona_request_with_key
+from plugins.polio.models import Campaign, Config
 
 logger = getLogger(__name__)
 
@@ -43,40 +42,6 @@ def forma_find_campaign_on_day(campaigns, day):
         if start_date <= day < end_date:
             return c
     return None
-
-
-def find_orgunit_in_cache(cache_dict, name, parent_name=None):
-    if not name or pd.isna(name):
-        return None
-    name = name.lower().strip()
-    parent_name = parent_name.lower() if (parent_name and not pd.isna(parent_name)) else ""
-    matched_orgunits = cache_dict[name]
-
-    if len(matched_orgunits) == 0:
-        return
-    if len(matched_orgunits) == 1:
-        return matched_orgunits[0]
-    for f in matched_orgunits:
-        if f.parent.name.lower() == parent_name:
-            return f
-        if f.parent.aliases:
-            aliases = [alias.lower() for alias in f.parent.aliases]
-            if parent_name in aliases:
-                return f
-    # if no match found on parent, use the first since we put them before the aliases
-    return matched_orgunits[0]
-
-
-def make_orgunits_cache(orgunits):
-    cache_dict = defaultdict(list)
-    for f in orgunits:
-        cache_dict[f.name.lower().strip()].append(f)
-    for f in orgunits:
-        if f.aliases:
-            for a in f.aliases:
-                if not f.name.lower().strip() == a.lower().strip():
-                    cache_dict[a.lower().strip()].append(f)
-    return cache_dict
 
 
 def parents_q(org_units):
@@ -364,3 +329,13 @@ class FormAStocksViewSetV2(viewsets.ViewSet):
         else:
             r = df.to_json(orient="table")
             return HttpResponse(r, content_type="application/json")
+
+
+class FormAStocksViewSet(viewsets.ViewSet):
+    """
+    Endpoint used to transform Vaccine Stocks data from existing ODK forms stored in ONA.
+    sample config: [{"url": "https://afro.who.int/api/v1/data/yyy", "login": "d", "country": "hyrule", "password": "zeldarules", "country_id": 2115781}]
+    """
+
+    def list(self, request):
+        return handle_ona_request_with_key(request, "forma")

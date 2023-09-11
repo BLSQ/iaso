@@ -3,7 +3,7 @@ from collections import defaultdict
 from datetime import datetime
 from functools import lru_cache
 
-from django.core import cache
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404

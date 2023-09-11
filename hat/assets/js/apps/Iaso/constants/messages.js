@@ -177,6 +177,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Duplicates',
         id: 'iaso.label.duplicates',
     },
+    modules: {
+        defaultMessage: 'Modules',
+        id: 'iaso.label.Modules',
+    },
 });
 
 export default MESSAGES;

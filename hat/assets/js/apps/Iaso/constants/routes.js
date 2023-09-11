@@ -15,6 +15,7 @@ import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import { Users } from '../domains/users/index.tsx';
 import { UserRoles } from '../domains/userRoles/index.tsx';
+import { Modules } from '../domains/modules/index.tsx';
 import { Projects } from '../domains/projects/index.tsx';
 import DataSources from '../domains/dataSources';
 import { Details as DataSourceDetail } from '../domains/dataSources/details.tsx';
@@ -702,6 +703,19 @@ export const completenessStatsPath = {
             isRequired: false,
             key: 'showDirectCompleteness',
         },
+    ],
+};
+
+export const modulesPath = {
+    baseUrl: baseUrls.Modules,
+    permissions: [Permission.MODULES],
+    component: props => <Modules {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        ...paginationPathParams,
     ],
 };
 

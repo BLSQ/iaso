@@ -14,6 +14,11 @@ import { Router } from 'react-router';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectTo } from '../../routing/actions';
+import { warningSnackBar } from '../../constants/snackBars';
+import {
+    closeFixedSnackbar,
+    enqueueSnackbar,
+} from '../../redux/snackBarsReducer';
 import {
     buildQueryString,
     useGetCompletenessStats,
@@ -49,6 +54,7 @@ type Props = {
     router: Router;
 };
 
+const snackbarKey = 'completenessMapWarning';
 export const CompletenessStats: FunctionComponent<Props> = ({
     params,
     router,
@@ -67,6 +73,23 @@ export const CompletenessStats: FunctionComponent<Props> = ({
         params,
         completenessStats,
     );
+    const mapResults =
+        completenessMapStats?.filter(location => !location.is_root) || [];
+    const displayWarning =
+        mapResults?.length < (completenessStats?.count || 0) && tab === 'map';
+
+    useEffect(() => {
+        if (displayWarning) {
+            dispatch(enqueueSnackbar(warningSnackBar(snackbarKey)));
+        } else {
+            dispatch(closeFixedSnackbar(snackbarKey));
+        }
+        return () => {
+            if (displayWarning) {
+                dispatch(closeFixedSnackbar(snackbarKey));
+            }
+        };
+    }, [dispatch, displayWarning]);
     const csvUrl = useMemo(
         () =>
             `/api/v2/completeness_stats.csv?${buildQueryString(params, true)}`,

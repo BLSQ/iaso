@@ -5,6 +5,7 @@ import json
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
+from hat import settings
 from iaso.api.tasks import TaskSerializer
 from iaso.models.base import RUNNING, Task
 from iaso.models.org_unit import OrgUnit
@@ -74,24 +75,25 @@ class RefreshLQASDataViewset(ModelViewSet):
         serializer.is_valid(raise_exception=True)
         user = request.user
         data = serializer.validated_data
+        started_at = datetime.now()
         country_id = data.get("country_id", None)
         name = f"{TASK_NAME}-{country_id}" if country_id is not None else TASK_NAME
         task = Task.objects.create(
-            launcher=user, account=user.iaso_profile.account, name=name, status=RUNNING, external=True
+            launcher=user,
+            account=user.iaso_profile.account,
+            name=name,
+            status=RUNNING,
+            external=True,
+            started_at=started_at,
         )
-        self.refresh_lqas_data(country_id)
+        self.refresh_lqas_data(country_id, task.id)
         return Response({"task": TaskSerializer(instance=task).data})
 
-    def refresh_lqas_data(
-        self,
-        country_id=None,
-    ):
-        started_at = datetime.now()
+    def refresh_lqas_data(self, country_id=None, task_id=None):
         transport = RequestsHTTPTransport(
             url="https://api.openhexa.org/graphql/",
             verify=True,
-            headers={"Authorization": f"Bearer {os.environ.get('OPENHEXA_TOKEN','token')}"},
-            # headers={"Authorization": f"Bearer {os.environ['OPENHEXA_API_1C9E_API_TOKEN']}"},
+            headers={"Authorization": f"Bearer {settings.OPENHEXA_TOKEN}"},
         )
         client = Client(transport=transport, fetch_schema_from_transport=True)
         get_runs = gql(
@@ -110,7 +112,7 @@ class RefreshLQASDataViewset(ModelViewSet):
         """
         )
         latest_runs = client.execute(get_runs)
-        print("LATEST RUNS", latest_runs)
+        # Warning the query will only return the last 10 runs
         active_runs = [
             run
             for run in latest_runs["pipeline"]["runs"]["items"]
@@ -119,8 +121,26 @@ class RefreshLQASDataViewset(ModelViewSet):
         ]
         if len(active_runs) > 0:
             logger.warning("Found active run for config")
-
-        # Create task
-        # Make API call
-
-        # TODO get count of countries with config || send special message from pipeline when updating last config
+        run_mutation = gql(
+            """
+        mutation runPipeline($input: RunPipelineInput) {
+        runPipeline(input: $input) {
+            success
+            run {
+            id
+            }
+        }
+        }
+    """
+        )
+        run_result = client.execute(
+            run_mutation,
+            variable_values={
+                "input": {
+                    "id": f"{PIPELINE_ID}",
+                    "version": 63,
+                    "config":{"country_id":country_id}
+                }
+            },
+        )["runPipeline"]
+        print("RUN RESULT", run_result)

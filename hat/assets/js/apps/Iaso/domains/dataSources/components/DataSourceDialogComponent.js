@@ -12,6 +12,7 @@ import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
+import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors.ts';
 
 const ProjectSelectorIds = ({
     keyValue,
@@ -105,12 +106,6 @@ const formIsValid = form => {
     );
 };
 
-const translateErrors = (dhis2Credentials, formatMessage) => {
-    return dhis2Credentials?.errors.length > 0
-        ? [formatMessage(MESSAGES[dhis2Credentials?.errors])]
-        : [];
-};
-
 export const DataSourceDialogComponent = ({
     defaultSourceVersion,
     initialData,
@@ -158,13 +153,9 @@ export const DataSourceDialogComponent = ({
         value: v.id,
     }));
 
-    const urlErrors = translateErrors(
-        form.credentials_dhis2_url,
-        formatMessage,
-    );
-    const userPasswordErrors = translateErrors(
+    const urlErrors = useTranslatedDhis2Errors(form.credentials_dhis2_url);
+    const userPasswordErrors = useTranslatedDhis2Errors(
         form.credentials_dhis2_password,
-        formatMessage,
     );
     return (
         <ConfirmCancelDialogComponent

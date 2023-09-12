@@ -3,16 +3,16 @@ import React, { FunctionComponent, useState } from 'react';
 import { FilterButton } from '../../../components/FilterButton';
 import InputComponent from '../../../components/forms/InputComponent';
 import { useFilterState } from '../../../hooks/useFilterState';
-import { UserRoleParams } from '../types/userRoles';
+import { ModuleParams } from '../types/modules';
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';
 
 type Props = {
-    params: UserRoleParams;
+    params: ModuleParams;
 };
 
-const baseUrl = baseUrls.userRoles;
-export const UserRolesFilters: FunctionComponent<Props> = ({ params }) => {
+const baseUrl = baseUrls.modules;
+export const ModulesFilters: FunctionComponent<Props> = ({ params }) => {
     const { filters, handleSearch, handleChange, filtersUpdated } =
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);

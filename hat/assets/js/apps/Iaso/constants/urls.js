@@ -46,5 +46,5 @@ export const baseUrls = {
     error403: '403',
     error404: '404',
     error500: '500',
-    Modules: 'settings/modules',
+    modules: 'settings/modules',
 };

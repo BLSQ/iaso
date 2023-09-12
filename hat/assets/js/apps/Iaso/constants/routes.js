@@ -707,13 +707,17 @@ export const completenessStatsPath = {
 };
 
 export const modulesPath = {
-    baseUrl: baseUrls.Modules,
+    baseUrl: baseUrls.modules,
     permissions: [Permission.MODULES],
     component: props => <Modules {...props} />,
     params: [
         {
             isRequired: false,
             key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'search',
         },
         ...paginationPathParams,
     ],

@@ -1,21 +1,20 @@
 /* eslint-disable camelcase */
 import { UrlParams } from 'bluesquare-components';
 
-export type UserRole = {
+export type Module = {
     id: number;
     name: string;
-    created_at: string;
-    updated_at?: string;
+    status: boolean;
 };
-export type UserRolesFilterParams = {
+export type ModulesFilterParams = {
     name?: string;
 };
 
-export type UserRoleParams = UrlParams &
-    UserRolesFilterParams & {
+export type ModuleParams = UrlParams &
+    ModulesFilterParams & {
         select?: (
             // eslint-disable-next-line no-unused-vars
-            data: Array<UserRole>,
+            data: Array<Module>,
         ) => Array<any>;
     };
 

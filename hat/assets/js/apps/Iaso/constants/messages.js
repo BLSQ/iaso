@@ -179,7 +179,7 @@ const MESSAGES = defineMessages({
     },
     modules: {
         defaultMessage: 'Modules',
-        id: 'iaso.label.Modules',
+        id: 'iaso.label.modules',
     },
 });
 

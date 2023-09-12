@@ -52,11 +52,8 @@ class SetupAccountSerializer(serializers.Serializer):
         )
 
         # Create a setup_account project with an app_id represented by the account name
-        app_id = (
-            validated_data["account_name"]
-            if " " not in validated_data["account_name"]
-            else validated_data["account_name"].replace(" ", "-")
-        )
+        app_id = validated_data["account_name"].replace(" ", "-")
+
         initial_project = Project.objects.create(
             name=validated_data["account_name"] + " project", account=account, app_id=app_id
         )

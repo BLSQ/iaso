@@ -90,9 +90,7 @@ class RefreshLQASDataViewset(ModelViewSet):
         transport = RequestsHTTPTransport(
             url="https://api.openhexa.org/graphql/",
             verify=True,
-            headers={
-                "Authorization": f"Bearer {os.environ.get('OPENHEXA_TOKEN','token')}"
-            },
+            headers={"Authorization": f"Bearer {os.environ.get('OPENHEXA_TOKEN','token')}"},
             # headers={"Authorization": f"Bearer {os.environ['OPENHEXA_API_1C9E_API_TOKEN']}"},
         )
         client = Client(transport=transport, fetch_schema_from_transport=True)

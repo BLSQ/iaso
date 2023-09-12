@@ -83,16 +83,24 @@ export const useGetPlannings = (
     });
 };
 
-const getPlanningsOptions = async (): Promise<PlanningApi[]> => {
-    const url = makeUrlWithParams(endpoint, {});
+const getPlanningsOptions = async (
+    formIds?: string,
+): Promise<PlanningApi[]> => {
+    const apiParams: Record<string, any> = {};
+    if (formIds) {
+        apiParams.form_ids = formIds;
+    }
+    const url = makeUrlWithParams(endpoint, apiParams);
     return getRequest(url) as Promise<PlanningApi[]>;
 };
-export const useGetPlanningsOptions = (): UseQueryResult<Planning[], Error> => {
-    const queryKey: any[] = ['planningsList'];
+export const useGetPlanningsOptions = (
+    formIds?: string,
+): UseQueryResult<Planning[], Error> => {
+    const queryKey: any[] = ['planningsList', formIds];
     // @ts-ignore
     return useSnackQuery({
         queryKey,
-        queryFn: () => getPlanningsOptions(),
+        queryFn: () => getPlanningsOptions(formIds),
         options: {
             select: (data: Planning[]) => {
                 return data?.map(planning => {

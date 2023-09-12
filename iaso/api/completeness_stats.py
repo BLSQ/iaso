@@ -436,8 +436,6 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
 
             return Response(paginated_res)
         if as_location:
-            print("ICI")
-            print(as_location)
             ou_with_stats = ou_with_stats.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
             object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
         else:

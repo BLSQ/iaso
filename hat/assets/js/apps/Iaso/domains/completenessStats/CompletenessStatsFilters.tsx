@@ -74,7 +74,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const { data: orgUnitTypes, isFetching: fetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
     const { data: availablePlannings, isFetching: fetchingPlannings } =
-        useGetPlanningsOptions();
+        useGetPlanningsOptions(filters.formId);
     useSkipEffectOnMount(() => {
         setInitialParentId(params?.parentId);
     }, [params]);
@@ -135,11 +135,20 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    const handleChangeForm = useCallback(
+        (keyValue, value) => {
+            if (keyValue === 'formId') {
+                handleChange('planningId', undefined);
+            }
+            handleChange(keyValue, value);
+        },
+        [handleChange],
+    );
+
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
-
     return (
         <>
             <Grid container spacing={2}>
@@ -147,7 +156,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
                     <InputWithInfos infos={formatMessage(MESSAGES.formsInfos)}>
                         <InputComponent
                             type="select"
-                            onChange={handleChange}
+                            onChange={handleChangeForm}
                             keyValue="formId"
                             label={MESSAGES.form}
                             value={filters.formId}

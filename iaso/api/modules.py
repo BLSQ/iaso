@@ -31,7 +31,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     def get_account(self, obj):
         account = self.context["request"].user.iaso_profile.account
-        return AccountSerializer(obj.account_modules.filter(id=account.id), many=True).data
+        return AccountSerializer(obj.account_modules.filter(pk=account.id), many=True).data
 
 
 class ModulesViewSet(ModelViewSet):

@@ -9,7 +9,7 @@ export const useGetRegions = country => {
         orgUnitParentId: country,
         // FIXME this is not super safe as the ids can change from one account to the other
         // orgUnitTypeId: 6,
-        orgunitTypeCategory: 'REGION',
+        orgUnitTypeCategory: 'REGION',
     };
 
     const queryString = new URLSearchParams(params);

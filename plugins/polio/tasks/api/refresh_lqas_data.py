@@ -135,12 +135,6 @@ class RefreshLQASDataViewset(ModelViewSet):
         )
         run_result = client.execute(
             run_mutation,
-            variable_values={
-                "input": {
-                    "id": f"{PIPELINE_ID}",
-                    "version": 63,
-                    "config":{"country_id":country_id}
-                }
-            },
+            variable_values={"input": {"id": f"{PIPELINE_ID}", "version": 63, "config": {"country_id": country_id}}},
         )["runPipeline"]
         print("RUN RESULT", run_result)

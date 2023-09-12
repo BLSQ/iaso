@@ -23,7 +23,7 @@ from ..models import Config, Round, RoundScope
 from ..preparedness.calculator import get_preparedness_score
 from ..preparedness.exceptions import InvalidFormatError
 from ..preparedness.spreadsheet_manager import *
-from ..api.campaigns import CampaignSerializer
+from ..api.campaigns.campaigns import CampaignSerializer
 
 
 class PolioAPITestCase(APITestCase):
@@ -91,7 +91,7 @@ class PolioAPITestCase(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(self.yoda)
 
-    @mock.patch("plugins.polio.api.campaigns.SpreadSheetImport")
+    @mock.patch("plugins.polio.api.campaigns.campaigns.SpreadSheetImport")
     def test_preview_invalid_document(self, mock_SpreadSheetImport, *_):
         mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
         url = "https://docs.google.com/spreadsheets/d/1"

@@ -6,7 +6,7 @@ from iaso.models import OrgUnit
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
 from plugins.polio.api.common import LqasAfroViewset, calculate_country_status, LQASStatus, RoundSelection
-from plugins.polio.api.lqasim_zoom_in_map import get_latest_active_campaign_and_rounds
+from plugins.polio.api.lqas_im.lqasim_zoom_in_map import get_latest_active_campaign_and_rounds
 
 
 @swagger_auto_schema(tags=["lqasglobal"])

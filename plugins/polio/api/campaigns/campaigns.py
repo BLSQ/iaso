@@ -35,9 +35,9 @@ from iaso.api.common import (
     ModelViewSet,
 )
 from iaso.models import Group, OrgUnit
-from plugins.polio.api.campaigns_log import log_campaign_modification, serialize_campaign
+from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
 from plugins.polio.api.common import CACHE_VERSION
-from plugins.polio.api.round import RoundScopeSerializer, RoundSerializer, ShipmentSerializer
+from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer, ShipmentSerializer
 from plugins.polio.api.shared_serializers import (
     DestructionSerializer,
     GroupSerializer,
@@ -144,7 +144,6 @@ class CampaignSerializer(serializers.ModelSerializer):
     def get_has_data_in_budget_tool(self, campaign):
         return campaign.budget_steps.count() > 0
 
-    # group = GroupSerializer(required=False, allow_null=True)
     scopes = CampaignScopeSerializer(many=True, required=False)
 
     obr_name = serializers.CharField(validators=[UniqueValidator(queryset=Campaign.objects.all())])

@@ -855,7 +855,7 @@
     "iaso.runs.dialog.deleteRunText": "All created links will be deleted.",
     "iaso.runs.dialog.deleteRunTitle": "Are you sure you want to delete this run?",
     "iaso.search": "Search",
-    "iaso.setup.accountNameAlreadyExist": "Account name already exists",
+    "iaso.setup.accountNameAlreadyExist": "This account name is already taken",
     "iaso.setup.accountName": "Account name",
     "iaso.setup.accountSetup": "Account setup",
     "iaso.setup.confirmMessage": "Account and profile created successfully, please logout and login again with the new profile.",

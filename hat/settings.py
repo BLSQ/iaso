@@ -508,6 +508,10 @@ THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR"
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
 # openhexa api token
 OPENHEXA_TOKEN = os.environ.get("OPENHEXA_TOKEN", "token")
+OH_PIPELINE_TARGET = os.environ.get("OH_PIPELINE_TARGET", "staging")
+LQAS_PIPELINE = os.environ.get("LQAS_PIPELINE", "pipeline")
+OPENHEXA_URL = os.environ.get("OPENHEXA_URL", None)
+LQAS_PIPELINE_VERSION = os.environ.get("LQAS_PIPELINE_VERSION", None)
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

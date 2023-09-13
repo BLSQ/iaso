@@ -7,7 +7,7 @@ from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
 from hat import settings
 from iaso.api.tasks import TaskSerializer
-from iaso.models.base import RUNNING, Task
+from iaso.models.base import RUNNING, SKIPPED, Task
 from iaso.models.org_unit import OrgUnit
 from rest_framework import viewsets, permissions, serializers
 from hat.menupermissions import models as permission
@@ -16,8 +16,6 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 logger = logging.getLogger(__name__)
-# Can be queried from OpenHexa, but we'd need to use the hardcoded name ("lqas") anyway
-PIPELINE_ID = "e5b9a3bb-a22c-461f-b000-4dfa8d1cc445"
 TASK_NAME = "Refresh LQAS data"
 
 
@@ -40,12 +38,12 @@ class RefreshLQASDataSerializer(serializers.Serializer):
 
 class ExternalTaskSerializer(TaskSerializer):
     def update(self, task, validated_data):
-        has_progress_message = validated_data["progress_message"] is not None
-        has_status = validated_data["status"] is not None
-        has_progress_value = validated_data["progress_value"] is not None
+        has_progress_message = validated_data.get("progress_message", None) is not None
+        has_status = validated_data.get("status", None) is not None
+        has_progress_value = validated_data.get("progress_value", None) is not None
         if (has_status or has_progress_value or has_progress_message) and not task.external:
             raise serializers.ValidationError({"external": "Cannot modify non external tasks"})
-        if validated_data["should_be_killed"] is not None:
+        if validated_data.get("should_be_killed", None) is not None:
             task.should_be_killed = validated_data["should_be_killed"]
         if has_progress_message:
             task.progress_message = validated_data["progress_message"]
@@ -85,13 +83,16 @@ class RefreshLQASDataViewset(ModelViewSet):
             status=RUNNING,
             external=True,
             started_at=started_at,
+            should_be_killed=False,
         )
-        self.refresh_lqas_data(country_id, task.id)
+        status = self.refresh_lqas_data(country_id, task.id)
+        task.status = status
+        task.save()
         return Response({"task": TaskSerializer(instance=task).data})
 
     def refresh_lqas_data(self, country_id=None, task_id=None):
         transport = RequestsHTTPTransport(
-            url="https://api.openhexa.org/graphql/",
+            url=settings.OPENHEXA_URL,
             verify=True,
             headers={"Authorization": f"Bearer {settings.OPENHEXA_TOKEN}"},
         )
@@ -116,11 +117,24 @@ class RefreshLQASDataViewset(ModelViewSet):
         active_runs = [
             run
             for run in latest_runs["pipeline"]["runs"]["items"]
-            if (run["status"] == "queued" or run["status"] == "success")
+            if (run["status"] != "queued" and run["status"] != "success" and run["status"] != "failed")
             and run.get("config", {}).get("country_id", None) == country_id
         ]
         if len(active_runs) > 0:
+            logger.debug("ACTIVE RUNS", active_runs, country_id)
             logger.warning("Found active run for config")
+            return SKIPPED
+
+        config = {"target": settings.OH_PIPELINE_TARGET}
+        if country_id:
+            config["country_id"] = country_id
+        if task_id:
+            config["task_id"] = task_id
+        mutation_input = (
+            {"id": settings.LQAS_PIPELINE, "version": settings.LQAS_PIPELINE_VERSION, "config": config}
+            if settings.LQAS_PIPELINE_VERSION
+            else {"id": settings.LQAS_PIPELINE, "config": config}
+        )
         run_mutation = gql(
             """
         mutation runPipeline($input: RunPipelineInput) {
@@ -135,6 +149,7 @@ class RefreshLQASDataViewset(ModelViewSet):
         )
         run_result = client.execute(
             run_mutation,
-            variable_values={"input": {"id": f"{PIPELINE_ID}", "version": 63, "config": {"country_id": country_id}}},
+            variable_values={"input": mutation_input},
         )["runPipeline"]
-        print("RUN RESULT", run_result)
+        if run_result["success"]:
+            return RUNNING

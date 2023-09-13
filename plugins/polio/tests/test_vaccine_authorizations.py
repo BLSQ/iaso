@@ -527,12 +527,18 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         response = expired_vaccine_authorizations_email_alert()
 
-        self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
+        page_url = f"example.com//dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
+        url_is_correct = False
 
+        if page_url in mail.outbox[0].body:
+            url_is_correct = True
+
+        self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f"ALERT: Vaccine Authorization {past_vacc_auth} has expired.")
         self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
+        self.assertEqual(url_is_correct, True)
 
     def test_vaccine_authorization_update_expired_entries(self):
         expired_entry = VaccineAuthorization.objects.create(

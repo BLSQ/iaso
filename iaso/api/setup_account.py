@@ -1,13 +1,14 @@
 import logging
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.models import Account, DataSource, SourceVersion, Profile
+from iaso.api.common import IsAdminOrSuperUser
+from iaso.models import Account, DataSource, Profile, SourceVersion
 
 logger = logging.getLogger(__name__)
 
@@ -62,5 +63,5 @@ class SetupAccountSerializer(serializers.Serializer):
 
 
 class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrSuperUser]
     serializer_class = SetupAccountSerializer

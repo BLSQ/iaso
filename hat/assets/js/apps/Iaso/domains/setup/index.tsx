@@ -46,6 +46,7 @@ const useStyles = makeStyles(theme => ({
         display: 'inline-block',
         textTransform: 'uppercase',
         cursor: 'pointer',
+        padding: theme.spacing(0, 0.5),
     },
     languageSwitchActive: {
         color: theme.palette.primary.main,
@@ -135,7 +136,7 @@ export const SetupAccount: FunctionComponent = () => {
                             >
                                 {locale.code}
                             </Box>
-                            {index + 1 !== APP_LOCALES.length && ' - '}
+                            {index + 1 !== APP_LOCALES.length && '-'}
                         </Box>
                     ))}
                 </Box>

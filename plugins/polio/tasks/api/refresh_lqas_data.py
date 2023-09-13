@@ -133,12 +133,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             return SKIPPED
 
         config = {"target": settings.OH_PIPELINE_TARGET}
-        config = {
-            "target": "custom",
-            "username": "sonpolio",
-            "pwd": "sonpolio",
-            "url": "https://25b2-2a02-a03f-c10a-1601-3dd5-b64e-239a-78e4.ngrok-free.app",
-        }
+
         if country_id:
             config["country_id"] = country_id
         if task_id:

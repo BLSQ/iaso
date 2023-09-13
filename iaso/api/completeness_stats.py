@@ -392,9 +392,11 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
                 ou_qs = get_annotated_queryset(ou_qs, orgunit_qs, instance_qs, form_qs)
 
-                top_row_ou = to_dict(ou_qs[0]) if not is_map else to_map(ou_qs[0])
-                top_row_ou["is_root"] = True
-                temp_list.insert(0, top_row_ou)
+                if ou_qs.count() > 0:
+                    top_row_ou = to_dict(ou_qs[0]) if not is_map else to_map(ou_qs[0])
+                    top_row_ou["is_root"] = True
+                    temp_list.insert(0, top_row_ou)
+
             return temp_list
 
         limit = request.GET.get("limit", None)

@@ -163,7 +163,9 @@ class CompletenessStatsAPITestCase(APITestCase):
     def test_base_map_results(self):
         self.client.force_authenticate(self.user)
 
-        response = self.client.get("/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW"})
+        response = self.client.get(
+            "/api/v2/completeness_stats/", {"org_unit_validation_status": "VALID,NEW", "as_location": True}
+        )
         j = self.assertJSONResponse(response, 200)
         expected_result = {
             "results": [
@@ -308,6 +310,17 @@ class CompletenessStatsAPITestCase(APITestCase):
                 },
             ],
         }
+        print("")
+        print("")
+        print(expected_result)
+        print("")
+        print("")
+        print("")
+        print("")
+        print("")
+        print(j)
+        print("")
+        print("")
         self.assertAlmostEqualRecursive(
             expected_result,
             j,

@@ -227,7 +227,7 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         orders = params["order"]
         form_qs = params["forms"]
         period = params.get("period", None)
-        planning = params.get("planning", None)
+        planning = params.get("planning_id", None)
         org_unit_validation_status = params["org_unit_validation_status"]
         as_location = params.get("as_location", None)
 
@@ -437,11 +437,14 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             }
 
             return Response(paginated_res)
+        object_list = []
         if as_location:
             ou_with_stats = ou_with_stats.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
-            object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
+            if ou_with_stats.count() > 0:
+                object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
         else:
-            object_list = with_parent([to_dict(ou) for ou in ou_with_stats], True)
+            if ou_with_stats.count() > 0:
+                object_list = with_parent([to_dict(ou) for ou in ou_with_stats], True)
         return Response({"results": object_list})
 
     @action(methods=["GET"], detail=False)

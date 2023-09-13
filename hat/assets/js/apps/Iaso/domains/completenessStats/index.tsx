@@ -76,7 +76,9 @@ export const CompletenessStats: FunctionComponent<Props> = ({
     const mapResults =
         completenessMapStats?.filter(location => !location.is_root) || [];
     const displayWarning =
-        mapResults?.length < (completenessStats?.count || 0) && tab === 'map';
+        mapResults?.length < (completenessStats?.count || 0) &&
+        tab === 'map' &&
+        !isFetchingMapStats;
 
     useEffect(() => {
         if (displayWarning) {

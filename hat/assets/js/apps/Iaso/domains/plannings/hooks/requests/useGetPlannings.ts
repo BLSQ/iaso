@@ -10,6 +10,7 @@ import {
 } from '../../../../utils/dates';
 import { endpoint } from '../../constants';
 import { PlanningParams } from '../../types';
+import { DropdownOptions } from '../../../../types/utils';
 
 export type OrgUnitDetails = {
     id: number;
@@ -27,6 +28,7 @@ export type PlanningApi = {
     started_at?: string;
     ended_at?: string;
     org_unit_details: OrgUnitDetails;
+    form?: [number];
 };
 
 type Planning = PlanningApi & {
@@ -95,7 +97,7 @@ const getPlanningsOptions = async (
 };
 export const useGetPlanningsOptions = (
     formIds?: string,
-): UseQueryResult<Planning[], Error> => {
+): UseQueryResult<DropdownOptions<number>[], Error> => {
     const queryKey: any[] = ['planningsList', formIds];
     // @ts-ignore
     return useSnackQuery({
@@ -107,6 +109,7 @@ export const useGetPlanningsOptions = (
                     return {
                         value: planning.id,
                         label: planning.name,
+                        original: planning,
                     };
                 });
             },

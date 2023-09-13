@@ -36,7 +36,7 @@ from gspread.utils import extract_id_from_url  # type: ignore
 from hat.menupermissions import models as permission
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
@@ -2174,6 +2174,10 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         validated_data["account"] = user.iaso_profile.account
+
+        expiration_date = validated_data.get("expiration_date")
+        if expiration_date is None:
+            raise serializers.ValidationError("Expiration date is required.")
 
         return super().create(validated_data)
 

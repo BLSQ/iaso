@@ -113,6 +113,22 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)
 
+    def test_expiration_date_is_required(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.id])
+
+        response = self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "quantity": 12346,
+                "status": "ONGOING",
+                "comment": "waiting for approval.",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+
     def test_get_vacc_auth_by_id(self):
         self.client.force_authenticate(self.user_1)
 

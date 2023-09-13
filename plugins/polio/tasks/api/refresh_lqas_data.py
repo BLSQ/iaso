@@ -123,6 +123,7 @@ class RefreshLQASDataViewset(ModelViewSet):
                 if (run["status"] != "queued" and run["status"] != "success" and run["status"] != "failed")
                 and run.get("config", {}).get("country_id", None) == country_id
             ]
+            # Don't create a task if there's already an ongoing run for the country
             if len(active_runs) > 0:
                 logger.debug("ACTIVE RUNS", active_runs, country_id)
                 logger.warning("Found active run for config")
@@ -132,11 +133,19 @@ class RefreshLQASDataViewset(ModelViewSet):
             return ERRORED
 
         config = {"target": settings.OH_PIPELINE_TARGET}
+        if settings.OH_PIPELINE_TARGET == "custom":
+            config = {
+                "target": settings.OH_PIPELINE_TARGET,
+                "url": settings.OH_CUSTOM_URL,
+                "username": settings.OH_CUSTOM_USERNAME,
+                "pwd": settings.OH_CUSTOM_PASSWORD,
+            }
 
         if country_id:
             config["country_id"] = country_id
         if task_id:
             config["task_id"] = task_id
+        # We can specify a version in the env in case the latest version gets bugged
         mutation_input = (
             {"id": settings.LQAS_PIPELINE, "version": settings.LQAS_PIPELINE_VERSION, "config": config}
             if settings.LQAS_PIPELINE_VERSION
@@ -159,6 +168,7 @@ class RefreshLQASDataViewset(ModelViewSet):
                 run_mutation,
                 variable_values={"input": mutation_input},
             )["runPipeline"]
+            # The SUCCESS state will be set by the OpenHexa pipeline
             if run_result["success"]:
                 return RUNNING
         except:

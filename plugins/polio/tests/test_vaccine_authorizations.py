@@ -128,6 +128,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["expiration_date"][0], "This field is required.")
 
     def test_get_vacc_auth_by_id(self):
         self.client.force_authenticate(self.user_1)

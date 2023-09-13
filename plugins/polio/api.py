@@ -2169,15 +2169,10 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
-        expiration_date = TimestampField(read_only=True)
 
     def create(self, validated_data):
         user = self.context["request"].user
         validated_data["account"] = user.iaso_profile.account
-
-        expiration_date = validated_data.get("expiration_date")
-        if expiration_date is None:
-            raise serializers.ValidationError("Expiration date is required.")
 
         return super().create(validated_data)
 

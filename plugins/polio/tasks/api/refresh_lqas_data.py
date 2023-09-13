@@ -1,20 +1,15 @@
 import logging
-from beanstalk_worker import task_decorator
-import os
-import json
 from gql import Client, gql
 from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
 from hat import settings
 from iaso.api.tasks import TaskSerializer
-from iaso.models.base import RUNNING, SKIPPED, KILLED, Task
+from iaso.models.base import RUNNING, SKIPPED, KILLED, ERRORED, Task
 from iaso.models.org_unit import OrgUnit
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import permissions, serializers
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.contrib.sites.models import Site
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
@@ -119,18 +114,22 @@ class RefreshLQASDataViewset(ModelViewSet):
         }
         """
         )
-        latest_runs = client.execute(get_runs)
-        # Warning the query will only return the last 10 runs
-        active_runs = [
-            run
-            for run in latest_runs["pipeline"]["runs"]["items"]
-            if (run["status"] != "queued" and run["status"] != "success" and run["status"] != "failed")
-            and run.get("config", {}).get("country_id", None) == country_id
-        ]
-        if len(active_runs) > 0:
-            logger.debug("ACTIVE RUNS", active_runs, country_id)
-            logger.warning("Found active run for config")
-            return SKIPPED
+        try:
+            latest_runs = client.execute(get_runs)
+            # Warning the query will only return the last 10 runs
+            active_runs = [
+                run
+                for run in latest_runs["pipeline"]["runs"]["items"]
+                if (run["status"] != "queued" and run["status"] != "success" and run["status"] != "failed")
+                and run.get("config", {}).get("country_id", None) == country_id
+            ]
+            if len(active_runs) > 0:
+                logger.debug("ACTIVE RUNS", active_runs, country_id)
+                logger.warning("Found active run for config")
+                return SKIPPED
+        except:
+            logger.exception("Could not fetch pipeline runs")
+            return ERRORED
 
         config = {"target": settings.OH_PIPELINE_TARGET}
 
@@ -143,21 +142,25 @@ class RefreshLQASDataViewset(ModelViewSet):
             if settings.LQAS_PIPELINE_VERSION
             else {"id": settings.LQAS_PIPELINE, "config": config}
         )
-        run_mutation = gql(
-            """
-        mutation runPipeline($input: RunPipelineInput) {
-        runPipeline(input: $input) {
-            success
-            run {
-            id
+        try:
+            run_mutation = gql(
+                """
+            mutation runPipeline($input: RunPipelineInput) {
+            runPipeline(input: $input) {
+                success
+                run {
+                id
+                }
             }
-        }
-        }
-    """
-        )
-        run_result = client.execute(
-            run_mutation,
-            variable_values={"input": mutation_input},
-        )["runPipeline"]
-        if run_result["success"]:
-            return RUNNING
+            }
+        """
+            )
+            run_result = client.execute(
+                run_mutation,
+                variable_values={"input": mutation_input},
+            )["runPipeline"]
+            if run_result["success"]:
+                return RUNNING
+        except:
+            logger.exception("Could not launch pipeline")
+            return ERRORED

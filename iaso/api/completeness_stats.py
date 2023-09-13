@@ -227,17 +227,21 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         orders = params["order"]
         form_qs = params["forms"]
         period = params.get("period", None)
-        planning = params.get("planning_id", None)
+        planning_id = params.get("planning_id", None)
         org_unit_validation_status = params["org_unit_validation_status"]
         as_location = params.get("as_location", None)
 
         instance_qs = Instance.objects.all()
+
+        planning = None
+        if planning_id:
+            planning = get_object_or_404(Planning, id=planning_id)
         if period:
             # In the future we would like to support multiple periods, but then we will have to count properly
             # the requirements
             instance_qs = instance_qs.filter(period=period)
         if planning:
-            instance_qs = instance_qs.filter(planning_id=planning.id)
+            instance_qs = instance_qs.filter(planning_id=planning)
             form_qs = form_qs.filter(plannings=planning)
 
         profile = request.user.iaso_profile  # type: ignore

@@ -1,11 +1,19 @@
+from typing import Union
+
 from django.db.models import Count
-from rest_framework import permissions, serializers
+from django.db.models.query import QuerySet
+from drf_yasg import openapi
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework import permissions, serializers, status
 from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.request import Request
 from rest_framework.response import Response
 
+from hat.menupermissions import models as permission
+from iaso.api.query_params import APP_ID
 from iaso.models import Group, SourceVersion, DataSource, Project
 from .common import ModelViewSet, TimestampField, HasPermission
-from hat.menupermissions import models as permission
 
 
 class HasGroupPermission(permissions.BasePermission):
@@ -169,3 +177,61 @@ class GroupsViewSet(ModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+
+class MobileGroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "name",
+        ]
+
+
+class MobileGroupsViewSet(ModelViewSet):
+    """Groups API for Mobile.
+
+    This API:
+
+    - allows the mobile application to pass an `app_id` to filter `groups`
+    - has a lighter payload
+    - is open to anonymous users
+
+    `GET /api/mobile/groups/?app_id=some.app.id`
+    """
+
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = MobileGroupSerializer
+    results_key = "groups"
+    http_method_names = ["get", "head", "options"]
+
+    app_id_param = openapi.Parameter(
+        name=APP_ID,
+        in_=openapi.IN_QUERY,
+        required=True,
+        description="Application id",
+        type=openapi.TYPE_STRING,
+    )
+
+    def check_params(self, request: Request) -> Union[Response, None]:
+        self.app_id_param = request.query_params.get(f"{APP_ID}")
+        if not self.app_id_param:
+            return Response(f"{APP_ID} is required", status=status.HTTP_400_BAD_REQUEST)
+
+    @swagger_auto_schema(
+        responses={
+            200: f"list of groups for the given '{APP_ID}'",
+            400: f"parameter '{APP_ID}' was not provided",
+            404: f"project for given '{APP_ID}' doesn't exist",
+        },
+        manual_parameters=[app_id_param],
+    )
+    def list(self, request: Request, *args, **kwargs) -> Response:
+        if error_response := self.check_params(request):
+            return error_response
+        return super().list(request, *args, **kwargs)
+
+    def get_queryset(self) -> QuerySet:
+        queryset = Project.objects.select_related("account__default_version")
+        project = get_object_or_404(queryset, app_id=self.app_id_param)
+        return Group.objects.filter(source_version=project.account.default_version)

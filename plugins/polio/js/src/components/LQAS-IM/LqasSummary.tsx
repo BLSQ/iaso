@@ -17,6 +17,7 @@ type Props = {
     campaign?: string;
     round: number;
     data: Record<string, ConvertedLqasImData>;
+    scopeCount: number;
 };
 
 const style = {
@@ -32,7 +33,7 @@ const style = {
 const useStyles = makeStyles(style);
 
 const getRatePassedColors = (ratePassed, classes) => {
-    if (!ratePassed) return '';
+    if (!ratePassed || Number.isNaN(parseInt(ratePassed, 10))) return '';
     if (parseFloat(ratePassed) >= 80) return classes.pass;
     return classes.fail;
 };
@@ -41,16 +42,15 @@ export const LqasSummary: FunctionComponent<Props> = ({
     campaign,
     round,
     data,
+    scopeCount,
 }) => {
     const { formatMessage } = useSafeIntl();
     const classes = useStyles();
     const summary = useMemo(() => {
         const [passed, failed] = getLqasStatsForRound(data, campaign, round);
-        const evaluated: number = passed.length + failed.length;
-        const ratePassed: string = convertStatToPercent(
-            passed.length,
-            evaluated,
-        );
+        const ratePassed: string = scopeCount
+            ? convertStatToPercent(passed.length, scopeCount)
+            : '--';
         const caregiversRatio =
             data && campaign && data[campaign]
                 ? makeCaregiversRatio(accessArrayRound(data[campaign], round))
@@ -62,7 +62,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
             ratePassed,
             caregiversRatio,
         };
-    }, [data, campaign, round]);
+    }, [data, campaign, round, scopeCount]);
 
     const ratePassedColor = getRatePassedColors(summary.ratePassed, classes);
 
@@ -75,7 +75,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         direction="row"
                         className={classes.containerGrid}
                     >
-                        <Grid item xs={4} sm={3}>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -92,7 +92,7 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         <Box mt={-2} mb={-2}>
                             <Divider orientation="vertical" />
                         </Box>
-                        <Grid item xs={4} sm={3}>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}
@@ -109,7 +109,24 @@ export const LqasSummary: FunctionComponent<Props> = ({
                         <Box mt={-2} mb={-2}>
                             <Divider orientation="vertical" />
                         </Box>
-                        <Grid item xs={4} sm={3}>
+                        <Grid item xs={3} sm={2}>
+                            <Typography
+                                variant="body1"
+                                className={classes.centerText}
+                            >
+                                {formatMessage(MESSAGES.districtsInScope)}
+                            </Typography>
+                            <Typography
+                                variant="h6"
+                                className={`${classes.centerText} ${classes.boldText}`}
+                            >
+                                {`${scopeCount}`}
+                            </Typography>
+                        </Grid>
+                        <Box mt={-2} mb={-2}>
+                            <Divider orientation="vertical" />
+                        </Box>
+                        <Grid item xs={3} sm={2}>
                             <Typography
                                 variant="body1"
                                 className={classes.centerText}

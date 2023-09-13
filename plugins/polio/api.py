@@ -5,20 +5,26 @@ import json
 import numpy as np
 from collections import defaultdict
 from datetime import timedelta, datetime
+from django.db.models.expressions import Subquery
+
 from functools import lru_cache
 from logging import getLogger
 from typing import Any, List, Optional, Union
+
+from django.contrib.auth.models import User
 from django.contrib.gis.geos import Polygon
+from django.db.models.functions import RowNumber, Coalesce
 from django.db.models.query import QuerySet
 from drf_yasg.utils import swagger_auto_schema, no_body
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Q, Max, Min
+from django.db.models import Q, Max, Min, Case
 from django.db.models import Value, TextField, UUIDField
-from django.db.models.expressions import RawSQL
+from django.db.models.expressions import RawSQL, OuterRef, Subquery, F, Window, When
 from django.http import FileResponse
 from django.http import HttpResponse, StreamingHttpResponse
+from django.db.models.expressions import RawSQL, Subquery
 from django.http import JsonResponse
 from django.http.response import HttpResponseBadRequest
 from django.shortcuts import get_object_or_404
@@ -27,28 +33,41 @@ from django.utils.timezone import now, make_aware
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from gspread.utils import extract_id_from_url  # type: ignore
+from hat.menupermissions import models as permission
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
+from rest_framework.exceptions import PermissionDenied
+
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
+from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 from rest_framework import routers, filters, viewsets, serializers, permissions, status
+from rest_framework import routers, filters, viewsets, serializers, permissions, status, pagination
 from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from iaso.api.common import (
     CSVExportMixin,
+    HasPermission,
     ModelViewSet,
     DeletionFilterBackend,
     CONTENT_TYPE_XLSX,
     CONTENT_TYPE_CSV,
+    TimestampField,
+    HasPermission,
+    Paginator,
 )
-from iaso.models import OrgUnit, Group
+from iaso.models import OrgUnit, Group, Team
+from iaso.utils.powerbi import launch_dataset_refresh
 from plugins.polio.serializers import (
     ConfigSerializer,
     CountryUsersGroupSerializer,
     ExportCampaignSerializer,
+    LqasDistrictsUpdateSerializer,
     RoundDateHistoryEntrySerializer,
+    PowerBIRefreshSerializer,
+    RoundSerializer,
 )
 from plugins.polio.serializers import (
     OrgUnitSerializer,
@@ -73,10 +92,13 @@ from .forma import (
 )
 from .helpers import (
     LqasAfroViewset,
+    RoundSelection,
+    LQASStatus,
     get_url_content,
     CustomFilterBackend,
     calculate_country_status,
     determine_status_for_district,
+    make_safe_bbox,
 )
 from .vaccines_email import send_vaccines_notification_email
 from .models import (
@@ -88,11 +110,13 @@ from .models import (
     CampaignScope,
     RoundDateHistoryEntry,
     RoundScope,
+    VaccineAuthorization,
 )
 from hat.api.export_utils import Echo, iter_items
 from time import gmtime, strftime
 from .models import CountryUsersGroup
 from .preparedness.summary import get_or_set_preparedness_cache_for_round
+from hat.menupermissions import models as permission
 
 logger = getLogger(__name__)
 
@@ -508,6 +532,15 @@ Timeline tracker Automated message
         log_campaign_modification(campaign, old_campaign_dump, request_user)
 
         return Response({"message": "email sent"})
+
+    # We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+    # But Patching the campign directly is very much error prone, so we disable it indirectly
+    def partial_update(self):
+        """Don't PATCH this way, it won't do anything
+        We need to authorize PATCH request to enable restore_deleted_campaign endpoint
+        But Patching the campign directly is very much error prone, so we disable it indirectly
+        """
+        pass
 
     @action(methods=["PATCH"], detail=False)
     def restore_deleted_campaigns(self, request):
@@ -1415,6 +1448,23 @@ def format_caregiver_stats(campaign_stats):
                 district["care_giver_stats"] = caregivers_dict
 
 
+@swagger_auto_schema()
+class LaunchPowerBIRefreshViewSet(viewsets.ViewSet):
+    serializer_class = PowerBIRefreshSerializer
+
+    def create(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        data_set_id = serializer.validated_data["data_set_id"]
+        group_id = serializer.validated_data["group_id"]
+        # Perform actions using uuid1 and uuid2
+        response_data = {"message": f"Received data_set_id: {data_set_id}, group_id: {group_id}"}
+        launch_dataset_refresh(group_id, data_set_id)
+
+        return Response(response_data, status=status.HTTP_201_CREATED)
+
+
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.
@@ -1754,15 +1804,17 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         # TODO see if we need to filter per user as with Campaign
-        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom=None)
+        return OrgUnit.objects.filter(org_unit_type__category="COUNTRY").exclude(simplified_geom__isnull=True)
 
     def list(self, request):
         results = []
+
         # Should be "lqas", "im_OHH", "im_HH"
-        requested_round = self.request.GET.get("round", "latest")
+        requested_round = self.request.GET.get("round", RoundSelection.Latest)
         queryset = self.get_queryset()
         data_stores = self.get_datastores()
         for org_unit in queryset:
+            result = None
             start_date_after, end_date_before = self.compute_reference_dates()
             country_id = org_unit.id
             try:
@@ -1775,58 +1827,50 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
             ).filter(id=org_unit.id)
             shapes = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
 
-            # Probably not necessary as long as we only have AFRO in the platform
-            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
-            # Filtering out future campaigns
-            started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
-            # By default, we want the last campaign, so we sort them by descending round end date
-            sorted_campaigns = (
-                sorted(
-                    started_campaigns,
-                    key=lambda campaign: campaign.get_last_round_end_date(),
-                    reverse=True,
-                )
-                if data_store
-                else []
-            )
-            # We apply the date filters if any. If there's a period filter it has already been taken into account in start_date_after and end_date_before
-            if start_date_after is not None:
-                sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "start", start_date_after)
-            if end_date_before is not None:
-                sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "end", end_date_before)
-            # And we pick the first one from our sorted list
-            latest_campaign = sorted_campaigns[0] if data_store and sorted_campaigns else None
-            sorted_rounds = (
-                sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
-                if latest_campaign is not None
-                else []
-            )
+            (
+                latest_active_campaign,
+                latest_active_campaign_rounds,
+                round_numbers,
+            ) = self.get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
+
+            if latest_active_campaign is None:
+                continue
+
             # Get data from json datastore
             data_for_country = data_store.content if data_store else None
             # remove data from all campaigns but latest
             stats = data_for_country.get("stats", None) if data_for_country else None
-            result = None
-            if stats and latest_campaign:
-                stats = stats.get(latest_campaign.obr_name, None)
-            if stats and latest_campaign:
+
+            if stats:
+                stats = stats.get(latest_active_campaign.obr_name, None)
+            if stats:
                 round_number = requested_round
-                if round_number == "latest":
-                    round_number = sorted_rounds[0].number if len(sorted_rounds) > 0 else None
-                elif round_number == "penultimate":
-                    round_number = sorted_rounds[1].number if len(sorted_rounds) > 1 else None
+                if round_number == RoundSelection.Latest:
+                    round_number = (
+                        latest_active_campaign_rounds.first().number
+                        if latest_active_campaign_rounds.count() > 0
+                        else None
+                    )
+                elif round_number == RoundSelection.Penultimate:
+                    round_number = (
+                        latest_active_campaign_rounds[1].number if latest_active_campaign_rounds.count() > 1 else None
+                    )
                 else:
                     round_number = int(round_number)
-                if latest_campaign:
-                    if latest_campaign.separate_scopes_per_round:
-                        scope = latest_campaign.get_districts_for_round_number(round_number)
+                    if round_number not in round_numbers:
+                        round_number = None
+                if round_number is None:
+                    continue
+                if latest_active_campaign.separate_scopes_per_round:
+                    scope = latest_active_campaign.get_districts_for_round_number(round_number)
 
-                    else:
-                        scope = latest_campaign.get_all_districts()
+                else:
+                    scope = latest_active_campaign.get_all_districts()
 
                 result = {
                     "id": int(country_id),
                     "data": {
-                        "campaign": latest_campaign.obr_name,
+                        "campaign": latest_active_campaign.obr_name,
                         **stats,
                         "country_name": org_unit.name,
                         "round_number": round_number,
@@ -1834,19 +1878,12 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     "geo_json": shapes,
                     "status": calculate_country_status(stats, scope, round_number),
                 }
-            elif latest_campaign:
-                result = {
-                    "id": int(country_id),
-                    "data": {"campaign": latest_campaign.obr_name, "country_name": org_unit.name},
-                    "geo_json": shapes,
-                    "status": "inScope",
-                }
             else:
                 result = {
                     "id": int(country_id),
-                    "data": {"country_name": org_unit.name},
+                    "data": {"campaign": latest_active_campaign.obr_name, "country_name": org_unit.name},
                     "geo_json": shapes,
-                    "status": "inScope",
+                    "status": LQASStatus.InScope,
                 }
             results.append(result)
         return Response({"results": results})
@@ -1860,28 +1897,28 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
                 bounds["_northEast"]["lat"],
-            )
+            ),
         )
         # TODO see if we need to filter per user as with Campaign
         return (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
 
     def list(self, request):
         results = []
-        requested_round = self.request.GET.get("round", "latest")
+        requested_round = self.request.GET.get("round", RoundSelection.Latest)
         queryset = self.get_queryset()
         bounds = json.loads(request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -1896,47 +1933,45 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 data_store = data_stores.get(slug__contains=str(country_id))
             except JsonDataStore.DoesNotExist:
                 continue
-            campaigns = Campaign.objects.filter(country=country_id).filter(deleted_at=None).exclude(is_test=True)
 
-            started_campaigns = [campaign for campaign in campaigns if campaign.is_started()]
-            sorted_campaigns = sorted(
-                started_campaigns,
-                key=lambda campaign: campaign.get_last_round_end_date(),
-                reverse=True,
-            )
+            (
+                latest_active_campaign,
+                latest_active_campaign_rounds,
+                round_numbers,
+            ) = self.get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
 
-            if start_date_after is not None:
-                sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "start", start_date_after)
-            if end_date_before is not None:
-                sorted_campaigns = self.filter_campaigns_by_date(sorted_campaigns, "end", end_date_before)
-
-            latest_campaign = sorted_campaigns[0] if len(started_campaigns) > 0 and sorted_campaigns else None
-
-            if latest_campaign is None:
+            if latest_active_campaign is None:
                 continue
-            sorted_rounds = sorted(latest_campaign.rounds.all(), key=lambda round: round.number, reverse=True)
-            if requested_round == "latest":
-                round_number = sorted_rounds[0].number if len(sorted_rounds) > 0 else None
-            elif requested_round == "penultimate" and len(sorted_rounds) > 1:
-                round_number = sorted_rounds[1].number if len(sorted_rounds) > 1 else None
+            if requested_round == RoundSelection.Latest:
+                round_number = (
+                    latest_active_campaign_rounds[0].number if latest_active_campaign_rounds.count() > 0 else None
+                )
+            elif requested_round == RoundSelection.Penultimate:
+                round_number = (
+                    latest_active_campaign_rounds[1].number if latest_active_campaign_rounds.count() > 1 else None
+                )
             else:
                 round_number = int(requested_round)
-            if latest_campaign.separate_scopes_per_round:
-                scope = latest_campaign.get_districts_for_round_number(round_number)
+                if round_number not in round_numbers:
+                    round_number = None
+            if round_number is None:
+                continue
+            if latest_active_campaign.separate_scopes_per_round:
+                scope = latest_active_campaign.get_districts_for_round_number(round_number)
 
             else:
-                scope = latest_campaign.get_all_districts()
+                scope = latest_active_campaign.get_all_districts()
             # Visible districts in scope
             districts = (
                 scope.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
-                .exclude(simplified_geom=None)
+                .exclude(simplified_geom__isnull=True)
                 .filter(simplified_geom__intersects=bounds_as_polygon)
             )
             data_for_country = data_store.content
             stats = data_for_country.get("stats", None)
             if stats:
-                stats = stats.get(latest_campaign.obr_name, None)
+                stats = stats.get(latest_active_campaign.obr_name, None)
             for district in districts:
                 result = None
                 district_stats = dict(stats) if stats else None
@@ -1966,7 +2001,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                     result = {
                         "id": district.id,
                         "data": {
-                            "campaign": latest_campaign.obr_name,
+                            "campaign": latest_active_campaign.obr_name,
                             **district_stats,
                             "district_name": district.name,
                             "round_number": round_number,
@@ -1978,9 +2013,9 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 else:
                     result = {
                         "id": district.id,
-                        "data": {"campaign": latest_campaign.obr_name, "district_name": district.name},
+                        "data": {"campaign": latest_active_campaign.obr_name, "district_name": district.name},
                         "geo_json": shapes,
-                        "status": "inScope",
+                        "status": LQASStatus.InScope,
                     }
                 results.append(result)
         return Response({"results": results})
@@ -1994,8 +2029,8 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
 
     def get_queryset(self):
         bounds = json.loads(self.request.GET.get("bounds", None))
-        bounds_as_polygon = Polygon.from_bbox(
-            (
+        bounds_as_polygon = Polygon(
+            make_safe_bbox(
                 bounds["_southWest"]["lng"],
                 bounds["_southWest"]["lat"],
                 bounds["_northEast"]["lng"],
@@ -2003,14 +2038,17 @@ class LQASIMZoominMapBackgroundViewSet(ModelViewSet):
             )
         )
         # TODO see if we need to filter per user as with Campaign
-        return (
+        qs = (
             OrgUnit.objects.filter(org_unit_type__category="COUNTRY")
-            .exclude(simplified_geom=None)
+            .exclude(simplified_geom__isnull=True)
             .filter(simplified_geom__intersects=bounds_as_polygon)
         )
+        print("Query", qs.query)
+        return qs
 
     def list(self, request):
         org_units = self.get_queryset()
+
         results = []
         for org_unit in org_units:
             shape_queryset = OrgUnit.objects.filter_for_user_and_app_id(
@@ -2061,6 +2099,292 @@ class CountriesWithLqasIMConfigViewSet(ModelViewSet):
             )
 
 
+@swagger_auto_schema(tags=["rounds"], request_body=LqasDistrictsUpdateSerializer)
+class RoundViewset(ModelViewSet):
+    # Patch should be in the list to allow updatelqasfields to work
+    http_method_names = ["patch"]
+    permission_classes = [HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
+    serializer_class = RoundSerializer
+    model = Round
+
+    def partial_update(self):
+        """Don't PATCH this way, it will not do anything
+        Overriding to prevent patching the whole round which is error prone, due to nested fields among others.
+        """
+        pass
+
+    # Endpoint used to update lqas passed and failed fields by OpenHexa pipeline
+    @action(detail=False, methods=["patch"], serializer_class=LqasDistrictsUpdateSerializer)
+    def updatelqasfields(self, request):
+        round_number = request.data.get("number", None)
+        obr_name = request.data.get("obr_name", None)
+        user = self.request.user
+        if obr_name is None:
+            raise serializers.ValidationError({"obr_name": "This field is required"})
+        if round_number is None:
+            raise serializers.ValidationError({"round_number": "This field is required"})
+        try:
+            campaigns_for_user = Campaign.objects.filter_for_user(user)
+            round_instance = Round.objects.filter(
+                campaign__obr_name__in=Subquery(campaigns_for_user.values("obr_name"))
+            )
+            round_instance = round_instance.get(campaign__obr_name=obr_name, number=round_number)
+            serializer = LqasDistrictsUpdateSerializer(data=request.data, context={"request": request}, partial=True)
+            serializer.is_valid(raise_exception=True)
+            res = serializer.update(round_instance, serializer.validated_data)
+            serialized_data = RoundSerializer(res).data
+            return Response(serialized_data)
+        except:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+class CountryForVaccineSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+
+
+class CountryField(serializers.PrimaryKeyRelatedField):
+    def to_representation(self, value):
+        country = OrgUnit.objects.get(pk=value.pk)
+        serializer = CountryForVaccineSerializer(country)
+        return serializer.data
+
+
+class VaccineAuthorizationSerializer(serializers.ModelSerializer):
+    country = CountryField(queryset=OrgUnit.objects.filter(org_unit_type__name="COUNTRY"))
+
+    class Meta:
+        model = VaccineAuthorization
+        fields = [
+            "id",
+            "country",
+            "expiration_date",
+            "created_at",
+            "updated_at",
+            "quantity",
+            "status",
+            "comment",
+        ]
+        read_only_fields = ["created_at", "updated_at"]
+        created_at = TimestampField(read_only=True)
+        updated_at = TimestampField(read_only=True)
+        expiration_date = TimestampField(read_only=True)
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["account"] = user.iaso_profile.account
+
+        return super().create(validated_data)
+
+
+class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
+    def has_permission(self, request, view):
+        read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
+        write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+        if request.method == "GET":
+            can_get = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(read_perm)
+                or request.user.is_superuser
+            )
+            return can_get
+        elif (
+            request.method == "POST"
+            or request.method == "PUT"
+            or request.method == "PATCH"
+            or request.method == "DELETE"
+        ):
+            can_post = (
+                request.user
+                and request.user.is_authenticated
+                and request.user.has_perm(write_perm)
+                or request.user.is_superuser
+            )
+            return can_post
+        else:
+            return False
+
+
+def handle_none_and_country(item, ordering):
+    """
+    This function handle the None cases to order the response of get_most_recent_authorizations
+    and country nested dict.
+    """
+    if "country" in ordering:
+        country_dict = item.get("country")
+        country_name = country_dict.get("name")
+        return country_name if country_name is not None else ""
+    if "date" in ordering:
+        date_field = item.get(ordering)
+        return date_field if date_field else dt.date(1, 1, 1)
+    if ordering != "date":
+        item_value = item.get(ordering)
+        return item_value if item_value is not None else float("inf")
+
+
+@swagger_auto_schema(tags=["vaccineauthorizations"])
+class VaccineAuthorizationViewSet(ModelViewSet):
+    """
+    Vaccine Authorizations API
+    list: /api/polio/vaccintauthorizations
+    action: /api/polio/get_most_recent_authorizations
+    """
+
+    permission_classes = [HassVaccineAuthorizationsPermissions]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    results_key = "results"
+    remove_results_key_if_paginated = True
+    serializer_class = VaccineAuthorizationSerializer
+    pagination_class = Paginator
+    ordering_fields = ["status", "current_expiration_date", "next_expiration_date", "expiration_date", "quantity"]
+
+    def get_queryset(self):
+        user = self.request.user
+        user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+        user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
+        country_id = self.request.query_params.get("country", None)
+        queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
+        block_country = self.request.query_params.get("block_country", None)
+        search = self.request.query_params.get("search", None)
+        auth_status = self.request.query_params.get("auth_status", None)
+
+        if country_id:
+            queryset = queryset.filter(country__pk=country_id)
+        if block_country:
+            block_country = block_country.split(",")
+            block_country = Group.objects.filter(pk__in=block_country)
+            org_units = [
+                ou_queryset
+                for ou_queryset in [
+                    ou_group_queryset for ou_group_queryset in [country.org_units.all() for country in block_country]
+                ]
+            ]
+            ou_pk_list = []
+            for ou_q in org_units:
+                for ou in ou_q:
+                    ou_pk_list.append(ou.pk)
+            queryset = queryset.filter(country__pk__in=ou_pk_list)
+        if search:
+            queryset = queryset.filter(country__name__icontains=search)
+        if auth_status:
+            auth_status = auth_status.split(",")
+            queryset = queryset.filter(status__in=auth_status)
+
+        return queryset
+
+    def create(self, request: Request, *args: Any, **kwargs: Any) -> Response:
+        country = self.request.data.get("country")
+        if not self.request.user.is_superuser:
+            if country not in [
+                str(ou.id) for ou in OrgUnit.objects.filter_for_user_and_app_id(self.request.user, None)
+            ]:
+                raise serializers.ValidationError({"Error": "You don't have access to this org unit."})
+
+        return super().create(request)
+
+    @action(detail=False, methods=["GET"])
+    def get_most_recent_authorizations(self, request):
+        """
+        Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
+        """
+        queryset = self.get_queryset()
+        country_list = []
+        response = []
+
+        ordering = request.query_params.get("order", None)
+
+        for auth in queryset:
+            if auth.country not in country_list:
+                country_list.append(auth.country)
+
+        for country in country_list:
+            last_validated_or_expired = (
+                queryset.filter(country=country, status__in=["VALIDATED", "EXPIRED"], deleted_at__isnull=True)
+                .order_by("-expiration_date")
+                .first()
+            )
+
+            next_expiration_auth = (
+                queryset.filter(country=country, status__in=["ONGOING", "SIGNATURE"], deleted_at__isnull=True)
+                .order_by("-expiration_date")
+                .first()
+            )
+
+            last_entry = queryset.filter(country=country, deleted_at__isnull=True).last()
+
+            last_entry_date_check = VaccineAuthorization.objects.filter(
+                country=country, account=self.request.user.iaso_profile.account, deleted_at__isnull=True
+            ).last()
+
+            if last_entry_date_check and last_entry:
+                if last_entry_date_check.expiration_date > last_entry.expiration_date:
+                    return Response(response)
+
+            if last_validated_or_expired and next_expiration_auth:
+                vacc_auth = {
+                    "id": last_entry.id,
+                    "country": {
+                        "id": last_entry.country.pk,
+                        "name": last_entry.country.name,
+                    },
+                    "current_expiration_date": last_validated_or_expired.expiration_date,
+                    "next_expiration_date": next_expiration_auth.expiration_date
+                    if next_expiration_auth.expiration_date > last_validated_or_expired.expiration_date
+                    else None,
+                    "quantity": last_validated_or_expired.quantity,
+                    "status": last_entry.status,
+                    "comment": last_entry.comment,
+                }
+
+                response.append(vacc_auth)
+
+            if last_validated_or_expired is None and next_expiration_auth:
+                vacc_auth = {
+                    "id": last_entry.id,
+                    "country": {
+                        "id": last_entry.country.pk,
+                        "name": last_entry.country.name,
+                    },
+                    "current_expiration_date": None,
+                    "next_expiration_date": next_expiration_auth.expiration_date,
+                    "quantity": None,
+                    "status": last_entry.status,
+                    "comment": last_entry.comment,
+                }
+
+                response.append(vacc_auth)
+
+            if last_validated_or_expired and next_expiration_auth is None:
+                vacc_auth = {
+                    "id": last_validated_or_expired.id,
+                    "country": {
+                        "id": last_validated_or_expired.country.pk,
+                        "name": last_validated_or_expired.country.name,
+                    },
+                    "current_expiration_date": last_validated_or_expired.expiration_date,
+                    "next_expiration_date": None,
+                    "quantity": last_validated_or_expired.quantity,
+                    "status": last_validated_or_expired.status,
+                    "comment": last_validated_or_expired.comment,
+                }
+
+                response.append(vacc_auth)
+
+        if ordering:
+            if ordering[0] == "-":
+                response = sorted(response, key=lambda x: handle_none_and_country(x, ordering[1:]), reverse=True)
+            else:
+                response = sorted(response, key=lambda x: handle_none_and_country(x, ordering))
+        page = self.paginate_queryset(response)
+
+        if page:
+            return self.get_paginated_response(page)
+
+        return Response(response)
+
+
 router = routers.SimpleRouter()
 router.register(r"polio/orgunits", PolioOrgunitViewSet, basename="PolioOrgunit")
 router.register(r"polio/campaigns", CampaignViewSet, basename="Campaign")
@@ -2085,3 +2409,7 @@ router.register(r"polio/lqasim/countries", CountriesWithLqasIMConfigViewSet, bas
 router.register(r"polio/lqasmap/global", LQASIMGlobalMapViewSet, basename="lqasmapglobal")
 router.register(r"polio/lqasmap/zoomin", LQASIMZoominMapViewSet, basename="lqasmapzoomin")
 router.register(r"polio/lqasmap/zoominbackground", LQASIMZoominMapBackgroundViewSet, basename="lqasmapzoominbackground")
+router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, basename="vaccine_authorizations")
+router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
+router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
+router.register(r"polio/rounds", RoundViewset, basename="rounds")

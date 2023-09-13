@@ -111,6 +111,14 @@ export const formsPath = {
             isRequired: false,
             key: 'planning',
         },
+        {
+            isRequired: false,
+            key: 'orgUnitTypeIds',
+        },
+        {
+            isRequired: false,
+            key: 'projectsIds',
+        },
     ],
     component: props => <Forms {...props} />,
     isRootUrl: true,
@@ -737,6 +745,10 @@ export const usersPath = {
         {
             isRequired: false,
             key: 'userRoles',
+        },
+        {
+            isRequired: false,
+            key: 'teamsIds',
         },
         ...paginationPathParams.map(p => ({
             ...p,

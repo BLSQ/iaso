@@ -58,6 +58,9 @@ _USERS_ADMIN = "iaso_users"
 _USERS_MANAGED = "iaso_users_managed"
 _USERS_ROLES = "iaso_user_roles"
 _WORKFLOW = "iaso_workflows"
+_POLIO_VACCINE_AUTHORIZATIONS_ADMIN = "iaso_polio_vaccine_authorizations_admin"
+_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = "iaso_polio_vaccine_authorizations_read_only"
+
 
 _PREFIX = "menupermissions."
 ASSIGNMENTS = _PREFIX + _ASSIGNMENTS
@@ -83,6 +86,8 @@ POLIO = _PREFIX + _POLIO
 POLIO_BUDGET = _PREFIX + _POLIO_BUDGET
 POLIO_BUDGET_ADMIN = _PREFIX + _POLIO_BUDGET_ADMIN
 POLIO_CONFIG = _PREFIX + _POLIO_CONFIG
+POLIO_VACCINE_AUTHORIZATIONS_ADMIN = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_ADMIN
+POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY = _PREFIX + _POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
 PROJECTS = _PREFIX + _PROJECTS
 REGISTRY = _PREFIX + _REGISTRY
 REPORTS = _PREFIX + _REPORTS
@@ -161,6 +166,8 @@ class CustomPermissionSupport(models.Model):
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
+            (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
+            (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
         )
 
     @staticmethod

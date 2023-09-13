@@ -134,6 +134,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_write_sources',
         defaultMessage: 'Edit data sources',
     },
+    iaso_polio_vaccine_authorizations_admin: {
+        id: 'iaso.permissions.polio_vaccine_authorizations_admin',
+        defaultMessage: 'Polio Vaccine Authorizations: Admin',
+    },
+    iaso_polio_vaccine_authorizations_read_only: {
+        id: 'iaso.permissions.polio_vaccine_authorizations_read_only',
+        defaultMessage: 'Polio Vaccine Authorizations: Read Only',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

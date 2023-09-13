@@ -120,6 +120,8 @@ export const LqasImMap = ({
                         campaign={selectedCampaign}
                         countryId={countryId}
                         data={disclaimerData}
+                        campaigns={campaigns}
+                        round={round}
                     />
                 )}
             </Box>

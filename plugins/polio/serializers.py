@@ -539,6 +539,11 @@ class PreparednessPreviewSerializer(serializers.Serializer):
         return instance
 
 
+class PowerBIRefreshSerializer(serializers.Serializer):
+    group_id = serializers.UUIDField()
+    data_set_id = serializers.UUIDField()
+
+
 class OrgUnitSerializer(serializers.ModelSerializer):
     country_parent = serializers.SerializerMethodField()
     root = serializers.SerializerMethodField()  # type: ignore
@@ -1233,3 +1238,16 @@ class ConfigSerializer(serializers.ModelSerializer):
 
     data = serializers.JSONField(source="content")  # type: ignore
     key = serializers.CharField(source="slug")
+
+
+class LqasDistrictsUpdateSerializer(serializers.Serializer):
+    number = serializers.IntegerField(required=True)
+    lqas_district_failing = serializers.IntegerField(required=True)
+    lqas_district_passing = serializers.IntegerField(required=True)
+    obr_name = serializers.CharField(required=True)
+
+    def update(self, instance, validated_data):
+        instance.lqas_district_passing = validated_data["lqas_district_passing"]
+        instance.lqas_district_failing = validated_data["lqas_district_failing"]
+        instance.save()
+        return instance

@@ -6,7 +6,7 @@ import datetime
 
 # handle old records with a None date.
 def populate_expiration_date(apps, schema_editor):
-    VaccineAuthorization = apps.get_model("your_app_name", "VaccineAuthorization")
+    VaccineAuthorization = apps.get_model("polio", "VaccineAuthorization")
 
     VaccineAuthorization.objects.filter(expiration_date=None).update(expiration_date=datetime.datetime.now())
 

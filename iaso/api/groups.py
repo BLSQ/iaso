@@ -217,6 +217,7 @@ class MobileGroupsViewSet(ModelViewSet):
         self.app_id_param = request.query_params.get(f"{APP_ID}")
         if not self.app_id_param:
             return Response(f"{APP_ID} is required", status=status.HTTP_400_BAD_REQUEST)
+        return None
 
     @swagger_auto_schema(
         responses={

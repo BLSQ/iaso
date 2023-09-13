@@ -36,7 +36,7 @@ from gspread.utils import extract_id_from_url  # type: ignore
 from hat.menupermissions import models as permission
 from openpyxl.writer.excel import save_virtual_workbook  # type: ignore
 from requests import HTTPError
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 
 from iaso.api.serializers import OrgUnitDropdownSerializer
 from iaso.models.data_store import JsonDataStore
@@ -2169,7 +2169,6 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
-        expiration_date = TimestampField(read_only=True)
 
     def create(self, validated_data):
         user = self.context["request"].user

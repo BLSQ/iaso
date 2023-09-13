@@ -1,6 +1,7 @@
 from rest_framework import permissions, serializers
 
 from iaso.models import Task
+from iaso.models.base import KILLED
 from ..common import ModelViewSet, TimestampField, UserSerializer, HasPermission
 from hat.menupermissions import models as permission
 
@@ -35,6 +36,8 @@ class TaskSerializer(serializers.ModelSerializer):
     def update(self, task, validated_data):
         if validated_data["should_be_killed"] is not None:
             task.should_be_killed = validated_data["should_be_killed"]
+            if task.external:
+                task.status = KILLED
             task.save()
         return task
 

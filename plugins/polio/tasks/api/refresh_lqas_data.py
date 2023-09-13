@@ -7,13 +7,14 @@ from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
 from hat import settings
 from iaso.api.tasks import TaskSerializer
-from iaso.models.base import RUNNING, SKIPPED, Task
+from iaso.models.base import RUNNING, SKIPPED, KILLED, Task
 from iaso.models.org_unit import OrgUnit
 from rest_framework import viewsets, permissions, serializers
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.contrib.sites.models import Site
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
@@ -41,17 +42,23 @@ class ExternalTaskSerializer(TaskSerializer):
         has_progress_message = validated_data.get("progress_message", None) is not None
         has_status = validated_data.get("status", None) is not None
         has_progress_value = validated_data.get("progress_value", None) is not None
-        if (has_status or has_progress_value or has_progress_message) and not task.external:
+        has_end_value = validated_data.get("end_value", None) is not None
+        if (has_status or has_progress_value or has_progress_message or has_end_value) and not task.external:
             raise serializers.ValidationError({"external": "Cannot modify non external tasks"})
-        if validated_data.get("should_be_killed", None) is not None:
-            task.should_be_killed = validated_data["should_be_killed"]
-        if has_progress_message:
-            task.progress_message = validated_data["progress_message"]
         if has_status:
             task.status = validated_data["status"]
+        if validated_data.get("should_be_killed", None) is not None:
+            task.should_be_killed = validated_data["should_be_killed"]
+            if validated_data["should_be_killed"]:
+                task.status = KILLED
+        if has_progress_message:
+            task.progress_message = validated_data["progress_message"]
         if has_progress_value:
             task.progress_value = validated_data["progress_value"]
+        if has_end_value:
+            task.end_value = validated_data["end_value"]
         task.save()
+        print("VALIDATED", validated_data)
         return task
 
 
@@ -126,6 +133,12 @@ class RefreshLQASDataViewset(ModelViewSet):
             return SKIPPED
 
         config = {"target": settings.OH_PIPELINE_TARGET}
+        config = {
+            "target": "custom",
+            "username": "sonpolio",
+            "pwd": "sonpolio",
+            "url": "https://25b2-2a02-a03f-c10a-1601-3dd5-b64e-239a-78e4.ngrok-free.app",
+        }
         if country_id:
             config["country_id"] = country_id
         if task_id:

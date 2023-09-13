@@ -1,12 +1,13 @@
 import logging
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.models import CustomPermissionSupport
+from iaso.api.common import IsAdminOrSuperUser
 from iaso.models import Account, DataSource, SourceVersion, Profile, Project, OrgUnitType
 
 logger = logging.getLogger(__name__)
@@ -25,14 +26,14 @@ class SetupAccountSerializer(serializers.Serializer):
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
-            raise serializers.ValidationError("An account with this name already exists")
+            raise serializers.ValidationError("account_name_already_exist")
         if DataSource.objects.filter(name=value).exists():
-            raise serializers.ValidationError("A data source with this name already exists")
+            raise serializers.ValidationError("data_source_name_already_exist")
         return value
 
     def validate_user_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A data source with this name already exists")
+            raise serializers.ValidationError("user_name_already_exist")
         return value
 
     def create(self, validated_data):
@@ -78,5 +79,5 @@ class SetupAccountSerializer(serializers.Serializer):
 
 
 class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrSuperUser]
     serializer_class = SetupAccountSerializer

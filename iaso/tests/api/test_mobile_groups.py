@@ -1,6 +1,7 @@
 from django.utils.timezone import now
 
 from iaso import models as m
+from iaso.api.query_params import APP_ID
 from iaso.test import APITestCase
 
 
@@ -41,14 +42,14 @@ class MobileGroupsAPITestCase(APITestCase):
 
     def test_api_mobile_groups_list_with_unknown_app_id(self):
         """GET /api/mobile/groups/ with unknown app_id"""
-        response = self.client.get("/api/mobile/groups/?app_id=foo")
+        response = self.client.get("/api/mobile/groups/", {APP_ID: "foo"})
         self.assertJSONResponse(response, 404)
 
     def test_api_mobile_groups_list_with_app_id(self):
         """GET /api/mobile/groups/ with app_id"""
 
         # Groups with `source_version_1`.
-        response = self.client.get(f"/api/mobile/groups/?app_id={self.project_cameroon.app_id}")
+        response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_cameroon.app_id})
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.data["groups"]), 2)
         expected_data = [
@@ -58,7 +59,7 @@ class MobileGroupsAPITestCase(APITestCase):
         self.assertCountEqual(response.data["groups"], expected_data)
 
         # Groups with `source_version_2`.
-        response = self.client.get(f"/api/mobile/groups/?app_id={self.project_nigeria.app_id}")
+        response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_nigeria.app_id})
         self.assertJSONResponse(response, 200)
         self.assertEqual(len(response.data["groups"]), 1)
         expected_data = [{"id": self.group_nigeria_2.pk, "name": "Villages"}]

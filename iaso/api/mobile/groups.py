@@ -32,7 +32,7 @@ class MobileGroupsViewSet(ModelViewSet):
     """
 
     http_method_names = ["get", "head", "options"]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     results_key = "groups"
     serializer_class = MobileGroupSerializer
 
@@ -58,7 +58,7 @@ class MobileGroupsViewSet(ModelViewSet):
     def get_queryset(self) -> QuerySet:
         app_id_serializer = AppIdSerializer(data=self.request.query_params)
         app_id_serializer.is_valid(raise_exception=True)
-        self.app_id_param = app_id_serializer.data["app_id"]
+        self.app_id_param = app_id_serializer.data[APP_ID]
 
         project_qs = Project.objects.select_related("account__default_version")
         project = get_object_or_404(project_qs, app_id=self.app_id_param)

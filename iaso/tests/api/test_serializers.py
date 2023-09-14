@@ -7,6 +7,7 @@ import pytz
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
 from iaso import models as m
+from iaso.api.query_params import APP_ID
 from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, AppIdSerializer
 from iaso.test import APITestCase
 
@@ -316,14 +317,14 @@ class AppIdSerializerTestCase(TestCase):
         query_params = {}
         app_id_serializer = AppIdSerializer(data=query_params)
         self.assertFalse(app_id_serializer.is_valid())
-        self.assertEqual(str(app_id_serializer.errors["app_id"][0]), "This field is required.")
+        self.assertEqual(str(app_id_serializer.errors[APP_ID][0]), "This field is required.")
 
         query_params = {"app_id": ""}
         app_id_serializer = AppIdSerializer(data=query_params)
         self.assertFalse(app_id_serializer.is_valid())
-        self.assertEqual(str(app_id_serializer.errors["app_id"][0]), "This field may not be blank.")
+        self.assertEqual(str(app_id_serializer.errors[APP_ID][0]), "This field may not be blank.")
 
         query_params = {"app_id": "foo.bar"}
         app_id_serializer = AppIdSerializer(data=query_params)
         self.assertTrue(app_id_serializer.is_valid())
-        self.assertEqual(app_id_serializer.validated_data["app_id"], "foo.bar")
+        self.assertEqual(app_id_serializer.validated_data[APP_ID], "foo.bar")

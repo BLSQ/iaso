@@ -1,12 +1,13 @@
 import datetime
 from collections import OrderedDict
 from unittest import mock
+from django.test import TestCase
 
 import pytz
 from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 
 from iaso import models as m
-from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer
+from iaso.api.serializers import OrgUnitSearchSerializer, OrgUnitSmallSearchSerializer, AppIdSerializer
 from iaso.test import APITestCase
 
 
@@ -308,3 +309,21 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(
             f"{self.yoda.username} ({self.yoda.first_name} {self.yoda.last_name})", response.json().get("creator")
         )
+
+
+class AppIdSerializerTestCase(TestCase):
+    def test_app_id_serializer(self):
+        query_params = {}
+        app_id_serializer = AppIdSerializer(data=query_params)
+        self.assertFalse(app_id_serializer.is_valid())
+        self.assertEqual(str(app_id_serializer.errors["app_id"][0]), "This field is required.")
+
+        query_params = {"app_id": ""}
+        app_id_serializer = AppIdSerializer(data=query_params)
+        self.assertFalse(app_id_serializer.is_valid())
+        self.assertEqual(str(app_id_serializer.errors["app_id"][0]), "This field may not be blank.")
+
+        query_params = {"app_id": "foo.bar"}
+        app_id_serializer = AppIdSerializer(data=query_params)
+        self.assertTrue(app_id_serializer.is_valid())
+        self.assertEqual(app_id_serializer.validated_data["app_id"], "foo.bar")

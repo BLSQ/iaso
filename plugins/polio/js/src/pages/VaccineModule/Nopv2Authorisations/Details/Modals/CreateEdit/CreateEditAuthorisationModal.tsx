@@ -113,6 +113,7 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                     component={DateInput}
                     fullWidth
                     clearable
+                    required
                     withMarginTop
                 />
                 <Field

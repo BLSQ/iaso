@@ -1,6 +1,9 @@
+import datetime as dt
 import json
+from datetime import timedelta
 
 from django.contrib.gis.geos import Polygon
+from django.db.models import Q, Subquery
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions
 from rest_framework.response import Response
@@ -9,14 +12,47 @@ from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
-from plugins.polio.api.common import (
-    LQASStatus,
-    LqasAfroViewset,
-    RoundSelection,
-    determine_status_for_district,
-    make_safe_bbox,
-)
-from plugins.polio.models import Campaign
+from plugins.polio.api.common import LQASStatus, RoundSelection, determine_status_for_district, make_safe_bbox
+from plugins.polio.api.lqas_im.base_viewset import LqasAfroViewset
+from plugins.polio.models import Campaign, Round
+
+
+def get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before):
+    today = dt.date.today()
+    latest_active_round_qs = Round.objects.filter(campaign__country=org_unit)
+    if start_date_after is not None:
+        latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=start_date_after)
+    if end_date_before is not None:
+        latest_active_round_qs = latest_active_round_qs.filter(ended_at__lte=end_date_before)
+
+    # filter out rounds that start in the future
+    # Filter by finished rounds and lqas dates ended. If no lqas end date, using end date +10 days (as in pipeline)
+    buffer = today - timedelta(days=10)
+    latest_active_round_qs = (
+        latest_active_round_qs.filter(
+            Q(lqas_ended_at__lte=today) | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=buffer))
+        )
+        .filter(campaign__deleted_at__isnull=True)
+        .exclude(campaign__is_test=True)
+        .order_by("-started_at")[:1]
+    )
+    latest_active_campaign = (
+        Campaign.objects.filter(id__in=Subquery(latest_active_round_qs.values("campaign")))
+        .filter(deleted_at=None)
+        .exclude(is_test=True)
+        .prefetch_related("rounds")
+        .first()
+    )
+    if latest_active_campaign is None:
+        return None, None, None
+    # Filter by finished rounds and lqas dates ended
+    latest_active_campaign_rounds = latest_active_campaign.rounds.filter(ended_at__lte=today).filter(
+        (Q(lqas_ended_at__lte=today)) | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
+    )
+    latest_active_campaign_rounds = latest_active_campaign_rounds.order_by("-number")
+    round_numbers = latest_active_campaign_rounds.values_list("number", flat=True)
+
+    return latest_active_campaign, latest_active_campaign_rounds, round_numbers
 
 
 @swagger_auto_schema(tags=["lqaszoomin"])
@@ -68,7 +104,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 latest_active_campaign,
                 latest_active_campaign_rounds,
                 round_numbers,
-            ) = self.get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
+            ) = get_latest_active_campaign_and_rounds(org_unit, start_date_after, end_date_before)
 
             if latest_active_campaign is None:
                 continue

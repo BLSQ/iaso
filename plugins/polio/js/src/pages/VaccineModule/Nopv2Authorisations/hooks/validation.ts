@@ -37,6 +37,7 @@ export const useNopv2AuthorisationsSchema = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
+            .required(formatMessage(MESSAGES.fieldRequired))
             // ts-compiler doesn't recognize the added method
             // @ts-ignore
             .checkDateForExpired(formatMessage),

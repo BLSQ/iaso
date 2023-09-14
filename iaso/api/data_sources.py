@@ -1,3 +1,4 @@
+import json
 import logging
 
 import dhis2
@@ -136,38 +137,55 @@ class TestCredentialSerializer(serializers.Serializer):
     dhis2_password = serializers.CharField(required=False, allow_blank=True)
     data_source = serializers.PrimaryKeyRelatedField(queryset=DataSource.objects.all(), required=False, allow_null=True)
 
+    def raise_exception(self, field):
+        message = "dhis2InvalideUserOrPasswordError" if field == "dhis2_password" else "dhis2ServerConnectionError"
+        raise serializers.ValidationError({field: [message]})
+
     def test_api(self):
         self.is_valid(raise_exception=True)
         data = self.validated_data
 
         password = data["dhis2_password"]
+        dhis2_login = data["dhis2_login"]
+        dhis2_url = data["dhis2_url"]
+        dhis2_system_info_api = data["dhis2_url"] + "/api/system/info"
         # Since we obviously don't send password to front but may want to test an
         # existing setup, if url is same we reuse the current password
         ds: DataSource = data["data_source"]
-        if not password and ds and ds.credentials and ds.credentials.url == data["dhis2_url"]:
+        if not password and ds and ds.credentials and ds.credentials.url == dhis2_url:
             password = ds.credentials.password
 
         if not password:
-            raise serializers.ValidationError({"dhis2_password": ["This field may not be blank."]})
+            raise serializers.ValidationError({"dhis2_password": ["dhis2PasswordBlankError"]})
 
         api = get_api(
-            data["dhis2_url"],
-            data["dhis2_login"],
+            dhis2_url,
+            dhis2_login,
             password,
         )
 
+        # check the authentication on the dhis2
         try:
             rep = api.get("system/ping")
         except dhis2.exceptions.RequestException as err:
+            if err.code == 404:
+                self.raise_exception("dhis2_url")
             if err.code == 401:
-                print(err)
-                raise serializers.ValidationError({"dhis2_password": ["Invalid user or password"]})
-            raise serializers.ValidationError({"dhis2_password": [err.description]})
+                self.raise_exception("dhis2_password")
+            self.raise_exception("dhis2_url", err.description)
         except requests.exceptions.ConnectionError:
-            raise serializers.ValidationError({"dhis2_url": ["Could not connect to server"]})
+            self.raise_exception("dhis2_url")
         except Exception as err:
             logging.exception(err)
             raise
+
+        # check the url authenticity throught the dhis2 api
+        try:
+            response = requests.get(dhis2_system_info_api, auth=(dhis2_login, password)).json()
+            if response["instanceBaseUrl"] != data["dhis2_url"]:
+                self.raise_exception("dhis2_url")
+        except json.decoder.JSONDecodeError:
+            self.raise_exception("dhis2_url")
         return rep
 
 

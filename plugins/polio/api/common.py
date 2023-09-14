@@ -1,7 +1,6 @@
-import datetime as dt
 import json
 from collections import defaultdict
-from datetime import datetime, timedelta
+from datetime import timedelta
 from enum import Enum
 from functools import reduce
 from logging import getLogger
@@ -9,15 +8,9 @@ from typing import Optional
 
 import pandas as pd
 import requests
-from django.db.models import Q
-from django.db.models.expressions import Subquery
 from django.utils.timezone import now
-from rest_framework import filters
 
-from iaso.api.common import ModelViewSet
-from iaso.models import OrgUnit, OrgUnitType
-from iaso.models.data_store import JsonDataStore
-from plugins.polio.models import Campaign, Round, URLCache
+from plugins.polio.models import Round, URLCache
 
 logger = getLogger(__name__)
 
@@ -227,76 +220,6 @@ class LQASStatus(str, Enum):
     InScope = "inScope"
 
 
-class LqasAfroViewset(ModelViewSet):
-    def compute_reference_dates(self):
-        start_date_after = self.request.GET.get("startDate", None)
-        end_date_before = self.request.GET.get("endDate", None)
-        selected_period = self.request.GET.get("period", None)
-        # Enforce 6 months as the default value
-        if start_date_after is None and end_date_before is None and selected_period is None:
-            selected_period = "6months"
-        if selected_period is not None:
-            if not selected_period[0].isdigit():
-                raise ValueError("period should be 3months, 6months, 9months or 12months")
-            # End_date should be None when selecting period, since its "from X months ago until now"
-            end_date_before = None
-            today = datetime.now()
-            interval_in_months = int(selected_period[0])
-            if selected_period[1].isdigit():
-                interval_in_months = int(f"{selected_period[0]}{selected_period[1]}")
-            # months have to be converted in days. using 31 days i.o 30 to avoid missing campaigns
-            start_date_after = (today - timedelta(days=interval_in_months * 31)).date()
-        else:
-            if start_date_after is not None:
-                start_date_after = datetime.strptime(start_date_after, "%d-%m-%Y").date()
-            if end_date_before is not None:
-                end_date_before = datetime.strptime(end_date_before, "%d-%m-%Y").date()
-        return start_date_after, end_date_before
-
-    def filter_campaigns_by_date(self, campaigns, reference, reference_date):
-        requested_round = self.request.GET.get("round", "latest")
-        round_number_to_find = int(requested_round) if requested_round.isdigit() else None
-        if requested_round != "penultimate":
-            if reference == "start":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
-                    and campaign.find_last_round_with_date(reference, round_number_to_find).started_at >= reference_date
-                ]
-            if reference == "end":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_last_round_with_date(reference, round_number_to_find) is not None
-                    and campaign.find_last_round_with_date(reference, round_number_to_find).ended_at <= reference_date
-                ]
-        else:
-            if reference == "start":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
-                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].started_at
-                    >= reference_date
-                ]
-            if reference == "end":
-                return [
-                    campaign
-                    for campaign in campaigns
-                    if campaign.find_rounds_with_date(reference, round_number_to_find).count() > 1
-                    and list(campaign.find_rounds_with_date(reference, round_number_to_find))[1].ended_at
-                    <= reference_date
-                ]
-
-    # constructs the slug for the required datastore, eg lqas_29702. It follows the naming convention adopted in OpenHExa pipeline
-    def get_datastores(self):
-        category = self.request.GET.get("category", None)
-        queryset = self.get_queryset()
-        countries = [f"{category}_{org_unit.id}" for org_unit in list(queryset)]
-        return JsonDataStore.objects.filter(slug__in=countries)
-
-
 def find_orgunit_in_cache(cache_dict, name, parent_name=None):
     if not name or pd.isna(name):
         return None
@@ -329,41 +252,3 @@ def make_orgunits_cache(orgunits):
                 if not f.name.lower().strip() == a.lower().strip():
                     cache_dict[a.lower().strip()].append(f)
     return cache_dict
-
-
-def get_latest_active_campaign_and_rounds(self, org_unit, start_date_after, end_date_before):
-    today = dt.date.today()
-    latest_active_round_qs = Round.objects.filter(campaign__country=org_unit)
-    if start_date_after is not None:
-        latest_active_round_qs = latest_active_round_qs.filter(started_at__gte=start_date_after)
-    if end_date_before is not None:
-        latest_active_round_qs = latest_active_round_qs.filter(ended_at__lte=end_date_before)
-
-    # filter out rounds that start in the future
-    # Filter by finished rounds and lqas dates ended. If no lqas end date, using end date +10 days (as in pipeline)
-    buffer = today - timedelta(days=10)
-    latest_active_round_qs = (
-        latest_active_round_qs.filter(
-            Q(lqas_ended_at__lte=today) | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=buffer))
-        )
-        .filter(campaign__deleted_at__isnull=True)
-        .exclude(campaign__is_test=True)
-        .order_by("-started_at")[:1]
-    )
-    latest_active_campaign = (
-        Campaign.objects.filter(id__in=Subquery(latest_active_round_qs.values("campaign")))
-        .filter(deleted_at=None)
-        .exclude(is_test=True)
-        .prefetch_related("rounds")
-        .first()
-    )
-    if latest_active_campaign is None:
-        return None, None, None
-    # Filter by finished rounds and lqas dates ended
-    latest_active_campaign_rounds = latest_active_campaign.rounds.filter(ended_at__lte=today).filter(
-        (Q(lqas_ended_at__lte=today)) | (Q(lqas_ended_at__isnull=True) & Q(ended_at__lte=today - timedelta(days=10)))
-    )
-    latest_active_campaign_rounds = latest_active_campaign_rounds.order_by("-number")
-    round_numbers = latest_active_campaign_rounds.values_list("number", flat=True)
-
-    return latest_active_campaign, latest_active_campaign_rounds, round_numbers

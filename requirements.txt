@@ -15,7 +15,7 @@ Fiona~=1.8.19
 numpy==1.18.1
 Pillow==8.3.2
 django-storages==1.9.1
-boto3==1.12.1
+boto3==1.16.63
 geopy==1.21.0
 Shapely==1.7.0
 unidecode==1.2.0

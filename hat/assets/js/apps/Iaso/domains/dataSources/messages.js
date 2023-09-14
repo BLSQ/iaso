@@ -77,6 +77,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.dataSources.dhisPassword',
         defaultMessage: 'DHIS password',
     },
+    dhis2ServerConnectionError: {
+        id: 'iaso.dataSources.dhis2ServerConnectionError',
+        defaultMessage: 'Could not connect to server, check the address.',
+    },
+    notDefinedDhis2ConnectionError: {
+        id: 'iaso.dataSources.notDefinedDhis2ConnectionError',
+        defaultMessage: 'Not defined dhis2 connection error.',
+    },
+    dhis2InvalideUserOrPasswordError: {
+        id: 'iaso.dataSources.dhis2InvalideUserOrPasswordError',
+        defaultMessage: 'Invalid user or password.',
+    },
+    dhis2PasswordBlankError: {
+        id: 'iaso.dataSources.dhis2PasswordBlankError',
+        defaultMessage: 'This field may not be blank.',
+    },
     dataSourceVersion: {
         id: 'iaso.dataSources.dataSourceVersion',
         defaultMessage: 'Source version',

@@ -47,14 +47,10 @@ class ModulesViewSet(ModelViewSet):
     http_method_names = ["get"]
 
     def get_queryset(self) -> QuerySet[Module]:
-        user = self.request.user
         queryset = Module.objects.all()  # type: ignore
         search = self.request.GET.get("search", None)
         orders = self.request.GET.get("order", "name").split(",")
-        account_id = self.request.GET.get("account_id", None)
 
-        if account_id:
-            queryset = queryset.filter(account_modules=user.iaso_profile.account)
         if search:
             queryset = queryset.filter(Q(name__icontains=search)).distinct()
         if orders:

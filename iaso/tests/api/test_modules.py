@@ -81,13 +81,3 @@ class ModuleAPITestCase(APITestCase):
         r = self.assertJSONResponse(response, 200)
 
         self.assertEqual(len(r["results"]), 1)
-
-    def test_list_modules_accible_by_the_connected_user(self):
-        self.client.force_authenticate(self.user_with_account_with_modules)
-
-        payload = {"account_id": self.yoda.iaso_profile.account.id}
-        response = self.client.get("/api/modules/", data=payload, format="json")
-
-        r = self.assertJSONResponse(response, 200)
-        self.assertEqual(len(r["results"]), 1)
-        self.assertEqual(r["results"][0]["name"], "Default")

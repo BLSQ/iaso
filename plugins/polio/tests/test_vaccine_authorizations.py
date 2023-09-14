@@ -1,6 +1,7 @@
 import datetime
 from datetime import date
 
+from django.contrib.auth.models import User
 from django.core import mail
 from django.utils.timezone import now
 from rest_framework.test import APIClient

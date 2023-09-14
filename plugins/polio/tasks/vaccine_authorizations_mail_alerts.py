@@ -16,15 +16,15 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
-    team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
-    vaccine_dashboard_link = (
-        f"{Site.objects.get_current()}/"
-        + "/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{0}/order/-current_expiration_date/pageSize/20/page/1".format(
-            team.project.account.id
-        )
-    )
+team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
 
-    mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+vaccine_dashboard_link = (
+    f"{Site.objects.get_current()}/"
+    + "/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{0}/order/-current_expiration_date/pageSize/20/page/1".format(
+        team.project.account.id
+    )
+)
+
 
 def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list):
     mail_sent = False

@@ -14,11 +14,13 @@ from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.utils.translation import gettext as _
+from django.core.exceptions import ObjectDoesNotExist
+from django.utils.html import strip_tags
+from django.template import Context, Template
 from rest_framework import viewsets, permissions, status
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from typing import Any, List, Optional, Union
-
 from hat.api.export_utils import Echo, iter_items, generate_xlsx
 from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
@@ -320,8 +322,23 @@ class ProfilesViewSet(viewsets.ViewSet):
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get("pk")
         if pk == PK_ME:
-            profile = request.user.iaso_profile
-            return Response(profile.as_dict())
+            try:
+                profile = request.user.iaso_profile
+                return Response(profile.as_dict())
+            except ObjectDoesNotExist:
+                return Response(
+                    {
+                        "first_name": request.user.first_name,
+                        "user_name": request.user.username,
+                        "last_name": request.user.last_name,
+                        "email": request.user.email,
+                        "user_id": request.user.id,
+                        "projects": [],
+                        "is_staff": request.user.is_staff,
+                        "is_superuser": request.user.is_superuser,
+                        "account": None,
+                    }
+                )
         else:
             profile = get_object_or_404(self.get_queryset(), pk=pk)
             return Response(profile.as_dict())
@@ -460,12 +477,11 @@ class ProfilesViewSet(viewsets.ViewSet):
                 return JsonResponse({"errorKey": "projects", "errorMessage": _("Unauthorized")}, status=400)
             profile.projects.add(item)
 
-    def send_email_invitation(self, profile, email_subject, email_message):
+    def send_email_invitation(self, profile, email_subject, email_message, email_html_message):
         current_site = get_current_site(self.request)
         site_name = current_site.name
         domain = current_site.domain
         from_email = settings.DEFAULT_FROM_EMAIL
-
         token_generator = PasswordResetTokenGenerator()
         token = token_generator.make_token(profile.user)
 
@@ -479,15 +495,39 @@ class ProfilesViewSet(viewsets.ViewSet):
             protocol=protocol,
             domain=domain,
             site_name=site_name,
+            account_name=profile.account.name,
         )
 
         email_subject_text = email_subject.format(dns_domain=f"{site_name}")
+        html_email_template = Template(email_html_message)
+        html_email_context = Context(
+            {
+                "protocol": protocol,
+                "domain": domain,
+                "account_name": profile.account.name,
+                "userName": profile.user.username,
+                "url": f"{protocol}://{domain}{create_password_path}",
+                "site_name": site_name,
+            }
+        )
 
-        send_mail(email_subject_text, email_message_text, from_email, [profile.user.email])
+        rendered_html_email = html_email_template.render(html_email_context)
+
+        send_mail(
+            email_subject_text,
+            email_message_text,
+            from_email,
+            [profile.user.email],
+            html_message=rendered_html_email,
+        )
 
     @staticmethod
     def get_message_by_language(self, language="en"):
         return self.CREATE_PASSWORD_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_MESSAGE_EN
+
+    @staticmethod
+    def get_html_message_by_language(self, language="en"):
+        return self.CREATE_PASSWORD_HTML_MESSAGE_FR if language == "fr" else self.CREATE_PASSWORD_HTML_MESSAGE_EN
 
     @staticmethod
     def get_subject_by_language(self, language="en"):
@@ -565,8 +605,8 @@ class ProfilesViewSet(viewsets.ViewSet):
         if send_email_invitation and profile.user.email:
             email_subject = self.get_subject_by_language(self, request.data.get("language"))
             email_message = self.get_message_by_language(self, request.data.get("language"))
-
-            self.send_email_invitation(profile, email_subject, email_message)
+            email_html_message = self.get_html_message_by_language(self, request.data.get("language"))
+            self.send_email_invitation(profile, email_subject, email_message, email_html_message)
 
         return Response(user.profile.as_dict())
 
@@ -579,24 +619,47 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     CREATE_PASSWORD_MESSAGE_EN = """Hello,
 
-You've been invited to access {protocol}://{domain}, and a new account with the username {userName} has been created for you. 
+You have been invited to access IASO - {protocol}://{domain}.
 
-To set up a password for your account, please click on the link:
+Username: {userName} 
+
+Please click on the link below to create your password:
 
 {url}
 
 If clicking the link above doesn't work, please copy and paste the URL in a new browser
 window instead.
 
-If you did not request an account on {domain}, you can ignore this e-mail - no password will be created.
+If you did not request an account on {account_name}, you can ignore this e-mail - no password will be created.
 
 Sincerely,
 The {site_name} Team.
     """
 
+    CREATE_PASSWORD_HTML_MESSAGE_EN = """<p>Hello,<br><br>
+
+You have been invited to access IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
+
+Username: <strong>{{userName}}</strong><br><br>
+
+Please click on the link below to create your password:<br><br>
+
+<a href="{{url}}" target="_blank">{{url}}</a><br><br>
+
+If clicking the link above doesn't work, please copy and paste the URL in a new browser<br>
+window instead.<br><br>
+
+If you did not request an account on {{account_name}}, you can ignore this e-mail - no password will be created.<br><br>
+
+Sincerely,<br>
+The {{site_name}} Team.</p>
+    """
+
     CREATE_PASSWORD_MESSAGE_FR = """Bonjour, 
 
-Vous avez été invité à accéder à {protocol}://{domain} et un nouveau compte avec le nom d'utilisateur {userName} a été créé pour vous.
+Vous avez été invité à accéder à l'IASO - {protocol}://{domain}.
+
+Nom d'utilisateur: {userName}
 
 Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :
 
@@ -604,10 +667,28 @@ Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien 
 
 Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.
 
-Si vous n'avez pas demandé de compte sur {domain}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
+Si vous n'avez pas demandé de compte sur {account_name}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.
 
 Cordialement,
 L'équipe {site_name}.
+    """
+
+    CREATE_PASSWORD_HTML_MESSAGE_FR = """<p>Bonjour,<br><br>
+
+Vous avez été invité à accéder à l'IASO - <a href="{{protocol}}://{{domain}}" target="_blank">{{account_name}}</a>.<br><br>
+
+Nom d'utilisateur: <strong>{{userName}}</strong><br><br>
+
+Pour configurer un mot de passe pour votre compte, merci de cliquer sur le lien ci-dessous :<br><br>
+
+<a href="{{url}}" target="_blank">{{url}}</a><br><br>
+
+Si le lien ne fonctionne pas, merci de copier et coller l'URL dans une nouvelle fenêtre de votre navigateur.<br><br>
+
+Si vous n'avez pas demandé de compte sur {{account_name}}, vous pouvez ignorer cet e-mail - aucun mot de passe ne sera créé.<br><br>
+
+Cordialement,<br>
+L'équipe {{site_name}}.</p>
     """
 
     EMAIL_SUBJECT_FR = "Configurer un mot de passe pour votre nouveau compte sur {dns_domain}"

@@ -15,7 +15,7 @@ Fiona~=1.8.19
 numpy==1.18.1
 Pillow==8.3.2
 django-storages==1.9.1
-boto3==1.12.1
+boto3==1.16.63
 geopy==1.21.0
 Shapely==1.7.0
 unidecode==1.2.0
@@ -24,7 +24,7 @@ django-cte==1.2.1
 
 # web server and auth
 oauth2client==4.1.3
-requests==2.22.0
+requests==2.26.0
 
 # postgresql and sql
 psycopg2-binary==2.8.5
@@ -83,4 +83,4 @@ django-json-widget==1.1.1
 django-stubs==1.9.0
 
 # required to use OpenHexa API
-gql[requests]==3.4.1
+gql[requests]==3.4.0

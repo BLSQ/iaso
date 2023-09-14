@@ -58,7 +58,7 @@ class ExternalTaskSerializer(TaskSerializer):
 
 
 class RefreshLQASDataViewset(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
     http_method_names = ["get", "post", "patch"]
     model = Task
 

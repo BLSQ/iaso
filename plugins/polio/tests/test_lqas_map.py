@@ -1,22 +1,24 @@
+import json
 from datetime import date, datetime, timedelta
+
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import MultiPolygon, Polygon
+from rest_framework.test import APIClient
+
+from iaso.models.base import Account, Group
 from iaso.models.data_source import DataSource, SourceVersion
 from iaso.models.data_store import JsonDataStore
 from iaso.models.org_unit import OrgUnit, OrgUnitType
 from iaso.models.project import Project
 from iaso.test import APITestCase
-import json
-from iaso.models.base import Account, Group
 from plugins.polio.api.common import (
+    LQASStatus,
     calculate_country_status,
     determine_status_for_district,
     get_data_for_round,
     reduce_to_country_status,
-    LQASStatus,
 )
 from plugins.polio.models import Campaign, CampaignScope, Round, RoundScope
-from django.contrib.auth.models import User
-from rest_framework.test import APIClient
-from django.contrib.gis.geos import Polygon, MultiPolygon
 
 
 class PolioLqasAfroMapTestCase(APITestCase):
@@ -665,9 +667,12 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
+        # There's no guarantee on the order of the districts
+        sorted_results = sorted(results, key=lambda k: k["data"]["district_name"])
+
         self.assertEquals(len(results), 3)
-        self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(results[0]["data"]["round_number"], 2)
+        self.assertEquals(sorted_results[0]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(sorted_results[0]["data"]["round_number"], 2)
 
     def test_lqas_zoomedin_start_date_filter(self):
         c = APIClient()
@@ -696,17 +701,14 @@ class PolioLqasAfroMapTestCase(APITestCase):
         content = json.loads(response.content)
         results = content["results"]
         self.assertEquals(len(results), 3)
-        self.assertEquals(results[0]["data"]["campaign"], self.campaign_1.obr_name)
         # There's no guarantee on the order of the districts
-        district_name_to_check = (
-            self.district_org_unit_2.name
-            if results[0]["data"]["district_name"] == self.district_org_unit_1.name
-            else self.district_org_unit_1.name
-        )
-        self.assertEquals(results[0]["status"], LQASStatus.Pass)
-        self.assertEquals(results[1]["data"]["campaign"], self.campaign_1.obr_name)
-        self.assertEquals(results[1]["data"]["district_name"], district_name_to_check)
-        self.assertEquals(results[1]["status"], LQASStatus.Pass)
+        sorted_results = sorted(results, key=lambda k: k["data"]["district_name"])
+        self.assertEquals(sorted_results[0]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(sorted_results[0]["data"]["district_name"], self.district_org_unit_1.name)
+        self.assertEquals(sorted_results[0]["status"], LQASStatus.Pass)
+        self.assertEquals(sorted_results[1]["data"]["campaign"], self.campaign_1.obr_name)
+        self.assertEquals(sorted_results[1]["data"]["district_name"], self.district_org_unit_2.name)
+        self.assertEquals(sorted_results[1]["status"], LQASStatus.Pass)
 
     def test_lqas_zoomin_round_with_end_date_filters(self):
         c = APIClient()
@@ -756,5 +758,4 @@ class PolioLqasAfroMapTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         content = json.loads(response.content)
         results = content["results"]
-        print(json.dumps(results))
         self.assertEquals(len(results), 0)

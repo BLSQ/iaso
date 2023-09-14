@@ -62,7 +62,6 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         read_only_fields = ["created_at", "updated_at"]
         created_at = TimestampField(read_only=True)
         updated_at = TimestampField(read_only=True)
-        expiration_date = TimestampField(read_only=True)
 
     def create(self, validated_data):
         user = self.context["request"].user

@@ -51,16 +51,16 @@ class MobileGroupsAPITestCase(APITestCase):
         # Groups with `source_version_1`.
         response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_cameroon.app_id})
         self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response.data["groups"]), 2)
+        self.assertEqual(len(response.data), 2)
         expected_data = [
             {"id": self.group_nigeria_1.pk, "name": "Hospitals"},
             {"id": self.group_cameroon.pk, "name": "North"},
         ]
-        self.assertCountEqual(response.data["groups"], expected_data)
+        self.assertCountEqual(response.data, expected_data)
 
         # Groups with `source_version_2`.
         response = self.client.get("/api/mobile/groups/", {APP_ID: self.project_nigeria.app_id})
         self.assertJSONResponse(response, 200)
-        self.assertEqual(len(response.data["groups"]), 1)
+        self.assertEqual(len(response.data), 1)
         expected_data = [{"id": self.group_nigeria_2.pk, "name": "Villages"}]
-        self.assertCountEqual(response.data["groups"], expected_data)
+        self.assertCountEqual(response.data, expected_data)

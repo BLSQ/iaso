@@ -3,10 +3,11 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework import permissions, serializers
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import ListModelMixin
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
-from iaso.api.common import ModelViewSet
 from iaso.api.query_params import APP_ID
 from iaso.api.serializers import AppIdSerializer
 from iaso.models import Group, Project
@@ -21,7 +22,7 @@ class MobileGroupSerializer(serializers.ModelSerializer):
         ]
 
 
-class MobileGroupsViewSet(ModelViewSet):
+class MobileGroupsViewSet(ListModelMixin, GenericViewSet):
     """Groups API for Mobile.
 
     Allows to retrieve a list of groups from the API.
@@ -31,9 +32,7 @@ class MobileGroupsViewSet(ModelViewSet):
     `GET /api/mobile/groups/?app_id=some.app.id`
     """
 
-    http_method_names = ["get", "head", "options"]
     permission_classes = [permissions.AllowAny]
-    results_key = "groups"
     serializer_class = MobileGroupSerializer
 
     app_id_param = openapi.Parameter(

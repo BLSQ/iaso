@@ -171,15 +171,15 @@ class CustomPermissionSupport(models.Model):
             (_PAGE_WRITE, _("Write page")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
-
         )
 
     @staticmethod
-    def filter_permissions(permissions, settings: LazySettings):
+    def filter_permissions(permissions, modules, settings: LazySettings):
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         permissions = (
             permissions.filter(content_type=content_type)
             .filter(codename__startswith="iaso_")
+            .filter(iaso_module_permission__module__in=modules)
             .exclude(codename__contains="datastore")
             .exclude(codename__contains="iaso_beneficiaries")
             .order_by("id")

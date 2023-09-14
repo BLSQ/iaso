@@ -1,7 +1,7 @@
 from datetime import date
 from unittest import skip
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 

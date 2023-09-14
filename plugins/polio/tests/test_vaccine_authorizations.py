@@ -113,6 +113,23 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)
 
+    def test_expiration_date_is_required(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.id])
+
+        response = self.client.post(
+            "/api/polio/vaccineauthorizations/",
+            data={
+                "country": self.org_unit_DRC.pk,
+                "quantity": 12346,
+                "status": "ONGOING",
+                "comment": "waiting for approval.",
+            },
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["expiration_date"][0], "This field is required.")
+
     def test_get_vacc_auth_by_id(self):
         self.client.force_authenticate(self.user_1)
 
@@ -510,12 +527,18 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         response = expired_vaccine_authorizations_email_alert()
 
-        self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
+        page_url = f"example.com//dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
+        url_is_correct = False
 
+        if page_url in mail.outbox[0].body:
+            url_is_correct = True
+
+        self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, f"ALERT: Vaccine Authorization {past_vacc_auth} has expired.")
         self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
+        self.assertEqual(url_is_correct, True)
 
     def test_vaccine_authorization_update_expired_entries(self):
         expired_entry = VaccineAuthorization.objects.create(

@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.comments',
         defaultMessage: 'Comments',
     },
+    logout: {
+        defaultMessage: 'Logout',
+        id: 'iaso.logout',
+    },
 });
 
 export default MESSAGES;

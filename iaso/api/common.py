@@ -1,22 +1,21 @@
 import enum
 import logging
-from datetime import datetime, date
+from datetime import date, datetime
 from functools import wraps
 from traceback import format_exc
-from django.http import HttpResponse
-from rest_framework.decorators import action
-from rest_framework_csv.renderers import CSVRenderer
-
 
 import pytz
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
+from django.http import HttpResponse
 from django.utils.timezone import make_aware
-from rest_framework import serializers, pagination, exceptions, permissions, filters, compat
+from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
+from rest_framework_csv.renderers import CSVRenderer
 
 from hat.vector_control.models import APIImport
 from iaso.models import OrgUnit, OrgUnitType
@@ -405,3 +404,12 @@ class CustomFilterBackend(filters.BaseFilterBackend):
             return queryset.filter(query)
 
         return queryset
+
+
+class IsAdminOrSuperUser(permissions.BasePermission):
+    """
+    Allows access only to admin users.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_staff) or (request.user and request.user.is_superuser)

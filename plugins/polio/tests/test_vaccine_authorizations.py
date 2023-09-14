@@ -1,22 +1,19 @@
 import datetime
 from datetime import date
 
-from django.contrib.auth.models import User, Permission
-from django.contrib.sites.models import Site
 from django.core import mail
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 
 from hat import settings
-from hat.audit.models import Modification
 from iaso import models as m
-from iaso.models import Account, OrgUnitType, OrgUnit, Group, Team
+from iaso.models import Account, Group, OrgUnitType, Team
 from iaso.test import APITestCase
 from plugins.polio.models import VaccineAuthorization
 from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
-    vaccine_authorizations_60_days_expiration_email_alert,
     expired_vaccine_authorizations_email_alert,
     vaccine_authorization_update_expired_entries,
+    vaccine_authorizations_60_days_expiration_email_alert,
 )
 
 

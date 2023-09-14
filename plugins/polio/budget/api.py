@@ -21,7 +21,7 @@ from plugins.polio.budget.serializers import (
     WorkflowSerializer,
     TransitionOverrideSerializer,
 )
-from plugins.polio.helpers import CustomFilterBackend
+from iaso.api.common import CustomFilterBackend
 from plugins.polio.models import Campaign
 from hat.menupermissions import models as permission
 

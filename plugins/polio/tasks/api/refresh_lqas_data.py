@@ -147,7 +147,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             config["task_id"] = task_id
         # We can specify a version in the env in case the latest version gets bugged
         mutation_input = (
-            {"id": settings.LQAS_PIPELINE, "version": settings.LQAS_PIPELINE_VERSION, "config": config}
+            {"id": settings.LQAS_PIPELINE, "version": int(settings.LQAS_PIPELINE_VERSION), "config": config}
             if settings.LQAS_PIPELINE_VERSION
             else {"id": settings.LQAS_PIPELINE, "config": config}
         )

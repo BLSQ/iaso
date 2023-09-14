@@ -14,6 +14,7 @@ from hat.menupermissions import models as permission
 from iaso.api.query_params import APP_ID
 from iaso.models import Group, SourceVersion, DataSource, Project
 from .common import ModelViewSet, TimestampField, HasPermission
+from .serializers import AppIdSerializer
 
 
 class HasGroupPermission(permissions.BasePermission):
@@ -213,12 +214,6 @@ class MobileGroupsViewSet(ModelViewSet):
         type=openapi.TYPE_STRING,
     )
 
-    def check_params(self, request: Request) -> Union[Response, None]:
-        self.app_id_param = request.query_params.get(f"{APP_ID}")
-        if not self.app_id_param:
-            return Response(f"{APP_ID} is required", status=status.HTTP_400_BAD_REQUEST)
-        return None
-
     @swagger_auto_schema(
         responses={
             200: f"list of groups for the given '{APP_ID}'",
@@ -228,11 +223,14 @@ class MobileGroupsViewSet(ModelViewSet):
         manual_parameters=[app_id_param],
     )
     def list(self, request: Request, *args, **kwargs) -> Response:
-        if error_response := self.check_params(request):
-            return error_response
         return super().list(request, *args, **kwargs)
 
     def get_queryset(self) -> QuerySet:
+        app_id_serializer = AppIdSerializer(data=self.request.query_params)
+        app_id_serializer.is_valid(raise_exception=True)
+        self.app_id_param = app_id_serializer.data["app_id"]
+
         queryset = Project.objects.select_related("account__default_version")
         project = get_object_or_404(queryset, app_id=self.app_id_param)
+
         return Group.objects.filter(source_version=project.account.default_version)

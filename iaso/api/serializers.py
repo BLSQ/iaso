@@ -6,6 +6,10 @@ from iaso.api.common import TimestampField
 from iaso.models import OrgUnit, OrgUnitType, Group
 
 
+class AppIdSerializer(serializers.Serializer):
+    app_id = serializers.CharField(allow_blank=False)
+
+
 class TimestampSerializerMixin:
     """This Mixin override the serialization of the DateTime field to timestamp
     instead of RST default RFC3339

@@ -258,5 +258,20 @@ class MobileGroupsAPITestCase(APITestCase):
 
     def test_api_mobile_groups_list_with_app_id(self):
         """GET /api/mobile/groups/ with app_id param"""
+
+        # Groups with `source_version_2`.
         response = self.client.get(f"/api/mobile/groups/?app_id={self.project_nigeria.app_id}")
         self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["groups"]), 1)
+        expected_data = [{"id": self.group_nigeria_2.pk, "name": self.group_nigeria_2.name}]
+        self.assertCountEqual(response.data["groups"], expected_data)
+
+        # Groups with `source_version_1`.
+        response = self.client.get(f"/api/mobile/groups/?app_id={self.project_cameroon.app_id}")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(len(response.data["groups"]), 2)
+        expected_data = [
+            {"id": self.group_nigeria_1.pk, "name": self.group_nigeria_1.name},
+            {"id": self.group_cameroon.pk, "name": self.group_cameroon.name},
+        ]
+        self.assertCountEqual(response.data["groups"], expected_data)

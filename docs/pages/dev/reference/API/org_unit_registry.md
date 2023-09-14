@@ -66,16 +66,12 @@ User must be authenticated.
 - `org_unit_type_id` is not a valid OrgUnitType
 - One of the `groups` id is not a valid Group
 - `instances` is empty
-- `org_unit_type_id` is not a valid sub OrgUnitType for the given parent --> TO BE CONFIRMED
+- `org_unit_type_id` is not a valid sub OrgUnitType for the given `parent_id` --> TO BE CONFIRMED
+- `org_unit_type_id` is not a valid sub OrgUnitType to be moved to the given `parent_id` --> TO BE CONFIRMED
 
 ### 401 - Unauthorized
 
 - No authentication token or an invalid one was provided
-
-### 403 - Forbidden
-
-- `org_unit_type_id` is not a valid OrgUnitType to be created for the given `parent_id`
-- `org_unit_type_id` is not a valid OrgUnitType to be moved to the given `parent_id`
 
 ### 404 - Not found
 

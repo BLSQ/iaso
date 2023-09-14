@@ -12,13 +12,8 @@ from iaso.api.common import ModelViewSet
 from iaso.models import OrgUnit
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
-from plugins.polio.api.common import (
-    LqasAfroViewset,
-    LQASStatus,
-    RoundSelection,
-    determine_status_for_district,
-    make_safe_bbox,
-)
+from plugins.polio.api.common import LQASStatus, RoundSelection, determine_status_for_district, make_safe_bbox
+from plugins.polio.api.lqas_im.base_viewset import LqasAfroViewset
 from plugins.polio.models import Campaign, Round
 
 

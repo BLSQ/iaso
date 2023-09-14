@@ -12,6 +12,7 @@ import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
+import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors.ts';
 
 const ProjectSelectorIds = ({
     keyValue,
@@ -152,6 +153,10 @@ export const DataSourceDialogComponent = ({
         value: v.id,
     }));
 
+    const urlErrors = useTranslatedDhis2Errors(form.credentials_dhis2_url);
+    const userPasswordErrors = useTranslatedDhis2Errors(
+        form.credentials_dhis2_password,
+    );
     return (
         <ConfirmCancelDialogComponent
             dataTestId="datasource-modal"
@@ -261,7 +266,7 @@ export const DataSourceDialogComponent = ({
                     <InputComponent
                         value={form.credentials.value.dhis_url}
                         keyValue="dhis_url"
-                        errors={form.credentials_dhis2_url?.errors}
+                        errors={urlErrors}
                         label={MESSAGES.dhisUrl}
                         onChange={setCredentials}
                     />
@@ -275,7 +280,7 @@ export const DataSourceDialogComponent = ({
                     <InputComponent
                         value={form.credentials.value.dhis_password}
                         keyValue="dhis_password"
-                        errors={form.credentials_dhis2_password?.errors}
+                        errors={userPasswordErrors}
                         label={MESSAGES.dhisPassword}
                         onChange={setCredentials}
                         password

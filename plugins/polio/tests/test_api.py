@@ -1,7 +1,7 @@
 from datetime import date
 from unittest import skip
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 
@@ -9,8 +9,8 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from ..models import Round
-from ..preparedness.spreadsheet_manager import *
+from plugins.polio.models import Round
+from plugins.polio.preparedness.spreadsheet_manager import *
 
 
 class PolioAPITestCase(APITestCase):

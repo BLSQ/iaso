@@ -122,3 +122,30 @@ class SetupAccountApiTestCase(APITestCase):
         self.assertEqual(m.Profile.objects.filter(user__username="unittest_username").count(), 1)
         self.assertEqual(m.User.objects.filter(username="unittest_username").count(), 1)
         self.assertEqual(has_all_perms, True)
+
+    def test_setup_account_project_creation(self):
+        self.client.force_authenticate(self.admin)
+
+        data = {
+            "account_name": "initial_project_account test",
+            "user_username": "username",
+            "password": "password",
+        }
+
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+
+        created_account = m.Account.objects.filter(name="initial_project_account test")
+        created_project = m.Project.objects.filter(name="initial_project_account test project")
+        created_data_source = m.DataSource.objects.filter(name="initial_project_account test")
+        self.assertEqual(len(created_project), 1)
+
+        project = created_project.first()
+        # Check if the project has the correct app_id
+        self.assertEqual(project.app_id, "initial_project_account-test")
+        # Check if the project is linked to the correct account
+        self.assertEqual(project.account, created_account.first())
+        # Check if the project is linked to the correct data source
+        data_source = created_data_source.first()
+        project_data_sources = project.data_sources.filter(pk=data_source.id)
+        self.assertEqual(project_data_sources.first(), data_source)

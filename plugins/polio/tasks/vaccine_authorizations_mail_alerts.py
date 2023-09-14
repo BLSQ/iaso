@@ -3,6 +3,7 @@ import datetime as dt
 from datetime import timedelta
 
 from django.contrib.auth.models import User
+from django.contrib.sites.models import Site
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
@@ -15,6 +16,15 @@ from logging import getLogger
 
 logger = getLogger(__name__)
 
+    team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
+    vaccine_dashboard_link = (
+        f"{Site.objects.get_current()}/"
+        + "/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{0}/order/-current_expiration_date/pageSize/20/page/1".format(
+            team.project.account.id
+        )
+    )
+
+    mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
 
 def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list):
     mail_sent = False
@@ -37,7 +47,7 @@ def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing
                 {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
                 A new authorization is {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
                 Please take appropriate action as needed. 
-                Link to the platform vaccine authorization page
+                Link to the platform vaccine authorization page : {vaccine_dashboard_link} 
                 RRT team
                 """,
                 settings.DEFAULT_FROM_EMAIL,
@@ -54,7 +64,7 @@ def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing
                             {obj.country} nOPV2 vaccines authorization date will expire on {obj.expiration_date}.
                             No new authorization pending.
                             Please take appropriate action as needed. 
-                            Link to the platform vaccine authorization page
+                            Link to the platform vaccine authorization page : {vaccine_dashboard_link} 
                             RRT team
                             """,
                 settings.DEFAULT_FROM_EMAIL,
@@ -73,6 +83,12 @@ def send_email_vaccine_authorizations_60_days_expiration_alert(task=None):
     total = vaccine_auths.count()
 
     team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
+    vaccine_dashboard_link = (
+        f"{Site.objects.get_current()}/"
+        + "/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{0}/order/-current_expiration_date/pageSize/20/page/1".format(
+            team.project.account.id
+        )
+    )
 
     mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
     email_sent = 0
@@ -115,7 +131,7 @@ def expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list):
                 {obj.country} nOPV2 vaccines authorization has expired expired on {obj.expiration_date}.
                 A new authorization is ongoing {next_vaccine_auth}, with an expiry date on {next_vaccine_auth.expiration_date}.
                 Please take appropriate action as needed. 
-                Link to the platform vaccine authorization page
+                Link to the platform vaccine authorization page : {vaccine_dashboard_link}
                 RRT team
                 """,
                 settings.DEFAULT_FROM_EMAIL,
@@ -131,7 +147,7 @@ def expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list):
                             {obj.country} nOPV2 vaccines authorization has expired on {obj.expiration_date}.
                             No new authorization pending.
                             Please take appropriate action as needed. 
-                            Link to the platform vaccine authorization page
+                            Link to the platform vaccine authorization page : {vaccine_dashboard_link} 
                             RRT team
                             """,
                 settings.DEFAULT_FROM_EMAIL,

@@ -20,7 +20,7 @@ from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences
-from .budget.models import BudgetStep, BudgetStepFile
+# from .budget.models import BudgetStep, BudgetStepFile
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -888,7 +888,7 @@ class VaccineAuthorization(SoftDeletableModel):
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
     )
     account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
-    expiration_date = models.DateField(blank=True, null=True)
+    expiration_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     quantity = models.IntegerField(blank=True, null=True)

@@ -2,9 +2,9 @@ import typing
 
 from django.utils.timezone import now
 
+from hat.menupermissions import models as permission
 from iaso import models as m
 from iaso.test import APITestCase
-from hat.menupermissions import models as permission
 
 
 class GroupsAPITestCase(APITestCase):

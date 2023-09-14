@@ -13,9 +13,7 @@ def _base_iaso(request: HttpRequest) -> HttpResponse:
     try:
         USER_HOME_PAGE = request.user.iaso_profile.home_page if request.user.is_authenticated else ""
     except ObjectDoesNotExist:
-        return HttpResponse(
-            f"User {request.user.username} has no iaso_profile. Please contact your administrator.", status=403
-        )
+        USER_HOME_PAGE = ""
     return render(
         request,
         "iaso/index.html",

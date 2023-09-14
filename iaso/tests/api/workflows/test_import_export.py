@@ -2,6 +2,8 @@ from iaso.models import Workflow
 from iaso.models.workflow import WorkflowVersionsStatus
 from iaso.tests.api.workflows.base import BaseWorkflowsAPITestCase
 from iaso.tests.utils.test_utils import var_dump, obj_compare
+from iaso.models import Account, EntityType
+from uuid import uuid4
 
 BASE_API = "/api/workflows/"
 
@@ -166,3 +168,46 @@ class WorkflowsImportExportAPITestCase(BaseWorkflowsAPITestCase):
         assert "condition" in res3[1]
         assert "updated_at" in res3[0]
         assert "updated_at" in res3[1]
+
+    # To verify that we are fixing bug WC2-262
+    def test_simulate_import_on_another_instance(self):
+        self.client.force_authenticate(user=self.blue_adult_1)
+
+        r = self.client.get(
+            f"{BASE_API}export/{self.workflow_et_adults_blue_with_followups_and_changes.pk}/", format="json"
+        )
+
+        orig_wf = self.workflow_et_adults_blue_with_followups_and_changes
+        orig_versions_count = orig_wf.workflow_versions.count()
+        orig_version = orig_wf.workflow_versions.filter(status="DRAFT").first()
+        orig_version_change = orig_version.changes.first()
+        orig_version_first_followup = orig_version.follow_ups.order_by("created_at").first()
+
+        self.assertJSONResponse(r, 200)
+        self.assertEqual(len(r.data["versions"]), orig_versions_count)
+        self.assertEqual(r.data["entity_type"], orig_wf.entity_type.name)
+
+        exp_version = r.data["versions"][1]
+        self.assertEqual(exp_version["uuid"], orig_version.uuid)
+        self.assertEqual(exp_version["status"], orig_version.status)
+
+        r.data["versions"][1]["changes"][0]["mapping"] = {"ton_champ": "ton_champ"}
+        r.data["versions"][1]["follow_ups"][0]["condition"] = {"!=": [2, 2]}
+
+        blue_adults = Account.objects.get(name="Blue Adults")
+
+        another_entity_type = EntityType.objects.create(
+            name="Another entity type",
+            created_at=self.now,
+            account=blue_adults,
+            reference_form=self.form_children_blue,
+        )
+
+        r.data["entity_type"] = another_entity_type.name
+        r.data["uuid"] = uuid4()
+        r.data["versions"][0]["uuid"] = uuid4()
+        r.data["versions"][1]["uuid"] = uuid4()
+
+        r2 = self.client.post(f"{BASE_API}import/", format="json", data=r.data)
+        self.assertJSONResponse(r2, 200)
+        self.assertEqual(r2.data["status"], f"Workflow {r.data['uuid']} imported successfully")

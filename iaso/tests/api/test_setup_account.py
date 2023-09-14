@@ -76,6 +76,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "modules": ["DEFAULT"],
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -92,6 +93,7 @@ class SetupAccountApiTestCase(APITestCase):
             "user_first_name": "unittest_first_name",
             "user_last_name": "unittest_last_name",
             "password": "unittest_password",
+            "modules": ["DEFAULT"],
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -106,6 +108,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "unittest_account",
             "user_username": "unittest_username",
             "password": "unittest_password",
+            "modules": ["DEFAULT"],
         }
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
@@ -130,6 +133,7 @@ class SetupAccountApiTestCase(APITestCase):
             "account_name": "initial_project_account test-appid",
             "user_username": "username",
             "password": "password",
+            "modules": ["DEFAULT"],
         }
 
         response = self.client.post("/api/setupaccount/", data=data, format="json")
@@ -149,3 +153,13 @@ class SetupAccountApiTestCase(APITestCase):
         data_source = created_data_source.first()
         project_data_sources = project.data_sources.filter(pk=data_source.id)
         self.assertEqual(project_data_sources.first(), data_source)
+
+    def test_setup_account_without_modules(self):
+        self.client.force_authenticate(self.admin)
+        data = {
+            "account_name": "unittest_account",
+            "user_username": "unittest_username",
+            "password": "unittest_password",
+        }
+        response = self.client.post("/api/setupaccount/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)

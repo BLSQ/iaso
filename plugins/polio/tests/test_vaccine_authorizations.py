@@ -7,6 +7,7 @@ from django.core import mail
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 
+from beanstalk_worker.services import TestTaskService
 from hat import settings
 from hat.audit.models import Modification
 from iaso import models as m
@@ -17,6 +18,8 @@ from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
     vaccine_authorizations_60_days_expiration_email_alert,
     expired_vaccine_authorizations_email_alert,
     vaccine_authorization_update_expired_entries,
+    send_email_vaccine_authorizations_60_days_expiration_alert,
+    send_email_expired_vaccine_authorizations_alert,
 )
 
 
@@ -446,6 +449,9 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         team.users.set([self.user_1])
 
         sixty_days_date = datetime.date.today() + datetime.timedelta(days=60)
+        vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=sixty_days_date)
+
+        mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
 
         sixty_days_expiration_auth = VaccineAuthorization.objects.create(
             account=self.user_1.iaso_profile.account,
@@ -467,7 +473,9 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         from_email = settings.DEFAULT_FROM_EMAIL
 
-        response = vaccine_authorizations_60_days_expiration_email_alert()
+        # test the function itself to check if the content is correct
+
+        response = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
 
         self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
 
@@ -479,6 +487,16 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
 
+        # test the task
+
+        task = send_email_vaccine_authorizations_60_days_expiration_alert(user=self.user_1)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
+
     def test_expired_vaccine_authorizations_email_alert(self):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
@@ -487,6 +505,9 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         team.users.set([self.user_1])
 
         past_date = datetime.date.today() - datetime.timedelta(days=1)
+
+        vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=past_date)
+        mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
 
         past_vacc_auth = VaccineAuthorization.objects.create(
             account=self.user_1.iaso_profile.account,
@@ -508,7 +529,9 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         from_email = settings.DEFAULT_FROM_EMAIL
 
-        response = expired_vaccine_authorizations_email_alert()
+        # test the function itself to check if the content is correct
+
+        response = expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list)
 
         self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
 
@@ -516,6 +539,16 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(mail.outbox[0].subject, f"ALERT: Vaccine Authorization {past_vacc_auth} has expired.")
         self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
+
+        # test the Task
+
+        task = send_email_expired_vaccine_authorizations_alert(user=self.user_1)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
 
     def test_vaccine_authorization_update_expired_entries(self):
         expired_entry = VaccineAuthorization.objects.create(
@@ -534,10 +567,15 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             expiration_date=date.today(),
         )
 
-        vaccine_authorization_update_expired_entries()
+        task = vaccine_authorization_update_expired_entries(user=self.user_1)
 
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
         expired_entry.refresh_from_db()
         valid_entry.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
 
         self.assertEqual(expired_entry.status, "EXPIRED")
         self.assertEqual(valid_entry.status, "VALIDATED")

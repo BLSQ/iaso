@@ -44,18 +44,13 @@ services:
       OPENHEXA_TOKEN:
       #OpenHexa API url
       OPENHEXA_URL:
+      #OpenHexa pipeline ID
+      LQAS_PIPELINE:
       #Optional: the version of the pipeline to run
       LQAS_PIPELINE_VERSION:
       # "prod", "staging" or "custom". Use "custom" for local testing
       OH_PIPELINE_TARGET:
-      # if OH_PIPELINE_TARGET is "custom", the url of your local iaso
-      OH_CUSTOM_URL:
-      # if OH_PIPELINE_TARGET is "custom", your local username
-      OH_CUSTOM_USERNAME:
-      # if OH_PIPELINE_TARGET is "custom", your local password
-      OH_CUSTOM_PASSWORD:
-      #OpenHexa pipeline ID
-      LQAS_PIPELINE:
+
       FAVICON_PATH:
       LOGO_PATH:
       APP_TITLE:

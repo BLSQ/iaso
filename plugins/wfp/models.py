@@ -1,11 +1,16 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from wfp.models import *
+from plugins.wfp.models import *
 
 GENDERS = [("MALE", _("Male")), ("FEMALE", _("Female"))]
 
-EXIT_TYPES = [("DEATH", _("Death")), ("CURED", _("Cured")), ("DISMISSED_DUE_TO_CHEATING",_("Dismissal")), ("VOLUNTARY_WITH_DRAWAL",_("Voluntary Withdrawal"))]
+EXIT_TYPES = [
+    ("DEATH", _("Death")),
+    ("CURED", _("Cured")),
+    ("DISMISSED_DUE_TO_CHEATING", _("Dismissal")),
+    ("VOLUNTARY_WITH_DRAWAL", _("Voluntary Withdrawal")),
+]
 
 NUTRITION_PROGRAMMES = [("TSFP", _("TSFP")), ("OTP", _("OTP"))]
 
@@ -25,12 +30,14 @@ ADMISSION_TYPES = [
     ("TRANSFER_IF_FROM_OTHER_TSFP", _("Transfer if from other TSFP")),
 ]
 
-#iaso copied (and simplified) models
-#-----------------------------------
+# iaso copied (and simplified) models
+# -----------------------------------
+
 
 class OrgUnitType(models.Model):
     class Meta:
         managed = False
+
     """A type of org unit, such as a country, a province, a district, a health facility, etc.
 
     Note: they are scope at the account level: for a given name and depth, there can be only one OUT per account
@@ -127,10 +134,10 @@ class Form(models.Model):
 
 
 class Instance(models.Model):
-
     class Meta:
         managed = False
         db_table = "iaso_instance"
+
     """A series of answers by an individual for a specific form
 
     Note that instances are called "Submissions" in the UI
@@ -182,6 +189,7 @@ class EntityType(models.Model):
     class Meta:
         managed = False
         db_table = "iaso_entitytype"
+
     name = models.CharField(max_length=255)  # Example: "Child under 5"
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -225,6 +233,7 @@ class Entity(models.Model):
         Instance, on_delete=models.PROTECT, help_text="instance", related_name="attributes", blank=True, null=True
     )
 
+
 # WFP Models
 
 
@@ -258,5 +267,3 @@ class Step(models.Model):
     quantity_given = models.FloatField()
     visit = models.ForeignKey(Visit, on_delete=models.DO_NOTHING, null=True, blank=True)
     instance_id = models.IntegerField(null=True, blank=True)
-
-

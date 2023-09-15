@@ -208,5 +208,5 @@ class RefreshLQASDataViewset(ModelViewSet):
             if country_id is not None
             else Q(name=TASK_NAME) & Q(status=SUCCESS)
         )
-        queryset = queryset.filter(query)
-        return Response({"tasks": TaskSerializer(queryset, many=True).data})
+        result = queryset.filter(query).order_by("-ended_at").first()
+        return Response({"tasks": TaskSerializer(instance=result).data})

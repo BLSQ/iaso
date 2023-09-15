@@ -205,8 +205,8 @@ class RefreshLQASDataViewset(ModelViewSet):
         queryset = self.get_queryset().filter(status=SUCCESS)
         query = Q(name=TASK_NAME) | Q(name=f"{TASK_NAME}-{country_id}") if country_id is not None else Q(name=TASK_NAME)
         queryset = queryset.filter(query).order_by("-ended_at")
-        print('TOTAL',queryset.count())
-        if queryset.count()==0:
-            return Response({"task":{}})
-        result=queryset.first()
-        return Response({"task":TaskSerializer(instance=result).data})
+        print("TOTAL", queryset.count())
+        if queryset.count() == 0:
+            return Response({"task": {}})
+        result = queryset.first()
+        return Response({"task": TaskSerializer(instance=result).data})

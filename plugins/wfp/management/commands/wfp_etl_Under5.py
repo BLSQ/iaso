@@ -1,4 +1,4 @@
-from wfp.models import *
+from plugins.wfp.models import *
 from django.core.management.base import BaseCommand
 from itertools import groupby
 from operator import itemgetter
@@ -9,9 +9,7 @@ class Command(BaseCommand):
     help = "Transform Child under 5 data for WFP in a format usable for tableau dashboard"
 
     def existing_beneficiaries(self):
-        existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values(
-            "entity_id"
-        )
+        existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
         return list(map(lambda x: x["entity_id"], existing_beneficiaries))
 
     def instances_to_exclude(self):
@@ -20,32 +18,16 @@ class Command(BaseCommand):
 
     def visits_to_exclude(self):
         instances_id = self.instances_to_exclude()
-        visits = (
-            Visit.objects.values("instance_id")
-            .distinct()
-            .exclude(instance_id__in=instances_id)
-        )
+        visits = Visit.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
         visits_id = list(map(lambda x: x["instance_id"], visits))
-        [
-            instances_id.append(visit_id)
-            for visit_id in visits_id
-            if visit_id not in instances_id
-        ]
+        [instances_id.append(visit_id) for visit_id in visits_id if visit_id not in instances_id]
         return instances_id
 
     def steps_to_exclude(self):
         instances_id = self.visits_to_exclude()
-        steps = (
-            Step.objects.values("instance_id")
-            .distinct()
-            .exclude(instance_id__in=instances_id)
-        )
+        steps = Step.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
         steps_id = list(map(lambda x: x["instance_id"], steps))
-        [
-            instances_id.append(step_id)
-            for step_id in steps_id
-            if step_id not in instances_id
-        ]
+        [instances_id.append(step_id) for step_id in steps_id if step_id not in instances_id]
         return instances_id
 
     def admission_type(self, visit):
@@ -109,9 +91,7 @@ class Command(BaseCommand):
                         instances[i]["last_name"] = current_record.get("last_name", "")
 
                     if current_record.get("first_name") is not None:
-                        instances[i]["first_name"] = current_record.get(
-                            "first_name", ""
-                        )
+                        instances[i]["first_name"] = current_record.get("first_name", "")
 
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
@@ -121,13 +101,9 @@ class Command(BaseCommand):
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
 
-                    current_record["weight_gain"] = self.compute_gained_weight(
-                        initial_weight, current_weight
-                    )
+                    current_record["weight_gain"] = self.compute_gained_weight(initial_weight, current_weight)
                     if visit.get("updated_at"):
-                        current_record["date"] = visit.get("updated_at").strftime(
-                            "%Y-%m-%d"
-                        )
+                        current_record["date"] = visit.get("updated_at").strftime("%Y-%m-%d")
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id
@@ -136,9 +112,7 @@ class Command(BaseCommand):
             i = i + 1
         return list(
             filter(
-                lambda instance: (
-                    instance.get("visits") and len(instance.get("visits")) > 0
-                )
+                lambda instance: (instance.get("visits") and len(instance.get("visits")) > 0)
                 and instance.get("gender") is not None
                 and instance.get("birth_date") is not None
                 and instance.get("birth_date") != ""
@@ -160,7 +134,7 @@ class Command(BaseCommand):
 
     def exit_type(self, visit):
         exit_type = None
-        if (visit.get("reasons_not_continuing") is not None and visit.get("reasons_not_continuing") != ""):
+        if visit.get("reasons_not_continuing") is not None and visit.get("reasons_not_continuing") != "":
             exit_type = visit.get("reasons_not_continuing")
         elif visit.get("non_respondent") is not None and visit.get("non_respondent") == "1":
             exit_type = "non_respondent"
@@ -178,9 +152,7 @@ class Command(BaseCommand):
 
                 if visit["form_id"] == "Anthropometric visit child":
                     current_journey["date"] = visit.get("date", None)
-                    current_journey["admission_criteria"] = self.admission_criteria(
-                        visit
-                    )
+                    current_journey["admission_criteria"] = self.admission_criteria(visit)
                     current_journey["admission_type"] = self.admission_type(visit)
 
                     if (
@@ -190,18 +162,13 @@ class Command(BaseCommand):
                         and visit.get("program_two") != "NONE"
                     ):
                         current_journey["programme_type"] = self.program_mapper(visit)
-                        current_journey["nutrition_programme"] = self.program_mapper(
-                            visit
-                        )
+                        current_journey["nutrition_programme"] = self.program_mapper(visit)
                     current_journey["org_unit_id"] = visit.get("org_unit_id")
 
                 if visit["form_id"] == "child_antropometric_followUp_tsfp":
                     current_journey["exit_type"] = self.exit_type(visit)
 
-                if (
-                    visit.get("weight_gain", None) is not None
-                    and visit.get("weight_gain", None) > 0
-                ):
+                if visit.get("weight_gain", None) is not None and visit.get("weight_gain", None) > 0:
                     current_journey["weight_gain"] = visit.get("weight_gain")
 
                 if visit["form_id"] in [
@@ -303,29 +270,22 @@ class Command(BaseCommand):
                 for sub_step in step:
                     current_step = None
                     quantity = 1
-                    given_assistance = self.map_assistance_step(
-                        sub_step, given_assistance
-                    )
+                    given_assistance = self.map_assistance_step(sub_step, given_assistance)
 
                     if sub_step.get("_counselling") is not None:
                         given_assistance.append(sub_step.get("_counselling"))
-                        if (
-                            sub_step.get("_csb_packets") is not None
-                            and sub_step.get("_csb_packets") != ""
-                        ):
+                        if sub_step.get("_csb_packets") is not None and sub_step.get("_csb_packets") != "":
                             quantity = sub_step.get("_csb_packets")
 
                     for assistance in given_assistance:
-                        current_step = self.assistance_to_step(
-                            assistance, quantity, visit, sub_step["instance_id"]
-                        )
+                        current_step = self.assistance_to_step(assistance, quantity, visit, sub_step["instance_id"])
                         current_step.save()
                         all_steps.append(current_step)
         return all_steps
 
     def handle(self, *args, **options):
         steps_id = self.steps_to_exclude()
-        updated_at = datetime.date(2023,7,10)
+        updated_at = datetime.date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__id=7)
             .filter(json__isnull=False)
@@ -367,29 +327,19 @@ class Command(BaseCommand):
                 beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
             instance["journey"] = self.journeyMapper(instance["visits"])
 
-            print(
-                "Retreiving journey linked to beneficiary ", f"{last_name} {first_name}"
-            )
+            print("Retreiving journey linked to beneficiary ", f"{last_name} {first_name}")
             for journey_instance in instance["journey"]:
-                if (
-                    len(journey_instance["visits"]) > 0
-                    and journey_instance.get("nutrition_programme") is not None
-                ):
-
+                if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
                     journey = self.save_journey(beneficiary, journey_instance)
                     visits = self.save_visit(journey_instance["visits"], journey)
                     print(f"Inserted {len(visits)} Visits")
                     grouped_steps = self.get_admission_steps(journey_instance["steps"])
                     admission_step = grouped_steps[0]
 
-                    followUpVisits = self.group_followup_steps(
-                        grouped_steps, admission_step
-                    )
+                    followUpVisits = self.group_followup_steps(grouped_steps, admission_step)
 
                     steps = self.save_steps(visits, followUpVisits)
                     print(f"Inserted {len(steps)} Steps")
                 else:
                     print(f"No new journey for {last_name} {first_name}")
-            print(
-                f"---------------------------------------------------------------------------------------------\n\n"
-            )
+            print(f"---------------------------------------------------------------------------------------------\n\n")

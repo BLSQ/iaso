@@ -4,7 +4,7 @@ from gql.transport.requests import RequestsHTTPTransport
 from datetime import datetime
 from hat import settings
 from iaso.api.tasks import TaskSerializer
-from iaso.models.base import RUNNING, SKIPPED, KILLED, ERRORED, Task
+from iaso.models.base import RUNNING, SKIPPED, KILLED, ERRORED, SUCCESS, Task
 from iaso.models.org_unit import OrgUnit
 from rest_framework import permissions, serializers, filters
 from hat.menupermissions import models as permission
@@ -12,22 +12,26 @@ from iaso.api.common import HasPermission, ModelViewSet
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Q
+from rest_framework.decorators import action
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
 
 
 class RefreshLQASDataSerializer(serializers.Serializer):
-    country_id = serializers.IntegerField()
+    country_id = serializers.IntegerField(required=False)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
         request = self.context["request"]
+        country_id = request.data.get("country_id", None)
+        if request.method == "GET":
+            country_id = request.query_params.get("country_id", None)
         # It seems a bit stange to limit the access on country id
         # but to launch the refresh for all countries if no id is passed
-        if request.data["country_id"] is not None:
+        if country_id is not None:
             user = request.user
-            country_id = int(request.data["country_id"])
+            country_id = int(country_id)
             user_has_access = OrgUnit.objects.filter_for_user(user).filter(id=country_id).count() > 0
             if not user_has_access:
                 raise serializers.ValidationError({"country_id": "No authorised org unit found for user"})
@@ -83,7 +87,7 @@ class RefreshLQASDataViewset(ModelViewSet):
         CustomTaskSearchFilterBackend,
         DjangoFilterBackend,
     ]
-    filterset_fields = {"created_at": ["gte"], "ended_at": ["exact"], "started_at": ["gte"]}
+    filterset_fields = {"created_at": ["gte"], "ended_at": ["exact"], "started_at": ["gte"], "status": ["exact"]}
     ordering_fields = ["created_at", "ended_at", "name", "started_at", "status"]
     ordering = ["-started_at"]
 
@@ -192,3 +196,17 @@ class RefreshLQASDataViewset(ModelViewSet):
         except:
             logger.exception("Could not launch pipeline")
             return ERRORED
+
+    @action(detail=False, methods=["get"], serializer_class=TaskSerializer)
+    def last_run_for_country(self, request):
+        serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        country_id = request.query_params.get("country_id", None)
+        queryset = self.get_queryset()
+        query = (
+            (Q(name=TASK_NAME) | Q(name=f"{TASK_NAME}-{country_id}") & Q(status=SUCCESS))
+            if country_id is not None
+            else Q(name=TASK_NAME) & Q(status=SUCCESS)
+        )
+        queryset = queryset.filter(query)
+        return Response({"tasks": TaskSerializer(queryset, many=True).data})

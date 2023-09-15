@@ -182,7 +182,7 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
     reference_forms = serializers.SerializerMethodField(read_only=True)
-    reference_forms_ids = serializers.PrimaryKeyRelatedField(
+    reference_forms_ids: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="reference_forms", write_only=True, many=True, allow_empty=True, queryset=Form.objects.all()
     )
 

@@ -22,7 +22,10 @@ import Filters from './components/Filters';
 import { AddUsersDialog } from './components/UsersDialog';
 
 import { baseUrls } from '../../constants/urls';
-import { useGetProfilesApiParams, useGetProfiles } from './hooks/useGetProfiles';
+import {
+    useGetProfilesApiParams,
+    useGetProfiles,
+} from './hooks/useGetProfiles';
 import { useDeleteProfile } from './hooks/useDeleteProfile';
 import { useSaveProfile } from './hooks/useSaveProfile';
 
@@ -129,8 +132,8 @@ export const Users: FunctionComponent<Props> = ({ params }) => {
                     <Grid
                         container
                         spacing={0}
-                        justifyContent='flex-end'
-                        alignItems='center'
+                        justifyContent="flex-end"
+                        alignItems="center"
                         className={classes.marginTop}
                     >
                         <AddUsersDialog

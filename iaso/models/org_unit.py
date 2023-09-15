@@ -110,7 +110,9 @@ class OrgUnitType(models.Model):
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
     # Allow the creation of these sub org unit types only for mobile (IA-2153)"
     allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
+    # TODO: ensure we can modify `OrgUnitTypeSerializerV1` before deleting `reference_form`.
     reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_forms = models.ManyToManyField("Form", related_name="org_unit_type_references", blank=False)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
@@ -143,18 +145,6 @@ class OrgUnitType(models.Model):
             "name": self.name,
             "id": self.id,
         }
-
-
-# def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
-#     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
-#
-#     :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
-#     :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
-#     """
-#     all_projects_from_account = Project.objects.filter(account=account)
-#     return OrgUnitType.objects.get_or_create(
-#         projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
-#     )
 
 
 # noinspection PyTypeChecker
@@ -540,6 +530,5 @@ class OrgUnit(TreeModel):
     def get_reference_form_id(self):
         """Return the form id of the reference form for this org unit, or None"""
         if self.org_unit_type:
-            return self.org_unit_type.reference_form_id
-        else:
-            return None
+            return self.org_unit_type.reference_forms.first()
+        return None

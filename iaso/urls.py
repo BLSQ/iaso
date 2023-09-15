@@ -85,6 +85,7 @@ from .api.workflows.import_export import export_workflow, import_workflow
 from .api.org_unit_validation_status import ValidationStatusViewSet
 from .dhis2.authentication import dhis2_callback  # type: ignore
 from .api.user_roles import UserRolesViewSet
+from .api.stocks import StockItemViewSet, StockMovementViewSet
 
 URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
@@ -164,6 +165,9 @@ router.register(r"datastore", DataStoreViewSet, basename="datastore")
 router.register(r"validationstatus", ValidationStatusViewSet, basename="validationstatus")
 
 router.register(r"mobile/metadata/lastupdates", LastUpdatesViewSet, basename="lastupdates")
+
+router.register(r"stock/items", StockItemViewSet, basename="stock_items")
+router.register(r"stock/movements", StockMovementViewSet, basename="stock_movements")
 
 router.registry.extend(plugins_router.registry)
 

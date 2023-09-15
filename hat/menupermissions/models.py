@@ -51,6 +51,7 @@ _REPORTS = "iaso_reports"
 _SOURCE_WRITE = "iaso_write_sources"
 _SOURCES = "iaso_sources"
 _STORAGE = "iaso_storages"
+_STOCKS = "iaso_stocks"
 _SUBMISSIONS = "iaso_submissions"
 _SUBMISSIONS_UPDATE = "iaso_update_submission"
 _TEAMS = "iaso_teams"
@@ -94,6 +95,7 @@ REPORTS = _PREFIX + _REPORTS
 SOURCE_WRITE = _PREFIX + _SOURCE_WRITE
 SOURCES = _PREFIX + _SOURCES
 STORAGE = _PREFIX + _STORAGE
+STOCKS = _PREFIX + _STOCKS
 SUBMISSIONS = _PREFIX + _SUBMISSIONS
 SUBMISSIONS_UPDATE = _PREFIX + _SUBMISSIONS_UPDATE
 TEAMS = _PREFIX + _TEAMS
@@ -166,6 +168,7 @@ class CustomPermissionSupport(models.Model):
             (_ORG_UNITS_GROUPS, _("Org unit groups")),
             (_SOURCE_WRITE, _("Write data source")),
             (_PAGE_WRITE, _("Write page")),
+            (_STOCKS, _("Stocks")),
             (_POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY, _("Polio Vaccine Authorizations Read Only")),
             (_POLIO_VACCINE_AUTHORIZATIONS_ADMIN, _("Polio Vaccine Authorizations Admin")),
         )

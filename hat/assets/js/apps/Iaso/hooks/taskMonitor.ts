@@ -1,32 +1,43 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { UseMutationResult, UseQueryResult } from 'react-query';
 import { getRequest, postRequest } from '../libs/Api';
 import { useSnackMutation, useSnackQuery } from '../libs/apiHooks';
 
-const getTasks = (id?: number) => {
-    const url = id ? `/api/tasks/${id}` : '/api/tasks/';
+const TASK_ENDPOINT = '/api/tasks/';
+const TASK_CREATE_ENDPOINT = '/api/tasks/create/';
+
+const getTasks = (id?: number, endpoint = TASK_ENDPOINT) => {
+    const url = id ? `${endpoint}${id}` : endpoint;
     return getRequest(url);
 };
 
 export const useTaskMonitor = (
     taskId?: number,
+    endpoint = TASK_ENDPOINT,
     interval = 1000,
 ): UseQueryResult<boolean, any> => {
     const [enabled, setEnabled] = useState<boolean>(true);
+    useEffect(() => {
+        if (taskId) {
+            setEnabled(true);
+        }
+    }, [taskId]);
     return useSnackQuery({
-        queryKey: ['task-monitor', taskId],
-        queryFn: () => getTasks(taskId),
+        queryKey: ['task-monitor', taskId, endpoint],
+        queryFn: () => getTasks(taskId, endpoint),
         options: {
             refetchInterval: interval,
-            enabled,
+            enabled: enabled && Boolean(taskId),
             select: data => {
-                if (!data) return false;
+                // Return a boolean that is true if task is not over
+                if (!data) return true;
+                // check if task is over
                 if (data.status === 'RUNNING' || data.status === 'QUEUED')
-                    return false;
-                return true;
+                    return true;
+                return false;
             },
             onSuccess: data => {
-                if (data) {
+                if (!data) {
                     setEnabled(false);
                 }
             },
@@ -34,19 +45,26 @@ export const useTaskMonitor = (
     });
 };
 
-const createTask = async (request, key) => {
+const createTask = async (request, endpoint, key) => {
     let file;
     if (request.file) {
         file = { file: request.file };
     }
     const body = { ...request };
     delete body.file;
-    return postRequest(`/api/tasks/create/${key}/`, body, file);
+    const url = key ? `${endpoint}${key}/` : endpoint;
+    return postRequest(url, body, file);
 };
 
-export const useCreateTask = (key: string): UseMutationResult => {
+export const useCreateTask = ({
+    key,
+    endpoint = TASK_CREATE_ENDPOINT,
+}: {
+    key?: string;
+    endpoint?: string;
+}): UseMutationResult => {
     return useSnackMutation({
-        mutationFn: request => createTask(request, key),
+        mutationFn: request => createTask(request, endpoint, key),
         showSucessSnackBar: false,
         invalidateQueryKey: ['task-monitor'],
     });

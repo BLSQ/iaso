@@ -56,8 +56,8 @@ export const Lqas = ({ router }) => {
     } = useLqasData({ campaign, country, selectedRounds, LQASData });
 
     const dropDownOptions = useMemo(() => {
-        return makeDropdownOptions(LQASData?.stats, campaign, selectedRounds);
-    }, [LQASData, campaign, selectedRounds]);
+        return makeDropdownOptions(LQASData?.stats, campaign);
+    }, [LQASData, campaign]);
 
     const onRoundChange = useCallback(
         index => value => {

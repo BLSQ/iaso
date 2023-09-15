@@ -202,11 +202,11 @@ class RefreshLQASDataViewset(ModelViewSet):
         serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         country_id = request.query_params.get("country_id", None)
-        queryset = self.get_queryset()
-        query = (
-            (Q(name=TASK_NAME) | Q(name=f"{TASK_NAME}-{country_id}") & Q(status=SUCCESS))
-            if country_id is not None
-            else Q(name=TASK_NAME) & Q(status=SUCCESS)
-        )
-        result = queryset.filter(query).order_by("-ended_at").first()
-        return Response({"tasks": TaskSerializer(instance=result).data})
+        queryset = self.get_queryset().filter(status=SUCCESS)
+        query = Q(name=TASK_NAME) | Q(name=f"{TASK_NAME}-{country_id}") if country_id is not None else Q(name=TASK_NAME)
+        queryset = queryset.filter(query).order_by("-ended_at")
+        print("TOTAL", queryset.count())
+        if queryset.count() == 0:
+            return Response({"task": {}})
+        result = queryset.first()
+        return Response({"task": TaskSerializer(instance=result).data})

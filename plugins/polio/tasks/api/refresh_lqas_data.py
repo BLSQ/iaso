@@ -6,10 +6,12 @@ from hat import settings
 from iaso.api.tasks import TaskSerializer
 from iaso.models.base import RUNNING, SKIPPED, KILLED, ERRORED, Task
 from iaso.models.org_unit import OrgUnit
-from rest_framework import permissions, serializers
+from rest_framework import permissions, serializers, filters
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from rest_framework.response import Response
+from django_filters.rest_framework import DjangoFilterBackend
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
@@ -53,14 +55,37 @@ class ExternalTaskSerializer(TaskSerializer):
         if has_end_value:
             task.end_value = validated_data["end_value"]
         task.save()
-        print("VALIDATED", validated_data)
         return task
+
+
+class CustomTaskSearchFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get("search")
+        if search:
+            query = (
+                Q(name__icontains=search)
+                | Q(status__icontains=search)
+                | Q(launcher__first_name__icontains=search)
+                | Q(launcher__username__icontains=search)
+                | Q(launcher__last_name__icontains=search)
+            )
+            return queryset.filter(query)
+
+        return queryset
 
 
 class RefreshLQASDataViewset(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore
     http_method_names = ["get", "post", "patch"]
     model = Task
+    filter_backends = [
+        filters.OrderingFilter,
+        CustomTaskSearchFilterBackend,
+        DjangoFilterBackend,
+    ]
+    filterset_fields = {"created_at": ["gte"], "ended_at": ["exact"], "started_at": ["gte"]}
+    ordering_fields = ["created_at", "ended_at", "name", "started_at", "status"]
+    ordering = ["-started_at"]
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -133,13 +158,6 @@ class RefreshLQASDataViewset(ModelViewSet):
             return ERRORED
 
         config = {"target": settings.OH_PIPELINE_TARGET}
-        if settings.OH_PIPELINE_TARGET == "custom":
-            config = {
-                "target": settings.OH_PIPELINE_TARGET,
-                "url": settings.OH_CUSTOM_URL,
-                "username": settings.OH_CUSTOM_USERNAME,
-                "pwd": settings.OH_CUSTOM_PASSWORD,
-            }
 
         if country_id:
             config["country_id"] = country_id
@@ -147,7 +165,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             config["task_id"] = task_id
         # We can specify a version in the env in case the latest version gets bugged
         mutation_input = (
-            {"id": settings.LQAS_PIPELINE, "version": settings.LQAS_PIPELINE_VERSION, "config": config}
+            {"id": settings.LQAS_PIPELINE, "version": int(settings.LQAS_PIPELINE_VERSION), "config": config}
             if settings.LQAS_PIPELINE_VERSION
             else {"id": settings.LQAS_PIPELINE, "config": config}
         )

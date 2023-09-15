@@ -506,14 +506,15 @@ THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
-# openhexa api token
-OPENHEXA_TOKEN = os.environ.get("OPENHEXA_TOKEN", "token")
-OH_PIPELINE_TARGET = os.environ.get("OH_PIPELINE_TARGET", "staging")
-OH_CUSTOM_URL = os.environ.get("OH_CUSTOM_URL", None)
-OH_CUSTOM_USERNAME = os.environ.get("OH_CUSTOM_USERNAME", None)
-OH_CUSTOM_PASSWORD = os.environ.get("OH_CUSTOM_PASSWORD", None)
-LQAS_PIPELINE = os.environ.get("LQAS_PIPELINE", "pipeline")
+# OpenHexa API url
 OPENHEXA_URL = os.environ.get("OPENHEXA_URL", None)
+# OpenHexa api token
+OPENHEXA_TOKEN = os.environ.get("OPENHEXA_TOKEN", "token")
+# "prod", "staging" or "custom". Use "custom" for local testing
+OH_PIPELINE_TARGET = os.environ.get("OH_PIPELINE_TARGET", "staging")
+# uuid of the OH pipeline
+LQAS_PIPELINE = os.environ.get("LQAS_PIPELINE", "pipeline")
+# Optional: the version of the pipeline to run (number)
 LQAS_PIPELINE_VERSION = os.environ.get("LQAS_PIPELINE_VERSION", None)
 
 AUTHENTICATION_BACKENDS = [

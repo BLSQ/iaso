@@ -1,19 +1,30 @@
-import React, { FunctionComponent, useMemo, useState } from 'react';
+import React, {
+    FunctionComponent,
+    useCallback,
+    useMemo,
+    useState,
+} from 'react';
 // @ts-ignore
-import { Select, useSafeIntl } from 'bluesquare-components';
+import { Select, useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import { withRouter } from 'react-router';
 import { useDispatch } from 'react-redux';
 import { replace } from 'react-router-redux';
-// Uncomment when OpenHExa pipeline is available for IM
-// import RefreshIcon from '@material-ui/icons/Refresh';
+import RefreshIcon from '@material-ui/icons/Refresh';
 
-import { Box, Grid, IconButton } from '@material-ui/core';
+import { Box, Button, Grid, IconButton } from '@material-ui/core';
 
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import {
+    useCreateTask,
+    useTaskMonitor,
+} from '../../../../../../hat/assets/js/apps/Iaso/hooks/taskMonitor';
 import MESSAGES from '../../constants/messages';
 import { makeCampaignsDropDown } from '../../utils/index';
 import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useGetLqasImCountriesOptions } from '../../hooks/useGetLqasImCountriesOptions';
+import { TaskApiResponse } from '../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
+
+const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
 
 type Params = {
     campaign: string | undefined;
@@ -42,15 +53,38 @@ const Filters: FunctionComponent<Props> = ({
     campaignsFetching,
     category,
 }) => {
+    const taskUrl = category === 'lqas' ? LQAS_TASK_ENDPOINT : undefined;
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const { params } = router;
+
+    const [taskId, setTaskId] = useState<number>();
+    const { data: isDataUpdating, isFetching: isFetchingTaskStatus } =
+        useTaskMonitor(taskId, taskUrl);
+
+    console.log('TaskId', taskId);
+    console.log('isDataUpdating', isDataUpdating);
+    const { mutateAsync: createRefreshTask } = useCreateTask({
+        endpoint: taskUrl,
+    });
 
     const [filters, setFilters] = useState<FiltersState>({
         campaign: params.campaign,
         country: params.country ? parseInt(params.country, 10) : undefined,
     });
     const { campaign, country } = filters;
+
+    const launchRefresh = useCallback(() => {
+        if (country) {
+            createRefreshTask({ country_id: country }).then(
+                (task: TaskApiResponse<any>) => {
+                    setTaskId(task.task.id);
+                },
+            );
+        }
+    }, [country, createRefreshTask]);
+
+    // TODO invalidate lqas data queryKey when OH task SUCCESS
 
     const { data: countriesOptions, isFetching: countriesLoading } =
         useGetLqasImCountriesOptions(category);
@@ -79,12 +113,8 @@ const Filters: FunctionComponent<Props> = ({
     const campaignLink = campaignObj
         ? `/dashboard/polio/list/campaignId/${campaignObj.id}/search/${campaignObj.obr_name}`
         : null;
-    // Uncomment when OpenHExa pipeline is available for IM
-    // const queryClient = useQueryClient();
-    // const handleRefresh = useCallback(
-    //     () => queryClient.resetQueries(),
-    //     [queryClient],
-    // );
+    const disableButton =
+        isDataUpdating || isFetchingTaskStatus || isFetchingTaskStatus;
     return (
         <Box mt={2} width="100%">
             <Grid container item spacing={2}>
@@ -125,22 +155,37 @@ const Filters: FunctionComponent<Props> = ({
                         </IconButton>
                     </Grid>
                 )}
-                {/* Uncomment when OpenHexa pipeline will ba active for IM */}
-                {/* <Grid item md={campaignLink ? 3 : 4}>
-                    <Box display="flex" justifyContent="flex-end" width="100%">
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="primary"
-                            onClick={handleRefresh}
+                {/* remove condition when IM pipeline is ready */}
+                {category === 'lqas' && (
+                    <Grid item md={campaignLink ? 3 : 4}>
+                        <Box
+                            display="flex"
+                            justifyContent="flex-end"
+                            width="100%"
                         >
-                            <Box mr={1} pt={1}>
-                                <RefreshIcon fontSize="small" />
-                            </Box>
-                            {formatMessage(MESSAGES.refreshPage)}
-                        </Button>
-                    </Box>
-                </Grid> */}
+                            <Button
+                                size="small"
+                                variant="contained"
+                                color="primary"
+                                onClick={launchRefresh}
+                                disabled={disableButton}
+                            >
+                                <Box mr={1} pt={1}>
+                                    <RefreshIcon fontSize="small" />
+                                </Box>
+                                {formatMessage(MESSAGES.refreshLqasData)}
+                                {disableButton && (
+                                    <LoadingSpinner
+                                        size={16}
+                                        absolute
+                                        fixed={false}
+                                        transparent
+                                    />
+                                )}
+                            </Button>
+                        </Box>
+                    </Grid>
+                )}
             </Grid>
         </Box>
     );

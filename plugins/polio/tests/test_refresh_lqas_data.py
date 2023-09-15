@@ -1,8 +1,10 @@
 import json
 from iaso import models as m
 from iaso.test import APITestCase
-from iaso.models.base import RUNNING, SKIPPED, KILLED, ERRORED, SUCCESS
-from plugins.polio.tasks.api.refresh_lqas_data import TASK_NAME
+from iaso.models.base import RUNNING, KILLED, ERRORED, SUCCESS, SKIPPED
+from plugins.polio.tasks.api.refresh_lqas_data import TASK_NAME, RefreshLQASDataViewset
+import os
+from unittest.mock import patch
 
 
 class RefreshLQASDataTestCase(APITestCase):
@@ -46,8 +48,14 @@ class RefreshLQASDataTestCase(APITestCase):
             # simplified_geom=cls.country_1_geo_json,
         )
 
-    # POST
-    # PATCH
+    def mock_openhexa_call_success(self, country_id=None, task_id=None):
+        return SUCCESS
+
+    def mock_openhexa_call_skipped(self, country_id=None, task_id=None):
+        return SKIPPED
+
+    def mock_openhexa_call_running(self, country_id=None, task_id=None):
+        return RUNNING
 
     def test_no_perm(self):
         user_no_perm = self.create_user_with_profile(username="test user2", account=self.account, permissions=[])
@@ -63,23 +71,36 @@ class RefreshLQASDataTestCase(APITestCase):
         jr = self.assertJSONResponse(response, 403)
         self.assertEqual({"detail": "You do not have permission to perform this action."}, jr)
 
+    @patch.object(RefreshLQASDataViewset, "refresh_lqas_data", mock_openhexa_call_running)
     def test_create_external_task(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, format="json", data={"country_id": self.country_org_unit.id})
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         # Expect ERRORED status because querying OpenHexa failed
-        self.assertEqual(task["status"], ERRORED)
+        self.assertEqual(task["status"], RUNNING)
         self.assertEqual(task["launcher"]["username"], self.user.username)
         self.assertEqual(task["name"], f"{TASK_NAME}-{self.country_org_unit.id}")
 
+    @patch.object(RefreshLQASDataViewset, "refresh_lqas_data", mock_openhexa_call_skipped)
+    def test_create_external_task_pipeline_already_running(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url, format="json", data={"country_id": self.country_org_unit.id})
+        response = self.assertJSONResponse(response, 200)
+        task = response["task"]
+        # Expect ERRORED status because querying OpenHexa failed
+        self.assertEqual(task["status"], SKIPPED)
+        self.assertEqual(task["launcher"]["username"], self.user.username)
+        self.assertEqual(task["name"], f"{TASK_NAME}-{self.country_org_unit.id}")
+
+    @patch.object(RefreshLQASDataViewset, "refresh_lqas_data", mock_openhexa_call_running)
     def test_patch_external_task(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, format="json", data={"country_id": self.country_org_unit.id})
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         task_id = task["id"]
-        self.assertEqual(task["status"], ERRORED)
+        self.assertEqual(task["status"], RUNNING)
         self.assertEqual(task["progress_value"], 0)
         self.assertEqual(task["end_value"], 0)
 
@@ -93,13 +114,14 @@ class RefreshLQASDataTestCase(APITestCase):
         self.assertEqual(task["progress_value"], 21)
         self.assertEqual(task["end_value"], 0)
 
+    @patch.object(RefreshLQASDataViewset, "refresh_lqas_data", mock_openhexa_call_running)
     def test_kill_external_task(self):
         self.client.force_authenticate(self.user)
         response = self.client.post(self.url, format="json", data={"country_id": self.country_org_unit.id})
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
         task_id = task["id"]
-        self.assertEqual(task["status"], ERRORED)
+        self.assertEqual(task["status"], RUNNING)
 
         response = self.client.patch(
             f"{self.url}{task_id}/",

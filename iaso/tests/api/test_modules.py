@@ -45,9 +45,9 @@ class ModuleAPITestCase(APITestCase):
             name="iaso permission", content_type_id=1, codename="iaso_permission2"
         )
 
-        cls.module_permission = m.ModulePermission.objects.create(permission=cls.permission, module=cls.module)
-        cls.module_permission1 = m.ModulePermission.objects.create(permission=cls.permission1, module=cls.module)
-        cls.module_permission2 = m.ModulePermission.objects.create(permission=cls.permission2, module=cls.module)
+        cls.module_permission = m.Permission.objects.create(permission=cls.permission, module=cls.module)
+        cls.module_permission1 = m.Permission.objects.create(permission=cls.permission1, module=cls.module)
+        cls.module_permission2 = m.Permission.objects.create(permission=cls.permission2, module=cls.module)
 
     def test_list_all_modules_without_authentication(self):
         response = self.client.get("/api/modules/")

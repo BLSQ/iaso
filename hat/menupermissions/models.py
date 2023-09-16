@@ -179,7 +179,7 @@ class CustomPermissionSupport(models.Model):
         permissions = (
             permissions.filter(content_type=content_type)
             .filter(codename__startswith="iaso_")
-            .filter(iaso_module_permission__module__in=modules)
+            .filter(permission__module__in=modules)
             .exclude(codename__contains="datastore")
             .exclude(codename__contains="iaso_beneficiaries")
             .order_by("id")

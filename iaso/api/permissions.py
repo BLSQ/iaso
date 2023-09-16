@@ -3,12 +3,12 @@ from operator import itemgetter
 from django.conf import settings
 from django.contrib.auth.models import Permission
 from django.utils.translation import gettext as _
-from iaso.models import Module
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
 from hat.menupermissions.models import CustomPermissionSupport
 from hat.menupermissions import models as p
+from iaso.models import Module
 
 
 class PermissionsViewSet(viewsets.ViewSet):

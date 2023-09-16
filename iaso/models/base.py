@@ -104,6 +104,8 @@ class AccountFeatureFlag(models.Model):
 class Module(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     codename = models.CharField(max_length=100, null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"{self.name} ({self.codename})"
@@ -1511,8 +1513,8 @@ class UserRole(models.Model):
         }
 
 
-class ModulePermission(models.Model):
+class Permission(models.Model):
     permission = models.OneToOneField(
-        auth.models.Permission, on_delete=models.CASCADE, related_name="iaso_module_permission", null=False, blank=False
+        auth.models.Permission, on_delete=models.CASCADE, related_name="permission", null=False, blank=False
     )
     module = models.ForeignKey(Module, on_delete=models.DO_NOTHING, null=True, blank=True)

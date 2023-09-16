@@ -2,7 +2,7 @@ from rest_framework import permissions, serializers
 from django.db.models import Q, QuerySet
 from django.contrib.auth.models import Permission
 from iaso.models import Account, Module
-from .common import ModelViewSet, HasPermission
+from .common import ModelViewSet, HasPermission, TimestampField
 from hat.menupermissions import models as permission
 
 
@@ -24,7 +24,10 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        fields = ["name", "permissions", "account"]
+        fields = ["name", "created_at", "updated_at", "permissions", "account"]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
     def get_permissions(self, obj):
         return PermissionSerializer(Permission.objects.filter(permission__module=obj), many=True).data

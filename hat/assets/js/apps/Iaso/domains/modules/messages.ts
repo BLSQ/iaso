@@ -17,6 +17,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.search',
     },
+    created_at: {
+        defaultMessage: 'Created',
+        id: 'iaso.label.created_at',
+    },
+    updated_at: {
+        defaultMessage: 'Updated',
+        id: 'iaso.label.updated_at',
+    },
 });
 
 export default MESSAGES;

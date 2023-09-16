@@ -901,6 +901,7 @@
     "iaso.setup.accountSetup": "Account setup",
     "iaso.setup.confirmMessage": "Account and profile created successfully, please logout and login again with the new profile.",
     "iaso.setup.dataSourceNameAlreadyExist": "Data source name already exists",
+    "iaso.setup.modulesEmpty": "Modules should not be empty",
     "iaso.setup.notAdmin": "User \"{displayName}\" has no Iaso profile and account.",
     "iaso.setup.notAdmin2": "Please contact your administrator.",
     "iaso.setup.usernameAlreadyExist": "Username already exists",

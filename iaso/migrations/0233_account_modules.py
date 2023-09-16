@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0232_module'),
+        ("iaso", "0232_module"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='account',
-            name='modules',
-            field=models.ManyToManyField(related_name='account_modules', to='iaso.Module'),
+            model_name="account",
+            name="modules",
+            field=models.ManyToManyField(related_name="account_modules", to="iaso.Module"),
         ),
     ]

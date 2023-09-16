@@ -901,6 +901,7 @@
     "iaso.setup.accountSetup": "Configuration du compte",
     "iaso.setup.confirmMessage": "Compte et profil créés avec succès, veuillez vous déconnecter et vous reconnecter avec le nouveau profil.",
     "iaso.setup.dataSourceNameAlreadyExist": "Une source avec ce nom existe déjà",
+    "iaso.setup.modulesEmpty": "Les modules ne doivent pas être vides.",
     "iaso.setup.notAdmin": "L'utilisateur \"{displayName}\" n'a pas de compte et ni de profil.",
     "iaso.setup.notAdmin2": "Merci de contacter votre administrateur.",
     "iaso.setup.usernameAlreadyExist": "Ce nom d'utilisateur existe déjà",

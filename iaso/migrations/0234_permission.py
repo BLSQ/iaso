@@ -5,19 +5,28 @@ import django.db.models.deletion
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('iaso', '0233_account_modules'),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("iaso", "0233_account_modules"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Permission',
+            name="Permission",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('module', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to='iaso.module')),
-                ('permission', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='permission', to='auth.permission')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "module",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.module"
+                    ),
+                ),
+                (
+                    "permission",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE, related_name="permission", to="auth.permission"
+                    ),
+                ),
             ],
         ),
     ]

@@ -23,7 +23,7 @@ class SetupAccountSerializer(serializers.Serializer):
     user_last_name = serializers.CharField(max_length=150, required=False)
     password = serializers.CharField(required=True)
     user_manual_path = serializers.CharField(required=False)
-    modules = serializers.JSONField(required=True)
+    modules = serializers.JSONField(required=True, initial=[])
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
@@ -35,6 +35,11 @@ class SetupAccountSerializer(serializers.Serializer):
     def validate_user_username(self, value):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("user_name_already_exist")
+        return value
+
+    def validate_modules(self, value):
+        if len(value) == 0:
+            raise serializers.ValidationError("modules_empty")
         return value
 
     def create(self, validated_data):

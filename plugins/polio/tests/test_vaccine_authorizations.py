@@ -60,6 +60,10 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             account=cls.account_2,
         )
 
+        cls.team = Team.objects.create(
+            name="nOPV2 vaccine authorization alerts", project=cls.project, manager=cls.user_1
+        )
+
         cls.org_unit_type_country = OrgUnitType.objects.create(name="COUNTRY", category="COUNTRY")
 
         cls.org_unit_type_country.projects.set([cls.project, cls.project_2])
@@ -460,13 +464,12 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-        team = Team.objects.create(name="nOPV2 vaccine authorization alerts", project=self.project, manager=self.user_1)
-        team.users.set([self.user_1])
+        self.team.users.set([self.user_1])
 
         sixty_days_date = datetime.date.today() + datetime.timedelta(days=60)
         vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=sixty_days_date)
 
-        mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+        mailing_list = [user.email for user in User.objects.filter(pk__in=self.team.users.all())]
 
         sixty_days_expiration_auth = VaccineAuthorization.objects.create(
             account=self.user_1.iaso_profile.account,
@@ -516,13 +519,12 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-        team = Team.objects.create(name="nOPV2 vaccine authorization alerts", project=self.project, manager=self.user_1)
-        team.users.set([self.user_1])
+        self.team.users.set([self.user_1])
 
         past_date = datetime.date.today() - datetime.timedelta(days=1)
 
         vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=past_date)
-        mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+        mailing_list = [user.email for user in User.objects.filter(pk__in=self.team.users.all())]
 
         past_vacc_auth = VaccineAuthorization.objects.create(
             account=self.user_1.iaso_profile.account,
@@ -548,9 +550,10 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         response = expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list)
 
-        page_url = f"example.com//dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
+        page_url = f"example.com/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
         url_is_correct = False
 
+        print(mail.outbox[0].body)
         if page_url in mail.outbox[0].body:
             url_is_correct = True
 

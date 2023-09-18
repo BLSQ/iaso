@@ -12,6 +12,7 @@ import MESSAGES from '../../../constants/messages';
 import { makeCampaignsDropDown } from '../../../utils/index';
 import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
 import { useGetLqasImCountriesOptions } from './hooks/api/useGetLqasImCountriesOptions';
+import { RefreshLqasData } from './RefreshLqasData';
 
 type Params = {
     campaign: string | undefined;

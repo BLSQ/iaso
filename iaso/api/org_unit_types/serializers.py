@@ -23,6 +23,18 @@ def get_parents(type_id):
     return parents_ids
 
 
+def validate_reference_forms(data):
+    """
+    Validate that reference forms are linked to the right project.
+    """
+    reference_forms_ids = [form.pk for form in data.get("reference_forms", [])]
+    projects_forms_ids = Form.objects.filter(projects__in=data.get("projects", [])).values_list("id", flat=True)
+    forms_not_in_projects_forms = set(reference_forms_ids) - set(projects_forms_ids)
+    if forms_not_in_projects_forms:
+        raise serializers.ValidationError({"reference_forms_ids": "Invalid reference forms ids"})
+    return data
+
+
 # Kept for the mobile
 class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
     """
@@ -45,6 +57,8 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
             "units_count",
             "reference_form",
             "reference_form_id",
+            "reference_forms",
+            "reference_forms_ids",
         ]
         read_only_fields = ["id", "projects", "sub_unit_types", "created_at", "updated_at", "units_count"]
 
@@ -63,13 +77,17 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
+    # `OrgUnitType.reference_form` has been replaced by `OrgUnitType.reference_forms`, but we keep
+    # `reference_form` and `reference_form_id` as "dummy" fields for API backwards compatibility.
     reference_form = serializers.SerializerMethodField(read_only=True)
-    reference_form_id: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
-        source="reference_form",
+    reference_form_id: serializers.IntegerField = serializers.IntegerField(required=False)
+    reference_forms = serializers.SerializerMethodField(read_only=True)
+    reference_forms_ids: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
+        source="reference_forms",
         write_only=True,
         required=False,
-        many=False,
-        allow_null=True,
+        many=True,
+        allow_empty=True,
         queryset=Form.objects.all(),
     )
 
@@ -82,13 +100,21 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         return orgunits_count
 
     def get_reference_form(self, obj: OrgUnitType):
-        form_def = Form.objects.filter_for_user_and_app_id(
-            self.context["request"].user, self.context["request"].query_params.get("app_id")
-        ).filter(id=obj.reference_form_id)
+        """
+        Returns an empty dict for API backwards compatibility.
+        """
         return FormSerializer(
-            form_def.first(),
+            Form.objects.none(),
             fields=["id", "form_id", "created_at", "updated_at", "projects"],
             many=False,
+            context=self.context,
+        ).data
+
+    def get_reference_forms(self, obj: OrgUnitType):
+        return FormSerializer(
+            obj.reference_forms.all(),
+            fields=["id", "form_id", "created_at", "updated_at", "projects"],
+            many=True,
             context=self.context,
         ).data
 
@@ -126,14 +152,14 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
-        # validate if form is linked to the right project
-        reference_form = data.get("reference_form", None)
-        if reference_form:
-            projects_form = Form.objects.filter(id=reference_form.id, projects__in=data.get("projects", []))
-            if not projects_form:
-                raise serializers.ValidationError({"reference_form_id": "Invalid reference form id"})
-
+        validate_reference_forms(data)
         return data
+
+    def create(self, validated_data):
+        # Remove fields that are no longer fields of the `OrgUnitType` model.
+        validated_data.pop("reference_form", None)
+        validated_data.pop("reference_form_id", None)
+        return super().create(validated_data)
 
 
 class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
@@ -183,7 +209,12 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
     units_count = serializers.SerializerMethodField(read_only=True)
     reference_forms = serializers.SerializerMethodField(read_only=True)
     reference_forms_ids: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
-        source="reference_forms", write_only=True, many=True, allow_empty=True, queryset=Form.objects.all()
+        source="reference_forms",
+        write_only=True,
+        required=False,
+        many=True,
+        allow_empty=True,
+        queryset=Form.objects.all(),
     )
 
     # Fixme make this directly in db !
@@ -250,10 +281,5 @@ class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
-        # validate if form is linked to the right project
-        reference_forms_ids = [form.pk for form in data.get("reference_forms", [])]
-        projects_forms_ids = Form.objects.filter(projects__in=data.get("projects", [])).values_list("id", flat=True)
-        forms_not_in_projects_forms = set(reference_forms_ids) - set(projects_forms_ids)
-        if forms_not_in_projects_forms:
-            raise serializers.ValidationError({"reference_forms_ids": "Invalid reference forms ids"})
+        validate_reference_forms(data)
         return data

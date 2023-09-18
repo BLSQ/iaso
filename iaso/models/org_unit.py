@@ -111,7 +111,6 @@ class OrgUnitType(models.Model):
     # Allow the creation of these sub org unit types only for mobile (IA-2153)"
     allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
     # TODO: ensure we can modify `OrgUnitTypeSerializerV1` before deleting `reference_form`.
-    reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
     reference_forms = models.ManyToManyField("Form", related_name="org_unit_type_references", blank=False)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)

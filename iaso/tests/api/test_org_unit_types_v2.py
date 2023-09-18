@@ -1,8 +1,42 @@
 import typing
 
-from iaso.api.query_params import PROJECT
+from django.test import TestCase
+from rest_framework.exceptions import ValidationError
+
 from iaso import models as m
+from iaso.api.org_unit_types.serializers import validate_reference_forms
+from iaso.api.query_params import PROJECT
 from iaso.test import APITestCase
+
+
+class ValidateReferenceFormsTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.form_1 = m.Form.objects.create(name="Form 1")
+        cls.form_2 = m.Form.objects.create(name="Form 2")
+        cls.form_3 = m.Form.objects.create(name="Form 3")
+
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Plop", short_name="Pl")
+        cls.org_unit_type.reference_forms.set([cls.form_1, cls.form_2])
+
+        cls.account = m.Account.objects.create(name="Global Health Initiative")
+        cls.project = m.Project.objects.create(name="End All Diseases", account=cls.account)
+        cls.project.forms.set([cls.form_1, cls.form_2])
+
+    def test_validate_reference_forms(self):
+        data = {"projects": [self.project], "reference_forms": [self.form_1, self.form_2]}
+        self.assertEqual(validate_reference_forms(data), data)
+
+        data = {"projects": [self.project], "reference_forms": []}
+        self.assertEqual(validate_reference_forms(data), data)
+
+        data = {"projects": [self.project], "reference_forms": [self.form_3]}
+        with self.assertRaises(ValidationError):
+            validate_reference_forms(data)
+
+        data = {"projects": [self.project], "reference_forms": [self.form_1, self.form_3]}
+        with self.assertRaises(ValidationError):
+            validate_reference_forms(data)
 
 
 class OrgUnitTypesAPITestCase(APITestCase):

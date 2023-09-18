@@ -46,12 +46,18 @@ class ExternalTaskSerializer(TaskSerializer):
         has_end_value = validated_data.get("end_value", None) is not None
         if (has_status or has_progress_value or has_progress_message or has_end_value) and not task.external:
             raise serializers.ValidationError({"external": "Cannot modify non external tasks"})
-        if has_status:
-            task.status = validated_data["status"]
         if validated_data.get("should_be_killed", None) is not None:
             task.should_be_killed = validated_data["should_be_killed"]
             if validated_data["should_be_killed"]:
                 task.status = KILLED
+        if has_status:
+            task.status = validated_data["status"]
+            if (
+                validated_data["status"] == SUCCESS
+                or validated_data["status"] == ERRORED
+                or validated_data["status"] == KILLED
+            ):
+                task.ended_at = datetime.now()
         if has_progress_message:
             task.progress_message = validated_data["progress_message"]
         if has_progress_value:
@@ -202,9 +208,10 @@ class RefreshLQASDataViewset(ModelViewSet):
         serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         country_id = request.query_params.get("country_id", None)
-        queryset = self.get_queryset().filter(status=SUCCESS)
+        status_query = Q(status=SUCCESS) | Q(status=RUNNING) | Q(status=ERRORED)
+        queryset = self.get_queryset().filter(status_query).exclude(started_at__isnull=True)
         query = Q(name=TASK_NAME) | Q(name=f"{TASK_NAME}-{country_id}") if country_id is not None else Q(name=TASK_NAME)
-        queryset = queryset.filter(query).order_by("-ended_at")
+        queryset = queryset.filter(query).order_by("-started_at")
         if queryset.count() == 0:
             return Response({"task": {}})
         result = queryset.first()

@@ -16,6 +16,11 @@ export const useGetModulesColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
                 id: 'name',
+                Cell: settings => {
+                    return formatMessage(
+                        MESSAGES[settings.row.original.codename.toLowerCase()],
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.created_at),

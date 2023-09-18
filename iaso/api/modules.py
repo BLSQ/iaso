@@ -24,7 +24,7 @@ class ModuleSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Module
-        fields = ["name", "created_at", "updated_at", "permissions", "account"]
+        fields = ["name", "codename", "created_at", "updated_at", "permissions", "account"]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)

@@ -12,13 +12,13 @@ import { useQueryClient } from 'react-query';
 import {
     Task,
     TaskApiResponse,
-} from '../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
-import { useGetLatestLQASIMUpdate } from '../../hooks/useGetLatestLQASIMUpdate';
+} from '../../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
+import { useGetLatestLQASIMUpdate } from '../../../hooks/useGetLatestLQASIMUpdate';
 import {
     useCreateTask,
     useTaskMonitor,
-} from '../../../../../../hat/assets/js/apps/Iaso/hooks/taskMonitor';
-import MESSAGES from '../../constants/messages';
+} from '../../../../../../../hat/assets/js/apps/Iaso/hooks/taskMonitor';
+import MESSAGES from '../../../constants/messages';
 
 type Props = {
     countryId?: number;

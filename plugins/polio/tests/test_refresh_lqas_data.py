@@ -144,7 +144,6 @@ class RefreshLQASDataTestCase(APITestCase):
         response = self.client.get(f"{self.action_url}?country_id={self.country_org_unit.id}")
         response = self.assertJSONResponse(response, 200)
         task = response["task"]
-        print("TASK", task, self.country_org_unit.id)
         self.assertEquals(task["id"], self.task1.id)
         self.assertEquals(task["ended_at"], self.task1.ended_at)
         self.assertEquals(task["status"], self.task1.status)

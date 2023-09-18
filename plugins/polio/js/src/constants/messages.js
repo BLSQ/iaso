@@ -1683,6 +1683,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.poNumbers',
         defaultMessage: 'PO numbers',
     },
+    poNumbers: {
+        id: 'iaso.polio.label.poNumbers',
+        defaultMessage: 'PO numbers',
+    },
     formAReception: {
         id: 'iaso.polio.label.formAReception',
         defaultMessage: 'Reception of national Form A',

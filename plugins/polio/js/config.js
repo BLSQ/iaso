@@ -15,10 +15,10 @@ import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import ExtensionIcon from '@material-ui/icons/Extension';
-import { Dashboard } from './src/pages/Dashboard';
-import { Calendar } from './src/pages/Calendar';
-import { CampaignHistory } from './src/components/campaignHistory/CampaignHistory.tsx';
-import { CountryNotificationsConfig } from './src/components/CountryNotificationsConfig/CountryNotificationsConfig';
+import { Dashboard } from './src/domains/Campaigns/Dashboard';
+import { Calendar } from './src/domains/Calendar/Calendar';
+import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
+import { CountryNotificationsConfig } from './src/domains/CountryNotificationsConfig/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
@@ -38,15 +38,15 @@ import {
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
-import { Lqas } from './src/pages/LQAS';
-import { ImStats } from './src/pages/IM';
+import { Lqas } from './src/domains/LQAS-IM/LQAS';
+import { ImStats } from './src/domains/LQAS-IM/IM';
 import { paginationPathParams } from '../../../hat/assets/js/apps/Iaso/routing/common.ts';
-import { GroupedCampaigns } from './src/pages/GroupedCampaigns/GroupedCampaigns.tsx';
-import { BudgetDetails } from './src/pages/Budget/BudgetDetails/BudgetDetails.tsx';
-import { BudgetList } from './src/pages/Budget/index.tsx';
-import { LqasAfroOverview } from './src/pages/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
-import { Nopv2Authorisations } from './src/pages/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
-import { Nopv2AuthorisationsDetails } from './src/pages/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
+import { GroupedCampaigns } from './src/domains/GroupedCampaigns/GroupedCampaigns.tsx';
+import { BudgetDetails } from './src/domains/Budget/BudgetDetails/BudgetDetails.tsx';
+import { BudgetList } from './src/domains/Budget/index.tsx';
+import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
+import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
+import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 
 const campaignsFilters = [
     {

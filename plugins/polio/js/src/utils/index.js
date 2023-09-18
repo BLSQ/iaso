@@ -1,4 +1,4 @@
-import { accessArrayRound } from './LqasIm.tsx';
+import { accessArrayRound } from '../domains/LQAS-IM/shared/LqasIm.tsx';
 
 export const findDataForShape = ({ shape, data, round, campaign }) => {
     if (!data || !data[campaign]) return null;

@@ -3,35 +3,7 @@
 from django.db import migrations
 from rest_framework.generics import get_object_or_404
 from iaso.models import Module, Permission
-
-MODULE_PERMISSIONS = {
-    "DATA_COLLECTION_FORMS": [
-        "iaso_forms",
-        "iaso_update_submission",
-        "iaso_submissions",
-        "iaso_completeness",
-        "iaso_completeness_stats",
-    ],
-    "DEFAULT": [
-        "iaso_org_units",
-        "iaso_org_unit_types",
-        "iaso_sources",
-        "iaso_links",
-        "iaso_data_tasks",
-        "iaso_reports",
-        "iaso_projects",
-        "iaso_users",
-        "iaso_user_roles",
-        "iaso_teams",
-    ],
-    "DHIS2_MAPPING": ["iaso_mappings"],
-    "EMBEDDED_LINKS": ["iaso_pages"],
-    "ENTITIES": ["iaso_entities", "iaso_workflows", "iaso_entity_duplicates_write", "iaso_entity_duplicates_read"],
-    "EXTERNAL_STORAGE": ["iaso_storages"],
-    "PLANNING": ["iaso_assignments"],
-    "POLIO_PROJECT": ["iaso_polio_config", "iaso_polio", "iaso_polio_budget_admin", "iaso_polio_budget"],
-    "REGISTRY": ["iaso_registry"],
-}
+from hat.menupermissions.constants import MODULE_PERMISSIONS
 
 
 def create_link_modules_and_permissions(apps, schema_editor):

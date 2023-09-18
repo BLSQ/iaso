@@ -2,18 +2,7 @@
 
 from django.db import migrations
 from iaso.models import Module
-
-MODULES = [
-    {"name": "Data collection - Forms", "codename": "DATA_COLLECTION_FORMS"},
-    {"name": "Default", "codename": "DEFAULT"},
-    {"name": "DHIS2 mapping", "codename": "DHIS2_MAPPING"},
-    {"name": "Embedded links", "codename": "EMBEDDED_LINKS"},
-    {"name": "Entities", "codename": "ENTITIES"},
-    {"name": "External storage", "codename": "EXTERNAL_STORAGE"},
-    {"name": "Planning", "codename": "PLANNING"},
-    {"name": "Polio project", "codename": "POLIO_PROJECT"},
-    {"name": "Registry", "codename": "REGISTRY"},
-]
+from hat.menupermissions.constants import MODULES
 
 
 def create_modules(apps, schema_editor):

@@ -435,7 +435,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 # Check if the instance has as form the reference_form for the orgUnittype
                 # if the reference_form is the same as the form related to the instance one,
                 # assign the instance to the orgUnit as reference instance
-                if org_unit.org_unit_type.reference_form != instance.form:
+                if not org_unit_type.reference_forms.filter(id=instance.form_id).exists():
                     errors.append(
                         {
                             "errorKey": "reference_form",
@@ -620,7 +620,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             # Check if the instance has as form the reference_form for the orgUnittype
             # if the reference_form is the same as the form related to the instance one,
             # assign the instance to the orgUnit as a reference instance
-            if org_unit_type.reference_form == instance.form:
+            if org_unit_type.reference_forms.filter(id=instance.form_id).exists():
                 org_unit.reference_instance = instance
 
         org_unit.save()

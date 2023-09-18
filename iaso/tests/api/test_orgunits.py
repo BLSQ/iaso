@@ -35,9 +35,11 @@ class OrgUnitAPITestCase(APITestCase):
             name="Not a reference form", period_type=m.MONTH, single_per_period=True
         )
         cls.jedi_council = jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc", reference_form=reference_form
+            name="Jedi Council",
+            short_name="Cnc",
         )
         jedi_council.sub_unit_types.add(jedi_squad)
+        jedi_council.reference_forms.add(reference_form)
 
         cls.mock_multipolygon = mock_multipolygon = MultiPolygon(
             Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])

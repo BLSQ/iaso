@@ -6,24 +6,22 @@ import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import TopBar from '../../components/nav/TopBarComponent';
 
 import MESSAGES from './messages';
+import { StocksParams } from './types/stocks';
+import { useGetStocksMouvements } from './hooks/useGetStocksMouvements';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-type Params = {
-    accountId: 'string';
-    orgUnitId: 'string';
-    item: 'string';
-};
-
 type Props = {
-    params: Params;
+    params: StocksParams;
 };
 
 export const Stocks: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const { formatMessage } = useSafeIntl();
+    const { data, isFetching } = useGetStocksMouvements(params);
+    console.log('data', data);
     return (
         <>
             <TopBar

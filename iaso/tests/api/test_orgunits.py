@@ -39,7 +39,8 @@ class OrgUnitAPITestCase(APITestCase):
             short_name="Cnc",
         )
         jedi_council.sub_unit_types.add(jedi_squad)
-        jedi_council.reference_forms.add(reference_form)
+        cls.jedi_council.reference_forms.add(cls.reference_form)
+        cls.jedi_council.save()
 
         cls.mock_multipolygon = mock_multipolygon = MultiPolygon(
             Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])

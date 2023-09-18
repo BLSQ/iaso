@@ -20,7 +20,7 @@ from plugins.polio.api.rounds.round import RoundViewset
 from plugins.polio.api.rounds.round_date_history import RoundDateHistoryEntryViewset
 from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizationViewSet
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
-from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
+from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet, BudgetProcessViewset
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
 
 router = routers.SimpleRouter()
@@ -49,3 +49,4 @@ router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, bas
 router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
 router.register(r"polio/rounds", RoundViewset, basename="rounds")
+router.register(r"polio/budgetprocesses", BudgetProcessViewset, basename="budget_processes")

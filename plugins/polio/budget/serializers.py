@@ -7,12 +7,20 @@ from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from iaso.api.common import DynamicFieldsModelSerializer, TimestampField
 from iaso.models.microplanning import Team
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer
 from plugins.polio.api.shared_serializers import UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink, model_field_exists, send_budget_mails, get_workflow
+from .models import (
+    BudgetStep,
+    BudgetStepFile,
+    BudgetStepLink,
+    model_field_exists,
+    send_budget_mails,
+    get_workflow,
+    BudgetProcess,
+)
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
 
@@ -622,3 +630,12 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
         if campaign.budget_last_updated_at:
             return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
+
+
+class BudgetProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetProcess
+        fields = ["id", "created_at", "updated_at", "rounds", "teams"]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)

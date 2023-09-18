@@ -13,9 +13,11 @@ from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
 
 from hat.api.token_authentication import generate_auto_authentication_link
+from iaso.models import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
+from plugins.polio.models import Round
 from plugins.polio.time_cache import time_cache
 
 
@@ -94,6 +96,22 @@ class BudgetStepLink(SoftDeletableModel):
 
     def __repr__(self):
         return f"{self.step}, {self.alias}"
+
+
+class BudgetProcess(SoftDeletableModel):
+    class Meta:
+        ordering = ["-updated_at"]
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
+    updated_at = models.DateTimeField(auto_now=True)
+    # Keep trace of the Team the user was acting on behalf of in case they get remove from it.
+    created_by_team = models.ForeignKey("iaso.Team", on_delete=models.PROTECT, blank=True, null=True)
+    rounds = models.ManyToManyField(Round, related_name="budget_process_rounds", blank=False)
+    teams = models.ManyToManyField(Team, related_name="budget_process_teams", blank=False)
+
+    def __str__(self):
+        return f"{self.rounds}-{self.created_at}"
 
 
 # this validator is here to show a proper error in the Django admin if the template is invalid

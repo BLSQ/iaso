@@ -4,7 +4,7 @@ import { useSnackQuery } from '../../../libs/apiHooks';
 import { makeUrlWithParams } from '../../../libs/utils';
 import { StocksMovementPaginated, StocksParams } from '../types/stocks';
 
-const getStocksMovements = async (
+const getStockMovements = async (
     options: StocksParams,
 ): Promise<StocksMovementPaginated> => {
     const { pageSize, ...params } = options as Record<string, any>;
@@ -15,13 +15,12 @@ const getStocksMovements = async (
     return getRequest(url) as Promise<StocksMovementPaginated>;
 };
 
-export const useGetStocksMouvements = (
+export const useGetStockMouvements = (
     options: StocksParams,
 ): UseQueryResult<StocksMovementPaginated, Error> => {
     const queryKey: any[] = ['stockMovements', options];
-    return useSnackQuery(
+    return useSnackQuery({
         queryKey,
-        () => getStocksMovements(options),
-        undefined,
-    );
+        queryFn: () => getStockMovements(options),
+    });
 };

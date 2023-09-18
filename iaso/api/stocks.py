@@ -1,5 +1,5 @@
 from iaso.api.common import ModelViewSet, HasPermission
-from iaso.models import StockItem, StockMovement
+from iaso.models import StockItem, StockMovement, OrgUnit
 from rest_framework import viewsets, permissions, serializers
 from hat.menupermissions import models as permission
 
@@ -44,7 +44,21 @@ class StockItemViewSet(ModelViewSet):
     #     return super().destroy(request, pk)
 
 
-class StockMovementSerializer(serializers.ModelSerializer):
+class EmbeddedStockItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = StockItem
+        fields = ["id", "name"]
+        read_only_fields = ["name"]
+
+
+class EmbeddedOrgUnitSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["id", "name"]
+        read_only_fields = ["name"]
+
+
+class PostStockMovementSerializer(serializers.ModelSerializer):
     class Meta:
         model = StockMovement
         fields = ["id", "stock_item", "org_unit", "quantity", "creation_date"]
@@ -53,6 +67,15 @@ class StockMovementSerializer(serializers.ModelSerializer):
         profile = self.context["request"].user.iaso_profile
         stock_move = StockMovement.objects.create(account=profile.account, **validated_data)
         return stock_move
+
+
+class GetStockMovementSerializer(serializers.ModelSerializer):
+    stock_item = EmbeddedStockItemSerializer()
+    org_unit = EmbeddedOrgUnitSerializer()
+
+    class Meta:
+        model = StockMovement
+        fields = ["id", "stock_item", "org_unit", "quantity", "creation_date"]
 
 
 class StockMovementViewSet(ModelViewSet):
@@ -67,7 +90,17 @@ class StockMovementViewSet(ModelViewSet):
     ]
 
     model = StockMovement
-    serializer_class = StockMovementSerializer
+    http_method_names = ["get", "post", "delete"]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return GetStockMovementSerializer
+        elif self.action == "create":
+            return PostStockMovementSerializer
+        elif self.action == "destroy":
+            return PostStockMovementSerializer
+        else:
+            raise Exception("Unknown action")
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile

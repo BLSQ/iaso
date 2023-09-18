@@ -68,24 +68,17 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
     entity_type_name = workflow_data["entity_type"]
     entity_type = EntityType.objects.get(name=entity_type_name)
 
-    workflow, created = Workflow.objects.get_or_create(uuid=workflow_data["uuid"])
-    if created:
-        workflow.entity_type = entity_type
-        workflow.save()
-    else:
-        if workflow.entity_type != entity_type:
-            workflow.entity_type = entity_type
-            workflow.save()
+    try:
+        wf = Workflow.objects.get(uuid=workflow_data["uuid"])
+        if wf.entity_type != entity_type:
+            wf.entity_type = entity_type
+            wf.save()
+    except Workflow.DoesNotExist:
+        wf = Workflow.objects.create(uuid=workflow_data["uuid"], entity_type=entity_type)
 
     for version_data in workflow_data["versions"]:
-        version, created = WorkflowVersion.objects.get_or_create(uuid=version_data["uuid"])
-
-        if created:
-            version.workflow = workflow
-            version.name = version_data["name"]
-            version.status = version_data["status"]
-            version.save()
-        else:
+        try:
+            version = WorkflowVersion.objects.get(uuid=version_data["uuid"])
             wv_changed = False
 
             if version.name != version_data["name"]:
@@ -99,6 +92,11 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
             if wv_changed:
                 version.save()
 
+        except WorkflowVersion.DoesNotExist:
+            version = WorkflowVersion.objects.create(
+                uuid=version_data["uuid"], workflow=wf, name=version_data["name"], status=version_data["status"]
+            )
+
         version.follow_ups.all().delete()
 
         for follow_up_data in version_data["follow_ups"]:
@@ -111,13 +109,13 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
             )
 
             for form_name in follow_up_data["forms"]:
-                form = Form.objects.filter(projects__account=account).get(name=form_name)
+                form = Form.objects.filter(projects__account=account).distinct().get(name=form_name)
                 fup.forms.add(form)
 
         version.changes.all().delete()
 
         for change_data in version_data["changes"]:
-            form = Form.objects.filter(projects__account=account).get(name=change_data["form"])
+            form = Form.objects.filter(projects__account=account).distinct().get(name=change_data["form"])
 
             WorkflowChange.objects.create(
                 form=form,
@@ -127,7 +125,7 @@ def import_workflow_real(workflow_data: typing.Dict, account: Account) -> Workfl
                 updated_at=change_data["updated_at"],
             )
 
-    return workflow
+    return wf
 
 
 @api_view(["GET"])

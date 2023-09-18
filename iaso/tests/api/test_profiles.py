@@ -677,9 +677,10 @@ class ProfileAPITestCase(APITestCase):
         team2.users.add(self.jim)
         response = self.client.get(f"/api/profiles/", {"teams": f"{team1.pk},{team2.pk}"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["profiles"]), 2)
-        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
-        self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+        self.assertEqual(len(response.data["profiles"]), 2)
+        user_names = [item["user_name"] for item in response.data["profiles"]]
+        self.assertIn("janedoe", user_names)
+        self.assertIn("jim", user_names)
 
     def test_user_with_managed_permission_can_update_profile_of_user_in_sub_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])

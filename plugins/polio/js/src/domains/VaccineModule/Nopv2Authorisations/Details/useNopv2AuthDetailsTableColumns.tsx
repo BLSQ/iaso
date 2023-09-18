@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { Column, formatThousand, useSafeIntl } from 'bluesquare-components';
+import { Column, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../../constants/messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import { DeleteAuthorisationModal } from './Modals/Delete/DeleteAuthorisationModal';
@@ -32,8 +32,8 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
                 accessor: 'quantity',
                 Cell: settings => (
                     <span>
-                        {formatThousand(settings.row.original.quantity) > 0
-                            ? formatThousand(settings.row.original.quantity)
+                        {settings.row.original.quantity > 0
+                            ? settings.row.original.quantity
                             : '--'}
                     </span>
                 ),

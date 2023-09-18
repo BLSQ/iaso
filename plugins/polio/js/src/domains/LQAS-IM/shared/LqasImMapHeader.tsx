@@ -59,10 +59,13 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
                                     <InputComponent
                                         type="select"
                                         keyValue="lqasImHeader"
-                                        options={options}
-                                        value={round}
+                                        options={options.map(o => ({
+                                            ...o,
+                                            value: `${o.value}`,
+                                        }))}
+                                        value={`${round}`}
                                         onChange={(_keyValue, value) =>
-                                            onRoundSelect(value)
+                                            onRoundSelect(parseInt(value, 10))
                                         }
                                         labelString={formatMessage(
                                             MESSAGES.round,

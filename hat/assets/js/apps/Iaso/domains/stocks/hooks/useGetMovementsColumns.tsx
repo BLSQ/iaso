@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { Column, useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
+import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
+import { useDeleteStockMovement } from './useDeleteStockMovement';
 
 export const useGetMovementsColumns = (): Array<Column> => {
     const { formatMessage } = useSafeIntl();
+
+    const { mutate: deleteMovement } = useDeleteStockMovement();
     return [
         {
             Header: formatMessage(MESSAGES.org_unit),
@@ -31,6 +35,25 @@ export const useGetMovementsColumns = (): Array<Column> => {
             id: 'creation_date',
             accessor: 'creation_date',
             Cell: DateCell,
+        },
+        {
+            Header: formatMessage(MESSAGES.actions),
+            accessor: 'actions',
+            resizable: false,
+            sortable: false,
+            Cell: (settings): ReactElement => {
+                return (
+                    <>
+                        <DeleteDialog
+                            keyName="stockMovement"
+                            titleMessage={MESSAGES.delete}
+                            onConfirm={() =>
+                                deleteMovement(settings.row.original)
+                            }
+                        />
+                    </>
+                );
+            },
         },
     ];
 };

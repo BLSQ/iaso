@@ -19,7 +19,7 @@ const getStockMovements = async (
     return getRequest(url) as Promise<StocksMovementPaginated>;
 };
 
-export const useGetStockMouvements = (
+export const useGetStockMovements = (
     options: StocksParams,
 ): UseQueryResult<StocksMovementPaginated, Error> => {
     const queryKey: any[] = ['stockMovements', options];

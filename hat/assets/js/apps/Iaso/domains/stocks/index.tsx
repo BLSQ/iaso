@@ -8,7 +8,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 
 import MESSAGES from './messages';
 import { StocksParams } from './types/stocks';
-import { useGetStockMouvements } from './hooks/useGetStockMouvements';
+import { useGetStockMovements } from './hooks/useGetStockMovements';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectToReplace } from '../../routing/actions';
@@ -29,7 +29,7 @@ export const Stocks: FunctionComponent<Props> = ({ params }) => {
     const classes: Record<string, string> = useStyles();
     const dispatch = useDispatch();
     const { formatMessage } = useSafeIntl();
-    const { data, isFetching } = useGetStockMouvements(params);
+    const { data, isFetching } = useGetStockMovements(params);
     const columns = useGetMovementsColumns();
     return (
         <>

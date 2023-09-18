@@ -21,6 +21,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.quantity',
         defaultMessage: 'Quantity',
     },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.label.actions',
+    },
+    delete: {
+        id: 'iaso.stocks.delete',
+        defaultMessage: 'Are you sure you want to delete this stock movement?',
+    },
+    deleteError: {
+        id: 'iaso.snackBar.deleteTeamError',
+        defaultMessage: 'An error occurred while deleting team',
+    },
+    deleteSuccess: {
+        id: 'iaso.snackBar.delete_successful',
+        defaultMessage: 'Deleted successfully',
+    },
 });
 
 export default MESSAGES;

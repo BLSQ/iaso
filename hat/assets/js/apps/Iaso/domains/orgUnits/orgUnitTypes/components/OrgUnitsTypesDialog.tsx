@@ -122,7 +122,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             if (projects) {
                 forms = getFilteredForms(projects, dataForms);
             }
-            setFieldValue('reference_forms_ids', null);
+            setFieldValue('reference_forms_ids', []);
             return forms;
         },
         [dataForms, setFieldValue],

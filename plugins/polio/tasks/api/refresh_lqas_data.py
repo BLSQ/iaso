@@ -10,7 +10,7 @@ from rest_framework import permissions, serializers, filters
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet
 from rest_framework.response import Response
-from django_filters.rest_framework import DjangoFilterBackend
+from django_filters.rest_framework import DjangoFilterBackend #type:ignore
 from django.db.models import Q
 from rest_framework.decorators import action
 

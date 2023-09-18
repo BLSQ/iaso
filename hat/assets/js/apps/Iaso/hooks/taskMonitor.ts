@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { UseMutationResult, UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult, useQueryClient } from 'react-query';
 import { getRequest, postRequest } from '../libs/Api';
 import { useSnackMutation, useSnackQuery } from '../libs/apiHooks';
 
@@ -11,12 +11,19 @@ const getTasks = (id?: number, endpoint = TASK_ENDPOINT) => {
     return getRequest(url);
 };
 
-export const useTaskMonitor = (
-    taskId?: number,
+export const useTaskMonitor = ({
+    taskId,
     endpoint = TASK_ENDPOINT,
     interval = 1000,
-): UseQueryResult<boolean, any> => {
+    invalidateQueries = [],
+}: {
+    taskId?: number;
+    endpoint?: string;
+    interval?: number;
+    invalidateQueries: any[];
+}): UseQueryResult<boolean, any> => {
     const [enabled, setEnabled] = useState<boolean>(true);
+    const queryClient = useQueryClient();
     useEffect(() => {
         if (taskId) {
             setEnabled(true);
@@ -39,6 +46,11 @@ export const useTaskMonitor = (
             onSuccess: data => {
                 if (!data) {
                     setEnabled(false);
+                    if (invalidateQueries.length > 0) {
+                        invalidateQueries.forEach(queryKey =>
+                            queryClient.invalidateQueries(queryKey),
+                        );
+                    }
                 }
             },
         },

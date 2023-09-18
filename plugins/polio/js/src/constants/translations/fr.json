@@ -318,6 +318,7 @@
     "iaso.polio.label.latestCampaignUntil": "Dernière campagne jusqu'au",
     "iaso.polio.label.latestEvent": "Dernière étape",
     "iaso.polio.label.latestEventDate": "Date dernière étape",
+    "iaso.polio.label.latestManualRefresh": "Dernière mise à jour manuelle",
     "iaso.polio.label.legend": "Légende",
     "iaso.polio.label.linksOrFilesRequired": "Veuillez joindre au moins un lien ou un fichier",
     "iaso.polio.label.lqas": "LQAS",

@@ -2,7 +2,6 @@ import React, { useMemo } from 'react';
 import {
     Column,
     IconButton,
-    formatThousand,
     useSafeIntl,
 } from 'bluesquare-components';
 import { NOPV2_AUTH_DETAILS } from '../../../../constants/routes';
@@ -34,8 +33,8 @@ export const useNopv2AuthTableColumns = (): Column[] => {
                 accessor: 'quantity',
                 Cell: settings => (
                     <span>
-                        {formatThousand(settings.row.original.quantity) > 0
-                            ? formatThousand(settings.row.original.quantity)
+                        {settings.row.original.quantity > 0
+                            ? settings.row.original.quantity
                             : '--'}
                     </span>
                 ),

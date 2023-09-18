@@ -1305,7 +1305,7 @@ export const stocksPath = {
         },
         {
             isRequired: false,
-            key: 'item',
+            key: 'stockItem',
         },
         ...paginationPathParams.map(p => ({
             ...p,

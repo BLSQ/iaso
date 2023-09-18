@@ -1,9 +1,10 @@
 import { Pagination } from 'bluesquare-components';
+import { PaginationParams } from '../../../types/general';
 
-export type StocksParams = {
+export type StocksParams = PaginationParams & {
     accountId: 'string';
     orgUnitId: 'string';
-    item: 'string';
+    stockItem: 'string';
 };
 
 export type StockMouvement = {

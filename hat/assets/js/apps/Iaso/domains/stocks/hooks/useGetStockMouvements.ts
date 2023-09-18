@@ -7,11 +7,15 @@ import { StocksMovementPaginated, StocksParams } from '../types/stocks';
 const getStockMovements = async (
     options: StocksParams,
 ): Promise<StocksMovementPaginated> => {
-    const { pageSize, ...params } = options as Record<string, any>;
-    if (pageSize) {
-        params.limit = pageSize;
-    }
-    const url = makeUrlWithParams('/api/stock/movements', params);
+    const { pageSize, stockItem, orgUnitId, page, order } = options;
+    const params = {
+        limit: pageSize,
+        stock_item: stockItem,
+        org_unit: orgUnitId,
+        page,
+        order,
+    };
+    const url = makeUrlWithParams('/api/stock/movements/', params);
     return getRequest(url) as Promise<StocksMovementPaginated>;
 };
 

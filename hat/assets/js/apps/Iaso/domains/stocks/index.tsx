@@ -13,6 +13,7 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectToReplace } from '../../routing/actions';
 import { useGetMovementsColumns } from './hooks/useGetMovementsColumns';
+import { Filters } from './components/Filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -37,6 +38,7 @@ export const Stocks: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Filters params={params} />
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}

@@ -1,9 +1,5 @@
 import React, { useMemo } from 'react';
-import {
-    Column,
-    IconButton,
-    useSafeIntl,
-} from 'bluesquare-components';
+import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 import { NOPV2_AUTH_DETAILS } from '../../../../constants/routes';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../../../../constants/messages';

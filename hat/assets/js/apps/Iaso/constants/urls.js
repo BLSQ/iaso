@@ -37,6 +37,7 @@ export const baseUrls = {
     teams: 'settings/teams',
     entityDetails: 'entities/details',
     entitySubmissionDetail: 'entities/submission',
+    stocks: 'stocks',
     storages: 'storages',
     storageDetail: 'storages/detail',
     workflows: 'workflows',

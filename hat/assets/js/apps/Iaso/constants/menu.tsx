@@ -23,6 +23,7 @@ import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
+import ShowChartIcon from '@material-ui/icons/ShowChart';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -226,6 +227,12 @@ const menuItems = (
                     icon: props => <FileCopyIcon {...props} />,
                 },
             ],
+        },
+        {
+            label: formatMessage(MESSAGES.stocks),
+            key: 'stocks',
+            permissions: paths.stocksPath.permissions,
+            icon: props => <ShowChartIcon {...props} />,
         },
         {
             label: formatMessage(MESSAGES.storages),

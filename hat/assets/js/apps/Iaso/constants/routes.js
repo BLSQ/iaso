@@ -48,6 +48,7 @@ import { DuplicateDetails } from '../domains/entities/duplicates/details/Duplica
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 import * as Permission from '../utils/permissions.ts';
 import { SetupAccount } from '../domains/setup/index.tsx';
+import { Stocks } from '../domains/stocks/index.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -1289,6 +1290,29 @@ export const workflowsDetailPath = {
     ],
 };
 
+export const stocksPath = {
+    baseUrl: baseUrls.stocks,
+    permissions: [Permission.STOCKS],
+    component: props => <Stocks {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitId',
+        },
+        {
+            isRequired: false,
+            key: 'item',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+        })),
+    ],
+};
+
 export const page401 = {
     baseUrl: baseUrls.error401,
     component: () => <PageError errorCode="401" />,
@@ -1358,4 +1382,5 @@ export const routeConfigs = [
     workflowsDetailPath,
     registryPath,
     registryDetailPath,
+    stocksPath,
 ];

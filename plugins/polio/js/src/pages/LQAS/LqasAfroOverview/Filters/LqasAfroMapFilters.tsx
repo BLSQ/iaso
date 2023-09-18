@@ -104,8 +104,22 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
                             />
                         </InputWithInfos>
                     )}
+                    <FormGroup>
+                        <FormControlLabel
+                            label={formatMessage(MESSAGES.chooseDates)}
+                            style={{ width: 'max-content' }}
+                            control={
+                                <Switch
+                                    size="medium"
+                                    checked={chooseDates}
+                                    onChange={onSwitchChange}
+                                    color="primary"
+                                />
+                            }
+                        />
+                    </FormGroup>
                 </Grid>
-                <Grid container item xs={12} md={6} justifyContent="flex-end">
+                <Grid container item xs={12} sm={6} justifyContent="flex-end">
                     <Box mt={2}>
                         <FilterButton
                             disabled={!filtersUpdated}
@@ -114,20 +128,6 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
                     </Box>
                 </Grid>
             </Grid>
-            <FormGroup>
-                <FormControlLabel
-                    label={formatMessage(MESSAGES.chooseDates)}
-                    style={{ width: 'max-content' }}
-                    control={
-                        <Switch
-                            size="medium"
-                            checked={chooseDates}
-                            onChange={onSwitchChange}
-                            color="primary"
-                        />
-                    }
-                />
-            </FormGroup>
         </>
     );
 };

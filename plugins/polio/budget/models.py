@@ -101,6 +101,7 @@ class BudgetStepLink(SoftDeletableModel):
 class BudgetProcess(SoftDeletableModel):
     class Meta:
         ordering = ["-updated_at"]
+        verbose_name_plural = "Budget Processes"
 
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)

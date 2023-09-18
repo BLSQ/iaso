@@ -9,7 +9,10 @@ import moment from 'moment';
 import { Box, Button } from '@material-ui/core';
 import RefreshIcon from '@material-ui/icons/Refresh';
 import { useQueryClient } from 'react-query';
-import { TaskApiResponse } from '../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
+import {
+    Task,
+    TaskApiResponse,
+} from '../../../../../../hat/assets/js/apps/Iaso/domains/tasks/types';
 import { useGetLatestLQASIMUpdate } from '../../hooks/useGetLatestLQASIMUpdate';
 import {
     useCreateTask,
@@ -24,14 +27,18 @@ type Props = {
 
 const LQAS_TASK_ENDPOINT = '/api/polio/tasks/refreshlqas/';
 
-const useLastUpdate = lastUpdate => {
+const useLastUpdate = (
+    lastUpdate: Task<any>,
+): { message: string; updateStatus: string } => {
     const { formatMessage } = useSafeIntl();
     const result = { message: '', updateStatus: '' };
     if (lastUpdate?.status === 'RUNNING') {
         result.message = formatMessage(MESSAGES.ongoing);
     }
     if (lastUpdate?.status === 'SUCCESS' && Boolean(lastUpdate?.ended_at)) {
-        result.message = `${moment.unix(lastUpdate.ended_at).format('LTS')}`;
+        result.message = `${moment
+            .unix(lastUpdate.ended_at as number)
+            .format('LTS')}`;
     }
     if (lastUpdate?.status) {
         const updateStatus = formatMessage(MESSAGES[lastUpdate.status])

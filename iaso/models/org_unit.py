@@ -528,5 +528,6 @@ class OrgUnit(TreeModel):
     def get_reference_form_id(self):
         """Return the form id of the reference form for this org unit, or None"""
         if self.org_unit_type:
-            return self.org_unit_type.reference_forms.first()
+            reference_form = self.org_unit_type.reference_forms.first()
+            return reference_form.pk if reference_form else None
         return None

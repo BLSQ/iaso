@@ -2395,6 +2395,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.task.label.EXPORTED',
         defaultMessage: 'Exported',
     },
+    gotoLqasForCountry: {
+        id: 'iaso.task.label.gotoLqasForCountry',
+        defaultMessage: 'See LQAS page',
+    },
 });
 
 export default MESSAGES;

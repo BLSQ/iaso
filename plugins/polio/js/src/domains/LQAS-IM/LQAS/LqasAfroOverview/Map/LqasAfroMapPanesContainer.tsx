@@ -19,6 +19,7 @@ import {
 import { defaultShapeStyle } from '../../../../../utils';
 import { AfroMapParams, RoundSelection, Side } from '../types';
 import { LqasAfroTooltip } from './LqasAfroTooltip';
+import { LqasAfroPopup } from './LqasAfroPopUp';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -163,6 +164,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     mainLayer={mapShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     name={`LQAS-Map-country-view-${paramsAsString}`}
+                    makePopup={shape => {
+                        return <LqasAfroPopup shape={shape} />;
+                    }}
                     customTooltip={shape => (
                         <LqasAfroTooltip
                             shape={shape}

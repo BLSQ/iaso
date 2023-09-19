@@ -12,29 +12,29 @@ from iaso.test import APITestCase
 class ValidateReferenceFormsTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
-        cls.form_1 = m.Form.objects.create(name="Form 1")
-        cls.form_2 = m.Form.objects.create(name="Form 2")
-        cls.form_3 = m.Form.objects.create(name="Form 3")
+        cls.ref_form_1 = m.Form.objects.create(name="Form 1")
+        cls.ref_form_2 = m.Form.objects.create(name="Form 2")
+        cls.other_form = m.Form.objects.create(name="Form 3")
 
         cls.org_unit_type = m.OrgUnitType.objects.create(name="Plop", short_name="Pl")
-        cls.org_unit_type.reference_forms.set([cls.form_1, cls.form_2])
+        cls.org_unit_type.reference_forms.set([cls.ref_form_1, cls.ref_form_2])
 
         cls.account = m.Account.objects.create(name="Global Health Initiative")
         cls.project = m.Project.objects.create(name="End All Diseases", account=cls.account)
-        cls.project.forms.set([cls.form_1, cls.form_2])
+        cls.project.forms.set([cls.ref_form_1, cls.ref_form_2])
 
     def test_validate_reference_forms(self):
-        data = {"projects": [self.project], "reference_forms": [self.form_1, self.form_2]}
+        data = {"projects": [self.project], "reference_forms": [self.ref_form_1, self.ref_form_2]}
         self.assertEqual(validate_reference_forms(data), data)
 
         data = {"projects": [self.project], "reference_forms": []}
         self.assertEqual(validate_reference_forms(data), data)
 
-        data = {"projects": [self.project], "reference_forms": [self.form_3]}
+        data = {"projects": [self.project], "reference_forms": [self.other_form]}
         with self.assertRaises(ValidationError):
             validate_reference_forms(data)
 
-        data = {"projects": [self.project], "reference_forms": [self.form_1, self.form_3]}
+        data = {"projects": [self.project], "reference_forms": [self.ref_form_1, self.other_form]}
         with self.assertRaises(ValidationError):
             validate_reference_forms(data)
 

@@ -75,6 +75,14 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                     />
                     {view === DISTRICT && (
                         <PopupItemComponent
+                            label={formatMessage(MESSAGES.country)}
+                            value={shape.country_name}
+                            labelSize={labelSize}
+                            valueSize={valueSize}
+                        />
+                    )}
+                    {view === DISTRICT && (
+                        <PopupItemComponent
                             label={formatMessage(MESSAGES.region)}
                             value={shape.data.region_name}
                             labelSize={labelSize}

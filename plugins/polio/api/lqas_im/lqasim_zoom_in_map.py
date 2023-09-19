@@ -175,6 +175,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "geo_json": shapes,
                         "status": determine_status_for_district(district_stats),
                         "country_id": country_id,
+                        "country_name": org_unit.name,
                     }
 
                 else:
@@ -184,6 +185,7 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         "geo_json": shapes,
                         "status": LQASStatus.InScope,
                         "country_id": country_id,
+                        "country_name": org_unit.name,
                     }
                 results.append(result)
         return Response({"results": results})

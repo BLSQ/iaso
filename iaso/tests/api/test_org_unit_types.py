@@ -105,8 +105,8 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
-    def test_org_unit_type_create_with_not_existing_reference_form_ok(self):
-        """POST /orgunittypes/ with auth: 201 OK"""
+    def test_org_unit_type_create_with_non_existing_reference_form(self):
+        """POST /orgunittypes/ with non existing reference form"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.post(

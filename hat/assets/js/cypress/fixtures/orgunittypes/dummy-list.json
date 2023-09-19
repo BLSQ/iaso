@@ -7,48 +7,11 @@
             "reference_forms": [
                 {
                     "id": 1,
-                    "possible_fields": [
-                        {
-                            "name": "first_name",
-                            "type": "text",
-                            "label": "First Name"
-                        },
-                        {
-                            "name": "middle_name",
-                            "type": "text",
-                            "label": "Middle Name"
-                        },
-                        {
-                            "name": "last_name",
-                            "type": "text",
-                            "label": "Last Name"
-                        }
-                    ],
                     "name": "FORM_A",
                     "form_id": "form_1",
-                    "device_field": "",
-                    "location_field": "",
-                    "org_unit_types": [],
                     "projects": [],
-                    "period_type": "MONTH",
-                    "single_per_period": false,
-                    "periods_before_allowed": 3,
-                    "periods_after_allowed": 3,
-                    "latest_form_version": {
-                        "id": 6,
-                        "version_id": "version_id_test",
-                        "file": "LINK TO FILE",
-                        "xls_file": "LINK TO XLS FILE",
-                        "created_at": 1576686655.95713,
-                        "updated_at": 1576686655.957162
-                    },
-                    "instances_count": 5,
-                    "instance_updated_at": 1571346521.795495,
                     "created_at": 1565610572.35755,
-                    "updated_at": 1637667618.966755,
-                    "deleted_at": null,
-                    "derived": false,
-                    "label_keys": []
+                    "updated_at": 1637667618.966755
                 }
             ],
             "updated_at": 1629460688.557815,

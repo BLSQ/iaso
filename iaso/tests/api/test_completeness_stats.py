@@ -310,17 +310,6 @@ class CompletenessStatsAPITestCase(APITestCase):
                 },
             ],
         }
-        print("")
-        print("")
-        print(expected_result)
-        print("")
-        print("")
-        print("")
-        print("")
-        print("")
-        print(j)
-        print("")
-        print("")
         self.assertAlmostEqualRecursive(
             expected_result,
             j,

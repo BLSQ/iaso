@@ -115,7 +115,7 @@ class StockMovementViewSet(ModelViewSet):
     model = StockMovement
     http_method_names = ["get", "post", "delete"]
     filter_backends = [filters.OrderingFilter, StockMovementCustomFilter]
-    ordering_fields = ["org_unit", "stock_item"]
+    ordering_fields = ["org_unit", "stock_item", "quantity", "creation_date"]
 
     def get_serializer_class(self):
         if self.action == "list":

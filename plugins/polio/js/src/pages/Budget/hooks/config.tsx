@@ -7,7 +7,7 @@ import {
     Column,
     Paginated,
 } from 'bluesquare-components';
-import { Box, makeStyles } from '@material-ui/core';
+import { Box, Tooltip, Typography, makeStyles } from '@material-ui/core';
 import MESSAGES from '../../../constants/messages';
 import { BUDGET_DETAILS } from '../../../constants/routes';
 import {
@@ -130,14 +130,24 @@ export const useBudgetDetailsColumns = (
                 sortable: false,
                 Cell: settings => {
                     const { comment } = settings.row.original;
+                    const formattedComment = <Typography>{comment}</Typography>;
+
                     return (
-                        <span
-                            className={getRowColor(
-                                Boolean(settings.row.original.deleted_at),
-                            )}
+                        <Tooltip
+                            title={formattedComment}
+                            interactive
+                            leaveDelay={500}
+                            placement="right-start"
+                            arrow
                         >
-                            {comment ? formatComment(comment) : '--'}
-                        </span>
+                            <span
+                                className={getRowColor(
+                                    Boolean(settings.row.original.deleted_at),
+                                )}
+                            >
+                                {comment ? formatComment(comment) : '--'}
+                            </span>
+                        </Tooltip>
                     );
                 },
             },

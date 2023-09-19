@@ -1,7 +1,9 @@
+from django.db.models.query import QuerySet
 from iaso.api.common import ModelViewSet, HasPermission
 from iaso.models import StockItem, StockMovement, OrgUnit
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import permissions, serializers
 from hat.menupermissions import models as permission
+from rest_framework import filters
 
 
 class StockItemSerializer(serializers.ModelSerializer):
@@ -16,9 +18,13 @@ class StockItemSerializer(serializers.ModelSerializer):
 
 
 class StockItemViewSet(ModelViewSet):
-    f"""Stock Items API
+    """Stock Items API
 
-    This API is restricted to authenticated authenticated users having the permission "{permission.STOCKS}"
+    This API is restricted to authenticated authenticated users having the permission `permission.STOCK`
+    GET `/api/stock/items/` for a list
+    GET `/api/stock/items/{id}/` for a single one
+    POST `/api/stock/items/` with a body like `{"name": "my item"}` to create
+    DELETE `/api/stock/items/123/` to delete
     """
 
     permission_classes = [
@@ -34,14 +40,6 @@ class StockItemViewSet(ModelViewSet):
         profile = self.request.user.iaso_profile
         qs = StockItem.objects.filter(account=profile.account).order_by("id")
         return qs
-
-    # def destroy(self, request, pk=None):
-    #     profile = request.user.iaso_profile
-    #     existing = StockItem.objects.get(id=pk)
-    #     if existing.account != profile.account:
-    #         raise ValueError("You can only delete stock items from your own account")
-
-    #     return super().destroy(request, pk)
 
 
 class EmbeddedStockItemSerializer(serializers.ModelSerializer):
@@ -78,10 +76,35 @@ class GetStockMovementSerializer(serializers.ModelSerializer):
         fields = ["id", "stock_item", "org_unit", "quantity", "creation_date"]
 
 
-class StockMovementViewSet(ModelViewSet):
-    f"""Stock Movements API
+class StockMovementCustomFilter(filters.BaseFilterBackend):
+    # filter by orgunit id
+    # filter by stock items ids (comma separated)
+    def filter_queryset(self, request, queryset, view):
+        org_unit_id = request.GET.get("orgunit", None)
+        stock_item_ids_str = request.GET.get("stockitems", None)
+        stock_item_ids = stock_item_ids_str.split(",") if stock_item_ids_str else None
 
-    This API is restricted to authenticated users having the permission "{permission.STOCKS}"
+        if org_unit_id is not None:
+            org_unit = OrgUnit.objects.get(id=org_unit_id)
+            queryset = queryset.filter(org_unit=org_unit)
+
+        if stock_item_ids is not None:
+            queryset = queryset.filter(stock_item__id__in=stock_item_ids)
+
+        return queryset
+
+
+class StockMovementViewSet(ModelViewSet):
+    """Stock Movements API
+
+    This API is restricted to authenticated users having the permission 'permission.STOCKS'
+    GET `/api/stock/movements/` for a list of movements
+    GET `/api/stock/movements/{id}/` for a single one
+    GET `/api/stock/movements/?order=-stock_item` for ordering by stock_item id (descending)
+    GET `/api/stock/movements/?order=org_unit` for ordering by org_unit id (ascending)
+    GET `/api/stock/movements/?orgunit=123&stockitems=1,2,3` for filtering by orgunit id and stock items ids
+    POST `/api/stock/movements/` with a body like `{"stock_item": 1, "org_unit": 123, "quantity": 10}` to create
+    DELETE `/api/stock/movements/123/` to delete
     """
 
     permission_classes = [
@@ -91,6 +114,8 @@ class StockMovementViewSet(ModelViewSet):
 
     model = StockMovement
     http_method_names = ["get", "post", "delete"]
+    filter_backends = [filters.OrderingFilter, StockMovementCustomFilter]
+    ordering_fields = ["org_unit", "stock_item"]
 
     def get_serializer_class(self):
         if self.action == "list":

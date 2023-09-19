@@ -863,7 +863,7 @@ class InstancesAPITestCase(APITestCase):
 
         instance = m.Instance.objects.create(org_unit=previous_org_unit, form=self.form_3, project=self.project)
 
-        previous_org_unit.reference_instance = instance
+        previous_org_unit.reference_instances.add(instance)
         previous_org_unit.save()
 
         new_org_unit = m.OrgUnit.objects.create(
@@ -881,7 +881,7 @@ class InstancesAPITestCase(APITestCase):
         previous_org_unit.refresh_from_db()
         instance.refresh_from_db()
         self.assertEqual(instance.org_unit, new_org_unit)
-        self.assertEqual(previous_org_unit.reference_instance, None)
+        self.assertEqual(previous_org_unit.reference_instances.count(), 0)
 
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""

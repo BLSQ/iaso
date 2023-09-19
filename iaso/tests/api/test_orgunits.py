@@ -700,7 +700,7 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
+        self.assertEqual(ou.reference_instances.count(), 1)
 
     def test_create_org_unit_with_not_linked_reference_instance(self):
         self.client.force_authenticate(self.yoda)
@@ -711,7 +711,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "id": None,
                 "name": "Test ou with no reference instance",
                 "org_unit_type_id": self.jedi_council.pk,
-                "reference_instance_id": self.instance_not_related_to_reference_form.id,
+                "reference_instances_ids": [self.instance_not_related_to_reference_form.id],
                 "groups": [],
                 "sub_source": "",
                 "status": False,
@@ -725,7 +725,7 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.reference_instance, None)
+        self.assertEqual(ou.reference_instances.count(), 0)
 
     def test_edit_org_unit_retrieve_put(self):
         """Retrieve an orgunit data and then resend back mostly unmodified and ensure that nothing burn
@@ -773,7 +773,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
+        self.assertIn(self.instance_related_to_reference_form, ou.reference_instances.all())
 
     def test_edit_org_unit_not_link_to_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id with a no reference form"""

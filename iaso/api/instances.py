@@ -478,9 +478,10 @@ class InstancesViewSet(viewsets.ViewSet):
         # If the org unit change but the instance was marked as the reference_instance for this org unit,
         # remove the reference as reference instance
         # FIXME we should log the modification on org unit
-        if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
+        original_is_ref = original.is_reference_for_org_units.filter(id=original.org_unit_id).exists()
+        if (original.org_unit_id != data_org_unit) and original_is_ref:
             previous_orgunit = original.org_unit
-            previous_orgunit.reference_instance = None
+            previous_orgunit.reference_instances.remove(original)
             previous_orgunit.save()
         instance_serializer.save()
 
@@ -626,7 +627,7 @@ def import_data(instances, user, app_id):
                 uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
             )
             instance.entity = entity
-            # If instance's form is the same as the type reference form, set the instance as reference_instance
+            # If instance's form is a reference form, set the instance as reference_instance
             if entity.entity_type.reference_form == instance.form:
                 entity.attributes = instance
                 entity.save()

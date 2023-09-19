@@ -267,7 +267,7 @@ class OrgUnit(TreeModel):
     simplified_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
-    reference_instance = models.ForeignKey("Instance", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_instances = models.ManyToManyField("Instance", related_name="is_reference_for_org_units", blank=False)
 
     gps_source = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
@@ -376,7 +376,7 @@ class OrgUnit(TreeModel):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
-            "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
+            "reference_instances_ids": [instance.pk for instance in self.reference_instances.all()],
             "aliases": self.aliases,
         }
 
@@ -401,7 +401,7 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
-            "reference_instance_id": self.reference_instance_id if self.reference_instance_id else None,
+            "reference_instances_ids": [instance.pk for instance in self.reference_instances.all()],
         }
 
         if hasattr(self, "search_index"):
@@ -435,6 +435,7 @@ class OrgUnit(TreeModel):
             "has_geo_json": True if self.simplified_geom else False,
             "reference_instance_id": self.reference_instance_id,
             "creator": get_creator_name(self.creator),
+            "reference_instances_ids": [instance.pk for instance in self.reference_instances.all()],
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]

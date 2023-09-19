@@ -432,9 +432,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             reference_instance_id = request.data["reference_instance_id"]
             if reference_instance_id:
                 instance = Instance.objects.get(pk=reference_instance_id)
-                # Check if the instance has as form the reference_form for the orgUnittype
+                # Check if the instance is a reference form for the org_unit_type
                 # if the reference_form is the same as the form related to the instance one,
-                # assign the instance to the orgUnit as reference instance
+                # assign the instance to the org_unit as reference instance
                 if not org_unit_type.reference_forms.filter(id=instance.form_id).exists():
                     errors.append(
                         {
@@ -442,11 +442,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                             "errorMessage": _("Form of subimssion is not allowed on this type of org unit"),
                         }
                     )
-                else:
-                    org_unit.reference_instance = instance
-            else:
-                instance = None
-                org_unit.reference_instance = instance
+                org_unit.reference_instances.add(instance)
 
         if "parent_id" in request.data:
             parent_id = request.data["parent_id"]
@@ -615,16 +611,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
-        if reference_instance_id and org_unit_type:
-            instance = Instance.objects.get(pk=reference_instance_id)
-            # Check if the instance has as form the reference_form for the orgUnittype
-            # if the reference_form is the same as the form related to the instance one,
-            # assign the instance to the orgUnit as a reference instance
-            if org_unit_type.reference_forms.filter(id=instance.form_id).exists():
-                org_unit.reference_instance = instance
-
         org_unit.save()
         org_unit.groups.set(new_groups)
+
+        if reference_instance_id and org_unit_type:
+            instance = Instance.objects.get(pk=reference_instance_id)
+            # Check if the instance has as form the reference_form for the org_unit_type
+            # if the reference_form is the same as the form related to the instance one,
+            # assign the instance to the org_unit as a reference instance
+            if org_unit_type.reference_forms.filter(id=instance.form_id).exists():
+                org_unit.reference_instances.add(instance)
+                org_unit.save()
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 
@@ -659,8 +656,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
-        # add the reference instance in the dictiannary to return
-        res["reference_instance"] = org_unit.reference_instance.as_full_model() if org_unit.reference_instance else None
+        # Add the reference instance in the dictionary to return
+        res["reference_instances"] = [instance.as_full_model() for instance in org_unit.reference_instances.all()]
 
         return Response(res)
 

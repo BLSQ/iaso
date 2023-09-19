@@ -55,8 +55,6 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
             "units_count",
-            "reference_form",
-            "reference_form_id",
             "reference_forms",
             "reference_forms_ids",
         ]
@@ -77,10 +75,6 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
-    # `OrgUnitType.reference_form` has been replaced by `OrgUnitType.reference_forms`, but we keep
-    # `reference_form` and `reference_form_id` as "dummy" fields for API backwards compatibility.
-    reference_form = serializers.SerializerMethodField(read_only=True)
-    reference_form_id: serializers.IntegerField = serializers.IntegerField(required=False)
     reference_forms = serializers.SerializerMethodField(read_only=True)
     reference_forms_ids: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
         source="reference_forms",
@@ -98,17 +92,6 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
         orgunits_count = orgUnits.count()
         return orgunits_count
-
-    def get_reference_form(self, obj: OrgUnitType):
-        """
-        Returns an empty dict for API backwards compatibility.
-        """
-        return FormSerializer(
-            Form.objects.none(),
-            fields=["id", "form_id", "created_at", "updated_at", "projects"],
-            many=False,
-            context=self.context,
-        ).data
 
     def get_reference_forms(self, obj: OrgUnitType):
         return FormSerializer(

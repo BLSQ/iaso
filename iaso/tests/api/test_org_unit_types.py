@@ -272,29 +272,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response = self.client.delete(f"/api/orgunittypes/{self.org_unit_type_1.id}/", format="json")
         self.assertJSONResponse(response, 204)
 
-    def test_org_unit_type_create_ok_and_backwards_compatible(self):
-        """POST /orgunittypes/ with auth: 201 OK"""
-
-        self.client.force_authenticate(self.jane)
-        response = self.client.post(
-            "/api/orgunittypes/",
-            data={
-                "name": "Bimbam",
-                "short_name": "Bi",
-                "depth": 1,
-                "project_ids": [self.ead.id],
-                "sub_unit_type_ids": [],
-                "allow_creating_sub_unit_type_ids": [],
-                "reference_form_id": self.reference_form.id,  # Old model field should be accepted.
-            },
-            format="json",
-        )
-
-        self.assertJSONResponse(response, 201)
-        self.assertValidOrgUnitTypeData(response.json())
-        self.assertEqual(response.data["reference_form"], {})  # Should always be empty.
-        self.assertEqual(response.data["reference_forms"], [])
-
     def assertValidOrgUnitTypeListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
             list_data=list_data, expected_length=expected_length, results_key="orgUnitTypes", paginated=paginated
@@ -312,7 +289,6 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertHasField(org_unit_type_data, "projects", list, optional=True)
         self.assertHasField(org_unit_type_data, "sub_unit_types", list, optional=True)
         self.assertHasField(org_unit_type_data, "created_at", float)
-        self.assertHasField(org_unit_type_data, "reference_form", dict, optional=True)
         self.assertHasField(org_unit_type_data, "reference_forms", list, optional=True)
 
         if "projects" in org_unit_type_data:

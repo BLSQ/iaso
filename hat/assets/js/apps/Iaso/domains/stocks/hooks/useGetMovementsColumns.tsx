@@ -4,7 +4,7 @@ import MESSAGES from '../messages';
 import { DateCell } from '../../../components/Cells/DateTimeCell';
 import { LinkToOrgUnit } from '../../orgUnits/components/LinkToOrgUnit';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
-import { useDeleteStockMovement } from './useDeleteStockMovement';
+import { useDeleteStockMovement } from './requests/useDeleteStockMovement';
 
 export const useGetMovementsColumns = (): Array<Column> => {
     const { formatMessage } = useSafeIntl();
@@ -13,16 +13,16 @@ export const useGetMovementsColumns = (): Array<Column> => {
     return [
         {
             Header: formatMessage(MESSAGES.org_unit),
-            id: 'org_unit__name',
-            accessor: 'org_unit__name',
+            id: 'org_unit',
+            accessor: 'org_unit',
             Cell: settings => (
                 <LinkToOrgUnit orgUnit={settings.row.original.org_unit} />
             ),
         },
         {
             Header: formatMessage(MESSAGES.stockItem),
-            id: 'stock_item__name',
-            accessor: 'stock_item__name',
+            id: 'stock_item',
+            accessor: 'stock_item',
             Cell: settings => <>{settings.row.original.stock_item.name}</>,
         },
         {

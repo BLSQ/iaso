@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { makeUrlWithParams } from '../../../libs/utils';
-import { StocksMovementPaginated, StocksParams } from '../types/stocks';
+import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from '../../../../libs/apiHooks';
+import { makeUrlWithParams } from '../../../../libs/utils';
+import { StocksMovementPaginated, StocksParams } from '../../types/stocks';
 
 const getStockMovements = async (
     options: StocksParams,
@@ -10,8 +10,8 @@ const getStockMovements = async (
     const { pageSize, stockItem, orgUnitId, page, order } = options;
     const params = {
         limit: pageSize,
-        stock_item: stockItem,
-        org_unit: orgUnitId,
+        stockitems: stockItem,
+        orgunit: orgUnitId,
         page,
         order,
     };

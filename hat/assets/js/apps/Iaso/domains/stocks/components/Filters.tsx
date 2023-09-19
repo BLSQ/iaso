@@ -8,7 +8,7 @@ import { StocksParams } from '../types/stocks';
 
 import { useFilterState } from '../../../hooks/useFilterState';
 
-import { useGetDropdownStockItems } from '../hooks/useGetDropdownStockItems';
+import { useGetDropdownStockItems } from '../hooks/requests/useGetDropdownStockItems';
 
 import MESSAGES from '../messages';
 import { baseUrls } from '../../../constants/urls';

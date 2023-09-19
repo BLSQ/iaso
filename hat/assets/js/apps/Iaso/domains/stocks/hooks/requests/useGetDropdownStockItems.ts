@@ -1,8 +1,8 @@
 import { UseQueryResult } from 'react-query';
-import { getRequest } from '../../../libs/Api';
-import { useSnackQuery } from '../../../libs/apiHooks';
-import { StockItems } from '../types/stocks';
-import { DropdownOptions } from '../../../types/utils';
+import { getRequest } from '../../../../libs/Api';
+import { useSnackQuery } from '../../../../libs/apiHooks';
+import { StockItems } from '../../types/stocks';
+import { DropdownOptions } from '../../../../types/utils';
 
 const getStockItems = async (): Promise<StockItems> => {
     return getRequest('/api/stock/items/') as Promise<StockItems>;

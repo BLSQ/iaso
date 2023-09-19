@@ -7,7 +7,7 @@ export type StocksParams = PaginationParams & {
     stockItem: 'string';
 };
 
-export type StockMouvement = {
+export type StockMovement = {
     id: number;
     stock_item: number;
     org_unit: number;
@@ -15,7 +15,7 @@ export type StockMouvement = {
     creation_date: string;
 };
 
-export type StockMouvements = Array<StockMouvement>;
+export type StockMouvements = Array<StockMovement>;
 export interface StocksMovementPaginated extends Pagination {
     results: StockMouvements;
 }

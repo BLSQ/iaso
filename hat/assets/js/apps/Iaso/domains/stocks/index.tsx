@@ -8,12 +8,13 @@ import TopBar from '../../components/nav/TopBarComponent';
 
 import MESSAGES from './messages';
 import { StocksParams } from './types/stocks';
-import { useGetStockMovements } from './hooks/useGetStockMovements';
+import { useGetStockMovements } from './hooks/requests/useGetStockMovements';
 import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectToReplace } from '../../routing/actions';
 import { useGetMovementsColumns } from './hooks/useGetMovementsColumns';
 import { Filters } from './components/Filters';
+import { AddStockMovementDialog } from './components/StockMovementDialog';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -22,6 +23,7 @@ const useStyles = makeStyles(theme => ({
 type Props = {
     params: StocksParams;
 };
+
 export const baseUrl = baseUrls.stocks;
 export const defaultSorted = [{ id: 'creation_date', desc: false }];
 
@@ -39,6 +41,13 @@ export const Stocks: FunctionComponent<Props> = ({ params }) => {
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
                 <Filters params={params} />
+
+                <Box display="flex" justifyContent="flex-end">
+                    <AddStockMovementDialog
+                        iconProps={{}}
+                        titleMessage={formatMessage(MESSAGES.addStockMovement)}
+                    />
+                </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}

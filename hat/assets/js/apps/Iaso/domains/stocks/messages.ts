@@ -37,6 +37,26 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.delete_successful',
         defaultMessage: 'Deleted successfully',
     },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    addStockMovement: {
+        id: 'iaso.stocks.addStockMovement',
+        defaultMessage: 'Add a stock movement',
+    },
+    quantityError: {
+        id: 'iaso.stocks.quantityError',
+        defaultMessage: 'Quantity is required and needs to be a number',
+    },
 });
 
 export default MESSAGES;

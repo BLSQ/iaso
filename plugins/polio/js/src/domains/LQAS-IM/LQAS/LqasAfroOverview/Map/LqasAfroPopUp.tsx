@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { FunctionComponent, useRef } from 'react';
 import {
     commonStyles,
     mapPopupStyles,
@@ -19,6 +19,7 @@ import {
 import PopupItemComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/popups/PopupItemComponent';
 import MESSAGES from '../../../../../constants/messages';
 import { LQAS_BASE_URL } from '../../../../../constants/routes';
+import { COUNTRY, DISTRICT } from '../../../shared/constants';
 
 const style = theme => {
     return { ...commonStyles(theme), ...mapPopupStyles(theme) };
@@ -26,11 +27,28 @@ const style = theme => {
 
 const useStyle = makeStyles(style);
 
-export const LqasAfroPopup = ({ shape }) => {
+type View = 'district' | 'country';
+type Props = {
+    shape: any;
+    view: View;
+};
+
+export const LqasAfroPopup: FunctionComponent<Props> = ({
+    shape,
+    view = COUNTRY,
+}) => {
     const classes: Record<string, string> = useStyle();
     const { formatMessage } = useSafeIntl();
     const ref = useRef();
     if (shape.status === 'inScope') return null;
+    const title =
+        view === COUNTRY ? shape.data?.country_name : shape.data?.district_name;
+
+    // District view needs more space for French translation
+    const labelSize = view === COUNTRY ? 4 : 6;
+    const valueSize = view === COUNTRY ? 8 : 6;
+    const countryId = view === COUNTRY ? shape.id : shape.country_id;
+
     return (
         // ignore classname TS error // @ts-ignore
         // @ts-ignore
@@ -43,7 +61,7 @@ export const LqasAfroPopup = ({ shape }) => {
                             className={classes.titleMessage}
                             style={{ fontSize: 16 }}
                         >
-                            {shape.data.country_name}
+                            {title}
                         </Typography>
                         <Box mt={1}>
                             <Divider />
@@ -52,31 +70,55 @@ export const LqasAfroPopup = ({ shape }) => {
                     <PopupItemComponent
                         label={formatMessage(MESSAGES.obrName)}
                         value={shape.data.campaign}
-                        labelSize={4}
-                        valueSize={8}
+                        labelSize={labelSize}
+                        valueSize={valueSize}
+                    />
+                    <PopupItemComponent
+                        label={formatMessage(MESSAGES.region)}
+                        value={shape.data.region_name}
+                        labelSize={labelSize}
+                        valueSize={valueSize}
                     />
                     <PopupItemComponent
                         label={formatMessage(MESSAGES.round)}
                         value={shape.data.round_number}
-                        labelSize={4}
-                        valueSize={8}
+                        labelSize={labelSize}
+                        valueSize={valueSize}
                     />
-                    <PopupItemComponent
-                        label={formatMessage(MESSAGES.passing)}
-                        value={`${shape.lqas_passed}/${shape.scope_count}`}
-                        labelSize={4}
-                        valueSize={8}
-                    />
+                    {view === COUNTRY && (
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.passing)}
+                            value={`${shape.lqas_passed}/${shape.scope_count}`}
+                            labelSize={labelSize}
+                            valueSize={valueSize}
+                        />
+                    )}
+                    {view === DISTRICT && (
+                        <>
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.childrenChecked)}
+                                value={shape.data.total_child_checked}
+                                labelSize={labelSize}
+                                valueSize={valueSize}
+                            />
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.childrenMarked)}
+                                value={shape.data.total_child_fmd}
+                                labelSize={labelSize}
+                                valueSize={valueSize}
+                            />
+                        </>
+                    )}
                     <Grid
                         container
                         spacing={0}
                         justifyContent="flex-end"
                         alignItems="center"
                     >
-                        <Box>
+                        <Box mt={2}>
                             <Link
                                 target="_blank"
-                                to={`${LQAS_BASE_URL}/lqas/campaign/${shape.data.campaign}/country/${shape.id}/`}
+                                to={`${LQAS_BASE_URL}/lqas/campaign/${shape.data.campaign}/country/${countryId}/`}
                             >
                                 <Button
                                     className={classes.marginLeft}
@@ -93,8 +135,4 @@ export const LqasAfroPopup = ({ shape }) => {
             </Card>
         </Popup>
     );
-};
-
-export const makePopup = shape => {
-    return <LqasAfroPopup shape={shape} />;
 };

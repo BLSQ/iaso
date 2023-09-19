@@ -7,12 +7,20 @@ from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from iaso.api.common import DynamicFieldsModelSerializer, TimestampField
 from iaso.models.microplanning import Team
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer
 from plugins.polio.api.shared_serializers import UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink, model_field_exists, send_budget_mails, get_workflow
+from .models import (
+    BudgetStep,
+    BudgetStepFile,
+    BudgetStepLink,
+    model_field_exists,
+    send_budget_mails,
+    get_workflow,
+    BudgetProcess,
+)
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
 
@@ -70,7 +78,26 @@ class TimelineSerializer(serializers.Serializer):
     categories = CategorySerializer(many=True)
 
 
-# noinspection PyMethodMayBeStatic
+class RoundSerializerForProcesses(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ["id", "number"]
+
+
+class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):
+    rounds = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BudgetProcess
+        fields = ["id", "rounds", "teams"]
+
+    @staticmethod
+    def get_rounds(obj):
+        round_pks = obj.rounds.all().values_list("pk", flat=True)
+        rounds = Round.objects.filter(pk__in=round_pks)
+        return [round.number for round in rounds]
+
+
 class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:
         model = Campaign
@@ -86,6 +113,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "cvdpv2_notified_at",
             "possible_transitions",
             "timeline",
+            "processes",
         ]
         default_fields = [
             "created_at",
@@ -94,11 +122,13 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "country_name",
             "current_state",
             "budget_last_updated_at",
+            "processes",
         ]
 
     # added via annotation
     budget_last_updated_at = serializers.DateTimeField(required=False, help_text="Last budget update on the campaign")
     current_state = serializers.SerializerMethodField()
+    processes = serializers.SerializerMethodField()
     # To be used for override
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()
@@ -109,6 +139,11 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
     country_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
         source="country", slug_field="name", read_only=True
     )
+
+    @staticmethod
+    def get_processes(campaign: Campaign):
+        processes = BudgetProcess.objects.filter(rounds__in=Round.objects.filter(campaign=campaign))
+        return ProcessesForCampaignBudgetSerializer(processes, many=True).data
 
     def get_current_state(self, campaign: Campaign):
         workflow = get_workflow()
@@ -622,3 +657,12 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
         if campaign.budget_last_updated_at:
             return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
+
+
+class BudgetProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetProcess
+        fields = ["id", "created_at", "updated_at", "rounds", "teams"]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)

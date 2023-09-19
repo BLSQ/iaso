@@ -80,6 +80,8 @@ from .models import (
     EntityDuplicate,
     EntityDuplicateAnalyzis,
     UserRole,
+    StockItem,
+    StockMovement,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -602,6 +604,17 @@ class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
 
+class StockItemAdmin(admin.ModelAdmin):
+    list_display = ("name",)
+    list_filter = ("account",)
+
+
+class StockMovementAdmin(admin.ModelAdmin):
+    list_display = ("stock_item", "quantity", "creation_date")
+    list_filter = ("stock_item", "account")
+    raw_id_fields = ("org_unit",)
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -648,3 +661,5 @@ admin.site.register(ReportVersion)
 admin.site.register(EntityDuplicate, EntityDuplicateAdmin)
 admin.site.register(EntityDuplicateAnalyzis, EntityDuplicateAnalyzisAdmin)
 admin.site.register(UserRole)
+admin.site.register(StockItem, StockItemAdmin)
+admin.site.register(StockMovement, StockMovementAdmin)

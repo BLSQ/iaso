@@ -234,7 +234,5 @@ class BudgetProcessViewset(ModelViewSet):
 
     def get_queryset(self):
         queryset = BudgetProcess.objects.filter(teams__users=self.request.user)
-        teams = self.request.query_params.get("teams", None)
-        rounds = self.request.query_params.get("rounds", None)
 
         return queryset

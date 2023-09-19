@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(populate_expiration_date, reverse_code=migrations.RunPython.noop),
+        migrations.RunPython(populate_expiration_date),
         migrations.AlterField(
             model_name="vaccineauthorization",
             name="expiration_date",

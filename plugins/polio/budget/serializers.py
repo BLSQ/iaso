@@ -78,7 +78,26 @@ class TimelineSerializer(serializers.Serializer):
     categories = CategorySerializer(many=True)
 
 
-# noinspection PyMethodMayBeStatic
+class RoundSerializerForProcesses(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ["id", "number"]
+
+
+class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):
+    rounds = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BudgetProcess
+        fields = ["id", "rounds", "teams"]
+
+    @staticmethod
+    def get_rounds(obj):
+        round_pks = obj.rounds.all().values_list("pk", flat=True)
+        rounds = Round.objects.filter(pk__in=round_pks)
+        return [round.number for round in rounds]
+
+
 class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:
         model = Campaign
@@ -94,6 +113,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "cvdpv2_notified_at",
             "possible_transitions",
             "timeline",
+            "processes",
         ]
         default_fields = [
             "created_at",
@@ -102,11 +122,13 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "country_name",
             "current_state",
             "budget_last_updated_at",
+            "processes",
         ]
 
     # added via annotation
     budget_last_updated_at = serializers.DateTimeField(required=False, help_text="Last budget update on the campaign")
     current_state = serializers.SerializerMethodField()
+    processes = serializers.SerializerMethodField()
     # To be used for override
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()
@@ -117,6 +139,11 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
     country_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
         source="country", slug_field="name", read_only=True
     )
+
+    @staticmethod
+    def get_processes(campaign: Campaign):
+        processes = BudgetProcess.objects.filter(rounds__in=Round.objects.filter(campaign=campaign))
+        return ProcessesForCampaignBudgetSerializer(processes, many=True).data
 
     def get_current_state(self, campaign: Campaign):
         workflow = get_workflow()

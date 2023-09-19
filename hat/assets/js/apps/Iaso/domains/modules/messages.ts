@@ -1,6 +1,6 @@
 import { defineMessages } from 'react-intl';
 
-const MESSAGES = defineMessages({
+export const MESSAGES = defineMessages({
     title: {
         defaultMessage: 'Modules',
         id: 'iaso.modules.title',

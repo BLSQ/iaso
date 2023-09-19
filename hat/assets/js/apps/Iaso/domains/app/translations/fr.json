@@ -965,6 +965,7 @@
     "iaso.snackBar.fetchLogDetailError": "Une erreur est survenue en récupérant le detail de la modification",
     "iaso.snackBar.fetchLogsError": "Une erreur est survenue en récupérant la liste des logs",
     "iaso.snackBar.fetchMappingsError": "Une erreur est survenue en récupérant la liste des correspondances avec DHIS2",
+    "iaso.snackBar.fetchModules": "Une erreur est survenue en récupérant les modules",
     "iaso.snackBar.fetchOrgUnitError": "Une erreur est survenue en récupérant les details de l'unité d’organisation",
     "iaso.snackBar.fetchOrgUnitsError": "Une erreur est survenue en récupérant la liste des unités d’organisation",
     "iaso.snackBar.fetchOrgUnitTypesError": "Une erreur est survenue en récupérant la liste des type d'unités d’organisation",

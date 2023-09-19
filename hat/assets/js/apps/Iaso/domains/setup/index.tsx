@@ -9,6 +9,7 @@ import { useFormik } from 'formik';
 import { isEqual } from 'lodash';
 import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
+import { SaveAccountQuery } from './types/account';
 import getDisplayName, { useCurrentUser } from '../../utils/usersUtils';
 import TopBar from '../../components/nav/TopBarComponent';
 import InputComponent from '../../components/forms/InputComponent';
@@ -18,9 +19,10 @@ import {
     useApiErrorValidation,
     useTranslatedErrors,
 } from '../../libs/validation';
-import { SaveAccountQuery, useSaveAccount } from './hooks/useSaveAccount';
+import { useSaveAccount } from './hooks/useSaveAccount';
 import { switchLocale } from '../app/actions';
 import { APP_LOCALES } from '../app/constants';
+import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -83,6 +85,7 @@ export const SetupAccount: FunctionComponent = () => {
             user_first_name: '',
             user_last_name: '',
             password: '',
+            modules: [],
         },
         enableReinitialize: true,
         validateOnBlur: true,
@@ -102,7 +105,11 @@ export const SetupAccount: FunctionComponent = () => {
     } = formik;
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
-        setFieldValue(keyValue, value);
+        if (keyValue === 'modules' && value) {
+            setFieldValue(keyValue, value.split(','));
+        } else {
+            setFieldValue(keyValue, value);
+        }
     };
 
     const getErrors = useTranslatedErrors({
@@ -111,6 +118,9 @@ export const SetupAccount: FunctionComponent = () => {
         touched,
         messages: MESSAGES,
     });
+
+    const { data: modules, isFetching: isFetchingModules } =
+        useGetModulesDropDown();
 
     const allowConfirm = isValid && !isEqual(values, initialValues);
     return (
@@ -235,6 +245,20 @@ export const SetupAccount: FunctionComponent = () => {
                                         value={values.password}
                                         onChange={onChange}
                                         errors={getErrors('password')}
+                                    />
+                                    <InputComponent
+                                        type="select"
+                                        multi
+                                        required
+                                        keyValue="modules"
+                                        labelString={formatMessage(
+                                            MESSAGES.modules,
+                                        )}
+                                        value={values.modules}
+                                        onChange={onChange}
+                                        errors={getErrors('modules')}
+                                        loading={isFetchingModules}
+                                        options={modules ?? []}
                                     />
                                     <Box
                                         mt={2}

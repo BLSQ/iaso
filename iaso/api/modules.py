@@ -1,7 +1,7 @@
 from rest_framework import permissions, serializers
 from django.db.models import Q, QuerySet
 from django.contrib.auth.models import Permission
-from iaso.models import Account, Module
+from iaso.models import Account, Module, Profile
 from .common import ModelViewSet, HasPermission, TimestampField
 from hat.menupermissions import models as permission
 
@@ -33,8 +33,13 @@ class ModuleSerializer(serializers.ModelSerializer):
         return PermissionSerializer(Permission.objects.filter(permission__module=obj), many=True).data
 
     def get_account(self, obj):
-        account = self.context["request"].user.iaso_profile.account
-        return AccountSerializer(obj.account_modules.filter(pk=account.id), many=True).data
+        user = self.context["request"].user
+        profile = Profile.objects.filter(user=user)
+        if profile:
+            account = profile.first().account
+            return AccountSerializer(obj.account_modules.filter(pk=account.id), many=True).data
+        else:
+            return []
 
 
 class ModulesViewSet(ModelViewSet):

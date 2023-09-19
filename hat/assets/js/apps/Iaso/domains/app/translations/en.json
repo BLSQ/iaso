@@ -965,6 +965,7 @@
     "iaso.snackBar.fetchLogDetailError": "An error occurred while fetching log details",
     "iaso.snackBar.fetchLogsError": "An error occurred while fetching logs",
     "iaso.snackBar.fetchMappingsError": "An error occurred while fetching mappings",
+    "iaso.snackBar.fetchModules": "An error occurred while fetching modules",
     "iaso.snackBar.fetchOrgUnitError": "An error occurred while fetching org unit detail",
     "iaso.snackBar.fetchOrgUnitsError": "An error occurred while fetching org unit list",
     "iaso.snackBar.fetchOrgUnitTypesError": "An error occurred while fetching org unit types list",

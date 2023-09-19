@@ -70,4 +70,12 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Modules should not be empty',
         id: 'iaso.setup.modulesEmpty',
     },
+    modules: {
+        defaultMessage: 'Modules',
+        id: 'iaso.modules.title',
+    },
+    modulesDropDownError: {
+        defaultMessage: 'An error occurred while fetching modules',
+        id: 'iaso.snackBar.fetchModules',
+    },
 });

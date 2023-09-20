@@ -151,7 +151,6 @@ export const useOrgUnitDetailData = (
         links,
         isFetchingDatas:
             isFetchingAlgorithm ||
-            isFetchingProfiles ||
             isFetchingAlgorithmRuns ||
             isFetchingGroups ||
             isFetchingSources ||
@@ -162,6 +161,7 @@ export const useOrgUnitDetailData = (
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
+        isFetchingProfiles,
         parentOrgUnit,
     };
 };

@@ -251,6 +251,7 @@ const OrgUnitDetail = ({ params, router }) => {
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
+        isFetchingProfiles,
         parentOrgUnit,
     } = useOrgUnitDetailData(
         isNewOrgunit,
@@ -427,7 +428,6 @@ const OrgUnitDetail = ({ params, router }) => {
                 )}
             </TopBar>
 
-            {/* there is already a loader on SingleTable for the other tabs */}
             {(isFetchingDetail || isFetchingDatas || savingOu) &&
                 (tab === 'infos' || tab === 'map' || tab === 'comments') && (
                     <LoadingSpinner />
@@ -590,6 +590,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                         profiles,
                                         algorithms,
                                         sources,
+                                        isFetchingProfiles,
                                     )}
                                     params={params}
                                     paramsPrefix="linksParams"

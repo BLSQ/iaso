@@ -162,11 +162,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         return super().create(request)
 
     def list(self, request: Request, *args, **kwargs):
-
         auth_status = self.request.query_params.get("auth_status", None)
 
         if auth_status == "EXPIRED":
-
             queryset = self.get_queryset().filter(status="EXPIRED")
 
             serializer = VaccineAuthorizationSerializer(queryset, many=True)

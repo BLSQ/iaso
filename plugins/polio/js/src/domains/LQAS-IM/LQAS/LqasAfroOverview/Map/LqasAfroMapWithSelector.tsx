@@ -49,8 +49,10 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
+    const paramTab =
+        side === 'left' ? router.params.leftTab : router.params.rightTab;
     const classes: Record<string, string> = useStyles();
-    const [tab, setTab] = useState(MAP);
+    const [tab, setTab] = useState(paramTab ?? MAP);
 
     // TABS
     const handleChangeTab = useCallback(

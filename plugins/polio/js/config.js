@@ -220,6 +220,14 @@ const routes = [
                 isRequired: false,
                 key: 'displayedShapesRight',
             },
+            {
+                isRequired: false,
+                key: 'leftTab',
+            },
+            {
+                isRequired: false,
+                key: 'rightTab',
+            },
         ],
     },
     {

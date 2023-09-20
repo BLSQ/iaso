@@ -143,7 +143,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
             queryset = queryset.filter(country__pk__in=ou_pk_list)
         if search:
             queryset = queryset.filter(country__name__icontains=search)
-        if auth_status:
+
+        # Expired status need to be treated differently as others status are mandatory to calculate the get_most_recent
+        if auth_status and auth_status != "EXPIRED":
             auth_status = auth_status.split(",")
             queryset = queryset.filter(status__in=auth_status)
 
@@ -159,6 +161,20 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         return super().create(request)
 
+    def list(self, request: Request, *args, **kwargs):
+
+        auth_status = self.request.query_params.get("auth_status", None)
+
+        if auth_status == "EXPIRED":
+
+            queryset = self.get_queryset().filter(status="EXPIRED")
+
+            serializer = VaccineAuthorizationSerializer(queryset, many=True)
+
+            return Response(serializer.data)
+
+        return super().list(request, *args, **kwargs)
+
     @action(detail=False, methods=["GET"])
     def get_most_recent_authorizations(self, request):
         """
@@ -169,6 +185,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         response = []
 
         ordering = request.query_params.get("order", None)
+        auth_status = request.query_params.get("auth_status", None)
 
         for auth in queryset:
             if auth.country not in country_list:
@@ -192,6 +209,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
             last_entry_date_check = VaccineAuthorization.objects.filter(
                 country=country, account=self.request.user.iaso_profile.account, deleted_at__isnull=True
             ).last()
+
+            if auth_status == "EXPIRED":
+                response = [entry for entry in response if entry["status"] == "EXPIRED"]
 
             if last_entry_date_check and last_entry:
                 if last_entry_date_check.expiration_date > last_entry.expiration_date:
@@ -246,6 +266,9 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 }
 
                 response.append(vacc_auth)
+
+        if auth_status == "EXPIRED":
+            response = [entry for entry in response if entry["status"] == "EXPIRED"]
 
         if ordering:
             if ordering[0] == "-":

@@ -26,6 +26,7 @@ const useStyles = makeStyles(theme => ({
             right: 'auto',
         },
     },
+    // We need to render the map to have bounds. Otherwise the API call for districts will get a 500
     hidden: { visibility: 'hidden', height: 0 },
 }));
 

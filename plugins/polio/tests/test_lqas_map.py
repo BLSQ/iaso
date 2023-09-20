@@ -101,7 +101,8 @@ class PolioLqasAfroMapTestCase(APITestCase):
             source_ref="PvtAI4RUMkr",
             org_unit_type=cls.district,
             version=cls.source_version,
-            simplified_geom=cls.district_2_geo_json,
+            # Removing the simplflified_geom should not break the test
+            # simplified_geom=cls.district_2_geo_json,
             parent=cls.region_org_unit_1,
         )
         cls.district_3_geo_json = MultiPolygon(Polygon.from_bbox((6, 6, 7, 7)))

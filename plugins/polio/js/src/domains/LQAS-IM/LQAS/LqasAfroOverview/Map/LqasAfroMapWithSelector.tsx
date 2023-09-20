@@ -26,6 +26,7 @@ const useStyles = makeStyles(theme => ({
             right: 'auto',
         },
     },
+    hidden: { visibility: 'hidden', height: 0 },
 }));
 
 type Props = {
@@ -93,16 +94,26 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                         side={side}
                     />
                 </Box>
-                {tab === MAP && (
-                    <Box m={2} pb={2} className={classes.mapContainer}>
-                        <LqasAfroMap router={router} side={side} />
-                    </Box>
-                )}
-                {tab === LIST && (
-                    <Box m={2} pb={2} className={classes.mapContainer}>
-                        <LqasAfroList router={router} side={side} />{' '}
-                    </Box>
-                )}
+
+                <Box
+                    m={2}
+                    pb={2}
+                    className={
+                        tab === MAP ? classes.mapContainer : classes.hidden
+                    }
+                >
+                    <LqasAfroMap router={router} side={side} />
+                </Box>
+
+                <Box
+                    m={2}
+                    pb={2}
+                    className={
+                        tab === LIST ? classes.mapContainer : classes.hidden
+                    }
+                >
+                    <LqasAfroList router={router} side={side} />{' '}
+                </Box>
             </Paper>
         </LqasAfroOverviewContextProvider>
     );

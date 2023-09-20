@@ -1,9 +1,11 @@
 import json
+
+from django.contrib.auth.models import User
+from rest_framework.test import APIClient
+
 from iaso.models.base import Account
 from iaso.test import APITestCase
 from plugins.polio.models import Config
-from django.contrib.auth.models import User
-from rest_framework.test import APIClient
 
 content = {"beurk": "lol"}
 

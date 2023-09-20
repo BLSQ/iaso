@@ -61,6 +61,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',
     },
+    requiredField: {
+        id: 'iaso.forms.error.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
 });
 
 export default MESSAGES;

@@ -14,7 +14,7 @@ import { useCreateEditNopv2Authorisation } from '../../../hooks/api';
 import { EditIconButton } from '../../../../../../../../../../hat/assets/js/apps/Iaso/components/Buttons/EditIconButton';
 import { useNopv2AuthorisationsSchema } from '../../../hooks/validation';
 import MESSAGES from './MESSAGES';
-import { NumberInput } from '../../../../../../components/Inputs';
+import { NumberInput } from '../../../../../../components/Inputs/NumberInput';
 import { MultilineText } from '../../../../../../components/Inputs/MultilineText';
 import { SingleSelect } from '../../../../../../components/Inputs/SingleSelect';
 import { useStatusOptions } from '../../../hooks/statuses';
@@ -113,6 +113,7 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                     component={DateInput}
                     fullWidth
                     clearable
+                    required
                     withMarginTop
                 />
                 <Field

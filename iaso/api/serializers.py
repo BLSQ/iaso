@@ -16,6 +16,10 @@ class TimestampSerializerMixin:
     serializer_field_mapping[models.DateTimeField] = TimestampField  # type: ignore
 
 
+class AppIdSerializer(serializers.Serializer):
+    app_id = serializers.CharField(allow_blank=False)
+
+
 class GroupSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Group

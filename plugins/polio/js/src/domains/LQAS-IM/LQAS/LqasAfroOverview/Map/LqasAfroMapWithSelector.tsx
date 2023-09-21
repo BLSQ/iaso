@@ -2,7 +2,7 @@ import React, { FunctionComponent, useCallback, useState } from 'react';
 import { Box, Paper, makeStyles, Tabs, Tab, Divider } from '@material-ui/core';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
-import { paperElevation } from '../../../shared/constants';
+import { LIST, MAP, paperElevation } from '../../../shared/constants';
 import { LqasAfroMap } from './LqasAfroMap';
 import { Router } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../../../constants/messages';
@@ -12,9 +12,7 @@ import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';
 import { LqasAfroSelector } from '../LqasAfroSelector';
 import { LqasAfroList } from '../ListView/LqasAfroList';
 import { LqasAfroOverviewContextProvider } from '../Context/LqasAfroOverviewContext';
-
-const LIST = 'list';
-const MAP = 'map';
+import { Sides } from '../../../../../constants/types';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
@@ -52,14 +50,14 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
     const { formatMessage } = useSafeIntl();
     const dispatch = useDispatch();
     const paramTab =
-        side === 'left' ? router.params.leftTab : router.params.rightTab;
+        side === Sides.left ? router.params.leftTab : router.params.rightTab;
     const classes: Record<string, string> = useStyles();
     const [tab, setTab] = useState(paramTab ?? MAP);
 
     // TABS
     const handleChangeTab = useCallback(
         newtab => {
-            const tabKey = side === 'left' ? 'leftTab' : 'rightTab';
+            const tabKey = side === Sides.left ? 'leftTab' : 'rightTab';
             setTab(newtab);
             const newParams = {
                 ...router.params,

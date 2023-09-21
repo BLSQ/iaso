@@ -34,7 +34,8 @@ import {
 import { getRound } from '../utils';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 import { HasLocationIcon } from './HasLocationIcon';
-import { IN_SCOPE, LQAS_FAIL, LQAS_PASS } from '../../../shared/constants';
+import { IN_SCOPE } from '../../../shared/constants';
+import { LQAS_FAIL, LQAS_PASS } from '../../constants';
 
 type SortFocus =
     | 'DISTRICT'

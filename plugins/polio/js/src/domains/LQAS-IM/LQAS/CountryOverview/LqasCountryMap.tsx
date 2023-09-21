@@ -12,8 +12,7 @@ import { MapLegendContainer } from '../../../Campaigns/MapComponent/MapLegendCon
 import { MapLegend } from '../../../Campaigns/MapComponent/MapLegend';
 import { MapComponent } from '../../../Campaigns/MapComponent/MapComponent';
 
-// eslint-disable-next-line no-unused-vars
-const getBackgroundLayerStyle = _shape => defaultShapeStyle;
+const getBackgroundLayerStyle = () => defaultShapeStyle;
 
 type Props = {
     round: number;

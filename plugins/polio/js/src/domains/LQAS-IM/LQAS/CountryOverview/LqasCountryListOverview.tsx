@@ -72,7 +72,7 @@ export const LqasCountryListOverview: FunctionComponent<Props> = ({
     const tableClasses: Record<string, string> = useTableStyle();
     const { formatMessage } = useSafeIntl();
 
-    const [rowsPerPage, setRowsPerPage] = useState(10);
+    const [rowsPerPage, setRowsPerPage] = useState(25);
     const [orderBy, setOrderBy] = useState('asc');
     const [sortFocus, setSortFocus] = useState<SortFocus>('REGION');
     const [page, setPage] = useState<number>(0);

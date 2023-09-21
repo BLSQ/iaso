@@ -24,7 +24,7 @@ import { useLqasData } from '../../hooks/useLqasData.ts';
 import MESSAGES from '../../constants/messages';
 import { BadRoundNumbers } from '../../components/LQAS-IM/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../../utils/LqasIm.tsx';
-import { genUrl } from '../../utils/routing';
+import { genUrl } from '../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { defaultRounds, paperElevation } from '../IM/constants.ts';
 import { useLqasIm } from '../IM/requests.ts';
@@ -56,8 +56,8 @@ export const Lqas = ({ router }) => {
     } = useLqasData({ campaign, country, selectedRounds, LQASData });
 
     const dropDownOptions = useMemo(() => {
-        return makeDropdownOptions(LQASData?.stats, campaign, selectedRounds);
-    }, [LQASData, campaign, selectedRounds]);
+        return makeDropdownOptions(LQASData?.stats, campaign);
+    }, [LQASData, campaign]);
 
     const onRoundChange = useCallback(
         index => value => {
@@ -90,6 +90,7 @@ export const Lqas = ({ router }) => {
                     isFetching={isFetching}
                     campaigns={campaigns}
                     campaignsFetching={campaignsFetching}
+                    category="lqas"
                 />
                 <Grid container spacing={2} direction="row">
                     {selectedRounds.map((rnd, index) => (

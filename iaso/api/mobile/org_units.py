@@ -18,6 +18,7 @@ from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.models import OrgUnit, Project, FeatureFlag
+from hat.menupermissions import models as permission
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -95,9 +96,9 @@ class HasOrgUnitPermission(permissions.BasePermission):
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm("menupermissions.iaso_forms")
-                or request.user.has_perm("menupermissions.iaso_org_units")
-                or request.user.has_perm("menupermissions.iaso_submissions")
+                request.user.has_perm(permission.FORMS)
+                or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.SUBMISSIONS)
             )
         ):
             return False

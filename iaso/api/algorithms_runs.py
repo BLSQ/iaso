@@ -6,12 +6,13 @@ from rest_framework import viewsets, permissions, exceptions
 from rest_framework.response import Response
 
 from iaso.models import AlgorithmRun, DataSource, SourceVersion, MatchingAlgorithm
+from hat.menupermissions import models as permission
 
 
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
-    """Algorithms runs API
+    f"""Algorithms runs API
 
-    This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
+    This API is restricted to authenticated users having the "{permission.LINKS}" permission
 
     GET /api/algorithmsruns/
     GET /api/algorithmsruns/<id>

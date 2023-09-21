@@ -1,18 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Box, Button, Grid, Typography } from '@material-ui/core';
-import { useSelector } from 'react-redux';
 
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import { merge } from 'lodash';
-import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests';
 import { FormattedMessage } from 'react-intl';
+import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { useFormState } from '../../../hooks/form';
 import { useCheckDhis2Mutation, useSaveDataSource } from '../requests';
+import { useTranslatedDhis2Errors } from '../hooks/useTranslatedDhis2Errors.ts';
 
 const ProjectSelectorIds = ({
     keyValue,
@@ -23,7 +23,7 @@ const ProjectSelectorIds = ({
     fieldHasBeenChanged,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const {data: projects, isFetching} = useGetProjectsDropdownOptions();
+    const { data: projects, isFetching } = useGetProjectsDropdownOptions();
     const allErrors = [...errors];
     if (value.length === 0 && fieldHasBeenChanged) {
         allErrors.unshift(formatMessage(MESSAGES.emptyProjectsError));
@@ -153,6 +153,10 @@ export const DataSourceDialogComponent = ({
         value: v.id,
     }));
 
+    const urlErrors = useTranslatedDhis2Errors(form.credentials_dhis2_url);
+    const userPasswordErrors = useTranslatedDhis2Errors(
+        form.credentials_dhis2_password,
+    );
     return (
         <ConfirmCancelDialogComponent
             dataTestId="datasource-modal"
@@ -262,7 +266,7 @@ export const DataSourceDialogComponent = ({
                     <InputComponent
                         value={form.credentials.value.dhis_url}
                         keyValue="dhis_url"
-                        errors={form.credentials_dhis2_url?.errors}
+                        errors={urlErrors}
                         label={MESSAGES.dhisUrl}
                         onChange={setCredentials}
                     />
@@ -276,7 +280,7 @@ export const DataSourceDialogComponent = ({
                     <InputComponent
                         value={form.credentials.value.dhis_password}
                         keyValue="dhis_password"
-                        errors={form.credentials_dhis2_password?.errors}
+                        errors={userPasswordErrors}
                         label={MESSAGES.dhisPassword}
                         onChange={setCredentials}
                         password

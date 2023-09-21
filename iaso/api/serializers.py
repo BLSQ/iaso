@@ -16,6 +16,10 @@ class TimestampSerializerMixin:
     serializer_field_mapping[models.DateTimeField] = TimestampField  # type: ignore
 
 
+class AppIdSerializer(serializers.Serializer):
+    app_id = serializers.CharField(allow_blank=False)
+
+
 class GroupSerializer(TimestampSerializerMixin, serializers.ModelSerializer):
     class Meta:
         model = Group
@@ -140,6 +144,15 @@ class OrgUnitSearchParentSerializer(OrgUnitSerializer):
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "parent"]
+
+
+class OrgUnitDropdownSerializer(OrgUnitSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["value", "label"]
+
+    label = serializers.CharField(source="name", read_only=True)  # type: ignore
+    value = serializers.IntegerField(source="id", read_only=True)
 
 
 # noinspection PyMethodMayBeStatic

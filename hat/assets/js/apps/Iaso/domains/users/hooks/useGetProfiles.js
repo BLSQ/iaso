@@ -2,8 +2,10 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { makeUrlWithParams } from '../../../libs/utils.tsx';
 
-export const useGetProfiles = params => {
-    const newParams = params
+
+export const useGetProfilesApiParams = params => {
+
+    const apiParams = params
         ? {
               limit: params.pageSize,
               order: params.order,
@@ -16,10 +18,23 @@ export const useGetProfiles = params => {
               ouChildren: params.ouChildren,
               projects: params.projectsIds,
               userRoles: params.userRoles,
+              teams: params.teamsIds,
           }
         : {};
 
-    const url = makeUrlWithParams(`/api/profiles/`, newParams);
+    const url = makeUrlWithParams(`/api/profiles/`, {
+        ...apiParams,
+        managedUsersOnly: 'true',
+    });
 
-    return useSnackQuery(['profiles', newParams], () => getRequest(url));
+    return {
+        url,
+        apiParams,
+    };
+
+};
+
+export const useGetProfiles = params => {
+    const { url, apiParams } = useGetProfilesApiParams(params);
+    return useSnackQuery(['profiles', apiParams], () => getRequest(url));
 };

@@ -143,6 +143,8 @@ class FormAdmin(admin.GeoModelAdmin):
 
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
 
+    list_filter = ["projects__account"]
+
     def get_queryset(self, request):
         return Form.objects_include_deleted.all()
 
@@ -268,7 +270,7 @@ class ProjectAdmin(admin.ModelAdmin):
 
 @admin_attr_decorator
 class FeatureFlagAdmin(admin.ModelAdmin):
-    list_display = ("code", "name")
+    list_display = ("code", "name", "requires_authentication")
 
 
 @admin_attr_decorator
@@ -560,6 +562,7 @@ class WorkflowFollowupInline(admin.TabularInline):
 class WorkflowVersionAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at")
     inlines = [WorkflowChangeInline, WorkflowFollowupInline]
+    list_filter = ("workflow", "status")
 
     def get_queryset(self, request):
         return WorkflowVersion.objects_include_deleted.all()

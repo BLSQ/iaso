@@ -35,7 +35,7 @@ const MESSAGES = defineMessages({
     },
     createdAt: {
         id: 'iaso.label.created',
-        defaultMessage: 'Created',
+        defaultMessage: 'Creation',
     },
     orgUnit: {
         id: 'iaso.label.orgUnit',

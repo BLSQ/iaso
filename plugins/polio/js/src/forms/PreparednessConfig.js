@@ -24,7 +24,7 @@ import {
 import MESSAGES from '../constants/messages';
 import { PreparednessSummary } from './PreparednessSummary';
 
-export const PreparednessConfig = ({ roundNumber }) => {
+export const PreparednessConfig = ({ roundNumber, campaignName }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, dirty } = useFormikContext();
@@ -57,11 +57,14 @@ export const PreparednessConfig = ({ roundNumber }) => {
     const previewMutation = useFetchPreparedness();
 
     const refreshData = () => {
-        previewMutation.mutate(preparedness_spreadsheet_url, {
-            onSuccess: data => {
-                setFieldValue(lastKey, data);
+        previewMutation.mutate(
+            { googleSheetURL: preparedness_spreadsheet_url, campaignName },
+            {
+                onSuccess: data => {
+                    setFieldValue(lastKey, data);
+                },
             },
-        });
+        );
     };
 
     const generateSpreadsheet = () => {

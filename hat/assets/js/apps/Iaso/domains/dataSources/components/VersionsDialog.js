@@ -18,6 +18,7 @@ import {
     DHIS2Svg,
     IconButton as IconButtonComponent,
     Table,
+    useSafeIntl,
 } from 'bluesquare-components';
 import 'react-table';
 import { CopySourceVersion } from './CopySourceVersion/CopySourceVersion.tsx';
@@ -29,6 +30,13 @@ import { ImportGeoPkgDialog } from './ImportGeoPkgDialog';
 import { AddNewEmptyVersion } from './AddNewEmptyVersion.tsx';
 import { DateTimeCell } from '../../../components/Cells/DateTimeCell';
 import { EditSourceVersion } from './EditSourceVersion.tsx';
+import {
+    getSortedSourceVersions,
+    handleSort,
+    handleTableParamsChange,
+    getTableParams,
+    getTablePages,
+} from '../utils';
 
 const useStyles = makeStyles(theme => ({
     spanStyle: {
@@ -103,7 +111,12 @@ const tableColumns = (source, forceRefreshParent) => [
         sortable: false,
     },
     {
-        Header: <FormattedMessage id="iaso.label.actions" />,
+        Header: (
+            <FormattedMessage
+                id="iaso.label.actions"
+                defaultMessage="Action(s)"
+            />
+        ),
         accessor: 'actions',
         sortable: false,
         width: 200,
@@ -155,19 +168,6 @@ const tableColumns = (source, forceRefreshParent) => [
     },
 ];
 
-const sortByNumberAsc = (sourceA, sourceB) => {
-    return sourceA.number - sourceB.number;
-};
-const sortByNumberDesc = (sourceA, sourceB) => {
-    return sourceB.number - sourceA.number;
-};
-const sortByOrgUnitsAsc = (sourceA, sourceB) => {
-    return sourceA.org_units_count - sourceB.org_units_count;
-};
-const sortByOrgUnitsDesc = (sourceA, sourceB) => {
-    return sourceB.org_units_count - sourceA.org_units_count;
-};
-
 const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
     const { spanStyle, ...classes } = useStyles();
     const [page, setPage] = useState(0);
@@ -178,31 +178,7 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
         () => source?.versions ?? [],
         [source?.versions],
     );
-    const handleSort = useCallback(
-        focus => {
-            if (sortFocus !== focus) {
-                setSortFocus(focus);
-                setSortBy('asc');
-            } else if (sortBy === 'asc') {
-                setSortBy('desc');
-            } else {
-                setSortBy('asc');
-            }
-        },
-        [sortBy, sortFocus],
-    );
-
-    const handleTableParamsChange = params => {
-        if (params.order) {
-            handleSort(params.order.replace('-', ''));
-        }
-        if (params.pageSize) {
-            setRowsPerPage(parseInt(params.pageSize, 10));
-        }
-        if (params.page) {
-            setPage(parseInt(params.page, 10) - 1);
-        }
-    };
+    const { formatMessage } = useSafeIntl();
 
     const formatDataForTable = useCallback(
         (tableData, sortFunc) =>
@@ -213,37 +189,30 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
     );
 
     const sortedData = useMemo(() => {
-        if (sortFocus === 'number' && sortBy === 'asc') {
-            return formatDataForTable(dataForTable, sortByNumberAsc);
-        }
-        if (sortFocus === 'number' && sortBy === 'desc') {
-            return formatDataForTable(dataForTable, sortByNumberDesc);
-        }
-        if (sortFocus === 'org_units_count' && sortBy === 'asc') {
-            return formatDataForTable(dataForTable, sortByOrgUnitsAsc);
-        }
-        if (sortFocus === 'org_units_count' && sortBy === 'desc') {
-            return formatDataForTable(dataForTable, sortByOrgUnitsDesc);
-        }
-        console.warn(
-            `Sort error, there must be a wrong parameter. Received: ${sortBy}, ${sortFocus}. Expected a combination of asc|desc and number|org_units_count`,
+        return getSortedSourceVersions(
+            dataForTable,
+            sortFocus,
+            sortBy,
+            formatDataForTable,
+            formatMessage,
         );
-        return [];
-    }, [sortBy, sortFocus, dataForTable, formatDataForTable]);
+    }, [dataForTable, sortFocus, sortBy, formatDataForTable, formatMessage]);
 
-    const pages = useMemo(() => {
-        return dataForTable.length
-            ? Math.ceil(dataForTable.length / rowsPerPage)
-            : 0;
-    }, [dataForTable.length, rowsPerPage]);
-
-    const params = useMemo(
-        () => ({
-            pageSize: rowsPerPage,
-            page: page + 1,
-        }),
-        [rowsPerPage, page],
+    const handleSortFunction = useCallback(
+        focus => {
+            handleSort(focus, sortFocus, sortBy, setSortFocus, setSortBy);
+        },
+        [sortBy, sortFocus],
     );
+
+    const handleTableParamsChangeFunction = tableParams => {
+        handleTableParamsChange(
+            tableParams,
+            handleSortFunction,
+            setRowsPerPage,
+            setPage,
+        );
+    };
 
     const titleMessage = (
         <FormattedMessage
@@ -254,6 +223,13 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
             }}
         />
     );
+    const params = useMemo(() => {
+        return getTableParams(rowsPerPage, page);
+    }, [page, rowsPerPage]);
+
+    const pages = useMemo(() => {
+        return getTablePages(dataForTable, rowsPerPage);
+    }, [dataForTable, rowsPerPage]);
 
     return (
         <DialogComponent
@@ -265,7 +241,10 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
             renderActions={({ closeDialog }) => (
                 <DialogActions className={classes.action}>
                     <Button onClick={closeDialog} color="primary">
-                        <FormattedMessage id="iaso.label.close" />
+                        <FormattedMessage
+                            id="iaso.label.close"
+                            defaultMessage="Close"
+                        />
                     </Button>
                 </DialogActions>
             )}
@@ -278,7 +257,7 @@ const VersionsDialog = ({ renderTrigger, source, forceRefreshParent }) => {
                 pages={pages}
                 elevation={0}
                 count={source?.versions.length ?? 0}
-                onTableParamsChange={handleTableParamsChange}
+                onTableParamsChange={handleTableParamsChangeFunction}
             />
             {source.versions.length === 0 && (
                 <Typography style={{ padding: 5 }}>

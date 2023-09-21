@@ -2,6 +2,7 @@ import typing
 
 from django.utils.timezone import now
 
+from hat.menupermissions import models as permission
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -44,7 +45,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_groups_list_wrong_permission(self):
-        """GET /groups/ with authenticated user, without the menupermissions.iaso_org_units permission"""
+        f"""GET /groups/ with authenticated user, without the {permission.ORG_UNITS} permission"""
 
         self.client.force_authenticate(self.chewbacca)
         response = self.client.get("/api/groups/")

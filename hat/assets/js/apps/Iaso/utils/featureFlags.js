@@ -4,6 +4,8 @@ export const SHOW_PAGES = 'SHOW_PAGES';
 export const HIDE_PERIOD_QUARTER_NAME = 'HIDE_PERIOD_QUARTER_NAME';
 export const SHOW_DHIS2_LINK = 'SHOW_DHIS2_LINK';
 export const SHOW_LINK_INSTANCE_REFERENCE = 'SHOW_LINK_INSTANCE_REFERENCE';
+export const SHOW_BENEFICIARY_TYPES_IN_LIST_MENU =
+    'SHOW_BENEFICIARY_TYPES_IN_LIST_MENU';
 
 /**
  * Check if current user has a feature flag active

@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import { useSelector } from 'react-redux';
+import { Project } from '../domains/projects/types/project';
 
 export type Profile = {
     id: string;
@@ -11,6 +12,37 @@ export type Profile = {
     language?: null | undefined | string;
     user_id: number;
     color?: string;
+};
+
+export type DataSource = {
+    name: string;
+    description?: string;
+    id: number;
+    url: string;
+    created_at: number;
+    updated_at: number;
+    versions: {
+        number: number;
+        description?: string;
+        id: number;
+        created_at: number;
+        updated_at: number;
+        org_units_count: number;
+    }[];
+};
+
+export type DefaultVersion = {
+    data_source: DataSource;
+    number: number;
+    description?: null;
+    id: number;
+    created_at: number;
+    updated_at: number;
+};
+
+export type SourceVersion = {
+    source?: DefaultVersion;
+    version?: DataSource;
 };
 
 export type User = {
@@ -25,37 +57,17 @@ export type User = {
         id: number;
         created_at: number;
         updated_at: number;
-        default_version?: {
-            data_source: {
-                name: string;
-                description?: string;
-                id: number;
-                url: string;
-                created_at: number;
-                updated_at: number;
-                versions: {
-                    number: number;
-                    description?: string;
-                    id: number;
-                    created_at: number;
-                    updated_at: number;
-                    org_units_count: number;
-                }[];
-            };
-            number: number;
-            description?: null;
-            id: number;
-            created_at: number;
-            updated_at: number;
-        };
+        default_version?: DefaultVersion;
         feature_flags: string[];
     };
     permissions: string[];
+    is_staff?: boolean;
     is_superuser: boolean;
     org_units: {
         name: string;
         id: string;
     }[];
+    projects?: Project[];
     language?: string;
     user_id: number;
     dhis2_id?: string;
@@ -88,4 +100,9 @@ export const useCurrentUser = (): User => {
     // noinspection UnnecessaryLocalVariableJS
     const currentUser = useSelector((state: State) => state.users.current);
     return currentUser;
+};
+
+export const useHasNoAccount = (): boolean => {
+    const currentUser = useCurrentUser();
+    return Boolean(currentUser && !currentUser.account);
 };

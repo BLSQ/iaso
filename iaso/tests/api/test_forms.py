@@ -27,7 +27,6 @@ class FormsAPITestCase(APITestCase):
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
-
         cls.project_2 = m.Project.objects.create(
             name="New Land Speeder concept", app_id="stars.empire.agriculture.land_speeder", account=star_wars
         )
@@ -83,6 +82,40 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
+
+    def test_forms_list_filtered_by_org_unit_type(self):
+        self.client.force_authenticate(self.yoda)
+        # Filter by org_unit type `jedi_council` and `jedi_academy`.
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk}&{self.jedi_academy.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+        # Filter by org_unit type `sith_guild`.
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.sith_guild.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 0)
+
+    def test_forms_list_filtered_by_project(self):
+        """GET /forms/ filtered by project"""
+        self.client.force_authenticate(self.yoda)
+        # Filter by project 1 and 2.
+        response = self.client.get(
+            f"/api/forms/?projectsIds={self.project_1.pk}&{self.project_2.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        # Filter by project 2 only.
+        response = self.client.get(
+            f"/api/forms/?projectsIds={self.project_2.pk}", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 0)
 
     def test_form_return_only_deleted(self):
         """GET /forms/ return only deleted forms"""

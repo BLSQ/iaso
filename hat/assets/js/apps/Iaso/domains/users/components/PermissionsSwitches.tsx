@@ -14,6 +14,16 @@ import { useUserPermissionColumns } from '../config';
 import { useGetUserPermissions } from '../hooks/useGetUserPermissions';
 import { Permission } from '../../userRoles/types/userRoles';
 import { useGetUserRolesDropDown } from '../hooks/useGetUserRolesDropDown';
+import { userHasPermission } from '../utils';
+import * as Permissions from '../../../utils/permissions';
+import { useCurrentUser } from '../../../utils/usersUtils';
+
+const canAssignPermission = (user, permission): boolean => {
+    if (userHasPermission(Permissions.USERS_ADMIN, user)) {
+        return true;
+    }
+    return permission.codename !== Permissions.USERS_ADMIN;
+};
 
 const styles = theme => ({
     admin: {
@@ -77,8 +87,11 @@ const PermissionsSwitches: React.FunctionComponent<Props> = ({
         }
         handleChange(newUserPerms);
     };
-
-    const allPermissions = data?.permissions ?? [];
+    const loggedInUser = useCurrentUser();
+    const allPermissions =
+        data?.permissions?.filter(permission =>
+            canAssignPermission(loggedInUser, permission),
+        ) ?? [];
     const userPermissions = currentUser.user_permissions.value;
     const { data: userRoles, isFetching } = useGetUserRolesDropDown();
     const permissionsData = useGetUserPermissions(

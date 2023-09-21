@@ -4,13 +4,10 @@ import {
     useSafeIntl,
     Column,
 } from 'bluesquare-components';
-import { useDispatch } from 'react-redux';
-import { cloneDeep } from 'lodash';
-import AccountTreeIcon from '@material-ui/icons/AccountTree';
+import { ArrowUpward, AccountTree } from '@material-ui/icons';
 import { Box, LinearProgress } from '@material-ui/core';
 import Typography from '@material-ui/core/Typography';
-import { ArrowUpward } from '@material-ui/icons';
-import { redirectTo } from '../../../routing/actions';
+import { Router } from 'react-router';
 import MESSAGES from '../messages';
 import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils';
@@ -21,8 +18,8 @@ import {
     FormDesc,
     FormStatRow,
 } from '../types';
-
-const baseUrl = `${baseUrls.completenessStats}`;
+import * as Permission from '../../../utils/permissions';
+import { usetGetParentPageUrl } from '../utils';
 
 // From https://v4.mui.com/components/progress/
 const LinearProgressWithLabel = props => (
@@ -40,21 +37,18 @@ const LinearProgressWithLabel = props => (
 );
 
 export const useCompletenessStatsColumns = (
+    router: Router,
     params: CompletenessRouterParams,
     completenessStats?: CompletenessApiResponse,
 ): Column[] => {
     const currentUser = useCurrentUser();
+
+    const getParentPageUrl = usetGetParentPageUrl(router);
     const hasSubmissionPermission = userHasPermission(
-        'iaso_submissions',
+        Permission.SUBMISSIONS,
         currentUser,
     );
     const { formatMessage } = useSafeIntl();
-    const redirectionParams: CompletenessRouterParams = useMemo(() => {
-        const clonedParams = cloneDeep(params);
-        delete clonedParams.parentId;
-        return clonedParams;
-    }, [params]);
-    const dispatch = useDispatch();
     return useMemo(() => {
         let columns: Column[] = [
             {
@@ -216,37 +210,26 @@ export const useCompletenessStatsColumns = (
                 const hasFormSubmissions = Object.values(formStats).some(
                     (stat: any) => stat.itself_has_instances > 0,
                 );
+                const childrenPageUrl = getParentPageUrl(
+                    settings.row.original.org_unit?.id,
+                );
+                const parentPageUrl = getParentPageUrl(
+                    settings.row.original.parent_org_unit?.id,
+                );
 
                 return (
                     <>
-                        {!settings.row.original.is_root && (
-                            <IconButtonComponent
-                                onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original.org_unit
-                                                    ?.id,
-                                        }),
-                                    );
-                                }}
-                                tooltipMessage={MESSAGES.seeChildren}
-                                overrideIcon={AccountTreeIcon}
-                            />
-                        )}
+                        {!settings.row.original.is_root &&
+                            settings.row.original.has_children && (
+                                <IconButtonComponent
+                                    url={childrenPageUrl}
+                                    tooltipMessage={MESSAGES.seeChildren}
+                                    overrideIcon={AccountTree}
+                                />
+                            )}
                         {settings.row.original.is_root && (
                             <IconButtonComponent
-                                onClick={() => {
-                                    dispatch(
-                                        redirectTo(baseUrl, {
-                                            ...redirectionParams,
-                                            parentId:
-                                                settings.row.original
-                                                    .parent_org_unit?.id,
-                                        }),
-                                    );
-                                }}
+                                url={parentPageUrl}
                                 tooltipMessage={MESSAGES.seeParent}
                                 overrideIcon={ArrowUpward}
                             />
@@ -265,11 +248,10 @@ export const useCompletenessStatsColumns = (
         });
         return columns;
     }, [
-        dispatch,
         formatMessage,
-        redirectionParams,
-        completenessStats,
-        params,
+        completenessStats?.forms,
+        getParentPageUrl,
         hasSubmissionPermission,
+        params.accountId,
     ]);
 };

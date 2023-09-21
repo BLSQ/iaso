@@ -1,7 +1,6 @@
 import math
 import xml.etree.ElementTree as ET
 from copy import deepcopy
-from pprint import pprint
 from typing import Dict, Optional
 from uuid import UUID, uuid4
 
@@ -23,19 +22,7 @@ from iaso.api.common import HasPermission, Paginator
 from iaso.api.workflows.serializers import find_question_by_name
 from iaso.models import Entity, EntityDuplicate, EntityDuplicateAnalyzis, EntityType, Form, Instance
 from iaso.models.deduplication import ValidationStatus  # type: ignore
-
-
-def var_dump(what):
-    if type(what) is dict:
-        pprint(what)
-    elif type(what) is list:
-        for t in what:
-            pprint(t)
-    else:
-        try:
-            pprint(what.__dict__)
-        except:
-            pprint(what)
+from hat.menupermissions import models as permission
 
 
 class EntityDuplicateNestedFormSerializer(serializers.ModelSerializer):
@@ -410,7 +397,7 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
     ordering_fields = ["created_at", "similarity_score", "id", "similarity_star"]
     remove_results_key_if_paginated = False
     results_key = "results"
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_entity_duplicates_read")]  # type: ignore
+    permission_classes = [permissions.IsAuthenticated, HasPermission(permission.ENTITIES_DUPLICATE_READ)]  # type: ignore
     serializer_class = EntityDuplicateSerializer
     results_key = "results"
     model = EntityDuplicate
@@ -582,7 +569,6 @@ class EntityDuplicateViewSet(viewsets.GenericViewSet):
         in the body
         Provides an API to merge duplicate entities or to ignore the match
         """
-        var_dump(request.data)
 
         serializer = EntityDuplicatePostSerializer(data=request.data, context={"request": request})
 

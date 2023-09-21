@@ -5,6 +5,7 @@ import { userHasPermission } from '../../users/utils';
 import { baseUrls } from '../../../constants/urls';
 import { useCurrentUser } from '../../../utils/usersUtils';
 import { Entity } from '../../entities/types/entity';
+import * as Permission from '../../../utils/permissions';
 
 type Props = {
     entity?: Entity;
@@ -12,7 +13,7 @@ type Props = {
 
 export const LinkToEntity: FunctionComponent<Props> = ({ entity }) => {
     const user = useCurrentUser();
-    if (userHasPermission('iaso_entities', user) && entity?.name) {
+    if (userHasPermission(Permission.ENTITIES, user) && entity?.name) {
         const url = `/${baseUrls.entityDetails}/entityId/${entity.id}`;
         return (
             <Link to={url}>

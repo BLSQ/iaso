@@ -59,8 +59,7 @@ export const useGetColumns = (params, count): Column[] => {
                                 message={{
                                     ...MESSAGES.deleteWarning,
                                     values: {
-                                        planningName:
-                                            settings.row.original.name,
+                                        name: settings.row.original.name,
                                     },
                                 }}
                                 onConfirm={() =>

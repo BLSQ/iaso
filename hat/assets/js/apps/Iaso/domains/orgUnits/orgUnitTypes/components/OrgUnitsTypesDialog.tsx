@@ -15,8 +15,6 @@ import {
 import intersection from 'lodash/intersection';
 import isEmpty from 'lodash/isEmpty';
 import { isUndefined, mapValues } from 'lodash';
-import { Tooltip, Grid, Box } from '@material-ui/core';
-import InfoIcon from '@material-ui/icons/Info';
 
 import { useGetFormsByProjects } from '../../../instances/hooks';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
@@ -37,6 +35,8 @@ import { useCurrentUser } from '../../../../utils/usersUtils';
 import { OrgunitType } from '../../types/orgunitTypes';
 import { DropdownOptions } from '../../../../types/utils';
 import { Form } from '../../../forms/types/forms';
+import * as Permission from '../../../../utils/permissions';
+import { InputWithInfos } from '../../../../components/InputWithInfos';
 
 const mapOrgUnitType = orgUnitType => {
     return {
@@ -222,8 +222,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         [formState, formatMessage, saveType, setFieldErrors],
     );
     const hasPermission =
-        userHasPermission('iaso_org_units', currentUser) &&
-        userHasPermission('iaso_forms', currentUser);
+        userHasPermission(Permission.ORG_UNITS, currentUser) &&
+        userHasPermission(Permission.FORMS, currentUser);
 
     const resetForm = () => {
         setFormState(mapOrgUnitType(orgUnitType));
@@ -322,46 +322,25 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                 options={subUnitTypes}
                 label={MESSAGES.subUnitTypes}
             />
-
-            <Grid container spacing={1}>
-                <Grid item xs={11}>
-                    <InputComponent
-                        multi
-                        clearable
-                        keyValue="allow_creating_sub_unit_type_ids"
-                        onChange={onChange}
-                        loading={isLoadingOrgUitTypes}
-                        value={
-                            allOrgUnitTypes &&
-                            formState.allow_creating_sub_unit_type_ids.value
-                        }
-                        errors={
-                            formState.allow_creating_sub_unit_type_ids.errors
-                        }
-                        type="select"
-                        options={subUnitTypes}
-                        label={MESSAGES.createSubUnitTypes}
-                    />
-                </Grid>
-                <Grid item xs={1}>
-                    <Tooltip
-                        title={formatMessage(MESSAGES.createSubUnitTypesInfos)}
-                        arrow
-                    >
-                        <Box
-                            position="relative"
-                            top={32}
-                            display="flex"
-                            justifyContent="center"
-                        >
-                            <InfoIcon
-                                color="primary"
-                                style={{ cursor: 'pointer' }}
-                            />
-                        </Box>
-                    </Tooltip>
-                </Grid>
-            </Grid>
+            <InputWithInfos
+                infos={formatMessage(MESSAGES.createSubUnitTypesInfos)}
+            >
+                <InputComponent
+                    multi
+                    clearable
+                    keyValue="allow_creating_sub_unit_type_ids"
+                    onChange={onChange}
+                    loading={isLoadingOrgUitTypes}
+                    value={
+                        allOrgUnitTypes &&
+                        formState.allow_creating_sub_unit_type_ids.value
+                    }
+                    errors={formState.allow_creating_sub_unit_type_ids.errors}
+                    type="select"
+                    options={subUnitTypes}
+                    label={MESSAGES.createSubUnitTypes}
+                />
+            </InputWithInfos>
             {hasPermission && (
                 <InputComponent
                     clearable

@@ -1,24 +1,24 @@
 import enum
 import logging
-from datetime import datetime, date
+from datetime import date, datetime
 from functools import wraps
 from traceback import format_exc
-from django.http import HttpResponse
-from rest_framework.decorators import action
-from rest_framework_csv.renderers import CSVRenderer
-
 
 import pytz
 from django.contrib.auth.models import User
 from django.db import transaction
 from django.db.models import ProtectedError, Q
+from django.http import HttpResponse
 from django.utils.timezone import make_aware
-from rest_framework import serializers, pagination, exceptions, permissions, filters, compat
+from rest_framework import compat, exceptions, filters, pagination, permissions, serializers
+from rest_framework.decorators import action
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
+from rest_framework_csv.renderers import CSVRenderer
 
 from hat.vector_control.models import APIImport
+from iaso.models import OrgUnit, OrgUnitType
 
 logger = logging.getLogger(__name__)
 
@@ -384,3 +384,32 @@ class CSVExportMixin:
             content=renderer.render(data),
         )
         return response
+
+
+class CustomFilterBackend(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        search = request.query_params.get("search")
+        if search:
+            country_types = OrgUnitType.objects.countries().only("id")
+            org_units = OrgUnit.objects.filter(
+                name__icontains=search, org_unit_type__in=country_types, path__isnull=False
+            ).only("id")
+
+            query = Q(obr_name__icontains=search) | Q(epid__icontains=search)
+            if len(org_units) > 0:
+                query.add(
+                    Q(initial_org_unit__path__descendants=OrgUnit.objects.query_for_related_org_units(org_units)), Q.OR
+                )
+
+            return queryset.filter(query)
+
+        return queryset
+
+
+class IsAdminOrSuperUser(permissions.BasePermission):
+    """
+    Allows access only to admin users.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_staff) or (request.user and request.user.is_superuser)

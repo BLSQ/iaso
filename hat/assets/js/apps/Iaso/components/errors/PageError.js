@@ -23,11 +23,14 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const PageError = ({ errorCode }) => {
+const PageError = ({ errorCode, displayMenuButton }) => {
     const classes = useStyles();
     return (
         <>
-            <TopBar displayBackButton={false} />
+            <TopBar
+                displayBackButton={false}
+                displayMenuButton={displayMenuButton}
+            />
             <Box mt={5}>
                 <Container maxWidth="md">
                     <Paper p={3}>
@@ -49,7 +52,19 @@ const PageError = ({ errorCode }) => {
                                     <Box pt={2} pb={2}>
                                         <Typography variant="h5">
                                             <FormattedMessage
-                                                {...MESSAGES.notFound}
+                                                {...MESSAGES.notAuthenticated}
+                                            />
+                                        </Typography>
+                                    </Box>
+                                    <NotAuthorized className={classes.icon} />
+                                </>
+                            )}
+                            {errorCode === '403' && (
+                                <>
+                                    <Box pt={2} pb={2}>
+                                        <Typography variant="h5">
+                                            <FormattedMessage
+                                                {...MESSAGES.unauthorized}
                                             />
                                         </Typography>
                                     </Box>
@@ -88,8 +103,13 @@ const PageError = ({ errorCode }) => {
     );
 };
 
+PageError.defaultProps = {
+    displayMenuButton: true,
+};
+
 PageError.propTypes = {
     errorCode: PropTypes.string.isRequired,
+    displayMenuButton: PropTypes.bool,
 };
 
 export default PageError;

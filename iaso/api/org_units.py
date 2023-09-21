@@ -23,6 +23,7 @@ from iaso.api.serializers import OrgUnitSmallSearchSerializer, OrgUnitSearchSeri
 from iaso.gpkg import org_units_to_gpkg_bytes
 from iaso.models import OrgUnit, OrgUnitType, Group, Project, SourceVersion, Form, Instance, DataSource
 from iaso.utils import geojson_queryset
+from hat.menupermissions import models as permission
 
 
 # noinspection PyMethodMayBeStatic
@@ -31,11 +32,11 @@ class HasOrgUnitPermission(permissions.BasePermission):
         if not (
             request.user.is_authenticated
             and (
-                request.user.has_perm("menupermissions.iaso_forms")
-                or request.user.has_perm("menupermissions.iaso_org_units")
-                or request.user.has_perm("menupermissions.iaso_submissions")
-                or request.user.has_perm("menupermissions.iaso_registry")
-                or request.user.has_perm("menupermissions.iaso_polio")
+                request.user.has_perm(permission.FORMS)
+                or request.user.has_perm(permission.ORG_UNITS)
+                or request.user.has_perm(permission.SUBMISSIONS)
+                or request.user.has_perm(permission.REGISTRY)
+                or request.user.has_perm(permission.POLIO)
             )
         ):
             return False
@@ -52,11 +53,11 @@ class HasOrgUnitPermission(permissions.BasePermission):
 
 # noinspection PyMethodMayBeStatic
 class OrgUnitViewSet(viewsets.ViewSet):
-    """Org units API
+    f"""Org units API
 
     This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
     projects that require authentication). Actions on specific org units are restricted to authenticated users with the
-    "menupermissions.iaso_forms", "menupermissions.iaso_org_units" or "menupermissions.iaso_submissions" permission.
+    "{permission.FORMS}", "{permission.ORG_UNITS}" or "{permission.SUBMISSIONS}" permission.
 
     GET /api/orgunits/
     GET /api/orgunits/<id>
@@ -329,7 +330,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if roots_for_user:
             org_unit_for_profile = request.user.iaso_profile.org_units.only("id")
-            if org_unit_for_profile:
+            if org_unit_for_profile and not request.user.is_superuser:
                 queryset = queryset.filter(id__in=org_unit_for_profile)
             else:
                 queryset = queryset.filter(parent__isnull=True)

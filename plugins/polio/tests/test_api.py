@@ -1,6 +1,7 @@
 from datetime import date
+from unittest import skip
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 
@@ -8,8 +9,8 @@ from hat.audit.models import Modification
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase
-from ..models import Round
-from ..preparedness.spreadsheet_manager import *
+from plugins.polio.models import Round
+from plugins.polio.preparedness.spreadsheet_manager import *
 
 
 class PolioAPITestCase(APITestCase):
@@ -302,6 +303,7 @@ class PolioAPITestCase(APITestCase):
         self.assertNotEqual(r["round_two"], None, r)
         self.assertEqual(r["round_two"]["started_at"], "2021-04-01", r)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -318,7 +320,10 @@ class PolioAPITestCase(APITestCase):
                 {
                     "number": 1,
                     "started_at": "2021-02-01",
-                    "ended_at": "2021-02-20",
+                    "lqas_district_failing": 100
+                    # Removed that line to test that empty field in payload
+                    # will not overwrite existing field in DB
+                    # "ended_at": "2021-02-20",
                 },
                 {
                     "number": 2,
@@ -332,7 +337,12 @@ class PolioAPITestCase(APITestCase):
         campaign.refresh_from_db()
         self.assertEqual(campaign.obr_name, "obr_name2")
         self.assertEqual(campaign.rounds.count(), 2, campaign.rounds)
+        self.assertEqual(campaign.rounds.get(number=1).number, 1)
+        self.assertEqual(campaign.rounds.get(number=1).ended_at, date(2021, 1, 20))
+        self.assertEqual(campaign.rounds.get(number=1).lqas_district_failing, 100)
+        self.assertEqual(campaign.rounds.get(number=1).lqas_district_passing, None)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign_remove_round(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -368,6 +378,7 @@ class PolioAPITestCase(APITestCase):
         self.assertEqual(2, rounds.count())
         self.assertQuerysetEqual(rounds, [1, 2], lambda r: r.number)
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_patch_campaign_remove_all_rounds(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -538,6 +549,7 @@ class PolioAPITestCase(APITestCase):
             ],
         )
 
+    @skip("Skipping as long as PATCH is disabled for campaigns")
     def test_update_campaign_with_vaccine_data(self):
         self.client.force_authenticate(self.yoda)
         self.assertEqual(Campaign.objects.count(), 0)
@@ -761,9 +773,8 @@ class TeamAPITestCase(APITestCase):
         self.client.force_authenticate(self.user)
         self.assertEqual(self.user.is_superuser, False)
         self.user.user_permissions.add(Permission.objects.get(codename="iaso_polio"))
-
         payload = {"obr_name": "test2"}
-        response = self.client.patch(f"/api/polio/campaigns/{self.c.id}/", payload, format="json")
+        response = self.client.put(f"/api/polio/campaigns/{self.c.id}/", payload, format="json")
         self.assertJSONResponse(response, 200)
 
         self.assertEqual(Modification.objects.count(), 1)

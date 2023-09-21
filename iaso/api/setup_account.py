@@ -1,13 +1,14 @@
 import logging
 
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import permissions, serializers
 from rest_framework.mixins import CreateModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.models import CustomPermissionSupport
-from iaso.models import Account, DataSource, SourceVersion, Profile
+from iaso.api.common import IsAdminOrSuperUser
+from iaso.models import Account, DataSource, SourceVersion, Profile, Project, OrgUnitType
 
 logger = logging.getLogger(__name__)
 
@@ -21,31 +22,52 @@ class SetupAccountSerializer(serializers.Serializer):
     user_first_name = serializers.CharField(max_length=30, required=False)
     user_last_name = serializers.CharField(max_length=150, required=False)
     password = serializers.CharField(required=True)
+    user_manual_path = serializers.CharField(required=False)
 
     def validate_account_name(self, value):
         if Account.objects.filter(name=value).exists():
-            raise serializers.ValidationError("An account with this name already exists")
+            raise serializers.ValidationError("account_name_already_exist")
         if DataSource.objects.filter(name=value).exists():
-            raise serializers.ValidationError("A data source with this name already exists")
+            raise serializers.ValidationError("data_source_name_already_exist")
         return value
 
     def validate_user_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("A data source with this name already exists")
+            raise serializers.ValidationError("user_name_already_exist")
         return value
 
     def create(self, validated_data):
         data_source = DataSource.objects.create(name=validated_data["account_name"], description="via setup_account")
         source_version = SourceVersion.objects.create(data_source=data_source, number=1)
-        data_source.default_version = source_version
-        data_source.save()
+
         user = User.objects.create_user(
             username=validated_data["user_username"],
             password=validated_data["password"],
             first_name=validated_data.get("user_first_name", ""),
             last_name=validated_data.get("user_last_name", ""),
         )
-        account = Account.objects.create(name=validated_data["account_name"], default_version=source_version)
+        account = Account.objects.create(
+            name=validated_data["account_name"],
+            default_version=source_version,
+            user_manual_path=validated_data.get("user_manual_path"),
+        )
+
+        # Create a setup_account project with an app_id represented by the account name
+        app_id = validated_data["account_name"].replace(" ", "-")
+
+        initial_project = Project.objects.create(
+            name=validated_data["account_name"] + " project", account=account, app_id=app_id
+        )
+
+        # Create an initial orgUnit type and link it to project
+        initial_orgunit_type = OrgUnitType.objects.create(name="Country", short_name="country", depth=1)
+        initial_orgunit_type.projects.set([initial_project])
+        initial_orgunit_type.save()
+
+        # Link data source to projects and source version
+        data_source.projects.set([initial_project])
+        data_source.default_version = source_version
+        data_source.save()
 
         Profile.objects.create(account=account, user=user)
 
@@ -57,5 +79,5 @@ class SetupAccountSerializer(serializers.Serializer):
 
 
 class SetupAccountViewSet(CreateModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated, permissions.IsAdminUser]
+    permission_classes = [permissions.IsAuthenticated, IsAdminOrSuperUser]
     serializer_class = SetupAccountSerializer

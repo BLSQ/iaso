@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     title: {
         defaultMessage: 'Submissions for the form',
-        id: 'iaso.instance.form',
+        id: 'iaso.instance.formSubmissions',
     },
     titleMulti: {
         defaultMessage: 'Form submissions',
@@ -123,7 +123,7 @@ const MESSAGES = defineMessages({
     },
     last_modified_by: {
         id: 'iaso.instance.last_modified_by',
-        defaultMessage: 'Modified By',
+        defaultMessage: 'Modified by',
     },
     files: {
         id: 'iaso.instance.files',
@@ -220,10 +220,10 @@ const MESSAGES = defineMessages({
     },
     error: {
         defaultMessage: 'Error',
-        id: 'iaso.label.instanceStatus.errorMulti',
+        id: 'iaso.label.instanceStatus.errorSingleCap',
     },
     duplicated: {
-        defaultMessage: 'Duplicated',
+        defaultMessage: 'Error (duplicated)',
         id: 'iaso.label.instanceStatus.duplicatedMulti',
     },
     exported: {
@@ -376,6 +376,34 @@ const MESSAGES = defineMessages({
     deviceOwnership: {
         id: 'iaso.forms.deviceOwnership',
         defaultMessage: 'Device ownership',
+    },
+    showAdvancedSettings: {
+        id: 'iaso.form.label.showAdvancedSettings',
+        defaultMessage: 'Show advanced settings',
+    },
+    hideAdvancedSettings: {
+        id: 'iaso.form.label.hideAdvancedSettings',
+        defaultMessage: 'Hide advanced settings',
+    },
+    modificationDateFrom: {
+        id: 'iaso.instances.modificationDateFrom',
+        defineMessage: 'Modification date from',
+    },
+    modificationDateTo: {
+        id: 'iaso.instances.modificationDateTo',
+        defineMessage: 'Modification date to',
+    },
+    sentDateFrom: {
+        id: 'iaso.instances.sentDateFrom',
+        defineMessage: 'Sent date from',
+    },
+    sentDateTo: {
+        id: 'iaso.instances.sentDateTo',
+        defineMessage: 'Sent date to',
+    },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
     },
     showDeleted: {
         id: 'iaso.instances.showDeleted',
@@ -557,6 +585,10 @@ const MESSAGES = defineMessages({
     created_by__username: {
         id: 'iaso.instances.label.created_by__username',
         defaultMessage: 'Created by',
+    },
+    user: {
+        id: 'iaso.label.user',
+        defaultMessage: 'User',
     },
 });
 

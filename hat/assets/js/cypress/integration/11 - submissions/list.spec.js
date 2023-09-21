@@ -155,7 +155,7 @@ describe('Submissions', () => {
                 is_superuser: false,
             });
             const errorCode = cy.get('#error-code');
-            errorCode.should('contain', '401');
+            errorCode.should('contain', '403');
         });
         describe('Search field', () => {
             beforeEach(() => {
@@ -280,6 +280,82 @@ describe('Submissions', () => {
         });
     });
 
+    it('select users should filter by user ids', () => {
+        cy.intercept('GET', '/api/profiles/?search=lui', {
+            fixture: 'profiles/search/lui.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=69', {
+            fixture: 'profiles/search/mario.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=999', {
+            fixture: 'profiles/search/lui.json',
+        });
+        cy.intercept('GET', '/api/profiles/?search=mario', {
+            fixture: 'profiles/search/mario.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=999%2C69', {
+            fixture: 'profiles/ids/69-999.json',
+        });
+        cy.intercept('GET', '/api/profiles/?ids=69%2C999', {
+            fixture: 'profiles/ids/69-999.json',
+        });
+        goToPage();
+        cy.wait('@getSubmissions').then(() => {
+            interceptFlag = false;
+            cy.intercept(
+                {
+                    method: 'GET',
+                    pathname: '/api/instances/**',
+                    query: {
+                        ...defaultQuery,
+                        userIds: '999',
+                    },
+                },
+                req => {
+                    interceptFlag = true;
+                    req.reply({
+                        statusCode: 200,
+                        body: listFixture,
+                    });
+                },
+            ).as('Luigi');
+        });
+
+        cy.get('#userIds').type('lui');
+        cy.wait(800);
+        cy.get('#userIds').type('{downarrow}').type('{enter}');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@Luigi').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
+        });
+        interceptFlag = false;
+        cy.intercept(
+            {
+                method: 'GET',
+                pathname: '/api/instances/**',
+                query: {
+                    ...defaultQuery,
+                    userIds: '999,69',
+                },
+            },
+            req => {
+                interceptFlag = true;
+                req.reply({
+                    statusCode: 200,
+                    body: listFixture,
+                });
+            },
+        ).as('LuigiMario');
+
+        cy.get('#userIds').type('mario');
+        cy.wait(800);
+        cy.get('#userIds').type('{downarrow}').type('{enter}');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@LuigiMario').then(() => {
+            cy.wrap(interceptFlag).should('eq', true);
+        });
+    });
+
     it('change filters should deep link and call api with correct params', () => {
         cy.intercept(
             'GET',
@@ -397,6 +473,61 @@ describe('Submissions', () => {
             testPeriod(1, '201401', '201501');
             testPeriod(2, '2014Q1', '2015Q1');
             testPeriod(3, '2014', '2015');
+        });
+    });
+
+    it('advanced settings should filter correctly', () => {
+        goToPage();
+        cy.get('[data-test="advanced-settings"]').click();
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="start-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('14/07/2023');
+        cy.get('[data-test="modificationDate"]')
+            .find('[data-test="end-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('15/07/2023');
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="start-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('12/07/2023');
+        cy.get('[data-test="sentDate"]')
+            .find('[data-test="end-date"]')
+            .find('input.MuiInputBase-input')
+            .clear()
+            .type('13/07/2023');
+        cy.wait('@getSubmissions')
+            .then(() => {
+                interceptFlag = false;
+                cy.intercept(
+                    {
+                        method: 'GET',
+                        pathname: '/api/instances/**',
+                    },
+                    req => {
+                        interceptFlag = true;
+                        req.reply({
+                            statusCode: 200,
+                            body: listFixture,
+                        });
+                    },
+                );
+            })
+            .as('getSubmissionsSearch');
+        cy.get('[data-test="search-button"]').click();
+        cy.wait('@getSubmissionsSearch').then(xhr => {
+            cy.wrap(interceptFlag).should('eq', true);
+            cy.wrap(xhr.request.query).should('deep.equal', {
+                ...defaultQuery,
+                showDeleted: 'false',
+                modificationDateFrom: '2023-07-14',
+                modificationDateTo: '2023-07-15',
+                sentDateFrom: '2023-07-12',
+                sentDateTo: '2023-07-13',
+            });
         });
     });
 

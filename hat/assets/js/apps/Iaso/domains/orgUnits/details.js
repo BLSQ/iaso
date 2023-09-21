@@ -137,7 +137,7 @@ const OrgUnitDetail = ({ params, router }) => {
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus(true);
+    } = useGetValidationStatus(true, tab === 'children');
 
     const title = useMemo(() => {
         if (isNewOrgunit) {
@@ -258,6 +258,7 @@ const OrgUnitDetail = ({ params, router }) => {
         params.orgUnitId,
         setCurrentOrgUnit,
         params.levels,
+        tab,
     );
 
     const goToRevision = useCallback(

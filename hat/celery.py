@@ -6,7 +6,6 @@ if settings.USE_CELERY:
 
     from hat import settings
 
-
     os.environ.setdefault("DJANGO_SETTINGS_MODULE", "hat.settings")
     app = Celery("iaso_celery")
     app.config_from_object("django.conf:settings", namespace="CELERY")

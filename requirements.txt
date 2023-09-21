@@ -7,12 +7,12 @@ django==3.2.21
 django-cors-headers==3.2.1
 djangorestframework==3.11.2
 django-filter==2.4.0
-pandas==1.0.1
-cython==0.29.23
+pandas==1.1.5
+#cython==0.29.36
 pyproj==3.0.1
 geopandas==0.8.0
 Fiona~=1.8.19
-numpy==1.18.1
+numpy==1.19.4
 Pillow==8.3.2
 django-storages==1.9.1
 boto3==1.12.1

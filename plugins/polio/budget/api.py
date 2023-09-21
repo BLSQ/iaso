@@ -224,7 +224,7 @@ class BudgetProcessViewset(ModelViewSet):
 
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     serializer_class = BudgetProcessSerializer
-    http_method_names = ["get", "head", "delete", "patch"]
+    http_method_names = ["get", "head", "delete", "patch", "post"]
     ordering_fields = ["created_at", "updated_at", "rounds", "teams"]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"

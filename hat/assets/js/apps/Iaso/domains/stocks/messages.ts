@@ -13,6 +13,38 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Stock item',
         id: 'iaso.stocks.stockItem',
     },
+    quantity: {
+        id: 'iaso.label.quantity',
+        defaultMessage: 'Quantity',
+    },
+    created_at: {
+        id: 'iaso.forms.created_at',
+        defaultMessage: 'Created',
+    },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.label.actions',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    save: {
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
+    },
+    delete: {
+        id: 'iaso.stocks.delete',
+        defaultMessage: 'Are you sure you want to delete this stock movement?',
+    },
+    addStockMovement: {
+        id: 'iaso.stocks.addStockMovement',
+        defaultMessage: 'Add a stock movement',
+    },
+    quantityError: {
+        id: 'iaso.stocks.quantityError',
+        defaultMessage: 'Quantity is required and needs to be a number',
+    },
 });
 
 export default MESSAGES;

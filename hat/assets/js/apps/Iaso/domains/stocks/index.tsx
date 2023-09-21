@@ -12,6 +12,8 @@ import { TableWithDeepLink } from '../../components/tables/TableWithDeepLink';
 import { baseUrls } from '../../constants/urls';
 import { redirectToReplace } from '../../routing/actions';
 import { useGetMovementsColumns } from './hooks/useGetMovementsColumns';
+import { Filters } from './components/Filters';
+import { AddStockMovementDialog } from './components/AddStockMovementDialog';
 
 const baseUrl = baseUrls.stocks;
 export const defaultSorted = [{ id: 'creation_date', desc: false }];
@@ -40,6 +42,13 @@ export const Stocks: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
+                <Filters params={params} />
+                <Box display="flex" justifyContent="flex-end">
+                    <AddStockMovementDialog
+                        iconProps={{}}
+                        titleMessage={formatMessage(MESSAGES.addStockMovement)}
+                    />
+                </Box>
                 <TableWithDeepLink
                     baseUrl={baseUrl}
                     data={data?.results ?? []}

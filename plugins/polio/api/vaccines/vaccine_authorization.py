@@ -162,7 +162,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     @action(detail=False, methods=["GET"])
     def get_most_recent_authorizations(self, request):
         """
-        Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
+        Compute the most recent vaccine authorization per country.
         """
         # Filters are done after calculation as all the status are required in order to compute the correct response
         user = self.request.user

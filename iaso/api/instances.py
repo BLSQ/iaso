@@ -350,9 +350,11 @@ class InstancesViewSet(viewsets.ViewSet):
                     d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
-                    reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None  # type: ignore
-                    if reference_form_id:
-                        d["reference_form_id"] = reference_form_id
+                    d["is_reference_instance"] = instance.is_reference_for_org_units.filter(
+                        id=instance.org_unit_id
+                    ).exists()
+                    if d["is_reference_instance"]:
+                        d["reference_form_id"] = instance.form_id
                     return d
 
                 res["instances"] = map(as_dict_formatter, page.object_list)

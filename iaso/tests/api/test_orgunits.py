@@ -791,7 +791,7 @@ class OrgUnitAPITestCase(APITestCase):
             data=data,
         )
         jr = self.assertJSONResponse(response, 400)
-        self.assertTrue("reference_form" in (error["errorKey"] for error in jr))
+        self.assertTrue("reference_instances" in (error["errorKey"] for error in jr))
         old_ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertEqual(old_modification_date, old_ou.updated_at)

@@ -1,4 +1,5 @@
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
 from django.db import InternalError, connections
 
 from iaso import models as m
@@ -25,6 +26,25 @@ class OrgUnitModelTestCase(TestCase):
         cls.system = m.OrgUnitType.objects.create(name="System", short_name="Sys")
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_task_force = m.OrgUnitType.objects.create(name="Jedi Task Force", short_name="Jtf")
+
+    def test_set_reference_instance(self):
+        # Create a form and flag it as a "reference form".
+        form1 = m.Form.objects.create(name="Vaccine form")
+        self.sector.reference_forms.add(form1)
+        org_unit = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Org Unit")
+        instance1 = m.Instance.objects.create(form=form1, org_unit=org_unit)
+
+        # Flag an instance as a "reference instance".
+        org_unit.set_reference_instance(instance1)
+        self.assertEqual(1, org_unit.reference_instances.count())
+        self.assertEqual(instance1, org_unit.reference_instances.first())
+
+        # Try to flag an instance of a non reference form.
+        form2 = m.Form.objects.create(name="Mosquito net form")
+        instance2 = m.Instance.objects.create(form=form2, org_unit=org_unit)
+        with self.assertRaises(ValidationError) as error:
+            org_unit.set_reference_instance(instance2)
+        self.assertIn("The submission must be an instance of a reference form.", error.exception.message)
 
     def test_org_unit_creation_no_parent_or_parent_has_path(self):
         """Newly created org unit without parents should have a path, and so do new org units

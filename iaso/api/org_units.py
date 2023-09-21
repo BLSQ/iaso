@@ -5,6 +5,7 @@ from time import gmtime, strftime
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value, Count
 from django.http import StreamingHttpResponse, HttpResponse
@@ -431,18 +432,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if "reference_instance_id" in request.data:
             reference_instance_id = request.data["reference_instance_id"]
             if reference_instance_id:
-                instance = Instance.objects.get(pk=reference_instance_id)
-                # Check if the instance is a reference form for the org_unit_type
-                # if the reference_form is the same as the form related to the instance one,
-                # assign the instance to the org_unit as reference instance
-                if not org_unit_type.reference_forms.filter(id=instance.form_id).exists():
+                try:
+                    instance = get_object_or_404(Instance, pk=reference_instance_id, org_unit=org_unit)
+                    org_unit.set_reference_instance(instance)
+                except ValidationError as e:
                     errors.append(
                         {
-                            "errorKey": "reference_form",
-                            "errorMessage": _("Form of subimssion is not allowed on this type of org unit"),
+                            "errorKey": "reference_instances",
+                            "errorMessage": e.messages[0],
                         }
                     )
-                org_unit.reference_instances.add(instance)
 
         if "parent_id" in request.data:
             parent_id = request.data["parent_id"]
@@ -615,13 +614,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.groups.set(new_groups)
 
         if reference_instance_id and org_unit_type:
+            # Flag instance as reference instance.
             instance = Instance.objects.get(pk=reference_instance_id)
-            # Check if the instance has as form the reference_form for the org_unit_type
-            # if the reference_form is the same as the form related to the instance one,
-            # assign the instance to the org_unit as a reference instance
-            if org_unit_type.reference_forms.filter(id=instance.form_id).exists():
-                org_unit.reference_instances.add(instance)
-                org_unit.save()
+            org_unit.set_reference_instance(instance=instance)
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 

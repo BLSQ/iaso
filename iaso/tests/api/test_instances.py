@@ -853,36 +853,6 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(new_org_unit.id, modification.new_value[0]["fields"]["org_unit"])
         self.assertEqual(instance_to_patch, modification.content_object)
 
-    def test_instance_patch_org_unit_unlink_reference_instance_from_previous_org_unit(self):
-        """PATCH /instances/:pk"""
-        self.client.force_authenticate(self.yoda)
-
-        previous_org_unit = m.OrgUnit.objects.create(
-            name="previous organisation unit", version=self.sw_version, org_unit_type=self.jedi_council
-        )
-
-        instance = m.Instance.objects.create(org_unit=previous_org_unit, form=self.form_3, project=self.project)
-
-        previous_org_unit.reference_instances.add(instance)
-        previous_org_unit.save()
-
-        new_org_unit = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
-        )
-
-        response = self.client.patch(
-            f"/api/instances/{instance.id}/",
-            data={"org_unit": new_org_unit.id},
-            format="json",
-            HTTP_ACCEPT="application/json",
-        )
-
-        self.assertJSONResponse(response, 200)
-        previous_org_unit.refresh_from_db()
-        instance.refresh_from_db()
-        self.assertEqual(instance.org_unit, new_org_unit)
-        self.assertEqual(previous_org_unit.reference_instances.count(), 0)
-
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)

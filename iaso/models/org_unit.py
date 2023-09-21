@@ -7,6 +7,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.postgres.indexes import GistIndex
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
@@ -19,7 +20,7 @@ from .project import Project
 from ..utils.expressions import ArraySubquery
 
 try:  # for typing
-    from .base import Account
+    from .base import Account, Instance
 except:
     pass
 
@@ -110,7 +111,7 @@ class OrgUnitType(models.Model):
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
     # Allow the creation of these sub org unit types only for mobile (IA-2153)"
     allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
-    reference_forms = models.ManyToManyField("Form", related_name="org_unit_type_references", blank=False)
+    reference_forms = models.ManyToManyField("Form", related_name="org_unit_type_references", blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
@@ -267,7 +268,9 @@ class OrgUnit(TreeModel):
     simplified_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
-    reference_instances = models.ManyToManyField("Instance", related_name="is_reference_for_org_units", blank=False)
+    reference_instances = models.ManyToManyField(
+        "Instance", related_name="is_reference_for_org_units", through="OrgUnitReferenceInstance", blank=True
+    )
 
     gps_source = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
@@ -526,9 +529,20 @@ class OrgUnit(TreeModel):
             return "/" + ("/".join(path_components))
         return None
 
-    def get_reference_form_id(self):
-        """Return the form id of the reference form for this org unit, or None"""
-        if self.org_unit_type:
-            reference_form = self.org_unit_type.reference_forms.first()
-            return reference_form.pk if reference_form else None
-        return None
+    def set_reference_instance(self, instance: "Instance"):
+        is_instance_of_reference_form = self.org_unit_type.reference_forms.filter(id=instance.form_id).exists()
+        if is_instance_of_reference_form:
+            kwargs = {"org_unit": self, "form_id": instance.form_id}
+            OrgUnitReferenceInstance.objects.create(instance=instance, **kwargs)
+        else:
+            raise ValidationError(_("The submission must be an instance of a reference form."))
+
+
+class OrgUnitReferenceInstance(models.Model):
+    org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
+    form = models.ForeignKey("Form", on_delete=models.CASCADE)
+    instance = models.ForeignKey("Instance", on_delete=models.CASCADE)
+
+    class Meta:
+        # There can be only one `instance` of a given `org_unit`'s reference `form`.
+        unique_together = ("org_unit", "form")

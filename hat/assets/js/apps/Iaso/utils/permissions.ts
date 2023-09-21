@@ -21,6 +21,7 @@ const PROJECTS = 'iaso_projects';
 const REGISTRY = 'iaso_registry';
 const SOURCES = 'iaso_sources';
 const SOURCE_WRITE = 'iaso_write_sources';
+const STOCKS = 'iaso_stocks';
 const STORAGES = 'iaso_storages';
 const SUBMISSIONS = 'iaso_submissions';
 const SUBMISSIONS_UPDATE = 'iaso_update_submission';
@@ -62,4 +63,5 @@ export {
     USERS_ADMIN,
     USERS_MANAGEMENT,
     WORKFLOWS,
+    STOCKS,
 };

@@ -976,6 +976,8 @@
     "iaso.sourceVersion.label.update": "Mise à jour de la version {version}",
     "iaso.sourceVersion.label.update_explication": "Mettre à jour cette version en la synchronisant avec DHIS2. Les nouvelles unités d'organisation seront importées depuis DHIS2, mais les OrgUnits existantes sur cette version ne seront pas modifiées.",
     "iaso.SSC": "Site de santé communautaire",
+    "iaso.stocks.stockItem": "Type de stock",
+    "iaso.stocks.title": "Mouvement de stock",
     "iaso.storages.changeStatus": "Changement de status",
     "iaso.storages.comment": "Commentaire",
     "iaso.storages.logs": "Logs",

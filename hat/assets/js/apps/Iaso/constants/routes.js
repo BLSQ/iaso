@@ -33,6 +33,7 @@ import { linksFiltersWithPrefix, orgUnitFiltersWithPrefix } from './filters';
 import Pages from '../domains/pages';
 import { Planning } from '../domains/plannings/index.tsx';
 import { Teams } from '../domains/teams/index.tsx';
+import { Stocks } from '../domains/stocks/index.tsx';
 import { Storages } from '../domains/storages/index.tsx';
 import { Workflows } from '../domains/workflows/index.tsx';
 import { Details as WorkflowDetails } from '../domains/workflows/details.tsx';
@@ -1181,6 +1182,29 @@ export const teamsPath = {
         })),
     ],
 };
+export const stocksPath = {
+    baseUrl: baseUrls.stocks,
+    permissions: [Permission.STOCKS],
+    component: props => <Stocks {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'accountId',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitId',
+        },
+        {
+            isRequired: false,
+            key: 'stockItem',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+        })),
+    ],
+};
+
 export const storagesPath = {
     baseUrl: baseUrls.storages,
     permissions: [Permission.STORAGES],
@@ -1352,6 +1376,7 @@ export const routeConfigs = [
     entitySubmissionDetailPath,
     entityDuplicatesPath,
     entityDuplicatesDetailsPath,
+    stocksPath,
     storagesPath,
     storageDetailPath,
     workflowsPath,

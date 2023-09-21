@@ -173,6 +173,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Duplicates',
         id: 'iaso.label.duplicates',
     },
+    stocks: {
+        defaultMessage: 'Stock movements',
+        id: 'iaso.stocks.title',
+    },
 });
 
 export default MESSAGES;

@@ -21,6 +21,7 @@ import AssessmentIcon from '@material-ui/icons/Assessment';
 import GroupIcon from '@material-ui/icons/Group';
 import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
+import ShowChartIcon from '@material-ui/icons/ShowChart';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
 
@@ -226,6 +227,12 @@ const menuItems = (
                     icon: props => <FileCopyIcon {...props} />,
                 },
             ],
+        },
+        {
+            label: formatMessage(MESSAGES.stocks),
+            key: 'stocks',
+            permissions: paths.stocksPath.permissions,
+            icon: props => <ShowChartIcon {...props} />,
         },
         {
             label: formatMessage(MESSAGES.storages),

@@ -164,6 +164,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         """
         Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
         """
+        # Filters are done after calculation as all the status are required in order to compute the correct response
         user = self.request.user
         user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
         user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")

@@ -529,13 +529,15 @@ class OrgUnit(TreeModel):
             return "/" + ("/".join(path_components))
         return None
 
-    def set_reference_instance(self, instance: "Instance"):
-        is_instance_of_reference_form = self.org_unit_type.reference_forms.filter(id=instance.form_id).exists()
-        if is_instance_of_reference_form:
-            kwargs = {"org_unit": self, "form_id": instance.form_id}
-            OrgUnitReferenceInstance.objects.create(instance=instance, **kwargs)
-        else:
+    def flag_as_reference_instance(self, instance: "Instance") -> "OrgUnitReferenceInstance":
+        if not instance.form_id:
+            raise ValidationError(_("The Instance must be linked to a Form."))
+        if not self.org_unit_type:
+            raise ValidationError(_("The OrgUnit must be linked to a OrgUnitType."))
+        if not self.org_unit_type.reference_forms.filter(id=instance.form_id).exists():
             raise ValidationError(_("The submission must be an instance of a reference form."))
+        kwargs = {"org_unit": self, "form_id": instance.form_id}
+        return OrgUnitReferenceInstance.objects.create(instance=instance, **kwargs)
 
 
 class OrgUnitReferenceInstance(models.Model):

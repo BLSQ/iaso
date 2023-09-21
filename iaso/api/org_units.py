@@ -434,7 +434,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             if reference_instance_id:
                 try:
                     instance = get_object_or_404(Instance, pk=reference_instance_id, org_unit=org_unit)
-                    org_unit.set_reference_instance(instance)
+                    org_unit.flag_as_reference_instance(instance)
                 except ValidationError as e:
                     errors.append(
                         {
@@ -616,7 +616,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if reference_instance_id and org_unit_type:
             # Flag instance as reference instance.
             instance = Instance.objects.get(pk=reference_instance_id)
-            org_unit.set_reference_instance(instance=instance)
+            org_unit.flag_as_reference_instance(instance=instance)
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 

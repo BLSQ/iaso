@@ -170,6 +170,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
         queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
         auth_status = self.request.query_params.get("auth_status", None)
+        block_country = self.request.query_params.get("block_country", None)
         country_list = []
         response = []
 
@@ -254,6 +255,22 @@ class VaccineAuthorizationViewSet(ModelViewSet):
 
         if auth_status:
             response = [entry for entry in response if entry["status"] in auth_status.split(",")]
+
+        if block_country:
+            block_country = block_country.split(",")
+            block_country = Group.objects.filter(pk__in=block_country)
+            org_units = [
+                ou_queryset
+                for ou_queryset in [
+                    ou_group_queryset for ou_group_queryset in [country.org_units.all() for country in block_country]
+                ]
+            ]
+            ou_pk_list = []
+            for ou_q in org_units:
+                for ou in ou_q:
+                    ou_pk_list.append(ou.pk)
+            print(ou_pk_list)
+            response = [entry for entry in response if entry["country"]["id"] in ou_pk_list]
 
         if ordering:
             if ordering[0] == "-":

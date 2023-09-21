@@ -269,7 +269,6 @@ class VaccineAuthorizationViewSet(ModelViewSet):
             for ou_q in org_units:
                 for ou in ou_q:
                     ou_pk_list.append(ou.pk)
-            print(ou_pk_list)
             response = [entry for entry in response if entry["country"]["id"] in ou_pk_list]
 
         if ordering:

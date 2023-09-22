@@ -560,9 +560,7 @@ class BudgetProcessAPITestCase(APITestCase):
         process.rounds.set([self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk])
         process.teams.set([self.team1.pk])
 
-        print(self.campaign_1.id)
-
-        response = self.client.get(f"/api/budget/{self.campaign_1.id}/")
+        response = self.client.get(f"/api/budget/{self.campaign_1.pk}/")
 
         print(response)
 

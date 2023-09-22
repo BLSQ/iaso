@@ -25,3 +25,5 @@ Both have default value of `redis://localhost:6379`
   plugins.wfp.tasks.etl
   plugins.wfp.tasks.generate_random_data
 ```
+
+7. Run python test `docker-compose run iaso manage test -k ETL`

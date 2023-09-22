@@ -542,26 +542,3 @@ class BudgetProcessAPITestCase(APITestCase):
         response = self.client.get("/api/polio/budgetprocesses/")
 
         self.assertEqual(response.status_code, 403)
-
-    def test_budget_have_processes_in_response(self):
-        self.client.force_authenticate(self.test_user_no_permission)
-
-        budget_step = BudgetStep.objects.create(
-            campaign=self.campaign_1,
-            created_by=self.test_user,
-            created_by_team=self.team1,
-            transition_key="submit_to_rrt"
-        )
-
-        process = BudgetProcess.objects.create(
-            created_by=self.test_user,
-            created_by_team=self.team1,
-        )
-        process.rounds.set([self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk])
-        process.teams.set([self.team1.pk])
-
-        response = self.client.get(f"/api/budget/{self.campaign_1.pk}/")
-
-        print(response)
-
-

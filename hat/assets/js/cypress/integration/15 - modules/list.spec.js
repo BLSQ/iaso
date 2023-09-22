@@ -10,6 +10,7 @@ import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/modules`;
+let interceptFlag = false;
 
 const defaultQuery = {
     limit: '20',

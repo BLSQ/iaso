@@ -24,7 +24,7 @@ def get_module(permission_code_name, iaso_permission, iaso_module):
                     )
 
 
-def my_callback(sender, **kwargs):
+def create_iaso_permissions_callback(sender, **kwargs):
     from iaso.models import Permission as IasoPermission, Module
     from django.contrib.auth.models import Permission as AuthPermission
 
@@ -55,4 +55,4 @@ class MenupermissionsConfig(AppConfig):
     name = "hat.menupermissions"
 
     def ready(self) -> None:
-        post_migrate.connect(my_callback, sender=self)
+        post_migrate.connect(create_iaso_permissions_callback, sender=self)

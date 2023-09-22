@@ -137,9 +137,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
 
     const handleChangeForm = useCallback(
         (keyValue, value) => {
-            if (keyValue === 'formId') {
-                handleChange('planningId', undefined);
-            }
+            handleChange('planningId', undefined);
             handleChange(keyValue, value);
         },
         [handleChange],

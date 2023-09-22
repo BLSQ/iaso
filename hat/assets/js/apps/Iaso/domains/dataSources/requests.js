@@ -102,10 +102,10 @@ export const useDataSourceVersions = () => {
 
 const adaptForApi = data => {
     const adaptedData = { ...data };
-    if (data.ref_status === 'ALL') {
+    if (data.ref_status === 'all') {
         adaptedData.ref_status = '';
     }
-    if (data.source_status === 'ALL') {
+    if (data.source_status === 'all') {
         adaptedData.source_status = '';
     }
     return adaptedData;

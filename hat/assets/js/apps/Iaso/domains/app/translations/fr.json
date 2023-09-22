@@ -24,6 +24,7 @@
     "iaso.assignment.baseOrgUnitsType": "Types d'unités d'org. de base",
     "iaso.assignment.clickRowToUnAssign": "Sélectionnez la ligne pour désassigner l'unité d'org.",
     "iaso.assignment.count": "Nombre d'assignations",
+    "iaso.completenessStats.completenessMapWarning": "Unité(s) d'org. trouvée(s) sans données géographiques",
     "iaso.assignment.inAnotherTeam": "dans une autre équipe",
     "iaso.assignment.label": "Affectation",
     "iaso.assignment.map.disabled": "Déjà assigné",

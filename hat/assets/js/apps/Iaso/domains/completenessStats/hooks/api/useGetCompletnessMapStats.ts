@@ -37,7 +37,10 @@ export const buildQueryString = (
             queryParams[value] = params[key];
         }
     });
-    const queryString = new URLSearchParams(getParams(params));
+    const queryString = new URLSearchParams({
+        ...getParams(params),
+        as_location: 'true',
+    });
     return queryString;
 };
 

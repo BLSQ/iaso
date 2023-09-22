@@ -28,6 +28,7 @@ const MESSAGES = defineMessages({
 
 export const useGetValidationStatus = (
     includeAll = false,
+    enabled = true,
 ): UseQueryResult<DropdownOptions<string>[], Error> => {
     const queryKey: any[] = ['validationStatus'];
     const { formatMessage } = useSafeIntl();
@@ -36,6 +37,7 @@ export const useGetValidationStatus = (
         queryFn: () => getRequest('/api/validationstatus/'),
         options: {
             retry: false,
+            enabled,
             keepPreviousData: true,
             select: (data: OrgUnitStatus[]) => {
                 const options: DropdownOptions<string>[] = data.map(

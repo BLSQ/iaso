@@ -6,12 +6,17 @@ import {
 } from 'redux';
 import { routerReducer } from 'react-router-redux';
 
-export default (initialState = {}, reducers = {}, middleWare = []) =>
-    _createStore(
-        combineReducers({
-            routing: routerReducer,
-            ...reducers,
-        }),
+const createReducer = (appReducers, pluginReducers) => {
+    return combineReducers({
+        routing: routerReducer,
+        ...appReducers,
+        ...pluginReducers,
+    });
+};
+
+export default (initialState = {}, reducers = {}, middleWare = []) => {
+    const store = _createStore(
+        createReducer(reducers),
         initialState,
         compose(
             applyMiddleware(...middleWare),
@@ -20,3 +25,10 @@ export default (initialState = {}, reducers = {}, middleWare = []) =>
                 : f => f,
         ),
     );
+    store.pluginReducers = {};
+    store.injectReducer = (key, pluginReducer) => {
+        store.pluginReducers[key] = pluginReducer;
+        store.replaceReducer(createReducer(reducers, store.pluginReducers));
+    };
+    return store;
+};

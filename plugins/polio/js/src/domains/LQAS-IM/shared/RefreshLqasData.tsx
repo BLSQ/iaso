@@ -41,9 +41,11 @@ const useLastUpdate = (
             .format('LTS')}`;
     }
     if (lastUpdate?.status) {
-        const updateStatus = formatMessage(MESSAGES[lastUpdate.status])
-            ? formatMessage(MESSAGES[lastUpdate.status])
-            : '';
+        const updateStatus =
+            MESSAGES[lastUpdate.status] &&
+            formatMessage(MESSAGES[lastUpdate.status])
+                ? formatMessage(MESSAGES[lastUpdate.status])
+                : '';
         result.updateStatus = updateStatus;
     }
     return result;

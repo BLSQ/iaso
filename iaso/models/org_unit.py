@@ -244,7 +244,7 @@ def get_creator_name(creator):
     if creator is None:
         return None
     if creator.first_name or creator.last_name:
-        return f"{creator.username} ({creator.first_name} {creator.last_name})"
+        return f"{creator.username} ({creator.get_full_name()})"
     return f"{creator.username}"
 
 

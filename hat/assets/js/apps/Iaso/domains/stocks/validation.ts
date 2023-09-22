@@ -24,11 +24,11 @@ export const useStockMovementValidation = (
                 .required('requiredField'),
             org_unit: number()
                 .nullable()
-                .test(apiValidator('org_unit'))
+                // .test(apiValidator('org_unit'))
                 .required('requiredField'),
             stock_item: number()
                 .nullable()
-                .test(apiValidator('stock_item'))
+                // .test(apiValidator('stock_item'))
                 .required('requiredField'),
         });
     }, [formatMessage, apiValidator]);

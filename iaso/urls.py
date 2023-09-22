@@ -48,6 +48,7 @@ from .api.form_attachments import FormAttachmentsViewSet
 from .api.form_versions import FormVersionsViewSet
 from .api.forms import FormsViewSet, MobileFormViewSet
 from .api.groups import GroupsViewSet
+from .api.mobile.groups import MobileGroupsViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.instances import InstancesViewSet
 from .api.links import LinkViewSet
@@ -114,6 +115,7 @@ router.register(r"profiles", ProfilesViewSet, basename="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
 router.register(r"groups", GroupsViewSet, basename="groups")
+router.register(r"mobile/groups", MobileGroupsViewSet, basename="groupsmobile")
 router.register(r"completeness", CompletenessViewSet, basename="completeness")
 router.register(r"v2/completeness_stats", CompletenessStatsV2ViewSet, basename="completeness_stats")
 router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")

@@ -1,5 +1,6 @@
 from django.db import models
 from iaso.models import OrgUnit, Account
+from rest_framework import serializers
 
 
 class StockItem(models.Model):
@@ -27,9 +28,9 @@ class StockMovement(models.Model):
             ).aggregate(models.Sum("quantity"))["quantity__sum"]
 
             if current_quantity + self.quantity < 0:
-                raise ValueError("Cannot have a negative total stock")
+                raise serializers.ValidationError({"quantity": "negative_quantity"})
 
         if self.quantity == 0:
-            raise ValueError("Quantity cannot be zero")
+            raise serializers.ValidationError({"quantity": "zero_quantity"})
 
         super().save(*args, **kwargs)

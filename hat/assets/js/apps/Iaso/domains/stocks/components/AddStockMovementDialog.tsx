@@ -62,6 +62,17 @@ const AddStockMovementDialog: FunctionComponent<Props> = ({
     const schema = useStockMovementValidation(apiErrors, payload);
 
     // Formik
+    const formik = useFormik({
+        initialValues: {
+            org_unit: undefined,
+            stock_item: undefined,
+            quantity: undefined,
+        },
+        enableReinitialize: true,
+        validateOnBlur: false,
+        validationSchema: schema,
+        onSubmit: save,
+    });
     const {
         values,
         setFieldValue,
@@ -72,13 +83,7 @@ const AddStockMovementDialog: FunctionComponent<Props> = ({
         initialValues,
         handleSubmit,
         resetForm,
-    } = useFormik({
-        initialValues: {},
-        enableReinitialize: true,
-        validateOnBlur: true,
-        validationSchema: schema,
-        onSubmit: save,
-    });
+    } = formik;
 
     const getErrors = useTranslatedErrors({
         errors,
@@ -94,24 +99,23 @@ const AddStockMovementDialog: FunctionComponent<Props> = ({
         },
         [setFieldTouched, setFieldValue],
     );
-    console.log('errors', errors);
-    console.log('values', values);
-    console.log('touched', touched);
     return (
         <ConfirmCancelModal
             titleMessage={titleMessage}
             onConfirm={() => handleSubmit()}
             maxWidth="xs"
-            closeDialog={closeDialog}
+            closeDialog={() => null}
             open={isOpen}
             cancelMessage={MESSAGES.cancel}
             confirmMessage={MESSAGES.save}
             id="stock-movement-dialog"
             dataTestId="stock-movement-dialog"
-            // allowConfirm={isValid && !isEqual(values, initialValues)}
-            allowConfirm
+            allowConfirm={isValid && !isEqual(values, initialValues)}
             onClose={() => null}
-            onCancel={() => resetForm()}
+            onCancel={() => {
+                resetForm();
+                closeDialog();
+            }}
         >
             <OrgUnitTreeviewModal
                 required
@@ -123,22 +127,20 @@ const AddStockMovementDialog: FunctionComponent<Props> = ({
                     onChange('org_unit', orgUnit.id);
                 }}
                 initialSelection={selectedOrgUnit}
-                // errors={getErrors('org_unit')}
+                errors={getErrors('org_unit')}
                 multiselect={false}
             />
             <InputComponent
                 type="select"
                 keyValue="stock_item"
                 loading={isFetchingStockItems}
-                onChange={(keyValue, value) => {
-                    onChange(keyValue, parseInt(value, 10));
-                }}
+                onChange={onChange}
                 value={values.stock_item}
                 label={MESSAGES.stockItem}
                 options={stockItems}
                 required
                 clearable={false}
-                // errors={getErrors('stock_item')}
+                errors={getErrors('stock_item')}
             />
             <InputComponent
                 type="number"

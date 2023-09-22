@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { object, number, ObjectSchema } from 'yup';
+import { object, number, ObjectSchema, string } from 'yup';
 import { useSafeIntl } from 'bluesquare-components';
 import { ValidationError } from '../../types/utils';
 
@@ -21,15 +21,15 @@ export const useStockMovementValidation = (
             quantity: number()
                 .nullable()
                 .typeError(formatMessage(MESSAGES.quantityError))
-                .required('requiredField'),
+                .required(formatMessage(MESSAGES.required)),
             org_unit: number()
                 .nullable()
-                // .test(apiValidator('org_unit'))
-                .required('requiredField'),
+                .required(formatMessage(MESSAGES.required))
+                .test(apiValidator('org_unit')),
             stock_item: number()
                 .nullable()
-                // .test(apiValidator('stock_item'))
-                .required('requiredField'),
+                .required(formatMessage(MESSAGES.required))
+                .test(apiValidator('stock_item')),
         });
     }, [formatMessage, apiValidator]);
     return schema;

@@ -45,6 +45,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.stocks.quantityError',
         defaultMessage: 'Quantity is required and needs to be a number',
     },
+    required: {
+        id: 'iaso.polio.form.fieldRequired',
+        defaultMessage: 'This field is required',
+    },
+    negative_quantity: {
+        id: 'iaso.stocks.negative_quantity',
+        defaultMessage: 'Cannot have a negative total stock',
+    },
+    zero_quantity: {
+        id: 'iaso.stocks.zero_quantity',
+        defaultMessage: 'Quantity cannot be zero',
+    },
 });
 
 export default MESSAGES;

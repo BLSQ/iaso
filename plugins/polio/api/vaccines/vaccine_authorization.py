@@ -259,16 +259,10 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if block_country:
             block_country = block_country.split(",")
             block_country = Group.objects.filter(pk__in=block_country)
-            org_units = [
-                ou_queryset
-                for ou_queryset in [
-                    ou_group_queryset for ou_group_queryset in [country.org_units.all() for country in block_country]
-                ]
-            ]
+            org_units = [country.org_units.all() for country in block_country]
             ou_pk_list = []
             for ou_q in org_units:
-                for ou in ou_q:
-                    ou_pk_list.append(ou.pk)
+                ou_pk_list = [ou.pk for ou in ou_q]
             response = [entry for entry in response if entry["country"]["id"] in ou_pk_list]
 
         if ordering:

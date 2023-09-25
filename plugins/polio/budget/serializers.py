@@ -638,3 +638,10 @@ class BudgetProcessSerializer(serializers.ModelSerializer):
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["created_by"] = user
+        instance = super(BudgetProcessSerializer, self).create(validated_data)
+
+        return instance

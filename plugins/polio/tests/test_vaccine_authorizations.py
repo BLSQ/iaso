@@ -585,7 +585,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         page_url = f"example.com/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
         url_is_correct = False
 
-        print(mail.outbox[0].body)
         if page_url in mail.outbox[0].body:
             url_is_correct = True
 

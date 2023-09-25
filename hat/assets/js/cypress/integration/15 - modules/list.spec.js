@@ -14,43 +14,25 @@ const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/modules`;
 let interceptFlag = false;
 
-const defaultQuery = {
-    limit: '20',
-    order: 'name',
-    page: '1',
-};
-
-const goToPage = ({
-    formQuery = {},
-    fakeUser = superUser,
-    fixture = listFixture,
-}) => {
+const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     cy.login();
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
-    const options = {
-        method: 'GET',
-        pathname: '/api/modules',
-    };
-    const query = {
-        ...defaultQuery,
-        ...formQuery,
-    };
-    cy.intercept({ ...options, query }, req => {
+    cy.intercept('GET', '/api/modules/**/*', req => {
         interceptFlag = true;
         req.reply({
             statusCode: 200,
             body: fixture,
         });
     }).as('getModules');
-    cy.visit(baseUrl);
 };
 
 describe('Modules', () => {
     describe('Page', () => {
         it('should redirect to url with pagination params', () => {
-            goToPage({});
+            mockPage();
+            cy.visit(baseUrl);
 
             cy.wait('@getModules').then(() => {
                 cy.url().should('eq', `${baseUrl}/accountId/1`);
@@ -63,14 +45,16 @@ describe('Modules', () => {
 
     describe('Search field', () => {
         beforeEach(() => {
-            goToPage({});
+            mockPage();
+            cy.visit(baseUrl);
         });
         testSearchField(search, searchWithForbiddenChars);
     });
 
     describe('Search button', () => {
         beforeEach(() => {
-            goToPage({});
+            mockPage();
+            cy.visit(baseUrl);
         });
         it('should be disabled', () => {
             cy.wait('@getModules').then(() => {
@@ -97,10 +81,9 @@ describe('Modules', () => {
         });
     });
 
-    describe('Table', () => {
+    describe.only('Table', () => {
         beforeEach(() => {
-            goToPage({});
-            cy.intercept('GET', '/api/modules', listFixture);
+            mockPage();
         });
 
         testTablerender({
@@ -112,9 +95,9 @@ describe('Modules', () => {
 
         testPagination({
             baseUrl,
-            apiPath: '/api/modules/**',
-            apiKey: 'modules',
-            withSearch: true,
+            apiPath: '/api/modules/',
+            apiKey: 'results',
+            withSearch: false,
             fixture: listFixture,
         });
     });

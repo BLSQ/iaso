@@ -13,6 +13,7 @@ from iaso.models import Team
 from plugins.polio.models import VaccineAuthorization
 from logging import getLogger
 
+from plugins.polio.settings import NOPV2_VACCINE_TEAM_NAME
 
 logger = getLogger(__name__)
 
@@ -76,7 +77,7 @@ def send_email_vaccine_authorizations_60_days_expiration_alert(task=None):
     vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=future_date)
     total = vaccine_auths.count()
 
-    team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
+    team = get_object_or_404(Team, name=NOPV2_VACCINE_TEAM_NAME)
 
     mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
     email_sent = 0
@@ -150,8 +151,8 @@ def expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list):
 @task_decorator(task_name="expired_vaccine_authorizations_email_alert")
 def send_email_expired_vaccine_authorizations_alert(task=None):
     past_date = dt.date.today() - timedelta(days=1)
+    team = get_object_or_404(Team, name=NOPV2_VACCINE_TEAM_NAME)
     vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=past_date)
-    team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
     mailing_list = team.users.values_list('pk', flat=True)
     total = vaccine_auths.count()
 

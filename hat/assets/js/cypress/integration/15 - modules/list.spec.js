@@ -12,6 +12,7 @@ import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
 const baseUrl = `${siteBaseUrl}/dashboard/settings/modules`;
+// eslint-disable-next-line no-unused-vars
 let interceptFlag = false;
 
 const mockPage = (fakeUser = superUser, fixture = listFixture) => {
@@ -81,7 +82,7 @@ describe('Modules', () => {
         });
     });
 
-    describe.only('Table', () => {
+    describe('Table', () => {
         beforeEach(() => {
             mockPage();
         });

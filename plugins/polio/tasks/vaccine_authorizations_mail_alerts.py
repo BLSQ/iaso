@@ -152,7 +152,7 @@ def send_email_expired_vaccine_authorizations_alert(task=None):
     past_date = dt.date.today() - timedelta(days=1)
     vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=past_date)
     team = get_object_or_404(Team, name="nOPV2 vaccine authorization alerts")
-    mailing_list = [user.email for user in User.objects.filter(pk__in=team.users.all())]
+    mailing_list = team.users.values_list('pk', flat=True)
     total = vaccine_auths.count()
 
     email_sent = 0

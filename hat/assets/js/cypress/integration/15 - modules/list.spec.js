@@ -6,6 +6,8 @@ import superUser from '../../fixtures/profiles/me/superuser.json';
 import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
 import { testSearchField } from '../../support/testSearchField';
+import { testPagination } from '../../support/testPagination';
+
 import { search, searchWithForbiddenChars } from '../../constants/search';
 
 const siteBaseUrl = Cypress.env('siteBaseUrl');
@@ -106,6 +108,14 @@ describe('Modules', () => {
             rows: listFixture.results.length,
             columns: 4,
             apiKey: 'modules',
+        });
+
+        testPagination({
+            baseUrl,
+            apiPath: '/api/modules/**',
+            apiKey: 'modules',
+            withSearch: true,
+            fixture: listFixture,
         });
     });
 });

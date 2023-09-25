@@ -32,7 +32,6 @@ export const useGetModules = (
     return useSnackQuery({
         queryKey: ['modulesList', options],
         queryFn: () => getModules(options),
-        snackErrorMsg: undefined,
         options: {
             select,
         },

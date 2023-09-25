@@ -17,13 +17,12 @@ type Redirection =
     | { path: string; component: React.FC<{ location }>; to: undefined };
 const getRedirections: (
     // eslint-disable-next-line no-unused-vars
-    overrideLanding: boolean,
-    // eslint-disable-next-line no-unused-vars
     hasNoAccount: boolean,
-) => Redirection[] = (overrideLanding, hasNoAccount) => {
+    // eslint-disable-next-line no-unused-vars
+    userHomePage?: string,
+) => Redirection[] = (hasNoAccount, userHomePage) => {
     const getPaginationParams = (order = 'id', pageSize = 20) =>
         `/order/${order}/pageSize/${pageSize}/page/1`;
-
     if (hasNoAccount) {
         return [
             {
@@ -39,7 +38,10 @@ const getRedirections: (
     return [
         {
             path: '/',
-            to: overrideLanding ?? baseUrls.forms,
+            to:
+                userHomePage && userHomePage !== ''
+                    ? userHomePage
+                    : baseUrls.home,
         },
         {
             path: `${baseUrls.orgUnits}`,
@@ -125,11 +127,11 @@ const getRedirections: (
 };
 const getRoutes = (
     baseRoutes: JSX.Element[],
-    overrideLanding: boolean,
     hasNoAccount: boolean,
+    userHomePage?: string,
 ): JSX.Element[] => {
     return cloneDeep(baseRoutes).concat(
-        getRedirections(overrideLanding, hasNoAccount).map(redirection => {
+        getRedirections(hasNoAccount, userHomePage).map(redirection => {
             if (redirection.component) {
                 return (
                     <Route

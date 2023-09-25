@@ -1,5 +1,6 @@
 export const baseUrls = {
     setupAccount: 'setupAccount',
+    home: 'home',
     forms: 'forms/list',
     formDetail: 'forms/detail',
     mappings: 'forms/mappings',

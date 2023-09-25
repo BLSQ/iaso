@@ -19,9 +19,23 @@ import {
 } from '../../constants/routes';
 
 import ProtectedRoute from '../users/components/ProtectedRoute';
+import Home from '../home/index.tsx';
+import { baseUrls } from '../../constants/urls';
 
-const getBaseRoutes = (plugins, hasNoAccount) => {
+const getBaseRoutes = (plugins, hasNoAccount, HomeComponent) => {
     const routesWithAccount = [
+        {
+            baseUrl: baseUrls.home,
+            permissions: [],
+            allowAnonymous: true,
+            component: props => <HomeComponent {...props} />,
+            params: [
+                {
+                    isRequired: false,
+                    key: 'accountId',
+                },
+            ],
+        },
         ...routeConfigs,
         ...plugins
             .map(plugin =>
@@ -44,25 +58,26 @@ const getBaseRoutes = (plugins, hasNoAccount) => {
     const allRoutesConfigs = hasNoAccount
         ? [setupAccountPath, page404]
         : routesWithAccount;
+    const baseRoutes = allRoutesConfigs.map(routeConfig => {
+        const { allowAnonymous, component } = routeConfig;
+        const renderProtectedComponent = props => (
+            <ProtectedRoute
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                {...props}
+                routeConfig={routeConfig}
+                component={routeConfig.component(props)}
+                allRoutes={allRoutesConfigs}
+                hasNoAccount={hasNoAccount}
+            />
+        );
+        const page =
+            allowAnonymous || hasNoAccount
+                ? component
+                : renderProtectedComponent;
+        return <Route path={getPath(routeConfig)} component={page} />;
+    });
     return {
-        baseRoutes: allRoutesConfigs.map(routeConfig => {
-            const { allowAnonymous, component } = routeConfig;
-            const renderProtectedComponent = props => (
-                <ProtectedRoute
-                    // eslint-disable-next-line react/jsx-props-no-spreading
-                    {...props}
-                    routeConfig={routeConfig}
-                    component={routeConfig.component(props)}
-                    allRoutes={allRoutesConfigs}
-                    hasNoAccount={hasNoAccount}
-                />
-            );
-            const page =
-                allowAnonymous || hasNoAccount
-                    ? component
-                    : renderProtectedComponent;
-            return <Route path={getPath(routeConfig)} component={page} />;
-        }),
+        baseRoutes,
         currentRoute: allRoutesConfigs.find(route =>
             window.location.pathname.includes(`/${route.baseUrl}/`),
         ),
@@ -74,11 +89,24 @@ export default function App({ history, userHomePage, plugins }) {
     // on first load this is undefined, it will be updated when fetchCurrentUser is done
     const currentUser = useCurrentUser();
     const hasNoAccount = useHasNoAccount();
-    const { baseRoutes, currentRoute } = useMemo(
-        () => getBaseRoutes(plugins, hasNoAccount),
-        [plugins, hasNoAccount],
-    );
 
+    const HomeComponent = useMemo(() => {
+        const homeComponents = plugins
+            .filter(plugin => plugin.homeComponent)
+            .map(plugin => plugin.homeComponent);
+        // using the last plugin override (arbitrary choice)
+        const component =
+            homeComponents.length > 0
+                ? homeComponents[homeComponents.length - 1]
+                : // or use Iaso Home page
+                  Home;
+        return component;
+    }, [plugins]);
+
+    const { baseRoutes, currentRoute } = useMemo(
+        () => getBaseRoutes(plugins, hasNoAccount, HomeComponent),
+        [plugins, hasNoAccount, HomeComponent],
+    );
     // launch fetch user only once on mount
     useEffect(() => {
         if (!currentRoute?.allowAnonymous) {
@@ -86,25 +114,12 @@ export default function App({ history, userHomePage, plugins }) {
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dispatch]);
-    const overrideLanding = useMemo(() => {
-        const overrideLandingRoutes = plugins
-            .filter(plugin => plugin.overrideLanding)
-            .map(plugin => plugin.overrideLanding);
-        // using the last plugin override (arbitrary choice)
-        return overrideLandingRoutes.length > 0
-            ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
-            : undefined;
-    }, [plugins]);
     // routes should only change id currentUser has changed
     const routes = useMemo(() => {
         if (!currentUser && !currentRoute?.allowAnonymous) {
             return [];
         }
-        return getRoutes(
-            baseRoutes,
-            userHomePage || overrideLanding,
-            hasNoAccount,
-        );
+        return getRoutes(baseRoutes, hasNoAccount, userHomePage);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser, hasNoAccount]);
 

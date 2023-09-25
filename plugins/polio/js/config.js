@@ -533,11 +533,9 @@ const translations = {
     en,
 };
 
-const overrideLanding = DASHBOARD_BASE_URL;
-
 export default {
     routes,
     menu,
     translations,
-    overrideLanding,
+    // homeComponent: () => <div>HOME POLIO</div>,
 };

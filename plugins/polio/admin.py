@@ -1,12 +1,10 @@
-import json
-
 import gspread.utils  # type: ignore
 from django.contrib import admin
 from django.contrib.admin import widgets
 from django.db import models
 from django.utils.safestring import mark_safe
 
-from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
+from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel, BudgetProcess
 from .models import (
     Campaign,
     RoundDateHistoryEntry,
@@ -18,7 +16,6 @@ from .models import (
     CampaignGroup,
     VaccineAuthorization,
 )
-
 from iaso.admin import IasoJSONEditorWidget
 
 
@@ -58,34 +55,27 @@ class SpreadSheetImportAdmin(admin.ModelAdmin):
         # return HTML string which will be display in the form
         # for sheet in self.content['sheets']:
         html = ""
-
         for sheet in obj.content["sheets"]:
             html += f'<details open><summary><b>{sheet["title"]}</b></summary><table>'
             try:
                 if not sheet["values"]:
                     html += "Empty</table></details>"
                     continue
-
                 values = gspread.utils.fill_gaps(sheet["values"])
-
                 html += "<tr><td></td>"
                 for col_num in range(len(values[0])):
                     html += f"<td>{col_num}</td>"
                 html += "</tr>"
-
                 for row_num, row in enumerate(values):
                     html += f"<tr><td>{row_num}</td>"
-
                     for col in row:
                         html += f"<td>{col}</td>\n"
                     html += "</tr>"
-
             except Exception as e:
                 print(e)
                 html += f"<error>render error: {e}</error>"
                 html += f'<pre>{sheet["values"]}</pre>'
             html += "</table></details>"
-
         # print(html)
         return mark_safe(html)
 
@@ -130,6 +120,11 @@ class VaccineAuthorizationsAdmin(admin.ModelAdmin):
     raw_id_fields = ("country",)
 
 
+class BudgetProcessesAdmin(admin.ModelAdmin):
+    model = BudgetProcess
+    raw_id_fields = ("rounds", "teams")
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
@@ -142,3 +137,4 @@ admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)
 admin.site.register(WorkflowModel, WorkflowAdmin)
 admin.site.register(VaccineAuthorization, VaccineAuthorizationsAdmin)
+admin.site.register(BudgetProcess, BudgetProcessesAdmin)

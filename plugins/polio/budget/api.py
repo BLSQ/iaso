@@ -12,6 +12,9 @@ from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
+from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission, Paginator
+from iaso.models import Team
+from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
     ExportCampaignBudgetSerializer,
@@ -20,6 +23,7 @@ from plugins.polio.budget.serializers import (
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
     TransitionOverrideSerializer,
+    BudgetProcessSerializer,
 )
 from iaso.api.common import CustomFilterBackend
 from plugins.polio.models import Campaign
@@ -32,7 +36,6 @@ from hat.menupermissions import models as permission
 class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     """
     Campaign endpoint with budget information.
-
     You can request specific field by using the ?fields parameter
     """
 
@@ -41,7 +44,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True
-
     # Make this read only
     # FIXME : remove POST
     http_method_names = ["get", "head", "post"]
@@ -60,11 +62,9 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
-
         org_unit_groups = self.request.query_params.get("orgUnitGroups")
         if org_unit_groups:
             queryset = queryset.filter(country__groups__in=org_unit_groups.split(","))
-
         return queryset
 
     ordering_fields = [
@@ -100,7 +100,6 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         serializer = TransitionToSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         budget_step = serializer.save()
-
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
 
     @action(
@@ -111,11 +110,11 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     )
     def override(self, request):
         "Transition campaign to next state. Use multipart/form-data to send files"
+        """Transition campaign to next state. Use multipart/form-data to send files"""
         data = request.data
         serializer = TransitionOverrideSerializer(data=data, context={"request": request})
         serializer.is_valid(raise_exception=True)
         budget_step = serializer.save()
-
         return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
 
 
@@ -135,7 +134,6 @@ class BudgetStepViewSet(ModelViewSet):
         return BudgetStepSerializer
 
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
-
     http_method_names = ["get", "head", "delete", "patch"]
     filter_backends = [
         filters.OrderingFilter,
@@ -165,7 +163,6 @@ class BudgetStepViewSet(ModelViewSet):
         "Redirect to the static file"
         # Since on AWS S3 the signed url created (for the media upload files) are only valid a certain amount of time
         # This is endpoint is used to give a permanent url to the users.
-
         # Use the queryset to ensure the user has the proper access rights to this step
         # and keep down the url guessing.
         step: BudgetStep = self.get_queryset().get(pk=pk)
@@ -188,7 +185,6 @@ class BudgetStepViewSet(ModelViewSet):
             html = email_template.subject
         else:
             html = email_template.message().as_string()
-
         return HttpResponse(html)
 
 
@@ -197,7 +193,6 @@ class BudgetStepViewSet(ModelViewSet):
 class WorkflowViewSet(ViewSet):
     """
     Info on the budge workflow
-
     This endpoint is currently used to show the possible state in the filter
     """
 
@@ -205,10 +200,31 @@ class WorkflowViewSet(ViewSet):
 
     # At the moment I only implemented retrieve /current hardcode because we only support one workflow at the time
     # to keep the design simple, change if/when we want to support multiple workflow.
-
     def retrieve(self, request, pk="current"):
         try:
             workflow = get_workflow()
         except Exception as e:
             return Response({"error": "Error getting workflow", "details": str(e)})
         return Response(WorkflowSerializer(workflow).data)
+
+
+@swagger_auto_schema(tags=["budget_process"])
+class BudgetProcessViewset(ModelViewSet):
+    """
+    Endpoint that allows to handle multiples rounds per Budget.
+    """
+
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    serializer_class = BudgetProcessSerializer
+    http_method_names = ["get", "head", "delete", "patch", "post"]
+    ordering_fields = ["created_at", "updated_at", "rounds", "teams"]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    results_key = "results"
+    remove_results_key_if_paginated = True
+    pagination_class = Paginator
+    user_team = Team.objects.filter()
+
+    def get_queryset(self):
+        queryset = BudgetProcess.objects.filter(teams__users=self.request.user)
+
+        return queryset

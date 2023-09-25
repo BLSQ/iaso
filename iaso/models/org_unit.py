@@ -434,7 +434,6 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
-            "reference_instance_id": self.reference_instance_id,
             "creator": get_creator_name(self.creator),
             "reference_instances_ids": [instance.pk for instance in self.reference_instances.all()],
         }

@@ -69,7 +69,7 @@ type Props = {
     orgUnitModified: boolean;
     isFetchingOrgUnitTypes: boolean;
     isFetchingGroups: boolean;
-    referenceInstance: Instance;
+    referenceInstances: Instance[];
     // eslint-disable-next-line no-unused-vars
     setFieldErrors: (errors: string) => void;
     orgUnit: OrgUnit;
@@ -87,7 +87,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     orgUnitModified,
     isFetchingOrgUnitTypes,
     isFetchingGroups,
-    referenceInstance,
+    referenceInstances,
     setFieldErrors,
     orgUnit,
 }) => {
@@ -101,7 +101,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     const { instanceId } = params;
 
     const showSpeedDialsActions =
-        referenceInstance ||
+        referenceInstances ||
         (formId === referenceFormId &&
             Boolean(formId) &&
             Boolean(referenceFormId));
@@ -134,10 +134,10 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         instanceId,
                         saveOu,
                         setFieldErrors,
-                        referenceInstance,
+                        referenceInstances,
                     })}
                     onActionSelected={action =>
-                        handleActionSelected(action, referenceInstance)
+                        handleActionSelected(action, referenceInstances)
                     }
                 />
             )}
@@ -275,7 +275,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
 
-            {referenceInstance && (
+            {referenceInstances.map(referenceInstance => (
                 <Grid container item xs={12} md={8}>
                     <Box mt={4} className={classes.formContents}>
                         <WidgetPaper
@@ -297,7 +297,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         </WidgetPaper>
                     </Box>
                 </Grid>
-            )}
+            ))}
         </Grid>
     );
 };

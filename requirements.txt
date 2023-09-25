@@ -73,6 +73,7 @@ oauth2client==4.1.3
 django-contrib-comments~=2.1.0
 django-sql-dashboard~=1.1
 redis==4.6.0
+django-redis==4.12.1
 
 # Allauth for wfp
 django-allauth==0.54.0

@@ -1,6 +1,6 @@
 import { getRequest } from 'Iaso/libs/Api';
-import { useSnackQuery } from 'Iaso/libs/apiHooks';
-import { appId } from '../constants/app';
+import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
+import { appId } from '../constants/app.ts';
 
 export const useGetCountries = () => {
     const params = {

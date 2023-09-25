@@ -240,6 +240,14 @@ class OrgUnitQuerySet(django_cte.CTEQuerySet):
 OrgUnitManager = models.Manager.from_queryset(OrgUnitQuerySet)
 
 
+def get_creator_name(creator):
+    if creator is None:
+        return None
+    if creator.first_name or creator.last_name:
+        return f"{creator.username} ({creator.get_full_name()})"
+    return f"{creator.username}"
+
+
 class OrgUnit(TreeModel):
     VALIDATION_NEW = "NEW"
     VALIDATION_VALID = "VALID"
@@ -438,9 +446,7 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "reference_instance_id": self.reference_instance_id,
-            "creator": None
-            if self.creator is None
-            else f"{self.creator.username} ({self.creator.first_name} {self.creator.last_name})",
+            "creator": get_creator_name(self.creator),
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]

@@ -153,6 +153,41 @@ class FormsVersionAPITestCase(APITestCase):
         created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022402")
 
+    def test_form_versions_create_should_fail_if_duplicate_version_id(self):
+        self.client.force_authenticate(self.yoda)
+        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb") as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_2.id, "xls_file": xls_file},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
+
+        self.assertJSONResponse(response, 201)
+        response_data = response.json()
+        self.assertValidFormVersionData(response_data, check_annotated_fields=False)
+
+        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb") as xls_file:
+            response2 = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_2.id, "xls_file": xls_file},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
+
+        self.assertJSONResponse(response2, 400)
+
+        # let's try to force it using the django orm
+        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb") as xls_file:
+            try:
+                m.FormVersion.objects.create(
+                    form=self.form_2,
+                    version_id="2020022402",
+                    xls_file=File(xls_file),
+                )
+            except Exception as e:
+                assert "duplicate key value violates unique constraint" in str(e)
+
     def test_form_versions_create_ok_second_version_with_mappings(self):
         """POST /form-versions/ happy path (second version)"""
 

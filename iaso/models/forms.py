@@ -240,6 +240,9 @@ class FormVersion(models.Model):
         editable=False,
     )
 
+    class Meta:
+        unique_together = ("form", "version_id")
+
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
     def get_or_save_form_descriptor(self):  # TODO: remove me - should be populated on create

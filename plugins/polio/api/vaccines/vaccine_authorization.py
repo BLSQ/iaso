@@ -1,4 +1,5 @@
 import datetime as dt
+import itertools
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -12,6 +13,7 @@ from hat.menupermissions import models as permission
 from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
+from plugins.polio.settings import COUNTRY
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):
@@ -118,7 +120,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
+        user_access_ou = user_access_ou.filter(org_unit_type__name=COUNTRY)
         country_id = self.request.query_params.get("country", None)
         queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
         block_country = self.request.query_params.get("block_country", None)
@@ -167,7 +169,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         # Filters are done after calculation as all the status are required in order to compute the correct response
         user = self.request.user
         user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
+        user_access_ou = user_access_ou.filter(org_unit_type__name=COUNTRY)
         queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
         auth_status = self.request.query_params.get("auth_status", None)
         block_country = self.request.query_params.get("block_country", None)
@@ -259,10 +261,8 @@ class VaccineAuthorizationViewSet(ModelViewSet):
         if block_country:
             block_country = block_country.split(",")
             block_country = Group.objects.filter(pk__in=block_country)
-            org_units = [country.org_units.all() for country in block_country]
-            ou_pk_list = []
-            for ou_q in org_units:
-                ou_pk_list = [ou.pk for ou in ou_q]
+            org_units_ids = [country.org_units.all().values_list("pk", flat=True) for country in block_country]
+            ou_pk_list = set(itertools.chain.from_iterable(org_units_ids))
             response = [entry for entry in response if entry["country"]["id"] in ou_pk_list]
 
         if ordering:

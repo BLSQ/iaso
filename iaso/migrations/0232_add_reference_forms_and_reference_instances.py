@@ -32,7 +32,6 @@ class Migration(migrations.Migration):
             name="reference_instances",
             field=models.ManyToManyField(
                 blank=True,
-                related_name="is_reference_for_org_units",
                 through="iaso.OrgUnitReferenceInstance",
                 to="iaso.Instance",
             ),

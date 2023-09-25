@@ -853,6 +853,36 @@ class InstancesAPITestCase(APITestCase):
         self.assertEqual(new_org_unit.id, modification.new_value[0]["fields"]["org_unit"])
         self.assertEqual(instance_to_patch, modification.content_object)
 
+    def test_instance_patch_org_unit_unlink_reference_instance_from_previous_org_unit(self):
+        """PATCH /instances/:pk"""
+        self.client.force_authenticate(self.yoda)
+
+        previous_org_unit = m.OrgUnit.objects.create(
+            name="previous organisation unit", version=self.sw_version, org_unit_type=self.jedi_council
+        )
+
+        instance = m.Instance.objects.create(org_unit=previous_org_unit, form=self.form_3, project=self.project)
+
+        m.OrgUnitReferenceInstance.objects.create(org_unit=previous_org_unit, instance=instance, form=self.form_3)
+        self.assertEqual(1, previous_org_unit.reference_instances.count())
+
+        new_org_unit = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
+        )
+
+        response = self.client.patch(
+            f"/api/instances/{instance.id}/",
+            data={"org_unit": new_org_unit.id},
+            format="json",
+            HTTP_ACCEPT="application/json",
+        )
+
+        self.assertJSONResponse(response, 200)
+        previous_org_unit.refresh_from_db()
+        instance.refresh_from_db()
+        self.assertEqual(instance.org_unit, new_org_unit)
+        self.assertEqual(0, previous_org_unit.reference_instances.count())
+
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""
         self.client.force_authenticate(self.yoda)
@@ -1221,6 +1251,8 @@ class InstancesAPITestCase(APITestCase):
         json = self.assertJSONResponse(response, 200)
         self.assertEqual(json["can_user_modify"], can_user_modify)
         self.assertEqual(json["is_locked"], is_locked)
+        self.assertFalse(json["is_instance_of_reference_form"])
+        self.assertFalse(json["is_reference_instance"])
         self.assertGreaterEqual(len(json["instance_locks"]), 1 if is_locked else 0, json["instance_locks"])
         # check from list view
         response = self.client.get(f"/api/instances/?limit=100")

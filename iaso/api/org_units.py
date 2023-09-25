@@ -429,12 +429,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
 
-        if "reference_instance_id" in request.data:
-            reference_instance_id = request.data["reference_instance_id"]
-            if reference_instance_id:
+        if "reference_instance_id" in request.data and "reference_instance_action" in request.data:
+            instance = get_object_or_404(Instance, pk=request.data["reference_instance_id"], org_unit=org_unit)
+            if request.data["reference_instance_action"] == Instance.REFERENCE_FLAG_CODE:
                 try:
-                    instance = get_object_or_404(Instance, pk=reference_instance_id, org_unit=org_unit)
-                    org_unit.flag_as_reference_instance(instance)
+                    instance.flag_reference_instance(org_unit)
                 except ValidationError as e:
                     errors.append(
                         {
@@ -442,6 +441,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                             "errorMessage": e.messages[0],
                         }
                     )
+            elif request.data["reference_instance_action"] == Instance.REFERENCE_UNFLAG_CODE:
+                instance.unflag_reference_instance(org_unit)
 
         if "parent_id" in request.data:
             parent_id = request.data["parent_id"]
@@ -614,9 +615,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.groups.set(new_groups)
 
         if reference_instance_id and org_unit_type:
-            # Flag instance as reference instance.
             instance = Instance.objects.get(pk=reference_instance_id)
-            org_unit.flag_as_reference_instance(instance=instance)
+            instance.flag_reference_instance(org_unit)
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 

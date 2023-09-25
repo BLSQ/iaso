@@ -268,9 +268,7 @@ class OrgUnit(TreeModel):
     simplified_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
-    reference_instances = models.ManyToManyField(
-        "Instance", related_name="is_reference_for_org_units", through="OrgUnitReferenceInstance", blank=True
-    )
+    reference_instances = models.ManyToManyField("Instance", through="OrgUnitReferenceInstance", blank=True)
 
     gps_source = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
@@ -529,16 +527,6 @@ class OrgUnit(TreeModel):
             return "/" + ("/".join(path_components))
         return None
 
-    def flag_as_reference_instance(self, instance: "Instance") -> "OrgUnitReferenceInstance":
-        if not instance.form_id:
-            raise ValidationError(_("The Instance must be linked to a Form."))
-        if not self.org_unit_type:
-            raise ValidationError(_("The OrgUnit must be linked to a OrgUnitType."))
-        if not self.org_unit_type.reference_forms.filter(id=instance.form_id).exists():
-            raise ValidationError(_("The submission must be an instance of a reference form."))
-        kwargs = {"org_unit": self, "form_id": instance.form_id}
-        return OrgUnitReferenceInstance.objects.create(instance=instance, **kwargs)
-
 
 class OrgUnitReferenceInstance(models.Model):
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
@@ -546,5 +534,5 @@ class OrgUnitReferenceInstance(models.Model):
     instance = models.ForeignKey("Instance", on_delete=models.CASCADE)
 
     class Meta:
-        # There can be only one `instance` of a given `org_unit`'s reference `form`.
+        # Only one `instance` by pair of org_unit/form.
         unique_together = ("org_unit", "form")

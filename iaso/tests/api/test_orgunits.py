@@ -754,7 +754,38 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.created_at, old_ou.created_at)
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
-    def test_edit_org_unit_link_to_reference_instance(self):
+    def test_edit_org_unit_unflag_reference_instance(self):
+        org_unit_type = self.jedi_council
+        org_unit = self.jedi_council_corruscant
+        form = self.reference_form
+        instance = self.instance_related_to_reference_form
+
+        # Create a reference instance.
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=form)
+        self.assertIn(instance, org_unit.reference_instances.all())
+
+        # GET /api/orgunits/id.
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        data = self.assertJSONResponse(response, 200)
+
+        # PATCH /api/orgunits/id.
+        data.update(
+            {
+                "groups": [g["id"] for g in response.data["groups"]],
+                "reference_instance_id": instance.id,
+                "reference_instance_action": m.Instance.REFERENCE_UNFLAG_CODE,
+            }
+        )
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertNotIn(instance, org_unit.reference_instances.all())
+
+    def test_edit_org_unit_flag_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id"""
         old_ou = self.jedi_council_corruscant
         self.client.force_authenticate(self.yoda)
@@ -763,6 +794,7 @@ class OrgUnitAPITestCase(APITestCase):
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
         data["reference_instance_id"] = self.instance_related_to_reference_form.id
+        data["reference_instance_action"] = m.Instance.REFERENCE_FLAG_CODE
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
@@ -775,7 +807,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.id, old_ou.id)
         self.assertIn(self.instance_related_to_reference_form, ou.reference_instances.all())
 
-    def test_edit_org_unit_not_link_to_reference_instance(self):
+    def test_edit_org_unit_flag_wrong_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id with a no reference form"""
         old_ou = self.jedi_council_corruscant
         old_modification_date = old_ou.updated_at
@@ -785,6 +817,7 @@ class OrgUnitAPITestCase(APITestCase):
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
         data["reference_instance_id"] = self.instance_not_related_to_reference_form.id
+        data["reference_instance_action"] = m.Instance.REFERENCE_FLAG_CODE
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
@@ -795,6 +828,7 @@ class OrgUnitAPITestCase(APITestCase):
         old_ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertEqual(old_modification_date, old_ou.updated_at)
+        self.assertNotIn(self.instance_not_related_to_reference_form, old_ou.reference_instances.all())
 
     def test_edit_org_unit_partial_update(self):
         """Check tha we can only modify a part of the fille"""

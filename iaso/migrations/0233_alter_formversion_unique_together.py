@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('iaso', '0232_check_no_duplicated_version_id'),
+        ("iaso", "0232_check_no_duplicated_version_id"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='formversion',
-            unique_together={('form', 'version_id')},
+            name="formversion",
+            unique_together={("form", "version_id")},
         ),
     ]

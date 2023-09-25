@@ -99,7 +99,7 @@ steps:
     RDS_USERNAME: postgres
     CACHE: false
     DEV_SERVER: true
-    PLUGINS: polio
+    PLUGINS: polio,wfp
     DJANGO_SUPERUSER_USERNAME: adm
     DJANGO_SUPERUSER_EMAIL: adm@example.com
     DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)

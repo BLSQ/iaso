@@ -37,7 +37,7 @@ import rest_framework.renderers
 import rest_framework_csv.renderers
 from django.core.paginator import Paginator
 from django.db import models
-from django.db.models import QuerySet, OrderBy
+from django.db.models import QuerySet, OrderBy, Q
 from django.db.models.expressions import RawSQL
 from django_cte import With
 from django_cte.raw import raw_cte_sql
@@ -170,6 +170,7 @@ class ParamSerializer(serializers.Serializer):
         help_text="Filter org unit on theses validation status"
         " (both for returned orgunit and count), can specify multiple status, separated by a ','",
     )
+    as_location = serializers.CharField(required=False, help_text="Filter only org units with geo locations")
 
     def validate_org_unit_validation_status(self, statuses):
         statuses = statuses.split(",")
@@ -226,16 +227,21 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
         orders = params["order"]
         form_qs = params["forms"]
         period = params.get("period", None)
-        planning = params.get("planning", None)
+        planning_id = params.get("planning_id", None)
         org_unit_validation_status = params["org_unit_validation_status"]
+        as_location = params.get("as_location", None)
 
         instance_qs = Instance.objects.all()
+
+        planning = None
+        if planning_id:
+            planning = get_object_or_404(Planning, id=planning_id)
         if period:
             # In the future we would like to support multiple periods, but then we will have to count properly
             # the requirements
             instance_qs = instance_qs.filter(period=period)
         if planning:
-            instance_qs = instance_qs.filter(planning_id=planning.id)
+            instance_qs = instance_qs.filter(planning_id=planning)
             form_qs = form_qs.filter(plannings=planning)
 
         profile = request.user.iaso_profile  # type: ignore
@@ -390,14 +396,17 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
                 ou_qs = OrgUnit.objects.filter(id=parent_ou.id)
                 ou_qs = get_annotated_queryset(ou_qs, orgunit_qs, instance_qs, form_qs)
 
-                top_row_ou = to_dict(ou_qs[0]) if not is_map else to_map(ou_qs[0])
-                top_row_ou["is_root"] = True
-                temp_list.insert(0, top_row_ou)
+                if ou_qs.count() > 0:
+                    top_row_ou = to_dict(ou_qs[0]) if not is_map else to_map(ou_qs[0])
+                    top_row_ou["is_root"] = True
+                    temp_list.insert(0, top_row_ou)
+
             return temp_list
 
         limit = request.GET.get("limit", None)
         # convert to proper pagination
         page_offset = int(request.GET.get("page", "1"))
+
         if limit is not None:
             paginator = Paginator(ou_with_stats, int(limit))
             if page_offset > paginator.num_pages:
@@ -432,8 +441,14 @@ class CompletenessStatsV2ViewSet(viewsets.ViewSet):
             }
 
             return Response(paginated_res)
-
-        object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
+        object_list = []
+        if as_location:
+            ou_with_stats = ou_with_stats.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
+            if ou_with_stats.count() > 0:
+                object_list = with_parent([to_map(ou) for ou in ou_with_stats], True)
+        else:
+            if ou_with_stats.count() > 0:
+                object_list = with_parent([to_dict(ou) for ou in ou_with_stats], True)
         return Response({"results": object_list})
 
     @action(methods=["GET"], detail=False)

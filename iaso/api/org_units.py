@@ -9,7 +9,6 @@ from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils import timezone
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action

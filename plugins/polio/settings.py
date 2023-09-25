@@ -1,0 +1,7 @@
+# use this file to store constants
+
+
+COUNTRY = "COUNTRY"
+DISTRICT = "DISTRICT"
+REGION = "REGION"
+HEALTH_FACILITY = "HEALTH FACILITY"

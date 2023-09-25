@@ -77,6 +77,38 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             source_ref="PvtAI4RUMkr",
         )
 
+        cls.org_unit_CHAD = m.OrgUnit.objects.create(
+            org_unit_type=cls.org_unit_type_country,
+            version=cls.source_version_1,
+            name="CHAD",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+
+        cls.org_unit_BURKINA_FASO = m.OrgUnit.objects.create(
+            org_unit_type=cls.org_unit_type_country,
+            version=cls.source_version_1,
+            name="Burkina Faso",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+
+        cls.org_unit_ZIMBABWE = m.OrgUnit.objects.create(
+            org_unit_type=cls.org_unit_type_country,
+            version=cls.source_version_1,
+            name="Zimbabwe",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+
+        cls.org_unit_SIERRA_LEONE = m.OrgUnit.objects.create(
+            org_unit_type=cls.org_unit_type_country,
+            version=cls.source_version_1,
+            name="Sierra Leone",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+
         cls.org_unit_ALGERIA = m.OrgUnit.objects.create(
             org_unit_type=cls.org_unit_type_country,
             version=cls.source_version_1,
@@ -770,3 +802,166 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.data[0]["next_expiration_date"], seventh.expiration_date)
         self.assertEqual(response.data[1]["next_expiration_date"], sixth.expiration_date)
         self.assertEqual(response.data[2]["next_expiration_date"], fifth.expiration_date)
+
+    def test_get_most_recent_filters_status(self):
+        self.client.force_authenticate(self.user_1)
+        self.user_1.iaso_profile.org_units.set(
+            [
+                self.org_unit_DRC.pk,
+                self.org_unit_SOMALIA,
+                self.org_unit_ALGERIA,
+                self.org_unit_ZIMBABWE,
+                self.org_unit_CHAD,
+                self.org_unit_SIERRA_LEONE,
+                self.org_unit_BURKINA_FASO,
+            ]
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_SOMALIA,
+            status="EXPIRED",
+            quantity=400,
+            expiration_date=date.today() - datetime.timedelta(days=30),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_SOMALIA,
+            status="VALIDATED",
+            quantity=400,
+            expiration_date=date.today() + datetime.timedelta(days=220),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="EXPIRED",
+            quantity=40000,
+            expiration_date=date.today() - datetime.timedelta(days=220),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_ALGERIA,
+            status="SIGNATURE",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=120),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_CHAD,
+            status="EXPIRED",
+            quantity=40000,
+            expiration_date=date.today() - datetime.timedelta(days=1),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_SIERRA_LEONE,
+            status="SIGNATURE",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=250),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_ZIMBABWE,
+            status="ONGOING",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=250),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_ZIMBABWE,
+            status="EXPIRED",
+            quantity=40000,
+            expiration_date=date.today() - datetime.timedelta(days=250),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_ZIMBABWE,
+            status="SIGNATURE",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=250),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_BURKINA_FASO,
+            status="EXPIRED",
+            quantity=40000,
+            expiration_date=date.today() - datetime.timedelta(days=250),
+        )
+
+        VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_BURKINA_FASO,
+            status="VALIDATED",
+            quantity=40000,
+            expiration_date=date.today() + datetime.timedelta(days=100),
+        )
+
+        # response length
+        response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/?order=status")
+
+        self.assertEqual((len(response.data)), 7)
+
+        # VALIDATED status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=VALIDATED"
+        )
+
+        self.assertEqual(len(response.data), 2)
+
+        # ONGOING status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=ONGOING"
+        )
+
+        self.assertEqual(len(response.data), 0)
+
+        # EXPIRED status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=EXPIRED"
+        )
+
+        self.assertEqual(len(response.data), 2)
+
+        # SIGNATURE status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=SIGNATURE"
+        )
+
+        self.assertEqual(len(response.data), 3)
+
+        # SIGNATURE and EXPIRED status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=SIGNATURE,EXPIRED"
+        )
+
+        self.assertEqual(len(response.data), 5)
+
+        # SIGNATURE and ONGOING status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=SIGNATURE,ONGOING"
+        )
+
+        self.assertEqual(len(response.data), 3)
+
+        # SIGNATURE and VALIDATED status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=SIGNATURE,VALIDATED"
+        )
+
+        self.assertEqual(len(response.data), 5)
+
+        # SIGNATURE, VALIDATED, EXPIRED status
+        response = self.client.get(
+            "/api/polio/vaccineauthorizations/get_most_recent_authorizations/?auth_status=SIGNATURE,EXPIRED,VALIDATED"
+        )
+
+        self.assertEqual(len(response.data), 7)

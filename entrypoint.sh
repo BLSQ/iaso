@@ -66,10 +66,10 @@ case "$1" in
     ./manage.py runserver 0.0.0.0:8081
   ;;
   "start_celery_beat" )
-    celery -A hat beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    celery -A hat beat -l info
   ;;
   "start_celery_worker" )
-    celery -A hat worker -l info --without-heartbeat
+    celery -A hat worker -l info
   ;;
   "start_webpack" )
     # if TEST_PROD, make a static js bundle otherwise launch js dev server

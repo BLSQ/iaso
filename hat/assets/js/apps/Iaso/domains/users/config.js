@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { Switch } from '@material-ui/core';
+import { Switch, Tooltip } from '@material-ui/core';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
@@ -8,6 +8,7 @@ import {
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
+import PERMISSIONS_MESSAGES from './permissionsMessages.ts';
 import { userHasPermission } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
@@ -84,6 +85,34 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 accessor: 'permission',
                 sortable: false,
                 align: 'left',
+                Cell: settings => {
+                    let title = false;
+                    if (
+                        PERMISSIONS_MESSAGES[
+                            `${settings.row.original.permissionCodeName}_tooltip`
+                        ] !== undefined
+                    ) {
+                        title = formatMessage(
+                            PERMISSIONS_MESSAGES[
+                                `${settings.row.original.permissionCodeName}_tooltip`
+                            ],
+                        );
+                    }
+                    if (title) {
+                        return (
+                            <Tooltip
+                                title={title}
+                                interactive
+                                leaveDelay={500}
+                                placement="right-start"
+                                arrow
+                            >
+                                <span>{settings.row.original.permission}</span>
+                            </Tooltip>
+                        );
+                    }
+                    return <span>{settings.row.original.permission}</span>;
+                },
             },
             {
                 Header: formatMessage(MESSAGES.userPermissions),

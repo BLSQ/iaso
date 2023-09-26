@@ -827,6 +827,7 @@
     "iaso.permissions.sources": "Geo data sources - Read only",
     "iaso.permissions.submissions": "Submissions - Read only",
     "iaso.permissions.teams": "Teams management",
+    "iaso.permissions.tooltip.assignments": "Assign tasks to specific users/teams via the Planning interface",
     "iaso.permissions.tooltip.completeness": "Monitor per period how many forms are ready/have errors/are exported",
     "iaso.permissions.tooltip.completeness_stats": "Monitor data collection completeness aggregated per form with drilldown to lower org unit levels",
     "iaso.permissions.tooltip.dataTasks": "Monitor long-running tasks (eg, import or manage data in the platform)",

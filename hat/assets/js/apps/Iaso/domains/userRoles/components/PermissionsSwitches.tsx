@@ -1,5 +1,11 @@
 import React, { useCallback, useMemo } from 'react';
-import { Box, FormControlLabel, Switch, makeStyles } from '@material-ui/core';
+import {
+    Box,
+    FormControlLabel,
+    Switch,
+    Tooltip,
+    makeStyles,
+} from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
@@ -60,6 +66,40 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
             ? formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])
             : permissionCodeName;
     };
+
+    const getPermissionToolTip = permissionCodeName => {
+        let title = false;
+        const toolTipMessageObject =
+            PERMISSIONS_MESSAGES[`${permissionCodeName}_tooltip`];
+        if (toolTipMessageObject !== undefined) {
+            title = formatMessage(toolTipMessageObject);
+        }
+        let permissionLabel = (
+            <span>
+                {formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])}
+            </span>
+        );
+        if (title) {
+            permissionLabel = (
+                <Tooltip
+                    title={title}
+                    interactive
+                    leaveDelay={500}
+                    placement="right-start"
+                    arrow
+                >
+                    <span>
+                        {formatMessage(
+                            PERMISSIONS_MESSAGES[permissionCodeName],
+                        )}
+                    </span>
+                </Tooltip>
+            );
+        }
+        return PERMISSIONS_MESSAGES[permissionCodeName]
+            ? permissionLabel
+            : permissionCodeName;
+    };
     const permissions = useMemo(
         () => data?.permissions ?? [],
         [data?.permissions],
@@ -98,7 +138,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                                     color="primary"
                                 />
                             }
-                            label={getPermissionLabel(p.codename)}
+                            label={getPermissionToolTip(p.codename)}
                         />
                     </div>
                 ))}

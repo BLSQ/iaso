@@ -88,6 +88,11 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage:
             'Manage one or multiple Projects (sub-part of Forms, Org Units, entity types). One Project is linked to one IASO Mobile App configuration, so to one App ID. You can edit Project(s) name, IDs, feature flags',
     },
+    iaso_projects: {
+        id: 'iaso.permissions.projects',
+        defaultMessage: 'Projects',
+    },
+
     iaso_sources: {
         id: 'iaso.permissions.sources',
         defaultMessage: 'Geo data sources - Read only',
@@ -165,6 +170,11 @@ const PERMISSIONS_MESSAGES = defineMessages({
     iaso_assignments: {
         id: 'iaso.permissions.assignments',
         defaultMessage: 'Planning',
+    },
+    iaso_assignments_tooltip: {
+        id: 'iaso.permissions.tooltip.assignments',
+        defaultMessage:
+            'Assign tasks to specific users/teams via the Planning interface',
     },
     iaso_completeness_stats: {
         id: 'iaso.permissions.completeness_stats',

@@ -314,20 +314,17 @@ class ETL:
             print(
                 f"---------------------------------------- Beneficiary N° {(index+1)} -----------------------------------"
             )
-            last_name = instance.get("last_name", "")
-            first_name = instance.get("first_name", "")
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries:
                 beneficiary.gender = instance["gender"]
                 beneficiary.birth_date = instance["birth_date"]
                 beneficiary.entity_id = instance["entity_id"]
                 beneficiary.save()
-                print(f"Created new beneficiary {last_name} {first_name}")
+                print("Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
             instance["journey"] = self.journeyMapper(instance["visits"])
 
-            print("Retrieving journey linked to beneficiary ", f"{last_name} {first_name}")
             for journey_instance in instance["journey"]:
                 if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
                     journey = self.save_journey(beneficiary, journey_instance)
@@ -341,7 +338,7 @@ class ETL:
                     steps = self.save_steps(visits, followUpVisits)
                     print(f"Inserted {len(steps)} Steps")
                 else:
-                    print(f"No new journey for {last_name} {first_name}")
+                    print("No new journey for the current beneficiary")
             print(f"---------------------------------------------------------------------------------------------\n\n")
 
 

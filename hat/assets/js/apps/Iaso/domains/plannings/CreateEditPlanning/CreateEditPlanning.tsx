@@ -25,7 +25,7 @@ import DatesRange from '../../../components/filters/DatesRange';
 import { OrgUnitsLevels as OrgUnitSelect } from '../../../../../../../../plugins/polio/js/src/components/Inputs/OrgUnitsSelect';
 import { usePlanningValidation } from '../hooks/validation';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
+import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import {
     useApiErrorValidation,
     useTranslatedErrors,

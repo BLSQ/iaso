@@ -8,7 +8,7 @@ import { useStyles } from './Styles';
 
 import { colSpanTitle } from './constants';
 import { HeadStaticFieldsCells } from './cells/HeadStaticFields';
-import { useStaticFields } from '../../hooks/useStaticFields';
+import { useStaticFields } from '../../domains/Calendar/hooks/useStaticFields';
 
 const Head = ({ headers, orders, currentWeekIndex, isPdf }) => {
     const classes = useStyles();

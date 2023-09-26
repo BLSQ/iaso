@@ -40,6 +40,10 @@ import MESSAGES from '../messages';
 import { Router } from '../../../types/general';
 
 import { usetGetParentPageUrl } from '../utils';
+import {
+    AssignmentsResult,
+    useGetAssignments,
+} from '../../assignments/hooks/requests/useGetAssignments';
 
 const defaultViewport = {
     center: [1, 20],
@@ -82,6 +86,7 @@ export const Map: FunctionComponent<Props> = ({
     selectedFormId,
     router,
 }) => {
+    const { planningId } = params;
     const classes: Record<string, string> = useStyles();
 
     const bounds: Bounds | undefined = useMemo(
@@ -129,17 +134,52 @@ export const Map: FunctionComponent<Props> = ({
         },
         [showDirectCompleteness],
     );
+
+    const {
+        data,
+        isFetching: isLoadingAssignments,
+    }: {
+        data?: AssignmentsResult;
+        isFetching: boolean;
+    } = useGetAssignments({ planning: planningId });
+    const assignments = useMemo(
+        () =>
+            data?.allAssignments.filter(
+                assignment =>
+                    Boolean(assignment.user) || Boolean(assignment.team),
+            ) || [],
+        [data?.allAssignments],
+    );
     const getLegendColor = useCallback(
-        value =>
-            showDirectCompleteness ? getDirectLegend(value) : getLegend(value),
-        [showDirectCompleteness],
+        (value, locationId) => {
+            if (planningId) {
+                if (
+                    !isLoadingAssignments &&
+                    assignments.find(
+                        assignment => assignment.org_unit === locationId,
+                    )
+                ) {
+                    return showDirectCompleteness
+                        ? getDirectLegend(value)
+                        : getLegend(value);
+                }
+
+                return 'grey';
+            }
+            return showDirectCompleteness
+                ? getDirectLegend(value)
+                : getLegend(value);
+        },
+        [planningId, showDirectCompleteness, isLoadingAssignments, assignments],
     );
 
     const getParentPageUrl = usetGetParentPageUrl(router);
     return (
         <section className={classes.mapContainer}>
             <Box position="relative">
-                {isLoading && <LoadingSpinner absolute />}
+                {(isLoading || isLoadingAssignments) && (
+                    <LoadingSpinner absolute />
+                )}
                 <CompletenessSelect params={params} />
                 <MapLegend showDirectCompleteness={showDirectCompleteness} />
                 {parentLocation?.parent_org_unit?.id && (
@@ -196,7 +236,7 @@ export const Map: FunctionComponent<Props> = ({
                             const stats =
                                 shape.form_stats[`form_${selectedFormId}`];
                             const color =
-                                getLegendColor(getPercent(stats)) ||
+                                getLegendColor(getPercent(stats), shape.id) ||
                                 theme.palette.primary.main;
                             return (
                                 <GeoJSON
@@ -223,7 +263,7 @@ export const Map: FunctionComponent<Props> = ({
                             const stats =
                                 marker.form_stats[`form_${selectedFormId}`];
                             const color =
-                                getLegendColor(getPercent(stats)) ||
+                                getLegendColor(getPercent(stats), marker.id) ||
                                 theme.palette.primary.main;
                             return (
                                 <CircleMarkerComponent

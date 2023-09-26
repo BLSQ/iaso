@@ -10,6 +10,7 @@ import {
 } from '../../../../utils/dates';
 import { endpoint } from '../../constants';
 import { PlanningParams } from '../../types';
+import { DropdownOptions } from '../../../../types/utils';
 
 export type OrgUnitDetails = {
     id: number;
@@ -27,6 +28,7 @@ export type PlanningApi = {
     started_at?: string;
     ended_at?: string;
     org_unit_details: OrgUnitDetails;
+    form?: [number];
 };
 
 type Planning = PlanningApi & {
@@ -83,22 +85,31 @@ export const useGetPlannings = (
     });
 };
 
-const getPlanningsOptions = async (): Promise<PlanningApi[]> => {
-    const url = makeUrlWithParams(endpoint, {});
+const getPlanningsOptions = async (
+    formIds?: string,
+): Promise<PlanningApi[]> => {
+    const apiParams: Record<string, any> = {};
+    if (formIds) {
+        apiParams.form_ids = formIds;
+    }
+    const url = makeUrlWithParams(endpoint, apiParams);
     return getRequest(url) as Promise<PlanningApi[]>;
 };
-export const useGetPlanningsOptions = (): UseQueryResult<Planning[], Error> => {
-    const queryKey: any[] = ['planningsList'];
+export const useGetPlanningsOptions = (
+    formIds?: string,
+): UseQueryResult<DropdownOptions<number>[], Error> => {
+    const queryKey: any[] = ['planningsList', formIds];
     // @ts-ignore
     return useSnackQuery({
         queryKey,
-        queryFn: () => getPlanningsOptions(),
+        queryFn: () => getPlanningsOptions(formIds),
         options: {
             select: (data: Planning[]) => {
                 return data?.map(planning => {
                     return {
                         value: planning.id,
                         label: planning.name,
+                        original: planning,
                     };
                 });
             },

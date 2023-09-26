@@ -158,7 +158,6 @@ export const OrgUnitForm: FunctionComponent<Props> = ({
                     isFetchingOrgUnitTypes={isFetchingOrgUnitTypes}
                     isFetchingGroups={isFetchingGroups}
                     referenceInstances={orgUnit.reference_instances}
-                    setFieldErrors={setFieldErrors}
                 />
             </Grid>
         </Box>

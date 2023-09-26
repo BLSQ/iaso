@@ -498,6 +498,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if org_unit.catchment:
                     res["catchment"] = geojson_queryset(queryset, geometry_field="catchment")
 
+            res["reference_instances"] = [instance.as_full_model() for instance in org_unit.reference_instances.all()]
             return Response(res)
         else:
             return Response(errors, status=400)

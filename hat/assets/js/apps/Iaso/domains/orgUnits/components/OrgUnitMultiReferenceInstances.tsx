@@ -8,6 +8,8 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 
+import { Link } from 'react-router';
+import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import InstanceFileContent from '../../instances/components/InstanceFileContent';
 import MESSAGES from '../messages';
@@ -22,6 +24,11 @@ const useStyles = makeStyles(() => ({
     formContents: {
         width: '100%',
     },
+    link: {
+        textDecoration: 'underline',
+        '&:active': { textDecoration: 'none' },
+        '&:hover': { textDecoration: 'none !important' },
+    },
 }));
 
 export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
@@ -29,14 +36,20 @@ export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+
     const [active, setActive] = useState<Instance>(referenceInstances[0]);
+
     const options = referenceInstances.map(instance => ({
         value: instance.id,
         label: instance.form_name,
     }));
+    const url = `${baseUrls.instanceDetail}/instanceId/${active.id}/referenceFormId/${active.form_id}`;
+    const title = `${formatMessage(MESSAGES.detailTitle)} - ${
+        active.form_name
+    }`;
+
     const handleChange = value => {
-        const instance = referenceInstances.filter(i => i.id === value)[0];
-        setActive(instance);
+        setActive(referenceInstances.filter(i => i.id === value)[0]);
     };
 
     return (
@@ -54,14 +67,13 @@ export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
                             value={active.id}
                         />
                     )}
-
                     <br />
-
                     <WidgetPaper
-                        id="form-contents"
-                        title={`${formatMessage(MESSAGES.detailTitle)} - ${
-                            active.form_name
-                        }`}
+                        title={
+                            <Link to={url} className={classes.link}>
+                                {title}
+                            </Link>
+                        }
                         IconButton={IconButtonComponent}
                         iconButtonProps={{
                             onClick: () =>

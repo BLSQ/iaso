@@ -2,7 +2,6 @@
 import React, { FunctionComponent } from 'react';
 
 import { Box, Button, Grid } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
 
 import { makeStyles } from '@material-ui/core/styles';
 
@@ -10,18 +9,14 @@ import {
     useSafeIntl,
     FormControl as FormControlComponent,
 } from 'bluesquare-components';
-import { useSaveOrgUnit } from '../hooks';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { fetchEditUrl } from '../../instances/actions';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstanceActions';
 
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
-import { Actions } from './OrgUnitActions';
 
-import { OrgUnitState, Group, OrgUnit, Action } from '../types/orgUnit';
+import { OrgUnitState, Group, OrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
@@ -65,8 +60,6 @@ type Props = {
     isFetchingOrgUnitTypes: boolean;
     isFetchingGroups: boolean;
     referenceInstances: Instance[];
-    // eslint-disable-next-line no-unused-vars
-    setFieldErrors: (errors: string) => void;
     orgUnit: OrgUnit;
 };
 
@@ -83,34 +76,15 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     isFetchingOrgUnitTypes,
     isFetchingGroups,
     referenceInstances,
-    setFieldErrors,
     orgUnit,
 }) => {
-    const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
-
-    const { formId } = params;
-    const { referenceFormId } = params;
-    const { instanceId } = params;
-
-    const showSpeedDialsActions =
-        referenceInstances ||
-        (formId === referenceFormId &&
-            Boolean(formId) &&
-            Boolean(referenceFormId));
 
     const isNewOrgunit = params.orgUnitId === '0';
     const isSaveDisabled =
         orgUnitState.name.value === '' ||
         orgUnitState.org_unit_type_id.value === null;
-
-    const handleActionSelected = (action: Action, instance: Instance) => {
-        if (action.id === 'instanceEditAction' && instance) {
-            dispatch(fetchEditUrl(instance, window.location));
-        }
-    };
 
     const {
         data: validationStatusOptions,
@@ -119,23 +93,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            {showSpeedDialsActions && (
-                <SpeedDialInstanceActions
-                    speedDialClasses={classes.speedDialTop}
-                    actions={Actions({
-                        orgUnitState,
-                        formId,
-                        referenceFormId,
-                        instanceId,
-                        saveOu,
-                        setFieldErrors,
-                        referenceInstances,
-                    })}
-                    onActionSelected={action =>
-                        handleActionSelected(action, referenceInstances[0])
-                    }
-                />
-            )}
             <Grid item xs={12} md={4}>
                 <InputComponent
                     keyValue="name"
@@ -270,7 +227,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
 
-            {referenceInstances!.length && (
+            {referenceInstances.length > 0 && (
                 <OrgUnitMultiReferenceInstances
                     referenceInstances={referenceInstances}
                 />

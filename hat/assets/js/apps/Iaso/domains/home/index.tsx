@@ -1,20 +1,26 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent, useCallback, useContext } from 'react';
 import {
     Box,
     makeStyles,
     Container,
     Typography,
     Button,
+    IconButton,
+    Grid,
 } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
+import MenuIcon from '@material-ui/icons/Menu';
+import { useDispatch } from 'react-redux';
+
 // @ts-ignore
 import iasoBg from '../../images/iaso-bg.jpg';
 import { LogoSvg } from '../app/components/LogoSvg';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { MESSAGES } from './messages';
 import { LangSwitch } from './components/LangSwitch';
-import { useGetCurrentUser } from './hooks/useGetCurrentUser';
-import TopBar from '../../components/nav/TopBarComponent';
+import { useCurrentUser } from '../../utils/usersUtils';
+import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
+import SidebarMenuComponent from '../app/components/SidebarMenuComponent';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -49,21 +55,53 @@ const useStyles = makeStyles(theme => ({
         textAlign: 'center',
         marginTop: theme.spacing(2),
     },
+    topMenu: {
+        position: 'absolute',
+        top: 0,
+        left: 0,
+    },
 }));
 const Home: FunctionComponent = () => {
     const classes = useStyles();
-    const { data: currentUser, isFetching } = useGetCurrentUser();
+    const currentUser = useCurrentUser();
     const { formatMessage } = useSafeIntl();
     const { LOGO_PATH, APP_TITLE } = useContext(ThemeConfigContext);
     // @ts-ignore
     const staticUrl = window.STATIC_URL ?? '/static/';
-    if (isFetching) {
+    const dispatch = useDispatch();
+    const toggleSidebar = useCallback(
+        () => dispatch(toggleSidebarMenu()),
+        [dispatch],
+    );
+    if (currentUser === null) {
         return null;
     }
     return (
         <Box className={classes.root}>
+            <Grid className={classes.topMenu} container spacing={2}>
+                <Grid container item xs={6} justifyContent="flex-start">
+                    {currentUser && (
+                        <>
+                            <IconButton
+                                // className={classes.menuButton}
+                                color="inherit"
+                                aria-label="Menu"
+                                onClick={toggleSidebar}
+                                id="menu-button"
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                            <SidebarMenuComponent location={window.location} />
+                        </>
+                    )}
+                </Grid>
+                <Grid container item xs={6} justifyContent="flex-end">
+                    <Box p={2} display="flex">
+                        <LangSwitch />
+                    </Box>
+                </Grid>
+            </Grid>
             <Container maxWidth="md">
-                {currentUser && <TopBar title="home" />}
                 <Box
                     justifyContent="center"
                     alignItems="center"
@@ -72,9 +110,6 @@ const Home: FunctionComponent = () => {
                     height="100vh"
                 >
                     <Box>
-                        <Box justifyContent="flex-end" display="flex">
-                            <LangSwitch />
-                        </Box>
                         <Box className={classes.logo}>
                             {APP_TITLE !== 'Iaso' && LOGO_PATH && (
                                 <img

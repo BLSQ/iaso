@@ -7,7 +7,7 @@ import {
 export const usersInitialState = {
     list: [],
     current: null,
-    fetching: false,
+    fetching: true,
     count: 0,
     pages: 1,
 };

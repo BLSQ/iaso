@@ -8,7 +8,9 @@ import { setCurrentUser } from '../../users/actions';
 const getCurrentUser = (): Promise<Profile> => {
     return getRequest('/api/profiles/me/');
 };
-export const useGetCurrentUser = (): UseQueryResult<Profile, Error> => {
+export const useGetCurrentUser = (
+    enabled: boolean,
+): UseQueryResult<Profile, Error> => {
     const queryKey: any[] = ['currentUser'];
     const dispatch = useDispatch();
     // @ts-ignore
@@ -20,8 +22,15 @@ export const useGetCurrentUser = (): UseQueryResult<Profile, Error> => {
             onSuccess: data => {
                 dispatch(setCurrentUser(data));
             },
-            onError: () => console.warn('User not connected'),
+            onError: () => {
+                console.warn('User not connected');
+
+                dispatch(setCurrentUser(undefined));
+            },
             retry: false,
+            enabled,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };

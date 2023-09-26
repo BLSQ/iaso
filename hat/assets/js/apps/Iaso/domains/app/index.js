@@ -1,5 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Router, Link, Route } from 'react-router';
 import { SnackbarProvider } from 'notistack';
@@ -8,8 +7,7 @@ import SnackBarContainer from '../../components/snackBars/SnackBarContainer';
 import LocalizedApp from './components/LocalizedAppComponent';
 
 import { getRoutes } from '../../routing/redirections.tsx';
-import { useCurrentUser, useHasNoAccount } from '../../utils/usersUtils.ts';
-import { fetchCurrentUser } from '../users/actions';
+import { useHasNoAccount } from '../../utils/usersUtils.ts';
 
 import {
     routeConfigs,
@@ -21,6 +19,7 @@ import {
 import ProtectedRoute from '../users/components/ProtectedRoute';
 import Home from '../home/index.tsx';
 import { baseUrls } from '../../constants/urls';
+import { useGetCurrentUser } from '../home/hooks/useGetCurrentUser.ts';
 
 const getBaseRoutes = (plugins, hasNoAccount, HomeComponent) => {
     const routesWithAccount = [
@@ -85,9 +84,9 @@ const getBaseRoutes = (plugins, hasNoAccount, HomeComponent) => {
 };
 
 export default function App({ history, userHomePage, plugins }) {
-    const dispatch = useDispatch();
+    // const dispatch = useDispatch();
     // on first load this is undefined, it will be updated when fetchCurrentUser is done
-    const currentUser = useCurrentUser();
+
     const hasNoAccount = useHasNoAccount();
 
     const HomeComponent = useMemo(() => {
@@ -107,13 +106,11 @@ export default function App({ history, userHomePage, plugins }) {
         () => getBaseRoutes(plugins, hasNoAccount, HomeComponent),
         [plugins, hasNoAccount, HomeComponent],
     );
-    // launch fetch user only once on mount
-    useEffect(() => {
-        if (!currentRoute?.allowAnonymous) {
-            dispatch(fetchCurrentUser());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dispatch]);
+    const { data: currentUser, isFetching: isFetchingCurrentUser } =
+        useGetCurrentUser(
+            !currentRoute?.allowAnonymous ||
+                currentRoute?.baseUrl === baseUrls.home,
+        );
     // routes should only change id currentUser has changed
     const routes = useMemo(() => {
         if (!currentUser && !currentRoute?.allowAnonymous) {
@@ -123,7 +120,11 @@ export default function App({ history, userHomePage, plugins }) {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser, hasNoAccount]);
 
-    if ((!currentUser || routes.length === 0) && !currentRoute?.allowAnonymous)
+    if (
+        ((!currentUser || routes.length === 0) &&
+            !currentRoute?.allowAnonymous) ||
+        (isFetchingCurrentUser && currentRoute?.baseUrl === baseUrls.home)
+    )
         return null;
     return (
         <LocalizedApp>

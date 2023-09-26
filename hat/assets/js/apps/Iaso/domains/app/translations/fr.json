@@ -794,7 +794,7 @@
     "iaso.periods.end": "Période de fin",
     "iaso.periods.start": "Période de début",
     "iaso.permission.reports": "Appareils",
-    "iaso.permissions.assignments": "Planning",
+    "iaso.permissions.assignments": "Attributions",
     "iaso.permissions.completeness": "Complétude des exports",
     "iaso.permissions.completeness_stats": "Statistiques de complétude",
     "iaso.permissions.dataTasks": "Batch monitoring",

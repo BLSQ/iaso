@@ -5,10 +5,12 @@ import {
     Switch,
     Tooltip,
     makeStyles,
+    Grid,
 } from '@material-ui/core';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';
@@ -74,13 +76,8 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
         if (toolTipMessageObject !== undefined) {
             title = formatMessage(toolTipMessageObject);
         }
-        let permissionLabel = (
-            <span>
-                {formatMessage(PERMISSIONS_MESSAGES[permissionCodeName])}
-            </span>
-        );
         if (title) {
-            permissionLabel = (
+            return (
                 <Tooltip
                     title={title}
                     interactive
@@ -88,17 +85,11 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     placement="right-start"
                     arrow
                 >
-                    <span>
-                        {formatMessage(
-                            PERMISSIONS_MESSAGES[permissionCodeName],
-                        )}
-                    </span>
+                    <HelpOutlineIcon color="primary" />
                 </Tooltip>
             );
         }
-        return PERMISSIONS_MESSAGES[permissionCodeName]
-            ? permissionLabel
-            : permissionCodeName;
+        return '';
     };
     const permissions = useMemo(
         () => data?.permissions ?? [],
@@ -120,27 +111,39 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     ),
                 )
                 .map(p => (
-                    <div key={p.id}>
-                        <FormControlLabel
-                            control={
-                                <Switch
-                                    className="permission-checkbox"
-                                    id={`permission-checkbox-${p.codename}`}
-                                    checked={Boolean(
-                                        userRolePermissions.find(
-                                            up => up.codename === p.codename,
-                                        ),
-                                    )}
-                                    onChange={e =>
-                                        setPermissions(p, e.target.checked)
+                    <Grid container direction="row" spacing={2}>
+                        <Grid item xs={8}>
+                            <div key={p.id}>
+                                <FormControlLabel
+                                    control={
+                                        <Switch
+                                            className="permission-checkbox"
+                                            id={`permission-checkbox-${p.codename}`}
+                                            checked={Boolean(
+                                                userRolePermissions.find(
+                                                    up =>
+                                                        up.codename ===
+                                                        p.codename,
+                                                ),
+                                            )}
+                                            onChange={e =>
+                                                setPermissions(
+                                                    p,
+                                                    e.target.checked,
+                                                )
+                                            }
+                                            name={p.codename}
+                                            color="primary"
+                                        />
                                     }
-                                    name={p.codename}
-                                    color="primary"
+                                    label={getPermissionLabel(p.codename)}
                                 />
-                            }
-                            label={getPermissionToolTip(p.codename)}
-                        />
-                    </div>
+                            </div>
+                        </Grid>
+                        <Grid item xs={2}>
+                            {getPermissionToolTip(p.codename)}
+                        </Grid>
+                    </Grid>
                 ))}
         </Box>
     );

@@ -738,6 +738,7 @@
     "iaso.orgUnits.instances_count": "Number of submissions",
     "iaso.orgUnits.missingGeolocation": "Cannot find an org unit with geolocation",
     "iaso.orgUnits.multiEditTitle": "Edit selection",
+    "iaso.orgUnits.MultiReferenceInstancesLabel": "Reference submissions",
     "iaso.orgUnits.multiSelectionAction": "Edit selected org units",
     "iaso.orgUnits.name": "Name",
     "iaso.orgUnits.new": "Create an org unit",

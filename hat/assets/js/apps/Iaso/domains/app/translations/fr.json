@@ -738,6 +738,7 @@
     "iaso.orgUnits.instances_count": "Nombre d'enregistrements",
     "iaso.orgUnits.missingGeolocation": "Aucune unités d'organisation trouvée avec une localisation",
     "iaso.orgUnits.multiEditTitle": "Editer la sélection",
+    "iaso.orgUnits.MultiReferenceInstancesLabel": "Soumissions de référence",
     "iaso.orgUnits.multiSelectionAction": "Editer les unités d'org. sélectionnées",
     "iaso.orgUnits.name": "Nom",
     "iaso.orgUnits.new": "Créer une unité d'org.",

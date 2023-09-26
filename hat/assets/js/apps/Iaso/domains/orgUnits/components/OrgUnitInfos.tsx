@@ -9,7 +9,6 @@ import { makeStyles } from '@material-ui/core/styles';
 import {
     useSafeIntl,
     FormControl as FormControlComponent,
-    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
 import { useSaveOrgUnit } from '../hooks';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -17,8 +16,6 @@ import { commaSeparatedIdsToArray } from '../../../utils/forms';
 import { fetchEditUrl } from '../../instances/actions';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-import InstanceFileContent from '../../instances/components/InstanceFileContent';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstanceActions';
 
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
@@ -28,6 +25,7 @@ import { OrgUnitState, Group, OrgUnit, Action } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -35,9 +33,6 @@ const useStyles = makeStyles(theme => ({
     },
     marginLeft: {
         marginLeft: '8px',
-    },
-    formContents: {
-        width: '100%',
     },
 }));
 
@@ -137,7 +132,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         referenceInstances,
                     })}
                     onActionSelected={action =>
-                        handleActionSelected(action, referenceInstances)
+                        handleActionSelected(action, referenceInstances[0])
                     }
                 />
             )}
@@ -275,29 +270,11 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
 
-            {referenceInstances.map(referenceInstance => (
-                <Grid container item xs={12} md={8}>
-                    <Box mt={4} className={classes.formContents}>
-                        <WidgetPaper
-                            id="form-contents"
-                            title={formatMessage(MESSAGES.detailTitle)}
-                            IconButton={IconButtonComponent}
-                            iconButtonProps={{
-                                onClick: () =>
-                                    window.open(
-                                        referenceInstance.file_url,
-                                        '_blank',
-                                    ),
-                                icon: 'xml',
-                                color: 'secondary',
-                                tooltipMessage: MESSAGES.downloadXml,
-                            }}
-                        >
-                            <InstanceFileContent instance={referenceInstance} />
-                        </WidgetPaper>
-                    </Box>
-                </Grid>
-            ))}
+            {referenceInstances!.length && (
+                <OrgUnitMultiReferenceInstances
+                    referenceInstances={referenceInstances}
+                />
+            )}
         </Grid>
     );
 };

@@ -1,16 +1,19 @@
 from django.db.models import Q
 from rest_framework import status, permissions
 from rest_framework.response import Response
+from iaso.api.query_params import APP_ID, ORDER, PROJECT, SEARCH
 
 from iaso.models import OrgUnitType
 from .serializers import OrgUnitTypeSerializerV1, OrgUnitTypeSerializerV2
 from ..common import ModelViewSet
 
+DEFAULT_ORDER = "name"
+
 
 class OrgUnitTypeViewSet(ModelViewSet):
     """Org unit types API (deprecated)
 
-    This endpoint it deprecated, Use /v2/orgunittypes/ instead, this is kept only  for compatiblity with the mobile
+    This endpoint it deprecated, Use /v2/orgunittypes/ instead, this is kept only  for compatibility with the mobile
     application
 
     Confusingly in this version  `sub_unit_types` map to allow_creating_sub_unit_types.
@@ -32,14 +35,14 @@ class OrgUnitTypeViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = OrgUnitType.objects.filter_for_user_and_app_id(
-            self.request.user, self.request.query_params.get("app_id")
+            self.request.user, self.request.query_params.get(APP_ID)
         )
 
-        search = self.request.query_params.get("search", None)
+        search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
 
-        orders = self.request.query_params.get("order", "name").split(",")
+        orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
         return queryset.order_by("depth").distinct().order_by(*orders)
 
@@ -65,13 +68,17 @@ class OrgUnitTypeViewSetV2(ModelViewSet):
 
     def get_queryset(self):
         queryset = OrgUnitType.objects.filter_for_user_and_app_id(
-            self.request.user, self.request.query_params.get("app_id")
+            self.request.user, self.request.query_params.get(APP_ID)
         )
 
-        search = self.request.query_params.get("search", None)
+        project = self.request.query_params.get(PROJECT, None)
+        if project:
+            queryset = queryset.filter(projects__id=project)
+
+        search = self.request.query_params.get(SEARCH, None)
         if search:
             queryset = queryset.filter(Q(name__icontains=search) | Q(short_name__icontains=search))
 
-        orders = self.request.query_params.get("order", "name").split(",")
+        orders = self.request.query_params.get(ORDER, DEFAULT_ORDER).split(",")
 
         return queryset.order_by("depth").distinct().order_by(*orders)

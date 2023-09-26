@@ -22,7 +22,7 @@ import {
     SaveTeamQuery,
     useSaveTeam,
 } from '../hooks/requests/useSaveTeam';
-import { useGetProjectsDropDown } from '../hooks/requests/useGetProjectsDropDown';
+import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
 import { useGetProfilesDropdown } from '../hooks/requests/useGetProfilesDropdown';
 import { useGetTeamsDropdown } from '../hooks/requests/useGetTeams';
 import {

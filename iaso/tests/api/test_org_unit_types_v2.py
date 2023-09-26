@@ -1,5 +1,6 @@
 import typing
 
+from iaso.api.query_params import PROJECT
 from iaso import models as m
 from iaso.test import APITestCase
 
@@ -7,33 +8,45 @@ from iaso.test import APITestCase
 class OrgUnitTypesAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        ghi = m.Account.objects.create(name="Global Health Initiative")
-        wha = m.Account.objects.create(name="Worldwide Health Aid")
-        cls.ead = m.Project.objects.create(name="End All Diseases", account=ghi)
-        cls.esd = m.Project.objects.create(name="End Some Diseases", account=wha)
+        cls.data_source_1 = data_source_1 = m.DataSource.objects.create(name="DataSource1")
+        version_1 = m.SourceVersion.objects.create(number=1, data_source=data_source_1)
+        ghi = m.Account.objects.create(name="Global Health Initiative", default_version=version_1)
+        cls.ead = ead = m.Project.objects.create(name="End All Diseases", account=ghi)
+        cls.esd = esd = m.Project.objects.create(name="End Some Diseases", account=ghi)
+        cls.data_source_2 = data_source_2 = m.DataSource.objects.create(name="DataSource2")
+        version_2 = m.SourceVersion.objects.create(number=1, data_source=data_source_2)
+
+        wha = m.Account.objects.create(name="Worldwide Health Aid", default_version=version_2)
+        cls.wrong_project = wrong_project = m.Project.objects.create(name="End No Diseases", account=wha)
 
         cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
-        cls.reference_form = m.Form.objects.create(
+        cls.reference_form = reference_form = m.Form.objects.create(
             name="Hydroponics study", period_type=m.MONTH, single_per_period=True
         )
-        cls.reference_form_update = m.Form.objects.create(
+        cls.reference_form_update = reference_form_update = m.Form.objects.create(
             name="Reference form update", period_type=m.MONTH, single_per_period=True
         )
-        cls.reference_form_wrong_project = m.Form.objects.create(
+        cls.reference_form_wrong_project = reference_form_wrong_project = m.Form.objects.create(
             name="Reference form with wrong project", period_type=m.MONTH, single_per_period=True
         )
-        cls.org_unit_type_1 = m.OrgUnitType.objects.create(
-            name="Plop", short_name="Pl", reference_form_id=cls.reference_form_update.id
+        cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(
+            name="Plop", short_name="Pl", reference_form_id=reference_form_update.id
         )
-        cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
-        cls.ead.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
+        cls.org_unit_type_2 = org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
+        ead.unit_types.set([org_unit_type_1, org_unit_type_2])
 
-        cls.ead.forms.add(cls.reference_form)
-        cls.ead.forms.add(cls.reference_form_update)
-        cls.ead.save()
+        ead.forms.add(reference_form)
+        ead.forms.add(reference_form_update)
+        ead.save()
 
-        cls.esd.forms.add(cls.reference_form_wrong_project)
-        cls.esd.save()
+        cls.org_unit_type_3 = org_unit_type_3 = m.OrgUnitType.objects.create(name="3", short_name="3")
+        cls.org_unit_type_4 = org_unit_type_4 = m.OrgUnitType.objects.create(name="4", short_name="4")
+        cls.org_unit_type_5 = org_unit_type_5 = m.OrgUnitType.objects.create(name="5", short_name="5")
+        esd.unit_types.set([org_unit_type_3, org_unit_type_4, org_unit_type_5])
+        esd.save()
+
+        wrong_project.forms.add(reference_form_wrong_project)
+        wrong_project.save()
 
     def test_org_unit_types_list_without_auth_or_app_id(self):
         """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
@@ -43,14 +56,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertValidOrgUnitTypeListData(response.json(), 0)
 
     def test_org_unit_types_list_with_auth(self):
-        """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
+        """GET /orgunittypes/ with auth but empty app id should return list of org unit types"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/v2/orgunittypes/")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
-        self.assertValidOrgUnitTypeListData(response_data, 2)
+        self.assertValidOrgUnitTypeListData(response_data, 5)
         for org_unit_type_data in response_data["orgUnitTypes"]:
             self.assertEqual(len(org_unit_type_data["projects"]), 1)
 
@@ -67,6 +80,22 @@ class OrgUnitTypesAPITestCase(APITestCase):
         response = self.client.get(f"/api/v2/orgunittypes/{self.org_unit_type_1.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
+
+    def test_org_unit_types_filter_by_project_retrieve_ok(self):
+        f"""GET /orgunittypes/?{PROJECT}=... happy path"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/v2/orgunittypes/", {PROJECT: self.ead.id})
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitTypeListData(response.json(), 2)
+
+    def test_org_unit_types_filter_by_wrong_data_source_retrieve_ok(self):
+        f"""GET /orgunittypes/?{PROJECT}=... wrong id"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/v2/orgunittypes/", {PROJECT: -1})
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitTypeListData(response.json(), 0)
 
     def test_org_unit_type_create_no_auth(self):
         """POST /orgunittypes/ without auth: 403"""
@@ -96,7 +125,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "name": "Bimbam",
                 "short_name": "Bi",
                 "depth": 1,
-                "project_ids": [self.esd.id],
+                "project_ids": [self.wrong_project.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
             },

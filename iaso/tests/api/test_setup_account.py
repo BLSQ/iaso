@@ -135,9 +135,9 @@ class SetupAccountApiTestCase(APITestCase):
         response = self.client.post("/api/setupaccount/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
 
-        created_account = m.Account.objects.filter(name="initial_project_account test")
-        created_project = m.Project.objects.filter(name="initial_project_account test project")
-        created_data_source = m.DataSource.objects.filter(name="initial_project_account test")
+        created_account = m.Account.objects.filter(name="initial_project_account test-appid")
+        created_project = m.Project.objects.filter(name="initial_project_account test-appid project")
+        created_data_source = m.DataSource.objects.filter(name="initial_project_account test-appid")
         self.assertEqual(len(created_project), 1)
 
         project = created_project.first()

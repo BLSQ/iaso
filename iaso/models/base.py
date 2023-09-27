@@ -1325,6 +1325,9 @@ class ExportLog(models.Model):
 
 
 class ExportStatus(models.Model):
+    class Meta:
+        verbose_name_plural = "Exports status"
+
     id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
 
     export_request = models.ForeignKey(ExportRequest, on_delete=models.CASCADE)

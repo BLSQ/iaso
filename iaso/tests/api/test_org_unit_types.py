@@ -117,7 +117,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
-                "reference_form_id": 100,
+                "reference_form_id": 100,  # The old field should be ignored.
             },
             format="json",
         )

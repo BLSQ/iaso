@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="orgunittype",
             name="reference_forms",
-            field=models.ManyToManyField(blank=True, related_name="org_unit_type_references", to="iaso.Form"),
+            field=models.ManyToManyField(blank=True, related_name="reference_of_org_unit_types", to="iaso.Form"),
         ),
         migrations.CreateModel(
             name="OrgUnitReferenceInstance",

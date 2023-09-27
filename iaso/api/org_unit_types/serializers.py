@@ -41,7 +41,7 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
     V1 kept for mobile where sub_types is actually `allow_creating_sub_unit_types`
 
     As requested by the mobile app development team, the `reference_forms` field
-    is not exposed on this endpoint.
+    is not exposed here but on `FormSerializer`.
     """
 
     class Meta:

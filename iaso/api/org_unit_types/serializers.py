@@ -39,6 +39,9 @@ def validate_reference_forms(data):
 class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
     """
     V1 kept for mobile where sub_types is actually `allow_creating_sub_unit_types`
+
+    As requested by the mobile app development team, the `reference_forms` field
+    is not exposed on this endpoint.
     """
 
     class Meta:
@@ -55,8 +58,6 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
             "units_count",
-            "reference_forms",
-            "reference_forms_ids",
         ]
         read_only_fields = ["id", "projects", "sub_unit_types", "created_at", "updated_at", "units_count"]
 
@@ -75,15 +76,6 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     units_count = serializers.SerializerMethodField(read_only=True)
-    reference_forms = serializers.SerializerMethodField(read_only=True)
-    reference_forms_ids: serializers.PrimaryKeyRelatedField = serializers.PrimaryKeyRelatedField(
-        source="reference_forms",
-        write_only=True,
-        required=False,
-        many=True,
-        allow_empty=True,
-        queryset=Form.objects.all(),
-    )
 
     # Fixme make this directly in db !
     def get_units_count(self, obj: OrgUnitType):
@@ -92,14 +84,6 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         ).filter(Q(validated=True) & Q(org_unit_type__id=obj.id))
         orgunits_count = orgUnits.count()
         return orgunits_count
-
-    def get_reference_forms(self, obj: OrgUnitType):
-        return FormSerializer(
-            obj.reference_forms.all(),
-            fields=["id", "form_id", "created_at", "updated_at", "projects"],
-            many=True,
-            context=self.context,
-        ).data
 
     def get_sub_unit_types(self, obj: OrgUnitType):
         # Filter sub unit types to show only visible items for the current app id
@@ -135,14 +119,7 @@ class OrgUnitTypeSerializerV1(DynamicFieldsModelSerializer):
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError({"project_ids": "Invalid project ids"})
-        validate_reference_forms(data)
         return data
-
-    def create(self, validated_data):
-        # Remove fields that are no longer fields of the `OrgUnitType` model.
-        validated_data.pop("reference_form", None)
-        validated_data.pop("reference_form_id", None)
-        return super().create(validated_data)
 
 
 class OrgUnitTypeSerializerV2(DynamicFieldsModelSerializer):

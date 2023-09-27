@@ -227,7 +227,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
 
-            {referenceInstances.length > 0 && (
+            {referenceInstances && referenceInstances.length > 0 && (
                 <OrgUnitMultiReferenceInstances
                     referenceInstances={referenceInstances}
                 />

@@ -127,7 +127,7 @@ class SetupAccountApiTestCase(APITestCase):
         self.client.force_authenticate(self.admin)
 
         data = {
-            "account_name": "initial_project_account test",
+            "account_name": "initial_project_account test-appid",
             "user_username": "username",
             "password": "password",
         }
@@ -142,7 +142,7 @@ class SetupAccountApiTestCase(APITestCase):
 
         project = created_project.first()
         # Check if the project has the correct app_id
-        self.assertEqual(project.app_id, "initial_project_account-test")
+        self.assertEqual(project.app_id, "initial_project_account.test.appid")
         # Check if the project is linked to the correct account
         self.assertEqual(project.account, created_account.first())
         # Check if the project is linked to the correct data source

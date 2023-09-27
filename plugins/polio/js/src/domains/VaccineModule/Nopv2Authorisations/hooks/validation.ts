@@ -33,6 +33,11 @@ yup.addMethod(
 export const useNopv2AuthorisationsSchema = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
+        start_date: yup
+            .date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable()
+            .required(formatMessage(MESSAGES.fieldRequired)),
         expiration_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

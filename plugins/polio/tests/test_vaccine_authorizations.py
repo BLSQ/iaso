@@ -270,6 +270,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "status": "VALIDATED",
                 "comment": "validated auth",
                 "expiration_date": "2024-03-01",
+                "start_date": "2024-02-01",
             },
         )
 
@@ -291,6 +292,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(response.data[0]["status"], "ONGOING")
         self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2024, 3, 1))
         self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 4, 1))
+        self.assertEqual(response.data[0]["start_date"], datetime.date(2024, 2, 1))
 
     def test_filters(self):
         self.client.force_authenticate(self.user_1)

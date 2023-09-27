@@ -528,6 +528,23 @@ class OrgUnit(TreeModel):
 
 
 class OrgUnitReferenceInstance(models.Model):
+    """
+    Intermediary model between `OrgUnit` and `Instance`.
+    Used to flag a form's Instance` as "reference instance".
+
+    The "reference" mechanism works like this:
+
+    - a `Form` can be flagged as "reference form" for a `OrgUnitType`
+    - a form's `Instance` can be flagged as "reference instance" for a
+        OrgUnit` if it's an instance of a "reference form"
+
+    The logic to flag a "reference instance" is implemented
+    in the `Instance` class.
+
+    Note: if a "reference form" is removed from a `OrgUnitType`,
+    we do nothing with the related "reference instances".
+    """
+
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     form = models.ForeignKey("Form", on_delete=models.CASCADE)
     instance = models.ForeignKey("Instance", on_delete=models.CASCADE)

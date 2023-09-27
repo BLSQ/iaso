@@ -634,7 +634,7 @@ def import_data(instances, user, app_id):
                 uuid=entityUuid, entity_type_id=entityTypeId, account=project.account
             )
             instance.entity = entity
-            # If instance's form is a reference form, set the instance as reference_instance
+            # If instance's form is the same as the type reference form, set the instance as reference_instance
             if entity.entity_type.reference_form == instance.form:
                 entity.attributes = instance
                 entity.save()

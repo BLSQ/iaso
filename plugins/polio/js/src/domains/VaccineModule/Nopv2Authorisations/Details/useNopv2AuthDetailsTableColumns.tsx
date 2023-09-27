@@ -16,6 +16,13 @@ export const useNopv2AuthDetailsTableColumns = (): Column[] => {
                 sortable: true,
             },
             {
+                Header: formatMessage(MESSAGES.vaccineAuthStartingDate),
+                accessor: 'start_date',
+                id: 'start_date',
+                sortable: true,
+                Cell: DateCell,
+            },
+            {
                 Header: formatMessage(MESSAGES.updated_at),
                 accessor: 'updated_at',
                 sortable: true,

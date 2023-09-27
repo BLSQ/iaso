@@ -54,6 +54,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
+            "start_date",
             "expiration_date",
             "created_at",
             "updated_at",
@@ -212,6 +213,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_entry.country.pk,
                         "name": last_entry.country.name,
                     },
+                    "start_date": last_validated_or_expired.start_date,
                     "current_expiration_date": last_validated_or_expired.expiration_date,
                     "next_expiration_date": next_expiration_auth.expiration_date
                     if next_expiration_auth.expiration_date > last_validated_or_expired.expiration_date
@@ -230,6 +232,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_entry.country.pk,
                         "name": last_entry.country.name,
                     },
+                    "start_date": last_entry.start_date,
                     "current_expiration_date": None,
                     "next_expiration_date": next_expiration_auth.expiration_date,
                     "quantity": None,
@@ -246,6 +249,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_validated_or_expired.country.pk,
                         "name": last_validated_or_expired.country.name,
                     },
+                    "start_date": last_validated_or_expired.start_date,
                     "current_expiration_date": last_validated_or_expired.expiration_date,
                     "next_expiration_date": None,
                     "quantity": last_validated_or_expired.quantity,

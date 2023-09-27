@@ -48,6 +48,7 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
     const formik = useFormik({
         initialValues: {
             expiration_date: authorisationData?.expiration_date,
+            start_date: authorisationData?.start_date,
             quantity: authorisationData?.quantity,
             country: countryId,
             comment: authorisationData?.comment,
@@ -107,6 +108,15 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                         />
                     </Box>
                 )}
+                <Field
+                    label={formatMessage(MESSAGES.vaccineAuthStartingDate)}
+                    name="start_date"
+                    component={DateInput}
+                    fullWidth
+                    clearable
+                    required
+                    withMarginTop
+                />
                 <Field
                     label={formatMessage(MESSAGES.expirationDate)}
                     name="expiration_date"

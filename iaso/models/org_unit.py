@@ -377,7 +377,6 @@ class OrgUnit(TreeModel):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
-            "reference_instances_ids": [instance.pk for instance in self.reference_instances.all()],
             "aliases": self.aliases,
         }
 
@@ -402,7 +401,6 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
-            "reference_instances_ids": [instance.pk for instance in self.reference_instances.all()],
         }
 
         if hasattr(self, "search_index"):
@@ -435,7 +433,6 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "creator": get_creator_name(self.creator),
-            "reference_instances_ids": [instance.pk for instance in self.reference_instances.all()],
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -525,6 +522,9 @@ class OrgUnit(TreeModel):
         if len(path_components) > 0:
             return "/" + ("/".join(path_components))
         return None
+
+    def get_reference_instances_details_for_api(self) -> list:
+        return [instance.as_full_model() for instance in self.reference_instances.all()]
 
 
 class OrgUnitReferenceInstance(models.Model):

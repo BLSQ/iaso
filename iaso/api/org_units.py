@@ -498,7 +498,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if org_unit.catchment:
                     res["catchment"] = geojson_queryset(queryset, geometry_field="catchment")
 
-            res["reference_instances"] = [instance.as_full_model() for instance in org_unit.reference_instances.all()]
+            res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
             return Response(res)
         else:
             return Response(errors, status=400)
@@ -631,7 +631,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit: OrgUnit = get_object_or_404(self.get_queryset(), pk=pk)
+        org_unit: OrgUnit = get_object_or_404(self.get_queryset().prefetch_related("reference_instances"), pk=pk)
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
@@ -652,9 +652,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
-        # Add the reference instance in the dictionary to return
-        res["reference_instances"] = [instance.as_full_model() for instance in org_unit.reference_instances.all()]
 
+        res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
         return Response(res)
 
 

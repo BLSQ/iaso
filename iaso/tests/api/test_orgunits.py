@@ -501,6 +501,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.get(f"/api/orgunits/{self.jedi_squad_endor.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
+        self.assertEqual(response.data["reference_instances"], [])
 
     def test_org_unit_retrieve_ok_2(self):
         """GET /orgunits/<org_unit_id>/ happy path (user is restricted to a few org units)"""
@@ -509,6 +510,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.get(f"/api/orgunits/{self.jedi_squad_endor.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
+        self.assertEqual(response.data["reference_instances"], [])
 
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
@@ -745,6 +747,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
+        self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertQuerysetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
@@ -784,6 +787,7 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertNotIn(instance, org_unit.reference_instances.all())
+        self.assertEqual(response.data["reference_instances"], [])
 
     def test_edit_org_unit_flag_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id"""
@@ -806,6 +810,7 @@ class OrgUnitAPITestCase(APITestCase):
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.id, old_ou.id)
         self.assertIn(self.instance_related_to_reference_form, ou.reference_instances.all())
+        self.assertEqual(len(response.data["reference_instances"]), 1)
 
     def test_edit_org_unit_flag_wrong_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id with a no reference form"""
@@ -857,6 +862,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.source_ref, "new source ref")
         self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
+        self.assertEqual(response.data["reference_instances"], [])
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """Check for a previous bug if an org unit is already member of a bad group

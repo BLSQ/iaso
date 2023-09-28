@@ -50,6 +50,7 @@ jobs:
         with:
           ref: ${{ steps.get-branch.outputs.branch }}
 
+
       - name: Mark comment as seen
         if: github.event_name != 'workflow_dispatch'
         uses: dkershner6/reaction-action@v1

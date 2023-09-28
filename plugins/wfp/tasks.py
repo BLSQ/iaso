@@ -1,4 +1,5 @@
 from .models import *
+from iaso.models import *
 from datetime import timedelta
 import random
 from celery import shared_task

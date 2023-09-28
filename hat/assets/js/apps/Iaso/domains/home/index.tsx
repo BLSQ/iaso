@@ -81,9 +81,8 @@ const Home: FunctionComponent = () => {
             <Grid className={classes.topMenu} container spacing={2}>
                 <Grid container item xs={6} justifyContent="flex-start">
                     {currentUser && (
-                        <>
+                        <Box m={2}>
                             <IconButton
-                                // className={classes.menuButton}
                                 color="inherit"
                                 aria-label="Menu"
                                 onClick={toggleSidebar}
@@ -92,11 +91,11 @@ const Home: FunctionComponent = () => {
                                 <MenuIcon />
                             </IconButton>
                             <SidebarMenuComponent location={window.location} />
-                        </>
+                        </Box>
                     )}
                 </Grid>
                 <Grid container item xs={6} justifyContent="flex-end">
-                    <Box p={2} display="flex">
+                    <Box p={4} display="flex">
                         <LangSwitch />
                     </Box>
                 </Grid>

@@ -279,6 +279,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Teams',
         id: 'iaso.label.teams',
     },
+    homePageInfos: {
+        defaultMessage: 'Copy/paste the url after "dashboard/"',
+        id: 'iaso.users.homePageInfos',
+    },
 });
 
 export default MESSAGES;

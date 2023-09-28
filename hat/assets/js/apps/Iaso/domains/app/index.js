@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { Router, Link, Route } from 'react-router';
 import { SnackbarProvider } from 'notistack';
@@ -20,6 +20,8 @@ import ProtectedRoute from '../users/components/ProtectedRoute';
 import Home from '../home/index.tsx';
 import { baseUrls } from '../../constants/urls';
 import { useGetCurrentUser } from '../home/hooks/useGetCurrentUser.ts';
+import { dispatch } from '../../redux/store';
+import { redirectToReplace } from '../../routing/actions';
 
 const getBaseRoutes = (plugins, hasNoAccount, HomeComponent) => {
     const routesWithAccount = [
@@ -119,6 +121,18 @@ export default function App({ history, userHomePage, plugins }) {
         return getRoutes(baseRoutes, hasNoAccount, userHomePage);
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser, hasNoAccount]);
+
+    // Redirect on load if user specify a home url in his profile
+    useEffect(() => {
+        if (
+            userHomePage &&
+            userHomePage !== '' &&
+            window.location.pathname.includes(`/${baseUrls.home}/`)
+        ) {
+            dispatch(redirectToReplace(userHomePage));
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     if (
         ((!currentUser || routes.length === 0) &&

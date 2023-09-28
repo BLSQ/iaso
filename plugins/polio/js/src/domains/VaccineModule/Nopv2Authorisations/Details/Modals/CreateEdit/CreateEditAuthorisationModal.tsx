@@ -109,7 +109,7 @@ const CreateEditAuthorisationModal: FunctionComponent<Props> = ({
                     </Box>
                 )}
                 <Field
-                    label={formatMessage(MESSAGES.vaccineAuthStartingDate)}
+                    label={formatMessage(MESSAGES.vaccineAuthStartDate)}
                     name="start_date"
                     component={DateInput}
                     fullWidth

@@ -41,9 +41,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.expirationDate',
         defaultMessage: 'Expiration date',
     },
-    vaccineAuthStartingDate: {
-        id: 'iaso.polio.label.vaccineAuthStartingDate',
-        defaultMessage: 'Starting Date',
+    vaccineAuthStartDate: {
+        id: 'iaso.polio.label.vaccineAuthStartDate',
+        defaultMessage: 'Start Date',
     },
 });
 export default MESSAGES;

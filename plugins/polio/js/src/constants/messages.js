@@ -2362,9 +2362,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.table.label.mostRecentAuthStatus',
         defaultMessage: 'Most recent authorisation status',
     },
-    vaccineAuthStartingDate: {
-        id: 'iaso.polio.table.label.vaccineAuthStartingDate',
-        defaultMessage: 'Starting Date',
+    vaccineAuthStartDate: {
+        id: 'iaso.polio.table.label.vaccineAuthStartDate',
+        defaultMessage: 'Start Date',
     },
     afroMapfilterInfo: {
         id: 'iaso.polio.label.afroMapfilterInfo',

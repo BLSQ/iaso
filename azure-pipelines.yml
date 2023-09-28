@@ -52,7 +52,8 @@ steps:
    architecture: 'x64'
 
 - script: |
-    sudo apt install gdal-bin
+    sudo apt-get update
+    sudo apt --fix-missing install gdal-bin
   displayName: 'install gdal'
 
 - script: |
@@ -103,7 +104,7 @@ steps:
     DJANGO_SUPERUSER_USERNAME: adm
     DJANGO_SUPERUSER_EMAIL: adm@example.com
     DJANGO_SUPERUSER_PASSWORD: $(DJANGO_SUPERUSER_PASSWORD)
-
+    USE_CELERY: true
 - task: PublishTestResults@2
   condition: succeededOrFailed()
   inputs:

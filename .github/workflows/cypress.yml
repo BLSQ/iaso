@@ -35,12 +35,21 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         with:
           ref: ${{ github.event.inputs.ref }}
+
+      - id: 'get-branch'
+        if: github.event_name != 'workflow_dispatch'
+        run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
+        env:
+          REPO: ${{ github.repository }}
+          PR_NO: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Checkout repository (comment)
         uses: actions/checkout@v3
         if: github.event_name != 'workflow_dispatch'
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ steps.get-branch.outputs.branch }}
+
 
       - name: Mark comment as seen
         if: github.event_name != 'workflow_dispatch'
@@ -129,11 +138,19 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref }}
       
+      - id: 'get-branch'
+        if: github.event_name != 'workflow_dispatch'
+        run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
+        env:
+          REPO: ${{ github.repository }}
+          PR_NO: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
       - name: Checkout repository (comment)
         uses: actions/checkout@v3
         if: github.event_name != 'workflow_dispatch'
         with:
-          ref: ${{ github.ref_name }}
+          ref: ${{ steps.get-branch.outputs.branch }}
 
       - name: Use node.js 14
         uses: actions/setup-node@v2

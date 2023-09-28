@@ -7,15 +7,15 @@ django==3.2.21
 django-cors-headers==3.2.1
 djangorestframework==3.11.2
 django-filter==2.4.0
-pandas==1.0.1
-cython==0.29.23
+pandas==1.1.5
+#cython==0.29.36
 pyproj==3.0.1
 geopandas==0.8.0
 Fiona~=1.8.19
-numpy==1.18.1
+numpy==1.19.4
 Pillow==8.3.2
 django-storages==1.9.1
-boto3==1.12.1
+boto3==1.16.63
 geopy==1.21.0
 Shapely==1.7.0
 unidecode==1.2.0
@@ -24,7 +24,7 @@ django-cte==1.2.1
 
 # web server and auth
 oauth2client==4.1.3
-requests==2.22.0
+requests==2.26.0
 
 # postgresql and sql
 psycopg2-binary==2.8.5
@@ -72,6 +72,8 @@ oauth2client==4.1.3
 
 django-contrib-comments~=2.1.0
 django-sql-dashboard~=1.1
+redis==4.6.0
+django-redis==4.12.1
 
 # Allauth for wfp
 django-allauth==0.54.0
@@ -81,3 +83,12 @@ django-json-widget==1.1.1
 
 # Seems to be required to run the project
 django-stubs==1.9.0
+
+gql[requests]==3.4.0
+
+#only used for wfp plugin
+celery==5.3.1
+SQLAlchemy==2.0.19
+
+django-celery-results==2.4.0
+django-celery-beat==2.5.0

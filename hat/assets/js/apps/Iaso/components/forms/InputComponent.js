@@ -176,6 +176,7 @@ class InputComponent extends Component {
                             onChange={newValue => onChange(keyValue, newValue)}
                             value={value}
                             label={labelText}
+                            required={required}
                         />
                     );
                 case 'radio':
@@ -188,6 +189,7 @@ class InputComponent extends Component {
                             onChange={newValue => onChange(keyValue, newValue)}
                             options={options}
                             value={value}
+                            required={required}
                         />
                     );
                 default:

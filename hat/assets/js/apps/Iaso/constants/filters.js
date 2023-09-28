@@ -492,6 +492,7 @@ export const linksFiltersWithPrefix = (
     profiles = [],
     algorithms = [],
     sources = [],
+    isFetchingProfiles = false,
 ) =>
     filtersWithPrefix(
         [
@@ -509,6 +510,7 @@ export const linksFiltersWithPrefix = (
             },
             {
                 ...validator(profiles),
+                loading: isFetchingProfiles,
                 column: 2,
             },
             {

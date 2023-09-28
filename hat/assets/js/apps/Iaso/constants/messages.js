@@ -162,7 +162,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.beneficiaries',
     },
     storages: {
-        defaultMessage: 'Storages',
+        defaultMessage: 'External storage',
         id: 'iaso.label.storages',
     },
     registry: {

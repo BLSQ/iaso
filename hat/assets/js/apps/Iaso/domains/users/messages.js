@@ -269,11 +269,11 @@ const MESSAGES = defineMessages({
     },
     iaso_write_sources: {
         id: 'iaso.permissions.iaso_write_sources',
-        defaultMessage: 'Edit data sources',
+        defaultMessage: 'Geo data sources - Read and Write',
     },
     iaso_page_write: {
         id: 'iaso.permissions.iaso_page_write',
-        defaultMessage: 'Edit page',
+        defaultMessage: 'Web pages management - Read and Write',
     },
     teams: {
         defaultMessage: 'Teams',

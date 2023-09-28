@@ -224,11 +224,11 @@ describe('Duplicate entities list', () => {
                 cy.fillSingleSelect('#algorithm', 1);
                 cy.fillSingleSelect('#similarity', 1);
                 cy.fillMultiSelect('#entity_type', [2, 3], false);
-                cy.fillTreeView('#ou-tree-input', 2, false);
                 cy.get('[data-test="start-date"] input').type(20052010);
                 cy.get('[data-test="end-date"] input').type(25052010);
                 cy.get('#check-box-ignored').check();
                 cy.get('#check-box-merged').check();
+                cy.fillTreeView('#ou-tree-input', 2, false);
 
                 cy.get('[data-test="search-button"]').click();
                 cy.wait('@getDuplicateSearch').then(xhr => {

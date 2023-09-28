@@ -59,7 +59,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Last sync',
     },
     title: {
-        defaultMessage: 'Storages',
+        defaultMessage: 'External storage',
         id: 'iaso.label.storages',
     },
     info: {

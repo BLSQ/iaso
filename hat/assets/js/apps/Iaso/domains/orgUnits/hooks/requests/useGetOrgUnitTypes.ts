@@ -8,19 +8,21 @@ import { DropdownOptions } from '../../../../types/utils';
 import { OrgunitTypesApi } from '../../types/orgunitTypes';
 import { staleTime } from '../../config';
 
-const getOrgunitTypes = (): Promise<OrgunitTypesApi> => {
-    return getRequest('/api/v2/orgunittypes/');
+const getOrgUnitTypes = (project?: number): Promise<OrgunitTypesApi> => {
+    if (project == null) {
+        return getRequest(`/api/v2/orgunittypes/`);
+    }
+    return getRequest(`/api/v2/orgunittypes/?project=${project}`);
 };
 
-export const useGetOrgUnitTypes = (): UseQueryResult<
-    DropdownOptions<string>[],
-    Error
-> => {
-    const queryKey: any[] = ['orgunittypes'];
+export const useGetOrgUnitTypes = (
+    project?: number,
+): UseQueryResult<DropdownOptions<string>[], Error> => {
+    const queryKey: any[] = ['orgunittypes', project];
     // @ts-ignore
     return useSnackQuery({
         queryKey,
-        queryFn: () => getOrgunitTypes(),
+        queryFn: () => getOrgUnitTypes(project),
         options: {
             staleTime,
             select: data => {

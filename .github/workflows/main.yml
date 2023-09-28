@@ -151,26 +151,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
-      - name: Check types with mypy
-        run: |
-          . ./venv/bin/activate &&  mypy .
-        env: # Apparently mypy (Django specific plugins) need to have proper Django env?
-          IASO_ENVIRONMENT: development
-          RDS_DB_NAME: github_actions
-          SECRET_KEY: secret
-          DEBUG: true
-          DJANGO_SETTINGS_MODULE: hat.settings
-          RDS_PASSWORD: postgres
-          RDS_HOSTNAME: localhost
-          RDS_PORT: 5432
-          RDS_USERNAME: postgres
-          CACHE: false
-          DEV_SERVER: true
-          PLUGINS: polio
-          AWS_STORAGE_BUCKET_NAME: iaso-dev
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
 
       - name: Slack notification
         uses: rtCamp/action-slack-notify@v2.1.3

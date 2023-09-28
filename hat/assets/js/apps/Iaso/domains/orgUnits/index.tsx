@@ -52,7 +52,6 @@ import {
 } from './hooks/requests/useGetOrgUnits';
 import { useBulkSaveOrgUnits } from './hooks/requests/useBulkSaveOrgUnits';
 import { useGetApiParams } from './hooks/useGetApiParams';
-import { useGetOrgUnitTypes } from './hooks/requests/useGetOrgUnitTypes';
 // HOOKS
 
 const useStyles = makeStyles(theme => ({
@@ -124,9 +123,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     // CUSTOM HOOKS
 
     // REQUESTS HOOKS
-
-    const { data: orgunitTypes, isFetching: isFetchingOrgunitTypes } =
-        useGetOrgUnitTypes();
     const { mutateAsync: saveMulti, isLoading: isSavingMulti } =
         useBulkSaveOrgUnits();
     const {
@@ -239,9 +235,7 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
     const isLoading =
         isFetchingOrgUnits ||
         isSavingMulti ||
-        (tab === 'map' &&
-            isFetchingOrgUnitsDataLocation &&
-            isFetchingOrgunitTypes);
+        (tab === 'map' && isFetchingOrgUnitsDataLocation);
     return (
         <>
             {isLoading && <LoadingSpinner fixed={false} absolute />}
@@ -253,8 +247,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     onSearch={onSearch}
                     currentTab={tab}
                     paramsSearches={searches || []}
-                    orgunitTypes={orgunitTypes || []}
-                    isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                     counts={(!isLoading && orgUnitsData?.counts) || []}
                     setDeletedTab={setDeletedTab}
                 />
@@ -316,7 +308,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                                 <div className={classes.containerMarginNeg}>
                                     <OrgUnitsMap
                                         getSearchColor={getSearchColor}
-                                        orgUnitTypes={orgunitTypes || []}
                                         orgUnits={
                                             orgUnitsDataLocation || {
                                                 locations: [],

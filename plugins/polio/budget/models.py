@@ -17,13 +17,12 @@ from iaso.models import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
-from plugins.polio.models import Round
+from plugins.polio.models import Round, Campaign
 from plugins.polio.time_cache import time_cache
 
 
 class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
-        from plugins.polio.models import Campaign
 
         campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
         return self.filter(campaign__in=campaigns)

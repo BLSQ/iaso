@@ -11,7 +11,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
 from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission, Paginator
-from iaso.models import Team
 from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,

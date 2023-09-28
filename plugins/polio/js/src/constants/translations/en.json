@@ -44,6 +44,7 @@
     "iaso.polio.error.dateForExpired": "Expired authorisations can only have past dates",
     "iaso.polio.error.label.userNeedsTeam": "You need to be part of a team to create or edit budget events",
     "iaso.polio.error.label.userWithoutTeam": "User should be part of a team",
+    "iaso.polio.error.startDateAfterExpiration": "Start date must be anterior to Expiration date",
     "iaso.polio.form.fieldRequired": "This field is required",
     "iaso.polio.form.invalidDate": "Date is invalid",
     "iaso.polio.form.label.agNopvGroup": "AG/nOPV Group",

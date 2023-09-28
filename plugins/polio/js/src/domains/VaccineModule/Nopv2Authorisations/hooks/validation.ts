@@ -30,6 +30,32 @@ yup.addMethod(
     },
 );
 
+yup.addMethod(
+    yup.date,
+    'checkDateForStart',
+    function checkDateForStart(formatMessage) {
+        return this.test('checkDateForStart', '', (value, context) => {
+            const { path, createError, parent } = context;
+            const startDate = moment(value);
+            const { expiration_date } = parent;
+
+            let errorMessage;
+
+            if (startDate?.isAfter(moment(expiration_date))) {
+                errorMessage = formatMessage(MESSAGES.startDateAfterExpiration);
+            }
+
+            if (errorMessage) {
+                return createError({
+                    path,
+                    message: errorMessage,
+                });
+            }
+            return true;
+        });
+    },
+);
+
 export const useNopv2AuthorisationsSchema = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
@@ -37,7 +63,9 @@ export const useNopv2AuthorisationsSchema = () => {
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
-            .required(formatMessage(MESSAGES.fieldRequired)),
+            .required(formatMessage(MESSAGES.fieldRequired))
+            // @ts-ignore
+            .checkDateForStart(MESSAGES.invalidDate),
         expiration_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

@@ -44,6 +44,7 @@
     "iaso.polio.error.dateForExpired": "Les autorisations expirées doivent avoir une date passée",
     "iaso.polio.error.label.userNeedsTeam": "Vous devez faire partie d'une équipe pour créer ou éditer les étapes d'un budget",
     "iaso.polio.error.label.userWithoutTeam": "L'utilisateur doit faire partie d'une équipe",
+    "iaso.polio.error.startDateAfterExpiration": "La date de début doit être antérieur à celle d'expiration",
     "iaso.polio.form.fieldRequired": "Ce champs est requis",
     "iaso.polio.form.invalidDate": "Date invalide",
     "iaso.polio.form.label.agNopvGroup": "Groupe AG/nOPV",

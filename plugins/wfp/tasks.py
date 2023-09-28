@@ -6,6 +6,9 @@ from plugins.wfp.models import *
 from itertools import groupby
 from operator import itemgetter
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class ETL:
@@ -285,6 +288,7 @@ class ETL:
         return all_steps
 
     def run(self):
+        logger.info("Starting ETL")
         steps_id = self.steps_to_exclude()
         updated_at = datetime.date(2023, 7, 10)
         beneficiaries = (
@@ -306,12 +310,12 @@ class ETL:
             )
             .order_by("entity_id", "created_at")
         )
-
+        logger.info("Instances linked to children under 5: %d " % beneficiaries.count())
         instances = self.group_visit_by_entity(beneficiaries)
         existing_beneficiaries = self.existing_beneficiaries()
 
         for index, instance in enumerate(instances):
-            print(
+            logger.debug(
                 f"---------------------------------------- Beneficiary N° {(index+1)} -----------------------------------"
             )
             beneficiary = Beneficiary()
@@ -320,26 +324,29 @@ class ETL:
                 beneficiary.birth_date = instance["birth_date"]
                 beneficiary.entity_id = instance["entity_id"]
                 beneficiary.save()
-                print("Created new beneficiary")
+                logger.debug(f"Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
             instance["journey"] = self.journeyMapper(instance["visits"])
+            logger.debug("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
                 if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
                     journey = self.save_journey(beneficiary, journey_instance)
                     visits = self.save_visit(journey_instance["visits"], journey)
-                    print(f"Inserted {len(visits)} Visits")
+                    logger.debug(f"Inserted {len(visits)} Visits")
                     grouped_steps = self.get_admission_steps(journey_instance["steps"])
                     admission_step = grouped_steps[0]
 
                     followUpVisits = self.group_followup_steps(grouped_steps, admission_step)
 
                     steps = self.save_steps(visits, followUpVisits)
-                    print(f"Inserted {len(steps)} Steps")
+                    logger.debug(f"Inserted {len(steps)} Steps")
                 else:
-                    print("No new journey for the current beneficiary")
-            print(f"---------------------------------------------------------------------------------------------\n\n")
+                    logger.debug("No new journey")
+            logger.debug(
+                f"---------------------------------------------------------------------------------------------\n\n"
+            )
 
 
 @shared_task()

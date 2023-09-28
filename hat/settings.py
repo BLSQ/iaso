@@ -67,6 +67,11 @@ SENTRY_URL = os.environ.get("SENTRY_URL", "")
 # If you have such plugin, you can activate the use of celery by setting this env variable to "true"
 USE_CELERY = os.environ.get("USE_CELERY", "")
 
+# env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
+# to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
+CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
+CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
+
 
 ALLOWED_HOSTS = ["*"]
 
@@ -547,8 +552,14 @@ if os.environ.get("WFP_AUTH_CLIENT_ID"):
         "EMAIL_RECIPIENTS_NEW_ACCOUNT": os.environ.get("WFP_EMAIL_RECIPIENTS_NEW_ACCOUNT", "").split(","),
     }
 
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.db.DatabaseCache", "LOCATION": "django_cache_table"}}
+CACHES = {
+    "default": {
+        "BACKEND": CACHE_BACKEND,
+        "LOCATION": CACHE_LOCATION,
+    }
+}
 
 # sample celery configuration
 CELERY_BROKER_URL = os.environ.get("CELERY_BROKER_URL", "redis://localhost:6379")
-CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+# CELERY_RESULT_BACKEND = os.environ.get("CELERY_RESULT_BACKEND", "redis://localhost:6379")
+CELERY_RESULT_BACKEND = "django-db"

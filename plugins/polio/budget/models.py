@@ -23,7 +23,6 @@ from plugins.polio.time_cache import time_cache
 
 class BudgetStepQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
-
         campaigns = Campaign.objects.filter_for_user(user)  # type: ignore
         return self.filter(campaign__in=campaigns)
 

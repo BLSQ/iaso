@@ -37,6 +37,7 @@ jobs:
           ref: ${{ github.event.inputs.ref }}
 
       - id: 'get-branch'
+        name: Get branch name from PR when triggered by comment
         if: github.event_name != 'workflow_dispatch'
         run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
         env:
@@ -138,6 +139,7 @@ jobs:
           ref: ${{ github.event.inputs.ref }}
       
       - id: 'get-branch'
+        name: Get branch name from PR when triggered by comment
         if: github.event_name != 'workflow_dispatch'
         run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
         env:

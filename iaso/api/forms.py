@@ -254,6 +254,7 @@ class FormsViewSet(ModelViewSet):
                         & ~Q(instances__deleted=True)
                         & Q(instances__org_unit__in=orgunits)
                     ),
+                    distinct=True,
                 )
             )
         else:
@@ -263,6 +264,7 @@ class FormsViewSet(ModelViewSet):
                     filter=(
                         ~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)
                     ),
+                    distinct=True,
                 )
             )
 

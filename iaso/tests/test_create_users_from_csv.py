@@ -42,17 +42,21 @@ class BulkCreateCsvTestCase(APITestCase):
 
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Coruscant Jedi Council", version=sw_version)
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Council", version=sw_version, source_ref="foo"
+        )
 
-        cls.tatooine = m.OrgUnit.objects.create(name="Tatooine", version=sw_version)
+        cls.tatooine = m.OrgUnit.objects.create(name="Tatooine", version=sw_version, source_ref="bar")
 
-        cls.dagobah = m.OrgUnit.objects.create(name="Dagobah", id=9999, version=sw_version)
+        cls.dagobah = m.OrgUnit.objects.create(name="Dagobah", id=9999, version=sw_version, source_ref="baz")
 
         cls.solana = m.OrgUnit.objects.create(name="Solana", version=sw_version)
         cls.solanaa = m.OrgUnit.objects.create(name="Solana", version=sw_version)
 
-        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10244, version=sw_version, parent=cls.tatooine)
-        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10934, version=st_version)
+        cls.chiloe = m.OrgUnit.objects.create(
+            name="chiloe", id=10244, version=sw_version, parent=cls.tatooine, source_ref="chiloe1"
+        )
+        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10934, version=st_version, source_ref="chiloe2")
 
         cls.yoda.iaso_profile.org_units.set([cls.jedi_council_corruscant, cls.tatooine, cls.dagobah, cls.solana])
 

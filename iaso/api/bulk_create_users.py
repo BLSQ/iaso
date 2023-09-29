@@ -2,18 +2,20 @@ import csv
 import io
 
 import pandas as pd
+
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
+from django.db.models import Q
+from django.http import FileResponse
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import serializers, permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from drf_yasg.utils import swagger_auto_schema, no_body
-from rest_framework.decorators import action
-from django.http import FileResponse
 
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 from hat.menupermissions import models as permission
@@ -156,7 +158,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."
                         }
                     )
-                org_units_list = []
+                org_units_list = set()
                 user_roles_list = []
                 projects_instance_list = []
                 if i > 0:
@@ -194,10 +196,13 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 "again.".format(i, row[csv_indexes.index("username")])
                             }
                         )
-                    org_units = row[csv_indexes.index("orgunit")]
-                    if org_units:
-                        org_units = org_units.split(value_splitter)
-                        for ou in org_units:
+
+                    org_units = row[csv_indexes.index("orgunit")].split(value_splitter)
+                    org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
+                    org_units += org_units_source_refs
+
+                    for ou in org_units:
+                        if ou:
                             ou = ou[1::] if ou[:1] == " " else ou
                             try:
                                 if int(ou):
@@ -210,7 +215,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                                     "You don't have access to this orgunit".format(ou, i + 1)
                                                 }
                                             )
-                                        org_units_list.append(ou)
+                                        org_units_list.add(ou)
                                     except ObjectDoesNotExist:
                                         raise serializers.ValidationError(
                                             {
@@ -222,7 +227,9 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                         )
                             except ValueError:
                                 try:
-                                    org_unit = OrgUnit.objects.get(name=ou, pk__in=orgunits_hierarchy)
+                                    org_unit = OrgUnit.objects.get(
+                                        Q(pk__in=orgunits_hierarchy), Q(name=ou) | Q(source_ref=ou)
+                                    )
                                     if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
                                         raise serializers.ValidationError(
                                             {
@@ -230,7 +237,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                                 "You don't have access to this orgunit".format(ou, i + 1)
                                             }
                                         )
-                                    org_units_list.append(org_unit)
+                                    org_units_list.add(org_unit)
                                 except MultipleObjectsReturned:
                                     raise serializers.ValidationError(
                                         {

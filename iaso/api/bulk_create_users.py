@@ -26,6 +26,7 @@ BULK_CREATE_USER_COLUMNS_LIST = [
     "first_name",
     "last_name",
     "orgunit",
+    "orgunit__source_ref",
     "profile_language",
     "dhis2_id",
     "permissions",

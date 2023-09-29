@@ -201,59 +201,57 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
                     org_units += org_units_source_refs
 
-                    for ou in org_units:
-                        if ou:
-                            ou = ou[1::] if ou[:1] == " " else ou
+                    for ou in list(filter(None, org_units)):
+                        ou = ou[1::] if ou[:1] == " " else ou
+                        if ou.isdigit():
                             try:
-                                if int(ou):
-                                    try:
-                                        ou = OrgUnit.objects.get(id=ou)
-                                        if ou not in user_access_ou:
-                                            raise serializers.ValidationError(
-                                                {
-                                                    "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                    "You don't have access to this orgunit".format(ou, i + 1)
-                                                }
-                                            )
-                                        org_units_list.add(ou)
-                                    except ObjectDoesNotExist:
-                                        raise serializers.ValidationError(
-                                            {
-                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                "Fix the error "
-                                                "and try "
-                                                "again.".format(ou, i + 1)
-                                            }
-                                        )
-                            except ValueError:
-                                try:
-                                    org_unit = OrgUnit.objects.get(
-                                        Q(pk__in=orgunits_hierarchy), Q(name=ou) | Q(source_ref=ou)
-                                    )
-                                    if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
-                                        raise serializers.ValidationError(
-                                            {
-                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                "You don't have access to this orgunit".format(ou, i + 1)
-                                            }
-                                        )
-                                    org_units_list.add(org_unit)
-                                except MultipleObjectsReturned:
+                                ou = OrgUnit.objects.get(id=int(ou))
+                                if ou not in user_access_ou:
                                     raise serializers.ValidationError(
                                         {
-                                            "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
-                                            "Use Orgunit ID instead of name.".format(ou, i + 1)
+                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                            "You don't have access to this orgunit".format(ou, i + 1)
                                         }
                                     )
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
-                                            "the error "
-                                            "and try "
-                                            "again. Use Orgunit ID instead of name.".format(ou, i + 1)
-                                        }
-                                    )
+                                org_units_list.add(ou)
+                            except ObjectDoesNotExist:
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                        "Fix the error "
+                                        "and try "
+                                        "again.".format(ou, i + 1)
+                                    }
+                                )
+                        else:
+                            org_unit = OrgUnit.objects.filter(
+                                Q(pk__in=orgunits_hierarchy), Q(name=ou) | Q(source_ref=ou)
+                            ).order_by("-version_id")
+                            if org_unit.count() > 1:
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Multiple OrgUnits with `name` or `source_ref`: {0} at row : {1}."
+                                        "Use Orgunit ID instead of name.".format(ou, i + 1)
+                                    }
+                                )
+                            if not org_unit.count():
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
+                                        "the error "
+                                        "and try "
+                                        "again. Use Orgunit ID instead of name.".format(ou, i + 1)
+                                    }
+                                )
+                            if org_unit[0] not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                        "You don't have access to this orgunit".format(ou, i + 1)
+                                    }
+                                )
+                            org_units_list.add(org_unit[0])
+
                     profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
                     # Using try except for dhis2_id in case users are being created with an older version of the template
                     try:

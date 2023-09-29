@@ -2,11 +2,10 @@ import csv
 import io
 
 import pandas as pd
-
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
-from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
 from django.db.models import Q
@@ -17,9 +16,8 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 from hat.menupermissions import models as permission
-
+from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 
 BULK_CREATE_USER_COLUMNS_LIST = [
     "username",

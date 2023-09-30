@@ -66,8 +66,10 @@ def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int]
     return None
 
 
-def find_campaign_on_day(campaigns, day):
+def find_campaign_on_day(campaigns, day, response_id=None):
     for c in campaigns:
+        if c.obr_name == response_id:
+            return c
         if not c.start_date:
             continue
         start_date = c.start_date

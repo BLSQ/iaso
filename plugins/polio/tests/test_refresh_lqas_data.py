@@ -55,7 +55,9 @@ class RefreshLQASDataTestCase(APITestCase):
         cls.task2 = m.Task.objects.create(
             status=RUNNING, account=account, launcher=cls.user, name="task 2", external=True
         )
-        cls.limited_user = cls.create_user_with_profile(username="other user", account=account, permissions=["iaso_polio"], org_units=[cls.other_country_org_unit])
+        cls.limited_user = cls.create_user_with_profile(
+            username="other user", account=account, permissions=["iaso_polio"], org_units=[cls.other_country_org_unit]
+        )
 
     def mock_openhexa_call_success(self, country_id=None, task_id=None):
         return SUCCESS
@@ -152,9 +154,9 @@ class RefreshLQASDataTestCase(APITestCase):
         self.assertEquals(task["id"], self.task1.id)
         self.assertEquals(task["ended_at"], self.task1.ended_at)
         self.assertEquals(task["status"], self.task1.status)
-        
+
     def test_restrict_user_country(self):
         self.client.force_authenticate(self.limited_user)
         response = self.client.get(f"{self.action_url}?country_id={self.country_org_unit.id}")
         response = self.assertJSONResponse(response, 400)
-        self.assertEquals(response,{"country_id": ["No authorised org unit found for user"]})
+        self.assertEquals(response, {"country_id": ["No authorised org unit found for user"]})

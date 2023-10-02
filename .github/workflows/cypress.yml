@@ -30,22 +30,27 @@ jobs:
 
     runs-on: ubuntu-20.04
     steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
       - name: Checkout repository (dispatch)
         uses: actions/checkout@v3
         if: github.event_name == 'workflow_dispatch'
         with:
           ref: ${{ github.event.inputs.ref }}
+
+      - id: 'get-branch'
+        name: Get branch name from PR when triggered by comment
+        if: github.event_name != 'workflow_dispatch'
+        run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
+        env:
+          REPO: ${{ github.repository }}
+          PR_NO: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Checkout repository (comment)
         uses: actions/checkout@v3
         if: github.event_name != 'workflow_dispatch'
         with:
-          ref: ${{ steps.extract_branch.outputs.branch }}
+          ref: ${{ steps.get-branch.outputs.branch }}
+
 
       - name: Mark comment as seen
         if: github.event_name != 'workflow_dispatch'
@@ -128,22 +133,26 @@ jobs:
         ports:
           - 8081:8081
     steps:
-      - name: Extract branch name
-        shell: bash
-        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
-        id: extract_branch
-
       - name: Checkout repository (dispatch)
         uses: actions/checkout@v3
         if: github.event_name == 'workflow_dispatch'
         with:
           ref: ${{ github.event.inputs.ref }}
       
+      - id: 'get-branch'
+        name: Get branch name from PR when triggered by comment
+        if: github.event_name != 'workflow_dispatch'
+        run: echo ::set-output name=branch::$(gh pr view $PR_NO --repo $REPO --json headRefName --jq '.headRefName')
+        env:
+          REPO: ${{ github.repository }}
+          PR_NO: ${{ github.event.issue.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        
       - name: Checkout repository (comment)
         uses: actions/checkout@v3
         if: github.event_name != 'workflow_dispatch'
         with:
-          ref: ${{ steps.extract_branch.outputs.branch }}
+          ref: ${{ steps.get-branch.outputs.branch }}
 
       - name: Use node.js 14
         uses: actions/setup-node@v2

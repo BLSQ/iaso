@@ -182,3 +182,4 @@ pyvenv.cfg
 originals
 
 *.code-workspace
+/setuper/credentials.py

@@ -319,6 +319,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.goToEntity',
         defaultMessage: 'Go to entity',
     },
+    completenessMapWarning: {
+        defaultMessage: 'Org unit(s) without geolocation found',
+        id: 'iaso.completenessStats.completenessMapWarning',
+    },
 });
 
 export default MESSAGES;

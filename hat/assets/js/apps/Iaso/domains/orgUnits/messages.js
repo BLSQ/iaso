@@ -157,6 +157,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Remove from group(s)',
         id: 'iaso.orgUnits.removeFromGroups',
     },
+    project: {
+        defaultMessage: 'Project',
+        id: 'iaso.orgUnits.project',
+    },
     source: {
         defaultMessage: 'Source',
         id: 'iaso.orgUnits.source',

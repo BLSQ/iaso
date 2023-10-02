@@ -2226,6 +2226,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
         defaultMessage: 'Campaign moved forward by MOH',
     },
+    VRF_NOT_SIGNED: {
+        id: 'iaso.polio.label.VRF_NOT_SIGNED',
+        defaultMessage: 'VRF not signed',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',

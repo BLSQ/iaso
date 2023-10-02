@@ -188,6 +188,7 @@
     "iaso.polio.label.calendar.selectDate": "Sélectionner une date",
     "iaso.polio.label.campaign": "Campagne",
     "iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH": "Campagne avancée par le Ministère de la Santé",
+    "iaso.polio.label.VRF_NOT_SIGNED": "VRF non signée",
     "iaso.polio.label.CAMPAIGN_SYNCHRONIZATION": "Synchonization de campagnes",
     "iaso.polio.label.campaign.id": "Id",
     "iaso.polio.label.campaignDropdownLabel": "Date de modification",

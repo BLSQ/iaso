@@ -89,6 +89,7 @@ class DelayReasons(models.TextChoices):
     SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
     CAMPAIGN_MOVED_FORWARD_BY_MOH = "CAMPAIGN_MOVED_FORWARD_BY_MOH", _("campaign_moved_forward_by_moh")
     VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_between_rounds")
 
 
 def make_group_round_scope():

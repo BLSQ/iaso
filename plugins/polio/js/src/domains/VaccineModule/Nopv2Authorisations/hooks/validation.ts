@@ -65,7 +65,7 @@ export const useNopv2AuthorisationsSchema = () => {
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired))
             // @ts-ignore
-            .checkDateForStart(MESSAGES.invalidDate),
+            .checkDateForStart(formatMessage),
         expiration_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))

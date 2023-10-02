@@ -1,6 +1,8 @@
+import io
 import csv
 
 from django.contrib.auth.models import User, Permission, Group
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from iaso import models as m
 from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
@@ -10,59 +12,59 @@ BASE_URL = "/api/bulkcreateuser/"
 
 
 class BulkCreateCsvTestCase(APITestCase):
+    CSV_HEADER = [
+        "username",
+        "password",
+        "email",
+        "first_name",
+        "last_name",
+        "orgunit",
+        "orgunit__source_ref",
+        "profile_language",
+        "dhis2_id",
+        "permissions",
+        "user_roles",
+        "projects",
+    ]
+
     @classmethod
     def setUpTestData(cls):
-        star_wars = m.Account.objects.create(name="Star Wars")
+        cls.source = m.DataSource.objects.create(name="Source")
+        version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
+        version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
 
-        cls.project = m.Project.objects.create(
-            name="Hydroponic gardens",
-            app_id="stars.empire.agriculture.hydroponics",
-            account=star_wars,
-        )
-
-        space_balls = m.Account.objects.create(name="Space Balls")
-
-        sw_source = m.DataSource.objects.create(name="Galactic Empire")
-        cls.sw_source = sw_source
-        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        st_version = m.SourceVersion.objects.create(data_source=sw_source, number=2)
-        star_wars.default_version = sw_version
-        star_wars.save()
-        cls.sw_version = sw_version
-
-        cls.han_solo = cls.create_user_with_profile(
-            username="han solo", account=space_balls, permissions=["iaso_submissions", "iaso_users"]
-        )
+        account1 = m.Account.objects.create(name="Account 1")
+        cls.project = m.Project.objects.create(name="Project name", app_id="project.id", account=account1)
+        account1.default_version = version1
+        account1.save()
 
         cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_submissions", "iaso_users", "iaso_user_roles"]
+            username="yoda", account=account1, permissions=["iaso_submissions", "iaso_users", "iaso_user_roles"]
+        )
+        cls.obi = cls.create_user_with_profile(username="obi", account=account1)
+
+        cls.org_unit1 = m.OrgUnit.objects.create(name="Coruscant Jedi Council", version=version1, source_ref="foo")
+        cls.org_unit2 = m.OrgUnit.objects.create(name="Tatooine", version=version1, source_ref="bar")
+        cls.org_unit3 = m.OrgUnit.objects.create(name="Dagobah", id=9999, version=version1, source_ref="baz")
+        cls.org_unit4 = m.OrgUnit.objects.create(name="Solana", version=version1)
+
+        cls.yoda.iaso_profile.org_units.set([cls.org_unit1, cls.org_unit2, cls.org_unit3, cls.org_unit4])
+
+        m.OrgUnit.objects.create(name="chiloe", id=10244, version=version1, parent=cls.org_unit2)
+        m.OrgUnit.objects.create(name="chiloe", id=10934, version=version2)
+
+        account2 = m.Account.objects.create(name="Account 2")
+        cls.create_user_with_profile(
+            username="han solo", account=account2, permissions=["iaso_submissions", "iaso_users"]
         )
 
-        cls.obi = cls.create_user_with_profile(username="obi", account=star_wars)
-
-        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
-
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", version=sw_version, source_ref="foo"
-        )
-
-        cls.tatooine = m.OrgUnit.objects.create(name="Tatooine", version=sw_version, source_ref="bar")
-
-        cls.dagobah = m.OrgUnit.objects.create(name="Dagobah", id=9999, version=sw_version, source_ref="baz")
-
-        cls.solana = m.OrgUnit.objects.create(name="Solana", version=sw_version)
-        cls.solanaa = m.OrgUnit.objects.create(name="Solana", version=sw_version)
-
-        cls.chiloe = m.OrgUnit.objects.create(
-            name="chiloe", id=10244, version=sw_version, parent=cls.tatooine, source_ref="chiloe1"
-        )
-        cls.chiloe = m.OrgUnit.objects.create(name="chiloe", id=10934, version=st_version, source_ref="chiloe2")
-
-        cls.yoda.iaso_profile.org_units.set([cls.jedi_council_corruscant, cls.tatooine, cls.dagobah, cls.solana])
+        cls.version1 = version1
+        cls.version2 = version2
+        cls.account1 = account1
 
     def test_upload_valid_csv(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -83,7 +85,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_valid_csv_with_perms(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         iaso_forms = Permission.objects.get(codename="iaso_forms")
         iaso_submissions = Permission.objects.get(codename="iaso_submissions")
@@ -102,7 +104,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_mail_csv(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_mail.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -114,7 +116,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_without_mail_must_work(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_no_mail.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -124,7 +126,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_orgunit_id(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -137,7 +139,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_user_already_exists(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         user = User.objects.create(
             username="broly", first_name="broly", last_name="Smith", email="broly-smith@bluesquarehub.com"
@@ -155,7 +157,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_csv_dont_create_entries(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_orgunit.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -173,7 +175,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_user_cant_access_without_permission(self):
         self.client.force_authenticate(self.obi)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         response = self.client.get(f"{BASE_URL}")
 
@@ -181,7 +183,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_password_delete_after_import(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         pswd_deleted = True
 
@@ -206,7 +208,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_password(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_password.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -219,7 +221,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_created_users_can_login(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -234,7 +236,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_invalid_orgunit_name(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_invalid_ou_name.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -250,7 +252,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_users_profiles_have_right_ou(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -268,7 +270,7 @@ class BulkCreateCsvTestCase(APITestCase):
             ou_f_list.append(ou.id)
 
         self.assertEqual(ou_list, [9999])
-        self.assertCountEqual(ou_f_list, [self.jedi_council_corruscant.id, self.tatooine.id, 9999])
+        self.assertCountEqual(ou_f_list, [self.org_unit1.id, self.org_unit2.id, 9999])
         self.assertEqual(response.status_code, 200)
 
     def test_cant_create_user_without_access_to_ou(self):
@@ -296,7 +298,7 @@ class BulkCreateCsvTestCase(APITestCase):
     def test_upload_duplicate_ou_names(self):
         # This test detects if in case there is multiple OU with same name in different sources the right OU is taken.
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_user_duplicate_ou_names.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -314,7 +316,7 @@ class BulkCreateCsvTestCase(APITestCase):
         # This test ensure that we can create users with access to ou child not explicitly added to the creator
         # access ou list ( ou is a child of ou in the user ou list )
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_user_access_to_child_ou.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -330,7 +332,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_semicolon_separated_csv(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_semicolon.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -371,7 +373,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_create_user_with_roles(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         data = {"name": "manager"}
         rep = self.client.post("/api/userroles/", data=data)
@@ -408,7 +410,7 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_create_user_with_projects(self):
         self.client.force_authenticate(self.yoda)
-        self.sw_source.projects.set([self.project])
+        self.source.projects.set([self.project])
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_projects.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
@@ -417,8 +419,8 @@ class BulkCreateCsvTestCase(APITestCase):
         profile_1 = Profile.objects.get(user__username="broly")
         profile_2 = Profile.objects.get(user__username="cyrus")
 
-        self.assertEqual(profile_1.projects.all()[0].name, "Hydroponic gardens")
-        self.assertEqual(profile_2.projects.all()[0].name, "Hydroponic gardens")
+        self.assertEqual(profile_1.projects.all()[0].name, "Project name")
+        self.assertEqual(profile_2.projects.all()[0].name, "Project name")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(users), 5)
         self.assertEqual(len(profiles), 5)
@@ -436,3 +438,49 @@ class BulkCreateCsvTestCase(APITestCase):
         self.assertEqual(new_user_2.iaso_profile.dhis2_id, "dhis2_id_6")
         self.assertEqual(org_unit_ids, [9999])
         self.assertEqual(response.data, {"Accounts created": 2})
+
+    def test_should_create_user_with_the_correct_org_unit_from_source_ref(self):
+        """
+        Given that multiple instances of an OrgUnit exist, when attempting to link
+        an OrgUnit based on its `source_ref` to a new user, then the OrgUnit that
+        matches the "default source version" of the account should be selected.
+        """
+        self.client.force_authenticate(self.yoda)
+        self.source.projects.set([self.project])
+
+        org_unit_a = m.OrgUnit.objects.create(name="Zakuul", source_ref="qux", version=self.version1)
+        org_unit_b = m.OrgUnit.objects.create(name="Zakuul", source_ref="qux", version=self.version2)
+        org_unit_c = m.OrgUnit.objects.create(name="Zakuul", source_ref="qux", version=None)
+        self.yoda.iaso_profile.org_units.add(org_unit_a, org_unit_b, org_unit_c)
+        self.yoda.iaso_profile.save()
+
+        csv_str = io.StringIO()
+        writer = csv.DictWriter(csv_str, fieldnames=self.CSV_HEADER)
+        writer.writeheader()
+        writer.writerow(
+            {
+                "username": "john",
+                "password": "yodnj!30dln",
+                "email": "john@foo.com",
+                "first_name": "John",
+                "last_name": "Doe",
+                "orgunit": "",
+                "orgunit__source_ref": "qux",
+                "profile_language": "fr",
+                "dhis2_id": "",
+                "permissions": "",
+                "user_roles": "",
+                "projects": "",
+            }
+        )
+        csv_bytes = csv_str.getvalue().encode()
+        csv_file = SimpleUploadedFile("users.csv", csv_bytes)
+
+        response = self.client.post(f"{BASE_URL}", {"file": csv_file})
+        self.assertEqual(response.status_code, 200)
+
+        new_user = User.objects.get(email="john@foo.com")
+        self.assertEqual(new_user.iaso_profile.account, self.account1)
+        self.assertEqual(new_user.iaso_profile.org_units.count(), 1)
+        self.assertEqual(new_user.iaso_profile.org_units.first(), org_unit_a)
+        self.assertEqual(org_unit_a.version_id, self.account1.default_version_id)

@@ -2356,7 +2356,7 @@ const MESSAGES = defineMessages({
     },
     startDateAfterExpiration: {
         id: 'iaso.polio.error.startDateAfterExpiration',
-        defaultMessage: 'Start date must be anterior to Expiration date',
+        defaultMessage: 'Start date must be anterior to expiration date',
     },
     mostRecentAuthStatus: {
         id: 'iaso.polio.table.label.mostRecentAuthStatus',

@@ -2230,6 +2230,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.VRF_NOT_SIGNED',
         defaultMessage: 'VRF not signed',
     },
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS: {
+        id: 'iaso.polio.label.FOUR_WEEKS_GAP_BETWEEN_ROUNDS',
+        defaultMessage: 'iaso.polio.label.FOUR_WEEKS_GAP_BETWEEN_ROUNDS',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',

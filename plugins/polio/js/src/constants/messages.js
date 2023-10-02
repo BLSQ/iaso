@@ -2230,6 +2230,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.VRF_NOT_SIGNED',
         defaultMessage: 'VRF not signed',
     },
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS: {
+        id: 'iaso.polio.label.FOUR_WEEKS_GAP_BETWEEN_ROUNDS',
+        defaultMessage: 'Four weeks gap between rounds to be respected',
+    },
+    OTHER_VACCINATION_CAMPAIGNS: {
+        id: 'iaso.polio.label.OTHER_VACCINATION_CAMPAIGNS',
+        defaultMessage: 'Other vaccination campaigns',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',

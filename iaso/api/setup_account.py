@@ -8,7 +8,16 @@ from rest_framework.viewsets import GenericViewSet
 
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.common import IsAdminOrSuperUser
-from iaso.models import Account, DataSource, SourceVersion, Profile, Project, OrgUnitType, Module
+from iaso.models import (
+    Account,
+    DataSource,
+    SourceVersion,
+    Profile,
+    Project,
+    OrgUnitType,
+    Module,
+    Permission as iaso_permission,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -81,7 +90,17 @@ class SetupAccountSerializer(serializers.Serializer):
 
         Profile.objects.create(account=account, user=user)
 
-        permissions_to_add = CustomPermissionSupport.get_full_permission_list()
+        modules = list(modules.values_list("id", flat=True))
+        # Get all permissions linked to the modules
+        modules_permissions = set(
+            iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True)
+        )
+
+        permissions_to_add = filter(
+            lambda permission_module: permission_module in modules_permissions,
+            CustomPermissionSupport.get_full_permission_list(),
+        )
+
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
 

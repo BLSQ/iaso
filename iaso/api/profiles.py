@@ -26,7 +26,7 @@ from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import FileFormatEnum, CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
-from iaso.models import Profile, OrgUnit, UserRole, Project
+from iaso.models import Profile, OrgUnit, UserRole, Project, Module, Permission as iaso_permission
 
 PK_ME = "me"
 
@@ -359,7 +359,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user = profile.user
 
         self.update_password(user, request)
-        self.update_permissions(user, request)
+        self.update_permissions(self, user, request)
 
         self.update_org_units(profile, request)
         self.update_user_roles(profile, request)
@@ -407,12 +407,22 @@ class ProfilesViewSet(viewsets.ViewSet):
         return profile
 
     @staticmethod
-    def update_permissions(user, request):
+    def update_permissions(self, user, request):
         user.user_permissions.clear()
+        current_account = user.iaso_profile.account
+
         for permission_codename in request.data.get("user_permissions", []):
-            CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
-            user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
+            if permission_codename in self.module_permissions(current_account):
+                CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
+                user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
         user.save()
+
+    @staticmethod
+    def module_permissions(current_account):
+        # Get all modules linked to the current account
+        modules = list(Module.objects.filter(account_modules=current_account).values_list("id", flat=True))
+        # Get all permissions linked to the modules
+        return set(iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True))
 
     @staticmethod
     def update_password(user, request):
@@ -554,21 +564,27 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.username = username
         user.email = request.data.get("email", "")
         permissions = request.data.get("user_permissions", [])
+
+        current_profile = request.user.iaso_profile
+        current_account = current_profile.account
+
+        modules_permissions = self.module_permissions(current_account)
+
         if password != "":
             user.set_password(password)
         user.save()
         for permission_codename in permissions:
-            permission = get_object_or_404(Permission, codename=permission_codename)
-            user.user_permissions.add(permission)
+            if permission_codename in modules_permissions:
+                permission = get_object_or_404(Permission, codename=permission_codename)
+                user.user_permissions.add(permission)
         if permissions != []:
             user.save()
 
         # Create an Iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
-        current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(
             user=user,
-            account=current_profile.account,
+            account=current_account,
             language=request.data.get("language", ""),
             home_page=request.data.get("home_page", ""),
         )

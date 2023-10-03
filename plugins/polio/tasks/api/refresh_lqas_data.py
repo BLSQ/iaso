@@ -145,7 +145,7 @@ class RefreshLQASDataViewset(ModelViewSet):
         get_runs = gql(
             """
         query pipeline {
-            pipeline(id: "{pipeline_id}"){
+            pipeline(id: "%s"){
                 runs{
                     items{
                         run_id
@@ -155,9 +155,8 @@ class RefreshLQASDataViewset(ModelViewSet):
                 }
             }
         }
-        """.format(
-                pipeline_id=settings.LQAS_PIPELINE
-            )
+        """
+            % (settings.LQAS_PIPELINE)
         )
         try:
             latest_runs = client.execute(get_runs)

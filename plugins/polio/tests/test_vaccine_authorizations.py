@@ -139,13 +139,15 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "start_date": datetime.date(2224, 2, 1),
+                "expiration_date": datetime.date(2225, 2, 1),
             },
         )
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
-        self.assertEqual(response.data["expiration_date"], "2024-02-01"),
+        self.assertEqual(response.data["expiration_date"], "2225-02-01"),
+        self.assertEqual(response.data["start_date"], "2224-02-01"),
         self.assertEqual(response.data["status"], "ONGOING")
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)
@@ -178,7 +180,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=123456,
             status="ongoing",
             comment="waiting for approval",
-            expiration_date="2024-02-01",
+            expiration_date="2224-02-01",
         )
 
         response = self.client.get(f"/api/polio/vaccineauthorizations/{vaccine_auth.id}/")
@@ -200,7 +202,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=1000000,
             status="signature",
             comment="validated",
-            expiration_date="2024-02-01",
+            expiration_date="2224-02-01",
         )
 
         response = self.client.get("/api/polio/vaccineauthorizations/")
@@ -218,7 +220,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=1000000,
             status="signature",
             comment="validated",
-            expiration_date="2024-02-01",
+            expiration_date="2224-02-01",
         )
 
         response = self.client.get("/api/polio/vaccineauthorizations/")
@@ -234,7 +236,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ongoing",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": "2224-02-01",
             },
         )
 
@@ -258,7 +260,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "EXPIRED",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2223-02-01",
             },
         )
 
@@ -269,8 +272,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "VALIDATED",
                 "comment": "validated auth",
-                "expiration_date": "2024-03-01",
-                "start_date": "2024-02-01",
+                "expiration_date": "2224-03-01",
+                "start_date": "2224-02-01",
             },
         )
 
@@ -282,17 +285,18 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "status": "ONGOING",
                 "comment": "next validation date",
                 "expiration_date": "2024-04-01",
+                "start_date": "2224-02-01",
             },
         )
 
         response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0]["comment"], "next validation date")
-        self.assertEqual(response.data[0]["status"], "ONGOING")
-        self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2024, 3, 1))
-        self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 4, 1))
-        self.assertEqual(response.data[0]["start_date"], datetime.date(2024, 2, 1))
+        self.assertEqual(response.data[0]["comment"], "validated auth")
+        self.assertEqual(response.data[0]["status"], "VALIDATED")
+        self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2224, 3, 1))
+        self.assertEqual(response.data[0]["next_expiration_date"], None)
+        self.assertEqual(response.data[0]["start_date"], datetime.date(2224, 2, 1))
 
     def test_filters(self):
         self.client.force_authenticate(self.user_1)
@@ -306,7 +310,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 
@@ -317,7 +322,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "new update",
-                "expiration_date": "2024-03-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 
@@ -328,7 +334,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "VALIDATED",
                 "comment": "Approved.",
-                "expiration_date": "2024-04-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 
@@ -339,7 +346,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "VALIDATED",
                 "comment": "Approved.",
-                "expiration_date": "2024-04-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 

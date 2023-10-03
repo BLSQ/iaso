@@ -76,7 +76,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
 
         if expiration_date and expiration_date < datetime.date.today():
             raise serializers.ValidationError({"error": "expiration_date must be a future date."})
-        if start_date and start_date < expiration_date:
+        if start_date and start_date > expiration_date:
             raise serializers.ValidationError({"error": "start_date must be before expiration_date."})
 
         return super().create(validated_data)

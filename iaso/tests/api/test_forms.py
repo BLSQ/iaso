@@ -1,10 +1,11 @@
 import typing
 
+from django.core.files import File
 from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
-from iaso.models import Form
+from iaso.models import Form, OrgUnit, Instance
 from iaso.test import APITestCase
 
 
@@ -20,6 +21,13 @@ class FormsAPITestCase(APITestCase):
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_forms"])
         cls.iron_man = cls.create_user_with_profile(username="iron_man", account=marvel)
 
+        sw_source = m.DataSource.objects.create(name="Galactic Empire")
+        cls.sw_source = sw_source
+        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        star_wars.default_version = sw_version
+        star_wars.save()
+        cls.sw_version = sw_version
+
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
         cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
@@ -32,6 +40,15 @@ class FormsAPITestCase(APITestCase):
         )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", created_at=cls.now)
+
+        cls.project_3 = m.Project.objects.create(name="Kotor", app_id="knights.of.the.old.republic", account=star_wars)
+
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Council",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
+            validation_status="VALID",
+        )
 
         cls.form_2 = m.Form.objects.create(
             name="Hydroponic public survey",
@@ -585,3 +602,40 @@ class FormsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 0)
+
+    def test_instance_not_in_same_project_are_not_counted(self):
+        """
+        This test ensure that the instance count on list form is not multiplied by the number of projects with
+        instances linked to the same form.
+        """
+
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.org_units.set(OrgUnit.objects.all())
+
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        self.assertEqual(0, response.json()["forms"][1]["instances_count"])
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as instance_file:
+            instance_1 = Instance.objects.create(
+                form=self.form_2,
+                period="202001",
+                org_unit=self.jedi_council_corruscant,
+                project=self.project_2,
+            )
+            instance_1.file.save("hydroponics_test_upload.xml", File(instance_file))
+            instance_2 = Instance.objects.create(
+                form=self.form_2,
+                period="202001",
+                org_unit=self.jedi_council_corruscant,
+                project=self.project_3,
+            )
+            instance_2.file.save("hydroponics_test_upload.xml", File(instance_file))
+
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        self.assertEqual(response.json()["forms"][0]["instances_count"], 2)

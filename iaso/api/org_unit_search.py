@@ -22,6 +22,7 @@ def build_org_units_queryset(queryset, params, profile):
     geography = params.get("geography", None)
     parent_id = params.get("parent_id", None)
     source = params.get("source", None)
+    project = params.get("project", None)
     group = params.get("group", None)
     version = params.get("version", None)
     default_version = params.get("defaultVersion", None)
@@ -79,6 +80,9 @@ def build_org_units_queryset(queryset, params, profile):
             queryset = queryset.filter(version=source.default_version)
         else:
             queryset = queryset.filter(version__data_source_id=source)
+
+    if project:
+        queryset = queryset.filter(org_unit_type__projects__id=project)
 
     if version:
         queryset = queryset.filter(version=version)

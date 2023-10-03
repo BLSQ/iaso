@@ -1,17 +1,17 @@
 import React, {
+    Dispatch,
     FunctionComponent,
-    useState,
+    useCallback,
     useEffect,
     useMemo,
-    Dispatch,
-    useCallback,
+    useState,
 } from 'react';
-import { Grid, Box, Typography, makeStyles, Divider } from '@material-ui/core';
+import { Box, Divider, Grid, makeStyles, Typography } from '@material-ui/core';
 import {
     commonStyles,
+    IntlFormatMessage,
     useSafeIntl,
     useSkipEffectOnMount,
-    IntlFormatMessage,
 } from 'bluesquare-components';
 
 import InputComponent from '../../../components/forms/InputComponent';
@@ -29,9 +29,9 @@ import { useCurrentUser } from '../../../utils/usersUtils';
 import { useGetOrgUnit } from './TreeView/requests';
 
 import { Search } from '../types/search';
-import { DropdownOptions } from '../../../types/utils';
-
 import MESSAGES from '../messages';
+import { useGetProjectsDropDown } from '../../projects/hooks/requests/useGetProjectsDropDown';
+import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 type Props = {
     searches: [Search];
@@ -47,8 +47,6 @@ type Props = {
     setSearches: React.Dispatch<React.SetStateAction<[Search]>>;
     currentTab: string;
     setHasLocationLimitError: React.Dispatch<React.SetStateAction<boolean>>;
-    orgunitTypes: DropdownOptions<string>[];
-    isFetchingOrgunitTypes: boolean;
 };
 
 const retrieveSourceFromVersionId = (versionId, dataSources) => {
@@ -75,8 +73,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     setSearches,
     currentTab,
     setHasLocationLimitError,
-    orgunitTypes,
-    isFetchingOrgunitTypes,
     locationLimit,
     setLocationLimit,
 }) => {
@@ -86,6 +82,9 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
     const currentUser = useCurrentUser();
 
     const [dataSourceId, setDataSourceId] = useState<number | undefined>();
+    const [projectId, setProjectId] = useState<number | undefined>(
+        currentSearch?.project,
+    );
     const [sourceVersionId, setSourceVersionId] = useState<
         number | undefined
     >();
@@ -103,10 +102,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
 
     const { data: dataSources, isFetching: isFetchingDataSources } =
         useGetDataSources();
+    const { data: projects, isFetching: isFetchingProjects } =
+        useGetProjectsDropDown();
     const { data: groups, isFetching: isFetchingGroups } = useGetGroups({
         dataSourceId,
         sourceVersionId,
     });
+    const { data: orgUnitTypes, isFetching: isFetchingOrgUnitTypes } =
+        useGetOrgUnitTypes(projectId);
 
     const {
         data: validationStatusOptions,
@@ -127,6 +130,11 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
         const newFilters: Record<string, unknown> = {
             ...filters,
         };
+        if (key === 'project') {
+            setInitialOrgUnitId(undefined);
+            newFilters.orgUnitTypeId = undefined;
+            setProjectId(parseInt(value, 10));
+        }
         if ((!value || value === '') && newFilters[key]) {
             delete newFilters[key];
         } else {
@@ -261,6 +269,16 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     options={dataSources}
                     loading={isFetchingDataSources}
                 />
+                <InputComponent
+                    type="select"
+                    disabled={isFetchingProjects}
+                    keyValue="project"
+                    onChange={handleChange}
+                    value={!isFetchingProjects && projectId}
+                    label={MESSAGES.project}
+                    options={projects}
+                    loading={isFetchingProjects}
+                />
                 {!showAdvancedSettings && (
                     <Typography
                         className={classes.advancedSettings}
@@ -274,14 +292,14 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                     <>
                         <InputComponent
                             type="select"
-                            disabled={isFetchingOrgunitTypes}
+                            disabled={isFetchingOrgUnitTypes}
                             keyValue="version"
                             onChange={handleChange}
                             value={sourceVersionId}
                             label={MESSAGES.sourceVersion}
                             options={versionsDropDown}
                             clearable={false}
-                            loading={isFetchingOrgunitTypes}
+                            loading={isFetchingOrgUnitTypes}
                         />
                         <InputComponent
                             type="number"
@@ -306,13 +324,13 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                 <InputComponent
                     type="select"
                     multi
-                    disabled={isFetchingOrgunitTypes}
+                    disabled={isFetchingOrgUnitTypes}
                     keyValue="orgUnitTypeId"
                     onChange={handleChange}
-                    value={!isFetchingOrgunitTypes && filters?.orgUnitTypeId}
+                    value={!isFetchingOrgUnitTypes && filters?.orgUnitTypeId}
                     label={MESSAGES.org_unit_type}
-                    options={orgunitTypes}
-                    loading={isFetchingOrgunitTypes}
+                    options={orgUnitTypes}
+                    loading={isFetchingOrgUnitTypes}
                 />
                 <InputComponent
                     type="select"
@@ -398,7 +416,6 @@ export const OrgUnitFilters: FunctionComponent<Props> = ({
                         ]}
                     />
                 </Box>
-                <Divider />
                 <Box mt={1}>
                     <InputComponent
                         type="select"

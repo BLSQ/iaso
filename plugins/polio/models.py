@@ -18,6 +18,7 @@ from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
+from translated_fields import TranslatedField
 
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
@@ -175,9 +176,22 @@ class RoundDateHistoryEntry(models.Model):
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
     reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
+    reason_for_delay = models.ForeignKey(
+        "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="reason"
+    )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ReasonForDelay(models.Model):
+    name = TranslatedField(models.CharField(_("name"), max_length=200))
+    key_name = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Round(models.Model):

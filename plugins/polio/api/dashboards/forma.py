@@ -231,7 +231,7 @@ def fetch_and_match_forma_data(country_id=None):
 
 def get_forma_scope_df(campaigns):
     scope_dfs = []
-    one_year_ago = datetime.datetime.utcnow() - datetime.timedelta(weeks=52)
+    one_year_ago = datetime.utcnow() - timedelta(weeks=52)
     for campaign in campaigns:
         for round in campaign.rounds.filter(started_at__gte=one_year_ago):
             districts = campaign.get_districts_for_round(round)

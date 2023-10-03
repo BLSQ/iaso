@@ -10,7 +10,7 @@ from django.core import mail
 from django.contrib.auth.models import Group, Permission
 
 from iaso import models as m
-from iaso.models import Profile
+from iaso.models import Profile, Module, Permission as iaso_permission
 from iaso.models.microplanning import Team
 from iaso.test import APITestCase
 from hat.menupermissions import models as permission
@@ -474,6 +474,7 @@ class ProfileAPITestCase(APITestCase):
 
     def test_create_profile_with_org_units_and_perms(self):
         self.client.force_authenticate(self.jim)
+
         data = {
             "user_name": "unittest_user_name",
             "password": "unittest_password",
@@ -483,6 +484,16 @@ class ProfileAPITestCase(APITestCase):
             "org_units": [{"id": self.jedi_council_corruscant.id}],
             "user_permissions": ["iaso_forms"],
         }
+
+        module = Module.objects.create(name="module name", codename="MODULE_NAME")
+        form_permission = Permission.objects.get(codename="iaso_forms")
+        iaso_permission.objects.create(module=module, permission=form_permission)
+
+        self.ghi.modules.set([module])
+        self.ghi.save()
+
+        self.ghi.refresh_from_db()
+
         response = self.client.post("/api/profiles/", data=data, format="json")
         self.assertEqual(response.status_code, 200)
 
@@ -713,6 +724,21 @@ class ProfileAPITestCase(APITestCase):
         self.jum.iaso_profile.org_units.set([self.jedi_council_corruscant_child.id])
         self.client.force_authenticate(self.jam)
         jum = Profile.objects.get(user=self.jum)
+
+        module = Module.objects.create(name="module name", codename="MODULE_NAME")
+        form_permission = Permission.objects.get(codename=permission._FORMS)
+        user_managed_permission = Permission.objects.get(codename=permission._USERS_MANAGED)
+        user_admin_permission = Permission.objects.get(codename=permission._USERS_ADMIN)
+        iaso_permission.objects.create(module=module, permission=form_permission)
+        iaso_permission.objects.create(module=module, permission=user_managed_permission)
+        iaso_permission.objects.create(module=module, permission=user_admin_permission)
+
+        jum_account = jum.account
+        jum_account.modules.set([module])
+        jum_account.save()
+
+        jum_account.refresh_from_db()
+
         data = {
             "user_name": "jum",
             "user_permissions": [permission._FORMS, permission._USERS_MANAGED, permission._USERS_ADMIN],

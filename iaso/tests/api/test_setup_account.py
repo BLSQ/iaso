@@ -110,13 +110,35 @@ class SetupAccountApiTestCase(APITestCase):
             "password": "unittest_password",
             "modules": ["DEFAULT"],
         }
+
+        module = m.Module.objects.get(codename="DEFAULT")
+        permission_codenames = [
+            "iaso_org_units",
+            "iaso_org_unit_types",
+            "iaso_sources",
+            "iaso_links",
+            "iaso_data_tasks",
+            "iaso_reports",
+            "iaso_projects",
+            "iaso_users",
+            "iaso_user_roles",
+            "iaso_teams",
+        ]
+        permissions = Permission.objects.filter(codename__in=permission_codenames)
+        for permission in permissions:
+            m.Permission.objects.create(module=module, permission=permission)
+
         response = self.client.post("/api/setupaccount/", data=data, format="json")
 
         user = User.objects.get(username="unittest_username")
 
         has_all_perms = True
+        all_permissions = filter(
+            lambda permission_module: permission_module in permission_codenames,
+            CustomPermissionSupport.get_full_permission_list(),
+        )
 
-        for perm in Permission.objects.filter(codename__in=CustomPermissionSupport.get_full_permission_list()):
+        for perm in Permission.objects.filter(codename__in=list(all_permissions)):
             if perm not in user.user_permissions.all():
                 has_all_perms = False
 

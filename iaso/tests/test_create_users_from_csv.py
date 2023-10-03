@@ -1,11 +1,11 @@
 import io
 import csv
 
-from django.contrib.auth.models import User, Permission, Group
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.contrib.auth.models import User, Permission
 
 from iaso import models as m
-from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
+from iaso.models import Profile, BulkCreateUserCsvFile, Module, Permission as iaso_permission
 from iaso.test import APITestCase
 
 BASE_URL = "/api/bulkcreateuser/"
@@ -85,10 +85,19 @@ class BulkCreateCsvTestCase(APITestCase):
 
     def test_upload_valid_csv_with_perms(self):
         self.client.force_authenticate(self.yoda)
-        self.source.projects.set([self.project])
+        self.sw_source.projects.set([self.project])
+        module = Module.objects.create(name="module name", codename="MODULE_NAME")
 
         iaso_forms = Permission.objects.get(codename="iaso_forms")
         iaso_submissions = Permission.objects.get(codename="iaso_submissions")
+
+        iaso_permission.objects.create(module=module, permission=iaso_forms)
+        iaso_permission.objects.create(module=module, permission=iaso_submissions)
+
+        self.star_wars.modules.set([module])
+        self.star_wars.save()
+
+        self.star_wars.refresh_from_db()
 
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})

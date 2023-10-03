@@ -13,13 +13,14 @@ import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages';
+import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
-import * as Permission from '../../../utils/permissions';
+import * as Permission from '../../../utils/permissions.ts';
 // eslint-disable-next-line camelcase
 const initialFormState = (
     orgUnit,
@@ -131,11 +132,11 @@ const ActionTableColumnComponent = ({ settings }) => {
         return !isItLinked
             ? linkOrgUnitToReferenceSubmission(
                   settings.row.original.id,
-                  'unflag',
+                  REFERENCE_UNFLAG_CODE,
               )
             : linkOrgUnitToReferenceSubmission(
                   settings.row.original.id,
-                  'flag',
+                  REFERENCE_FLAG_CODE,
               );
     };
 

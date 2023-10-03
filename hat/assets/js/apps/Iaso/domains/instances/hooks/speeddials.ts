@@ -8,6 +8,7 @@ import { redirectTo } from '../../../routing/actions';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { Instance } from '../types/instance';
+import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
 import snackMessages from '../../../components/snackBars/messages';
 import { Nullable } from '../../../types/utils';
 
@@ -39,8 +40,8 @@ export const useLinkOrgUnitToReferenceSubmission = ({
                 id: orgUnit.id,
                 reference_instance_id: instanceId,
                 reference_instance_action: isReferenceInstance
-                    ? 'unflag'
-                    : 'flag',
+                    ? REFERENCE_UNFLAG_CODE
+                    : REFERENCE_FLAG_CODE,
             };
             return saveOrgUnit(orgUnitPayload, {
                 onSuccess: (result: OrgUnit) => {

@@ -314,9 +314,8 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.prefetch_related("org_unit__reference_instances")
+        queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("org_unit__version__data_source")
-        queryset = queryset.prefetch_related("org_unit__org_unit_type__reference_forms")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.prefetch_related("created_by")
         queryset = queryset.for_filters(**filters)
@@ -334,6 +333,8 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(org_unit__validation_status=org_unit_status)
 
         if not file_export:
+            queryset = queryset.prefetch_related("org_unit__reference_instances")
+            queryset = queryset.prefetch_related("org_unit__org_unit_type__reference_forms")
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)

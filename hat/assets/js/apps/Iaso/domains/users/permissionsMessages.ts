@@ -9,7 +9,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage: 'Export completeness',
     },
     iaso_completeness_tooltip: {
-        id: 'iaso.permissions.tooltip.completenes',
+        id: 'iaso.permissions.tooltip.completeness',
         defaultMessage:
             'Monitor per period how many forms are ready/have errors/are exported',
     },
@@ -224,7 +224,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
         defaultMessage: 'Entity duplicates - Read only',
     },
     iaso_entity_duplicates_read_tooltip: {
-        id: 'iaso.permissions.tooltip.iaso_entity_duplicates_read;',
+        id: 'iaso.permissions.tooltip.iaso_entity_duplicates_read',
         defaultMessage:
             'View entity duplicates, without the possibility to merge them',
     },

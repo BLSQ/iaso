@@ -6,7 +6,7 @@ def add_reason_for_delay_to_datelog(apps, schema_editor):
     RoundDateHistoryEntry = apps.get_model("polio", "RoundDateHistoryEntry")
     round_date_history_entries = RoundDateHistoryEntry.objects.all()
     for entry in round_date_history_entries:
-        reason_for_delay = ReasonForDelay.objects.filter(key_name=entry.reason)
+        reason_for_delay = ReasonForDelay.objects.filter(key_name=entry.reason).first()
         entry.reason_for_delay = reason_for_delay
         entry.save()
 

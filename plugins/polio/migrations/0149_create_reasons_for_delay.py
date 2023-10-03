@@ -47,7 +47,7 @@ def create_reasons_for_delay(apps, schema_editor):
     ReasonForDelay = apps.get_model("polio", "ReasonForDelay")
     text_choice_keys = [choice.name for choice in DelayReasons]
     for choice_key in text_choice_keys:
-        ReasonForDelay.create(
+        ReasonForDelay.objects.create(
             key_name=choice_key,
             name_en=TRANSLATIONS[choice_key]["en"],
             name_fr=TRANSLATIONS[choice_key]["fr"],
@@ -63,7 +63,7 @@ def remove_reasons_for_delay(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0148_auto_20231003_1213"),
+        ("polio", "0148_auto_20231003_1247"),
     ]
 
     operations = [migrations.RunPython(create_reasons_for_delay, remove_reasons_for_delay)]

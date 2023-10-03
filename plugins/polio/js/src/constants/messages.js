@@ -2375,6 +2375,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'The latest campaign is the campaign with the round that started the most recently within the chosen time frame',
     },
+    reasonsForDelay: {
+        id: 'iaso.polio.label.reasonsForDelay',
+        defaultMessage: 'Reasons for delay',
+    },
 });
 
 export default MESSAGES;

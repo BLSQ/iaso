@@ -15,6 +15,7 @@ import HomeIcon from '@material-ui/icons/Home';
 import StorefrontIcon from '@material-ui/icons/Storefront';
 import AccountBalanceWalletIcon from '@material-ui/icons/AccountBalanceWallet';
 import ExtensionIcon from '@material-ui/icons/Extension';
+import WatchLaterIcon from '@material-ui/icons/WatchLater';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
@@ -25,7 +26,8 @@ import {
     CAMPAIGN_HISTORY_URL,
     GROUPED_CAMPAIGNS,
     CALENDAR_BASE_URL,
-    CONFIG_BASE_URL,
+    CONFIG_COUNTRY_URL,
+    CONFIG_REASONS_FOR_DELAY_URL,
     LQAS_BASE_URL,
     IM_GLOBAL,
     IM_IHH,
@@ -389,7 +391,26 @@ const routes = [
         ],
     },
     {
-        baseUrl: CONFIG_BASE_URL,
+        baseUrl: CONFIG_COUNTRY_URL,
+        component: () => <CountryNotificationsConfig />,
+        permissions: ['iaso_polio_config'],
+        params: [
+            {
+                isRequired: false,
+                key: 'order',
+            },
+            {
+                isRequired: false,
+                key: 'page',
+            },
+            {
+                isRequired: false,
+                key: 'pageSize',
+            },
+        ],
+    },
+    {
+        baseUrl: CONFIG_REASONS_FOR_DELAY_URL,
         component: () => <CountryNotificationsConfig />,
         permissions: ['iaso_polio_config'],
         params: [
@@ -523,6 +544,20 @@ const menu = [
                 key: 'config',
                 permissions: ['iaso_polio_config'],
                 icon: props => <SettingsIcon {...props} />,
+                subMenu: [
+                    {
+                        label: MESSAGES.country,
+                        key: 'country',
+                        permissions: ['iaso_polio_config'],
+                        icon: props => <PhotoSizeSelectActualIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.reasonsForDelay,
+                        key: 'reasonsfordelay',
+                        permissions: ['iaso_polio_config'],
+                        icon: props => <WatchLaterIcon {...props} />,
+                    },
+                ],
             },
         ],
     },

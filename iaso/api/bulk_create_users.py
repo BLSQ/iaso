@@ -5,19 +5,19 @@ import pandas as pd
 from django.contrib.auth.models import User, Permission
 from django.contrib.auth.password_validation import validate_password
 from django.core import validators
-from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
+from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.files.base import ContentFile
 from django.db import IntegrityError, transaction
+from django.db.models import Q
+from django.http import FileResponse
+from drf_yasg.utils import swagger_auto_schema, no_body
 from rest_framework import serializers, permissions
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from drf_yasg.utils import swagger_auto_schema, no_body
-from rest_framework.decorators import action
-from django.http import FileResponse
 
-from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 from hat.menupermissions import models as permission
-
+from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 
 BULK_CREATE_USER_COLUMNS_LIST = [
     "username",
@@ -26,6 +26,7 @@ BULK_CREATE_USER_COLUMNS_LIST = [
     "first_name",
     "last_name",
     "orgunit",
+    "orgunit__source_ref",
     "profile_language",
     "dhis2_id",
     "permissions",
@@ -106,8 +107,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     def create(self, request, *args, **kwargs):
         user_created_count = 0
         if request.FILES:
-            user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(request.user, None)
-
             # Retrieve and check the validity and format of the CSV File
             try:
                 user_csv = request.FILES["file"]
@@ -136,16 +135,17 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
             except pd.errors.ParserError as e:
                 raise serializers.ValidationError({"error": f"Invalid CSV File. Error: {e}"})
 
+            importer_user = request.user
+            importer_account = request.user.iaso_profile.account
+            importer_access_ou = OrgUnit.objects.filter_for_user_and_app_id(importer_user)
+            importer_orgunits_hierarchy = OrgUnit.objects.hierarchy(importer_access_ou)
+
             csv_indexes = []
             file_instance = BulkCreateUserCsvFile.objects.create(
-                file=user_csv, created_by=request.user, account=request.user.iaso_profile.account
+                file=user_csv, created_by=importer_user, account=importer_account
             )
-
             value_splitter = "," if delimiter == "," else "*"
-
             file_instance.save()
-
-            orgunits_hierarchy = OrgUnit.objects.hierarchy(user_access_ou)
 
             for i, row in enumerate(reader):
                 if i > 0 and not set(BULK_CREATE_USER_COLUMNS_LIST).issubset(csv_indexes):
@@ -155,7 +155,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             "error": f"Something is wrong with your CSV File. Possibly missing {missing_elements} column(s)."
                         }
                     )
-                org_units_list = []
+                org_units_list = set()
                 user_roles_list = []
                 projects_instance_list = []
                 if i > 0:
@@ -193,60 +193,68 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 "again.".format(i, row[csv_indexes.index("username")])
                             }
                         )
-                    org_units = row[csv_indexes.index("orgunit")]
-                    if org_units:
-                        org_units = org_units.split(value_splitter)
-                        for ou in org_units:
-                            ou = ou[1::] if ou[:1] == " " else ou
+
+                    org_units = row[csv_indexes.index("orgunit")].split(value_splitter)
+                    org_units_source_refs = row[csv_indexes.index("orgunit__source_ref")].split(value_splitter)
+                    org_units += org_units_source_refs
+
+                    for ou in list(filter(None, org_units)):
+                        ou = ou.strip()
+                        if ou.isdigit():
                             try:
-                                if int(ou):
-                                    try:
-                                        ou = OrgUnit.objects.get(id=ou)
-                                        if ou not in user_access_ou:
-                                            raise serializers.ValidationError(
-                                                {
-                                                    "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                    "You don't have access to this orgunit".format(ou, i + 1)
-                                                }
-                                            )
-                                        org_units_list.append(ou)
-                                    except ObjectDoesNotExist:
-                                        raise serializers.ValidationError(
-                                            {
-                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                "Fix the error "
-                                                "and try "
-                                                "again.".format(ou, i + 1)
-                                            }
-                                        )
-                            except ValueError:
-                                try:
-                                    org_unit = OrgUnit.objects.get(name=ou, pk__in=orgunits_hierarchy)
-                                    if org_unit not in OrgUnit.objects.filter_for_user_and_app_id(request.user, None):
-                                        raise serializers.ValidationError(
-                                            {
-                                                "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
-                                                "You don't have access to this orgunit".format(ou, i + 1)
-                                            }
-                                        )
-                                    org_units_list.append(org_unit)
-                                except MultipleObjectsReturned:
+                                ou = OrgUnit.objects.get(id=int(ou))
+                                if ou not in importer_access_ou:
                                     raise serializers.ValidationError(
                                         {
-                                            "error": "Operation aborted. Multiple OrgUnits with the name: {0} at row : {1}."
-                                            "Use Orgunit ID instead of name.".format(ou, i + 1)
+                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                            "You don't have access to this orgunit".format(ou, i + 1)
                                         }
                                     )
-                                except ObjectDoesNotExist:
-                                    raise serializers.ValidationError(
-                                        {
-                                            "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
-                                            "the error "
-                                            "and try "
-                                            "again. Use Orgunit ID instead of name.".format(ou, i + 1)
-                                        }
-                                    )
-                    profile = Profile.objects.create(account=request.user.iaso_profile.account, user=user)
+                                org_units_list.add(ou)
+                            except ObjectDoesNotExist:
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                        "Fix the error "
+                                        "and try "
+                                        "again.".format(ou, i + 1)
+                                    }
+                                )
+                        else:
+                            # The same `OrgUnit` can appear more than once with the same `name` and `source_ref`
+                            # due to multiple sequential imports from DHIS2 (this happens a lot). So we must
+                            # select the one that matches the "default source version" of the account.
+                            org_unit = OrgUnit.objects.filter(
+                                Q(pk__in=importer_orgunits_hierarchy),
+                                Q(version_id=importer_account.default_version_id),
+                                Q(name=ou) | Q(source_ref=ou),
+                            ).order_by("-version_id")
+                            if org_unit.count() > 1:
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Multiple OrgUnits with `name` or `source_ref`: {0} at row : {1}."
+                                        "Use Orgunit ID instead of name.".format(ou, i + 1)
+                                    }
+                                )
+                            if not org_unit.count():
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. Fix "
+                                        "the error "
+                                        "and try "
+                                        "again. Use Orgunit ID instead of name.".format(ou, i + 1)
+                                    }
+                                )
+                            if org_unit[0] not in OrgUnit.objects.filter_for_user_and_app_id(importer_user, None):
+                                raise serializers.ValidationError(
+                                    {
+                                        "error": "Operation aborted. Invalid OrgUnit {0} at row : {1}. "
+                                        "You don't have access to this orgunit".format(ou, i + 1)
+                                    }
+                                )
+                            org_units_list.add(org_unit[0])
+
+                    profile = Profile.objects.create(account=importer_account, user=user)
                     # Using try except for dhis2_id in case users are being created with an older version of the template
                     try:
                         dhis2_id = row[csv_indexes.index("dhis2_id")]
@@ -278,8 +286,8 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                 role = role[1::] if role[:1] == " " else role
                                 try:
                                     role_instance = UserRole.objects.get(
-                                        account=request.user.iaso_profile.account,
-                                        group__name=f"{request.user.iaso_profile.account.id}_{role}",
+                                        account=importer_account,
+                                        group__name=f"{importer_account.id}_{role}",
                                     )
                                     user_roles_list.append(role_instance)
                                 except ObjectDoesNotExist:
@@ -299,9 +307,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                             if project != "":
                                 project = project[1::] if project[:1] == " " else project
                                 try:
-                                    project_instance = Project.objects.get(
-                                        account=request.user.iaso_profile.account, name=project
-                                    )
+                                    project_instance = Project.objects.get(account=importer_account, name=project)
                                     projects_instance_list.append(project_instance)
                                 except ObjectDoesNotExist:
                                     raise serializers.ValidationError(
@@ -347,7 +353,6 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     user_created_count += 1
                 else:
                     csv_indexes = row
-                i += 1
         response = {"Accounts created": user_created_count}
         return Response(response)
 

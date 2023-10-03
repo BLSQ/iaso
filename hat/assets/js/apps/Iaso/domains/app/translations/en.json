@@ -987,7 +987,6 @@
     "iaso.snackBar.saveMultiEditOrgUnitsLaunch": "The modifications to the OrgUnits will take a few minutes to take effect",
     "iaso.snackBar.saveMultiEditOrgUnitsLaunched": "The modifications to the org units will take a few minutes to take effect",
     "iaso.snackBar.saveMultiEditOrgUnitsSuccesfull": "Selected org unit saved successfully",
-    "iaso.snackBar.saveOrgUniteError": "An error occurred while saving org unit",
     "iaso.snackBar.saveOrgUnitError": "An error occurred while saving org unit",
     "iaso.snackBar.saveOrgUnitSuccesfull": "Org unit saved successfully",
     "iaso.snackBar.saveOrgUnitTypeError": "An error occurred while saving org unit type",

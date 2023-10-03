@@ -865,7 +865,6 @@
     "iaso.planning.title": "Planning",
     "iaso.plannings.label.duplicatePlanning": "Dupliquer planning",
     "iaso.plannings.label.selectOrgUnit": "Sélectionner une unité d'org.",
-    "iaso.polio.label.refreshPage": "Rafraîchir la page",
     "iaso.projects.appId": "Identifiant de l'App",
     "iaso.projects.create": "Créer un projet",
     "iaso.projects.false": "L'utilisateur n'a pas besoin d'authentification",

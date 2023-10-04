@@ -568,7 +568,7 @@ class Campaign(SoftDeletableModel):
 
     def get_campaign_scope_districts(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
-        id_set = ()
+        id_set = set()
         districts = []
         for scope in self.scopes.all():
             for ou in scope.group.org_units.all():

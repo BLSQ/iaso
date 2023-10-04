@@ -57,6 +57,18 @@ export const MESSAGES = defineMessages({
         id: 'iaso.label.renderError',
         defaultMessage: 'Error rendering value',
     },
+    REJECTED: {
+        defaultMessage: 'Rejected',
+        id: 'iaso.forms.rejectedCap',
+    },
+    NEW: {
+        defaultMessage: 'New',
+        id: 'iaso.forms.newCap',
+    },
+    VALID: {
+        defaultMessage: 'Validated',
+        id: 'iaso.forms.validated',
+    },
 });
 
 export default MESSAGES;

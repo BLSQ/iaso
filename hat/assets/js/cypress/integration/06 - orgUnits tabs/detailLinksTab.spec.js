@@ -234,23 +234,13 @@ const goToPage = () => {
         page2,
     ).as('page2');
     cy.visit(baseUrl);
-    // cy.wait('@socks', { timeout: 10000 });
     cy.wait('@me');
     cy.wait('@algorithmsRuns');
-    // cy.wait('@getOuDetail');// duplicate in tablePagination test
-    // cy.wait('@allProfiles');
-    cy.wait('@groupList');
-    // cy.wait('@formsList');
-    // cy.wait('@logs');
     cy.wait('@datasources');
-    // cy.wait('@linkedOrgUnits');
-    // cy.wait('@comments');
     cy.wait('@childrenPaginated');
     cy.wait('@links');
     cy.wait('@similarityScore');
     cy.wait('@instances');
-    cy.wait('@ouType2');
-    // cy.wait('@page2');
     interceptList.forEach(i => {
         cy.wait(`@${i}List`);
     });

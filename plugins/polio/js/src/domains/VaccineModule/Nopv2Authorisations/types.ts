@@ -10,6 +10,7 @@ export type AuthorisationData = {
     status: Nopv2AuthStatus;
     expiration_date: string;
     country: NameAndId;
+    start_date: string;
 };
 
 export type AuthorisationAPIData = AuthorisationData & {

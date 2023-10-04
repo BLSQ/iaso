@@ -661,9 +661,6 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         expired_entry.refresh_from_db()
         expired_entry_third.refresh_from_db()
         valid_entry.refresh_from_db()
-        print(task.status)
-        print(task.progress_message)
-        print(task.result)
         self.assertEqual(task.status, "SUCCESS")
 
         self.assertEqual(expired_entry_second.status, "EXPIRED")

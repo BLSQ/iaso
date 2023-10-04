@@ -247,11 +247,12 @@ class Round(models.Model):
     def vaccine_names(self):
         # only take into account scope which have orgunit attached
         campaign = self.campaign
-        scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
 
         if campaign.separate_scopes_per_round:
+            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
             return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
         else:
+            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.campaign.scopes.all())
             return ",".join(scope.vaccine for scope in scopes_with_orgunits)
 
     @property

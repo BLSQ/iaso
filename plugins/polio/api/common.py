@@ -188,7 +188,7 @@ def calculate_country_status(country_data, scope, roundNumber):
     if len(country_data.get("rounds", [])) == 0:
         # TODO put in an enum
         return LQASStatus.InScope
-    if scope.count() == 0:
+    if len(scope) == 0:
         return LQASStatus.InScope
     data_for_round = get_data_for_round(country_data, roundNumber)
     district_statuses = [

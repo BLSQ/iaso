@@ -13,7 +13,7 @@ import MenuIcon from '@material-ui/icons/Menu';
 import { useDispatch } from 'react-redux';
 
 // @ts-ignore
-import iasoBg from '../../images/iaso-bg.jpg';
+import iasoBg from '../../images/iaso-bg.png';
 import { LogoSvg } from '../app/components/LogoSvg';
 import { ThemeConfigContext } from '../app/contexts/ThemeConfigContext';
 import { MESSAGES } from './messages';

@@ -32,6 +32,7 @@ copyProps(window, global);
 
 const doNothing = () => null;
 
+require.extensions['.png'] = doNothing;
 require.extensions['.css'] = doNothing;
 require.extensions['.less'] = doNothing;
 require.extensions['.scss'] = doNothing;

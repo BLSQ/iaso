@@ -7,6 +7,7 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.postgres.indexes import GistIndex
+from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
@@ -19,7 +20,7 @@ from .project import Project
 from ..utils.expressions import ArraySubquery
 
 try:  # for typing
-    from .base import Account
+    from .base import Account, Instance
 except:
     pass
 
@@ -110,7 +111,7 @@ class OrgUnitType(models.Model):
     sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
     # Allow the creation of these sub org unit types only for mobile (IA-2153)"
     allow_creating_sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="create_types", blank=True)
-    reference_form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_forms = models.ManyToManyField("Form", related_name="reference_of_org_unit_types", blank=True)
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
@@ -143,18 +144,6 @@ class OrgUnitType(models.Model):
             "name": self.name,
             "id": self.id,
         }
-
-
-# def get_or_create_org_unit_type(name: str, depth: int, account: Account) -> typing.Tuple[OrgUnitType, bool]:
-#     """ ""Get the OUT if a similar one exist in the account, otherwise create it.
-#
-#     :return: a tuple of the OrgUnitType and a boolean indicating if it was created or not
-#     :raises MultipleObjectsReturned: if multiple OUT with the same name and depth exist in the account
-#     """
-#     all_projects_from_account = Project.objects.filter(account=account)
-#     return OrgUnitType.objects.get_or_create(
-#         projects__in=all_projects_from_account, name=name, depth=depth, defaults={"short_name": name[:4]}
-#     )
 
 
 # noinspection PyTypeChecker
@@ -279,7 +268,7 @@ class OrgUnit(TreeModel):
     simplified_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
-    reference_instance = models.ForeignKey("Instance", on_delete=models.DO_NOTHING, null=True, blank=True)
+    reference_instances = models.ManyToManyField("Instance", through="OrgUnitReferenceInstance", blank=True)
 
     gps_source = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
@@ -388,7 +377,6 @@ class OrgUnit(TreeModel):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
-            "reference_instance_id": self.reference_instance_id if self.reference_instance else None,
             "aliases": self.aliases,
         }
 
@@ -413,7 +401,6 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
-            "reference_instance_id": self.reference_instance_id if self.reference_instance_id else None,
         }
 
         if hasattr(self, "search_index"):
@@ -445,7 +432,6 @@ class OrgUnit(TreeModel):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
-            "reference_instance_id": self.reference_instance_id,
             "creator": get_creator_name(self.creator),
         }
         if not light:  # avoiding joins here
@@ -537,9 +523,32 @@ class OrgUnit(TreeModel):
             return "/" + ("/".join(path_components))
         return None
 
-    def get_reference_form_id(self):
-        """Return the form id of the reference form for this org unit, or None"""
-        if self.org_unit_type:
-            return self.org_unit_type.reference_form_id
-        else:
-            return None
+    def get_reference_instances_details_for_api(self) -> list:
+        return [instance.as_full_model() for instance in self.reference_instances.all()]
+
+
+class OrgUnitReferenceInstance(models.Model):
+    """
+    Intermediary model between `OrgUnit` and `Instance`.
+    Used to flag a form's Instance` as "reference instance".
+
+    The "reference" mechanism works like this:
+
+    - a `Form` can be flagged as "reference form" for a `OrgUnitType`
+    - a form's `Instance` can be flagged as "reference instance" for a
+        OrgUnit` if it's an instance of a "reference form"
+
+    The logic to flag a "reference instance" is implemented
+    in the `Instance` class.
+
+    Note: if a "reference form" is removed from a `OrgUnitType`,
+    we do nothing with the related "reference instances".
+    """
+
+    org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
+    form = models.ForeignKey("Form", on_delete=models.CASCADE)
+    instance = models.ForeignKey("Instance", on_delete=models.CASCADE)
+
+    class Meta:
+        # Only one `instance` by pair of org_unit/form.
+        unique_together = ("org_unit", "form")

@@ -1,8 +1,42 @@
 import typing
 
-from iaso.api.query_params import PROJECT
+from django.test import TestCase
+from rest_framework.exceptions import ValidationError
+
 from iaso import models as m
+from iaso.api.org_unit_types.serializers import validate_reference_forms
+from iaso.api.query_params import PROJECT
 from iaso.test import APITestCase
+
+
+class ValidateReferenceFormsTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.ref_form_1 = m.Form.objects.create(name="Form 1")
+        cls.ref_form_2 = m.Form.objects.create(name="Form 2")
+        cls.other_form = m.Form.objects.create(name="Form 3")
+
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Plop", short_name="Pl")
+        cls.org_unit_type.reference_forms.set([cls.ref_form_1, cls.ref_form_2])
+
+        cls.account = m.Account.objects.create(name="Global Health Initiative")
+        cls.project = m.Project.objects.create(name="End All Diseases", account=cls.account)
+        cls.project.forms.set([cls.ref_form_1, cls.ref_form_2])
+
+    def test_validate_reference_forms(self):
+        data = {"projects": [self.project], "reference_forms": [self.ref_form_1, self.ref_form_2]}
+        self.assertEqual(validate_reference_forms(data), data)
+
+        data = {"projects": [self.project], "reference_forms": []}
+        self.assertEqual(validate_reference_forms(data), data)
+
+        data = {"projects": [self.project], "reference_forms": [self.other_form]}
+        with self.assertRaises(ValidationError):
+            validate_reference_forms(data)
+
+        data = {"projects": [self.project], "reference_forms": [self.ref_form_1, self.other_form]}
+        with self.assertRaises(ValidationError):
+            validate_reference_forms(data)
 
 
 class OrgUnitTypesAPITestCase(APITestCase):
@@ -29,9 +63,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
         cls.reference_form_wrong_project = reference_form_wrong_project = m.Form.objects.create(
             name="Reference form with wrong project", period_type=m.MONTH, single_per_period=True
         )
-        cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(
-            name="Plop", short_name="Pl", reference_form_id=reference_form_update.id
-        )
+        cls.org_unit_type_1 = org_unit_type_1 = m.OrgUnitType.objects.create(name="Plop", short_name="Pl")
+        cls.org_unit_type_1.reference_forms.add(cls.reference_form_update)
+        cls.org_unit_type_1.save()
         cls.org_unit_type_2 = org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
         ead.unit_types.set([org_unit_type_1, org_unit_type_2])
 
@@ -128,6 +162,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.wrong_project.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
+                "reference_forms_ids": [],
             },
             format="json",
         )
@@ -147,12 +182,12 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
-                "reference_form_id": 100,
+                "reference_forms_ids": [100],
             },
             format="json",
         )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "reference_form_id", 'Invalid pk "100" - object does not exist.')
+        self.assertHasError(response.json(), "reference_forms_ids", 'Invalid pk "100" - object does not exist.')
 
     def test_org_unit_type_create_with_reference_form_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""
@@ -167,7 +202,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
-                "reference_form_id": self.reference_form.id,
+                "reference_forms_ids": [self.reference_form.id],
             },
             format="json",
         )
@@ -175,7 +210,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         org_unit_type_data = response.json()
         self.assertJSONResponse(response, 201)
         self.assertValidOrgUnitTypeData(org_unit_type_data)
-        self.assertEqual(self.reference_form.id, org_unit_type_data["reference_form"]["id"])
+        self.assertEqual(self.reference_form.id, org_unit_type_data["reference_forms"][0]["id"])
 
     def test_org_unit_type_create_with_reference_form_wrong_project(self):
         """POST /orgunittypes/ with Invalid reference form id"""
@@ -190,13 +225,13 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
-                "reference_form_id": self.reference_form_wrong_project.id,
+                "reference_forms_ids": [self.reference_form_wrong_project.id],
             },
             format="json",
         )
 
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "reference_form_id", "Invalid reference form id")
+        self.assertHasError(response.json(), "reference_forms_ids", "Invalid reference forms ids")
 
     def test_org_unit_type_create_ok(self):
         """POST /orgunittypes/ with auth: 201 OK"""
@@ -211,6 +246,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
+                "reference_forms_ids": [],
             },
             format="json",
         )
@@ -233,6 +269,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id],
                 "allow_creating_sub_unit_type_ids": [],
+                "reference_forms_ids": [],
             },
             format="json",
         )
@@ -256,6 +293,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
+                "reference_forms_ids": [],
             },
             format="json",
         )
@@ -275,7 +313,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
                 "allow_creating_sub_unit_type_ids": [],
-                "reference_form_id": self.reference_form_update.id,
+                "reference_forms_ids": [self.reference_form_update.id],
             },
             format="json",
         )
@@ -318,7 +356,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertHasField(org_unit_type_data, "projects", list, optional=True)
         self.assertHasField(org_unit_type_data, "sub_unit_types", list, optional=True)
         self.assertHasField(org_unit_type_data, "created_at", float)
-        self.assertHasField(org_unit_type_data, "reference_form", dict, optional=True)
+        self.assertHasField(org_unit_type_data, "reference_forms", list, optional=True)
 
         if "projects" in org_unit_type_data:
             for project_data in org_unit_type_data["projects"]:

@@ -73,6 +73,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "derived",
             "fields",
             "label_keys",
+            "reference_form_of_org_unit_types",
         ]
         fields = [
             "id",
@@ -99,6 +100,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "label_keys",
             "predefined_filters",
             "has_attachments",
+            "reference_form_of_org_unit_types",
         ]
         read_only_fields = [
             "id",
@@ -112,6 +114,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "possible_fields",
             "fields",
             "has_attachments",
+            "reference_form_of_org_unit_types",
         ]
 
     org_unit_types = serializers.SerializerMethodField()
@@ -130,6 +133,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     deleted_at = TimestampField(allow_null=True, required=False)
     has_attachments = serializers.SerializerMethodField()
+    reference_form_of_org_unit_types = serializers.SerializerMethodField()
 
     @staticmethod
     def get_latest_form_version(obj: Form):
@@ -138,6 +142,10 @@ class FormSerializer(DynamicFieldsModelSerializer):
     @staticmethod
     def get_org_unit_types(obj: Form):
         return [t.as_dict() for t in obj.org_unit_types.all()]
+
+    @staticmethod
+    def get_reference_form_of_org_unit_types(obj: Form):
+        return [org_unit.as_dict() for org_unit in obj.reference_of_org_unit_types.all()]
 
     @staticmethod
     def get_has_attachments(obj: Form):

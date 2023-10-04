@@ -99,7 +99,7 @@ def admin_attr_decorator(func: Any) -> AdminAttributes:
 
 @admin_attr_decorator
 class OrgUnitAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("parent", "reference_instance")
+    raw_id_fields = ("parent", "reference_instances")
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     readonly_fields = ("path",)

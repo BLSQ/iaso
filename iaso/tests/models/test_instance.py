@@ -1,6 +1,7 @@
 from django.core.files import File
 from django.core.files.uploadedfile import UploadedFile
 from django.utils.timezone import now
+from django.core.exceptions import ValidationError
 
 from hat.audit.models import Modification, INSTANCE_API
 from iaso import models as m
@@ -496,3 +497,57 @@ class InstanceModelTestCase(TestCase):
         self.assertEqual(1, Modification.objects.count())
         modification = Modification.objects.first()
         self.assertEqual(self.yoda, modification.user)
+
+
+class ReferenceInstanceTestCase(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")
+        cls.form = m.Form.objects.create(name="Vaccine form")
+        cls.org_unit = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type, name="Org Unit")
+        cls.instance = m.Instance.objects.create(form=cls.form, org_unit=cls.org_unit)
+
+    def test_flag_reference_instance_exception_no_form(self):
+        instance_without_form = m.Instance.objects.create(form=None, org_unit=None)
+        with self.assertRaises(ValidationError) as error:
+            instance_without_form.flag_reference_instance(self.org_unit)
+        self.assertIn("The Instance must be linked to a Form.", error.exception.message)
+
+    def test_flag_reference_instance_exception_no_orgunittype(self):
+        org_unit_without_org_unit_type = m.OrgUnit.objects.create(org_unit_type=None)
+        with self.assertRaises(ValidationError) as error:
+            self.instance.flag_reference_instance(org_unit_without_org_unit_type)
+        self.assertIn("The OrgUnit must be linked to a OrgUnitType.", error.exception.message)
+
+    def test_flag_reference_instance_exception_not_a_reference_form(self):
+        form_not_in_reference_forms = m.Form.objects.create(name="Vaccine form")
+        instance = m.Instance.objects.create(form=form_not_in_reference_forms, org_unit=self.org_unit)
+        with self.assertRaises(ValidationError) as error:
+            instance.flag_reference_instance(self.org_unit)
+        self.assertIn("The submission must be an instance of a reference form.", error.exception.message)
+
+    def test_flag_reference_instance(self):
+        self.org_unit_type.reference_forms.add(self.form)
+        org_unit_reference_instance = self.instance.flag_reference_instance(self.org_unit)
+        self.assertEqual(1, self.org_unit.reference_instances.count())
+        self.assertEqual(org_unit_reference_instance.org_unit, self.org_unit)
+        self.assertEqual(org_unit_reference_instance.form, self.form)
+        self.assertEqual(org_unit_reference_instance.instance, self.instance)
+        self.assertEqual(self.instance, self.org_unit.reference_instances.first())
+
+    def test_unflag_reference_instance(self):
+        self.org_unit_type.reference_forms.add(self.form)
+        self.instance.flag_reference_instance(self.org_unit)
+        self.assertEqual(1, self.org_unit.reference_instances.count())
+        self.instance.unflag_reference_instance(self.org_unit)
+        self.assertEqual(0, self.org_unit.reference_instances.count())
+
+    def test_is_instance_of_reference_form(self):
+        self.assertFalse(self.instance.is_instance_of_reference_form)
+        self.org_unit_type.reference_forms.add(self.form)
+        self.assertTrue(self.instance.is_instance_of_reference_form)
+
+    def test_is_reference_instance(self):
+        self.assertFalse(self.instance.is_reference_instance)
+        m.OrgUnitReferenceInstance.objects.create(org_unit=self.org_unit, instance=self.instance, form=self.form)
+        self.assertTrue(self.instance.is_reference_instance)

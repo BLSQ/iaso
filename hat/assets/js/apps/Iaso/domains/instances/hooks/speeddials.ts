@@ -8,6 +8,7 @@ import { redirectTo } from '../../../routing/actions';
 import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { OrgUnit } from '../../orgUnits/types/orgUnit';
 import { Instance } from '../types/instance';
+import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
 import snackMessages from '../../../components/snackBars/messages';
 import { Nullable } from '../../../types/utils';
 
@@ -23,20 +24,24 @@ export const useLinkOrgUnitToReferenceSubmission = ({
 }: LinkToFormParams): ((
     // eslint-disable-next-line no-unused-vars
     instance: Instance,
-    // eslint-disable-next-line no-unused-vars
-    isOrgUnitAlreadyLinked: boolean,
 ) => any) => {
     const { mutateAsync: saveOrgUnit } = useSaveOrgUnit(undefined, [
         'orgUnits',
     ]);
     const dispatch = useDispatch();
     return useCallback(
-        (currentInstance: Instance, isOrgUnitAlreadyLinked: boolean) => {
-            const { org_unit: orgUnit, id: instanceId } = currentInstance ?? {};
-            const id = isOrgUnitAlreadyLinked ? null : instanceId;
+        (currentInstance: Instance) => {
+            const {
+                org_unit: orgUnit,
+                id: instanceId,
+                is_reference_instance: isReferenceInstance,
+            } = currentInstance ?? {};
             const orgUnitPayload: Partial<OrgUnit> = {
                 id: orgUnit.id,
-                reference_instance_id: id,
+                reference_instance_id: instanceId,
+                reference_instance_action: isReferenceInstance
+                    ? REFERENCE_UNFLAG_CODE
+                    : REFERENCE_FLAG_CODE,
             };
             return saveOrgUnit(orgUnitPayload, {
                 onSuccess: (result: OrgUnit) => {

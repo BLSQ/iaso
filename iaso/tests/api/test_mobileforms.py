@@ -58,6 +58,12 @@ class MobileFormsAPITestCase(APITestCase):
         cls.project_1.forms.add(cls.form_2)
         cls.project_1.save()
 
+        # Set reference forms.
+        cls.jedi_council.reference_forms.add(cls.form_2)
+        cls.jedi_council.save()
+        cls.jedi_academy.reference_forms.add(cls.form_1)
+        cls.jedi_academy.save()
+
     def test_forms_list_without_auth(self):
         """GET /mobile/forms/ without auth: 0 result"""
 
@@ -440,6 +446,7 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "periods_after_allowed", int)
         self.assertHasField(form_data, "created_at", float)
         self.assertHasField(form_data, "updated_at", float)
+        self.assertHasField(form_data, "reference_form_of_org_unit_types", list)
 
     # noinspection DuplicatedCode
     def assertValidFullFormData(self, form_data: typing.Mapping):
@@ -456,6 +463,10 @@ class MobileFormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "instance_updated_at", float)
 
         for org_unit_type_data in form_data["org_unit_types"]:
+            self.assertIsInstance(org_unit_type_data, dict)
+            self.assertHasField(org_unit_type_data, "id", int)
+
+        for org_unit_type_data in form_data["reference_form_of_org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)
             self.assertHasField(org_unit_type_data, "id", int)
 

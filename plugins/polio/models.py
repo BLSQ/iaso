@@ -554,9 +554,9 @@ class Campaign(SoftDeletableModel):
         return self.get_campaign_scope_districts()
 
     def get_districts_for_round(self, round):
+        districts = []
         if self.separate_scopes_per_round:
-            id_set = ()
-            districts = []
+            id_set = set()
             for scope in round.scopes.all():
                 for ou in scope.group.org_units.all():
                     if ou.id not in id_set:

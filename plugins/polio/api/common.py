@@ -199,7 +199,7 @@ def calculate_country_status(country_data, scope, roundNumber):
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
         return LQASStatus.InScope
-    passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
+    passing_ratio = round((aggregated_statuses["passed"] * 100) / len(scope))
     if passing_ratio >= 80:
         return LQASStatus.Pass
     return LQASStatus.Fail

@@ -53,40 +53,37 @@ export const OrgUnitMultiReferenceInstances: FunctionComponent<Props> = ({
     };
 
     return (
-        <>
-            <Grid container item xs={12} md={8}>
-                <Box mt={4} className={classes.formContents}>
-                    {referenceInstances.length > 1 && (
-                        <InputComponent
-                            type="select"
-                            clearable={false}
-                            onChange={(_, value) => handleChange(value)}
-                            label={MESSAGES.multiReferenceInstancesLabel}
-                            options={options}
-                            keyValue="referenceInstance"
-                            value={active.id}
-                        />
-                    )}
-                    <br />
-                    <WidgetPaper
-                        title={
-                            <Link to={url} className={classes.link}>
-                                {title}
-                            </Link>
-                        }
-                        IconButton={IconButtonComponent}
-                        iconButtonProps={{
-                            onClick: () =>
-                                window.open(active.file_url, '_blank'),
-                            icon: 'xml',
-                            color: 'secondary',
-                            tooltipMessage: MESSAGES.downloadXml,
-                        }}
-                    >
-                        <InstanceFileContent instance={active} />
-                    </WidgetPaper>
-                </Box>
-            </Grid>
-        </>
+        <Grid container item xs={12} md={8}>
+            <Box mt={4} className={classes.formContents}>
+                {referenceInstances.length > 1 && (
+                    <InputComponent
+                        type="select"
+                        clearable={false}
+                        onChange={(_, value) => handleChange(value)}
+                        label={MESSAGES.multiReferenceInstancesLabel}
+                        options={options}
+                        keyValue="referenceInstance"
+                        value={active.id}
+                    />
+                )}
+                <br />
+                <WidgetPaper
+                    title={
+                        <Link to={url} className={classes.link}>
+                            {title}
+                        </Link>
+                    }
+                    IconButton={IconButtonComponent}
+                    iconButtonProps={{
+                        onClick: () => window.open(active.file_url, '_blank'),
+                        icon: 'xml',
+                        color: 'secondary',
+                        tooltipMessage: MESSAGES.downloadXml,
+                    }}
+                >
+                    <InstanceFileContent instance={active} />
+                </WidgetPaper>
+            </Box>
+        </Grid>
     );
 };

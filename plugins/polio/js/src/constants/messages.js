@@ -2366,9 +2366,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.error.dateForExpired',
         defaultMessage: 'Expired authorisations can only have past dates',
     },
+    startDateAfterExpiration: {
+        id: 'iaso.polio.error.startDateAfterExpiration',
+        defaultMessage: 'Start date must be anterior to expiration date',
+    },
     mostRecentAuthStatus: {
         id: 'iaso.polio.table.label.mostRecentAuthStatus',
         defaultMessage: 'Most recent authorisation status',
+    },
+    vaccineAuthStartDate: {
+        id: 'iaso.polio.table.label.vaccineAuthStartDate',
+        defaultMessage: 'Start Date',
     },
     afroMapfilterInfo: {
         id: 'iaso.polio.label.afroMapfilterInfo',

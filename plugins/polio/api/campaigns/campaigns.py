@@ -134,7 +134,7 @@ class CampaignSerializer(serializers.ModelSerializer):
     def get_general_status(self, campaign):
         now_utc = timezone.now().date()
         ordered_rounds = list(campaign.rounds.all())
-        ordered_rounds.sort(key=lambda x: x.number)
+        ordered_rounds.sort(key=lambda x: x.number, reverse=True)
         for round in ordered_rounds:
             if round.ended_at and now_utc > round.ended_at:
                 return _("Round {} ended").format(round.number)

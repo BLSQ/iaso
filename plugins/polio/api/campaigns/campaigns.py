@@ -998,7 +998,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             current_date = current_date.date()
             return current_date.year
         else:
-            today = datetime.date.today()
+            today = datetime.today()
             return today.year
 
     def get_calendar_data(self: "CampaignViewSet", year: int, params: Any) -> Any:
@@ -1084,7 +1084,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         # count all districts in the country
         country_districts_count = country.descendants().filter(org_unit_type__category="DISTRICT").count()
         # count disticts related to the round
-        round_districts_count = campaign.get_districts_for_round_number(round_number).count() if round_number else 0
+        round_districts_count = len(campaign.get_districts_for_round_number(round_number)) if round_number else 0
         districts_exists = country_districts_count > 0 and round_districts_count > 0
         # check if country districts is equal to round districts
         if districts_exists:

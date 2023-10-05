@@ -177,7 +177,7 @@ def send_email_expired_vaccine_authorizations_alert(task=None):
 
 @task_decorator(task_name="vaccine_authorization_update_expired_entries")
 def vaccine_authorization_update_expired_entries(task=None):
-    expired_vacc_auth = VaccineAuthorization.objects.filter(expiration_date=datetime.date.today() - timedelta(days=1))
+    expired_vacc_auth = VaccineAuthorization.objects.filter(expiration_date__lt=datetime.date.today())
     total = expired_vacc_auth.count()
 
     expired_auth = 0

@@ -622,6 +622,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             status="VALIDATED",
             quantity=5000000,
             expiration_date=date.today() - datetime.timedelta(days=1),
+            start_date=date.today() - datetime.timedelta(days=20),
         )
 
         valid_entry = VaccineAuthorization.objects.create(
@@ -632,18 +633,41 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             expiration_date=date.today(),
         )
 
+        expired_entry_second = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=5000000,
+            expiration_date=date.today() - datetime.timedelta(days=200),
+            start_date=date.today() - datetime.timedelta(days=250),
+        )
+
+        expired_entry_third = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=5000000,
+            expiration_date=date.today() - datetime.timedelta(days=300),
+            start_date=date.today() - datetime.timedelta(days=350),
+        )
+
         task = vaccine_authorization_update_expired_entries(user=self.user_1)
 
         self.assertEqual(task.status, "QUEUED")
         task_service = TestTaskService()
         task_service.run_all()
         task.refresh_from_db()
+        expired_entry_second.refresh_from_db()
         expired_entry.refresh_from_db()
+        expired_entry_third.refresh_from_db()
         valid_entry.refresh_from_db()
         self.assertEqual(task.status, "SUCCESS")
 
+        self.assertEqual(expired_entry_second.status, "EXPIRED")
         self.assertEqual(expired_entry.status, "EXPIRED")
+        self.assertEqual(expired_entry_third.status, "EXPIRED")
         self.assertEqual(valid_entry.status, "VALIDATED")
+        self.assertEqual(task.progress_message, "3 expired nOPV2 vaccine authorization.")
 
     def test_order_get_recent_vacc(self):
         self.client.force_authenticate(self.user_1)

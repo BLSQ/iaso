@@ -239,6 +239,7 @@ export type RoundDateHistoryEntry = {
     started_at: string; // DATE
     ended_at: string; // DATE
     reason: ReasonForDelay;
+    reason_for_delay: number; // an id
     user: { first_name: string; last_name: string; username: string };
     created_at: string; // DATE
 };

@@ -30,7 +30,7 @@ User must be authenticated.
 ```json
 {
   "uuid": "UUID - Client generated UUID",
-  "org_unit_id": "String - id or UUID of the OrgUnit to change, if UUID doesn't exist in DB, it's a new OrgUnit.",
+  "org_unit_id": "String - id or UUID of the OrgUnit to change",
   "created_at": "Timestamp - format same as /api/instances",
   "updated_at": "Timestamp - format same as /api/instances",
   "changes": { "": "Changes is not null and must contain at least one field",

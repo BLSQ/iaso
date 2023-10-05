@@ -1,19 +1,18 @@
 import React, { useMemo } from 'react';
 import { textPlaceholder, useSafeIntl } from 'bluesquare-components';
-import { Switch, Tooltip, Grid } from '@material-ui/core';
+import { Switch } from '@material-ui/core';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
 } from '@material-ui/icons';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
-import PERMISSIONS_MESSAGES from './permissionsMessages.ts';
 import { userHasPermission } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
+import PermissionLabel from './components/PermissionLabel.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -88,34 +87,11 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 sortable: false,
                 align: 'left',
                 Cell: settings => {
-                    let title = false;
-                    const toolTipMessageObject =
-                        PERMISSIONS_MESSAGES[
-                            `${settings.row.original.permissionCodeName}_tooltip`
-                        ];
-                    if (toolTipMessageObject !== undefined) {
-                        title = formatMessage(toolTipMessageObject);
-                    }
-
                     return (
-                        <Grid container direction="row" spacing={2}>
-                            <Grid item xs={11}>
-                                <span>{settings.row.original.permission} </span>
-                            </Grid>
-                            <Grid item xs={1}>
-                                {title && (
-                                    <Tooltip
-                                        title={title}
-                                        interactive
-                                        leaveDelay={500}
-                                        placement="right-start"
-                                        arrow
-                                    >
-                                        <HelpOutlineIcon color="primary" />
-                                    </Tooltip>
-                                )}
-                            </Grid>
-                        </Grid>
+                        <PermissionLabel
+                            codename={`${settings.row.original.permissionCodeName}_tooltip`}
+                            name={settings.row.original.permission}
+                        />
                     );
                 },
             },

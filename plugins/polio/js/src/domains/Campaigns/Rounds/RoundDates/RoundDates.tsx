@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import React, { FunctionComponent } from 'react';
 import { Field, FormikProvider, useFormik, useFormikContext } from 'formik';
 import { useSafeIntl } from 'bluesquare-components';
@@ -48,7 +49,10 @@ export const RoundDates: FunctionComponent<Props> = ({
             initialValues.rounds.find(round => round.number === roundNumber)
                 ?.ended_at,
     );
-    const save = ({ startDate, endDate, reason }, helpers) => {
+    const save = (
+        { startDate, endDate, reason, reason_for_delay },
+        helpers,
+    ) => {
         setParentFieldValue(`rounds[${roundIndex}]`, {
             ...rounds[roundIndex],
             started_at: startDate,
@@ -57,6 +61,7 @@ export const RoundDates: FunctionComponent<Props> = ({
                 ...(parentFieldValue?.datelogs ?? []),
                 {
                     reason,
+                    reason_for_delay,
                     previous_started_at: currentStartDate,
                     previous_ended_at: currentEndDate,
                     started_at: startDate,
@@ -74,6 +79,7 @@ export const RoundDates: FunctionComponent<Props> = ({
             startDate: currentStartDate,
             endDate: currentEndDate,
             reason: null,
+            reason_for_delay: null,
         },
         enableReinitialize: true,
         validateOnBlur: true,

@@ -7,7 +7,10 @@ import {
 import { Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
 import MESSAGES from '../../../../constants/messages';
-import { useReasonsForDateChangeOptions } from './hooks/reasons';
+import {
+    useReasonsDelayOptions,
+    useReasonsForDateChangeOptions,
+} from './hooks/reasons';
 import { ReasonsForDelayButton } from './ReasonsForDelayButton';
 import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
@@ -25,8 +28,10 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
     allowConfirm,
 }) => {
     const { formatMessage } = useSafeIntl();
-    const { handleSubmit, resetForm } = useFormikContext();
+    const { handleSubmit, resetForm, values } = useFormikContext();
     const options = useReasonsForDateChangeOptions();
+    const { data: reasonsForDelayOptions } = useReasonsDelayOptions();
+    console.log('OPTIONS', reasonsForDelayOptions);
     return (
         <ConfirmCancelModal
             id="reasonForDelay-Modal"
@@ -58,12 +63,12 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
             />
             <Field
                 label={formatMessage(MESSAGES.reasonForDateChange)}
-                name="reason"
+                name="reason_for_delay"
                 component={SingleSelect}
                 fullWidth
                 required
                 clearable={false}
-                options={options}
+                options={reasonsForDelayOptions ?? []}
             />
         </ConfirmCancelModal>
     );

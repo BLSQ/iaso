@@ -1,7 +1,10 @@
 import { useSafeIntl } from 'bluesquare-components';
 import { useMemo } from 'react';
+import { UseQueryResult } from 'react-query';
 import MESSAGES from '../../../../../constants/messages';
 import { DropdownOptions } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { useSnackQuery } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import { getRequest } from '../../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 
 export type ReasonForDelay =
     | 'INITIAL_DATA'
@@ -52,3 +55,24 @@ export const useReasonsForDateChangeOptions =
             });
         }, [formatMessage]);
     };
+
+export const useReasonsDelayOptions = (
+    locale: 'en' | 'fr' = 'en',
+): UseQueryResult<DropdownOptions<number>[], any> => {
+    return useSnackQuery({
+        queryKey: ['reasonsForDelay', locale],
+        queryFn: () => getRequest('/api/polio/reasonsfordelay/'),
+        options: {
+            select: data => {
+                if (!data) return [];
+                const key = `name_${locale.toLowerCase()}`;
+                return data.results.map(reason => {
+                    return {
+                        label: reason[key],
+                        value: reason.id,
+                    } as DropdownOptions<number>;
+                });
+            },
+        },
+    });
+};

@@ -103,8 +103,8 @@ export const useRoundDateHistorySchema = (
             .required(formatMessage(MESSAGES.fieldRequired)),
         // @ts-ignore
         // .isEndBeforeStart(formatMessage),
-        reason: yup
-            .string()
+        reason_for_delay: yup
+            .number()
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired)),
     });

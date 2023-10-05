@@ -84,7 +84,6 @@ const MarkerInputs = ({
                             label={MESSAGES.longitude}
                             min={-180}
                             max={180}
-                            step={0.00000001}
                         />
                         <InputComponent
                             disabled={actionBusy}
@@ -99,7 +98,6 @@ const MarkerInputs = ({
                                     });
                                 }
                             }}
-                            step={0.00000001}
                         />
                         <Box mb={2} mt={2}>
                             <Button

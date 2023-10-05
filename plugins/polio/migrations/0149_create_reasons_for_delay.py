@@ -58,7 +58,7 @@ def remove_reasons_for_delay(apps, schema_editor):
     ReasonForDelay = apps.get_model("polio", "ReasonForDelay")
     reasons_for_delay = ReasonForDelay.objects.all()
     for reason in reasons_for_delay:
-        reason.delete
+        reason.delete()
 
 
 class Migration(migrations.Migration):

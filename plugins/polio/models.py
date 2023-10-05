@@ -14,6 +14,7 @@ from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 
 from iaso.models import Group, OrgUnit
+from iaso.models.base import Account
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
@@ -190,7 +191,10 @@ class ReasonForDelay(SoftDeletableModel):
     key_name = models.CharField(null=True, blank=True, max_length=200, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # add account
+    account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")
+
+    class Meta:
+        unique_together = ["key_name", "account"]
 
     def __str__(self):
         return self.name

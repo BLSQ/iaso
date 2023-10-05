@@ -117,7 +117,7 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
     round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
     reason_for_delay: Field = serializers.PrimaryKeyRelatedField(
         queryset=ReasonForDelay.objects.all(), many=False
-    )  # optimize by account
+    )  # filter by account
 
     def validate(self, data):
         if data.get("reason_for_delay", None) is None:

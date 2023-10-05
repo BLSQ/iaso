@@ -99,6 +99,7 @@ class RoundSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
         user = request.user
+        account = user.iaso_profile.account
         updated_datelogs = validated_data.pop("datelogs", [])
 
         has_datelog = instance.datelogs.count() > 0
@@ -121,7 +122,11 @@ class RoundSerializer(serializers.ModelSerializer):
                 ].key_name != "INITIAL_DATA":  # INITAL_DATA should prolly be put in a const somewhere
                     datelog = RoundDateHistoryEntry.objects.create(round=instance, modified_by=user)
             else:
-                reason_for_delay = ReasonForDelay.objects.get(key_name="INITIAL_DATA")  # Make null safe
+                try:
+                    reason_for_delay = ReasonForDelay.objects.filter(account=account).get(key_name="INITIAL_DATA")
+                except ReasonForDelay.DoesNotExist:
+                    # Fallback on first reason available for account
+                    reason_for_delay = ReasonForDelay.filter(account=account).first()
                 datelog = RoundDateHistoryEntry.objects.create(
                     round=instance, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
                 )
@@ -131,7 +136,7 @@ class RoundSerializer(serializers.ModelSerializer):
                     instance=datelog,
                     data={**new_datelog, "reason_for_delay": new_datelog["reason_for_delay"].id},
                     context=self.context,
-                )  # This stinks
+                )
                 datelog_serializer.is_valid(raise_exception=True)
                 datelog_instance = datelog_serializer.save()
                 instance.datelogs.add(datelog_instance)

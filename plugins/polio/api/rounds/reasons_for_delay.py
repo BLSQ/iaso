@@ -16,4 +16,5 @@ class ReasonForDelayViewSet(ModelViewSet):
     serializer_class = ReasonForDelaySerializer
 
     def get_queryset(self):
-        return ReasonForDelay.objects.filter(deleted_at__isnull=True)
+        account = self.request.user.iaso_profile.account
+        return ReasonForDelay.objects.filter(deleted_at__isnull=True).filter(account=account)

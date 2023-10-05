@@ -81,7 +81,7 @@ const PERMISSIONS_MESSAGES = defineMessages({
     },
     iaso_assignments: {
         id: 'iaso.permissions.assignments',
-        defaultMessage: 'Planning',
+        defaultMessage: 'Attributions',
     },
     iaso_completeness_stats: {
         id: 'iaso.permissions.completeness_stats',

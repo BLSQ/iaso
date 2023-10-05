@@ -1,10 +1,12 @@
 import datetime
 from datetime import date
 
+from django.contrib.auth.models import User
 from django.core import mail
 from django.utils.timezone import now
 from rest_framework.test import APIClient
 
+from beanstalk_worker.services import TestTaskService
 from hat import settings
 from iaso import models as m
 from iaso.models import Account, Group, OrgUnitType, Team
@@ -13,6 +15,8 @@ from plugins.polio.models import VaccineAuthorization
 from plugins.polio.tasks.vaccine_authorizations_mail_alerts import (
     expired_vaccine_authorizations_email_alert,
     vaccine_authorization_update_expired_entries,
+    send_email_vaccine_authorizations_60_days_expiration_alert,
+    send_email_expired_vaccine_authorizations_alert,
     vaccine_authorizations_60_days_expiration_email_alert,
 )
 
@@ -54,6 +58,10 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             name="Project_2",
             app_id="pro.jects",
             account=cls.account_2,
+        )
+
+        cls.team = Team.objects.create(
+            name="nOPV2 vaccine authorization alerts", project=cls.project, manager=cls.user_1
         )
 
         cls.org_unit_type_country = OrgUnitType.objects.create(name="COUNTRY", category="COUNTRY")
@@ -131,13 +139,15 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "start_date": datetime.date(2224, 2, 1),
+                "expiration_date": datetime.date(2225, 2, 1),
             },
         )
 
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.data["country"]["name"], "Democratic Republic of Congo")
-        self.assertEqual(response.data["expiration_date"], "2024-02-01"),
+        self.assertEqual(response.data["expiration_date"], "2225-02-01"),
+        self.assertEqual(response.data["start_date"], "2224-02-01"),
         self.assertEqual(response.data["status"], "ONGOING")
         self.assertEqual(response.data["comment"], "waiting for approval.")
         self.assertEqual(response.data["quantity"], 12346)
@@ -170,7 +180,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=123456,
             status="ongoing",
             comment="waiting for approval",
-            expiration_date="2024-02-01",
+            expiration_date="2224-02-01",
         )
 
         response = self.client.get(f"/api/polio/vaccineauthorizations/{vaccine_auth.id}/")
@@ -192,7 +202,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=1000000,
             status="signature",
             comment="validated",
-            expiration_date="2024-02-01",
+            expiration_date="2224-02-01",
         )
 
         response = self.client.get("/api/polio/vaccineauthorizations/")
@@ -210,7 +220,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             quantity=1000000,
             status="signature",
             comment="validated",
-            expiration_date="2024-02-01",
+            expiration_date="2224-02-01",
         )
 
         response = self.client.get("/api/polio/vaccineauthorizations/")
@@ -226,7 +236,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ongoing",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": "2224-02-01",
             },
         )
 
@@ -250,7 +260,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "EXPIRED",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2223-02-01",
             },
         )
 
@@ -261,7 +272,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "VALIDATED",
                 "comment": "validated auth",
-                "expiration_date": "2024-03-01",
+                "expiration_date": "2224-03-01",
+                "start_date": "2224-02-01",
             },
         )
 
@@ -273,16 +285,18 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "status": "ONGOING",
                 "comment": "next validation date",
                 "expiration_date": "2024-04-01",
+                "start_date": "2224-02-01",
             },
         )
 
         response = self.client.get("/api/polio/vaccineauthorizations/get_most_recent_authorizations/")
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.data[0]["comment"], "next validation date")
-        self.assertEqual(response.data[0]["status"], "ONGOING")
-        self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2024, 3, 1))
-        self.assertEqual(response.data[0]["next_expiration_date"], datetime.date(2024, 4, 1))
+        self.assertEqual(response.data[0]["comment"], "validated auth")
+        self.assertEqual(response.data[0]["status"], "VALIDATED")
+        self.assertEqual(response.data[0]["current_expiration_date"], datetime.date(2224, 3, 1))
+        self.assertEqual(response.data[0]["next_expiration_date"], None)
+        self.assertEqual(response.data[0]["start_date"], datetime.date(2224, 2, 1))
 
     def test_filters(self):
         self.client.force_authenticate(self.user_1)
@@ -296,7 +310,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "waiting for approval.",
-                "expiration_date": "2024-02-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 
@@ -307,7 +322,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "ONGOING",
                 "comment": "new update",
-                "expiration_date": "2024-03-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 
@@ -318,7 +334,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "VALIDATED",
                 "comment": "Approved.",
-                "expiration_date": "2024-04-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 
@@ -329,7 +346,8 @@ class VaccineAuthorizationAPITestCase(APITestCase):
                 "quantity": 12346,
                 "status": "VALIDATED",
                 "comment": "Approved.",
-                "expiration_date": "2024-04-01",
+                "expiration_date": "2224-02-01",
+                "start_date": "2224-01-01",
             },
         )
 
@@ -488,10 +506,12 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-        team = Team.objects.create(name="nOPV2 vaccine authorization alerts", project=self.project, manager=self.user_1)
-        team.users.set([self.user_1])
+        self.team.users.set([self.user_1])
 
         sixty_days_date = datetime.date.today() + datetime.timedelta(days=60)
+        vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=sixty_days_date)
+
+        mailing_list = [user.email for user in User.objects.filter(pk__in=self.team.users.all())]
 
         sixty_days_expiration_auth = VaccineAuthorization.objects.create(
             account=self.user_1.iaso_profile.account,
@@ -513,7 +533,9 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         from_email = settings.DEFAULT_FROM_EMAIL
 
-        response = vaccine_authorizations_60_days_expiration_email_alert()
+        # test the function itself to check if the content is correct
+
+        response = vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing_list)
 
         self.assertEqual(response, {"vacc_auth_mail_sent_to": ["XlfeeekfdpppZ@somemailzz.io"]})
 
@@ -525,14 +547,26 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(mail.outbox[0].from_email, from_email)
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
 
+        # test the task
+
+        task = send_email_vaccine_authorizations_60_days_expiration_alert(user=self.user_1)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
+
     def test_expired_vaccine_authorizations_email_alert(self):
         self.client.force_authenticate(self.user_1)
         self.user_1.iaso_profile.org_units.set([self.org_unit_DRC.pk])
 
-        team = Team.objects.create(name="nOPV2 vaccine authorization alerts", project=self.project, manager=self.user_1)
-        team.users.set([self.user_1])
+        self.team.users.set([self.user_1])
 
         past_date = datetime.date.today() - datetime.timedelta(days=1)
+
+        vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=past_date)
+        mailing_list = [user.email for user in User.objects.filter(pk__in=self.team.users.all())]
 
         past_vacc_auth = VaccineAuthorization.objects.create(
             account=self.user_1.iaso_profile.account,
@@ -554,9 +588,11 @@ class VaccineAuthorizationAPITestCase(APITestCase):
 
         from_email = settings.DEFAULT_FROM_EMAIL
 
-        response = expired_vaccine_authorizations_email_alert()
+        # test the function itself to check if the content is correct
 
-        page_url = f"example.com//dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
+        response = expired_vaccine_authorizations_email_alert(vaccine_auths, mailing_list)
+
+        page_url = f"example.com/dashboard/polio/vaccinemodule/nopv2authorisation/accountId/{self.team.project.account.id}/order/-current_expiration_date/pageSize/20/page/1"
         url_is_correct = False
 
         if page_url in mail.outbox[0].body:
@@ -569,6 +605,16 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         self.assertEqual(mail.outbox[0].to, ["XlfeeekfdpppZ@somemailzz.io"])
         self.assertEqual(url_is_correct, True)
 
+        # test the Task
+
+        task = send_email_expired_vaccine_authorizations_alert(user=self.user_1)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
+
     def test_vaccine_authorization_update_expired_entries(self):
         expired_entry = VaccineAuthorization.objects.create(
             account=self.user_1.iaso_profile.account,
@@ -576,6 +622,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             status="VALIDATED",
             quantity=5000000,
             expiration_date=date.today() - datetime.timedelta(days=1),
+            start_date=date.today() - datetime.timedelta(days=20),
         )
 
         valid_entry = VaccineAuthorization.objects.create(
@@ -586,13 +633,41 @@ class VaccineAuthorizationAPITestCase(APITestCase):
             expiration_date=date.today(),
         )
 
-        vaccine_authorization_update_expired_entries()
+        expired_entry_second = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=5000000,
+            expiration_date=date.today() - datetime.timedelta(days=200),
+            start_date=date.today() - datetime.timedelta(days=250),
+        )
 
+        expired_entry_third = VaccineAuthorization.objects.create(
+            account=self.user_1.iaso_profile.account,
+            country=self.org_unit_DRC,
+            status="VALIDATED",
+            quantity=5000000,
+            expiration_date=date.today() - datetime.timedelta(days=300),
+            start_date=date.today() - datetime.timedelta(days=350),
+        )
+
+        task = vaccine_authorization_update_expired_entries(user=self.user_1)
+
+        self.assertEqual(task.status, "QUEUED")
+        task_service = TestTaskService()
+        task_service.run_all()
+        task.refresh_from_db()
+        expired_entry_second.refresh_from_db()
         expired_entry.refresh_from_db()
+        expired_entry_third.refresh_from_db()
         valid_entry.refresh_from_db()
+        self.assertEqual(task.status, "SUCCESS")
 
+        self.assertEqual(expired_entry_second.status, "EXPIRED")
         self.assertEqual(expired_entry.status, "EXPIRED")
+        self.assertEqual(expired_entry_third.status, "EXPIRED")
         self.assertEqual(valid_entry.status, "VALIDATED")
+        self.assertEqual(task.progress_message, "3 expired nOPV2 vaccine authorization.")
 
     def test_order_get_recent_vacc(self):
         self.client.force_authenticate(self.user_1)

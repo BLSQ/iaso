@@ -2226,6 +2226,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
         defaultMessage: 'Campaign moved forward by MOH',
     },
+    VRF_NOT_SIGNED: {
+        id: 'iaso.polio.label.VRF_NOT_SIGNED',
+        defaultMessage: 'VRF not signed',
+    },
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS: {
+        id: 'iaso.polio.label.FOUR_WEEKS_GAP_BETWEEN_ROUNDS',
+        defaultMessage: 'Four weeks gap between rounds to be respected',
+    },
+    OTHER_VACCINATION_CAMPAIGNS: {
+        id: 'iaso.polio.label.OTHER_VACCINATION_CAMPAIGNS',
+        defaultMessage: 'Other vaccination campaigns',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',
@@ -2354,9 +2366,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.error.dateForExpired',
         defaultMessage: 'Expired authorisations can only have past dates',
     },
+    startDateAfterExpiration: {
+        id: 'iaso.polio.error.startDateAfterExpiration',
+        defaultMessage: 'Start date must be anterior to expiration date',
+    },
     mostRecentAuthStatus: {
         id: 'iaso.polio.table.label.mostRecentAuthStatus',
         defaultMessage: 'Most recent authorisation status',
+    },
+    vaccineAuthStartDate: {
+        id: 'iaso.polio.table.label.vaccineAuthStartDate',
+        defaultMessage: 'Start Date',
     },
     afroMapfilterInfo: {
         id: 'iaso.polio.label.afroMapfilterInfo',

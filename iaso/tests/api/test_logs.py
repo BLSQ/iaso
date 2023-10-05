@@ -23,9 +23,7 @@ class LogsAPITestCase(APITestCase):
         cls.reference_form_wrong_project = m.Form.objects.create(
             name="Reference form with wrong project", period_type=m.MONTH, single_per_period=True
         )
-        cls.org_unit_type_1 = m.OrgUnitType.objects.create(
-            name="Plop", short_name="Pl", reference_form_id=cls.reference_form_update.id
-        )
+        cls.org_unit_type_1 = m.OrgUnitType.objects.create(name="Plop", short_name="Pl")
         cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
         cls.ead.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
 

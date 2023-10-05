@@ -2,32 +2,25 @@
 import React, { FunctionComponent } from 'react';
 
 import { Box, Button, Grid } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
 
 import { makeStyles } from '@material-ui/core/styles';
 
 import {
     useSafeIntl,
     FormControl as FormControlComponent,
-    IconButton as IconButtonComponent,
 } from 'bluesquare-components';
-import { useSaveOrgUnit } from '../hooks';
 import InputComponent from '../../../components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { fetchEditUrl } from '../../instances/actions';
 import MESSAGES from '../messages';
 import { OrgUnitTreeviewModal } from './TreeView/OrgUnitTreeviewModal';
-import InstanceFileContent from '../../instances/components/InstanceFileContent';
-import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
-import SpeedDialInstanceActions from '../../instances/components/SpeedDialInstanceActions';
 
 import { OrgUnitCreationDetails } from './OrgUnitCreationDetails';
-import { Actions } from './OrgUnitActions';
 
-import { OrgUnitState, Group, OrgUnit, Action } from '../types/orgUnit';
+import { OrgUnitState, Group, OrgUnit } from '../types/orgUnit';
 import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
+import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -35,9 +28,6 @@ const useStyles = makeStyles(theme => ({
     },
     marginLeft: {
         marginLeft: '8px',
-    },
-    formContents: {
-        width: '100%',
     },
 }));
 
@@ -69,9 +59,7 @@ type Props = {
     orgUnitModified: boolean;
     isFetchingOrgUnitTypes: boolean;
     isFetchingGroups: boolean;
-    referenceInstance: Instance;
-    // eslint-disable-next-line no-unused-vars
-    setFieldErrors: (errors: string) => void;
+    referenceInstances: Instance[];
     orgUnit: OrgUnit;
 };
 
@@ -87,35 +75,16 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
     orgUnitModified,
     isFetchingOrgUnitTypes,
     isFetchingGroups,
-    referenceInstance,
-    setFieldErrors,
+    referenceInstances,
     orgUnit,
 }) => {
-    const { mutateAsync: saveOu } = useSaveOrgUnit();
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
-    const dispatch = useDispatch();
-
-    const { formId } = params;
-    const { referenceFormId } = params;
-    const { instanceId } = params;
-
-    const showSpeedDialsActions =
-        referenceInstance ||
-        (formId === referenceFormId &&
-            Boolean(formId) &&
-            Boolean(referenceFormId));
 
     const isNewOrgunit = params.orgUnitId === '0';
     const isSaveDisabled =
         orgUnitState.name.value === '' ||
         orgUnitState.org_unit_type_id.value === null;
-
-    const handleActionSelected = (action: Action, instance: Instance) => {
-        if (action.id === 'instanceEditAction' && instance) {
-            dispatch(fetchEditUrl(instance, window.location));
-        }
-    };
 
     const {
         data: validationStatusOptions,
@@ -124,23 +93,6 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
 
     return (
         <Grid container spacing={2}>
-            {showSpeedDialsActions && (
-                <SpeedDialInstanceActions
-                    speedDialClasses={classes.speedDialTop}
-                    actions={Actions({
-                        orgUnitState,
-                        formId,
-                        referenceFormId,
-                        instanceId,
-                        saveOu,
-                        setFieldErrors,
-                        referenceInstance,
-                    })}
-                    onActionSelected={action =>
-                        handleActionSelected(action, referenceInstance)
-                    }
-                />
-            )}
             <Grid item xs={12} md={4}>
                 <InputComponent
                     keyValue="name"
@@ -275,28 +227,10 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                 </Box>
             </Grid>
 
-            {referenceInstance && (
-                <Grid container item xs={12} md={8}>
-                    <Box mt={4} className={classes.formContents}>
-                        <WidgetPaper
-                            id="form-contents"
-                            title={formatMessage(MESSAGES.detailTitle)}
-                            IconButton={IconButtonComponent}
-                            iconButtonProps={{
-                                onClick: () =>
-                                    window.open(
-                                        referenceInstance.file_url,
-                                        '_blank',
-                                    ),
-                                icon: 'xml',
-                                color: 'secondary',
-                                tooltipMessage: MESSAGES.downloadXml,
-                            }}
-                        >
-                            <InstanceFileContent instance={referenceInstance} />
-                        </WidgetPaper>
-                    </Box>
-                </Grid>
+            {referenceInstances && referenceInstances.length > 0 && (
+                <OrgUnitMultiReferenceInstances
+                    referenceInstances={referenceInstances}
+                />
             )}
         </Grid>
     );

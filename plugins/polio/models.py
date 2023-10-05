@@ -175,6 +175,7 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
+    # Deprecated. Kept temporarily to avoid breaking a dashboard
     reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
     reason_for_delay = models.ForeignKey(
         "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="reason"
@@ -184,11 +185,12 @@ class RoundDateHistoryEntry(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-class ReasonForDelay(models.Model):
+class ReasonForDelay(SoftDeletableModel):
     name = TranslatedField(models.CharField(_("name"), max_length=200))
-    key_name = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
+    key_name = models.CharField(null=True, blank=True, max_length=200, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # add account
 
     def __str__(self):
         return self.name

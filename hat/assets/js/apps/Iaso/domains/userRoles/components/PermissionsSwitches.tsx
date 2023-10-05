@@ -70,10 +70,10 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
     };
 
     const getPermissionToolTip = permissionCodeName => {
-        let title = false;
+        let title;
         const toolTipMessageObject =
             PERMISSIONS_MESSAGES[`${permissionCodeName}_tooltip`];
-        if (toolTipMessageObject !== undefined) {
+        if (toolTipMessageObject) {
             title = formatMessage(toolTipMessageObject);
         }
         if (title) {

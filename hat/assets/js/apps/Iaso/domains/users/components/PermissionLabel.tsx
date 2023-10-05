@@ -13,7 +13,7 @@ const PermissionLabel: React.FunctionComponent<Props> = ({
     codename,
     name,
 }) => {
-    let title = false;
+    let title;
     const { formatMessage } = useSafeIntl();
     const toolTipMessageObject = PERMISSIONS_MESSAGES[codename];
     if (toolTipMessageObject) {

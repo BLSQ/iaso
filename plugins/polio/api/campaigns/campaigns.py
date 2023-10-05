@@ -257,6 +257,14 @@ class CampaignSerializer(serializers.ModelSerializer):
             # we pop the campaign since we use the set afterward which will also remove the deleted one
             round_data.pop("campaign", None)
             scopes = round_data.pop("scopes", [])
+
+            # Replace ReasonForDelay instance with pk to avoid type error when calling is_valid
+            round_datelogs = round_data.pop("datelogs")
+            datelogs_with_pk = [
+                {**datelog, "reason_for_delay": datelog["reason_for_delay"].id} for datelog in round_datelogs
+            ]
+            round_data["datelogs"] = datelogs_with_pk
+
             round_serializer = RoundSerializer(instance=round, data=round_data, context=self.context)
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()
@@ -576,8 +584,10 @@ class ExportCampaignSerializer(CampaignSerializer):
                     "started_at",
                     "ended_at",
                     "reason",
+                    "reason_for_delay",
                     "modified_by",
                     "created_at",
+                    "reason_for_delay",
                 ]
 
         class Meta:
@@ -627,6 +637,7 @@ class ExportCampaignSerializer(CampaignSerializer):
         vaccines = NestedRoundVaccineSerializer(many=True, required=False)
         shipments = NestedShipmentSerializer(many=True, required=False)
         destructions = NestedDestructionSerializer(many=True, required=False)
+        # TODO check this is the right serializer to use
         datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
 
     class ExportCampaignScopeSerializer(CampaignScopeSerializer):

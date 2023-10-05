@@ -269,7 +269,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()
             round_instances.append(round_instance)
-            round_datelogs=[]
+            round_datelogs = []
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")

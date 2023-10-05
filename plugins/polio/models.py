@@ -179,7 +179,7 @@ class RoundDateHistoryEntry(models.Model):
     # Deprecated. Kept temporarily to avoid breaking a dashboard
     reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
     reason_for_delay = models.ForeignKey(
-        "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="reason"
+        "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
     )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)

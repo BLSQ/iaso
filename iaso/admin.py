@@ -33,53 +33,54 @@ class IasoJSONEditorWidget(JSONEditorWidget):
 
 
 from .models import (
-    OrgUnitType,
-    OrgUnit,
-    Form,
-    FormVersion,
-    FormPredefinedFilter,
-    FormAttachment,
-    Instance,
-    InstanceFile,
     Account,
-    Project,
-    FeatureFlag,
+    AccountFeatureFlag,
+    AlgorithmRun,
+    BulkCreateUserCsvFile,
+    DataSource,
     Device,
     DeviceOwnership,
-    DataSource,
-    SourceVersion,
-    MatchingAlgorithm,
-    AlgorithmRun,
-    Link,
-    Group,
-    GroupSet,
-    Profile,
-    ExternalCredentials,
-    Mapping,
-    MappingVersion,
-    ExportRequest,
-    ExportStatus,
-    ExportLog,
     DevicePosition,
-    Task,
-    Page,
-    AccountFeatureFlag,
-    EntityType,
     Entity,
-    BulkCreateUserCsvFile,
-    InstanceLock,
-    StorageDevice,
-    StoragePassword,
-    StorageLogEntry,
-    Workflow,
-    WorkflowVersion,
-    WorkflowChange,
-    WorkflowFollowup,
-    Report,
-    ReportVersion,
     EntityDuplicate,
     EntityDuplicateAnalyzis,
+    EntityType,
+    ExportLog,
+    ExportRequest,
+    ExportStatus,
+    ExternalCredentials,
+    FeatureFlag,
+    Form,
+    FormAttachment,
+    FormPredefinedFilter,
+    FormVersion,
+    Group,
+    GroupSet,
+    Instance,
+    InstanceFile,
+    InstanceLock,
+    Link,
+    Mapping,
+    MappingVersion,
+    MatchingAlgorithm,
+    OrgUnit,
+    OrgUnitChangeRequest,
+    OrgUnitType,
+    Page,
+    Profile,
+    Project,
+    Report,
+    ReportVersion,
+    SourceVersion,
+    StorageDevice,
+    StorageLogEntry,
+    StoragePassword,
+    Task,
     UserRole,
+    Workflow,
+    WorkflowChange,
+    WorkflowFollowup,
+    WorkflowVersion,
 )
 from .models.microplanning import Team, Planning, Assignment
 from .models.data_store import JsonDataStore
@@ -600,6 +601,69 @@ class EntityDuplicateAdmin(admin.ModelAdmin):
 
 class EntityDuplicateAnalyzisAdmin(admin.ModelAdmin):
     formfield_overrides = {models.JSONField: {"widget": IasoJSONEditorWidget}}
+
+
+@admin.register(OrgUnitChangeRequest)
+class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
+    list_display = ("pk", "org_unit", "created_at", "status")
+    list_display_links = ("pk", "org_unit")
+    list_filter = ("status",)
+    raw_id_fields = (
+        "org_unit",
+        "created_by",
+        "updated_by",
+        "reviewed_by",
+        "parent",
+        "org_unit_type",
+        "groups",
+        "instances",
+    )
+    fieldsets = (
+        (
+            "Informations",
+            {
+                "fields": (
+                    "org_unit",
+                    "status",
+                )
+            },
+        ),
+        (
+            "Proposed changes",
+            {
+                "fields": (
+                    "parent",
+                    "name",
+                    "org_unit_type",
+                    "groups",
+                    "location",
+                    "accuracy",
+                    "instances",
+                )
+            },
+        ),
+        (
+            "Approved changes",
+            {"fields": ("approved_fields",)},
+        ),
+        (
+            "Metadata",
+            {
+                "fields": (
+                    "created_at",
+                    "created_by",
+                    "updated_at",
+                    "updated_by",
+                    "reviewed_at",
+                    "reviewed_by",
+                    "rejection_comment",
+                )
+            },
+        ),
+    )
+
+    def get_queryset(self, request):
+        return super().get_queryset(request).select_related("org_unit")
 
 
 admin.site.register(Link, LinkAdmin)

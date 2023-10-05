@@ -7,10 +7,10 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.postgres.indexes import GistIndex
-from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
@@ -552,3 +552,84 @@ class OrgUnitReferenceInstance(models.Model):
     class Meta:
         # Only one `instance` by pair of org_unit/form.
         unique_together = ("org_unit", "form")
+
+
+class OrgUnitChangeRequest(models.Model):
+    """
+    A request to change an OrgUnit.
+
+    It can also be a request to create an OrgUnit. In this case the OrgUnit
+    already exists in DB with `OrgUnit.validation_status == VALIDATION_NEW`.
+    The change request will change `validation_status` to either
+    `VALIDATION_REJECTED` or `VALIDATION_VALID`.
+    """
+
+    class Statuses(models.TextChoices):
+        NEW = "NEW", _("New")
+        REJECTED = "REJECTED", _("Rejected")
+        VALIDATED = "VALIDATED", _("Validated")
+
+    class ApprovedFields(models.TextChoices):
+        """
+        Used to accept only part of the proposed changes.
+        """
+
+        PARENT = "parent"
+        NAME = "name"
+        ORG_UNIT_TYPE = "org_unit_type"
+        GROUPS = "groups"
+        LOCATION = "location"
+        INSTANCES = "instances"
+
+    org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
+    status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
+
+    # Metadata.
+
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_updated_set"
+    )
+    reviewed_at = models.DateTimeField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_reviewed_set"
+    )
+    rejection_comment = models.CharField(max_length=255, blank=True)
+
+    # Proposed changes.
+
+    parent = models.ForeignKey(
+        "OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="org_unit_change_parents_set"
+    )
+    name = models.CharField(max_length=255, blank=True)
+    org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
+    groups = models.ManyToManyField("Group", blank=True)
+    location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
+    # `accuracy` is only used to help decision-making during validation: is the accuracy good
+    # enough to change the location? The field doesn't exist on `OrgUnit`.
+    accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    # `instances` is a list to be defined as new "reference instances".
+    instances = models.ManyToManyField("Instance", blank=True)
+
+    # Approved changes.
+
+    approved_fields = ArrayField(
+        models.CharField(max_length=20, blank=True, choices=ApprovedFields.choices),
+        default=list,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Org unit change request")
+
+    def __str__(self):
+        return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"
+
+    def save(self, *args, **kwargs):
+        if self.approved_fields:
+            self.approved_fields = list(set(self.approved_fields))
+        super().save(*args, **kwargs)

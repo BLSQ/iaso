@@ -1,10 +1,17 @@
 import React, { useMemo } from 'react';
 import { Column, textPlaceholder, useSafeIntl } from 'bluesquare-components';
+import { useSelector } from 'react-redux';
 import { DateCell } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import getDisplayName from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
 import MESSAGES from '../../../../../constants/messages';
 
+const NAMEFIELD = 'name_';
+
 export const useGetRoundDatesHistoryColumns = (): Column[] => {
+    // @ts-ignore
+    const activeLocale = useSelector(state => state.app.locale);
+    const { code: locale } = activeLocale;
+    const reasonName = `${NAMEFIELD}${locale}`;
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -45,9 +52,7 @@ export const useGetRoundDatesHistoryColumns = (): Column[] => {
                 Cell: settings => {
                     return (
                         <span>
-                            {formatMessage(
-                                MESSAGES[settings.row.original.reason],
-                            )}
+                            {settings.row.original.reason_for_delay[reasonName]}
                         </span>
                     );
                 },

@@ -259,7 +259,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             scopes = round_data.pop("scopes", [])
 
             # Replace ReasonForDelay instance with pk to avoid type error when calling is_valid
-            round_datelogs = round_data.pop("datelogs")
+            round_datelogs = round_data.pop("datelogs", [])
             datelogs_with_pk = [
                 {**datelog, "reason_for_delay": datelog["reason_for_delay"].id} for datelog in round_datelogs
             ]
@@ -269,6 +269,7 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()
             round_instances.append(round_instance)
+            round_datelogs=[]
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")

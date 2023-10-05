@@ -57,7 +57,7 @@ from plugins.polio.models import (
     RoundScope,
     RoundVaccine,
     Shipment,
-    SpreadSheetImport,
+    SpreadSheetImport, VaccineAuthorization,
 )
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
@@ -152,6 +152,12 @@ class CampaignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
+        initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"])
+
+        # check if there is a vaccine authorization validated for this campaign
+        vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit.country_ancestors().pk, status="VALIDATED")
+
+
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
@@ -302,7 +308,7 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class ListCampaignSerializer(CampaignSerializer):
-    "This serializer contains juste enough data for the List view in the web ui"
+    """This serializer contains juste enough data for the List view in the web ui"""
 
     class NestedListRoundSerializer(RoundSerializer):
         class Meta:

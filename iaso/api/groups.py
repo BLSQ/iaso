@@ -3,9 +3,9 @@ from rest_framework import permissions, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from hat.menupermissions import models as permission
 from iaso.models import Group, SourceVersion, DataSource, Project
 from .common import ModelViewSet, TimestampField, HasPermission
-from hat.menupermissions import models as permission
 
 
 class HasGroupPermission(permissions.BasePermission):

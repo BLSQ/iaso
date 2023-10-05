@@ -1,10 +1,11 @@
 import typing
 
+from django.core.files import File
 from django.utils.timezone import now
 
 from iaso import models as m
 from iaso.api.common import CONTENT_TYPE_XLSX
-from iaso.models import Form
+from iaso.models import Form, OrgUnit, Instance
 from iaso.test import APITestCase
 
 
@@ -20,6 +21,13 @@ class FormsAPITestCase(APITestCase):
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel, permissions=["iaso_forms"])
         cls.iron_man = cls.create_user_with_profile(username="iron_man", account=marvel)
 
+        sw_source = m.DataSource.objects.create(name="Galactic Empire")
+        cls.sw_source = sw_source
+        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        star_wars.default_version = sw_version
+        star_wars.save()
+        cls.sw_version = sw_version
+
         cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
         cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
         cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
@@ -27,12 +35,20 @@ class FormsAPITestCase(APITestCase):
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
-
         cls.project_2 = m.Project.objects.create(
             name="New Land Speeder concept", app_id="stars.empire.agriculture.land_speeder", account=star_wars
         )
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study", created_at=cls.now)
+
+        cls.project_3 = m.Project.objects.create(name="Kotor", app_id="knights.of.the.old.republic", account=star_wars)
+
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Council",
+            source_ref="jedi_council_corruscant_ref",
+            version=sw_version,
+            validation_status="VALID",
+        )
 
         cls.form_2 = m.Form.objects.create(
             name="Hydroponic public survey",
@@ -83,6 +99,40 @@ class FormsAPITestCase(APITestCase):
         response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
+
+    def test_forms_list_filtered_by_org_unit_type(self):
+        self.client.force_authenticate(self.yoda)
+        # Filter by org_unit type `jedi_council` and `jedi_academy`.
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.jedi_council.pk}&{self.jedi_academy.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+        # Filter by org_unit type `sith_guild`.
+        response = self.client.get(
+            f"/api/forms/?orgUnitTypeIds={self.sith_guild.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 0)
+
+    def test_forms_list_filtered_by_project(self):
+        """GET /forms/ filtered by project"""
+        self.client.force_authenticate(self.yoda)
+        # Filter by project 1 and 2.
+        response = self.client.get(
+            f"/api/forms/?projectsIds={self.project_1.pk}&{self.project_2.pk}",
+            headers={"Content-Type": "application/json"},
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        # Filter by project 2 only.
+        response = self.client.get(
+            f"/api/forms/?projectsIds={self.project_2.pk}", headers={"Content-Type": "application/json"}
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 0)
 
     def test_form_return_only_deleted(self):
         """GET /forms/ return only deleted forms"""
@@ -552,3 +602,40 @@ class FormsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 0)
+
+    def test_instance_not_in_same_project_are_not_counted(self):
+        """
+        This test ensure that the instance count on list form is not multiplied by the number of projects with
+        instances linked to the same form.
+        """
+
+        self.client.force_authenticate(self.yoda)
+        self.yoda.iaso_profile.org_units.set(OrgUnit.objects.all())
+
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        self.assertEqual(0, response.json()["forms"][1]["instances_count"])
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as instance_file:
+            instance_1 = Instance.objects.create(
+                form=self.form_2,
+                period="202001",
+                org_unit=self.jedi_council_corruscant,
+                project=self.project_2,
+            )
+            instance_1.file.save("hydroponics_test_upload.xml", File(instance_file))
+            instance_2 = Instance.objects.create(
+                form=self.form_2,
+                period="202001",
+                org_unit=self.jedi_council_corruscant,
+                project=self.project_3,
+            )
+            instance_2.file.save("hydroponics_test_upload.xml", File(instance_file))
+
+        response = self.client.get("/api/forms/", headers={"Content-Type": "application/json"})
+
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+        self.assertEqual(response.json()["forms"][0]["instances_count"], 2)

@@ -863,8 +863,8 @@ class InstancesAPITestCase(APITestCase):
 
         instance = m.Instance.objects.create(org_unit=previous_org_unit, form=self.form_3, project=self.project)
 
-        previous_org_unit.reference_instance = instance
-        previous_org_unit.save()
+        m.OrgUnitReferenceInstance.objects.create(org_unit=previous_org_unit, instance=instance, form=self.form_3)
+        self.assertEqual(1, previous_org_unit.reference_instances.count())
 
         new_org_unit = m.OrgUnit.objects.create(
             name="Coruscant Jedi Council Hospital", version=self.sw_version, org_unit_type=self.jedi_council
@@ -881,7 +881,7 @@ class InstancesAPITestCase(APITestCase):
         previous_org_unit.refresh_from_db()
         instance.refresh_from_db()
         self.assertEqual(instance.org_unit, new_org_unit)
-        self.assertEqual(previous_org_unit.reference_instance, None)
+        self.assertEqual(0, previous_org_unit.reference_instances.count())
 
     def test_instance_patch_restore(self):
         """PATCH /instances/:pk"""
@@ -1251,6 +1251,8 @@ class InstancesAPITestCase(APITestCase):
         json = self.assertJSONResponse(response, 200)
         self.assertEqual(json["can_user_modify"], can_user_modify)
         self.assertEqual(json["is_locked"], is_locked)
+        self.assertFalse(json["is_instance_of_reference_form"])
+        self.assertFalse(json["is_reference_instance"])
         self.assertGreaterEqual(len(json["instance_locks"]), 1 if is_locked else 0, json["instance_locks"])
         # check from list view
         response = self.client.get(f"/api/instances/?limit=100")

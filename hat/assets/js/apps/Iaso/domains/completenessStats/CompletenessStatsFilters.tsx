@@ -31,6 +31,7 @@ import { useGetGroups } from '../orgUnits/hooks/requests/useGetGroups';
 import { PERIOD_TYPE_PLACEHOLDER } from '../periods/constants';
 import { useGetValidationStatus } from '../forms/hooks/useGetValidationStatus';
 import { redirectToReplace } from '../../routing/actions';
+import { InputWithInfos } from '../../components/InputWithInfos';
 
 type Props = {
     params: UrlParams & any;
@@ -73,7 +74,7 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
     const { data: orgUnitTypes, isFetching: fetchingTypes } =
         useGetOrgUnitTypesOptions(filters.parentId);
     const { data: availablePlannings, isFetching: fetchingPlannings } =
-        useGetPlanningsOptions();
+        useGetPlanningsOptions(filters.formId);
     useSkipEffectOnMount(() => {
         setInitialParentId(params?.parentId);
     }, [params]);
@@ -134,25 +135,34 @@ export const CompletenessStatsFilters: FunctionComponent<Props> = ({
         [handleChange],
     );
 
+    const handleChangeForm = useCallback(
+        (keyValue, value) => {
+            handleChange('planningId', undefined);
+            handleChange(keyValue, value);
+        },
+        [handleChange],
+    );
+
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus();
-
     return (
         <>
             <Grid container spacing={2}>
                 <Grid item xs={12} md={3}>
-                    <InputComponent
-                        type="select"
-                        onChange={handleChange}
-                        keyValue="formId"
-                        label={MESSAGES.form}
-                        value={filters.formId}
-                        loading={fetchingForms}
-                        options={forms ?? []}
-                        multi
-                    />
+                    <InputWithInfos infos={formatMessage(MESSAGES.formsInfos)}>
+                        <InputComponent
+                            type="select"
+                            onChange={handleChangeForm}
+                            keyValue="formId"
+                            label={MESSAGES.form}
+                            value={filters.formId}
+                            loading={fetchingForms}
+                            options={forms ?? []}
+                            multi
+                        />
+                    </InputWithInfos>
                     <PeriodPicker
                         message={
                             periodType === PERIOD_TYPE_PLACEHOLDER

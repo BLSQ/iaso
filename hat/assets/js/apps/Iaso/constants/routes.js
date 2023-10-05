@@ -47,6 +47,7 @@ import { Duplicates } from '../domains/entities/duplicates/list/Duplicates.tsx';
 import { DuplicateDetails } from '../domains/entities/duplicates/details/DuplicateDetails.tsx';
 import { VisitDetails } from '../domains/entities/components/VisitDetails.tsx';
 import * as Permission from '../utils/permissions.ts';
+import { SetupAccount } from '../domains/setup/index.tsx';
 
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
@@ -78,6 +79,13 @@ export const getPath = path => {
     return url;
 };
 
+export const setupAccountPath = {
+    baseUrl: baseUrls.setupAccount,
+    permissions: [],
+    component: props => <SetupAccount {...props} />,
+    params: [],
+};
+
 export const formsPath = {
     baseUrl: baseUrls.forms,
     permissions: [Permission.FORMS, Permission.SUBMISSIONS],
@@ -102,6 +110,14 @@ export const formsPath = {
         {
             isRequired: false,
             key: 'planning',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitTypeIds',
+        },
+        {
+            isRequired: false,
+            key: 'projectsIds',
         },
     ],
     component: props => <Forms {...props} />,

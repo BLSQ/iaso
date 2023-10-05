@@ -3,7 +3,7 @@ import * as yup from 'yup';
 import moment from 'moment';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../constants/messages';
-import { dateFormat } from '../components/campaignCalendar/constants';
+import { dateFormat } from '../domains/Calendar/campaignCalendar/constants';
 
 const getRounds = context => {
     return context?.from[context.from.length - 1]?.value?.rounds || [];

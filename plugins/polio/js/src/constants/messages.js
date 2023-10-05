@@ -89,6 +89,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Select region',
         id: 'iaso.polio.button.label.addRegion',
     },
+    addAuthorisation: {
+        defaultMessage: 'Add authorisation',
+        id: 'iaso.polio.button.label.addAuthorisation',
+    },
     confirm: {
         defaultMessage: 'Confirm',
         id: 'iaso.label.confirm',
@@ -1679,6 +1683,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.poNumbers',
         defaultMessage: 'PO numbers',
     },
+    poNumbers: {
+        id: 'iaso.polio.label.poNumbers',
+        defaultMessage: 'PO numbers',
+    },
     formAReception: {
         id: 'iaso.polio.label.formAReception',
         defaultMessage: 'Reception of national Form A',
@@ -2218,6 +2226,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
         defaultMessage: 'Campaign moved forward by MOH',
     },
+    VRF_NOT_SIGNED: {
+        id: 'iaso.polio.label.VRF_NOT_SIGNED',
+        defaultMessage: 'VRF not signed',
+    },
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS: {
+        id: 'iaso.polio.label.FOUR_WEEKS_GAP_BETWEEN_ROUNDS',
+        defaultMessage: 'Four weeks gap between rounds to be respected',
+    },
+    OTHER_VACCINATION_CAMPAIGNS: {
+        id: 'iaso.polio.label.OTHER_VACCINATION_CAMPAIGNS',
+        defaultMessage: 'Other vaccination campaigns',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',
@@ -2278,9 +2298,9 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.12months',
         defaultMessage: '12 months',
     },
-    selectPeriod: {
-        id: 'iaso.polio.label.selectPeriod',
-        defaultMessage: 'Select period',
+    latestCampaignForPeriod: {
+        id: 'iaso.polio.label.latestCampaignForPeriod',
+        defaultMessage: 'Latest campaign for',
     },
     chooseDates: {
         id: 'iaso.polio.label.chooseDates',
@@ -2289,6 +2309,79 @@ const MESSAGES = defineMessages({
     refreshPage: {
         id: 'iaso.polio.label.refreshPage',
         defaultMessage: 'Refresh page',
+    },
+    districtsInScope: {
+        id: 'iaso.polio.label.districtsInScope',
+        defaultMessage: 'Districts in scope',
+    },
+    vaccinemodule: {
+        id: 'iaso.polio.title.vaccinemodule',
+        defaultMessage: 'Vaccine module',
+    },
+    nopv2Auth: {
+        id: 'iaso.polio.title.nopv2Auth',
+        defaultMessage: 'NOPV2 authorisations',
+    },
+    editAuth: {
+        id: 'iaso.polio.title.editAuth',
+        defaultMessage: 'Edit authorisation',
+    },
+    signature: {
+        id: 'iaso.polio.label.signature',
+        defaultMessage: 'Signature',
+    },
+    expired: {
+        id: 'iaso.polio.label.expired',
+        defaultMessage: 'Expired',
+    },
+    quantity: {
+        id: 'iaso.polio.label.quantity',
+        defaultMessage: 'Quantity',
+    },
+    currentAuthorisedQuantity: {
+        id: 'iaso.polio.label.currentAuthorisedQuantity',
+        defaultMessage: 'Current authorised quantity',
+    },
+    expirationDate: {
+        id: 'iaso.polio.label.expirationDate',
+        defaultMessage: 'Expiration date',
+    },
+    currentExpirationDate: {
+        id: 'iaso.polio.label.currentExpirationDate',
+        defaultMessage: 'Current expiration date',
+    },
+    nextExpirationDate: {
+        id: 'iaso.polio.label.nextExpirationDate',
+        defaultMessage: 'Next expiration date',
+    },
+    latestCampaignFrom: {
+        id: 'iaso.polio.label.latestCampaignFrom',
+        defaultMessage: 'Latest campaign from',
+    },
+    latestCampaignUntil: {
+        id: 'iaso.polio.label.latestCampaignUntil',
+        defaultMessage: 'Latest campaign until',
+    },
+    dateForExpired: {
+        id: 'iaso.polio.error.dateForExpired',
+        defaultMessage: 'Expired authorisations can only have past dates',
+    },
+    startDateAfterExpiration: {
+        id: 'iaso.polio.error.startDateAfterExpiration',
+        defaultMessage: 'Start date must be anterior to expiration date',
+    },
+    mostRecentAuthStatus: {
+        id: 'iaso.polio.table.label.mostRecentAuthStatus',
+        defaultMessage: 'Most recent authorisation status',
+    },
+    vaccineAuthStartDate: {
+        id: 'iaso.polio.table.label.vaccineAuthStartDate',
+        defaultMessage: 'Start Date',
+    },
+    afroMapfilterInfo: {
+        id: 'iaso.polio.label.afroMapfilterInfo',
+        defaultMessage:
+            'The latest campaign is the campaign with the round that started the most recently within the chosen time frame',
     },
 });
 

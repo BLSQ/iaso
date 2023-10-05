@@ -20,7 +20,7 @@ from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
 
 # noinspection PyUnresolvedReferences
-from .budget.models import BudgetStep, BudgetStepFile
+# from .budget.models import BudgetStep, BudgetStepFile
 
 VIRUSES = [
     ("PV1", _("PV1")),
@@ -88,6 +88,9 @@ class DelayReasons(models.TextChoices):
     VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
     SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
     CAMPAIGN_MOVED_FORWARD_BY_MOH = "CAMPAIGN_MOVED_FORWARD_BY_MOH", _("campaign_moved_forward_by_moh")
+    VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
+    OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
 
 
 def make_group_round_scope():
@@ -874,3 +877,27 @@ class BudgetFiles(models.Model):
 
     def __str__(self):
         return str(self.event)
+
+
+class VaccineAuthorizationStatus(models.TextChoices):
+    PENDING = "ONGOING", _("Ongoing")
+    VALIDATED = "VALIDATED", _("Validated")
+    IGNORED = "SIGNATURE", _("Sent for signature")
+    EXPIRED = "EXPIRED", _("Expired")
+
+
+class VaccineAuthorization(SoftDeletableModel):
+    country = models.ForeignKey(
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
+    )
+    account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
+    start_date = models.DateField(blank=True, null=True)
+    expiration_date = models.DateField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    quantity = models.IntegerField(blank=True, null=True)
+    status = models.CharField(null=True, blank=True, choices=VaccineAuthorizationStatus.choices, max_length=200)
+    comment = models.TextField(max_length=250, blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.country}-{self.expiration_date}"

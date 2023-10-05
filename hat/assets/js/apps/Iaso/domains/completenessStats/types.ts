@@ -67,6 +67,7 @@ export type CompletenessRouterParams = UrlParams & {
     groupId?: string;
     parentId?: string;
     accountId?: string;
+    planningId?: string;
     tab?: 'list' | 'map';
     showDirectCompleteness: 'true' | 'false';
 };

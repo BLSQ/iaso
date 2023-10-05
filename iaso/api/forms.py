@@ -8,19 +8,17 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ParseError, NotFound
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.audit.models import log_modification, FORM_API
+from hat.menupermissions import models as permission
 from iaso.models import Form, Project, OrgUnitType, OrgUnit, FormPredefinedFilter
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, CONTENT_TYPE_XLSX, CONTENT_TYPE_CSV
 from .enketo import public_url_for_enketo
 from .projects import ProjectSerializer
-from .query_params import APP_ID
-from hat.menupermissions import models as permission
 
 
 class HasFormPermission(permissions.BasePermission):
@@ -75,6 +73,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "derived",
             "fields",
             "label_keys",
+            "reference_form_of_org_unit_types",
         ]
         fields = [
             "id",
@@ -101,6 +100,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "label_keys",
             "predefined_filters",
             "has_attachments",
+            "reference_form_of_org_unit_types",
         ]
         read_only_fields = [
             "id",
@@ -114,6 +114,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
             "possible_fields",
             "fields",
             "has_attachments",
+            "reference_form_of_org_unit_types",
         ]
 
     org_unit_types = serializers.SerializerMethodField()
@@ -132,6 +133,7 @@ class FormSerializer(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     deleted_at = TimestampField(allow_null=True, required=False)
     has_attachments = serializers.SerializerMethodField()
+    reference_form_of_org_unit_types = serializers.SerializerMethodField()
 
     @staticmethod
     def get_latest_form_version(obj: Form):
@@ -140,6 +142,10 @@ class FormSerializer(DynamicFieldsModelSerializer):
     @staticmethod
     def get_org_unit_types(obj: Form):
         return [t.as_dict() for t in obj.org_unit_types.all()]
+
+    @staticmethod
+    def get_reference_form_of_org_unit_types(obj: Form):
+        return [org_unit.as_dict() for org_unit in obj.reference_of_org_unit_types.all()]
 
     @staticmethod
     def get_has_attachments(obj: Form):
@@ -230,6 +236,14 @@ class FormsViewSet(ModelViewSet):
         if planning_ids:
             queryset = queryset.filter(plannings__id__in=planning_ids.split(","))
 
+        org_unit_type_ids = self.request.query_params.get("orgUnitTypeIds")
+        if org_unit_type_ids:
+            queryset = queryset.filter(org_unit_types__id__in=org_unit_type_ids.split(","))
+
+        projects_ids = self.request.query_params.get("projectsIds")
+        if projects_ids:
+            queryset = queryset.filter(projects__id__in=projects_ids.split(","))
+
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
 
         if not self.request.user.is_anonymous:
@@ -248,6 +262,7 @@ class FormsViewSet(ModelViewSet):
                         & ~Q(instances__deleted=True)
                         & Q(instances__org_unit__in=orgunits)
                     ),
+                    distinct=True,
                 )
             )
         else:
@@ -257,6 +272,7 @@ class FormsViewSet(ModelViewSet):
                     filter=(
                         ~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)
                     ),
+                    distinct=True,
                 )
             )
 

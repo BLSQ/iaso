@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
-import { redirectToReplace } from '../../../routing/actions';
+import { redirectToReplace } from '../../../routing/actions.ts';
 
 import { userHasOneOfPermissions, getFirstAllowedUrl } from '../utils';
 

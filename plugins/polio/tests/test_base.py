@@ -4,10 +4,9 @@ from typing import List
 from unittest import mock, skip
 from unittest.mock import patch
 
-import jwt  # type: ignore
 import pandas as pd
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import Polygon, Point, MultiPolygon
+from django.contrib.gis.geos import MultiPolygon, Point, Polygon
 from django.core.cache import cache
 from django.utils.timezone import now
 from rest_framework import status
@@ -16,14 +15,14 @@ from rest_framework.test import APIClient
 from iaso import models as m
 from iaso.models import Account
 from iaso.test import APITestCase, TestCase
+from plugins.polio.api.campaigns.campaigns import CampaignSerializer
+from plugins.polio.api.common import CACHE_VERSION
+from plugins.polio.export_utils import format_date
+from plugins.polio.models import Config, Round, RoundScope
+from plugins.polio.preparedness.calculator import get_preparedness_score
+from plugins.polio.preparedness.exceptions import InvalidFormatError
+from plugins.polio.preparedness.spreadsheet_manager import *
 from plugins.polio.tasks.weekly_email import send_notification_email
-from ..api import CACHE_VERSION
-from ..export_utils import format_date
-from ..models import Config, Round, RoundScope
-from ..preparedness.calculator import get_preparedness_score
-from ..preparedness.exceptions import InvalidFormatError
-from ..preparedness.spreadsheet_manager import *
-from ..serializers import CampaignSerializer
 
 
 class PolioAPITestCase(APITestCase):
@@ -91,7 +90,7 @@ class PolioAPITestCase(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(self.yoda)
 
-    @mock.patch("plugins.polio.serializers.SpreadSheetImport")
+    @mock.patch("plugins.polio.api.campaigns.campaigns.SpreadSheetImport")
     def test_preview_invalid_document(self, mock_SpreadSheetImport, *_):
         mock_SpreadSheetImport.create_for_url.return_value = mock.MagicMock()
         url = "https://docs.google.com/spreadsheets/d/1"

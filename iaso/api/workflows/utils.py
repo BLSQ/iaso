@@ -1,4 +1,5 @@
 from copy import deepcopy
+import uuid
 
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
@@ -25,6 +26,7 @@ def make_deep_copy_with_relations(orig_version):
 
     new_version = deepcopy(orig_version)
     new_version.id = None
+    new_version.uuid = uuid.uuid4()
     new_version.name = "Copy of " + orig_version.name
     new_version.status = WorkflowVersionsStatus.DRAFT
     new_version.save()

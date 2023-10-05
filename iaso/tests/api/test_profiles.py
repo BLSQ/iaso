@@ -64,7 +64,7 @@ class ProfileAPITestCase(APITestCase):
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
+            source_ref="FooBarB4z00",
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
 
@@ -208,18 +208,22 @@ class ProfileAPITestCase(APITestCase):
             "first_name,"
             "last_name,"
             "orgunit,"
+            "orgunit__source_ref,"
             "profile_language,"
             "dhis2_id,"
             "permissions,"
             "user_roles,"
             "projects\r\n"
         )
-        expected_csv += "janedoe,,,,,,,,iaso_forms,,\r\n"
-        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",,,,,\r\n'
-        expected_csv += 'jim,,,,,,,,"iaso_forms,iaso_users",,\r\n'
-        expected_csv += "jam,,,,,,en,,iaso_users_managed,,\r\n"
-        expected_csv += "jom,,,,,,fr,,,,\r\n"
-        expected_csv += f"jum,,,,,,,,,,{self.project.id}\r\n"
+
+        expected_csv += "janedoe,,,,,,,,,iaso_forms,,\r\n"
+        expected_csv += (
+            f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}","PvtAI4RUMkr,FooBarB4z00",,,,,\r\n'
+        )
+        expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,\r\n'
+        expected_csv += "jam,,,,,,,en,,iaso_users_managed,,\r\n"
+        expected_csv += "jom,,,,,,,fr,,,,\r\n"
+        expected_csv += f"jum,,,,,,,,,,,{self.project.id}\r\n"
 
         self.assertEqual(response_csv, expected_csv)
 
@@ -243,6 +247,7 @@ class ProfileAPITestCase(APITestCase):
                 "first_name",
                 "last_name",
                 "orgunit",
+                "orgunit__source_ref",
                 "profile_language",
                 "dhis2_id",
                 "permissions",
@@ -263,6 +268,14 @@ class ProfileAPITestCase(APITestCase):
                 "orgunit": {
                     0: None,
                     1: f"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",
+                    2: None,
+                    3: None,
+                    4: None,
+                    5: None,
+                },
+                "orgunit__source_ref": {
+                    0: None,
+                    1: "PvtAI4RUMkr,FooBarB4z00",
                     2: None,
                     3: None,
                     4: None,
@@ -677,9 +690,10 @@ class ProfileAPITestCase(APITestCase):
         team2.users.add(self.jim)
         response = self.client.get(f"/api/profiles/", {"teams": f"{team1.pk},{team2.pk}"})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json()["profiles"]), 2)
-        self.assertEqual(response.json()["profiles"][0]["user_name"], "janedoe")
-        self.assertEqual(response.json()["profiles"][1]["user_name"], "jim")
+        self.assertEqual(len(response.data["profiles"]), 2)
+        user_names = [item["user_name"] for item in response.data["profiles"]]
+        self.assertIn("janedoe", user_names)
+        self.assertIn("jim", user_names)
 
     def test_user_with_managed_permission_can_update_profile_of_user_in_sub_org_unit(self):
         self.jam.iaso_profile.org_units.set([self.jedi_council_corruscant.id])

@@ -5,12 +5,14 @@ import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
 } from '@material-ui/icons';
+
 import { EditUsersDialog } from './components/UsersDialog.tsx';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import MESSAGES from './messages';
 import { userHasPermission } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
+import PermissionTooltip from './components/PermissionTooltip.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -79,10 +81,25 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
     return useMemo(() => {
         const columns = [
             {
+                Header: '',
+                id: 'tooltip',
+                sortable: false,
+                align: 'center',
+                width: 50,
+                Cell: settings => {
+                    return (
+                        <PermissionTooltip
+                            codename={`${settings.row.original.permissionCodeName}_tooltip`}
+                        />
+                    );
+                },
+            },
+            {
                 Header: formatMessage(MESSAGES.permissions),
                 id: 'permission',
                 accessor: 'permission',
                 sortable: false,
+                width: 250,
                 align: 'left',
             },
             {
@@ -123,6 +140,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 id: role.id.toString(),
                 accessor: role.id.toString(),
                 sortable: false,
+                width: 50,
                 Cell: settings => {
                     if (
                         role.permissions.find(

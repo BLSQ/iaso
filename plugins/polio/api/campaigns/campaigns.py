@@ -105,7 +105,7 @@ def check_total_doses_requested(vaccine_authorization, rounds):
     if vaccine_authorization:
         total_doses_requested = 0
         for c_round in rounds:
-            total_doses_requested += c_round["doses_requested"]
+            total_doses_requested += c_round.get("doses_requested", 0)
 
         if total_doses_requested > vaccine_authorization.quantity:
             raise serializers.ValidationError(
@@ -256,7 +256,7 @@ class CampaignSerializer(serializers.ModelSerializer):
         initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        vaccine_authorization = VaccineAuthorization.objects.get(country=initial_org_unit, status="VALIDATED")
+        vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
         if vaccine_authorization:
             check_total_doses_requested(vaccine_authorization[0], rounds)
 

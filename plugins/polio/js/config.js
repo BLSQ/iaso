@@ -20,6 +20,7 @@ import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
 import { CountryNotificationsConfig } from './src/domains/Config/CountryNotification/CountryNotificationsConfig';
+import { ReasonsForDelay } from './src/domains/Config/ReasonsForDelay/ReasonsForDelay.tsx';
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,
@@ -411,7 +412,7 @@ const routes = [
     },
     {
         baseUrl: CONFIG_REASONS_FOR_DELAY_URL,
-        component: () => <CountryNotificationsConfig />,
+        component: props => <ReasonsForDelay {...props} />,
         permissions: ['iaso_polio_config'],
         params: [
             {

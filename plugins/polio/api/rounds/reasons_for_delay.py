@@ -1,10 +1,11 @@
 from plugins.polio.models import ReasonForDelay
 from rest_framework import serializers
 from iaso.api.common import ModelViewSet, HasPermission
-from rest_framework import permissions
+from rest_framework import filters
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from hat.menupermissions import models as permission
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 
 
 class ReasonForDelayForCampaignSerializer(serializers.ModelSerializer):
@@ -50,7 +51,13 @@ class ReasonForDelayViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch"]
     permission_classes = [HasPermission(permission.POLIO_CONFIG)]  # type: ignore
     serializer_class = ReasonForDelaySerializer
+    ordering_fields = ["updated_at", "created_at", "name_en", "name_fr", "key_name", "id"]
+    filter_backends = [
+        filters.OrderingFilter,
+        DjangoFilterBackend,
+    ]
 
+    # TODO annotate to be able to sort on time_selected
     def get_queryset(self):
         account = self.request.user.iaso_profile.account
         return ReasonForDelay.objects.filter(deleted_at__isnull=True).filter(account=account)

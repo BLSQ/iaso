@@ -300,10 +300,6 @@ class Task(models.Model):
         self.result = {"result": SUCCESS, "message": message}
         self.save()
 
-    def kill_if_external(self):
-        if self.external:
-            self.stop_if_killed()
-
 
 class Link(models.Model):
     destination = models.ForeignKey(

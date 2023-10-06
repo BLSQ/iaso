@@ -57,7 +57,8 @@ from plugins.polio.models import (
     RoundScope,
     RoundVaccine,
     Shipment,
-    SpreadSheetImport, VaccineAuthorization,
+    SpreadSheetImport,
+    VaccineAuthorization,
 )
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.parser import InvalidFormatError, get_preparedness
@@ -90,6 +91,24 @@ class CurrentAccountDefault:
 
     def __call__(self, serializer_field):
         return serializer_field.context["request"].user.iaso_profile.account_id
+
+
+def check_total_doses_requested(initial_org_unit, rounds):
+
+    vaccine_authorization = VaccineAuthorization.objects.get(
+        country=initial_org_unit.country_ancestors()[0].pk, status="VALIDATED"
+    )
+
+    if vaccine_authorization:
+        total_doses_requested = 0
+        for c_round in rounds:
+            total_doses_requested += c_round["doses_requested"]
+
+        if total_doses_requested > vaccine_authorization.quantity:
+            raise serializers.ValidationError({
+                "error": f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}."})
+
+        # MUST ALSO SEND A MAIL
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -154,14 +173,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         rounds = validated_data.pop("rounds", [])
         initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
 
-        vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit.country_ancestors().pk, status="VALIDATED")
-
-        if vaccine_authorization:
-            pass
-
-        print(validated_data)
-
-
+        # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
+        check_total_doses_requested(initial_org_unit, rounds)
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
@@ -227,8 +240,13 @@ class CampaignSerializer(serializers.ModelSerializer):
     @atomic
     def update(self, instance: Campaign, validated_data):
         old_campaign_dump = serialize_campaign(instance)
-        rounds = validated_data.pop("rounds", [])
         campaign_scopes = validated_data.pop("scopes", [])
+        rounds = validated_data.pop("rounds", [])
+        initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
+
+        # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
+        check_total_doses_requested(initial_org_unit, rounds)
+        
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine")
             org_units = scope.get("group", {}).get("org_units")
@@ -833,16 +851,16 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
                 return ListCampaignSerializer
             if (
-                self.request.query_params.get("fieldset") == "calendar"
-                and self.request.method in permissions.SAFE_METHODS
+                    self.request.query_params.get("fieldset") == "calendar"
+                    and self.request.method in permissions.SAFE_METHODS
             ):
                 return CalendarCampaignSerializer
 
             return CampaignSerializer
         else:
             if (
-                self.request.query_params.get("fieldset") == "calendar"
-                and self.request.method in permissions.SAFE_METHODS
+                    self.request.query_params.get("fieldset") == "calendar"
+                    and self.request.method in permissions.SAFE_METHODS
             ):
                 return CalendarCampaignSerializer
             return AnonymousCampaignSerializer
@@ -1145,7 +1163,8 @@ Timeline tracker Automated message
             virus_type=campaign.virus,
             onset_date=campaign.onset_at,
             initial_orgunit_name=campaign.initial_org_unit.name
-            + (", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
+                                 + (
+                                     ", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
             url=f"https://{domain}/dashboard/polio/list",
             url_campaign=f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}",
         )

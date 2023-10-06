@@ -2,6 +2,7 @@
 export type Search = {
     search?: string;
     source?: string;
+    project?: number;
     version?: string;
     orgUnitTypeId?: string;
     groups?: string;

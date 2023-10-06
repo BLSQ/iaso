@@ -314,9 +314,8 @@ class InstancesViewSet(viewsets.ViewSet):
         # 2. Prepare queryset (common part between searches and exports)
         queryset = self.get_queryset()
         queryset = queryset.exclude(file="").exclude(device__test_device=True)
-        queryset = queryset.prefetch_related("org_unit")
-        queryset = queryset.prefetch_related("org_unit__version", "org_unit__version__data_source")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
+        queryset = queryset.prefetch_related("org_unit__version__data_source")
         queryset = queryset.prefetch_related("form")
         queryset = queryset.prefetch_related("created_by")
         queryset = queryset.for_filters(**filters)
@@ -334,6 +333,8 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(org_unit__validation_status=org_unit_status)
 
         if not file_export:
+            queryset = queryset.prefetch_related("org_unit__reference_instances")
+            queryset = queryset.prefetch_related("org_unit__org_unit_type__reference_forms")
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
@@ -350,9 +351,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     d = instance.as_dict_with_descriptor() if with_descriptor == "true" else instance.as_dict()
                     d["can_user_modify"] = instance.count_lock_applying_to_user == 0
                     d["is_locked"] = instance.count_active_lock > 0
-                    reference_form_id = instance.org_unit.get_reference_form_id() if instance.has_org_unit else None  # type: ignore
-                    if reference_form_id:
-                        d["reference_form_id"] = reference_form_id
+                    d["is_instance_of_reference_form"] = instance.is_instance_of_reference_form
+                    d["is_reference_instance"] = instance.is_reference_instance
                     return d
 
                 res["instances"] = map(as_dict_formatter, page.object_list)
@@ -437,7 +437,13 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response({"res": "ok"})
 
     def retrieve(self, request, pk=None):
-        self.get_queryset().prefetch_related("instance_locks", "instance_locks__top_org_unit", "instance_locks__user")
+        self.get_queryset().prefetch_related(
+            "instance_locks",
+            "instance_locks__top_org_unit",
+            "instance_locks__user",
+            "org_unit__reference_instances",
+            "org_unit__org_unit_type__reference_forms",
+        )
         instance: Instance = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, instance)
         all_instance_locks = instance.instancelock_set.all()
@@ -450,6 +456,9 @@ class InstancesViewSet(viewsets.ViewSet):
         response["can_user_modify"] = instance.can_user_modify(request.user)
         # To display either the "unlock" or the "lock" icon depending on if the instance is already lock or not
         response["is_locked"] = any(lock.unlocked_by is None for lock in all_instance_locks)
+
+        response["is_instance_of_reference_form"] = instance.is_instance_of_reference_form
+        response["is_reference_instance"] = instance.is_reference_instance
 
         return Response(response)
 
@@ -478,9 +487,9 @@ class InstancesViewSet(viewsets.ViewSet):
         # If the org unit change but the instance was marked as the reference_instance for this org unit,
         # remove the reference as reference instance
         # FIXME we should log the modification on org unit
-        if original.org_unit.reference_instance and original.org_unit_id != data_org_unit:
+        if (original.org_unit_id != data_org_unit) and original.is_reference_instance:
             previous_orgunit = original.org_unit
-            previous_orgunit.reference_instance = None
+            original.unflag_reference_instance(previous_orgunit)
             previous_orgunit.save()
         instance_serializer.save()
 

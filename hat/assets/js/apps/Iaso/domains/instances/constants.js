@@ -20,6 +20,9 @@ export const INSTANCE_STATUSES = [
     INSTANCE_STATUS_EXPORTED,
 ];
 
+export const REFERENCE_FLAG_CODE = 'flag';
+export const REFERENCE_UNFLAG_CODE = 'unflag';
+
 const PrettyPeriod = ({ value }) => {
     const formatPeriod = usePrettyPeriod();
     return formatPeriod(value);

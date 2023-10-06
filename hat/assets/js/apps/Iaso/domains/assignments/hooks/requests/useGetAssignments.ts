@@ -6,7 +6,7 @@ import { AssignmentApi } from '../../types/assigment';
 import { Team } from '../../types/team';
 
 type Option = {
-    planning: string;
+    planning: string | undefined;
 };
 
 export type AssignmentsResult = {
@@ -21,11 +21,12 @@ const getAssignments = async (options: Option): Promise<AssignmentApi[]> => {
 
 export const useGetAssignments = (
     options: Option,
-    currentTeam: Team | undefined,
+    currentTeam?: Team,
 ): UseQueryResult<AssignmentsResult, Error> => {
     const queryKey: any[] = ['assignmentsList'];
     // @ts-ignore
     return useSnackQuery(queryKey, () => getAssignments(options), undefined, {
+        enabled: Boolean(options.planning),
         select: data => {
             const filteredAssignments = data.filter(assignment => {
                 if (currentTeam?.type) {

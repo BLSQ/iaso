@@ -33,22 +33,27 @@ def create_iaso_permissions_callback(sender, **kwargs):
         if plan:  # Check if there is a new migration
             (plan_migration, plan_bool) = plan[0]
             if not plan_bool:  # Check if it's not a rollback migration
-                operation = plan_migration.operations[0]
-                if hasattr(operation, "options"):  # Check if it has options
-                    if "permissions" in operation.options:  # Check if the migration is related to new permissions
-                        permissions = operation.options["permissions"]
-                        for permission in permissions:  # loop on all permissions in the migration
-                            iaso_permission = IasoPermission.objects.filter(permission__codename=permission[0]).first()
-                            if not iaso_permission:  # check if the current auth permission has already iaso permission
-                                auth_permission = AuthPermission.objects.filter(codename=permission[0])
-                                if auth_permission:  # check if the auth permission exists
-                                    iaso_permission = IasoPermission.objects.create(
-                                        permission=auth_permission.first()
-                                    )  # create the iaso permission
-                            module = get_module(permission[0], IasoPermission, Module)  # get the module
-                            if module:  # link the module to iaso permission if the module already exist
-                                iaso_permission.module = module
-                                iaso_permission.save()
+                if hasattr(plan_migration, "operations"):  # Check if there are operations in the migration
+                    operation = plan_migration.operations[0]
+                    if hasattr(operation, "options"):  # Check if it has options
+                        if "permissions" in operation.options:  # Check if the migration is related to new permissions
+                            permissions = operation.options["permissions"]
+                            for permission in permissions:  # loop on all permissions in the migration
+                                iaso_permission = IasoPermission.objects.filter(
+                                    permission__codename=permission[0]
+                                ).first()
+                                if (
+                                    not iaso_permission
+                                ):  # check if the current auth permission has already iaso permission
+                                    auth_permission = AuthPermission.objects.filter(codename=permission[0])
+                                    if auth_permission:  # check if the auth permission exists
+                                        iaso_permission = IasoPermission.objects.create(
+                                            permission=auth_permission.first()
+                                        )  # create the iaso permission
+                                module = get_module(permission[0], IasoPermission, Module)  # get the module
+                                if module:  # link the module to iaso permission if the module already exist
+                                    iaso_permission.module = module
+                                    iaso_permission.save()
 
 
 class MenupermissionsConfig(AppConfig):

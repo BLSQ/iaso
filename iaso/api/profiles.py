@@ -410,9 +410,9 @@ class ProfilesViewSet(viewsets.ViewSet):
     def update_permissions(self, user, request):
         user.user_permissions.clear()
         current_account = user.iaso_profile.account
-
+        module_permissions = self.module_permissions(current_account)
         for permission_codename in request.data.get("user_permissions", []):
-            if permission_codename in self.module_permissions(current_account):
+            if permission_codename in module_permissions:
                 CustomPermissionSupport.assert_right_to_assign(request.user, permission_codename)
                 user.user_permissions.add(get_object_or_404(Permission, codename=permission_codename))
         user.save()

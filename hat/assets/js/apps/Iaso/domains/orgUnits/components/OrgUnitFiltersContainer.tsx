@@ -30,7 +30,6 @@ import { baseUrls } from '../../../constants/urls';
 import { getChipColors } from '../../../constants/chipColors';
 
 import { Search } from '../types/search';
-import { DropdownOptions } from '../../../types/utils';
 import { Count } from '../hooks/requests/useGetOrgUnits';
 
 import { decodeSearch } from '../utils';
@@ -43,8 +42,6 @@ type Props = {
     // eslint-disable-next-line no-unused-vars
     onSearch: (searches: any) => void;
     currentTab: string;
-    orgunitTypes: DropdownOptions<string>[];
-    isFetchingOrgunitTypes: boolean;
     counts: Count[];
     setDeletedTab: React.Dispatch<React.SetStateAction<boolean>>;
 };
@@ -82,8 +79,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
     onSearch,
     currentTab,
     paramsSearches,
-    orgunitTypes,
-    isFetchingOrgunitTypes,
     counts,
     setDeletedTab,
 }) => {
@@ -205,8 +200,6 @@ export const OrgUnitFiltersContainer: FunctionComponent<Props> = ({
                             onChangeColor={handleChangeColor}
                             currentTab={currentTab}
                             setHasLocationLimitError={setHasLocationLimitError}
-                            orgunitTypes={orgunitTypes}
-                            isFetchingOrgunitTypes={isFetchingOrgunitTypes}
                             locationLimit={locationLimit}
                             setLocationLimit={setLocationLimit}
                         />

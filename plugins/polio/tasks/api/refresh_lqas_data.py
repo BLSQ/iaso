@@ -16,6 +16,7 @@ from rest_framework.decorators import action
 
 logger = logging.getLogger(__name__)
 TASK_NAME = "Refresh LQAS data"
+NO_AUTHORIZED_COUNTRY_ERROR = {"country_id": "No authorised org unit found for user"}
 
 
 class RefreshLQASDataSerializer(serializers.Serializer):
@@ -34,7 +35,7 @@ class RefreshLQASDataSerializer(serializers.Serializer):
             country_id = int(country_id)
             user_has_access = OrgUnit.objects.filter_for_user(user).filter(id=country_id).count() > 0
             if not user_has_access:
-                raise serializers.ValidationError({"country_id": "No authorised org unit found for user"})
+                raise serializers.ValidationError(NO_AUTHORIZED_COUNTRY_ERROR)
         return validated_data
 
 
@@ -103,7 +104,14 @@ class RefreshLQASDataViewset(ModelViewSet):
         return ExternalTaskSerializer
 
     def get_queryset(self):
-        return Task.objects.all()
+        user = self.request.user
+        account = user.iaso_profile.account
+        queryset = Task.objects.filter(account=account).filter(external=True)
+        authorized_countries = user.iaso_profile.org_units.filter(org_unit_type_id__category="COUNTRY")
+        if authorized_countries.count() > 0:
+            authorized_names = [f"{TASK_NAME}-{id}" for id in authorized_countries]
+            queryset = queryset.filter(name__in=authorized_names)
+        return queryset
 
     def create(self, request):
         serializer = RefreshLQASDataSerializer(data=request.data, context={"request": request})
@@ -137,7 +145,7 @@ class RefreshLQASDataViewset(ModelViewSet):
         get_runs = gql(
             """
         query pipeline {
-            pipeline(id: "e5b9a3bb-a22c-461f-b000-4dfa8d1cc445"){
+            pipeline(id: "%s"){
                 runs{
                     items{
                         run_id
@@ -148,6 +156,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             }
         }
         """
+            % (settings.LQAS_PIPELINE)
         )
         try:
             latest_runs = client.execute(get_runs)
@@ -155,7 +164,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             active_runs = [
                 run
                 for run in latest_runs["pipeline"]["runs"]["items"]
-                if (run["status"] != "queued" and run["status"] != "success" and run["status"] != "failed")
+                if (run["status"] not in ["queued", "success", "failed"])
                 and run.get("config", {}).get("country_id", None) == country_id
             ]
             # Don't create a task if there's already an ongoing run for the country

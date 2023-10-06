@@ -7,7 +7,7 @@ const TASK_ENDPOINT = '/api/tasks/';
 const TASK_CREATE_ENDPOINT = '/api/tasks/create/';
 
 const getTasks = (id?: number, endpoint = TASK_ENDPOINT) => {
-    const url = id ? `${endpoint}${id}` : endpoint;
+    const url = id ? `${endpoint}${id}/` : endpoint;
     return getRequest(url);
 };
 

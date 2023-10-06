@@ -47,6 +47,7 @@ import tiles from '../../../constants/mapTiles';
 import { CustomTileLayer } from '../../../components/maps/tools/CustomTileLayer';
 import { CustomZoomControl } from '../../../components/maps/tools/CustomZoomControl';
 import { MapToggleCluster } from '../../../components/maps/tools/MapToggleCluster';
+import { useGetOrgUnitTypes } from '../hooks/requests/useGetOrgUnitTypes';
 
 type OrgUnitWithSearchIndex = Omit<OrgUnit, 'search_index'> & {
     search_index: number;
@@ -59,7 +60,6 @@ export type Locations = {
 type Props = {
     // eslint-disable-next-line no-unused-vars
     getSearchColor: (index: number) => string;
-    orgUnitTypes: DropdownOptions<string>[];
     orgUnits: Locations;
 };
 
@@ -109,10 +109,9 @@ const getOrgUnitsBounds = (orgUnits: Locations): Bounds | undefined => {
 export const OrgUnitsMap: FunctionComponent<Props> = ({
     getSearchColor,
     orgUnits,
-    orgUnitTypes,
 }) => {
     const classes: Record<string, string> = useStyles();
-
+    const { data: orgUnitTypes } = useGetOrgUnitTypes();
     const [currentTile, setCurrentTile] = useState<Tile>(tiles.osm);
     const [isClusterActive, setIsClusterActive] = useState<boolean>(true);
     const [currentOrgUnitId, setCurrentOrgUnitId] = useState<
@@ -282,7 +281,9 @@ export const OrgUnitsMap: FunctionComponent<Props> = ({
                                     </GeoJSON>
                                 </Pane>
                             ))}
-                        {orgUnitTypes.map(ot => (
+                        {(
+                            orgUnitTypes || new Array<DropdownOptions<string>>()
+                        ).map(ot => (
                             <Pane
                                 style={{
                                     zIndex: 400 + (ot.original?.depth || 1),

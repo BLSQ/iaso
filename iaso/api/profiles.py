@@ -285,13 +285,15 @@ class ProfilesViewSet(viewsets.ViewSet):
         columns = [{"title": column} for column in BULK_CREATE_USER_COLUMNS_LIST]
 
         def get_row(profile: Profile, **_) -> List[Any]:
+            org_units = profile.org_units.all().order_by("id")
             return [
                 profile.user.username,
                 "",  # Password is left empty on purpose.
                 profile.user.email,
                 profile.user.first_name,
                 profile.user.last_name,
-                ",".join(str(item.pk) for item in profile.org_units.all().order_by("id")),
+                ",".join(str(item.pk) for item in org_units),
+                ",".join(item.source_ref for item in org_units),
                 profile.language,
                 profile.dhis2_id,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),

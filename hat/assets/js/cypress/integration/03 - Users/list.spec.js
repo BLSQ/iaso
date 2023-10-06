@@ -275,7 +275,13 @@ describe('Users', () => {
             goToPage(superUser, {}, emptyFixture);
             cy.wait('@getUsers').then(() => {
                 interceptFlag = false;
-
+                cy.intercept(
+                    'GET',
+                    '/api/orgunits/treesearch/?&rootsForUser=true&defaultVersion=true&validation_status=all&ignoreEmptyNames=true',
+                    {
+                        fixture: 'orgunits/list.json',
+                    },
+                );
                 cy.intercept('GET', '/api/profiles/**/*', req => {
                     req.continue(res => {
                         interceptFlag = true;
@@ -296,7 +302,7 @@ describe('Users', () => {
                     cy.wrap(interceptFlag).should('eq', true);
                     cy.wrap(xhr.request.query).should('deep.equal', {
                         limit: '20',
-                        location: '1233989',
+                        location: '3',
                         managedUsersOnly: 'true',
                         order: 'user__username',
                         orgUnitTypes: '11',

@@ -107,7 +107,7 @@ describe('Org unit types', () => {
                                 cy.testInputValue('#input-text-depth', '0');
                                 cy.testMultiSelect('#sub_unit_type_ids', []);
                                 cy.testMultiSelect('#project_ids', []);
-                                cy.testMultiSelect('#reference_form_id', []);
+                                cy.testMultiSelect('#reference_forms_ids', []);
                             });
                     });
             });
@@ -158,7 +158,10 @@ describe('Org unit types', () => {
                                     '#project_ids',
                                     outypesList.orgUnitTypes[0].projects,
                                 );
-                                cy.fillSingleSelect('#reference_form_id', 1);
+                                cy.testMultiSelect(
+                                    '#reference_forms_ids',
+                                    outypesList.orgUnitTypes[0].reference_forms,
+                                );
                             });
                     });
             });

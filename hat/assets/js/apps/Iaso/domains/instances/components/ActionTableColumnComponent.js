@@ -13,15 +13,20 @@ import { baseUrls } from '../../../constants/urls';
 import { userHasPermission } from '../../users/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
 import MESSAGES from '../messages';
+import { REFERENCE_FLAG_CODE, REFERENCE_UNFLAG_CODE } from '../constants';
 import { useFormState } from '../../../hooks/form';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import {
     hasFeatureFlag,
     SHOW_LINK_INSTANCE_REFERENCE,
 } from '../../../utils/featureFlags';
-import * as Permission from '../../../utils/permissions';
+import * as Permission from '../../../utils/permissions.ts';
 // eslint-disable-next-line camelcase
-const initialFormState = (orgUnit, referenceSubmissionId) => {
+const initialFormState = (
+    orgUnit,
+    referenceSubmissionId,
+    referenceSubmissionAction = null,
+) => {
     return {
         id: orgUnit?.id,
         name: orgUnit?.name,
@@ -33,6 +38,7 @@ const initialFormState = (orgUnit, referenceSubmissionId) => {
         parent_id: orgUnit?.parent_id,
         source_ref: orgUnit?.source_ref,
         reference_instance_id: referenceSubmissionId,
+        reference_instance_action: referenceSubmissionAction,
     };
 };
 
@@ -61,8 +67,8 @@ const ActionTableColumnComponent = ({ settings }) => {
         // each instance should have a formId
         let initialUrl = `${baseUrls.orgUnitDetails}/orgUnitId/${rowOriginal.org_unit.id}/formId/${rowOriginal.form_id}`;
         // there are some instances which don't have a reference form Id
-        if (rowOriginal.reference_form_id) {
-            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.reference_form_id}`;
+        if (rowOriginal.is_reference_instance) {
+            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
         }
         // each instance has an id
         return `${initialUrl}/instanceId/${rowOriginal.id}`;
@@ -73,17 +79,21 @@ const ActionTableColumnComponent = ({ settings }) => {
         // each instance should have a formId
         let initialUrl = `${baseUrls.instanceDetail}/instanceId/${settings.row.original.id}`;
         // there are some instances which don't have a reference form Id
-        if (rowOriginal.reference_form_id) {
-            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.reference_form_id}`;
+        if (rowOriginal.is_reference_instance) {
+            initialUrl = `${initialUrl}/referenceFormId/${rowOriginal.form_id}`;
         }
         return `${initialUrl}`;
     };
 
-    const linkOrgUnitToReferenceSubmission = referenceSubmissionId => {
+    const linkOrgUnitToReferenceSubmission = (
+        referenceSubmissionId,
+        referenceSubmissionAction,
+    ) => {
         const currentOrgUnit = settings.row.original.org_unit;
         const newOrgUnit = initialFormState(
             settings.row.original.org_unit,
             referenceSubmissionId,
+            referenceSubmissionAction,
         );
         let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit });
         orgUnitPayload = {
@@ -97,15 +107,14 @@ const ActionTableColumnComponent = ({ settings }) => {
         saveOu(orgUnitPayload).catch(onError);
     };
 
-    const showLinkOrgUnitIstanceReferenceButton =
-        settings.row.original.reference_form_id ===
-            settings.row.original.form_id &&
+    const showLinkOrgUnitInstanceReferenceButton =
+        settings.row.original.is_instance_of_reference_form &&
         hasFeatureFlag(user, SHOW_LINK_INSTANCE_REFERENCE) &&
         userHasPermission(Permission.ORG_UNITS, user) &&
         userHasPermission(Permission.SUBMISSIONS_UPDATE, user);
 
     const notLinked =
-        !settings.row.original?.org_unit?.reference_instance_id &&
+        !settings.row.original.is_reference_instance &&
         userHasPermission(Permission.ORG_UNITS, user);
 
     const showOrgUnitButton =
@@ -121,8 +130,14 @@ const ActionTableColumnComponent = ({ settings }) => {
 
     const confirmLinkOrUnlink = isItLinked => {
         return !isItLinked
-            ? linkOrgUnitToReferenceSubmission(null)
-            : linkOrgUnitToReferenceSubmission(settings.row.original.id);
+            ? linkOrgUnitToReferenceSubmission(
+                  settings.row.original.id,
+                  REFERENCE_UNFLAG_CODE,
+              )
+            : linkOrgUnitToReferenceSubmission(
+                  settings.row.original.id,
+                  REFERENCE_FLAG_CODE,
+              );
     };
 
     const confirmCancelToolTipMessage = isItLinked => {
@@ -145,7 +160,7 @@ const ActionTableColumnComponent = ({ settings }) => {
                     tooltipMessage={MESSAGES.viewOrgUnit}
                 />
             )}
-            {showLinkOrgUnitIstanceReferenceButton && (
+            {showLinkOrgUnitInstanceReferenceButton && (
                 <ConfirmCancelDialogComponent
                     titleMessage={confirmCancelTitleMessage(notLinked)}
                     onConfirm={closeDialog => {

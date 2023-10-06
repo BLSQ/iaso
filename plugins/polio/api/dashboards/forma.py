@@ -1,5 +1,5 @@
 import operator
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from functools import lru_cache, reduce
 from logging import getLogger
 from typing import Any, Callable, Dict, Optional
@@ -231,8 +231,9 @@ def fetch_and_match_forma_data(country_id=None):
 
 def get_forma_scope_df(campaigns):
     scope_dfs = []
+    one_year_ago = datetime.utcnow() - timedelta(weeks=52)
     for campaign in campaigns:
-        for round in campaign.rounds.all():
+        for round in campaign.rounds.filter(started_at__gte=one_year_ago):
             districts = campaign.get_districts_for_round(round)
 
             if districts.count() == 0:

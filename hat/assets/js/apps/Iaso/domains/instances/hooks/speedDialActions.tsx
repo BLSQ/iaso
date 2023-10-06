@@ -17,6 +17,7 @@ import {
     useSafeIntl,
 } from 'bluesquare-components';
 import { DialogContentText } from '@material-ui/core';
+import { useDispatch } from 'react-redux';
 import EnketoIcon from '../components/EnketoIcon';
 import { CreateReAssignDialogComponent } from '../components/CreateReAssignDialogComponent';
 import ExportInstancesDialogComponent from '../components/ExportInstancesDialogComponent';
@@ -27,7 +28,6 @@ import { useSaveOrgUnit } from '../../orgUnits/hooks';
 import { usePostLockInstance } from '../hooks';
 import { FormDef, useLinkOrgUnitToReferenceSubmission } from './speeddials';
 import { Nullable } from '../../../types/utils';
-import { useDispatch } from 'react-redux';
 import { reAssignInstance } from '../actions';
 
 export type SpeedDialAction = {
@@ -211,7 +211,7 @@ export const useEnketoAction = (currentInstance: Instance): SpeedDialAction => {
 
 type LinkToActionParams = {
     currentInstance: Instance;
-    isOrgUnitAlreadyLinked: boolean;
+    isReferenceInstance: boolean;
     formId: number;
     referenceFormId: Nullable<number>;
 };
@@ -227,12 +227,12 @@ const renderTrigger =
 
 export const useLinkToOrgUnitAction = ({
     currentInstance,
-    isOrgUnitAlreadyLinked,
+    isReferenceInstance,
     formId,
     referenceFormId,
 }: LinkToActionParams): SpeedDialAction => {
     const { formatMessage } = useSafeIntl();
-    const titleMessage = isOrgUnitAlreadyLinked
+    const titleMessage = isReferenceInstance
         ? MESSAGES.linkOffOrgUnitToInstanceReferenceTitle
         : MESSAGES.linkOrgUnitToInstanceReferenceTitle;
 
@@ -242,20 +242,15 @@ export const useLinkToOrgUnitAction = ({
     });
     return useMemo(() => {
         return {
-            id: isOrgUnitAlreadyLinked
+            id: isReferenceInstance
                 ? 'linkOffOrgUnitReferenceSubmission'
                 : 'linkOrgUnitReferenceSubmission',
             icon: (
                 // @ts-ignore
                 <ConfirmCancelDialogComponent
                     titleMessage={titleMessage}
-                    onConfirm={() =>
-                        linkToSubmission(
-                            currentInstance,
-                            isOrgUnitAlreadyLinked,
-                        )
-                    }
-                    renderTrigger={renderTrigger(isOrgUnitAlreadyLinked)}
+                    onConfirm={() => linkToSubmission(currentInstance)}
+                    renderTrigger={renderTrigger(isReferenceInstance)}
                 >
                     <DialogContentText id="alert-dialog-description">
                         {formatMessage(
@@ -269,7 +264,7 @@ export const useLinkToOrgUnitAction = ({
     }, [
         currentInstance,
         formatMessage,
-        isOrgUnitAlreadyLinked,
+        isReferenceInstance,
         linkToSubmission,
         titleMessage,
     ]);

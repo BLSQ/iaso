@@ -47,12 +47,14 @@ export const useGetRoundDatesHistoryColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.reasonForDateChange),
-                accessor: 'reason',
+                accessor: 'reason_for_delay',
                 sortable: false,
                 Cell: settings => {
                     return (
                         <span>
-                            {settings.row.original.reason_for_delay[reasonName]}
+                            {settings.row.original?.reason_for_delay?.[
+                                reasonName
+                            ] ?? settings.row.original.reason}
                         </span>
                     );
                 },
@@ -69,5 +71,5 @@ export const useGetRoundDatesHistoryColumns = (): Column[] => {
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [formatMessage, reasonName]);
 };

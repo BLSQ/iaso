@@ -10,7 +10,7 @@ export const useReasonsDelayOptions = (
 ): UseQueryResult<DropdownOptions<number>[], any> => {
     return useSnackQuery({
         queryKey: ['reasonsForDelay', locale],
-        queryFn: () => getRequest('/api/polio/reasonsfordelay/'),
+        queryFn: () => getRequest('/api/polio/reasonsfordelay/forcampaign/'),
         options: {
             select: data => {
                 if (!data) return [];

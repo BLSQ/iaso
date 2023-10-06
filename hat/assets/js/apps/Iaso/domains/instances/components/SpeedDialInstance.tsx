@@ -38,7 +38,11 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
     const {
         params: { referenceFormId },
         currentInstance,
-        currentInstance: { form_id: formId },
+        currentInstance: {
+            form_id: formId,
+            is_instance_of_reference_form: isInstanceOfReferenceForm,
+            is_reference_instance: isReferenceInstance,
+        },
     } = props;
     const { data: formDef } = useGetFormDefForInstance(formId);
     const currentUser = useCurrentUser();
@@ -56,8 +60,6 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         currentUser,
     );
 
-    const isOrgUnitAlreadyLinked =
-        currentInstance.org_unit?.reference_instance_id !== null;
     const {
         org_unit: orgUnit,
         latitude: formLat,
@@ -75,9 +77,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
         formAltitude === orgUnit?.altitude;
 
     const isLinkActionEnabled =
-        hasOrgUnitPermission &&
-        hasfeatureFlag &&
-        formId.toString() === referenceFormId;
+        hasOrgUnitPermission && hasfeatureFlag && isInstanceOfReferenceForm;
 
     const baseActions = useBaseActions(currentInstance, formDef);
 
@@ -92,7 +92,7 @@ const SpeedDialInstance: FunctionComponent<Props> = props => {
 
     const linkOrgUnitAction = useLinkToOrgUnitAction({
         currentInstance,
-        isOrgUnitAlreadyLinked,
+        isReferenceInstance,
         formId,
         referenceFormId: referenceFormId ? parseInt(referenceFormId, 10) : null,
     });

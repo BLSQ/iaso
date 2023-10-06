@@ -531,6 +531,10 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'GPS coordinates will NOT be updated for org units that already have coordinates or a shape',
     },
+    multiReferenceInstancesLabel: {
+        id: 'iaso.orgUnits.MultiReferenceInstancesLabel',
+        defaultMessage: 'Reference submissions',
+    },
 });
 
 export default MESSAGES;

@@ -837,6 +837,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.failed',
         defaultMessage: 'Failed',
     },
+    inScope: {
+        id: 'iaso.polio.label.inScope',
+        defaultMessage: 'No data found',
+    },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',
         defaultMessage: 'Districts not found',

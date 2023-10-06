@@ -5,6 +5,7 @@ import LocationDisabledIcon from '@material-ui/icons/LocationDisabled';
 
 import { useSafeIntl } from 'bluesquare-components';
 import ShapeSvg from '../../../../../../../../../hat/assets/js/apps/Iaso/components/svg/ShapeSvgComponent';
+import { Shape } from '../../../../../constants/types';
 
 const MESSAGES = defineMessages({
     withShape: {
@@ -20,7 +21,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.noGeographicalData',
     },
 });
-type Props = { shape: any };
+type Props = { shape: Shape };
 
 export const HasLocationIcon: FunctionComponent<Props> = ({ shape }) => {
     const { formatMessage } = useSafeIntl();

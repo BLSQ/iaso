@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useCallback, useState } from 'react';
-import { Box, Paper, makeStyles, Tabs, Tab, Divider } from '@material-ui/core';
+import { Box, Paper, makeStyles, Tabs, Tab } from '@material-ui/core';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { paperElevation } from '../../../shared/constants';
@@ -85,7 +85,6 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
                     <Tab value={MAP} label={formatMessage(MESSAGES.map)} />
                     <Tab value={LIST} label={formatMessage(MESSAGES.list)} />
                 </Tabs>
-                <Divider />
                 <Box px={2} mt={2}>
                     <LqasAfroSelector
                         selectedRound={selectedRound}

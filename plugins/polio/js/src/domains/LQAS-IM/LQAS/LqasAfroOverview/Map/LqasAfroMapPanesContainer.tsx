@@ -1,6 +1,5 @@
 import React, {
     FunctionComponent,
-    // useState,
     useEffect,
     useCallback,
     useContext,
@@ -26,7 +25,6 @@ import { AfroMapParams, Side } from '../types';
 import { LqasAfroTooltip } from './LqasAfroTooltip';
 import { LqasAfroPopup } from './LqasAfroPopUp';
 import { getRound } from '../utils';
-// import { Bounds } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/map/mapUtils';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 
 const getMainLayerStyle = shape => {

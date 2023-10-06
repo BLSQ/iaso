@@ -5,6 +5,7 @@ from time import gmtime, strftime
 from django.conf import settings
 from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon, GEOSGeometry, MultiPolygon
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value, Count
 from django.http import StreamingHttpResponse, HttpResponse
@@ -428,25 +429,20 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
 
-        if "reference_instance_id" in request.data:
-            reference_instance_id = request.data["reference_instance_id"]
-            if reference_instance_id:
-                instance = Instance.objects.get(pk=reference_instance_id)
-                # Check if the instance has as form the reference_form for the orgUnittype
-                # if the reference_form is the same as the form related to the instance one,
-                # assign the instance to the orgUnit as reference instance
-                if org_unit.org_unit_type.reference_form != instance.form:
+        if "reference_instance_id" in request.data and "reference_instance_action" in request.data:
+            instance = get_object_or_404(Instance, pk=request.data["reference_instance_id"], org_unit=org_unit)
+            if request.data["reference_instance_action"] == Instance.REFERENCE_FLAG_CODE:
+                try:
+                    instance.flag_reference_instance(org_unit)
+                except ValidationError as e:
                     errors.append(
                         {
-                            "errorKey": "reference_form",
-                            "errorMessage": _("Form of subimssion is not allowed on this type of org unit"),
+                            "errorKey": "reference_instances",
+                            "errorMessage": e.messages[0],
                         }
                     )
-                else:
-                    org_unit.reference_instance = instance
-            else:
-                instance = None
-                org_unit.reference_instance = instance
+            elif request.data["reference_instance_action"] == Instance.REFERENCE_UNFLAG_CODE:
+                instance.unflag_reference_instance(org_unit)
 
         if "parent_id" in request.data:
             parent_id = request.data["parent_id"]
@@ -502,6 +498,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if org_unit.catchment:
                     res["catchment"] = geojson_queryset(queryset, geometry_field="catchment")
 
+            res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
             return Response(res)
         else:
             return Response(errors, status=400)
@@ -615,16 +612,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
-        if reference_instance_id and org_unit_type:
-            instance = Instance.objects.get(pk=reference_instance_id)
-            # Check if the instance has as form the reference_form for the orgUnittype
-            # if the reference_form is the same as the form related to the instance one,
-            # assign the instance to the orgUnit as a reference instance
-            if org_unit_type.reference_form == instance.form:
-                org_unit.reference_instance = instance
-
         org_unit.save()
         org_unit.groups.set(new_groups)
+
+        if reference_instance_id and org_unit_type:
+            instance = Instance.objects.get(pk=reference_instance_id)
+            instance.flag_reference_instance(org_unit)
 
         audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
 
@@ -638,7 +631,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit: OrgUnit = get_object_or_404(self.get_queryset(), pk=pk)
+        org_unit: OrgUnit = get_object_or_404(self.get_queryset().prefetch_related("reference_instances"), pk=pk)
         self.check_object_permissions(request, org_unit)
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
@@ -659,9 +652,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
-        # add the reference instance in the dictiannary to return
-        res["reference_instance"] = org_unit.reference_instance.as_full_model() if org_unit.reference_instance else None
 
+        res["reference_instances"] = org_unit.get_reference_instances_details_for_api()
         return Response(res)
 
 

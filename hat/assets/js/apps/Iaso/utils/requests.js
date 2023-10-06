@@ -141,7 +141,7 @@ export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
         });
 
 export const fetchLogDetail = (dispatch, logId) =>
-    getRequest(`/api/logs/${logId}`)
+    getRequest(`/api/logs/${logId}/`)
         .then(logDetail => logDetail)
         .catch(error => {
             dispatch(

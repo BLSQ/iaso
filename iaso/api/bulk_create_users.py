@@ -370,7 +370,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @staticmethod
     def module_permissions(current_account):
         # Get all modules linked to the current account
-        modules = list(Module.objects.filter(account_modules=current_account).values_list("id", flat=True))
+        modules = Module.objects.filter(account_modules=current_account).values_list("id", flat=True)
         # Get all permissions linked to the modules
         return set(iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True))
 

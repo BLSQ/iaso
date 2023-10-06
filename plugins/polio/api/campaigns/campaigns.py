@@ -36,6 +36,9 @@ from iaso.api.common import (
 )
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
+from plugins.polio.api.campaigns.vaccine_authorization_missing_email import (
+    missing_vaccine_authorization_for_campaign_email_alert,
+)
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer, ShipmentSerializer
 from plugins.polio.api.shared_serializers import (
@@ -93,11 +96,11 @@ class CurrentAccountDefault:
         return serializer_field.context["request"].user.iaso_profile.account_id
 
 
-def check_total_doses_requested(initial_org_unit, rounds):
-
-    vaccine_authorization = VaccineAuthorization.objects.get(
-        country=initial_org_unit.country_ancestors()[0].pk, status="VALIDATED"
-    )
+def check_total_doses_requested(vaccine_authorization, rounds):
+    """
+    Check if the total doses requested per round in a campaign is not superior to the allowed doses in the vaccine authorization.
+    It also emails the nopv2 vaccine team about it.
+    """
 
     if vaccine_authorization:
         total_doses_requested = 0
@@ -105,10 +108,11 @@ def check_total_doses_requested(initial_org_unit, rounds):
             total_doses_requested += c_round["doses_requested"]
 
         if total_doses_requested > vaccine_authorization.quantity:
-            raise serializers.ValidationError({
-                "error": f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}."})
-
-        # MUST ALSO SEND A MAIL
+            raise serializers.ValidationError(
+                {
+                    "error": f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}."
+                }
+            )
 
 
 class CampaignSerializer(serializers.ModelSerializer):
@@ -172,9 +176,16 @@ class CampaignSerializer(serializers.ModelSerializer):
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
         initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
+        obr_name = validated_data["obr_name"]
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        check_total_doses_requested(initial_org_unit, rounds)
+        vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
+
+        if not vaccine_authorization:
+            missing_vaccine_authorization_for_campaign_email_alert(obr_name, validated_data["initial_org_unit"])
+
+        if vaccine_authorization:
+            check_total_doses_requested(vaccine_authorization[0], rounds)
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
@@ -245,8 +256,10 @@ class CampaignSerializer(serializers.ModelSerializer):
         initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        check_total_doses_requested(initial_org_unit, rounds)
-        
+        vaccine_authorization = VaccineAuthorization.objects.get(country=initial_org_unit, status="VALIDATED")
+        if vaccine_authorization:
+            check_total_doses_requested(vaccine_authorization[0], rounds)
+
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine")
             org_units = scope.get("group", {}).get("org_units")
@@ -851,16 +864,16 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             if self.request.query_params.get("fieldset") == "list" and self.request.method in permissions.SAFE_METHODS:
                 return ListCampaignSerializer
             if (
-                    self.request.query_params.get("fieldset") == "calendar"
-                    and self.request.method in permissions.SAFE_METHODS
+                self.request.query_params.get("fieldset") == "calendar"
+                and self.request.method in permissions.SAFE_METHODS
             ):
                 return CalendarCampaignSerializer
 
             return CampaignSerializer
         else:
             if (
-                    self.request.query_params.get("fieldset") == "calendar"
-                    and self.request.method in permissions.SAFE_METHODS
+                self.request.query_params.get("fieldset") == "calendar"
+                and self.request.method in permissions.SAFE_METHODS
             ):
                 return CalendarCampaignSerializer
             return AnonymousCampaignSerializer
@@ -1163,8 +1176,7 @@ Timeline tracker Automated message
             virus_type=campaign.virus,
             onset_date=campaign.onset_at,
             initial_orgunit_name=campaign.initial_org_unit.name
-                                 + (
-                                     ", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
+            + (", " + campaign.initial_org_unit.parent.name if campaign.initial_org_unit.parent else ""),
             url=f"https://{domain}/dashboard/polio/list",
             url_campaign=f"https://{domain}/dashboard/polio/list/campaignId/{campaign.id}",
         )

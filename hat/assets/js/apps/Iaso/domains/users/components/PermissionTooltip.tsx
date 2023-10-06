@@ -1,4 +1,4 @@
-import { Tooltip, Grid } from '@material-ui/core';
+import { Tooltip, Box } from '@material-ui/core';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
@@ -6,13 +6,9 @@ import PERMISSIONS_MESSAGES from '../permissionsMessages';
 
 type Props = {
     codename: string;
-    name: string;
 };
 
-const PermissionLabel: React.FunctionComponent<Props> = ({
-    codename,
-    name,
-}) => {
+const PermissionTooltip: React.FunctionComponent<Props> = ({ codename }) => {
     let title;
     const { formatMessage } = useSafeIntl();
     const toolTipMessageObject = PERMISSIONS_MESSAGES[codename];
@@ -20,9 +16,9 @@ const PermissionLabel: React.FunctionComponent<Props> = ({
         title = formatMessage(toolTipMessageObject);
     }
     return (
-        <Grid container direction="row" spacing={2}>
-            <Grid item xs={2}>
-                {title && (
+        <>
+            {title && (
+                <Box style={{ cursor: 'pointer' }}>
                     <Tooltip
                         title={title}
                         interactive
@@ -32,13 +28,10 @@ const PermissionLabel: React.FunctionComponent<Props> = ({
                     >
                         <HelpOutlineIcon color="primary" />
                     </Tooltip>
-                )}
-            </Grid>
-            <Grid item xs={10}>
-                <span>{name}</span>
-            </Grid>
-        </Grid>
+                </Box>
+            )}
+        </>
     );
 };
 
-export default PermissionLabel;
+export default PermissionTooltip;

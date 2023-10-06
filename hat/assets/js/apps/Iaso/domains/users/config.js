@@ -12,7 +12,7 @@ import MESSAGES from './messages';
 import { userHasPermission } from './utils';
 
 import * as Permission from '../../utils/permissions.ts';
-import PermissionLabel from './components/PermissionLabel.tsx';
+import PermissionTooltip from './components/PermissionTooltip.tsx';
 
 export const usersTableColumns = ({
     formatMessage,
@@ -81,19 +81,26 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
     return useMemo(() => {
         const columns = [
             {
+                Header: '',
+                id: 'tooltip',
+                sortable: false,
+                align: 'center',
+                width: 50,
+                Cell: settings => {
+                    return (
+                        <PermissionTooltip
+                            codename={`${settings.row.original.permissionCodeName}_tooltip`}
+                        />
+                    );
+                },
+            },
+            {
                 Header: formatMessage(MESSAGES.permissions),
                 id: 'permission',
                 accessor: 'permission',
                 sortable: false,
+                width: 250,
                 align: 'left',
-                Cell: settings => {
-                    return (
-                        <PermissionLabel
-                            codename={`${settings.row.original.permissionCodeName}_tooltip`}
-                            name={settings.row.original.permission}
-                        />
-                    );
-                },
             },
             {
                 Header: formatMessage(MESSAGES.userPermissions),
@@ -133,6 +140,7 @@ export const useUserPermissionColumns = ({ setPermissions, currentUser }) => {
                 id: role.id.toString(),
                 accessor: role.id.toString(),
                 sortable: false,
+                width: 50,
                 Cell: settings => {
                     if (
                         role.permissions.find(

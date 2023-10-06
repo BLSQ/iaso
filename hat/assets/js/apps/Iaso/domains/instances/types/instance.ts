@@ -38,6 +38,8 @@ export type Instance = {
     instance_locks: Lock[];
     can_user_modify: boolean;
     is_locked: boolean;
+    is_instance_of_reference_form: boolean;
+    is_reference_instance: boolean;
 };
 
 export type InstanceLogDetail = {

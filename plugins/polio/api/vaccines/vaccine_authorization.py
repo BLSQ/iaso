@@ -1,3 +1,4 @@
+import datetime
 import datetime as dt
 import itertools
 from typing import Any
@@ -54,6 +55,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
+            "start_date",
             "expiration_date",
             "created_at",
             "updated_at",
@@ -69,10 +71,18 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         validated_data["account"] = user.iaso_profile.account
 
+        expiration_date = validated_data.get("expiration_date")
+        start_date = validated_data.get("start_date")
+
+        if expiration_date and expiration_date < datetime.date.today():
+            raise serializers.ValidationError({"error": "expiration_date must be a future date."})
+        if start_date and start_date > expiration_date:
+            raise serializers.ValidationError({"error": "start_date must be before expiration_date."})
+
         return super().create(validated_data)
 
 
-class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
+class HasVaccineAuthorizationsPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
         write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
@@ -109,7 +119,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     action: /api/polio/get_most_recent_authorizations
     """
 
-    permission_classes = [HassVaccineAuthorizationsPermissions]
+    permission_classes = [HasVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
     remove_results_key_if_paginated = True
@@ -212,6 +222,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_entry.country.pk,
                         "name": last_entry.country.name,
                     },
+                    "start_date": last_validated_or_expired.start_date,
                     "current_expiration_date": last_validated_or_expired.expiration_date,
                     "next_expiration_date": next_expiration_auth.expiration_date
                     if next_expiration_auth.expiration_date > last_validated_or_expired.expiration_date
@@ -230,6 +241,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_entry.country.pk,
                         "name": last_entry.country.name,
                     },
+                    "start_date": last_entry.start_date,
                     "current_expiration_date": None,
                     "next_expiration_date": next_expiration_auth.expiration_date,
                     "quantity": None,
@@ -246,6 +258,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_validated_or_expired.country.pk,
                         "name": last_validated_or_expired.country.name,
                     },
+                    "start_date": last_validated_or_expired.start_date,
                     "current_expiration_date": last_validated_or_expired.expiration_date,
                     "next_expiration_date": None,
                     "quantity": last_validated_or_expired.quantity,

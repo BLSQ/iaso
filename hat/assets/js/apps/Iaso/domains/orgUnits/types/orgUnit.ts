@@ -67,8 +67,9 @@ export type OrgUnit = {
     org_unit_type: OrgunitType;
     search_index?: number;
     reference_instance_id: Nullable<number>;
-    reference_instance: Instance;
+    reference_instances: Instance[];
     catchment?: Shape;
+    reference_instance_action?: string;
 };
 export interface PaginatedOrgUnits extends Pagination {
     orgunits: OrgUnit[];

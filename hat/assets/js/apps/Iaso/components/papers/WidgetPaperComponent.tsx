@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent } from 'react';
+import React, { useState, FunctionComponent, ReactElement } from 'react';
 
 import {
     Paper,
@@ -53,7 +53,7 @@ const useStyles = makeStyles(theme => ({
 }));
 
 type Props = {
-    title: string;
+    title: ReactElement | string;
     isExpanded?: boolean;
     expandable?: boolean;
     id?: string;

@@ -19,7 +19,7 @@ import WatchLaterIcon from '@material-ui/icons/WatchLater';
 import { Dashboard } from './src/domains/Campaigns/Dashboard';
 import { Calendar } from './src/domains/Calendar/Calendar';
 import { CampaignHistory } from './src/domains/Campaigns/campaignHistory/CampaignHistory.tsx';
-import { CountryNotificationsConfig } from './src/domains/CountryNotificationsConfig/CountryNotificationsConfig';
+import { CountryNotificationsConfig } from './src/domains/Config/CountryNotification/CountryNotificationsConfig';
 import MESSAGES from './src/constants/messages';
 import {
     DASHBOARD_BASE_URL,

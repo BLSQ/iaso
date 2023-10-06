@@ -152,10 +152,14 @@ class CampaignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
-        initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"])
+        initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
 
-        # check if there is a vaccine authorization validated for this campaign
         vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit.country_ancestors().pk, status="VALIDATED")
+
+        if vaccine_authorization:
+            pass
+
+        print(validated_data)
 
 
 

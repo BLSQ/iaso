@@ -569,9 +569,9 @@ class OrgUnitChangeRequest(models.Model):
         REJECTED = "REJECTED", _("Rejected")
         VALIDATED = "VALIDATED", _("Validated")
 
-    class ApprovedFields(models.TextChoices):
+    class ChangeRequestFields(models.TextChoices):
         """
-        Used to accept only part of the proposed changes.
+        Fields for which a change can be requested.
         """
 
         PARENT = "parent"
@@ -600,7 +600,7 @@ class OrgUnitChangeRequest(models.Model):
     )
     rejection_comment = models.CharField(max_length=255, blank=True)
 
-    # Proposed changes.
+    # Fields for which a change can be requested.
 
     parent = models.ForeignKey(
         "OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="org_unit_change_parents_set"
@@ -618,7 +618,7 @@ class OrgUnitChangeRequest(models.Model):
     # Approved changes.
 
     approved_fields = ArrayField(
-        models.CharField(max_length=20, blank=True, choices=ApprovedFields.choices),
+        models.CharField(max_length=20, blank=True, choices=ChangeRequestFields.choices),
         default=list,
         blank=True,
     )
@@ -631,5 +631,20 @@ class OrgUnitChangeRequest(models.Model):
 
     def save(self, *args, **kwargs):
         if self.approved_fields:
-            self.approved_fields = list(set(self.approved_fields))
+            unique_approved_fields = list(set(self.approved_fields))
+            self.approved_fields = unique_approved_fields
         super().save(*args, **kwargs)
+
+    @property
+    def requested_fields(self) -> typing.List[str]:
+        """
+        Returns a list of fields that were requested to change.
+        """
+        requested = []
+        for name in OrgUnitChangeRequest.ChangeRequestFields.values:
+            field = getattr(self, name)
+            is_m2m = field.__class__.__name__ == "ManyRelatedManager"
+            is_requested = field.exists() if is_m2m else field
+            if is_requested:
+                requested.append(name)
+        return requested

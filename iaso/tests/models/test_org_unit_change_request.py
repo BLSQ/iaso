@@ -58,3 +58,13 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(org_unit_change_request.instances.count(), 1)
         self.assertEqual(org_unit_change_request.instances.first(), new_instance)
         self.assertCountEqual(org_unit_change_request.approved_fields, kwargs["approved_fields"])
+
+    def test_requested_fields(self):
+        kwargs = {"org_unit": self.org_unit, "name": "New name"}
+        org_unit_change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        self.assertCountEqual(org_unit_change_request.requested_fields, ["name"])
+
+        org_unit_change_request.org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
+        org_unit_change_request.groups.add(m.Group.objects.create(name="new group"))
+        org_unit_change_request.save()
+        self.assertCountEqual(org_unit_change_request.requested_fields, ["name", "org_unit_type", "groups"])

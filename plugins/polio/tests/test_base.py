@@ -209,7 +209,7 @@ class PolioAPITestCase(APITestCase):
         )
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(Campaign.objects.get().get_all_districts().count(), 3)
+        self.assertEqual(len(Campaign.objects.get().get_all_districts()), 3)
 
     def test_can_only_see_campaigns_within_user_org_units_hierarchy(self):
         """

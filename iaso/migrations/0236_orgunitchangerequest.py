@@ -11,7 +11,7 @@ import django.utils.timezone
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0234_delete_reference_form_and_reference_instance"),
+        ("iaso", "0235_merge_20231006_0940"),
     ]
 
     operations = [

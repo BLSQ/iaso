@@ -6,18 +6,21 @@ import MESSAGES from '../../../../constants/messages';
 
 yup.addMethod(
     yup.date,
-    'checkDateForExpired',
-    function checkDateForExpired(formatMessage) {
-        return this.test('checkDateForExpired', '', (value, context) => {
+    'checkForDateValidity',
+    function checkForDateValidity(formatMessage) {
+        return this.test('checkForDateValidity', '', (value, context) => {
             const { path, createError, parent } = context;
             const now = moment();
             const newExpiryDate = moment(value);
+            const startDate = moment(parent.start_date);
             const { status } = parent;
-
             let errorMessage;
 
             if (newExpiryDate?.isAfter(now) && status === 'EXPIRED') {
                 errorMessage = formatMessage(MESSAGES.dateForExpired);
+            }
+            if (startDate?.isAfter(moment(newExpiryDate))) {
+                errorMessage = formatMessage(MESSAGES.startDateAfterExpiration);
             }
             if (errorMessage) {
                 return createError({
@@ -33,6 +36,13 @@ yup.addMethod(
 export const useNopv2AuthorisationsSchema = () => {
     const { formatMessage } = useSafeIntl();
     return yup.object().shape({
+        start_date: yup
+            .date()
+            .typeError(formatMessage(MESSAGES.invalidDate))
+            .nullable()
+            .required(formatMessage(MESSAGES.fieldRequired))
+            // @ts-ignore
+            .checkForDateValidity(MESSAGES.invalidDate),
         expiration_date: yup
             .date()
             .typeError(formatMessage(MESSAGES.invalidDate))
@@ -40,7 +50,7 @@ export const useNopv2AuthorisationsSchema = () => {
             .required(formatMessage(MESSAGES.fieldRequired))
             // ts-compiler doesn't recognize the added method
             // @ts-ignore
-            .checkDateForExpired(formatMessage),
+            .checkForDateValidity(formatMessage),
         country: yup
             .number()
             .positive()

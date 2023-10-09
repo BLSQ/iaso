@@ -35,9 +35,12 @@ class OrgUnitAPITestCase(APITestCase):
             name="Not a reference form", period_type=m.MONTH, single_per_period=True
         )
         cls.jedi_council = jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc", reference_form=reference_form
+            name="Jedi Council",
+            short_name="Cnc",
         )
         jedi_council.sub_unit_types.add(jedi_squad)
+        cls.jedi_council.reference_forms.add(cls.reference_form)
+        cls.jedi_council.save()
 
         cls.mock_multipolygon = mock_multipolygon = MultiPolygon(
             Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])
@@ -498,6 +501,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.get(f"/api/orgunits/{self.jedi_squad_endor.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
+        self.assertEqual(response.data["reference_instances"], [])
 
     def test_org_unit_retrieve_ok_2(self):
         """GET /orgunits/<org_unit_id>/ happy path (user is restricted to a few org units)"""
@@ -506,6 +510,7 @@ class OrgUnitAPITestCase(APITestCase):
         response = self.client.get(f"/api/orgunits/{self.jedi_squad_endor.id}/")
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(response.json())
+        self.assertEqual(response.data["reference_instances"], [])
 
     def test_can_retrieve_org_units_in_csv_format(self):
         self.client.force_authenticate(self.yoda)
@@ -697,7 +702,7 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
+        self.assertEqual(ou.reference_instances.count(), 1)
 
     def test_create_org_unit_with_not_linked_reference_instance(self):
         self.client.force_authenticate(self.yoda)
@@ -708,7 +713,7 @@ class OrgUnitAPITestCase(APITestCase):
                 "id": None,
                 "name": "Test ou with no reference instance",
                 "org_unit_type_id": self.jedi_council.pk,
-                "reference_instance_id": self.instance_not_related_to_reference_form.id,
+                "reference_instances_ids": [self.instance_not_related_to_reference_form.id],
                 "groups": [],
                 "sub_source": "",
                 "status": False,
@@ -722,7 +727,7 @@ class OrgUnitAPITestCase(APITestCase):
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
         ou = m.OrgUnit.objects.get(id=jr["id"])
-        self.assertEqual(ou.reference_instance, None)
+        self.assertEqual(ou.reference_instances.count(), 0)
 
     def test_edit_org_unit_retrieve_put(self):
         """Retrieve an orgunit data and then resend back mostly unmodified and ensure that nothing burn
@@ -742,6 +747,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         jr = self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitData(jr)
+        self.assertEqual(response.data["reference_instances"], [])
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertQuerysetEqual(ou.groups.all().order_by("name"), ["<Group: Elite councils | Evil Empire  1 >"])
@@ -751,7 +757,39 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.created_at, old_ou.created_at)
         self.assertNotEqual(ou.updated_at, old_ou.updated_at)
 
-    def test_edit_org_unit_link_to_reference_instance(self):
+    def test_edit_org_unit_unflag_reference_instance(self):
+        org_unit_type = self.jedi_council
+        org_unit = self.jedi_council_corruscant
+        form = self.reference_form
+        instance = self.instance_related_to_reference_form
+
+        # Create a reference instance.
+        m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=form)
+        self.assertIn(instance, org_unit.reference_instances.all())
+
+        # GET /api/orgunits/id.
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/{org_unit.id}/")
+        data = self.assertJSONResponse(response, 200)
+
+        # PATCH /api/orgunits/id.
+        data.update(
+            {
+                "groups": [g["id"] for g in response.data["groups"]],
+                "reference_instance_id": instance.id,
+                "reference_instance_action": m.Instance.REFERENCE_UNFLAG_CODE,
+            }
+        )
+        response = self.client.patch(
+            f"/api/orgunits/{org_unit.id}/",
+            format="json",
+            data=data,
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertNotIn(instance, org_unit.reference_instances.all())
+        self.assertEqual(response.data["reference_instances"], [])
+
+    def test_edit_org_unit_flag_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id"""
         old_ou = self.jedi_council_corruscant
         self.client.force_authenticate(self.yoda)
@@ -760,6 +798,7 @@ class OrgUnitAPITestCase(APITestCase):
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
         data["reference_instance_id"] = self.instance_related_to_reference_form.id
+        data["reference_instance_action"] = m.Instance.REFERENCE_FLAG_CODE
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
@@ -770,9 +809,10 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertCreated({Modification: 1})
         ou = m.OrgUnit.objects.get(id=jr["id"])
         self.assertEqual(ou.id, old_ou.id)
-        self.assertEqual(ou.reference_instance, self.instance_related_to_reference_form)
+        self.assertIn(self.instance_related_to_reference_form, ou.reference_instances.all())
+        self.assertEqual(len(response.data["reference_instances"]), 1)
 
-    def test_edit_org_unit_not_link_to_reference_instance(self):
+    def test_edit_org_unit_flag_wrong_reference_instance(self):
         """Retrieve an orgunit data and modify the reference_instance_id with a no reference form"""
         old_ou = self.jedi_council_corruscant
         old_modification_date = old_ou.updated_at
@@ -782,16 +822,18 @@ class OrgUnitAPITestCase(APITestCase):
         group_ids = [g["id"] for g in data["groups"]]
         data["groups"] = group_ids
         data["reference_instance_id"] = self.instance_not_related_to_reference_form.id
+        data["reference_instance_action"] = m.Instance.REFERENCE_FLAG_CODE
         response = self.client.patch(
             f"/api/orgunits/{old_ou.id}/",
             format="json",
             data=data,
         )
         jr = self.assertJSONResponse(response, 400)
-        self.assertTrue("reference_form" in (error["errorKey"] for error in jr))
+        self.assertTrue("reference_instances" in (error["errorKey"] for error in jr))
         old_ou.refresh_from_db()
         # check the orgunit has not beee modified
         self.assertEqual(old_modification_date, old_ou.updated_at)
+        self.assertNotIn(self.instance_not_related_to_reference_form, old_ou.reference_instances.all())
 
     def test_edit_org_unit_partial_update(self):
         """Check tha we can only modify a part of the fille"""
@@ -820,6 +862,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(ou.source_ref, "new source ref")
         self.assertQuerysetEqual(ou.groups.all().order_by("name"), [group_a, group_b])
         self.assertEqual(ou.geom.wkt, MultiPolygon(Polygon([(0, 0), (0, 1), (1, 1), (0, 0)])).wkt)
+        self.assertEqual(response.data["reference_instances"], [])
 
     def test_edit_org_unit_edit_bad_group_fail(self):
         """Check for a previous bug if an org unit is already member of a bad group

@@ -94,6 +94,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.referenceForm',
         defaultMessage: 'Reference form',
     },
+    referenceForms: {
+        id: 'iaso.orgUnits.referenceForms',
+        defaultMessage: 'Reference forms',
+    },
     selectProjects: {
         id: 'iaso.orgUnits.selectProjects',
         defaultMessage: 'select a project',

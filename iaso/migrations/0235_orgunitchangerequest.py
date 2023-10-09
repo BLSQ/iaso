@@ -22,7 +22,7 @@ class Migration(migrations.Migration):
                 (
                     "status",
                     models.CharField(
-                        choices=[("NEW", "New"), ("REJECTED", "Rejected"), ("VALIDATED", "Validated")],
+                        choices=[("new", "New"), ("rejected", "Rejected"), ("validated", "Validated")],
                         default="NEW",
                         max_length=40,
                     ),

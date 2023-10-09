@@ -565,9 +565,9 @@ class OrgUnitChangeRequest(models.Model):
     """
 
     class Statuses(models.TextChoices):
-        NEW = "NEW", _("New")
-        REJECTED = "REJECTED", _("Rejected")
-        VALIDATED = "VALIDATED", _("Validated")
+        NEW = "new", _("New")
+        REJECTED = "rejected", _("Rejected")
+        VALIDATED = "validated", _("Validated")
 
     class ChangeRequestFields(models.TextChoices):
         """

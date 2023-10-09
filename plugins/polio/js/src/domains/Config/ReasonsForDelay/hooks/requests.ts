@@ -1,10 +1,17 @@
-import { UseQueryResult } from 'react-query';
+import { UseMutationResult, UseQueryResult } from 'react-query';
 import {
     FormattedApiParams,
     useApiParams,
 } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
-import { useSnackQuery } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
-import { getRequest } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
+import {
+    useSnackMutation,
+    useSnackQuery,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/apiHooks';
+import {
+    getRequest,
+    patchRequest,
+    postRequest,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/libs/Api';
 import { FormattedUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
 import { makeUrlWithParams } from '../../../../../../../../hat/assets/js/apps/Iaso/libs/utils';
 
@@ -30,5 +37,20 @@ export const useReasonsForDelay = (
                 return data;
             },
         },
+    });
+};
+
+const createEditReasonForDelay = (body: any) => {
+    if (body.id) {
+        return patchRequest(`${apiUrl}${body.id}/`, body);
+    }
+    return postRequest(apiUrl, body);
+};
+
+export const useCreateEditReasonForDelay = (): UseMutationResult => {
+    return useSnackMutation({
+        mutationFn: (body: any) => createEditReasonForDelay(body),
+        invalidateQueryKey: ['reasonsForDelay'],
+        ignoreErrorCodes: [400],
     });
 };

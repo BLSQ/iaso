@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { AddButton, useSafeIntl } from 'bluesquare-components';
+import { useSafeIntl } from 'bluesquare-components';
 import { Grid, Box } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 import { useUrlParams } from '../../../../../../../hat/assets/js/apps/Iaso/hooks/useUrlParams';
@@ -11,6 +11,7 @@ import { Router } from '../../../../../../../hat/assets/js/apps/Iaso/types/gener
 import MESSAGES from './messages';
 import { useReasonsForDelay } from './hooks/requests';
 import { CONFIG_REASONS_FOR_DELAY_URL } from '../../../constants/routes';
+import { CreateReasonForDelay } from './CreateEdit/CreateEditReasonForDelay';
 import { useReasonsForDelayColumns } from './hooks/columns';
 
 type Props = { router: Router };
@@ -41,17 +42,8 @@ export const ReasonsForDelay: FunctionComponent<Props> = ({ router }) => {
                     justifyContent="flex-end"
                     alignItems="center"
                     className={classes.marginTop}
-                >
-                    {/* <OrgUnitsTypesDialog
-                        titleMessage={MESSAGES.create}
-                        renderTrigger={({ openDialog }) => (
-                            <AddButton
-                                onClick={openDialog}
-                                id="create-ou-type"
-                            />
-                        )}
-                    /> */}
-                </Grid>
+                />
+                <CreateReasonForDelay iconProps={{}} />
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}

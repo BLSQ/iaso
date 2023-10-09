@@ -1,13 +1,11 @@
 import { Column, useSafeIntl } from 'bluesquare-components';
-import { useMemo } from 'react';
-import { useSelector } from 'react-redux';
+import React, { ReactElement, useMemo } from 'react';
+import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/domains/app/constants';
 import MESSAGES from '../messages';
 import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import { EditReasonForDelay } from '../CreateEdit/CreateEditReasonForDelay';
 
 export const useReasonsForDelayColumns = (): Column[] => {
-    // @ts-ignore
-    const activeLocale = useSelector(state => state.app.locale);
-    const { code: locale } = activeLocale;
     const { formatMessage } = useSafeIntl();
     return useMemo(() => {
         return [
@@ -21,16 +19,14 @@ export const useReasonsForDelayColumns = (): Column[] => {
                 accessor: 'key_name',
                 sortable: true,
             },
-            {
-                Header: formatMessage(MESSAGES.name_en),
-                accessor: 'name_en',
-                sortable: true,
-            },
-            {
-                Header: formatMessage(MESSAGES.name_fr),
-                accessor: 'name_fr',
-                sortable: true,
-            },
+            ...APP_LOCALES.map(locale => {
+                const key = `name_${locale.code}`;
+                return {
+                    Header: formatMessage(MESSAGES[key]),
+                    accessor: key,
+                    sortable: true,
+                };
+            }),
             {
                 Header: formatMessage(MESSAGES.createdAt),
                 accessor: 'created_at',
@@ -47,6 +43,23 @@ export const useReasonsForDelayColumns = (): Column[] => {
                 Header: formatMessage(MESSAGES.timesSelected),
                 accessor: 'times_selected',
                 sortable: false,
+            },
+            {
+                Header: formatMessage(MESSAGES.actions),
+                accessor: 'actions',
+                resizable: false,
+                sortable: false,
+                Cell: (settings): ReactElement => {
+                    return (
+                        <EditReasonForDelay
+                            iconProps={{}}
+                            id={settings.row.original.id}
+                            keyName={settings.row.original.key_name}
+                            nameEn={settings.row.original.name_en}
+                            nameFr={settings.row.original.name_fr}
+                        />
+                    );
+                },
             },
         ];
     }, [formatMessage]);

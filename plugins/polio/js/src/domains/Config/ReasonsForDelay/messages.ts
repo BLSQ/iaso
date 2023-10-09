@@ -33,6 +33,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.keyName',
         defaultMessage: 'Key',
     },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.label.actions',
+    },
 });
 
 export default MESSAGES;

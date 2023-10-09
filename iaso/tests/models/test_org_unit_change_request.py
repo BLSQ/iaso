@@ -8,7 +8,7 @@ from iaso.test import TestCase
 
 class OrgUnitChangeRequestModelTestCase(TestCase):
     """
-    Test OrgUnitChangeRequest.
+    Test OrgUnitChangeRequest model.
     """
 
     @classmethod

@@ -1,5 +1,8 @@
-from rest_framework import serializers
+from rest_framework import viewsets, permissions, serializers
+from rest_framework.mixins import ListModelMixin
+from rest_framework.viewsets import GenericViewSet
 
+from iaso.filters.org_unit_change_requests import OrgUnitChangeRequestListFilter
 from iaso.models import OrgUnitChangeRequest
 
 
@@ -37,3 +40,16 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
 
     def get_groups(self, obj: OrgUnitChangeRequest):
         return [group.name for group in obj.groups.all()]
+
+
+class OrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
+    permission_classes = [permissions.IsAuthenticated]
+    filterset_class = OrgUnitChangeRequestListFilter
+    serializer_class = OrgUnitChangeRequestListSerializer
+
+    def get_queryset(self):
+        return (
+            OrgUnitChangeRequest.objects.all()
+            # Select/prefetch related objects used in serializer/filterset.
+            .select_related("org_unit__org_unit_type", "org_unit__parent").prefetch_related("groups", "instances")
+        )

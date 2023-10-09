@@ -3,12 +3,13 @@ import time_machine
 from django.contrib.gis.geos import Point
 
 from iaso.api.org_unit_change_requests import OrgUnitChangeRequestListSerializer
-from iaso.test import TestCase as IasoTestCase
+from iaso.test import TestCase
+from iaso.test import APITestCase
 from iaso import models as m
 
 
 @time_machine.travel("2023-10-09T13:00:00.000Z", tick=False)
-class OrgUnitChangeRequestListSerializerTestCase(IasoTestCase):
+class OrgUnitChangeRequestListSerializerTestCase(TestCase):
     """
     Test list serializer.
     """
@@ -60,3 +61,30 @@ class OrgUnitChangeRequestListSerializerTestCase(IasoTestCase):
         )
         self.assertCountEqual(serializer.data["requested_fields"], ["org_unit_type", "groups", "location"])
         self.assertCountEqual(serializer.data["approved_fields"], ["org_unit_type", "groups"])
+
+
+class OrgUnitChangeRequestAPITestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        cls.org_unit = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+
+        cls.form = m.Form.objects.create(name="Vaccine form")
+        cls.instance = m.Instance.objects.create(form=cls.form, org_unit=cls.org_unit)
+
+        cls.account = m.Account.objects.create(name="Account")
+        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+
+    def test_list_ok(self):
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, name="Foo")
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, name="Bar")
+
+        self.client.force_authenticate(self.user)
+
+        with self.assertNumQueries(4):
+            # 1. COUNT(*)
+            # 2. SELECT OrgUnitChangeRequest
+            # 3. PREFETCH Group
+            # 4. PREFETCH Instance
+            response = self.client.get("/api/orgunits/changes/")
+            self.assertJSONResponse(response, 200)

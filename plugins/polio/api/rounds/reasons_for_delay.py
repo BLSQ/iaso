@@ -30,14 +30,14 @@ class ReasonForDelaySerializer(serializers.ModelSerializer):
         key_name = data.get("key_name", None)
         name_en = data.get("name_en", None)
         if key_name is None:
-            raise serializers.ValidationError("key_name is mandatory")
+            raise serializers.ValidationError("requiredField")
         if name_en is None:
-            raise serializers.ValidationError("You should provide at least an EN translation")
+            raise serializers.ValidationError("requiredField")
         # Checking that updates are made from user from the same accont as the Reason for delay
         if self.instance is not None:
             user_account = self.context["request"].user.iaso_profile.account
             if user_account != self.instance.account:
-                raise serializers.ValidationError("user cannot modify reasons for delay on this account")
+                raise serializers.ValidationError("wrongUserAccount")
         return super().validate(data)
 
     def create(self, validated_data):

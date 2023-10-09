@@ -626,7 +626,7 @@ class OrgUnitChangeRequest(models.Model):
     class Meta:
         verbose_name = _("Org unit change request")
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"
 
     def save(self, *args, **kwargs):

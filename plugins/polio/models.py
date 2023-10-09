@@ -187,7 +187,7 @@ class RoundDateHistoryEntry(models.Model):
 
 
 class ReasonForDelay(SoftDeletableModel):
-    name = TranslatedField(models.CharField(_("name"), max_length=200))
+    name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True, "null": True}})
     key_name = models.CharField(null=True, blank=True, max_length=200, unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

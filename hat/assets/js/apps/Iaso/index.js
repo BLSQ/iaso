@@ -5,6 +5,8 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { theme } from 'bluesquare-components';
 import { QueryClient, QueryClientProvider } from 'react-query';
+import 'polyfill-object.fromentries';
+import 'array-flat-polyfill';
 
 import App from './domains/app';
 import { store, history } from './redux/store';

@@ -1,4 +1,5 @@
 import django_filters
+from rest_framework.exceptions import ValidationError
 
 from django.db.models import Q
 from django.db.models.query import QuerySet
@@ -7,45 +8,40 @@ from iaso.models import OrgUnitChangeRequest
 
 
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
-    groups = django_filters.CharFilter(method="filter_groups")
     org_unit_id = django_filters.NumberFilter(field_name="org_unit_id")
-    org_unit_type_id = django_filters.NumberFilter(method="filter_org_unit_type_id")
-    parent_id = django_filters.NumberFilter(method="org_unit__parent_id")
-    project = django_filters.CharFilter(field_name="org_unit__org_unit_type__projects")
+    project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects")
+    # Methods.
+    groups = django_filters.CharFilter(method="filter_groups")
+    org_unit_type_id = django_filters.CharFilter(method="filter_org_unit_type_id")
+    parent_id = django_filters.CharFilter(method="filter_parent_id")
 
     class Meta:
         model = OrgUnitChangeRequest
-        fields = [
-            "groups",
-            "org_unit_id",
-            "org_unit_type_id",
-            "parent_id",
-            "project",
-            "status",
-        ]
+        # Searchable model fields.
+        fields = ["status"]
 
-    def filter_parent_id(self, queryset: QuerySet, name, value: str) -> QuerySet:
+    def filter_parent_id(self, queryset: QuerySet, _, value: str) -> QuerySet:
         """
-        Id of the parent OrgUnit to filter on, either the current one or in the change.
+        Filter by "Parent OrgUnit", either the current or the new one.
         """
         if not value.isnumeric():
-            return queryset
+            raise ValidationError(detail="`parent_id` is invalid.")
         return queryset.filter(Q(org_unit__parent_id=value) | Q(parent_id=value))
 
-    def filter_org_unit_type_id(self, queryset: QuerySet, name, value: str) -> QuerySet:
+    def filter_org_unit_type_id(self, queryset: QuerySet, _, value: str) -> QuerySet:
         """
-        Id of the OrgUnitType to filter on, either the current one or in the change.
+        Filter by "OrgUnitType", either the current or the new one.
         """
         if not value.isnumeric():
-            return queryset
+            raise ValidationError(detail="`org_unit_type_id` is invalid.")
         return queryset.filter(Q(org_unit__org_unit_type_id=value) | Q(org_unit_type_id=value))
 
-    def filter_groups(self, queryset: QuerySet, name, value: str) -> QuerySet:
+    def filter_groups(self, queryset: QuerySet, _, value: str) -> QuerySet:
         """
-        List of int, comma separated.
-        Ids of the group to filter on, either the currents ones or in the change.
+        Filter by "Group IDs", either actual groups or the new ones.
+        `value` is intended to be a comma-separated list of numeric chars.
         """
         groups_ids = [val for val in value.split(",") if val.isnumeric()]
         if not groups_ids:
-            return queryset
+            raise ValidationError(detail="`groups` is invalid.")
         return queryset.filter(Q(org_unit__groups__in=groups_ids) | Q(groups__in=groups_ids))

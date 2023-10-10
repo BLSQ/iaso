@@ -81,10 +81,11 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(4):
+        with self.assertNumQueries(5):
             # 1. COUNT(*)
             # 2. SELECT OrgUnitChangeRequest
-            # 3. PREFETCH Group
-            # 4. PREFETCH Instance
+            # 3. PREFETCH OrgUnit__Group
+            # 4. PREFETCH Group
+            # 5. PREFETCH Instance
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)

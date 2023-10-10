@@ -50,6 +50,15 @@ class OrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return (
             OrgUnitChangeRequest.objects.all()
-            # Select/prefetch related objects used in serializer/filterset.
-            .select_related("org_unit__org_unit_type", "org_unit__parent").prefetch_related("groups", "instances")
+            .select_related(
+                "parent",
+                "org_unit__parent",
+                "org_unit_type",
+                "org_unit__org_unit_type",
+            )
+            .prefetch_related(
+                "org_unit__groups",
+                "groups",
+                "instances",
+            )
         )

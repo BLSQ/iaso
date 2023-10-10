@@ -107,7 +107,7 @@ class BudgetProcess(SoftDeletableModel):
     # Keep trace of the Team the user was acting on behalf of in case they get remove from it.
     created_by_team = models.ForeignKey("iaso.Team", on_delete=models.PROTECT, blank=True, null=True)
     rounds = models.ManyToManyField(Round, related_name="budget_process_rounds", blank=False)
-    teams = models.ManyToManyField(Team, related_name="budget_process_teams", blank=False)
+    teams = models.ManyToManyField("iaso.Team", related_name="budget_process_teams", blank=True)
 
     def __str__(self):
         return f"{self.rounds}-{self.created_at}"

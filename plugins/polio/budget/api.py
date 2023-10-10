@@ -1,5 +1,5 @@
 from typing import Type
-from django.db.models import QuerySet, Max
+from django.db.models import QuerySet, Max, Subquery, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -53,7 +53,11 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user)
+        campaigns_with_budget_process = Campaign.objects.filter(
+            rounds__in=Subquery(BudgetProcess.objects.filter(rounds__campaign=OuterRef("pk")).values("rounds"))
+        )
+        # Filter the campaigns based on the user and the subquery
+        campaigns = Campaign.objects.filter_for_user(user).filter(pk__in=campaigns_with_budget_process)
         campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))
         return campaigns
 

@@ -93,9 +93,7 @@ class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_rounds(obj):
-        round_pks = obj.rounds.all().values_list("pk", flat=True)
-        rounds = Round.objects.filter(pk__in=round_pks)
-        return [round.number for round in rounds]
+        return [c_round.number for c_round in obj.rounds.all()]
 
 
 class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
@@ -645,3 +643,15 @@ class BudgetProcessSerializer(serializers.ModelSerializer):
         instance = super(BudgetProcessSerializer, self).create(validated_data)
 
         return instance
+
+    def validate_rounds(self, value):
+        # Check if a BudgetProcess with the same round(s) already exists
+        if self.instance and self.instance.pk:
+            existing_budget_processes = BudgetProcess.objects.exclude(pk=self.instance.pk).filter(rounds__in=value)
+        else:
+            existing_budget_processes = BudgetProcess.objects.filter(rounds__in=value)
+
+        if existing_budget_processes.exists():
+            raise serializers.ValidationError("A BudgetProcess with the same Round(s) already exists.")
+
+        return value

@@ -616,7 +616,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "parent",
         "org_unit_type",
         "groups",
-        "instances",
+        "reference_instances",
     )
     fieldsets = (
         (
@@ -638,7 +638,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "groups",
                     "location",
                     "accuracy",
-                    "instances",
+                    "reference_instances",
                 )
             },
         ),

@@ -15,7 +15,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     groups = serializers.SerializerMethodField()
     created_by = serializers.CharField(source="created_by.username", default="")
     updated_by = serializers.CharField(source="updated_by.username", default="")
-    instances = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    reference_instances = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = OrgUnitChangeRequest
@@ -28,7 +28,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_type_name",
             "status",
             "groups",
-            "instances",
+            "reference_instances",
             "requested_fields",
             "approved_fields",
             "rejection_comment",
@@ -59,6 +59,6 @@ class OrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
             .prefetch_related(
                 "org_unit__groups",
                 "groups",
-                "instances",
+                "reference_instances",
             )
         )

@@ -579,7 +579,7 @@ class OrgUnitChangeRequest(models.Model):
         ORG_UNIT_TYPE = "org_unit_type"
         GROUPS = "groups"
         LOCATION = "location"
-        INSTANCES = "instances"
+        REFERENCE_INSTANCES = "reference_instances"
 
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
@@ -598,9 +598,10 @@ class OrgUnitChangeRequest(models.Model):
     reviewed_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_reviewed_set"
     )
-    rejection_comment = models.CharField(max_length=255, blank=True)
+    rejection_comment = models.TextField(blank=True)
 
     # Fields for which a change can be requested.
+    # They must be kept in sync with `self.ChangeRequestFields`.
 
     parent = models.ForeignKey(
         "OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="org_unit_change_parents_set"
@@ -612,8 +613,7 @@ class OrgUnitChangeRequest(models.Model):
     # `accuracy` is only used to help decision-making during validation: is the accuracy good
     # enough to change the location? The field doesn't exist on `OrgUnit`.
     accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
-    # `instances` is a list to be defined as new "reference instances".
-    instances = models.ManyToManyField("Instance", blank=True)
+    reference_instances = models.ManyToManyField("Instance", blank=True)
 
     # Approved changes.
 

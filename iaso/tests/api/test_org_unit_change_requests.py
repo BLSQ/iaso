@@ -49,7 +49,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "org_unit_type_name": self.org_unit.org_unit_type.name,
                 "status": org_unit_change_request.status.value,
                 "groups": ["new group"],
-                "instances": [],
+                "reference_instances": [],
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
@@ -64,6 +64,10 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
 
 
 class OrgUnitChangeRequestAPITestCase(APITestCase):
+    """
+    Test ViewSet.
+    """
+
     @classmethod
     def setUpTestData(cls):
         cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
@@ -86,6 +90,6 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
             # 2. SELECT OrgUnitChangeRequest
             # 3. PREFETCH OrgUnit__Group
             # 4. PREFETCH Group
-            # 5. PREFETCH Instance
+            # 5. PREFETCH Reference Instance
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)

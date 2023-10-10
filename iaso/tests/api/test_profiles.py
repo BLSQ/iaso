@@ -53,7 +53,7 @@ class ProfileAPITestCase(APITestCase):
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
-            source_ref="PvtAI4RUMkr",
+            source_ref=None,
         )
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
@@ -217,9 +217,7 @@ class ProfileAPITestCase(APITestCase):
         )
 
         expected_csv += "janedoe,,,,,,,,,iaso_forms,,\r\n"
-        expected_csv += (
-            f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}","PvtAI4RUMkr,FooBarB4z00",,,,,\r\n'
-        )
+        expected_csv += f'johndoe,,,,,"{self.jedi_squad_1.pk},{self.jedi_council_corruscant.pk}",FooBarB4z00,,,,,\r\n'
         expected_csv += 'jim,,,,,,,,,"iaso_forms,iaso_users",,\r\n'
         expected_csv += "jam,,,,,,,en,,iaso_users_managed,,\r\n"
         expected_csv += "jom,,,,,,,fr,,,,\r\n"
@@ -275,7 +273,7 @@ class ProfileAPITestCase(APITestCase):
                 },
                 "orgunit__source_ref": {
                     0: None,
-                    1: "PvtAI4RUMkr,FooBarB4z00",
+                    1: "FooBarB4z00",
                     2: None,
                     3: None,
                     4: None,

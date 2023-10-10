@@ -40,6 +40,17 @@ services:
       THEME_PRIMARY_COLOR:
       THEME_SECONDARY_COLOR:
       THEME_PRIMARY_BACKGROUND_COLOR:
+      #OpenHexa API token
+      OPENHEXA_TOKEN:
+      #OpenHexa API url
+      OPENHEXA_URL:
+      #OpenHexa pipeline ID
+      LQAS_PIPELINE:
+      #Optional: the version of the pipeline to run
+      LQAS_PIPELINE_VERSION:
+      # "prod", "staging" or "custom". Use "custom" for local testing
+      OH_PIPELINE_TARGET:
+
       FAVICON_PATH:
       LOGO_PATH:
       APP_TITLE:

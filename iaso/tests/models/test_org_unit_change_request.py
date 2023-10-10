@@ -36,14 +36,14 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "org_unit_type": new_org_unit_type,
             "location": Point(-2.4747713, 47.3358576, 1.3358576),
             "accuracy": "0.11",
-            "approved_fields": ["parent", "name", "org_unit_type", "groups", "location", "instances"],
+            "approved_fields": ["parent", "name", "org_unit_type", "groups", "location", "reference_instances"],
         }
         org_unit_change_request = m.OrgUnitChangeRequest(**kwargs)
 
         org_unit_change_request.full_clean()
         org_unit_change_request.save()
         org_unit_change_request.groups.set([new_group])
-        org_unit_change_request.instances.set([new_instance])
+        org_unit_change_request.reference_instances.set([new_instance])
         org_unit_change_request.refresh_from_db()
 
         self.assertEqual(org_unit_change_request.org_unit, self.org_unit)
@@ -55,8 +55,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(org_unit_change_request.accuracy, Decimal("0.11"))
         self.assertEqual(org_unit_change_request.groups.count(), 1)
         self.assertEqual(org_unit_change_request.groups.first(), new_group)
-        self.assertEqual(org_unit_change_request.instances.count(), 1)
-        self.assertEqual(org_unit_change_request.instances.first(), new_instance)
+        self.assertEqual(org_unit_change_request.reference_instances.count(), 1)
+        self.assertEqual(org_unit_change_request.reference_instances.first(), new_instance)
         self.assertCountEqual(org_unit_change_request.approved_fields, kwargs["approved_fields"])
 
     def test_requested_fields(self):

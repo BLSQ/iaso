@@ -646,6 +646,8 @@ class OrgUnitChangeRequest(models.Model):
     def requested_fields(self) -> typing.List[str]:
         """
         Returns a list of fields names that were requested to change.
+        `prefetch_related` of many-to-many fields are required when
+        used in bulk (e.g. in API ViewSet).
         """
         requested = []
         for name in self.new_fields:

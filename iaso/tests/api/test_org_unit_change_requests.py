@@ -71,9 +71,6 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         cls.org_unit = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
 
-        cls.form = m.Form.objects.create(name="Vaccine form")
-        cls.instance = m.Instance.objects.create(form=cls.form, org_unit=cls.org_unit)
-
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
@@ -86,8 +83,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         with self.assertNumQueries(5):
             # 1. COUNT(*)
             # 2. SELECT OrgUnitChangeRequest
-            # 3. PREFETCH OrgUnit__Group
-            # 4. PREFETCH Group
-            # 5. PREFETCH Reference Instance
+            # 3. PREFETCH OrgUnit.groups
+            # 4. PREFETCH OrgUnitChangeRequest.new_groups
+            # 5. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)

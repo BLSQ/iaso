@@ -234,9 +234,9 @@ def get_forma_scope_df(campaigns):
     one_year_ago = datetime.utcnow() - timedelta(weeks=52)
     for campaign in campaigns:
         for round in campaign.rounds.filter(started_at__gte=one_year_ago):
-            districts = campaign.get_districts_for_round(round)
+            districts = campaign.get_districts_for_round_qs(round)
 
-            if len(districts) == 0:
+            if districts.count() == 0:
                 logger.info(f"skipping {campaign}, no scope")
                 continue
             facilities = OrgUnit.objects.filter(parent__in=districts).filter(validation_status="VALID")

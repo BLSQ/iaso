@@ -566,6 +566,15 @@ class Campaign(SoftDeletableModel):
             districts = self.get_campaign_scope_districts()
         return districts
 
+    def get_districts_for_round_qs(self, round):
+        if self.separate_scopes_per_round:
+            districts = (
+                OrgUnit.objects.filter(groups__roundScope__round=round).filter(validation_status="VALID").distinct()
+            )
+        else:
+            districts = self.get_campaign_scope_districts_qs()
+        return districts
+
     def get_campaign_scope_districts(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
         id_set = set()
@@ -577,6 +586,10 @@ class Campaign(SoftDeletableModel):
                     districts.append(ou)
 
         return districts
+
+    def get_campaign_scope_districts_qs(self):
+        # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
+        return OrgUnit.objects.filter(groups__campaignScope__campaign=self).filter(validation_status="VALID")
 
     def get_all_districts(self):
         """District from all round merged as one"""

@@ -569,7 +569,7 @@ class OrgUnitChangeRequest(models.Model):
     class Statuses(models.TextChoices):
         NEW = "new", _("New")
         REJECTED = "rejected", _("Rejected")
-        VALIDATED = "validated", _("Validated")
+        APPROVED = "approved", _("Approved")
 
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
@@ -604,8 +604,7 @@ class OrgUnitChangeRequest(models.Model):
     new_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
-    # Only a subset of the requested changes can be approved.
-
+    # Stores approved fields (only a subset can be approved).
     approved_fields = ArrayField(
         models.CharField(max_length=30, blank=True),
         default=list,
@@ -639,9 +638,8 @@ class OrgUnitChangeRequest(models.Model):
     @property
     def requested_fields(self) -> typing.List[str]:
         """
-        Returns a list of fields names that were requested to change.
-        `prefetch_related` of many-to-many fields are required when
-        used in bulk (e.g. in API ViewSet).
+        Returns the list of fields names for which a change was requested.
+        `prefetch_related` of m2m are required when used in bulk.
         """
         requested = []
         for name in self.new_fields:

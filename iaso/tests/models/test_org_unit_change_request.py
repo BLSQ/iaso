@@ -70,14 +70,21 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
     def test_clean_approved_fields(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
 
+        # It should remove duplicates.
         change_request.approved_fields = ["new_name", "new_name"]
         change_request.clean_approved_fields()
         self.assertEqual(change_request.approved_fields, ["new_name"])
 
+        # It should raise for an invalid value.
         change_request.approved_fields = ["new_name", "foo"]
         with self.assertRaises(ValidationError) as error:
             change_request.clean_approved_fields()
         self.assertIn("Value foo is not a valid choice.", error.exception.messages)
+
+        # `clean()` should call `clean_approved_fields()`.
+        change_request.approved_fields = ["new_parent", "new_parent"]
+        change_request.clean()
+        self.assertEqual(change_request.approved_fields, ["new_parent"])
 
     def test_new_fields(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)

@@ -59,7 +59,7 @@ def parents_q(org_units):
 
 def make_find_orgunit_for_campaign(cs):
     districts = (
-        cs.get_all_districts()
+        cs.get_all_districts_qs()
         .prefetch_related("parent")
         .prefetch_related("parent__parent")
         .prefetch_related("parent__parent__parent")

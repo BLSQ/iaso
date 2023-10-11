@@ -19,7 +19,8 @@ export type ReasonForDelay =
     | 'CAMPAIGN_MOVED_FORWARD_BY_MOH'
     | 'VRF_NOT_SIGNED'
     | 'FOUR_WEEKS_GAP_BETWEEN_ROUNDS'
-    | 'OTHER_VACCINATION_CAMPAIGNS';
+    | 'OTHER_VACCINATION_CAMPAIGNS'
+    | 'PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING';
 
 export const reasonsForDateChange: ReasonForDelay[] = [
     // 'INITIAL_DATA', // users should not have access to that option in the dropdown
@@ -38,6 +39,7 @@ export const reasonsForDateChange: ReasonForDelay[] = [
     'VRF_NOT_SIGNED',
     'FOUR_WEEKS_GAP_BETWEEN_ROUNDS',
     'OTHER_VACCINATION_CAMPAIGNS',
+    'PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING',
 ];
 
 export const useReasonsForDateChangeOptions =

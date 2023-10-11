@@ -236,7 +236,7 @@ def get_forma_scope_df(campaigns):
         for round in campaign.rounds.filter(started_at__gte=one_year_ago):
             districts = campaign.get_districts_for_round(round)
 
-            if districts.count() == 0:
+            if len(districts) == 0:
                 logger.info(f"skipping {campaign}, no scope")
                 continue
             facilities = OrgUnit.objects.filter(parent__in=districts).filter(validation_status="VALID")

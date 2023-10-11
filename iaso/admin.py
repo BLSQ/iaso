@@ -613,10 +613,10 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
         "created_by",
         "updated_by",
         "reviewed_by",
-        "parent",
-        "org_unit_type",
-        "groups",
-        "reference_instances",
+        "new_parent",
+        "new_org_unit_type",
+        "new_groups",
+        "new_reference_instances",
     )
     fieldsets = (
         (
@@ -632,13 +632,13 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
             "Proposed changes",
             {
                 "fields": (
-                    "parent",
-                    "name",
-                    "org_unit_type",
-                    "groups",
-                    "location",
-                    "accuracy",
-                    "reference_instances",
+                    "new_parent",
+                    "new_name",
+                    "new_org_unit_type",
+                    "new_groups",
+                    "new_location",
+                    "new_accuracy",
+                    "new_reference_instances",
                 )
             },
         ),

@@ -3,6 +3,7 @@ import typing
 from functools import reduce
 
 import django_cte
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
@@ -10,6 +11,7 @@ from django.contrib.postgres.indexes import GistIndex
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
+from django.utils.functional import cached_property
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
@@ -569,22 +571,8 @@ class OrgUnitChangeRequest(models.Model):
         REJECTED = "rejected", _("Rejected")
         VALIDATED = "validated", _("Validated")
 
-    class ChangeRequestFields(models.TextChoices):
-        """
-        Fields for which a change can be requested.
-        """
-
-        PARENT = "parent"
-        NAME = "name"
-        ORG_UNIT_TYPE = "org_unit_type"
-        GROUPS = "groups"
-        LOCATION = "location"
-        REFERENCE_INSTANCES = "reference_instances"
-
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
-
-    # Metadata.
 
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
@@ -600,25 +588,21 @@ class OrgUnitChangeRequest(models.Model):
     )
     rejection_comment = models.TextField(blank=True)
 
-    # Fields for which a change can be requested.
-    # They must be kept in sync with `self.ChangeRequestFields`.
-
-    parent = models.ForeignKey(
+    new_parent = models.ForeignKey(
         "OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="org_unit_change_parents_set"
     )
-    name = models.CharField(max_length=255, blank=True)
-    org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
-    groups = models.ManyToManyField("Group", blank=True)
-    location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
+    new_name = models.CharField(max_length=255, blank=True)
+    new_org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
+    new_groups = models.ManyToManyField("Group", blank=True)
+    new_location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     # `accuracy` is only used to help decision-making during validation: is the accuracy good
     # enough to change the location? The field doesn't exist on `OrgUnit`.
-    accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
-    reference_instances = models.ManyToManyField("Instance", blank=True)
+    new_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
-    # Approved changes.
-
+    # Only a subset of the requested changes can be approved.
     approved_fields = ArrayField(
-        models.CharField(max_length=20, blank=True, choices=ChangeRequestFields.choices),
+        models.CharField(max_length=30, blank=True),
         default=list,
         blank=True,
     )
@@ -635,13 +619,31 @@ class OrgUnitChangeRequest(models.Model):
             self.approved_fields = unique_approved_fields
         super().save(*args, **kwargs)
 
+    def clean(self, *args, **kwargs):
+        super().clean()
+        self.clean_approved_fields()
+
+    def clean_approved_fields(self) -> typing.List[str]:
+        approved_fields = list(set(self.approved_fields))
+        for name in approved_fields:
+            if name not in self.new_fields:
+                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
+        return approved_fields
+
+    @cached_property
+    def new_fields(self) -> typing.List[str]:
+        """
+        Returns a list of fields names for which a change can be requested.
+        """
+        return [field.name for field in OrgUnitChangeRequest._meta.get_fields() if field.name.startswith("new_")]
+
     @property
     def requested_fields(self) -> typing.List[str]:
         """
-        Returns a list of fields that were requested to change.
+        Returns a list of fields names that were requested to change.
         """
         requested = []
-        for name in OrgUnitChangeRequest.ChangeRequestFields.values:
+        for name in self.new_fields:
             field = getattr(self, name)
             is_m2m = field.__class__.__name__ == "ManyRelatedManager"
             is_requested = field.exists() if is_m2m else field

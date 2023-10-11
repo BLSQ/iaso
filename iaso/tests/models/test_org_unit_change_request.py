@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.gis.geos import Point
+from django.core.exceptions import ValidationError
 
 from iaso import models as m
 from iaso.test import TestCase
@@ -31,40 +32,67 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         kwargs = {
             "org_unit": self.org_unit,
             "created_by": self.user,
-            "parent": new_parent,
-            "name": "New name",
-            "org_unit_type": new_org_unit_type,
-            "location": Point(-2.4747713, 47.3358576, 1.3358576),
-            "accuracy": "0.11",
-            "approved_fields": ["parent", "name", "org_unit_type", "groups", "location", "reference_instances"],
+            "new_parent": new_parent,
+            "new_name": "New name",
+            "new_org_unit_type": new_org_unit_type,
+            "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
+            "new_accuracy": "0.11",
+            "approved_fields": [
+                "new_parent",
+                "new_name",
+                "new_org_unit_type",
+                "new_groups",
+                "new_location",
+                "new_reference_instances",
+            ],
         }
-        org_unit_change_request = m.OrgUnitChangeRequest(**kwargs)
+        change_request = m.OrgUnitChangeRequest(**kwargs)
 
-        org_unit_change_request.full_clean()
-        org_unit_change_request.save()
-        org_unit_change_request.groups.set([new_group])
-        org_unit_change_request.reference_instances.set([new_instance])
-        org_unit_change_request.refresh_from_db()
+        change_request.full_clean()
+        change_request.save()
+        change_request.new_groups.set([new_group])
+        change_request.new_reference_instances.set([new_instance])
+        change_request.refresh_from_db()
 
-        self.assertEqual(org_unit_change_request.org_unit, self.org_unit)
-        self.assertEqual(org_unit_change_request.created_by, self.user)
-        self.assertEqual(org_unit_change_request.parent, new_parent)
-        self.assertEqual(org_unit_change_request.name, "New name")
-        self.assertEqual(org_unit_change_request.org_unit_type, new_org_unit_type)
-        self.assertCountEqual(org_unit_change_request.location, kwargs["location"])
-        self.assertEqual(org_unit_change_request.accuracy, Decimal("0.11"))
-        self.assertEqual(org_unit_change_request.groups.count(), 1)
-        self.assertEqual(org_unit_change_request.groups.first(), new_group)
-        self.assertEqual(org_unit_change_request.reference_instances.count(), 1)
-        self.assertEqual(org_unit_change_request.reference_instances.first(), new_instance)
-        self.assertCountEqual(org_unit_change_request.approved_fields, kwargs["approved_fields"])
+        self.assertEqual(change_request.org_unit, self.org_unit)
+        self.assertEqual(change_request.created_by, self.user)
+        self.assertEqual(change_request.new_parent, new_parent)
+        self.assertEqual(change_request.new_name, "New name")
+        self.assertEqual(change_request.new_org_unit_type, new_org_unit_type)
+        self.assertCountEqual(change_request.new_location, kwargs["new_location"])
+        self.assertEqual(change_request.new_accuracy, Decimal("0.11"))
+        self.assertEqual(change_request.new_groups.count(), 1)
+        self.assertEqual(change_request.new_groups.first(), new_group)
+        self.assertEqual(change_request.new_reference_instances.count(), 1)
+        self.assertEqual(change_request.new_reference_instances.first(), new_instance)
+        self.assertCountEqual(change_request.approved_fields, kwargs["approved_fields"])
+
+    def test_clean_approved_fields(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit, new_name="New name", approved_fields=["new_name", "foo"]
+        )
+        with self.assertRaises(ValidationError) as error:
+            change_request.clean()
+        self.assertIn("Value foo is not a valid choice.", error.exception.messages)
+
+    def test_new_fields(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
+        expected_fields = [
+            "new_parent",
+            "new_name",
+            "new_org_unit_type",
+            "new_groups",
+            "new_location",
+            "new_accuracy",
+            "new_reference_instances",
+        ]
+        self.assertCountEqual(change_request.new_fields, expected_fields)
 
     def test_requested_fields(self):
-        kwargs = {"org_unit": self.org_unit, "name": "New name"}
-        org_unit_change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
-        self.assertCountEqual(org_unit_change_request.requested_fields, ["name"])
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
+        self.assertCountEqual(change_request.requested_fields, ["new_name"])
 
-        org_unit_change_request.org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
-        org_unit_change_request.groups.add(m.Group.objects.create(name="new group"))
-        org_unit_change_request.save()
-        self.assertCountEqual(org_unit_change_request.requested_fields, ["name", "org_unit_type", "groups"])
+        change_request.new_org_unit_type = m.OrgUnitType.objects.create(name="New org unit type")
+        change_request.new_groups.add(m.Group.objects.create(name="new group"))
+        change_request.save()
+        self.assertCountEqual(change_request.requested_fields, ["new_name", "new_org_unit_type", "new_groups"])

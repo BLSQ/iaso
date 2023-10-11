@@ -62,6 +62,7 @@
         "@types/react-dom": "^17.0.9",
         "@visx/legend": "^3.3.0",
         "@visx/scale": "^3.3.0",
+        "abortcontroller-polyfill": "^1.7.5",
         "array-flat-polyfill": "^1.0.1",
         "babel-plugin-formatjs": "^10.3.4",
         "bluesquare-components": "github:BLSQ/bluesquare-components",

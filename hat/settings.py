@@ -190,9 +190,6 @@ INSTALLED_APPS = [
 if USE_CELERY:
     INSTALLED_APPS.extend(["django_celery_beat", "django_celery_results"])
 
-if USE_CELERY:
-    INSTALLED_APPS.extend(["django_celery_beat", "django_celery_results"])
-
 # needed because we customize the comment model
 # see https://django-contrib-comments.readthedocs.io/en/latest/custom.htm
 COMMENTS_APP = "iaso"

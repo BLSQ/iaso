@@ -601,6 +601,16 @@ class Campaign(SoftDeletableModel):
             )
         return self.get_campaign_scope_districts()
 
+    def get_all_districts_qs(self):
+        """District from all round merged as one"""
+        if self.separate_scopes_per_round:
+            return (
+                OrgUnit.objects.filter(groups__roundScope__round__campaign=self)
+                .filter(validation_status="VALID")
+                .distinct()
+            )
+        return self.get_campaign_scope_districts_qs()
+
     # Returning date.min if ended_at has no value so the method can be used with `sorted`
     def get_last_round_end_date(self):
         sorted_rounds = sorted(

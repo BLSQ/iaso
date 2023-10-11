@@ -113,7 +113,7 @@ def find_campaign_orgunits(campaign_find_func, campaign, *args):
     if pd.isna(campaign):
         return
     if not campaign_find_func.get(campaign.pk):
-        if not campaign.get_all_districts().count() > 0:
+        if not campaign.get_all_districts_qs().count() > 0:
             campaign_find_func[campaign.pk] = lambda *x: None
         campaign_find_func[campaign.pk] = make_find_orgunit_for_campaign(campaign)
     return campaign_find_func[campaign.pk](*args)

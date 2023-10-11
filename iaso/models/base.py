@@ -13,6 +13,7 @@ from io import StringIO
 
 import django_cte
 from django.contrib.auth.models import User
+from django.contrib.postgres.fields import ArrayField
 from django.contrib import auth
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -109,6 +110,7 @@ class Account(models.Model):
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
     user_manual_path = models.TextField(null=True, blank=True)
+    modules = ArrayField(models.CharField(max_length=200), blank=True, null=True)
 
     def as_dict(self):
         return {

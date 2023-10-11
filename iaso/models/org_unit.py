@@ -574,6 +574,8 @@ class OrgUnitChangeRequest(models.Model):
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
 
+    # Metadata.
+
     created_at = models.DateTimeField(default=timezone.now)
     created_by = models.ForeignKey(
         User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_created_set"
@@ -588,6 +590,8 @@ class OrgUnitChangeRequest(models.Model):
     )
     rejection_comment = models.TextField(blank=True)
 
+    # Fields for which a change can be requested.
+
     new_parent = models.ForeignKey(
         "OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="org_unit_change_parents_set"
     )
@@ -601,6 +605,7 @@ class OrgUnitChangeRequest(models.Model):
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
     # Only a subset of the requested changes can be approved.
+
     approved_fields = ArrayField(
         models.CharField(max_length=30, blank=True),
         default=list,
@@ -623,17 +628,17 @@ class OrgUnitChangeRequest(models.Model):
         super().clean()
         self.clean_approved_fields()
 
-    def clean_approved_fields(self) -> typing.List[str]:
+    def clean_approved_fields(self) -> None:
         approved_fields = list(set(self.approved_fields))
         for name in approved_fields:
             if name not in self.new_fields:
                 raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
-        return approved_fields
+        self.approved_fields = approved_fields
 
     @cached_property
     def new_fields(self) -> typing.List[str]:
         """
-        Returns a list of fields names for which a change can be requested.
+        Returns the list of fields names which can store a change request.
         """
         return [field.name for field in OrgUnitChangeRequest._meta.get_fields() if field.name.startswith("new_")]
 

@@ -1,7 +1,7 @@
 import { Pagination, IntlFormatMessage } from 'bluesquare-components';
 import { Nullable } from '../../../../../hat/assets/js/apps/Iaso/types/utils';
 import { Profile } from '../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
-import { ReasonForDelay } from '../components/Rounds/ReasonForDelayModal/hooks/reasons';
+import { ReasonForDelay } from '../domains/Campaigns/Rounds/ReasonForDelayModal/hooks/reasons';
 
 /* eslint-disable camelcase */
 export type FormatForNFMArgs<T> = {

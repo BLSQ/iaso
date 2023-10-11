@@ -1,4 +1,5 @@
 from .models import *
+from iaso.models import *
 from datetime import timedelta
 import random
 from celery import shared_task
@@ -318,15 +319,13 @@ class ETL:
             logger.debug(
                 f"---------------------------------------- Beneficiary N° {(index+1)} -----------------------------------"
             )
-            last_name = instance.get("last_name", "")
-            first_name = instance.get("first_name", "")
             beneficiary = Beneficiary()
             if instance["entity_id"] not in existing_beneficiaries:
                 beneficiary.gender = instance["gender"]
                 beneficiary.birth_date = instance["birth_date"]
                 beneficiary.entity_id = instance["entity_id"]
                 beneficiary.save()
-                logger.debug(f"Created new beneficiary {last_name} {first_name}")
+                logger.debug(f"Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
             instance["journey"] = self.journeyMapper(instance["visits"])

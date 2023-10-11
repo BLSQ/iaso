@@ -48,7 +48,7 @@ const mapOrgUnitType = orgUnitType => {
         sub_unit_type_ids: orgUnitType.sub_unit_types.map(unit => unit.id),
         allow_creating_sub_unit_type_ids:
             orgUnitType.allow_creating_sub_unit_types.map(unit => unit.id),
-        reference_form_id: orgUnitType?.reference_form?.id,
+        reference_forms_ids: orgUnitType.reference_forms.map(form => form.id),
     };
 };
 
@@ -71,7 +71,7 @@ const defaultOrgUnitType: Omit<
     projects: [],
     depth: 0,
     sub_unit_types: [],
-    reference_form: null,
+    reference_forms: [],
     allow_creating_sub_unit_types: [],
 };
 export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
@@ -90,10 +90,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
     const projectsEmptyUpdated = useRef(null);
     const { formatMessage } = useSafeIntl();
 
-    const [referenceFormMessage, setReferenceFormMessage] = useState(
+    const [referenceFormsMessage, setReferenceFormsMessage] = useState(
         isEmpty(formState.project_ids.value)
             ? MESSAGES.selectProjects
-            : MESSAGES.referenceForm,
+            : MESSAGES.referenceForms,
     );
 
     const [projectsEmpty, setProjectsEmpty] = useState(
@@ -122,7 +122,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             if (projects) {
                 forms = getFilteredForms(projects, dataForms);
             }
-            setFieldValue('reference_form_id', null);
+            setFieldValue('reference_forms_ids', []);
             return forms;
         },
         [dataForms, setFieldValue],
@@ -142,10 +142,10 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
         if (projectsEmptyUpdated.current !== formState.project_ids.value) {
             if (isEmpty(formState.project_ids.value)) {
                 setProjectsEmpty(true);
-                setReferenceFormMessage(MESSAGES.selectProjects);
+                setReferenceFormsMessage(MESSAGES.selectProjects);
             } else {
                 setProjectsEmpty(false);
-                setReferenceFormMessage(MESSAGES.referenceForm);
+                setReferenceFormsMessage(MESSAGES.referenceForms);
             }
         }
     };
@@ -170,7 +170,8 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             if (
                 keyValue === 'sub_unit_type_ids' ||
                 keyValue === 'allow_creating_sub_unit_type_ids' ||
-                keyValue === 'project_ids'
+                keyValue === 'project_ids' ||
+                keyValue === 'reference_forms_ids'
             ) {
                 setFieldValue(keyValue, commaSeparatedIdsToArray(value));
                 if (keyValue === 'project_ids') {
@@ -343,11 +344,12 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
             </InputWithInfos>
             {hasPermission && (
                 <InputComponent
+                    multi
                     clearable
-                    keyValue="reference_form_id"
+                    keyValue="reference_forms_ids"
                     onChange={onChange}
-                    value={formState.reference_form_id?.value}
-                    errors={formState.reference_form_id.errors}
+                    value={formState.reference_forms_ids.value}
+                    errors={formState.reference_forms_ids.errors}
                     type="select"
                     disabled={projectsEmpty}
                     options={
@@ -357,7 +359,7 @@ export const OrgUnitsTypesDialog: FunctionComponent<Props> = ({
                             label: form.name,
                         }))
                     }
-                    label={referenceFormMessage}
+                    label={referenceFormsMessage}
                 />
             )}
         </ConfirmCancelDialogComponent>

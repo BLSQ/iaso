@@ -47,8 +47,8 @@ const initialExportData = defaultVersionId => ({
 
     ref_org_unit_type_ids: [],
     source_org_unit_type_ids: [],
-    ref_status: 'ALL', // "New", "Validated" etc, cf orgunit search
-    source_status: 'ALL', // "New", "Validated" etc, cf orgunit search
+    ref_status: 'all', // "New", "Validated" etc, cf orgunit search
+    source_status: 'all', // "New", "Validated" etc, cf orgunit search
     fields_to_export: [
         FIELDS_TO_EXPORT.name,
         FIELDS_TO_EXPORT.parent,

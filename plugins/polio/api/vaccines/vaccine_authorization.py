@@ -1,4 +1,6 @@
+import datetime
 import datetime as dt
+import itertools
 from typing import Any
 
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -12,6 +14,7 @@ from hat.menupermissions import models as permission
 from iaso.api.common import DeletionFilterBackend, ModelViewSet, Paginator, TimestampField
 from iaso.models import OrgUnit
 from plugins.polio.models import Group, VaccineAuthorization
+from plugins.polio.settings import COUNTRY
 
 
 class CountryForVaccineSerializer(serializers.ModelSerializer):
@@ -52,6 +55,7 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
+            "start_date",
             "expiration_date",
             "created_at",
             "updated_at",
@@ -67,10 +71,18 @@ class VaccineAuthorizationSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         validated_data["account"] = user.iaso_profile.account
 
+        expiration_date = validated_data.get("expiration_date")
+        start_date = validated_data.get("start_date")
+
+        if expiration_date and expiration_date < datetime.date.today():
+            raise serializers.ValidationError({"error": "expiration_date must be a future date."})
+        if start_date and start_date > expiration_date:
+            raise serializers.ValidationError({"error": "start_date must be before expiration_date."})
+
         return super().create(validated_data)
 
 
-class HassVaccineAuthorizationsPermissions(permissions.BasePermission):
+class HasVaccineAuthorizationsPermissions(permissions.BasePermission):
     def has_permission(self, request, view):
         read_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_READ_ONLY
         write_perm = permission.POLIO_VACCINE_AUTHORIZATIONS_ADMIN
@@ -107,7 +119,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     action: /api/polio/get_most_recent_authorizations
     """
 
-    permission_classes = [HassVaccineAuthorizationsPermissions]
+    permission_classes = [HasVaccineAuthorizationsPermissions]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
     results_key = "results"
     remove_results_key_if_paginated = True
@@ -118,7 +130,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
-        user_access_ou = user_access_ou.filter(org_unit_type__name="COUNTRY")
+        user_access_ou = user_access_ou.filter(org_unit_type__name=COUNTRY)
         country_id = self.request.query_params.get("country", None)
         queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
         block_country = self.request.query_params.get("block_country", None)
@@ -162,9 +174,15 @@ class VaccineAuthorizationViewSet(ModelViewSet):
     @action(detail=False, methods=["GET"])
     def get_most_recent_authorizations(self, request):
         """
-        Returns the most recent validated or expired authorization or the most recent ongoing or signature if the first case does not exists.
+        Compute the most recent vaccine authorization per country.
         """
-        queryset = self.get_queryset()
+        # Filters are done after calculation as all the status are required in order to compute the correct response
+        user = self.request.user
+        user_access_ou = OrgUnit.objects.filter_for_user_and_app_id(user, None)
+        user_access_ou = user_access_ou.filter(org_unit_type__name=COUNTRY)
+        queryset = VaccineAuthorization.objects.filter(account=user.iaso_profile.account, country__in=user_access_ou)
+        auth_status = self.request.query_params.get("auth_status", None)
+        block_country = self.request.query_params.get("block_country", None)
         country_list = []
         response = []
 
@@ -204,6 +222,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_entry.country.pk,
                         "name": last_entry.country.name,
                     },
+                    "start_date": last_validated_or_expired.start_date,
                     "current_expiration_date": last_validated_or_expired.expiration_date,
                     "next_expiration_date": next_expiration_auth.expiration_date
                     if next_expiration_auth.expiration_date > last_validated_or_expired.expiration_date
@@ -222,6 +241,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_entry.country.pk,
                         "name": last_entry.country.name,
                     },
+                    "start_date": last_entry.start_date,
                     "current_expiration_date": None,
                     "next_expiration_date": next_expiration_auth.expiration_date,
                     "quantity": None,
@@ -238,6 +258,7 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                         "id": last_validated_or_expired.country.pk,
                         "name": last_validated_or_expired.country.name,
                     },
+                    "start_date": last_validated_or_expired.start_date,
                     "current_expiration_date": last_validated_or_expired.expiration_date,
                     "next_expiration_date": None,
                     "quantity": last_validated_or_expired.quantity,
@@ -246,6 +267,16 @@ class VaccineAuthorizationViewSet(ModelViewSet):
                 }
 
                 response.append(vacc_auth)
+
+        if auth_status:
+            response = [entry for entry in response if entry["status"] in auth_status.split(",")]
+
+        if block_country:
+            block_country = block_country.split(",")
+            block_country = Group.objects.filter(pk__in=block_country)
+            org_units_ids = [country.org_units.all().values_list("pk", flat=True) for country in block_country]
+            ou_pk_list = set(itertools.chain.from_iterable(org_units_ids))
+            response = [entry for entry in response if entry["country"]["id"] in ou_pk_list]
 
         if ordering:
             if ordering[0] == "-":

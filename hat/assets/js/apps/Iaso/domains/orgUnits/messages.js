@@ -157,6 +157,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Remove from group(s)',
         id: 'iaso.orgUnits.removeFromGroups',
     },
+    project: {
+        defaultMessage: 'Project',
+        id: 'iaso.orgUnits.project',
+    },
     source: {
         defaultMessage: 'Source',
         id: 'iaso.orgUnits.source',
@@ -526,6 +530,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.GPSWarning',
         defaultMessage:
             'GPS coordinates will NOT be updated for org units that already have coordinates or a shape',
+    },
+    multiReferenceInstancesLabel: {
+        id: 'iaso.orgUnits.MultiReferenceInstancesLabel',
+        defaultMessage: 'Reference submissions',
     },
 });
 

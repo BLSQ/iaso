@@ -17,7 +17,7 @@ from django.contrib import auth
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
 from django.db import models
@@ -29,7 +29,7 @@ from django.utils.translation import gettext_lazy as _
 
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models.data_source import SourceVersion, DataSource
-from iaso.models.org_unit import OrgUnit
+from iaso.models.org_unit import OrgUnit, OrgUnitReferenceInstance
 from iaso.utils import flat_parse_xml_soup, extract_form_version_id
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
@@ -224,6 +224,7 @@ class Task(models.Model):
     queue_answer = models.JSONField(null=True, blank=True)
     progress_message = models.TextField(null=True, blank=True)
     should_be_killed = models.BooleanField(default=False)
+    external = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -256,11 +257,7 @@ class Task(models.Model):
             "should_be_killed": self.should_be_killed,
         }
 
-    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
-        """Save progress and check if we have been killed
-        We use a separate transaction, so we can report the progress even from a transaction, see services.py
-        """
-        logger.info(f"Task {self} reported {progress_message}")
+    def stop_if_killed(self):
         self.refresh_from_db()
         if self.should_be_killed:
             logger.warning(f"Stopping Task {self} as it as been marked for kill")
@@ -268,6 +265,15 @@ class Task(models.Model):
             self.ended_at = timezone.now()
             self.result = {"result": KILLED, "message": "Killed"}
             self.save()
+
+    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
+        """Save progress and check if we have been killed
+        We use a separate transaction, so we can report the progress even from a transaction, see services.py
+        """
+        logger.info(f"Task {self} reported {progress_message}")
+        self.refresh_from_db()
+        if self.should_be_killed:
+            self.stop_if_killed()
             raise KilledException("Killed by user")
 
         if progress_value:
@@ -293,6 +299,10 @@ class Task(models.Model):
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}
         self.save()
+
+    def kill_if_external(self):
+        if self.external:
+            self.stop_if_killed()
 
 
 class Link(models.Model):
@@ -842,6 +852,9 @@ class Instance(models.Model):
         ["formhub", "formhub/uuid", "meta", "meta/instanceID", "meta/editUserID", "meta/deprecatedID"]
     )
 
+    REFERENCE_FLAG_CODE = "flag"
+    REFERENCE_UNFLAG_CODE = "unflag"
+
     created_at = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(User, on_delete=models.PROTECT, blank=True, null=True)
     last_modified_by = models.ForeignKey(
@@ -884,6 +897,37 @@ class Instance(models.Model):
     deleted = models.BooleanField(default=False)
     # See public_create_url workflow in enketo/README.md. used to tell we should export immediately
     to_export = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "%s %s" % (self.form, self.name)
+
+    @property
+    def is_instance_of_reference_form(self) -> bool:
+        if not self.org_unit or not self.org_unit.org_unit_type:
+            return False
+        return self.org_unit.org_unit_type.reference_forms.filter(id=self.form_id).exists()
+
+    @property
+    def is_reference_instance(self) -> bool:
+        if not self.org_unit:
+            return False
+        return self.org_unit.reference_instances.filter(orgunitreferenceinstance__instance=self).exists()
+
+    def flag_reference_instance(self, org_unit: "OrgUnit") -> "OrgUnitReferenceInstance":
+        if not self.form:
+            raise ValidationError(_("The Instance must be linked to a Form."))
+        if not org_unit.org_unit_type:
+            raise ValidationError(_("The OrgUnit must be linked to a OrgUnitType."))
+        if not org_unit.org_unit_type.reference_forms.filter(id=self.form_id).exists():
+            raise ValidationError(_("The submission must be an instance of a reference form."))
+        kwargs = {"org_unit": org_unit, "form_id": self.form_id}
+        # Delete the previous flag for this pair of org_unit/form.
+        OrgUnitReferenceInstance.objects.filter(**kwargs).delete()
+        # Flag the new one.
+        return OrgUnitReferenceInstance.objects.create(instance=self, **kwargs)
+
+    def unflag_reference_instance(self, org_unit: "OrgUnit") -> None:
+        org_unit.reference_instances.remove(self)
 
     # Used by Django Admin to link to the submission page in the dashboard
     def get_absolute_url(self):
@@ -1003,9 +1047,6 @@ class Instance(models.Model):
             self.refresh_from_db()
         except NothingToExportError:
             print("Export failed for instance", self)
-
-    def __str__(self):
-        return "%s %s" % (self.form, self.name)
 
     def as_dict(self):
         file_content = self.get_and_save_json_of_xml()

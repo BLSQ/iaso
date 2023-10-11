@@ -73,6 +73,16 @@ CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.D
 CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
 
 
+# There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
+# If you have such plugin, you can activate the use of celery by setting this env variable to "true"
+USE_CELERY = os.environ.get("USE_CELERY", "")
+
+# env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
+# to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
+CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
+CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
+
+
 ALLOWED_HOSTS = ["*"]
 
 # Tell django to view requests as secure(ssl) that have this header set
@@ -176,6 +186,9 @@ INSTALLED_APPS = [
     "drf_yasg",
     "django_json_widget",
 ]
+
+if USE_CELERY:
+    INSTALLED_APPS.extend(["django_celery_beat", "django_celery_results"])
 
 if USE_CELERY:
     INSTALLED_APPS.extend(["django_celery_beat", "django_celery_results"])
@@ -519,6 +532,16 @@ THEME_PRIMARY_COLOR = os.environ.get("THEME_PRIMARY_COLOR", "#006699")
 THEME_SECONDARY_COLOR = os.environ.get("THEME_SECONDARY_COLOR", "#0066CC")
 THEME_PRIMARY_BACKGROUND_COLOR = os.environ.get("THEME_PRIMARY_BACKGROUND_COLOR", "#F5F5F5")
 SHOW_NAME_WITH_LOGO = os.environ.get("SHOW_NAME_WITH_LOGO", "yes")
+# OpenHexa API url
+OPENHEXA_URL = os.environ.get("OPENHEXA_URL", None)
+# OpenHexa api token
+OPENHEXA_TOKEN = os.environ.get("OPENHEXA_TOKEN", "token")
+# "prod", "staging" or "custom". Use "custom" for local testing
+OH_PIPELINE_TARGET = os.environ.get("OH_PIPELINE_TARGET", "staging")
+# uuid of the OH pipeline
+LQAS_PIPELINE = os.environ.get("LQAS_PIPELINE", "pipeline")
+# Optional: the version of the pipeline to run (number)
+LQAS_PIPELINE_VERSION = os.environ.get("LQAS_PIPELINE_VERSION", None)
 
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",

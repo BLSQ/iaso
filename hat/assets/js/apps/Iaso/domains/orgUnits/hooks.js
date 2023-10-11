@@ -14,6 +14,7 @@ export const useOrgUnitDetailData = (
     orgUnitId,
     setCurrentOrgUnit,
     levels,
+    tab,
 ) => {
     const { data: originalOrgUnit, isFetching: isFetchingDetail } =
         useSnackQuery(
@@ -35,6 +36,10 @@ export const useOrgUnitDetailData = (
         }
         return basUrl;
     }, [isNewOrgunit, originalOrgUnit?.source_id]);
+    const cacheOptions = {
+        staleTime: 1000 * 60 * 15, // in MS
+        cacheTime: 1000 * 60 * 5,
+    };
     const [
         { data: algorithms = [], isFetching: isFetchingAlgorithm },
         { data: algorithmRuns = [], isFetching: isFetchingAlgorithmRuns },
@@ -52,12 +57,19 @@ export const useOrgUnitDetailData = (
         {
             queryKey: ['algorithms'],
             queryFn: () => getRequest('/api/algorithms/'),
+            options: {
+                enabled: tab === 'links',
+                ...cacheOptions,
+            },
         },
         {
             queryKey: ['algorithmRuns'],
             queryFn: () => getRequest('/api/algorithmsruns/'),
             snackErrorMsg: MESSAGES.fetchAlgorithmsError,
-            options: {},
+            options: {
+                enabled: tab === 'links',
+                ...cacheOptions,
+            },
         },
         {
             queryKey: ['groups'],
@@ -65,6 +77,8 @@ export const useOrgUnitDetailData = (
             snackErrorMsg: MESSAGES.fetchGroupsError,
             options: {
                 select: data => data.groups,
+                enabled: tab === 'children' || tab === 'infos',
+                ...cacheOptions,
             },
         },
         {
@@ -73,6 +87,8 @@ export const useOrgUnitDetailData = (
             snackErrorMsg: MESSAGES.fetchProfilesError,
             options: {
                 select: data => data.profiles,
+                enabled: tab === 'links',
+                ...cacheOptions,
             },
         },
         {
@@ -85,6 +101,8 @@ export const useOrgUnitDetailData = (
                         ...ot,
                         color: getOtChipColors(i),
                     })),
+                enabled: tab === 'map' || tab === 'children' || tab === 'infos',
+                ...cacheOptions,
             },
         },
         {
@@ -107,7 +125,8 @@ export const useOrgUnitDetailData = (
                         ...s,
                         color: getChipColors(i),
                     })),
-                enabled: !isNewOrgunit,
+                enabled: !isNewOrgunit && (tab === 'map' || tab === 'links'),
+                ...cacheOptions,
             },
         },
         // FIXME this can probably be refactored into a single query
@@ -122,7 +141,8 @@ export const useOrgUnitDetailData = (
                         color: getChipColors(i),
                     })),
                 // here seems to be an error here as the condition for enabling is the same as the query above
-                enabled: !isNewOrgunit,
+                enabled: isNewOrgunit && (tab === 'map' || tab === 'links'),
+                ...cacheOptions,
             },
         },
         {
@@ -134,6 +154,8 @@ export const useOrgUnitDetailData = (
                     Boolean(levels) &&
                     isNewOrgunit &&
                     levels.split(',').length === 1,
+
+                ...cacheOptions,
             },
         },
     ]);
@@ -151,7 +173,6 @@ export const useOrgUnitDetailData = (
         links,
         isFetchingDatas:
             isFetchingAlgorithm ||
-            isFetchingProfiles ||
             isFetchingAlgorithmRuns ||
             isFetchingGroups ||
             isFetchingSources ||
@@ -162,6 +183,7 @@ export const useOrgUnitDetailData = (
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
+        isFetchingProfiles,
         parentOrgUnit,
     };
 };

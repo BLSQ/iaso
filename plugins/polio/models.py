@@ -88,6 +88,9 @@ class DelayReasons(models.TextChoices):
     VACCINES_NOT_ARRIVED_IN_COUNTRY = "VACCINES_NOT_ARRIVED_IN_COUNTRY", _("vaccines_not_arrived_in_country")
     SECURITY_CONTEXT = "SECURITY_CONTEXT", _("security_context")
     CAMPAIGN_MOVED_FORWARD_BY_MOH = "CAMPAIGN_MOVED_FORWARD_BY_MOH", _("campaign_moved_forward_by_moh")
+    VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
+    OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
 
 
 def make_group_round_scope():
@@ -244,24 +247,17 @@ class Round(models.Model):
     def vaccine_names(self):
         # only take into account scope which have orgunit attached
         campaign = self.campaign
+
         if campaign.separate_scopes_per_round:
-            return ", ".join(
-                scope.vaccine
-                for scope in self.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
-                    orgunits_count__gte=1
-                )
-            )
+            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
+            return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
         else:
-            return ",".join(
-                scope.vaccine
-                for scope in campaign.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
-                    orgunits_count__gte=1
-                )
-            )
+            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.campaign.scopes.all())
+            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
 
     @property
     def districts_count_calculated(self):
-        return self.campaign.get_districts_for_round(self).count()
+        return len(self.campaign.get_districts_for_round(self))
 
 
 class CampaignQuerySet(models.QuerySet):
@@ -558,17 +554,29 @@ class Campaign(SoftDeletableModel):
         return self.get_campaign_scope_districts()
 
     def get_districts_for_round(self, round):
+        districts = []
         if self.separate_scopes_per_round:
-            districts = (
-                OrgUnit.objects.filter(groups__roundScope__round=round).filter(validation_status="VALID").distinct()
-            )
+            id_set = set()
+            for scope in round.scopes.all():
+                for ou in scope.group.org_units.all():
+                    if ou.id not in id_set:
+                        id_set.add(ou.id)
+                        districts.append(ou)
         else:
             districts = self.get_campaign_scope_districts()
         return districts
 
     def get_campaign_scope_districts(self):
         # Get districts on campaign scope, make only sense if separate_scopes_per_round=True
-        return OrgUnit.objects.filter(groups__campaignScope__campaign=self).filter(validation_status="VALID")
+        id_set = set()
+        districts = []
+        for scope in self.scopes.all():
+            for ou in scope.group.org_units.all():
+                if ou.id not in id_set:
+                    id_set.add(ou.id)
+                    districts.append(ou)
+
+        return districts
 
     def get_all_districts(self):
         """District from all round merged as one"""
@@ -623,18 +631,23 @@ class Campaign(SoftDeletableModel):
         if self.separate_scopes_per_round:
             vaccines = set()
             for round in self.rounds.all():
-                for scope in round.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
-                    orgunits_count__gte=1
-                ):
+                scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, round.scopes.all())
+                for scope in scopes_with_orgunits:
                     vaccines.add(scope.vaccine)
             return ", ".join(list(vaccines))
         else:
-            return ",".join(
-                scope.vaccine
-                for scope in self.scopes.annotate(orgunits_count=Count("group__org_units")).filter(
-                    orgunits_count__gte=1
-                )
-            )
+            scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
+            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
+
+    def vaccine_names(self):
+        # only take into account scope which have orgunit attached
+        campaign = self.campaign
+        scopes_with_orgunits = filter(lambda s: len(s.group.org_units.all()) > 0, self.scopes.all())
+
+        if campaign.separate_scopes_per_round:
+            return ", ".join(scope.vaccine for scope in scopes_with_orgunits)
+        else:
+            return ",".join(scope.vaccine for scope in scopes_with_orgunits)
 
     def get_round_one(self):
         try:
@@ -888,6 +901,7 @@ class VaccineAuthorization(SoftDeletableModel):
         "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="vaccineauthorization"
     )
     account = models.ForeignKey("iaso.account", on_delete=models.DO_NOTHING, related_name="vaccineauthorization")
+    start_date = models.DateField(blank=True, null=True)
     expiration_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

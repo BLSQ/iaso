@@ -1,3 +1,4 @@
+from plugins.polio.tasks.api.refresh_lqas_data import RefreshLQASDataViewset
 from rest_framework import routers
 
 from plugins.polio.api.campaigns.campaign_groups import CampaignGroupViewSet
@@ -49,3 +50,4 @@ router.register(r"polio/vaccineauthorizations", VaccineAuthorizationViewSet, bas
 router.register(r"polio/powerbirefresh", LaunchPowerBIRefreshViewSet, basename="powerbirefresh")
 router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherViewSet, basename="refresh_preparedness")
 router.register(r"polio/rounds", RoundViewset, basename="rounds")
+router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")

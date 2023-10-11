@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
+from iaso.models import OrgUnit
 from plugins.wfp.models import *
 
 GENDERS = [("MALE", _("Male")), ("FEMALE", _("Female"))]

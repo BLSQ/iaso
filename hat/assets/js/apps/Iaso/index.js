@@ -5,8 +5,7 @@ import { MuiThemeProvider } from '@material-ui/core/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
 import { theme } from 'bluesquare-components';
 import { QueryClient, QueryClientProvider } from 'react-query';
-
-import 'abortcontroller-polyfill/dist/abortcontroller-polyfill-only';
+import 'abortcontroller-polyfill/dist/polyfill-patch-fetch';
 import 'polyfill-object.fromentries';
 import 'array-flat-polyfill';
 

@@ -37,7 +37,10 @@ export const iasoFetch = async (resource, init = {}) => {
     const url = resource.url ?? resource;
     const method = init?.method ?? 'GET';
     try {
-        response = await fetch(resource, init);
+        response = await fetch(resource, {
+            ...init,
+            credentials: 'same-origin',
+        });
     } catch (error) {
         // ignoring errors from cancelled fetch
         if (error.name !== 'AbortError') {
@@ -90,6 +93,7 @@ export const basePostRequest = (url, data, fileData = {}, signal) => {
             body: JSON.stringify(data),
             headers: { 'Content-Type': 'application/json' },
             signal,
+            credentials: 'same-origin',
         };
     }
 
@@ -114,6 +118,7 @@ export const patchRequest = (url, data, signal) =>
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
+        credentials: 'same-origin',
     }).then(response => response.json());
 
 export const deleteRequest = (url, signal) =>
@@ -124,6 +129,7 @@ export const deleteRequest = (url, signal) =>
             Accept: 'application/json',
         },
         signal,
+        credentials: 'same-origin',
     }).then(() => true);
 
 export const restoreRequest = (url, signal) =>
@@ -134,6 +140,7 @@ export const restoreRequest = (url, signal) =>
         }),
         headers: { 'Content-Type': 'application/json' },
         signal,
+        credentials: 'same-origin',
     }).then(() => true);
 
 export const putRequest = (url, data, signal) =>
@@ -142,4 +149,5 @@ export const putRequest = (url, data, signal) =>
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
+        credentials: 'same-origin',
     }).then(response => response.json());

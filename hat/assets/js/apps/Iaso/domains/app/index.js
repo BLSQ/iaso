@@ -1,5 +1,4 @@
-import React, { useMemo, useEffect } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Router, Link, Route } from 'react-router';
 import { SnackbarProvider } from 'notistack';
@@ -8,8 +7,7 @@ import SnackBarContainer from '../../components/snackBars/SnackBarContainer';
 import LocalizedApp from './components/LocalizedAppComponent';
 
 import { getRoutes } from '../../routing/redirections.tsx';
-import { useCurrentUser, useHasNoAccount } from '../../utils/usersUtils.ts';
-import { fetchCurrentUser } from '../users/actions';
+import { useHasNoAccount } from '../../utils/usersUtils.ts';
 
 import {
     routeConfigs,
@@ -19,6 +17,7 @@ import {
 } from '../../constants/routes';
 
 import ProtectedRoute from '../users/components/ProtectedRoute';
+import { useGetCurrentUser } from '../users/hooks/useGetCurrentUser.ts';
 
 const getBaseRoutes = (plugins, hasNoAccount) => {
     const routesWithAccount = [
@@ -70,22 +69,12 @@ const getBaseRoutes = (plugins, hasNoAccount) => {
 };
 
 export default function App({ history, userHomePage, plugins }) {
-    const dispatch = useDispatch();
-    // on first load this is undefined, it will be updated when fetchCurrentUser is done
-    const currentUser = useCurrentUser();
     const hasNoAccount = useHasNoAccount();
     const { baseRoutes, currentRoute } = useMemo(
         () => getBaseRoutes(plugins, hasNoAccount),
         [plugins, hasNoAccount],
     );
 
-    // launch fetch user only once on mount
-    useEffect(() => {
-        if (!currentRoute?.allowAnonymous) {
-            dispatch(fetchCurrentUser());
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [dispatch]);
     const overrideLanding = useMemo(() => {
         const overrideLandingRoutes = plugins
             .filter(plugin => plugin.overrideLanding)
@@ -95,6 +84,9 @@ export default function App({ history, userHomePage, plugins }) {
             ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
             : undefined;
     }, [plugins]);
+    const { data: currentUser } = useGetCurrentUser(
+        !currentRoute?.allowAnonymous,
+    );
     // routes should only change id currentUser has changed
     const routes = useMemo(() => {
         if (!currentUser && !currentRoute?.allowAnonymous) {

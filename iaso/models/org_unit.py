@@ -618,12 +618,6 @@ class OrgUnitChangeRequest(models.Model):
     def __str__(self) -> str:
         return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"
 
-    def save(self, *args, **kwargs):
-        if self.approved_fields:
-            unique_approved_fields = list(set(self.approved_fields))
-            self.approved_fields = unique_approved_fields
-        super().save(*args, **kwargs)
-
     def clean(self, *args, **kwargs):
         super().clean()
         self.clean_approved_fields()

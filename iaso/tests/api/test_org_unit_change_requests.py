@@ -29,27 +29,25 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         kwargs = {
             "org_unit": self.org_unit,
             "created_by": self.user,
-            "org_unit_type": self.org_unit_type,
-            "location": Point(-2.4747713, 47.3358576, 1.3358576),
-            "approved_fields": ["org_unit_type", "groups"],
+            "new_org_unit_type": self.org_unit_type,
+            "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
+            "approved_fields": ["new_org_unit_type"],
         }
-        org_unit_change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
-        org_unit_change_request.groups.set([m.Group.objects.create(name="new group")])
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
 
-        serializer = OrgUnitChangeRequestListSerializer(org_unit_change_request)
+        serializer = OrgUnitChangeRequestListSerializer(change_request)
 
         self.assertEqual(
             serializer.data,
             {
-                "id": org_unit_change_request.pk,
+                "id": change_request.pk,
                 "org_unit_id": self.org_unit.pk,
                 "org_unit_uuid": self.org_unit.uuid,
                 "org_unit_name": self.org_unit.name,
                 "org_unit_type_id": self.org_unit.org_unit_type.pk,
                 "org_unit_type_name": self.org_unit.org_unit_type.name,
-                "status": org_unit_change_request.status.value,
-                "groups": ["new group"],
-                "reference_instances": [],
+                "status": change_request.status.value,
+                "groups": [],
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
@@ -59,8 +57,8 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "updated_at": None,
             },
         )
-        self.assertCountEqual(serializer.data["requested_fields"], ["org_unit_type", "groups", "location"])
-        self.assertCountEqual(serializer.data["approved_fields"], ["org_unit_type", "groups"])
+        self.assertCountEqual(serializer.data["requested_fields"], ["new_org_unit_type", "new_location"])
+        self.assertCountEqual(serializer.data["approved_fields"], ["new_org_unit_type"])
 
 
 class OrgUnitChangeRequestAPITestCase(APITestCase):
@@ -80,8 +78,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
     def test_list_ok(self):
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, name="Foo")
-        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, name="Bar")
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Bar")
 
         self.client.force_authenticate(self.user)
 

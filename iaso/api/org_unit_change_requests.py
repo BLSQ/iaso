@@ -12,10 +12,9 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_name = serializers.CharField(source="org_unit.name")
     org_unit_type_id = serializers.IntegerField(source="org_unit.org_unit_type.id")
     org_unit_type_name = serializers.CharField(source="org_unit.org_unit_type.name")
-    groups = serializers.SerializerMethodField()
+    groups = serializers.SerializerMethodField(method_name="get_current_org_unit_groups")
     created_by = serializers.CharField(source="created_by.username", default="")
     updated_by = serializers.CharField(source="updated_by.username", default="")
-    reference_instances = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
 
     class Meta:
         model = OrgUnitChangeRequest
@@ -28,7 +27,6 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "org_unit_type_name",
             "status",
             "groups",
-            "reference_instances",
             "requested_fields",
             "approved_fields",
             "rejection_comment",
@@ -38,8 +36,8 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    def get_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.groups.all()]
+    def get_current_org_unit_groups(self, obj: OrgUnitChangeRequest):
+        return [group.name for group in obj.org_unit.groups.all()]
 
 
 class OrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
@@ -51,14 +49,14 @@ class OrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
         return (
             OrgUnitChangeRequest.objects.all()
             .select_related(
-                "parent",
                 "org_unit__parent",
-                "org_unit_type",
                 "org_unit__org_unit_type",
+                "new_parent",
+                "new_org_unit_type",
             )
             .prefetch_related(
                 "org_unit__groups",
-                "groups",
-                "reference_instances",
+                "new_groups",
+                "new_reference_instances",
             )
         )

@@ -13,7 +13,6 @@ from io import StringIO
 
 import django_cte
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import ArrayField
 from django.contrib import auth
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
@@ -236,7 +235,6 @@ class Task(models.Model):
     queue_answer = models.JSONField(null=True, blank=True)
     progress_message = models.TextField(null=True, blank=True)
     should_be_killed = models.BooleanField(default=False)
-    external = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -269,15 +267,6 @@ class Task(models.Model):
             "should_be_killed": self.should_be_killed,
         }
 
-    def stop_if_killed(self):
-        self.refresh_from_db()
-        if self.should_be_killed:
-            logger.warning(f"Stopping Task {self} as it as been marked for kill")
-            self.status = KILLED
-            self.ended_at = timezone.now()
-            self.result = {"result": KILLED, "message": "Killed"}
-            self.save()
-
     def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
         """Save progress and check if we have been killed
         We use a separate transaction, so we can report the progress even from a transaction, see services.py
@@ -285,7 +274,11 @@ class Task(models.Model):
         logger.info(f"Task {self} reported {progress_message}")
         self.refresh_from_db()
         if self.should_be_killed:
-            self.stop_if_killed()
+            logger.warning(f"Stopping Task {self} as it as been marked for kill")
+            self.status = KILLED
+            self.ended_at = timezone.now()
+            self.result = {"result": KILLED, "message": "Killed"}
+            self.save()
             raise KilledException("Killed by user")
 
         if progress_value:
@@ -311,10 +304,6 @@ class Task(models.Model):
         self.ended_at = timezone.now()
         self.result = {"result": SUCCESS, "message": message}
         self.save()
-
-    def kill_if_external(self):
-        if self.external:
-            self.stop_if_killed()
 
 
 class Link(models.Model):

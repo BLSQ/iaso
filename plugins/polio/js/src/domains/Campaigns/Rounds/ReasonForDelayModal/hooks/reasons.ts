@@ -19,7 +19,7 @@ export const useReasonsDelayOptions = (
                     .filter(reason => reason.key_name !== 'INITIAL_DATA')
                     .map(reason => {
                         return {
-                            label: reason[key],
+                            label: reason[key] ?? reason.name_en,
                             value: reason.key_name,
                         } as DropdownOptions<string>;
                     })

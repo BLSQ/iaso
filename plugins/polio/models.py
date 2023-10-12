@@ -188,7 +188,7 @@ class RoundDateHistoryEntry(models.Model):
 
 class ReasonForDelay(SoftDeletableModel):
     name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True, "null": True}})
-    key_name = models.CharField(null=True, blank=True, max_length=200, validators=[RegexValidator(r"/^[A-Z_]+$/")])
+    key_name = models.CharField(null=True, blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")

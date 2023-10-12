@@ -23,7 +23,7 @@ export const ReasonsForDelay: FunctionComponent<Props> = ({ router }) => {
     const columns = useReasonsForDelayColumns();
     const safeParams = useUrlParams(router.params, {
         order: 'id',
-        pageSize: 20,
+        pageSize: 10,
         page: 1,
     });
     // TODO pass router params for table

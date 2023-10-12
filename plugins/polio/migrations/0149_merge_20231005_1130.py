@@ -5,7 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0147_update_budget_processes"),
         ("polio", "0148_merge_20231002_1610"),
     ]
 

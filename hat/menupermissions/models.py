@@ -35,6 +35,7 @@ _ENTITIES_DUPLICATE_WRITE = "iaso_entity_duplicates_write"
 _FORMS = "iaso_forms"
 _LINKS = "iaso_links"
 _MAPPINGS = "iaso_mappings"
+_MODULES = "iaso_modules"
 _ORG_UNITS = "iaso_org_units"
 _ORG_UNITS_TYPES = "iaso_org_unit_types"
 _ORG_UNITS_GROUPS = "iaso_org_unit_groups"
@@ -76,6 +77,7 @@ ENTITIES_DUPLICATE_WRITE = _PREFIX + _ENTITIES_DUPLICATE_WRITE
 FORMS = _PREFIX + _FORMS
 LINKS = _PREFIX + _LINKS
 MAPPINGS = _PREFIX + _MAPPINGS
+MODULES = _PREFIX + _MODULES
 ORG_UNITS = _PREFIX + _ORG_UNITS
 ORG_UNITS_TYPES = _PREFIX + _ORG_UNITS_TYPES
 ORG_UNITS_GROUPS = _PREFIX + _ORG_UNITS_GROUPS
@@ -132,6 +134,7 @@ class CustomPermissionSupport(models.Model):
         permissions = (
             (_FORMS, _("Formulaires")),
             (_MAPPINGS, _("Correspondances avec DHIS2")),
+            (_MODULES, _("modules")),
             (_COMPLETENESS, _("Complétude des données")),
             (_ORG_UNITS, _("Unités d'organisations")),
             (_REGISTRY, _("Registre")),

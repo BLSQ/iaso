@@ -1,5 +1,8 @@
 from django.utils.translation import gettext as _
-from plugins.polio.api.rounds.reasons_for_delay import ReasonForDelayForCampaignSerializer
+from plugins.polio.api.rounds.reasons_for_delay import (
+    ReasonForDelayFieldSerializer,
+    ReasonForDelayForCampaignSerializer,
+)
 from rest_framework import serializers
 from rest_framework.fields import Field
 
@@ -115,9 +118,7 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
 
     modified_by = UserSerializer(required=False, read_only=True)
     round: Field = serializers.PrimaryKeyRelatedField(read_only=True, many=False)
-    reason_for_delay: Field = serializers.PrimaryKeyRelatedField(
-        queryset=ReasonForDelay.objects.all(), many=False
-    )  # filter by account
+    reason_for_delay = ReasonForDelayFieldSerializer()
 
     def validate(self, data):
         if data.get("reason_for_delay", None) is None:

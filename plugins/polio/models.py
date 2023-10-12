@@ -12,7 +12,7 @@ from django.db.models import Count, Q
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
-
+from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account
 from iaso.models.microplanning import Team
@@ -176,7 +176,7 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    # Deprecated. Kept temporarily to avoid breaking a dashboard
+    # Deprecated.
     reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
     reason_for_delay = models.ForeignKey(
         "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
@@ -188,12 +188,13 @@ class RoundDateHistoryEntry(models.Model):
 
 class ReasonForDelay(SoftDeletableModel):
     name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True, "null": True}})
-    key_name = models.CharField(null=True, blank=True, max_length=200, unique=True)
+    key_name = models.CharField(null=True, blank=True, max_length=200, validators=[RegexValidator(r"/^[A-Z_]+$/")])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")
 
     class Meta:
+        # This will prevent sharing reasons across accounts, but it can be annoying if 2 accounts need INITIAL_DATA
         unique_together = ["key_name", "account"]
 
     def __str__(self):

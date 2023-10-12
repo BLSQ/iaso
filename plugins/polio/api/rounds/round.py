@@ -131,10 +131,10 @@ class RoundSerializer(serializers.ModelSerializer):
                     round=instance, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
                 )
             if datelog is not None:
-                # Replace instance with pk to avoid validation error
+                # Replace instance with key_name to avoid validation error
                 datelog_serializer = RoundDateHistoryEntryForRoundSerializer(
                     instance=datelog,
-                    data={**new_datelog, "reason_for_delay": new_datelog["reason_for_delay"].id},
+                    data={**new_datelog, "reason_for_delay": new_datelog["reason_for_delay"].key_name},
                     context=self.context,
                 )
                 datelog_serializer.is_valid(raise_exception=True)

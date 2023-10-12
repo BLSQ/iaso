@@ -259,10 +259,10 @@ class CampaignSerializer(serializers.ModelSerializer):
             round_data.pop("campaign", None)
             scopes = round_data.pop("scopes", [])
 
-            # Replace ReasonForDelay instance with pk to avoid type error when calling is_valid
+            # # Replace ReasonForDelay instance with key_name to avoid type error when calling is_valid
             round_datelogs = round_data.pop("datelogs", [])
             datelogs_with_pk = [
-                {**datelog, "reason_for_delay": datelog["reason_for_delay"].id} for datelog in round_datelogs
+                {**datelog, "reason_for_delay": datelog["reason_for_delay"].key_name} for datelog in round_datelogs
             ]
             round_data["datelogs"] = datelogs_with_pk
 

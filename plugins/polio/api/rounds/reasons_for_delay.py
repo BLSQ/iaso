@@ -21,6 +21,21 @@ class ReasonForDelayForCampaignSerializer(serializers.ModelSerializer):
         fields = ["id", "name_fr", "name_en", "key_name"]
 
 
+class ReasonForDelayFieldSerializer(serializers.Field):
+    def to_representation(self, value):
+        if value:
+            return value.key_name
+        return None
+
+    def to_internal_value(self, data):
+        account = self.context["request"].user.iaso_profile.account
+        try:
+            reason_for_delay = ReasonForDelay.objects.get(key_name=data, account=account)
+            return reason_for_delay
+        except ReasonForDelay.DoesNotExist:
+            raise serializers.ValidationError(f"key_name not found: {data}")
+
+
 class ReasonForDelaySerializer(serializers.ModelSerializer):
     class Meta:
         model = ReasonForDelay

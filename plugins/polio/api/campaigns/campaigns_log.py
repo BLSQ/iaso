@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from hat.audit.models import CAMPAIGN_API, Modification
 from iaso.models import Group
-from plugins.polio.models import CampaignScope, Destruction, Round, RoundScope, RoundVaccine, Shipment
+from plugins.polio.models import CampaignScope, Round, RoundScope
 from plugins.polio.preparedness.spreadsheet_manager import Campaign
 
 
@@ -12,24 +12,6 @@ from plugins.polio.preparedness.spreadsheet_manager import Campaign
 class AuditGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = "__all__"
-
-
-class AuditRoundVaccineSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RoundVaccine
-        fields = "__all__"
-
-
-class AuditShipmentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Shipment
-        fields = "__all__"
-
-
-class AuditDestructionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Destruction
         fields = "__all__"
 
 
@@ -46,10 +28,7 @@ class AuditRoundSerializer(serializers.ModelSerializer):
         model = Round
         fields = "__all__"
 
-    vaccines = AuditRoundVaccineSerializer(many=True)
     scopes = AuditRoundScopeSerializer(many=True)
-    shipments = AuditShipmentSerializer(many=True)
-    destructions = AuditDestructionSerializer(many=True)
 
 
 class AuditCampaignScopeSerializer(serializers.ModelSerializer):

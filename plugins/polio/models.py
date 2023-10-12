@@ -130,36 +130,6 @@ class CampaignScope(models.Model):
         ordering = ["campaign", "vaccine"]
 
 
-class Destruction(models.Model):
-    vials_destroyed = models.IntegerField(null=True, blank=True)
-    date_report_received = models.DateField(null=True, blank=True)
-    date_report = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="destructions", on_delete=models.CASCADE, null=True)
-
-
-class Shipment(models.Model):
-    vaccine_name = models.CharField(max_length=5, choices=VACCINES)
-    po_numbers = models.IntegerField(null=True, blank=True)
-    vials_received = models.IntegerField(null=True, blank=True)
-    estimated_arrival_date = models.DateField(null=True, blank=True)
-    reception_pre_alert = models.DateField(null=True, blank=True)
-    date_reception = models.DateField(null=True, blank=True)
-    comment = models.TextField(null=True, blank=True)
-    round = models.ForeignKey("Round", related_name="shipments", on_delete=models.CASCADE, null=True)
-
-
-class RoundVaccine(models.Model):
-    class Meta:
-        unique_together = [("name", "round")]
-        ordering = ["name"]
-
-    name = models.CharField(max_length=5, choices=VACCINES)
-    round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="vaccines", null=True, blank=True)
-    doses_per_vial = models.IntegerField(null=True, blank=True)
-    wastage_ratio_forecast = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
-
-
 class RoundDateHistoryEntryQuerySet(models.QuerySet):
     def filter_for_user(self, user: Union[User, AnonymousUser]):
         from plugins.polio.models import Campaign

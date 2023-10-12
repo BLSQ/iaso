@@ -4,7 +4,7 @@ from rest_framework.fields import Field
 
 from iaso.api.common import UserSerializer
 from iaso.models import Group
-from plugins.polio.models import Destruction, RoundDateHistoryEntry, RoundVaccine
+from plugins.polio.models import RoundDateHistoryEntry
 from plugins.polio.preparedness.spreadsheet_manager import *
 
 logger = getLogger(__name__)
@@ -20,18 +20,6 @@ class GroupSerializer(serializers.ModelSerializer):
         model = Group
         fields = ["name", "org_units", "id"]
         ref_name = "polio_group_serializer"
-
-
-class DestructionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Destruction
-        fields = [
-            "vials_destroyed",
-            "date_report_received",
-            "date_report",
-            "comment",
-            "id",
-        ]
 
 
 class OrgUnitSerializer(serializers.ModelSerializer):
@@ -56,12 +44,6 @@ class OrgUnitSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrgUnit
         fields = ["id", "name", "root", "country_parent"]
-
-
-class RoundVaccineSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = RoundVaccine
-        fields = ["wastage_ratio_forecast", "doses_per_vial", "name", "id"]
 
 
 class RoundDateHistoryEntrySerializer(serializers.ModelSerializer):

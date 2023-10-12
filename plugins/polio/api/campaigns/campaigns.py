@@ -38,13 +38,11 @@ from iaso.api.common import (
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
 from plugins.polio.api.common import CACHE_VERSION
-from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer, ShipmentSerializer
+from plugins.polio.api.rounds.round import RoundScopeSerializer, RoundSerializer
 from plugins.polio.api.shared_serializers import (
-    DestructionSerializer,
     GroupSerializer,
     OrgUnitSerializer,
     RoundDateHistoryEntrySerializer,
-    RoundVaccineSerializer,
 )
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
@@ -52,12 +50,9 @@ from plugins.polio.models import (
     CampaignGroup,
     CampaignScope,
     CountryUsersGroup,
-    Destruction,
     Round,
     RoundDateHistoryEntry,
     RoundScope,
-    RoundVaccine,
-    Shipment,
     SpreadSheetImport,
 )
 from plugins.polio.preparedness.calculator import get_preparedness_score
@@ -534,39 +529,7 @@ class ExportCampaignSerializer(CampaignSerializer):
                 model = RoundScope
                 fields = ["vaccine"]
 
-        class NestedShipmentSerializer(ShipmentSerializer):
-            class Meta:
-                model = Shipment
-                fields = [
-                    "vaccine_name",
-                    "po_numbers",
-                    "vials_received",
-                    "estimated_arrival_date",
-                    "reception_pre_alert",
-                    "date_reception",
-                    "comment",
-                ]
-
-        class NestedDestructionSerializer(DestructionSerializer):
-            class Meta:
-                model = Destruction
-                fields = [
-                    "vials_destroyed",
-                    "date_report_received",
-                    "date_report",
-                    "comment",
-                ]
-
-        class NestedRoundVaccineSerializer(RoundVaccineSerializer):
-            class Meta:
-                model = RoundVaccine
-                fields = [
-                    "name",
-                    "doses_per_vial",
-                    "wastage_ratio_forecast",
-                ]
-
-        class NestedRoundDateHistoryEntrySerializer(RoundVaccineSerializer):
+        class NestedRoundDateHistoryEntrySerializer(serializers.ModelSerializer):
             class Meta:
                 model = RoundDateHistoryEntry
                 fields = [
@@ -583,9 +546,9 @@ class ExportCampaignSerializer(CampaignSerializer):
             model = Round
             fields = [
                 "scopes",
-                "vaccines",
-                "shipments",
-                "destructions",
+                # "vaccines",
+                # "shipments",
+                # "destructions",
                 "number",
                 "started_at",
                 "ended_at",
@@ -623,9 +586,9 @@ class ExportCampaignSerializer(CampaignSerializer):
             ]
 
         scopes = NestedRoundScopeSerializer(many=True, required=False)
-        vaccines = NestedRoundVaccineSerializer(many=True, required=False)
-        shipments = NestedShipmentSerializer(many=True, required=False)
-        destructions = NestedDestructionSerializer(many=True, required=False)
+        # vaccines = NestedRoundVaccineSerializer(many=True, required=False)
+        # shipments = NestedShipmentSerializer(many=True, required=False)
+        # destructions = NestedDestructionSerializer(many=True, required=False)
         datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
 
     class ExportCampaignScopeSerializer(CampaignScopeSerializer):
@@ -874,9 +837,9 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             .prefetch_related("rounds")
             .prefetch_related("rounds__datelogs")
             .prefetch_related("rounds__datelogs__modified_by")
-            .prefetch_related("rounds__shipments")
-            .prefetch_related("rounds__destructions")
-            .prefetch_related("rounds__vaccines")
+            # .prefetch_related("rounds__shipments")
+            # .prefetch_related("rounds__destructions")
+            # .prefetch_related("rounds__vaccines")
             .prefetch_related("rounds__scopes")
             .prefetch_related("rounds__scopes__group")
             .prefetch_related(rounds_scopes_group_org_units_prefetch)

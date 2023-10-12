@@ -40,7 +40,10 @@ TRANSLATIONS = {
         "fr": "Intervalle de 4 semaines entre les rounds à respecter",
     },
     "OTHER_VACCINATION_CAMPAIGNS": {"en": "Other vaccination campaigns", "fr": "Autres campagnes de vaccination"},
-    "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING":{"en": "Pending liquidation of previous SIA funding", "fr": "Liquidation des fonds de la SIA précédente en attente"}
+    "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING": {
+        "en": "Pending liquidation of previous SIA funding",
+        "fr": "Liquidation des fonds de la SIA précédente en attente",
+    },
 }
 
 
@@ -55,7 +58,7 @@ def create_reasons_for_delay(apps, schema_editor):
                 key_name=choice_key,
                 name_en=TRANSLATIONS[choice_key]["en"],
                 name_fr=TRANSLATIONS[choice_key]["fr"],
-                account=polio_account
+                account=polio_account,
             )
         RoundDateHistoryEntry = apps.get_model("polio", "RoundDateHistoryEntry")
         round_date_history_entries = RoundDateHistoryEntry.objects.all()

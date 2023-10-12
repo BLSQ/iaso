@@ -23,7 +23,7 @@ User must be authenticated.
 
 ## Query parameters
 
-- app_id: String - Must be provided, project for which this is created.
+- app_id: String - Optional, project for which this is created.
 
 ## Body
 
@@ -33,20 +33,17 @@ User must be authenticated.
   "org_unit_id": "String - id or UUID of the OrgUnit to change",
   "created_at": "Timestamp - format same as /api/instances",
   "updated_at": "Timestamp - format same as /api/instances",
-  "changes": { "": "Changes is not null and must contain at least one field",
-    "parent_id": "String? - id or UUID of the parent OrgUnit, may be null or omitted.",
-    "name": "String? - Name of the OrgUnit, may be null or omitted.",
-    "opening_status": "Enum<Status>? - One of `open` or `close`",
-    "org_unit_type_id": "Int? - id of the OrgUnitType, may be null or omitted",
-    "groups": "Array of Group ids? - can be empty, null or omitted. Empty means we want to remove all values",
-    "geo_point": { "": "New geopoint for the OrgUnit, may be null or omitted",
-      "latitude": "Double - New latitude of the OrgUnit",
-      "longitude": "Double - New longitude of the OrgUnit",
-      "altitude": "Double - New altitude of the OrgUnit",
-      "accuracy": "Double - New accuracy of the OrgUnit"
-    },
-    "geo-shape": "String? - GeoJSON representation, may be null or omitted",
-    "instances":  "Array of instance ids? - may be null or omitted, cannot be empty"
+  "new_parent_id": "String? - id or UUID of the parent OrgUnit, may be null or omitted.",
+  "new_name": "String? - Name of the OrgUnit, may be null or omitted.",
+  "new_org_unit_type_id": "Int? - id of the OrgUnitType, may be null or omitted",
+  "new_groups": "Array of Group ids? - can be empty, null or omitted. Empty means we want to remove all values",
+  "new_geo_point": { "": "New geopoint for the OrgUnit, may be null or omitted",
+    "latitude": "Double - New latitude of the OrgUnit",
+    "longitude": "Double - New longitude of the OrgUnit",
+    "altitude": "Double - New altitude of the OrgUnit",
+    "accuracy": "Double - New accuracy of the OrgUnit",
+  },
+  "new_reference_instances":  "Array of instance ids? - may be null or omitted, cannot be empty"
   }
 }
 ```
@@ -57,17 +54,15 @@ User must be authenticated.
 
 ### 400 - Bad request
 
-- `app_id` was not provided
 - A not nullable field was null or omitted
 - `org_unit_id` is a new OrgUnit and the following fields were null or omitted: `parent_id`, `name`, `geo_point` and `org_unit_type_id`
 - A `String` field has an empty value
-- `parent_id` is not a valid OrgUnit
-- `opening_status` was not one of the enum values.
-- `org_unit_type_id` is not a valid OrgUnitType
-- One of the `groups` id is not a valid Group
-- `instances` is empty
-- `org_unit_type_id` is not a valid sub OrgUnitType for the given `parent_id` --> TO BE CONFIRMED
-- `org_unit_type_id` is not a valid sub OrgUnitType to be moved to the given `parent_id` --> TO BE CONFIRMED
+- `new_parent_id` is not a valid OrgUnit
+- `new_org_unit_type_id` is not a valid OrgUnitType
+- One of the `new_groups` id is not a valid Group
+- `new_reference_instances` is empty
+- `new_org_unit_type_id` is not a valid sub OrgUnitType for the given `parent_id` --> TO BE CONFIRMED
+- `new_org_unit_type_id` is not a valid sub OrgUnitType to be moved to the given `parent_id` --> TO BE CONFIRMED
 
 ### 401 - Unauthorized
 
@@ -75,9 +70,9 @@ User must be authenticated.
 
 ### 404 - Not found
 
-- one or more of `instances` ids is not found
-- `parent_id` is not found
-- `org_unit_type_id` is not found
+- one or more of `new_reference_instances` ids is not found
+- `new_parent_id` is not found
+- `new_org_unit_type_id` is not found
 
 
 
@@ -126,7 +121,6 @@ Org Unit admin?
       "requested_fields": "Array<String> - name of the properties that were requested to change",
       "approved_fields": "Array<String>? - name of the properties that were approved to change",
       "rejection_comment": "String? - Comment about why the changes were rejected",
-      "instances": "Array of instance ids? - may be null or omitted, cannot be empty"
     }
   ]
 }
@@ -175,7 +169,6 @@ Same as `GET /api/orgunits/changes/`
   "org_unit": {
     "parent": "String - Name of the parent OrgUnit.",
     "name": "String - Name of the OrgUnit.",
-    "opening_status": "Enum<Status>? - Status of the OrgUnit, One of `open` or `close`, may be null or omitted.",
     "org_unit_type_id": "Int - id of the OrgUnitType",
     "org_unit_type_name": "String - Name of the OrgUnitType",
     "groups": "Array of String - can be empty. Names of the new groups",
@@ -183,10 +176,8 @@ Same as `GET /api/orgunits/changes/`
       "latitude": "Double - New latitude of the OrgUnit",
       "longitude": "Double - New longitude of the OrgUnit",
       "altitude": "Double - New altitude of the OrgUnit",
-      "accuracy": "Double - New accuracy of the OrgUnit"
     },
-    "geo-shape": "String? - GeoJSON representation, may be null or omitted",
-    "instances": [ "Array of form objects - can be empty",
+    "reference_instances": [ "Array of form objects - can be empty",
       {
         "form_id": "id of the form",
         "form_name": "Name of the form",
@@ -201,35 +192,31 @@ Same as `GET /api/orgunits/changes/`
       }
     ]
   },
-  "changes": {
-    "parent": "String? - Name of the new parent OrgUnit, may be null or omitted.",
-    "name": "String? - New name of the OrgUnit, may be null or omitted.",
-    "opening_status": "Enum<Status>? - New status of the OrgUnit, One of `open` or `close`, may be null or omitted.",
-    "org_unit_type_id": "Int? - id of the new OrgUnitType, may be null or omitted",
-    "org_unit_type_name": "String? - Name of the new OrgUnitType, may be null or omitted",
-    "groups": "Array of String? - can be empty, null or omitted. Names of the new groups",
-    "geo_point": { "": "New GeoPoint? for the OrgUnit, may be null or omitted",
-      "latitude": "Double - New latitude of the OrgUnit",
-      "longitude": "Double - New longitude of the OrgUnit",
-      "altitude": "Double - New altitude of the OrgUnit",
-      "accuracy": "Double - New accuracy of the OrgUnit"
-    },
-    "geo-shape": "String? - New GeoJSON representation, may be null or omitted",
-    "instances": [ "Array of form objects? - may be null or omitted, cannot be empty",
-      {
-        "form_id": "id of the form",
-        "form_name": "Name of the form",
-        "instance_id": "id of the instance",
-        "values": [
-          {
-            "key": "String",
-            "label": "String",
-            "value": "String"
-          }
-        ]
-      }
-    ]
-  }
+  "new_parent": "String? - Name of the new parent OrgUnit, may be null or omitted.",
+  "new_name": "String? - New name of the OrgUnit, may be null or omitted.",
+  "new_org_unit_type_id": "Int? - id of the new OrgUnitType, may be null or omitted",
+  "new_org_unit_type_name": "String? - Name of the new OrgUnitType, may be null or omitted",
+  "new_groups": "Array of String? - can be empty, null or omitted. Names of the new groups",
+  "new_geo_point": { "": "New GeoPoint? for the OrgUnit, may be null or omitted",
+    "latitude": "Double - New latitude of the OrgUnit",
+    "longitude": "Double - New longitude of the OrgUnit",
+    "altitude": "Double - New altitude of the OrgUnit",
+    "accuracy": "Double - New accuracy of the OrgUnit"
+  },
+  "new_reference_instances": [ "Array of form objects? - may be null or omitted, cannot be empty",
+    {
+      "form_id": "id of the form",
+      "form_name": "Name of the form",
+      "instance_id": "id of the instance",
+      "values": [
+        {
+          "key": "String",
+          "label": "String",
+          "value": "String"
+        }
+      ]
+    }
+  ]
 }
 ```
 

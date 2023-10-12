@@ -17,6 +17,7 @@ from django.contrib import auth
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.contrib.postgres.fields import ArrayField
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
 from django.core.paginator import Paginator
 from django.core.validators import MinLengthValidator
@@ -100,16 +101,6 @@ class AccountFeatureFlag(models.Model):
         return f"{self.name} ({self.code})"
 
 
-class Module(models.Model):
-    name = models.CharField(max_length=100, null=False, blank=False)
-    codename = models.CharField(max_length=100, unique=True, null=False, blank=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.name} ({self.codename})"
-
-
 class Account(models.Model):
     """Account represent a tenant (=roughly a client organisation or a country)"""
 
@@ -119,7 +110,7 @@ class Account(models.Model):
     default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
     feature_flags = models.ManyToManyField(AccountFeatureFlag)
     user_manual_path = models.TextField(null=True, blank=True)
-    modules = models.ManyToManyField(Module, related_name="account_modules")
+    modules = ArrayField(models.CharField(max_length=100), blank=True, null=True)
 
     def as_dict(self):
         return {
@@ -1500,10 +1491,3 @@ class UserRole(models.Model):
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
-
-
-class Permission(models.Model):
-    permission = models.OneToOneField(
-        auth.models.Permission, on_delete=models.CASCADE, related_name="permission", null=False, blank=False
-    )
-    module = models.ForeignKey(Module, on_delete=models.DO_NOTHING, null=True, blank=True)

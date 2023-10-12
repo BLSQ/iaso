@@ -15,8 +15,8 @@ from iaso.models import (
     Profile,
     Project,
     OrgUnitType,
-    Module,
-    Permission as iaso_permission,
+    # Module,
+    # Permission as iaso_permission,
 )
 
 logger = logging.getLogger(__name__)
@@ -62,7 +62,7 @@ class SetupAccountSerializer(serializers.Serializer):
             last_name=validated_data.get("user_last_name", ""),
         )
 
-        modules = Module.objects.filter(codename__in=validated_data.get("modules"))
+        # modules = Module.objects.filter(codename__in=validated_data.get("modules"))
 
         account = Account.objects.create(
             name=validated_data["account_name"],
@@ -92,17 +92,21 @@ class SetupAccountSerializer(serializers.Serializer):
 
         modules = list(modules.values_list("id", flat=True))
         # Get all permissions linked to the modules
-        modules_permissions = set(
-            iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True)
-        )
+        # modules_permissions = set(
+        #     iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True)
+        # )
 
-        permissions_to_add = filter(
-            lambda permission_module: permission_module in modules_permissions,
-            CustomPermissionSupport.get_full_permission_list(),
-        )
+        # permissions_to_add = filter(
+        #     lambda permission_module: permission_module in modules_permissions,
+        #     CustomPermissionSupport.get_full_permission_list(),
+        # )
 
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-        user.user_permissions.set(Permission.objects.filter(codename__in=permissions_to_add, content_type=content_type))
+        user.user_permissions.set(
+            Permission.objects.filter(
+                codename__in=CustomPermissionSupport.get_full_permission_list(), content_type=content_type
+            )
+        )
 
         return validated_data
 

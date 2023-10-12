@@ -26,7 +26,7 @@ from hat.menupermissions import models as permission
 from hat.menupermissions.models import CustomPermissionSupport
 from iaso.api.bulk_create_users import BULK_CREATE_USER_COLUMNS_LIST
 from iaso.api.common import FileFormatEnum, CONTENT_TYPE_CSV, CONTENT_TYPE_XLSX
-from iaso.models import Profile, OrgUnit, UserRole, Project, Module, Permission as iaso_permission
+from iaso.models import Profile, OrgUnit, UserRole, Project  # , Module, Permission as iaso_permission
 
 PK_ME = "me"
 
@@ -419,10 +419,11 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     @staticmethod
     def module_permissions(current_account):
-        # Get all modules linked to the current account
-        modules = Module.objects.filter(account_modules=current_account).values_list("id", flat=True)
-        # Get all permissions linked to the modules
-        return set(iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True))
+        # # Get all modules linked to the current account
+        # modules = Module.objects.filter(account_modules=current_account).values_list("id", flat=True)
+        # # Get all permissions linked to the modules
+        # return set(iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True))
+        return
 
     @staticmethod
     def update_password(user, request):

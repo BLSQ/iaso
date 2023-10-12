@@ -22,8 +22,8 @@ from iaso.models import (
     OrgUnit,
     UserRole,
     Project,
-    Module,
-    Permission as iaso_permission,
+    # Module,
+    # Permission as iaso_permission,
 )
 from hat.menupermissions import models as permission
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
@@ -369,10 +369,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
 
     @staticmethod
     def module_permissions(current_account):
-        # Get all modules linked to the current account
-        modules = Module.objects.filter(account_modules=current_account).values_list("id", flat=True)
-        # Get all permissions linked to the modules
-        return set(iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True))
+        # # Get all modules linked to the current account
+        # modules = Module.objects.filter(account_modules=current_account).values_list("id", flat=True)
+        # # Get all permissions linked to the modules
+        # return set(iaso_permission.objects.filter(module_id__in=modules).values_list("permission__codename", flat=True))
+        return
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="getsample")

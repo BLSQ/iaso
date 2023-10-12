@@ -1,7 +1,7 @@
 from rest_framework import permissions, serializers
 from django.db.models import Q, QuerySet
 from django.contrib.auth.models import Permission
-from iaso.models import Account, Module, Profile
+from iaso.models import Account, Profile  # Module,
 from .common import ModelViewSet, HasPermission, TimestampField
 from hat.menupermissions import models as permission
 
@@ -23,7 +23,7 @@ class ModuleSerializer(serializers.ModelSerializer):
     account = serializers.SerializerMethodField("get_account")
 
     class Meta:
-        model = Module
+        # model = Module
         fields = ["name", "codename", "created_at", "updated_at", "permissions", "account"]
 
     created_at = TimestampField(read_only=True)
@@ -54,14 +54,14 @@ class ModulesViewSet(ModelViewSet):
     serializer_class = ModuleSerializer
     http_method_names = ["get"]
 
-    def get_queryset(self) -> QuerySet[Module]:
-        queryset = Module.objects.all()  # type: ignore
-        search = self.request.GET.get("search", None)
-        orders = self.request.GET.get("order", "name").split(",")
+    # def get_queryset(self) -> QuerySet[Module]:
+    #     queryset = Module.objects.all()  # type: ignore
+    #     search = self.request.GET.get("search", None)
+    #     orders = self.request.GET.get("order", "name").split(",")
 
-        if search:
-            queryset = queryset.filter(Q(name__icontains=search)).distinct()
-        if orders:
-            queryset = queryset.order_by(*orders)
+    #     if search:
+    #         queryset = queryset.filter(Q(name__icontains=search)).distinct()
+    #     if orders:
+    #         queryset = queryset.order_by(*orders)
 
-        return queryset
+    #     return queryset

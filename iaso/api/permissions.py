@@ -8,7 +8,8 @@ from rest_framework.response import Response
 
 from hat.menupermissions.models import CustomPermissionSupport
 from hat.menupermissions import models as p
-from iaso.models import Module
+
+# from iaso.models import Module
 
 
 class PermissionsViewSet(viewsets.ViewSet):
@@ -29,10 +30,10 @@ class PermissionsViewSet(viewsets.ViewSet):
         else:
             perms = request.user.user_permissions
 
-        account = request.user.iaso_profile.account
-        modules = Module.objects.filter(account_modules=account)
+        # account = request.user.iaso_profile.account
+        # modules = Module.objects.filter(account_modules=account)
 
-        perms = CustomPermissionSupport.filter_permissions(perms, modules, settings)
+        # perms = CustomPermissionSupport.filter_permissions(perms, modules, settings)
 
         result = []
         for permission in perms:

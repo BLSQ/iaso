@@ -2411,6 +2411,15 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.forms.error.wrongUserAccount',
         defaultMessage: 'Wrong user account',
     },
+    incorrectFormat: {
+        id: 'iaso.polio.forms.error.incorrectFormat',
+        defaultMessage: 'Incorrect format',
+    },
+    keyNameFormat: {
+        id: 'iaso.polio.forms.error.keyNameFormat',
+        defaultMessage:
+            'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
+    },
 });
 
 export default MESSAGES;

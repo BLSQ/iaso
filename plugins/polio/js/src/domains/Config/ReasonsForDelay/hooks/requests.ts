@@ -36,6 +36,9 @@ export const useReasonsForDelay = (
                 if (!data) return [];
                 return data;
             },
+            keepPreviousData: true,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
         },
     });
 };

@@ -18,6 +18,7 @@ import { APP_LOCALES } from '../../../../../../../../hat/assets/js/apps/Iaso/dom
 import { useCreateEditReasonForDelay } from '../hooks/requests';
 import { useReasonsForDelayValidation } from '../hooks/validation';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import { InputWithInfos } from '../../../../../../../../hat/assets/js/apps/Iaso/components/InputWithInfos';
 
 type Props = {
     isOpen: boolean;
@@ -115,16 +116,34 @@ const CreateEditReasonForDelay: FunctionComponent<Props> = ({
             >
                 <Divider />
                 <Box mt={2}>
-                    <InputComponent
-                        keyValue="key_name"
-                        onChange={onChange}
-                        value={values.key_name}
-                        errors={getErrors('key_name')}
-                        type="text"
-                        label={MESSAGES.keyName}
-                        required
-                        disabled={Boolean(id)}
-                    />
+                    {!id && (
+                        <InputWithInfos
+                            infos={formatMessage(MESSAGES.keyNameFormat)}
+                        >
+                            <InputComponent
+                                keyValue="key_name"
+                                onChange={onChange}
+                                value={values.key_name}
+                                errors={getErrors('key_name')}
+                                type="text"
+                                label={MESSAGES.keyName}
+                                required
+                                disabled={Boolean(id)}
+                            />
+                        </InputWithInfos>
+                    )}
+                    {id && (
+                        <InputComponent
+                            keyValue="key_name"
+                            onChange={onChange}
+                            value={values.key_name}
+                            errors={getErrors('key_name')}
+                            type="text"
+                            label={MESSAGES.keyName}
+                            required
+                            disabled={Boolean(id)}
+                        />
+                    )}
                 </Box>
                 {APP_LOCALES.sort((a, b) =>
                     a.code.localeCompare(b.code, undefined, {

@@ -151,6 +151,8 @@
     "iaso.polio.forms.deleteRound": "Delete round",
     "iaso.polio.forms.emptyEndDate": "Round {roundNumber} has no end date",
     "iaso.polio.forms.emptyStartDate": "Round {roundNumber} has no start date",
+    "iaso.polio.forms.error.incorrectFormat": "Incorrect format",
+    "iaso.polio.forms.error.keyNameFormat": "Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters",
     "iaso.polio.forms.error.wrongUserAccount": "Wrong user account",
     "iaso.polio.forms.options.approval": "Approval",
     "iaso.polio.forms.options.approval_ongoing": "Approval ongoing",

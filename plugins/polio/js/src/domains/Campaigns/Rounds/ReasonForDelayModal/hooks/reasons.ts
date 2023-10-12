@@ -7,7 +7,7 @@ export type ReasonForDelay = 'INITIAL_DATA' | string;
 
 export const useReasonsDelayOptions = (
     locale: 'en' | 'fr' = 'en',
-): UseQueryResult<DropdownOptions<number>[], any> => {
+): UseQueryResult<DropdownOptions<string>[], any> => {
     return useSnackQuery({
         queryKey: ['reasonsForDelay', locale],
         queryFn: () => getRequest('/api/polio/reasonsfordelay/forcampaign/'),
@@ -20,8 +20,8 @@ export const useReasonsDelayOptions = (
                     .map(reason => {
                         return {
                             label: reason[key],
-                            value: reason.id,
-                        } as DropdownOptions<number>;
+                            value: reason.key_name,
+                        } as DropdownOptions<string>;
                     })
                     .sort((a, b) =>
                         a.label.localeCompare(b.label, undefined, {

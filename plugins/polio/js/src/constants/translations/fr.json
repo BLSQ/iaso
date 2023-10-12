@@ -151,6 +151,8 @@
     "iaso.polio.forms.deleteRound": "Effacer round",
     "iaso.polio.forms.emptyEndDate": "Le round {roundNumber} n'a pas de date de fin",
     "iaso.polio.forms.emptyStartDate": "Le round {roundNumber} n'a pas de date de début",
+    "iaso.polio.forms.error.incorrectFormat": "Format incorrect",
+    "iaso.polio.forms.error.keyNameFormat": "Identifiant unique. Veuillez utiliser des lettres majuscules séparées par un tiret bas. Nombres et caractères spéciaux interdits",
     "iaso.polio.forms.error.wrongUserAccount": "Mauvais compte d'utilisateur",
     "iaso.polio.forms.options.approval": "Approbation",
     "iaso.polio.forms.options.approval_ongoing": "Approbation en cours",

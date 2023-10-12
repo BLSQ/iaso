@@ -43,7 +43,9 @@ export const ReasonsForDelay: FunctionComponent<Props> = ({ router }) => {
                     alignItems="center"
                     className={classes.marginTop}
                 />
-                <CreateReasonForDelay iconProps={{}} />
+                <Grid container item justifyContent="flex-end" xs={12}>
+                    <CreateReasonForDelay iconProps={{}} />
+                </Grid>
                 <TableWithDeepLink
                     marginTop={false}
                     data={data?.results ?? []}

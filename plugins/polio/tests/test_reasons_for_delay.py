@@ -71,15 +71,6 @@ class PolioReasonSForDelayTestCase(APITestCase):
         cls.round1_modif3 = RoundDateHistoryEntry.objects.create(
             round=cls.round1, reason_for_delay=cls.cat_ate_my_homework
         )
-        # cls.wrong_campaign = Campaign.objects.create(
-        #     obr_name="wrong_campaign", account=cls.account, initial_org_unit=cls.country_org_unit_2
-        # )
-        # cls.wrong_round1 = Round.objects.create(
-        #     number=1,
-        #     started_at=cls.round1_start.strftime("%Y-%m-%d"),
-        #     ended_at=cls.round1_end.strftime("%Y-%m-%d"),
-        #     campaign=cls.wrong_campaign,
-        # )
 
     def test_no_perm(self):
         user_no_perm = self.create_user_with_profile(username="test user2", account=self.account, permissions=[])

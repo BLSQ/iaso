@@ -18,7 +18,7 @@ from iaso.test import APITestCase, TestCase
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer
 from plugins.polio.api.common import CACHE_VERSION
 from plugins.polio.export_utils import format_date
-from plugins.polio.models import Config, Round, RoundScope
+from plugins.polio.models import Config, ReasonForDelay, Round, RoundScope
 from plugins.polio.preparedness.calculator import get_preparedness_score
 from plugins.polio.preparedness.exceptions import InvalidFormatError
 from plugins.polio.preparedness.spreadsheet_manager import *
@@ -83,6 +83,15 @@ class PolioAPITestCase(APITestCase):
 
         cls.luke = cls.create_user_with_profile(
             username="luke", account=cls.account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
+        )
+        cls.initial_data = ReasonForDelay.objects.create(
+            account=cls.account, key_name="INITIAL_DATA", name_en="Initial data", name_fr="Données initiales"
+        )
+        cls.cat_ate_my_homework = ReasonForDelay.objects.create(
+            account=cls.account,
+            key_name="CAT_ATE_MY_HOMEWORK",
+            name_en="The cat ate my homework",
+            name_fr="Mon chat a mangé mon devoir",
         )
 
     def setUp(self) -> None:
@@ -210,6 +219,72 @@ class PolioAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(Campaign.objects.get().get_all_districts()), 3)
+
+    def test_create_round_adds_history(self):
+        """Check that adding a round adds a datelog with initial data"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.post(
+            "/api/polio/campaigns/",
+            data={
+                "obr_name": "campaign with org units",
+                "rounds": [{"number": 1, "started_at": "2023-03-21", "ended_at": "2023-04-01"}],
+            },
+            format="json",
+        )
+        jr = self.assertJSONResponse(response, 201)
+        self.assertEquals(len(jr["rounds"]), 1)
+        self.assertEquals(len(jr["rounds"][0]["datelogs"]), 1)
+        self.assertEquals(jr["rounds"][0]["datelogs"][0]["reason_for_delay"], self.initial_data.key_name)
+
+    def test_update_round_date_adds_history(self):
+        """Updating round dates should add an entry in datelogs"""
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.post(
+            "/api/polio/campaigns/",
+            data={
+                "obr_name": "campaign with org units",
+                "rounds": [{"number": 1, "started_at": "2023-03-21", "ended_at": "2023-04-01"}],
+            },
+            format="json",
+        )
+        jr = self.assertJSONResponse(response, 201)
+        campaign_id = jr["id"]
+        datelogs = jr["rounds"][0]["datelogs"]
+        new_datelog = {
+            "previous_started_at": datelogs[0]["started_at"],
+            "previous_ended_at": datelogs[0]["ended_at"],
+            "started_at": datelogs[0]["started_at"],
+            "ended_at": "2023-04-05",
+            "reason_for_delay": self.cat_ate_my_homework.key_name,
+        }
+        datelogs.append(new_datelog)
+        # Using PUT as it's how the UI proceeds
+        response = self.client.put(
+            f"/api/polio/campaigns/{campaign_id}/",
+            data={
+                "obr_name": "campaign with org units",
+                "rounds": [
+                    {
+                        "number": 1,
+                        "started_at": "2023-03-21",
+                        "ended_at": "2023-04-05",
+                        "datelogs": datelogs,
+                    }
+                ],
+            },
+            format="json",
+        )
+        jr = self.assertJSONResponse(response, 200)
+        print("RESPONSE", jr)
+        datelogs = jr["rounds"][0]["datelogs"]
+        self.assertEquals(len(jr["rounds"][0]["datelogs"]), 2)
+        self.assertEquals(jr["rounds"][0]["datelogs"][1]["reason_for_delay"], self.cat_ate_my_homework.key_name)
+        self.assertEquals(jr["rounds"][0]["datelogs"][1]["ended_at"], "2023-04-05")
+        self.assertEquals(jr["rounds"][0]["datelogs"][1]["previous_ended_at"], "2023-04-01")
+        self.assertEquals(jr["rounds"][0]["datelogs"][1]["started_at"], "2023-03-21")
+        self.assertEquals(jr["rounds"][0]["datelogs"][1]["previous_started_at"], "2023-03-21")
 
     def test_can_only_see_campaigns_within_user_org_units_hierarchy(self):
         """

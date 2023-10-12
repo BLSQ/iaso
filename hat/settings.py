@@ -73,16 +73,6 @@ CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.D
 CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
 
 
-# There exists plugins using celery for the backend task (but it's not the default task mechanism of Iaso)
-# If you have such plugin, you can activate the use of celery by setting this env variable to "true"
-USE_CELERY = os.environ.get("USE_CELERY", "")
-
-# env variables allowing to configure the cache used by Iaso. By default, it's using a table in Postgres
-# to setup Redis, use django_redis.cache.RedisCache as CACHE_BACKEND and something like "redis://127.0.0.1:6379" as CACHE_LOCATION
-CACHE_BACKEND = os.environ.get("CACHE_BACKEND", "django.core.cache.backends.db.DatabaseCache")
-CACHE_LOCATION = os.environ.get("CACHE_LOCATION", "django_cache_table")
-
-
 ALLOWED_HOSTS = ["*"]
 
 # Tell django to view requests as secure(ssl) that have this header set

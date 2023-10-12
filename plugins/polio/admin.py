@@ -131,6 +131,7 @@ class VaccineAuthorizationsAdmin(admin.ModelAdmin):
     raw_id_fields = ("country",)
 
 
+@admin.register(ReasonForDelay)
 class ReasonForDelayAdmin(admin.ModelAdmin):
     model = ReasonForDelay
 

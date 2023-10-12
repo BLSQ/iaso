@@ -66,4 +66,12 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Logout',
         id: 'iaso.logout',
     },
+    modules_empty: {
+        defaultMessage: 'Modules should not be empty',
+        id: 'iaso.setup.modulesEmpty',
+    },
+    modules_not_exist: {
+        defaultMessage: 'Modules do not exist',
+        id: 'iaso.setup.modulesNotExist',
+    },
 });

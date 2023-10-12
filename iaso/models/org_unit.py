@@ -613,6 +613,10 @@ class OrgUnitChangeRequest(models.Model):
 
     class Meta:
         verbose_name = _("Org unit change request")
+        indexes = [
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["updated_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"

@@ -91,7 +91,7 @@ URL = Union[URLPattern, URLResolver]
 URLList = List[URL]
 
 router = routers.DefaultRouter()
-router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunits_changes")
+router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunitschanges")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
 router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")

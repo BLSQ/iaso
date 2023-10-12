@@ -59,6 +59,7 @@ from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
+from .api.mobile.org_unit_change_requests import MobileOrgUnitChangeRequestViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
@@ -92,6 +93,7 @@ URLList = List[URL]
 
 router = routers.DefaultRouter()
 router.register(r"orgunits/changes", OrgUnitChangeRequestViewSet, basename="orgunitschanges")
+router.register(r"mobile/orgunits/changes", MobileOrgUnitChangeRequestViewSet, basename="mobileorgunitschanges")
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
 router.register(r"v2/orgunittypes", OrgUnitTypeViewSetV2, basename="orgunittypes")

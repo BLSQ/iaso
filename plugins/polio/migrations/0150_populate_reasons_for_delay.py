@@ -40,18 +40,29 @@ TRANSLATIONS = {
         "fr": "Intervalle de 4 semaines entre les rounds à respecter",
     },
     "OTHER_VACCINATION_CAMPAIGNS": {"en": "Other vaccination campaigns", "fr": "Autres campagnes de vaccination"},
+    "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING":{"en": "Pending liquidation of previous SIA funding", "fr": "Liquidation des fonds de la SIA précédente en attente"}
 }
 
 
 def create_reasons_for_delay(apps, schema_editor):
     ReasonForDelay = apps.get_model("polio", "ReasonForDelay")
-    text_choice_keys = [choice.name for choice in DelayReasons]
-    for choice_key in text_choice_keys:
-        ReasonForDelay.objects.create(
-            key_name=choice_key,
-            name_en=TRANSLATIONS[choice_key]["en"],
-            name_fr=TRANSLATIONS[choice_key]["fr"],
-        )
+    Account = apps.get_model("iaso", "Account")
+    polio_account = Account.objects.filter(pk=1).first()
+    if polio_account:
+        text_choice_keys = [choice.name for choice in DelayReasons]
+        for choice_key in text_choice_keys:
+            ReasonForDelay.objects.create(
+                key_name=choice_key,
+                name_en=TRANSLATIONS[choice_key]["en"],
+                name_fr=TRANSLATIONS[choice_key]["fr"],
+                account=polio_account
+            )
+        RoundDateHistoryEntry = apps.get_model("polio", "RoundDateHistoryEntry")
+        round_date_history_entries = RoundDateHistoryEntry.objects.all()
+        for entry in round_date_history_entries:
+            reason_for_delay = ReasonForDelay.objects.filter(key_name=entry.reason).first()
+            entry.reason_for_delay = reason_for_delay
+            entry.save()
 
 
 def remove_reasons_for_delay(apps, schema_editor):
@@ -63,7 +74,7 @@ def remove_reasons_for_delay(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("polio", "0148_auto_20231003_1247"),
+        ("polio", "0149_auto_20231012_1456"),
     ]
 
     operations = [migrations.RunPython(create_reasons_for_delay, remove_reasons_for_delay)]

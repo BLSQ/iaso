@@ -30,7 +30,7 @@ case "$1" in
   "start_gunicorn")
     ./scripts/wait_for_dbs.sh
     ./manage.py migrate --noinput
-    gunicorn hat.wsgi --bind=0.0.0.0:8081 --timeout 600
+    gunicorn hat.wsgi --workers 5 --threads=10 --bind=0.0.0.0:8081 --timeout 600
   ;;
   "test" )
     export TESTING=true
@@ -65,12 +65,7 @@ case "$1" in
     ./manage.py compilemessages
     ./manage.py runserver 0.0.0.0:8081
   ;;
-  "start_celery_beat" )
-    celery -A hat beat -l info --scheduler "django_celery_beat.schedulers:DatabaseScheduler"
-  ;;
-  "start_celery_worker" )
-    celery -A hat worker -l info --without-heartbeat
-  ;;
+
   "start_webpack" )
     # if TEST_PROD, make a static js bundle otherwise launch js dev server
     if [ -n "$TEST_PROD" ]; then

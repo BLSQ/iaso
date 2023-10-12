@@ -324,21 +324,17 @@ User has to be authenticated
       "org_unit_id": "String - id or UUID of the OrgUnit to change",
       "created_at": "Timestamp in double",
       "updated_at": "Timestamp in double",
-      "changes": {
-        "parent_id": "String? - id or UUID of the parent OrgUnit, may be null or omitted.",
-        "name": "String? - Name of the OrgUnit, may be null or omitted.",
-        "status": "Enum<Status>? - One of `open` or `close`",
-        "org_unit_type_id": "Int? - id of the OrgUnitType, may be null or omitted",
-        "groups": "Array of Group ids? - can be empty, null or omitted. Empty means we want to remove all values",
-        "geo_point": { "": "New geopoint for the OrgUnit, may be null or omitted",
-          "latitude": "Double - New latitude of the OrgUnit",
-          "longitude": "Double - New longitude of the OrgUnit",
-          "altitude": "Double - New altitude of the OrgUnit",
-          "accuracy": "Double - New accuracy of the OrgUnit"
-        },
-        "geo-shape": "String? - GeoJSON representation, may be null or omitted",
-        "instances": "Array of instance ids? - may be null or omitted, cannot be empty"
-      }
+      "new_parent_id": "String? - id or UUID of the parent OrgUnit, may be null or omitted.",
+      "new_name": "String? - Name of the OrgUnit, may be null or omitted.",
+      "new_org_unit_type_id": "Int? - id of the OrgUnitType, may be null or omitted",
+      "new_groups": "Array of Group ids? - can be empty, null or omitted. Empty means we want to remove all values",
+      "new_geo_point": { "": "New geopoint for the OrgUnit, may be null or omitted",
+        "latitude": "Double - New latitude of the OrgUnit",
+        "longitude": "Double - New longitude of the OrgUnit",
+        "altitude": "Double - New altitude of the OrgUnit",
+        "accuracy": "Double - New accuracy of the OrgUnit"
+      },
+      "new_reference_instances": "Array of instance ids? - may be null or omitted, cannot be empty"
     }
   ]
 }

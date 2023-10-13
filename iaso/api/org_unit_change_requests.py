@@ -2,7 +2,7 @@ from rest_framework import viewsets, permissions, serializers
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
-from iaso.filters.org_unit_change_requests import OrgUnitChangeRequestListFilter
+from iaso.api_filters.org_unit_change_requests import OrgUnitChangeRequestListFilter
 from iaso.models import OrgUnitChangeRequest
 
 

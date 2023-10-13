@@ -2,6 +2,8 @@ from rest_framework import viewsets, permissions, serializers
 from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
+from iaso.api.serializers import AppIdSerializer
+from iaso.api_filters.org_unit_change_requests import MobileOrgUnitChangeRequestListFilter
 from iaso.models import OrgUnitChangeRequest
 
 
@@ -20,9 +22,9 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "rejection_comment",
             "created_at",
             "updated_at",
-            "new_parent",
+            "new_parent_id",
             "new_name",
-            "new_org_unit_type",
+            "new_org_unit_type_id",
             "new_groups",
             "new_location",
             "new_accuracy",
@@ -32,21 +34,17 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
 
 class MobileOrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
     permission_classes = [permissions.IsAuthenticated]
-    # from iaso.filters.org_unit_change_requests import OrgUnitChangeRequestListFilter
-    # filterset_class = OrgUnitChangeRequestListFilter
+    filterset_class = MobileOrgUnitChangeRequestListFilter
     serializer_class = MobileOrgUnitChangeRequestListSerializer
 
     def get_queryset(self):
+        app_id_serializer = AppIdSerializer(data=self.request.query_params)
+        app_id_serializer.is_valid(raise_exception=True)
+
         return (
             OrgUnitChangeRequest.objects.all()
-            .select_related(
-                "org_unit__parent",
-                "org_unit__org_unit_type",
-                "new_parent",
-                "new_org_unit_type",
-            )
+            .select_related("org_unit")
             .prefetch_related(
-                "org_unit__groups",
                 "new_groups",
                 "new_reference_instances",
             )

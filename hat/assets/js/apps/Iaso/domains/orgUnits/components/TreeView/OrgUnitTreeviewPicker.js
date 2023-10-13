@@ -105,7 +105,6 @@ const OrgUnitTreeviewPicker = ({
         (multiselect
             ? intl.formatMessage(MESSAGES.selectMultiple)
             : intl.formatMessage(MESSAGES.selectSingle));
-
     const makeTruncatedTrees = treesData => {
         if (treesData.size === 0)
             return (
@@ -127,10 +126,12 @@ const OrgUnitTreeviewPicker = ({
                     key={`TruncatedTree${key.toString()}`}
                     label={label}
                     redirect={id =>
-                        window.open(
-                            `/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/${id}`,
-                            '_blank',
-                        )
+                        disabled
+                            ? null
+                            : window.open(
+                                  `/dashboard/${baseUrls.orgUnitDetails}/orgUnitId/${id}`,
+                                  '_blank',
+                              )
                     }
                 />
             );
@@ -169,9 +170,13 @@ const OrgUnitTreeviewPicker = ({
                                 icon="clear"
                                 size="small"
                                 tooltipMessage={MESSAGES.clear}
-                                onClick={() => {
-                                    resetSelection();
-                                }}
+                                onClick={
+                                    disabled
+                                        ? noOp
+                                        : () => {
+                                              resetSelection();
+                                          }
+                                }
                             />
                         </Box>
                     )}
@@ -183,7 +188,8 @@ const OrgUnitTreeviewPicker = ({
                                 : MESSAGES.selectSingle
                         }
                         icon="orgUnit"
-                        onClick={onClick}
+                        onClick={disabled ? noOp : onClick}
+                        disabled={disabled}
                     />
                 </Paper>
             </FormControl>

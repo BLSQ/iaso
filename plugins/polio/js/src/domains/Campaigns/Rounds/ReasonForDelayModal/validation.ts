@@ -101,9 +101,7 @@ export const useRoundDateHistorySchema = (
             .typeError(formatMessage(MESSAGES.invalidDate))
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired)),
-        // @ts-ignore
-        // .isEndBeforeStart(formatMessage),
-        reason: yup
+        reason_for_delay: yup
             .string()
             .nullable()
             .required(formatMessage(MESSAGES.fieldRequired)),

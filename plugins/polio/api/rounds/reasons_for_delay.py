@@ -60,7 +60,6 @@ class ReasonForDelaySerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         account = self.context["request"].user.iaso_profile.account
-        print("ACCOUNT", account)
         validated_data["account"] = account
 
         return super().create(validated_data)

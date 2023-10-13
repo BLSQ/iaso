@@ -132,6 +132,9 @@ class RoundSerializer(serializers.ModelSerializer):
                 )
             if datelog is not None:
                 # Replace instance with key_name to avoid validation error
+                # Because the serializer is nested, and data is converted at every level of nesting
+                # datelog["reason_for_delay"] is the ReasonForDelay instance, and not the  key_name that was passed by the front-end
+                # So we have to extract the key_name from the instance and re-pass it to the serializer, otherwise we get an error
                 datelog_serializer = RoundDateHistoryEntryForRoundSerializer(
                     instance=datelog,
                     data={**new_datelog, "reason_for_delay": new_datelog["reason_for_delay"].key_name},

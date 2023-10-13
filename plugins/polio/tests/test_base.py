@@ -277,7 +277,6 @@ class PolioAPITestCase(APITestCase):
             format="json",
         )
         jr = self.assertJSONResponse(response, 200)
-        print("RESPONSE", jr)
         datelogs = jr["rounds"][0]["datelogs"]
         self.assertEquals(len(jr["rounds"][0]["datelogs"]), 2)
         self.assertEquals(jr["rounds"][0]["datelogs"][1]["reason_for_delay"], self.cat_ate_my_homework.key_name)

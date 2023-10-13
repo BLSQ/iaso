@@ -260,6 +260,9 @@ class CampaignSerializer(serializers.ModelSerializer):
             scopes = round_data.pop("scopes", [])
 
             # Replace ReasonForDelay instance with key_name to avoid type error when calling is_valid
+            # Because the serializer is nested, and data is converted at every level of nesting
+            # datelog["reason_for_delay"] is the ReasonForDelay instance, and not the  key_name that was passed by the front-end
+            # So we have to extract the key_name from the instance and re-pass it to the serializer, otherwise we get an error
             round_datelogs = round_data.pop("datelogs", [])
             datelogs_with_pk = [
                 {**datelog, "reason_for_delay": datelog["reason_for_delay"].key_name} for datelog in round_datelogs

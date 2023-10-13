@@ -68,11 +68,23 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        cls.org_unit = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+        data_source = m.DataSource.objects.create(name="Data source")
+        version = m.SourceVersion.objects.create(number=1, data_source=data_source)
+        account = m.Account.objects.create(name="Account", default_version=version)
+        project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
 
-        cls.account = m.Account.objects.create(name="Account")
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, version=version)
+
+        user = cls.create_user_with_profile(username="user", account=account)
+
+        data_source.projects.set([project])
+        org_unit_type.projects.set([project])
+        user.iaso_profile.org_units.set([org_unit])
+
+        cls.org_unit = org_unit
+        cls.project = project
+        cls.user = user
 
     def test_list_ok(self):
         m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
@@ -80,11 +92,19 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(5):
-            # 1. COUNT(*)
-            # 2. SELECT OrgUnitChangeRequest
-            # 3. PREFETCH OrgUnit.groups
-            # 4. PREFETCH OrgUnitChangeRequest.new_groups
-            # 5. PREFETCH OrgUnitChangeRequest.new_reference_instances
+        with self.assertNumQueries(6):
+            # OrgUnit.filter_for_user_and_app_id()
+            #   1. SELECT OrgUnit
+            # ViewSet.get_queryset
+            #   2. COUNT(*)
+            #   3. SELECT OrgUnitChangeRequest
+            #   4. PREFETCH OrgUnit.groups
+            #   5. PREFETCH OrgUnitChangeRequest.new_groups
+            #   6. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
+            self.assertEqual(2, len(response.data))
+
+    def test_list_without_auth(self):
+        response = self.client.get("/api/orgunits/changes/")
+        self.assertJSONResponse(response, 403)

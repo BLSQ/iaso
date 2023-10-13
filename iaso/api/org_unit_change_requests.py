@@ -3,7 +3,7 @@ from rest_framework.mixins import ListModelMixin
 from rest_framework.viewsets import GenericViewSet
 
 from iaso.api_filters.org_unit_change_requests import OrgUnitChangeRequestListFilter
-from iaso.models import OrgUnitChangeRequest
+from iaso.models import OrgUnitChangeRequest, OrgUnit
 
 
 class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
@@ -46,8 +46,9 @@ class OrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
     serializer_class = OrgUnitChangeRequestListSerializer
 
     def get_queryset(self):
+        org_units = OrgUnit.objects.filter_for_user_and_app_id(self.request.user)
         return (
-            OrgUnitChangeRequest.objects.all()
+            OrgUnitChangeRequest.objects.filter(org_unit__in=org_units)
             .select_related(
                 "org_unit__parent",
                 "org_unit__org_unit_type",

@@ -938,6 +938,9 @@ class VaccineRequestForm(models.Model):
     def count_arrival_reports(self):
         return self.vaccinearrivalreport_set.count()
 
+    def total_doses_shipped(self):
+        return sum([pre_alert.doses_shipped for pre_alert in self.vaccineprealert_set.all()])
+
     def __str__(self):
         return f"VFR for {self.country} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 

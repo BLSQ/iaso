@@ -188,8 +188,8 @@ class RoundDateHistoryEntry(models.Model):
 
 class ReasonForDelay(SoftDeletableModel):
     name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True}})
-    # key_name is necessary for the current implementation of powerBi dashboards 
-    # and for the front-end to be able to prevent users from selecting "INITIAL_DATA" 
+    # key_name is necessary for the current implementation of powerBi dashboards
+    # and for the front-end to be able to prevent users from selecting "INITIAL_DATA"
     # when updating round dates
     key_name = models.CharField(blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")])
     created_at = models.DateTimeField(auto_now_add=True)

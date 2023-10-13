@@ -1,11 +1,12 @@
-from datetime import date
 import datetime
 import json
+from datetime import date
 from typing import Union
 from uuid import uuid4
 
 import django.db.models.manager
-from django.contrib.auth.models import User, AnonymousUser
+from django.contrib.auth.models import AnonymousUser, User
+from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models import Count, Q
@@ -35,6 +36,12 @@ VACCINES = [
     ("nOPV2", _("nOPV2")),
     ("bOPV", _("bOPV")),
 ]
+
+DOSES_PER_VIAL = {
+    "mOPV2": 20,
+    "nOPV2": 20,
+    "bOPV": 20,
+}
 
 LANGUAGES = [
     ("FR", "Français"),
@@ -904,3 +911,51 @@ class VaccineAuthorization(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.country}-{self.expiration_date}"
+
+
+class VaccineRequestForm(models.Model):
+    country = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
+    campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
+    vaccine_type = models.CharField(max_length=5, choices=VACCINES)
+    rounds = models.ManyToManyField(Round)
+    date_vrf_signature = models.DateField()
+    date_vrf_reception = models.DateField()
+    date_dg_approval = models.DateField()
+    quantities_ordered_in_doses = models.PositiveIntegerField()
+
+    # optional fields
+    wastage_rate_used_on_vrf = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    date_vrf_submission_to_orpg = models.DateField(null=True, blank=True)
+    quantities_approved_by_orpg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    date_rrt_orpg_approval = models.DateField(null=True, blank=True)
+    date_vrf_submitted_to_dg = models.DateField(null=True, blank=True)
+    quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
+    comment = models.TextField(blank=True, null=True)
+
+    def clean(self):
+        if not self.rounds.exists():
+            raise ValidationError("At least one round must be attached to a Request Form.")
+
+        for round in self.rounds.all():
+            if round.campaign != self.campaign:
+                raise ValidationError("All rounds must belong to the same campaign as the Request Form.")
+
+
+class VaccinePreAlert(models.Model):
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
+    date_pre_alert_reception = models.DateField()
+    po_number = models.CharField(max_length=200)
+    estimated_arrival_time = models.DateTimeField()
+    lot_number = models.CharField(max_length=200)
+    expiration_date = models.DateField()
+    doses_shipped = models.PositiveIntegerField()
+    doses_received = models.PositiveIntegerField()
+
+    def get_doses_per_vial(self):
+        return DOSES_PER_VIAL[self.request_form.vaccine_type]
+
+
+class VaccineArrivalReport(models.Model):
+    pre_alert = models.ForeignKey(VaccinePreAlert, on_delete=models.CASCADE)
+    arrival_report_date = models.DateField()  # prepolutated from pre_alert.estimated_arrival_time
+    doses_received = models.PositiveIntegerField()  # prepolulated from pre_alert.doses_received

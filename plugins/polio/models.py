@@ -932,14 +932,6 @@ class VaccineRequestForm(models.Model):
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
 
-    def clean(self):
-        if not self.rounds.exists():
-            raise ValidationError("At least one round must be attached to a Request Form.")
-
-        for round in self.rounds.all():
-            if round.campaign != self.campaign:
-                raise ValidationError("All rounds must belong to the same campaign as the Request Form.")
-
 
 class VaccinePreAlert(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)

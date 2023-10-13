@@ -3,6 +3,24 @@ from rest_framework import serializers, viewsets
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from plugins.polio.models import VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
+from django import forms
+
+
+def validate_rounds_and_campaign(data):
+    rounds = data.get("rounds")
+    campaign = data.get("campaign")
+
+    if not rounds:
+        raise forms.ValidationError("At least one round must be attached.")
+
+    for round in rounds.all():
+        if round.campaign != campaign:
+            raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
+
+    if data.get("country").org_unit_type.category != "COUNTRY":
+        raise forms.ValidationError("The selected OrgUnit must be of type 'Country'.")
+
+    return data
 
 
 class VaccineRequestReadWritePerm(GenericReadWritePerm):
@@ -32,6 +50,9 @@ class VaccineRequestFormViewSet(ModelViewSet):
     permission_classes = [VaccineRequestReadWritePerm]
     queryset = VaccineRequestForm.objects.all()
     serializer_class = VaccineRequestFormSerializer
+
+    def validate(self, data):
+        return validate_rounds_and_campaign(data)
 
 
 class VaccinePreAlertViewSet(ModelViewSet):

@@ -1,25 +1,31 @@
 import json
 
 import gspread.utils  # type: ignore
+from django import forms
 from django.contrib import admin
 from django.contrib.admin import widgets
 from django.db import models
 from django.utils.safestring import mark_safe
 
-from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
+from iaso.admin import IasoJSONEditorWidget
+
+from .budget.models import BudgetStep, BudgetStepFile, BudgetStepLink, MailTemplate, WorkflowModel
 from .models import (
     Campaign,
-    RoundDateHistoryEntry,
-    Round,
+    CampaignGroup,
     Config,
     CountryUsersGroup,
-    URLCache,
+    Round,
+    RoundDateHistoryEntry,
     SpreadSheetImport,
-    CampaignGroup,
+    URLCache,
+    VaccineArrivalReport,
     VaccineAuthorization,
+    VaccinePreAlert,
+    VaccineRequestForm,
 )
 
-from iaso.admin import IasoJSONEditorWidget
+from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 
 
 class CampaignAdmin(admin.ModelAdmin):
@@ -130,6 +136,38 @@ class VaccineAuthorizationsAdmin(admin.ModelAdmin):
     raw_id_fields = ("country",)
 
 
+class VaccineArrivalReportAdminInline(admin.TabularInline):
+    model = VaccineArrivalReport
+    extra = 0
+
+
+class VaccinePreAlertAdminInline(admin.TabularInline):
+    model = VaccinePreAlert
+    extra = 0
+    inlines = [
+        VaccineArrivalReportAdminInline,
+    ]
+
+
+class VaccineRequestFormForm(forms.ModelForm):
+    class Meta:
+        model = VaccineRequestForm
+        fields = "__all__"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        return validate_rounds_and_campaign(cleaned_data)
+
+
+class VaccineRequestFormAdmin(admin.ModelAdmin):
+    model = VaccineRequestForm
+    form = VaccineRequestFormForm
+    raw_id_fields = ("country",)
+    inlines = [
+        VaccinePreAlertAdminInline,
+    ]
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
@@ -142,3 +180,4 @@ admin.site.register(BudgetStep, BudgetStepAdmin)
 admin.site.register(MailTemplate, MailTemplateAdmin)
 admin.site.register(WorkflowModel, WorkflowAdmin)
 admin.site.register(VaccineAuthorization, VaccineAuthorizationsAdmin)
+admin.site.register(VaccineRequestForm, VaccineRequestFormAdmin)

@@ -1,7 +1,7 @@
-from rest_framework import viewsets, permissions, serializers
+from rest_framework import viewsets, serializers
 from rest_framework.mixins import ListModelMixin
-from rest_framework.viewsets import GenericViewSet
 
+from iaso.api.org_unit_change_requests import HasOrgUnitsChangeRequestPermission
 from iaso.api.serializers import AppIdSerializer
 from iaso.api_filters.org_unit_change_requests import MobileOrgUnitChangeRequestListFilter
 from iaso.models import OrgUnitChangeRequest, OrgUnit
@@ -32,8 +32,8 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         ]
 
 
-class MobileOrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+class MobileOrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [HasOrgUnitsChangeRequestPermission]
     filterset_class = MobileOrgUnitChangeRequestListFilter
     serializer_class = MobileOrgUnitChangeRequestListSerializer
 

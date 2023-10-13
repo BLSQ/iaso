@@ -807,6 +807,8 @@
     "iaso.permissions.entities": "Entités",
     "iaso.permissions.forms": "Gestion des formulaires",
     "iaso.permissions.iaso_dhis2_link": "Lier avec DHIS2",
+    "iaso.permissions.iaso_org_unit_change_request": "Demande de changement d’unité d’organisation - Lecture et écriture",
+    "iaso.permissions.iaso_org_unit_change_request_approve": "Demande de changement d’unité d’organisation - Approbation",
     "iaso.permissions.iaso_entity_duplicates_read": "Doublons d’entités - Lecture seule",
     "iaso.permissions.iaso_entity_duplicates_write": "Doublons d’entités - Lecture et écriture",
     "iaso.permissions.iaso_entity_type_write": "Types d’entités",

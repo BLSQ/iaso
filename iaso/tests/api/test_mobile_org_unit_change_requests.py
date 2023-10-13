@@ -28,7 +28,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
         cls.org_unit_type = org_unit_type
         cls.user = user
 
-    def test_serialization_of_change_request(self):
+    def test_list_serializer(self):
         kwargs = {
             "org_unit": self.org_unit,
             "created_by": self.user,
@@ -81,7 +81,9 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, version=version)
 
-        user = cls.create_user_with_profile(username="user", account=account)
+        user = cls.create_user_with_profile(
+            username="user", account=account, permissions=["iaso_org_unit_change_request"]
+        )
 
         data_source.projects.set([project])
         org_unit_type.projects.set([project])
@@ -97,17 +99,20 @@ class MobileOrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(8):
-            # OrgUnit.filter_for_user_and_app_id()
-            #   1. SELECT OrgUnit
-            #   2. SELECT Project
-            #   3. SELECT Account
-            #   4. SELECT SourceVersion
-            # ViewSet.get_queryset
-            #   5. COUNT(*) OrgUnitChangeRequest
-            #   6. SELECT OrgUnitChangeRequest
-            #   7. PREFETCH OrgUnitChangeRequest.new_groups
-            #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances
+        with self.assertNumQueries(10):
+            # permission_classes
+            #   1. SELECT User perms
+            #   2. SELECT Group perms
+            # filter_for_user_and_app_id
+            #   3. SELECT OrgUnit
+            #   4. SELECT Project
+            #   5. SELECT Account
+            #   6. SELECT SourceVersion
+            # get_queryset
+            #   7. COUNT(*) OrgUnitChangeRequest
+            #   8. SELECT OrgUnitChangeRequest
+            #   9. PREFETCH OrgUnitChangeRequest.new_groups
+            #  10. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get(f"/api/mobile/orgunits/changes/?app_id={self.project.app_id}")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data))

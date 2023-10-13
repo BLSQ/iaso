@@ -25,7 +25,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
-    def test_serialization_of_change_request(self):
+    def test_list_serializer(self):
         kwargs = {
             "org_unit": self.org_unit,
             "created_by": self.user,
@@ -76,7 +76,9 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, version=version)
 
-        user = cls.create_user_with_profile(username="user", account=account)
+        user = cls.create_user_with_profile(
+            username="user", account=account, permissions=["iaso_org_unit_change_request"]
+        )
 
         data_source.projects.set([project])
         org_unit_type.projects.set([project])
@@ -92,15 +94,18 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        with self.assertNumQueries(6):
-            # OrgUnit.filter_for_user_and_app_id()
-            #   1. SELECT OrgUnit
-            # ViewSet.get_queryset
-            #   2. COUNT(*)
-            #   3. SELECT OrgUnitChangeRequest
-            #   4. PREFETCH OrgUnit.groups
-            #   5. PREFETCH OrgUnitChangeRequest.new_groups
-            #   6. PREFETCH OrgUnitChangeRequest.new_reference_instances
+        with self.assertNumQueries(8):
+            # permission_classes
+            #   1. SELECT User perms
+            #   2. SELECT Group perms
+            # filter_for_user_and_app_id
+            #   3. SELECT OrgUnit
+            # get_queryset
+            #   4. COUNT(*)
+            #   5. SELECT OrgUnitChangeRequest
+            #   6. PREFETCH OrgUnit.groups
+            #   7. PREFETCH OrgUnitChangeRequest.new_groups
+            #   8. PREFETCH OrgUnitChangeRequest.new_reference_instances
             response = self.client.get("/api/orgunits/changes/")
             self.assertJSONResponse(response, 200)
             self.assertEqual(2, len(response.data))

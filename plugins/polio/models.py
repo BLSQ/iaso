@@ -176,7 +176,7 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
-    # Deprecated.
+    # Deprecated. Cannot be deleted until the PowerBI dashboards are updated to use reason_for_delay instead
     reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
     reason_for_delay = models.ForeignKey(
         "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
@@ -187,8 +187,11 @@ class RoundDateHistoryEntry(models.Model):
 
 
 class ReasonForDelay(SoftDeletableModel):
-    name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True, "null": True}})
-    key_name = models.CharField(null=True, blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")])
+    name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True}})
+    # key_name is necessary for the current implementation of powerBi dashboards 
+    # and for the front-end to be able to prevent users from selecting "INITIAL_DATA" 
+    # when updating round dates
+    key_name = models.CharField(blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")])
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")

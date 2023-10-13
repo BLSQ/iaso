@@ -52,7 +52,10 @@ export const iasoFetch = async (
         typeof resource === 'string' ? resource : resource.url ?? resource;
     const method = init?.method ?? 'GET';
     try {
-        response = await fetch(resource, init);
+        response = await fetch(resource, {
+            ...init,
+            credentials: 'same-origin',
+        });
     } catch (error) {
         // ignoring errors from cancelled fetch
         if (error.name !== 'AbortError') {
@@ -105,7 +108,12 @@ export const basePostRequest = (
                 formData.append(key, value);
             }
         });
-        init = { method: 'POST', body: formData, signal };
+        init = {
+            method: 'POST',
+            body: formData,
+            signal,
+            credentials: 'same-origin',
+        };
     } else {
         // standard json mode
         init = {
@@ -113,6 +121,7 @@ export const basePostRequest = (
             body: JSON.stringify(data),
             headers: { 'Content-Type': 'application/json' },
             signal,
+            credentials: 'same-origin',
         };
     }
 
@@ -146,6 +155,7 @@ export const patchRequest = (
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
+        credentials: 'same-origin',
     }).then(response => response.json());
 
 export const deleteRequest = (
@@ -159,6 +169,7 @@ export const deleteRequest = (
             Accept: 'application/json',
         },
         signal,
+        credentials: 'same-origin',
     }).then(() => true);
 
 export const restoreRequest = (
@@ -172,6 +183,7 @@ export const restoreRequest = (
         }),
         headers: { 'Content-Type': 'application/json' },
         signal,
+        credentials: 'same-origin',
     }).then(() => true);
 
 export const putRequest = (
@@ -184,4 +196,5 @@ export const putRequest = (
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
+        credentials: 'same-origin',
     }).then(response => response.json());

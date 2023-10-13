@@ -42,7 +42,7 @@
         ]
     },
     "browserslist": [
-        "Chrome >= 58",
+        "Chrome >= 55",
         "Android >= 56",
         "ios_saf >= 11",
         "safari >= 11"
@@ -96,6 +96,7 @@
         "redux": "^4.0.5",
         "redux-thunk": "^2.3.0",
         "typescript": "^4.5.2",
+        "url-search-params-polyfill": "^8.2.5",
         "use-debounce": "^7.0.0",
         "video.js": "^7.20.3",
         "yup": "^0.32.9"

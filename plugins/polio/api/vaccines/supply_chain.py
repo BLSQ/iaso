@@ -1,6 +1,13 @@
 from rest_framework import serializers, viewsets
-from plugins.polio.models import VaccineRequestForm, VaccinePreAlert, VaccineArrivalReport
-from iaso.api.common import ModelViewSet
+
+from hat.menupermissions import models as permission
+from iaso.api.common import GenericReadWritePerm, ModelViewSet
+from plugins.polio.models import VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
+
+
+class VaccineRequestReadWritePerm(GenericReadWritePerm):
+    read_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_READ
+    write_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE
 
 
 class VaccineRequestFormSerializer(serializers.ModelSerializer):
@@ -22,15 +29,18 @@ class VaccineArrivalReportSerializer(serializers.ModelSerializer):
 
 
 class VaccineRequestFormViewSet(ModelViewSet):
+    permission_classes = [VaccineRequestReadWritePerm]
     queryset = VaccineRequestForm.objects.all()
     serializer_class = VaccineRequestFormSerializer
 
 
 class VaccinePreAlertViewSet(ModelViewSet):
+    permission_classes = [VaccineRequestReadWritePerm]
     queryset = VaccinePreAlert.objects.all()
     serializer_class = VaccinePreAlertSerializer
 
 
 class VaccineArrivalReportViewSet(ModelViewSet):
+    permission_classes = [VaccineRequestReadWritePerm]
     queryset = VaccineArrivalReport.objects.all()
     serializer_class = VaccineArrivalReportSerializer

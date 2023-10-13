@@ -932,6 +932,15 @@ class VaccineRequestForm(models.Model):
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
 
+    def count_pre_alerts(self):
+        return self.vaccineprealert_set.count()
+
+    def count_arrival_reports(self):
+        return self.vaccinearrivalreport_set.count()
+
+    def __str__(self):
+        return f"VFR for {self.country} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
+
 
 class VaccinePreAlert(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
@@ -948,6 +957,6 @@ class VaccinePreAlert(models.Model):
 
 
 class VaccineArrivalReport(models.Model):
-    pre_alert = models.ForeignKey(VaccinePreAlert, on_delete=models.CASCADE)
+    request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     arrival_report_date = models.DateField()  # prepolutated from pre_alert.estimated_arrival_time
     doses_received = models.PositiveIntegerField()  # prepolulated from pre_alert.doses_received

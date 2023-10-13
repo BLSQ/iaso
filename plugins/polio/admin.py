@@ -144,9 +144,6 @@ class VaccineArrivalReportAdminInline(admin.TabularInline):
 class VaccinePreAlertAdminInline(admin.TabularInline):
     model = VaccinePreAlert
     extra = 0
-    inlines = [
-        VaccineArrivalReportAdminInline,
-    ]
 
 
 class VaccineRequestFormForm(forms.ModelForm):
@@ -163,15 +160,21 @@ class VaccineRequestFormAdmin(admin.ModelAdmin):
     model = VaccineRequestForm
     form = VaccineRequestFormForm
     raw_id_fields = ("country",)
-    inlines = [
-        VaccinePreAlertAdminInline,
-    ]
+    inlines = [VaccinePreAlertAdminInline, VaccineArrivalReportAdminInline]
+    list_display = ["campaign", "country", "count_pre_alerts", "count_arrival_reports"]
+
+
+class RoundAdmin(admin.ModelAdmin):
+    model = Round
+    raw_id_fields = ("campaign",)
+    list_display = ["campaign", "number"]
+    list_filter = ["campaign"]
 
 
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
-admin.site.register(Round)
+admin.site.register(Round, RoundAdmin)
 admin.site.register(RoundDateHistoryEntry)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)

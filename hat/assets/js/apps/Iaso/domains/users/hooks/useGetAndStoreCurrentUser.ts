@@ -8,7 +8,7 @@ import { setCurrentUser } from '../actions';
 const getCurrentUser = (): Promise<Profile> => {
     return getRequest('/api/profiles/me/');
 };
-export const useGetCurrentUser = (
+export const useGetAndStoreCurrentUser = (
     enabled: boolean,
 ): UseQueryResult<Profile, Error> => {
     const queryKey: any[] = ['currentUser'];
@@ -17,7 +17,7 @@ export const useGetCurrentUser = (
     return useSnackQuery({
         queryKey,
         queryFn: () => getCurrentUser(),
-        dispatchOnError: false,
+        dispatchOnError: true,
         options: {
             onSuccess: data => {
                 dispatch(setCurrentUser(data));

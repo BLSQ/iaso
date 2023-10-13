@@ -17,7 +17,7 @@ import {
 } from '../../constants/routes';
 
 import ProtectedRoute from '../users/components/ProtectedRoute';
-import { useGetCurrentUser } from '../users/hooks/useGetCurrentUser.ts';
+import { useGetAndStoreCurrentUser } from '../users/hooks/useGetAndStoreCurrentUser.ts';
 
 const getBaseRoutes = (plugins, hasNoAccount) => {
     const routesWithAccount = [
@@ -84,7 +84,7 @@ export default function App({ history, userHomePage, plugins }) {
             ? overrideLandingRoutes[overrideLandingRoutes.length - 1]
             : undefined;
     }, [plugins]);
-    const { data: currentUser } = useGetCurrentUser(
+    const { data: currentUser } = useGetAndStoreCurrentUser(
         !currentRoute?.allowAnonymous,
     );
     // routes should only change id currentUser has changed

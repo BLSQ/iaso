@@ -112,7 +112,6 @@ export const basePostRequest = (
             method: 'POST',
             body: formData,
             signal,
-            credentials: 'same-origin',
         };
     } else {
         // standard json mode
@@ -121,7 +120,6 @@ export const basePostRequest = (
             body: JSON.stringify(data),
             headers: { 'Content-Type': 'application/json' },
             signal,
-            credentials: 'same-origin',
         };
     }
 
@@ -155,7 +153,6 @@ export const patchRequest = (
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
-        credentials: 'same-origin',
     }).then(response => response.json());
 
 export const deleteRequest = (
@@ -169,7 +166,6 @@ export const deleteRequest = (
             Accept: 'application/json',
         },
         signal,
-        credentials: 'same-origin',
     }).then(() => true);
 
 export const restoreRequest = (
@@ -183,7 +179,6 @@ export const restoreRequest = (
         }),
         headers: { 'Content-Type': 'application/json' },
         signal,
-        credentials: 'same-origin',
     }).then(() => true);
 
 export const putRequest = (
@@ -196,5 +191,4 @@ export const putRequest = (
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
-        credentials: 'same-origin',
     }).then(response => response.json());

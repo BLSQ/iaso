@@ -93,7 +93,6 @@ export const basePostRequest = (url, data, fileData = {}, signal) => {
             body: JSON.stringify(data),
             headers: { 'Content-Type': 'application/json' },
             signal,
-            credentials: 'same-origin',
         };
     }
 
@@ -118,7 +117,6 @@ export const patchRequest = (url, data, signal) =>
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
-        credentials: 'same-origin',
     }).then(response => response.json());
 
 export const deleteRequest = (url, signal) =>
@@ -129,7 +127,6 @@ export const deleteRequest = (url, signal) =>
             Accept: 'application/json',
         },
         signal,
-        credentials: 'same-origin',
     }).then(() => true);
 
 export const restoreRequest = (url, signal) =>
@@ -140,7 +137,6 @@ export const restoreRequest = (url, signal) =>
         }),
         headers: { 'Content-Type': 'application/json' },
         signal,
-        credentials: 'same-origin',
     }).then(() => true);
 
 export const putRequest = (url, data, signal) =>
@@ -149,5 +145,4 @@ export const putRequest = (url, data, signal) =>
         body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
         signal,
-        credentials: 'same-origin',
     }).then(response => response.json());

@@ -183,3 +183,4 @@ originals
 
 *.code-workspace
 /setuper/credentials.py
+/setuper/generated/

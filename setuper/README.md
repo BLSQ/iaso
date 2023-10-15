@@ -1,7 +1,7 @@
 Iaso Demo Setup script
 ----------------------
 
-#Introduction 
+# Introduction 
 The setuper.py script exists to help users or developer kickstart a fully working Iaso environment. 
 
 It will:
@@ -11,7 +11,7 @@ It will:
 - import a test form
 - create a few submissions of this form 
 
-Once the script has run, you can login to your server using the account name as login and password. 
+Once the script has run, you can log in to your server using the account name as login and password. 
 
 # How To Use
 

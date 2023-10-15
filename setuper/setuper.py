@@ -56,19 +56,18 @@ def setup_orgunits(account_name):
 
     geopackage_file = {"file": (test_file, open(test_file, "rb"), "application/octet-stream")}
     r = requests.post(launch_geopackage_import_url, files=geopackage_file, data=data, headers=headers)
-    print("Importing org units")
+    print("-- Importing org units")
 
     count = 0
     imported = False
     while not imported and count < 120:
         r = requests.get(API_URL + "tasks/", headers=headers)
-        print("Waiting:", count, "s elapsed")
+
         task = r.json()["tasks"][0]
         imported = task["status"] == "SUCCESS"
         time.sleep(5)
         count += 5
-
-    print("Importing done")
+        print("\tWaiting:", count, "s elapsed")
 
     r = requests.get(API_URL + "datasources/", headers=headers)
 
@@ -85,7 +84,7 @@ def setup_orgunits(account_name):
 
 
 def setup_instances(account_name):
-    print("Setting up a form")
+    print("-- Setting up a form")
     headers = get_auth_headers(account_name, account_name)
 
     r = requests.get(API_URL + "projects/", headers=headers)
@@ -179,6 +178,9 @@ def setup_instances(account_name):
 
         with open(local_path) as fp:
             r = requests.post(UPLOAD_URL, files={"xml_submission_file": fp})
+        count = count + 1
+        if count % 5 == 0:
+            print("\t%d submissions done" % count)
 
 
 if __name__ == "__main__":
@@ -190,4 +192,7 @@ if __name__ == "__main__":
     setup_account(account_name)
     setup_orgunits(account_name)
     setup_instances(account_name)
+    print("-----------------------------------------------")
     print("Account created:", account_name)
+    print("Login at %s with\n\tlogin: %s \n\tpassword: %s" % (SERVER, account_name, account_name))
+    print("-----------------------------------------------")

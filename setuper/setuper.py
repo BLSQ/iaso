@@ -130,14 +130,22 @@ def setup_instances(account_name):
     f = open("data/instance.xml", "r")
     xml = f.read()
     f.close()
+    limit = 20
+    url = API_URL + "orgunits/?limit=%d&orgUnitTypeId=%d" % (limit, hf_out["id"])
 
-    url = API_URL + "orgunits/?limit=20&orgUnitTypeId=%d" % hf_out["id"]
-    print("Waiting 10 secondes before calling ", url)
-    time.sleep(10)  # instead of doing this, we should loop and wait until there are more than 0 org units
-    re = requests.get(url, headers=headers)
-    print(url, re, re.text)
-    org_unit_ids = [ou["id"] for ou in re.json()["orgunits"]]
+    org_unit_ids = []
 
+    print("-- Downloading org units")
+    seconds = 0
+    # we need to wait for org units to appear in the API before continuing
+    while len(org_unit_ids) == 0 and seconds <= 30:
+        time.sleep(2)
+        seconds += 2
+        re = requests.get(url, headers=headers)
+        org_unit_ids = [ou["id"] for ou in re.json()["orgunits"]]
+
+    print("-- Submitting %d form instances" % limit)
+    count = 0
     for org_unit_id in org_unit_ids:
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid

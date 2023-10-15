@@ -74,4 +74,12 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Modules do not exist',
         id: 'iaso.setup.modulesNotExist',
     },
+    modules: {
+        defaultMessage: 'Modules',
+        id: 'iaso.modules.title',
+    },
+    modulesDropDownError: {
+        defaultMessage: 'An error occurred while fetching modules',
+        id: 'iaso.snackBar.fetchModules',
+    },
 });

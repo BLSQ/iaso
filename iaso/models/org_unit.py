@@ -275,6 +275,7 @@ class OrgUnit(TreeModel):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    extra_fields = models.JSONField(default=dict)
 
     objects = OrgUnitManager()  # type: ignore
 

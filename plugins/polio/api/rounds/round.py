@@ -6,14 +6,23 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
-from iaso.api.common import HasPermission, ModelViewSet
+from iaso.api.common import HasPermission, ModelViewSet, UserSerializer
 from plugins.polio.api.shared_serializers import (
     DestructionSerializer,
     GroupSerializer,
-    RoundDateHistoryEntrySerializer,
+    RoundDateHistoryEntryForRoundSerializer,
     RoundVaccineSerializer,
 )
-from plugins.polio.models import Destruction, Round, RoundDateHistoryEntry, RoundScope, RoundVaccine, Shipment, Campaign
+from plugins.polio.models import (
+    Destruction,
+    ReasonForDelay,
+    Round,
+    RoundDateHistoryEntry,
+    RoundScope,
+    RoundVaccine,
+    Shipment,
+    Campaign,
+)
 from plugins.polio.preparedness.summary import set_preparedness_cache_for_round
 
 
@@ -49,7 +58,7 @@ class RoundSerializer(serializers.ModelSerializer):
     vaccines = RoundVaccineSerializer(many=True, required=False)
     shipments = ShipmentSerializer(many=True, required=False)
     destructions = DestructionSerializer(many=True, required=False)
-    datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
+    datelogs = RoundDateHistoryEntryForRoundSerializer(many=True, required=False)
     districts_count_calculated = serializers.IntegerField(read_only=True)
 
     # Vaccines from real scopes, from property, separated by ,
@@ -64,12 +73,15 @@ class RoundSerializer(serializers.ModelSerializer):
         destructions = validated_data.pop("destructions", [])
         started_at = validated_data.get("started_at", None)
         ended_at = validated_data.get("ended_at", None)
-        datelogs = validated_data.get("datelogs", None)
+        datelogs = validated_data.pop("datelogs", None)
         if datelogs:
             raise serializers.ValidationError({"datelogs": "Cannot have modification history for new round"})
         round = Round.objects.create(**validated_data)
         if started_at is not None or ended_at is not None:
-            datelog = RoundDateHistoryEntry.objects.create(round=round, reason="INITIAL_DATA", modified_by=user)
+            reason_for_delay = ReasonForDelay.objects.filter(key_name="INITIAL_DATA").first()
+            datelog = RoundDateHistoryEntry.objects.create(
+                round=round, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
+            )
             if started_at is not None:
                 datelog.started_at = started_at
             if ended_at is not None:
@@ -87,12 +99,8 @@ class RoundSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get("request")
         user = request.user
+        account = user.iaso_profile.account
         updated_datelogs = validated_data.pop("datelogs", [])
-        # from pprint import pprint
-
-        # print("DATELOGS")
-        # pprint(validated_data)
-        # pprint(self.data)
 
         has_datelog = instance.datelogs.count() > 0
         if updated_datelogs:
@@ -106,15 +114,32 @@ class RoundSerializer(serializers.ModelSerializer):
                     new_datelog["previous_started_at"] = last_entry.started_at
                     new_datelog["previous_ended_at"] = last_entry.ended_at
                 if (
-                    new_datelog["reason"] != last_entry.reason
+                    new_datelog["reason_for_delay"].id != last_entry.reason_for_delay.id
                     or new_datelog["started_at"] != last_entry.started_at
                     or new_datelog["ended_at"] != last_entry.ended_at
-                ) and new_datelog["reason"] != "INITIAL_DATA":
+                ) and new_datelog[
+                    "reason_for_delay"
+                ].key_name != "INITIAL_DATA":  # INITAL_DATA should prolly be put in a const somewhere
                     datelog = RoundDateHistoryEntry.objects.create(round=instance, modified_by=user)
             else:
-                datelog = RoundDateHistoryEntry.objects.create(round=instance, reason="INITIAL_DATA", modified_by=user)
+                try:
+                    reason_for_delay = ReasonForDelay.objects.filter(account=account).get(key_name="INITIAL_DATA")
+                except ReasonForDelay.DoesNotExist:
+                    # Fallback on first reason available for account
+                    reason_for_delay = ReasonForDelay.filter(account=account).first()
+                datelog = RoundDateHistoryEntry.objects.create(
+                    round=instance, reason="INITIAL_DATA", reason_for_delay=reason_for_delay, modified_by=user
+                )
             if datelog is not None:
-                datelog_serializer = RoundDateHistoryEntrySerializer(instance=datelog, data=new_datelog)
+                # Replace instance with key_name to avoid validation error
+                # Because the serializer is nested, and data is converted at every level of nesting
+                # datelog["reason_for_delay"] is the ReasonForDelay instance, and not the  key_name that was passed by the front-end
+                # So we have to extract the key_name from the instance and re-pass it to the serializer, otherwise we get an error
+                datelog_serializer = RoundDateHistoryEntryForRoundSerializer(
+                    instance=datelog,
+                    data={**new_datelog, "reason_for_delay": new_datelog["reason_for_delay"].key_name},
+                    context=self.context,
+                )
                 datelog_serializer.is_valid(raise_exception=True)
                 datelog_instance = datelog_serializer.save()
                 instance.datelogs.add(datelog_instance)
@@ -207,7 +232,7 @@ class LqasDistrictsUpdateSerializer(serializers.Serializer):
 
 
 @swagger_auto_schema(tags=["rounds"], request_body=LqasDistrictsUpdateSerializer)
-class RoundViewset(ModelViewSet):
+class RoundViewSet(ModelViewSet):
     # Patch should be in the list to allow updatelqasfields to work
     http_method_names = ["patch"]
     permission_classes = [HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore

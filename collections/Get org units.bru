@@ -1,0 +1,19 @@
+meta {
+  name: Get org units
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/api/orgunits/?limit=10
+  body: none
+  auth: bearer
+}
+
+query {
+  limit: 10
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

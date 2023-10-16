@@ -1,0 +1,23 @@
+meta {
+  name: Create API Token
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/token/
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+      "username": "{{username}}",
+      "password": "{{password}}"
+  }
+}
+
+script:post-response {
+  bru.setEnvVar("accessToken", res.body.access)
+  bru.setEnvVar("refreshToken", res.body.refresh)
+}

@@ -1,0 +1,23 @@
+meta {
+  name: Update org unit
+  type: http
+  seq: 3
+}
+
+patch {
+  url: {{baseUrl}}/api/orgunits/1/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "extra_fields": {
+      "contact_emails": ["bram@periplo.io"]
+    }
+  }
+}

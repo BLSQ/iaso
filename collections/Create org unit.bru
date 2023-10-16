@@ -1,0 +1,27 @@
+meta {
+  name: Create org unit
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/orgunits/create_org_unit/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Bramtown",
+    "parent_id": 3,
+    "org_unit_type_id": 11,
+    "validation_status": "VALID",
+    "extra_fields": {
+      "contact_emails": ["bram@periplo.io"]
+    }
+  }
+}

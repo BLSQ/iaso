@@ -196,6 +196,7 @@ class OrgUnitSearchSerializer(OrgUnitSerializer):
             "updated_at",
             "groups",
             "creator",
+            "extra_fields"
         ]
 
 

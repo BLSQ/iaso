@@ -1285,7 +1285,7 @@ class Profile(models.Model):
             "permissions": permissions,
             "user_permissions": user_permissions,
             "is_superuser": self.user.is_superuser,
-            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+            "org_units": [o.as_dict_for_profile() for o in self.org_units.all().order_by("name")],
             "user_roles": list(role.id for role in user_roles),
             "user_roles_permissions": list(role.as_dict() for role in user_roles),
             "language": self.language,

@@ -78,7 +78,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         which all the power should be really specified.
 
         Can serve these formats, depending on the combination of GET Parameters:
-         * Simple JSON (default) -> as_dict_for_mobile
+         * Simple JSON (default) -> as_small_dict
          * Paginated JSON (if a `limit` is passed) -> OrgUnitSearchSerializer
          * Paginated JSON with less info (if both `limit` and `smallSearch` are passed) -> OrgUnitSmallSearchSerializer
          * GeoJson with the geo info (if `withShapes` is passed` ) -> as_dict
@@ -190,7 +190,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")
-                return Response({"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]})
+                return Response({"orgUnits": [unit.as_small_dict() for unit in queryset]})
         elif gpkg_format:
             user_account_name = profile.account.name if profile else ""
             environment = settings.ENVIRONMENT

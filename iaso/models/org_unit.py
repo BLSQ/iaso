@@ -353,19 +353,7 @@ class OrgUnit(TreeModel):
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
 
-    def as_dict_for_mobile_lite(self):
-        return {
-            "n": self.name,
-            "id": self.id,
-            "p": self.parent_id,
-            "out": self.org_unit_type_id,
-            "c_a": self.created_at.timestamp() if self.created_at else None,
-            "lat": self.location.y if self.location else None,
-            "lon": self.location.x if self.location else None,
-            "alt": self.location.z if self.location else None,
-        }
-
-    def as_dict_for_mobile(self):
+    def as_small_dict(self):
         return {
             "name": self.name,
             "id": self.id,
@@ -450,7 +438,7 @@ class OrgUnit(TreeModel):
 
         return res
 
-    def as_small_dict(self):
+    def as_dict_for_profile(self):
         res = {
             "name": self.name,
             "id": self.id,
@@ -459,7 +447,7 @@ class OrgUnit(TreeModel):
             "parent_name": self.parent.name if self.parent else None,
             "source": self.version.data_source.name if self.version else None,
             "source_ref": self.source_ref,
-            "parent": self.parent.as_small_dict() if self.parent else None,
+            "parent": self.parent.as_dict_for_profile() if self.parent else None,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
         }
         if hasattr(self, "search_index"):

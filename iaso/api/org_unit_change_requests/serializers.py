@@ -1,11 +1,13 @@
 from rest_framework import serializers
 
+from iaso.api.org_unit_change_requests.fields import ThreeDimPointField
 from iaso.models import OrgUnitChangeRequest
 
 
 class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
     org_unit_id = serializers.IntegerField(source="org_unit.id")
     org_unit_uuid = serializers.UUIDField(source="org_unit.uuid")
+    new_location = ThreeDimPointField()
 
     class Meta:
         model = OrgUnitChangeRequest

@@ -59,7 +59,11 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "new_name": "",
                 "new_org_unit_type_id": self.org_unit_type.pk,
                 "new_groups": [new_group.pk],
-                "new_location": "SRID=4326;POINT Z (-2.4747713 47.3358576 1.3358576)",
+                "new_location": {
+                    "latitude": 47.3358576,
+                    "longitude": -2.4747713,
+                    "altitude": 1.3358576,
+                },
                 "new_accuracy": None,
                 "new_reference_instances": [new_instance.pk],
             },

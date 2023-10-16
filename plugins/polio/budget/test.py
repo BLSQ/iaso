@@ -9,10 +9,11 @@ from django.http import HttpResponse
 from django.template import Engine, Context
 from rest_framework import status
 
+from iaso.models import Team, Account
 from iaso.test import APITestCase
-from plugins.polio.budget.models import BudgetStep, MailTemplate
+from plugins.polio.budget.models import BudgetStep, MailTemplate, BudgetProcess
 from plugins.polio.budget.workflow import Transition, Node, Workflow
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 
 # Hardcoded workflow for testing.
 
@@ -475,3 +476,92 @@ class TeamAPITestCase(APITestCase):
         self.assertEqual(r["Content-Type"], "text/csv")
         d = bs.created_at.strftime("%Y-%m-%d")
         self.assertEqual(r.content.decode(), f"Last update\r\n{d}\r\n")
+
+
+class BudgetProcessAPITestCase(APITestCase):
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.account = Account.objects.create(name="test")
+        cls.test_user = cls.create_user_with_profile(
+            username="test_user", account=cls.account, permissions=["iaso_polio_budget"]
+        )
+        cls.test_user_no_permission = cls.create_user_with_profile(
+            username="test_user_no_permission", account=cls.account
+        )
+
+        cls.campaign_1 = Campaign.objects.create(obr_name="test campaign", account=cls.test_user.iaso_profile.account)
+        cls.rounds_0 = Round.objects.create(campaign=cls.campaign_1)
+        cls.rounds_1 = Round.objects.create(campaign=cls.campaign_1)
+        cls.rounds_2 = Round.objects.create(campaign=cls.campaign_1)
+
+        cls.campaign_2 = Campaign.objects.create(obr_name="test campaign_2", account=cls.test_user.iaso_profile.account)
+
+        cls.project1 = cls.account.project_set.create(name="project1")
+        cls.team1 = Team.objects.create(project=cls.project1, name="budget_test_team", manager=cls.test_user)
+        cls.team1.users.set([cls.test_user])
+
+    def test_post_process(self):
+        self.client.force_authenticate(self.test_user)
+
+        data = {
+            "created_by": self.test_user.pk,
+            "created_by_team": self.team1.pk,
+            "rounds": [self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk],
+            "teams": self.team1.pk,
+        }
+
+        response = self.client.post("/api/polio/budgetprocesses/", data=data)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.data["rounds"], [self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk])
+
+    def test_get_process(self):
+        self.client.force_authenticate(self.test_user)
+
+        process = BudgetProcess.objects.create(
+            created_by=self.test_user,
+            created_by_team=self.team1,
+        )
+        process.rounds.set([self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk])
+        process.teams.set([self.team1.pk])
+
+        response = self.client.get("/api/polio/budgetprocesses/")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.data[0]["rounds"], [self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk])
+
+    def test_user_need_permission(self):
+        self.client.force_authenticate(self.test_user_no_permission)
+
+        process = BudgetProcess.objects.create(
+            created_by=self.test_user,
+            created_by_team=self.team1,
+        )
+        process.rounds.set([self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk])
+        process.teams.set([self.team1.pk])
+
+        response = self.client.get("/api/polio/budgetprocesses/")
+
+        self.assertEqual(response.status_code, 403)
+
+    def test_cant_assign_same_round_to_multiple_processes(self):
+        self.client.force_authenticate(self.test_user)
+
+        process = BudgetProcess.objects.create(
+            created_by=self.test_user,
+            created_by_team=self.team1,
+        )
+        process.rounds.set([self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk])
+        process.teams.set([self.team1.pk])
+
+        data = {
+            "created_by": self.test_user.pk,
+            "created_by_team": self.team1.pk,
+            "rounds": [self.rounds_0.pk, self.rounds_1.pk, self.rounds_2.pk],
+            "teams": self.team1.pk,
+        }
+
+        response = self.client.post("/api/polio/budgetprocesses/", data=data)
+
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.data["rounds"][0], "A BudgetProcess with the same Round(s) already exists.")

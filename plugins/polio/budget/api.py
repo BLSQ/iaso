@@ -1,5 +1,6 @@
 from typing import Type
-from django.db.models import QuerySet, Max
+
+from django.db.models import QuerySet, Max, Subquery, OuterRef
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
@@ -10,8 +11,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 
-from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission
-from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile
+from iaso.api.common import CSVExportMixin, ModelViewSet, DeletionFilterBackend, HasPermission, Paginator
+from plugins.polio.budget.models import BudgetStep, MailTemplate, get_workflow, BudgetStepFile, BudgetProcess
 from plugins.polio.budget.serializers import (
     CampaignBudgetSerializer,
     ExportCampaignBudgetSerializer,
@@ -20,6 +21,7 @@ from plugins.polio.budget.serializers import (
     UpdateBudgetStepSerializer,
     WorkflowSerializer,
     TransitionOverrideSerializer,
+    BudgetProcessSerializer,
 )
 from iaso.api.common import CustomFilterBackend
 from plugins.polio.models import Campaign
@@ -54,7 +56,11 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
     def get_queryset(self) -> QuerySet:
         user = self.request.user
-        campaigns = Campaign.objects.filter_for_user(user)
+        campaigns_with_budget_process = Campaign.objects.filter(
+            rounds__in=Subquery(BudgetProcess.objects.filter(rounds__campaign=OuterRef("pk")).values("rounds"))
+        )
+        # Filter the campaigns based on the user and the subquery
+        campaigns = Campaign.objects.filter_for_user(user).filter(pk__in=campaigns_with_budget_process)
         campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))
         return campaigns
 
@@ -212,3 +218,24 @@ class WorkflowViewSet(ViewSet):
         except Exception as e:
             return Response({"error": "Error getting workflow", "details": str(e)})
         return Response(WorkflowSerializer(workflow).data)
+
+
+@swagger_auto_schema(tags=["budget_process"])
+class BudgetProcessViewset(ModelViewSet):
+    """
+    Endpoint that allows to handle multiples rounds per Budget.
+    """
+
+    permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
+    serializer_class = BudgetProcessSerializer
+    http_method_names = ["get", "head", "delete", "patch", "post"]
+    ordering_fields = ["created_at", "updated_at", "rounds", "teams"]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, DeletionFilterBackend]
+    results_key = "results"
+    remove_results_key_if_paginated = True
+    pagination_class = Paginator
+
+    def get_queryset(self):
+        queryset = BudgetProcess.objects.filter(teams__users=self.request.user)
+
+        return queryset

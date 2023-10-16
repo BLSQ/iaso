@@ -7,12 +7,20 @@ from django.db import transaction
 from drf_yasg.utils import swagger_serializer_method
 from rest_framework import serializers
 
-from iaso.api.common import DynamicFieldsModelSerializer
+from iaso.api.common import DynamicFieldsModelSerializer, TimestampField
 from iaso.models.microplanning import Team
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 from plugins.polio.api.campaigns.campaigns import CampaignSerializer
 from plugins.polio.api.shared_serializers import UserSerializer
-from .models import BudgetStep, BudgetStepFile, BudgetStepLink, model_field_exists, send_budget_mails, get_workflow
+from .models import (
+    BudgetStep,
+    BudgetStepFile,
+    BudgetStepLink,
+    model_field_exists,
+    send_budget_mails,
+    get_workflow,
+    BudgetProcess,
+)
 from .workflow import next_transitions, can_user_transition, Category, effective_teams
 
 
@@ -70,6 +78,12 @@ class TimelineSerializer(serializers.Serializer):
     categories = CategorySerializer(many=True)
 
 
+class RoundSerializerForProcesses(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ["id", "number"]
+
+
 # noinspection PyMethodMayBeStatic
 class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer):
     class Meta:
@@ -86,6 +100,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "cvdpv2_notified_at",
             "possible_transitions",
             "timeline",
+            "processes",
         ]
         default_fields = [
             "created_at",
@@ -94,6 +109,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
             "country_name",
             "current_state",
             "budget_last_updated_at",
+            "processes",
         ]
 
     # added via annotation
@@ -103,12 +119,18 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
     possible_states = serializers.SerializerMethodField()
     possible_transitions = serializers.SerializerMethodField()
     timeline = serializers.SerializerMethodField()
+    processes = serializers.SerializerMethodField()
 
     next_transitions = serializers.SerializerMethodField()
     # will need to use country__name for sorting
     country_name: serializers.SlugRelatedField = serializers.SlugRelatedField(
         source="country", slug_field="name", read_only=True
     )
+
+    @staticmethod
+    def get_processes(campaign: Campaign):
+        processes = BudgetProcess.objects.filter(rounds__campaign=campaign)
+        return ProcessesForCampaignBudgetSerializer(processes, many=True).data
 
     def get_current_state(self, campaign: Campaign):
         workflow = get_workflow()
@@ -622,3 +644,49 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
         if campaign.budget_last_updated_at:
             return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
+
+
+class RoundSerializerForProcesses(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ["id", "number"]
+
+
+class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):
+    rounds = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BudgetProcess
+        fields = ["id", "rounds", "teams"]
+
+    @staticmethod
+    def get_rounds(obj):
+        return [c_round.number for c_round in obj.rounds.all()]
+
+
+class BudgetProcessSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetProcess
+        fields = ["id", "created_at", "updated_at", "rounds", "teams"]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+
+    def create(self, validated_data):
+        user = self.context["request"].user
+        validated_data["created_by"] = user
+        instance = super(BudgetProcessSerializer, self).create(validated_data)
+
+        return instance
+
+    def validate_rounds(self, value):
+        # Check if a BudgetProcess with the same round(s) already exists
+        if self.instance and self.instance.pk:
+            existing_budget_processes = BudgetProcess.objects.exclude(pk=self.instance.pk).filter(rounds__in=value)
+        else:
+            existing_budget_processes = BudgetProcess.objects.filter(rounds__in=value)
+
+        if existing_budget_processes.exists():
+            raise serializers.ValidationError("A BudgetProcess with the same Round(s) already exists.")
+
+        return value

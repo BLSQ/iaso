@@ -137,7 +137,7 @@ const OrgUnitDetail = ({ params, router }) => {
     const {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
-    } = useGetValidationStatus(true);
+    } = useGetValidationStatus(true, tab === 'children');
 
     const title = useMemo(() => {
         if (isNewOrgunit) {
@@ -251,12 +251,14 @@ const OrgUnitDetail = ({ params, router }) => {
         isFetchingDetail,
         isFetchingOrgUnitTypes,
         isFetchingGroups,
+        isFetchingProfiles,
         parentOrgUnit,
     } = useOrgUnitDetailData(
         isNewOrgunit,
         params.orgUnitId,
         setCurrentOrgUnit,
         params.levels,
+        tab,
     );
 
     const goToRevision = useCallback(
@@ -427,7 +429,6 @@ const OrgUnitDetail = ({ params, router }) => {
                 )}
             </TopBar>
 
-            {/* there is already a loader on SingleTable for the other tabs */}
             {(isFetchingDetail || isFetchingDatas || savingOu) &&
                 (tab === 'infos' || tab === 'map' || tab === 'comments') && (
                     <LoadingSpinner />
@@ -590,6 +591,7 @@ const OrgUnitDetail = ({ params, router }) => {
                                         profiles,
                                         algorithms,
                                         sources,
+                                        isFetchingProfiles,
                                     )}
                                     params={params}
                                     paramsPrefix="linksParams"

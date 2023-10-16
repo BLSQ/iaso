@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.fields import Field
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from hat.audit.audit_mixin import AuditMixin
 from iaso.permissions import ReadOnly
 
 from hat.audit.models import Modification
@@ -189,53 +190,6 @@ class TeamAncestorFilterBackend(filters.BaseFilterBackend):
         return queryset
 
 
-class AuditMixin:
-    audit_serializer: serializers.ModelSerializer
-
-    def perform_create(self, serializer):
-        # noinspection PyUnresolvedReferences
-        super().perform_create(serializer)
-        instance = serializer.instance
-
-        serialized = [self.audit_serializer(instance).data]
-        Modification.objects.create(
-            user=self.request.user,
-            past_value=[],
-            new_value=serialized,
-            content_object=instance,
-            source="API " + self.request.method + self.request.path,
-        )
-
-    def perform_update(self, serializer):
-        instance = serializer.instance
-        old_value = [self.audit_serializer(instance).data]
-        # noinspection PyUnresolvedReferences
-        super().perform_update(serializer)
-        instance = serializer.instance
-        new_value = [self.audit_serializer(instance).data]
-        Modification.objects.create(
-            user=self.request.user,
-            past_value=old_value,
-            new_value=new_value,
-            content_object=instance,
-            source="API " + self.request.method + self.request.path,
-        )
-
-    def perform_destroy(self, instance):
-        old_value = [self.audit_serializer(instance).data]
-        # noinspection PyUnresolvedReferences
-        super().perform_destroy(instance)
-        # for soft delete, we still have an existing instance
-        new_value = [self.audit_serializer(instance).data]
-        Modification.objects.create(
-            user=self.request.user,
-            past_value=old_value,
-            new_value=new_value,
-            content_object=instance,
-            source=f"API {self.request.method} {self.request.path}",
-        )
-
-
 class TeamViewSet(AuditMixin, ModelViewSet):
     """Api for teams
 
@@ -354,11 +308,14 @@ class PlanningSearchFilterBackend(filters.BaseFilterBackend):
 class PublishingStatusFilterBackend(filters.BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
         status = request.query_params.get("publishing_status", "all")
+        form_ids = request.query_params.get("form_ids", None)
 
         if status == "draft":
             queryset = queryset.filter(published_at__isnull=True)
         if status == "published":
             queryset = queryset.exclude(published_at__isnull=True)
+        if form_ids:
+            queryset = queryset.filter(forms__id__in=form_ids.split(","))
         return queryset
 
 

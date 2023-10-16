@@ -35,6 +35,7 @@ export const RoundDatesHistoryTable: FunctionComponent<Props> = ({
     const { data: datelogs, isFetching } = useGetRoundDatesHistory(urlParams);
 
     return (
+        // @ts-ignore
         <Table
             onTableParamsChange={onTableParamsChange}
             params={tableParams}

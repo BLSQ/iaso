@@ -66,7 +66,10 @@ def find_lqas_im_campaign(campaigns, today, country, round_number: Optional[int]
     return None
 
 
-def find_campaign_on_day(campaigns, day):
+def find_campaign_on_day(campaigns, day, response_id=None):
+    exact_match = campaigns.filter(obr_name=response_id).first()
+    if exact_match:
+        return exact_match
     for c in campaigns:
         if not c.start_date:
             continue
@@ -185,7 +188,7 @@ def calculate_country_status(country_data, scope, roundNumber):
     if len(country_data.get("rounds", [])) == 0:
         # TODO put in an enum
         return LQASStatus.InScope
-    if scope.count() == 0:
+    if len(scope) == 0:
         return LQASStatus.InScope
     data_for_round = get_data_for_round(country_data, roundNumber)
     district_statuses = [
@@ -196,7 +199,7 @@ def calculate_country_status(country_data, scope, roundNumber):
     aggregated_statuses = reduce(reduce_to_country_status, district_statuses, {})
     if aggregated_statuses.get("total", 0) == 0:
         return LQASStatus.InScope
-    passing_ratio = round((aggregated_statuses["passed"] * 100) / scope.count())
+    passing_ratio = round((aggregated_statuses["passed"] * 100) / len(scope))
     if passing_ratio >= 80:
         return LQASStatus.Pass
     return LQASStatus.Fail

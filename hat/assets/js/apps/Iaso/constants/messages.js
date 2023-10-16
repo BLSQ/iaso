@@ -162,8 +162,12 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.beneficiaries',
     },
     storages: {
-        defaultMessage: 'Storages',
+        defaultMessage: 'External storage',
         id: 'iaso.label.storages',
+    },
+    storages_tooltip: {
+        defaultMessage: 'NFC cards data management',
+        id: 'iaso.label.tooltip.storages',
     },
     registry: {
         defaultMessage: 'Registry',

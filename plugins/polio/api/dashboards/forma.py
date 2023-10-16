@@ -1,5 +1,5 @@
 import operator
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 from functools import lru_cache, reduce
 from logging import getLogger
 from typing import Any, Callable, Dict, Optional
@@ -113,7 +113,7 @@ def find_campaign_orgunits(campaign_find_func, campaign, *args):
     if pd.isna(campaign):
         return
     if not campaign_find_func.get(campaign.pk):
-        if not campaign.get_all_districts().count() > 0:
+        if not campaign.get_all_districts_qs().count() > 0:
             campaign_find_func[campaign.pk] = lambda *x: None
         campaign_find_func[campaign.pk] = make_find_orgunit_for_campaign(campaign)
     return campaign_find_func[campaign.pk](*args)
@@ -231,9 +231,10 @@ def fetch_and_match_forma_data(country_id=None):
 
 def get_forma_scope_df(campaigns):
     scope_dfs = []
+    one_year_ago = datetime.utcnow() - timedelta(weeks=52)
     for campaign in campaigns:
-        for round in campaign.rounds.all():
-            districts = campaign.get_districts_for_round(round)
+        for round in campaign.rounds.filter(started_at__gte=one_year_ago):
+            districts = campaign.get_districts_for_round_qs(round)
 
             if districts.count() == 0:
                 logger.info(f"skipping {campaign}, no scope")

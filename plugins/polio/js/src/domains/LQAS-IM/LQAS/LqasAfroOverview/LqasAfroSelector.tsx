@@ -6,6 +6,7 @@ import {
     Radio,
     RadioGroup,
 } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { useOptions } from './utils';
 import MESSAGES from '../../../../constants/messages';
@@ -29,6 +30,7 @@ export const LqasAfroSelector: FunctionComponent<Props> = ({
     side,
 }) => {
     const options = useOptions();
+    const { formatMessage } = useSafeIntl();
     const shapeKey =
         side === 'left' ? 'displayedShapesLeft' : 'displayedShapesRight';
     return (
@@ -59,12 +61,16 @@ export const LqasAfroSelector: FunctionComponent<Props> = ({
                             <FormControlLabel
                                 value="country"
                                 control={<Radio color="primary" />}
-                                label="COUNTRY"
+                                label={formatMessage(
+                                    MESSAGES.country,
+                                ).toUpperCase()}
                             />
                             <FormControlLabel
                                 value="district"
                                 control={<Radio color="primary" />}
-                                label="DISTRICT"
+                                label={formatMessage(
+                                    MESSAGES.district,
+                                ).toUpperCase()}
                             />
                         </RadioGroup>
                     </Box>

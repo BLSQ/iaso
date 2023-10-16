@@ -837,6 +837,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.failed',
         defaultMessage: 'Failed',
     },
+    inScope: {
+        id: 'iaso.polio.label.inScope',
+        defaultMessage: 'No data found',
+    },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',
         defaultMessage: 'Districts not found',
@@ -2226,6 +2230,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.CAMPAIGN_MOVED_FORWARD_BY_MOH',
         defaultMessage: 'Campaign moved forward by MOH',
     },
+    VRF_NOT_SIGNED: {
+        id: 'iaso.polio.label.VRF_NOT_SIGNED',
+        defaultMessage: 'VRF not signed',
+    },
+    FOUR_WEEKS_GAP_BETWEEN_ROUNDS: {
+        id: 'iaso.polio.label.FOUR_WEEKS_GAP_BETWEEN_ROUNDS',
+        defaultMessage: 'Four weeks gap between rounds to be respected',
+    },
+    OTHER_VACCINATION_CAMPAIGNS: {
+        id: 'iaso.polio.label.OTHER_VACCINATION_CAMPAIGNS',
+        defaultMessage: 'Other vaccination campaigns',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',
@@ -2354,9 +2370,17 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.error.dateForExpired',
         defaultMessage: 'Expired authorisations can only have past dates',
     },
+    startDateAfterExpiration: {
+        id: 'iaso.polio.error.startDateAfterExpiration',
+        defaultMessage: 'Start date must be anterior to expiration date',
+    },
     mostRecentAuthStatus: {
         id: 'iaso.polio.table.label.mostRecentAuthStatus',
         defaultMessage: 'Most recent authorisation status',
+    },
+    vaccineAuthStartDate: {
+        id: 'iaso.polio.table.label.vaccineAuthStartDate',
+        defaultMessage: 'Start Date',
     },
     afroMapfilterInfo: {
         id: 'iaso.polio.label.afroMapfilterInfo',
@@ -2402,6 +2426,43 @@ const MESSAGES = defineMessages({
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',
+    },
+    reasonsForDelay: {
+        id: 'iaso.polio.label.reasonsForDelay',
+        defaultMessage: 'Reasons for delay',
+    },
+    name_fr: {
+        id: 'iaso.polio.label.name_fr',
+        defaultMessage: 'French text',
+    },
+    name_en: {
+        id: 'iaso.polio.label.name_en',
+        defaultMessage: 'English text',
+    },
+    keyName: {
+        id: 'iaso.polio.label.keyName',
+        defaultMessage: 'Key',
+    },
+    createReasonForDelay: {
+        id: 'iaso.polio.label.createReasonForDelay',
+        defaultMessage: 'Create reason for delay',
+    },
+    editReasonForDelay: {
+        id: 'iaso.polio.label.editReasonForDelay',
+        defaultMessage: 'Edit reason for delay',
+    },
+    wrongUserAccount: {
+        id: 'iaso.polio.forms.error.wrongUserAccount',
+        defaultMessage: 'Wrong user account',
+    },
+    incorrectFormat: {
+        id: 'iaso.polio.forms.error.incorrectFormat',
+        defaultMessage: 'Incorrect format',
+    },
+    keyNameFormat: {
+        id: 'iaso.polio.forms.error.keyNameFormat',
+        defaultMessage:
+            'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
     },
 });
 

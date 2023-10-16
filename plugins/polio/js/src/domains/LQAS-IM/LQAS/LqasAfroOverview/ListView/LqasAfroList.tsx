@@ -100,7 +100,7 @@ export const LqasAfroList: FunctionComponent<Props> = ({ router, side }) => {
         useGetZoomedInShapes({
             bounds: JSON.stringify(bounds),
             category: 'lqas',
-            enabled: !showCountries,
+            enabled: !showCountries && Boolean(bounds),
             params: router.params as AfroMapParams,
             selectedRound,
             side,
@@ -166,7 +166,11 @@ export const LqasAfroList: FunctionComponent<Props> = ({ router, side }) => {
         return result;
     }, [shapesToDisplay, sortFocus, orderBy, page, rowsPerPage]);
 
-    const displayPlaceHolder = isFetchingDistricts || isFetchingCountries;
+    const displayPlaceHolder =
+        isFetchingDistricts ||
+        isFetchingCountries ||
+        ((districtShapes ?? []).length === 0 && !showCountries) ||
+        ((countryShapes ?? []).length === 0 && showCountries);
 
     return (
         <Box>

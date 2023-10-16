@@ -50,7 +50,7 @@
     created_at: 2022-09-13 13:12:18.488257+00:00
     updated_at: 2022-09-13 13:16:27.655439+00:00
     category: COUNTRY
-    reference_form: null
+    reference_forms: []
     depth: 0
     sub_unit_types:
     - 2
@@ -64,7 +64,7 @@
     created_at: 2022-09-13 13:12:43.195513+00:00
     updated_at: 2022-09-13 13:16:19.412231+00:00
     category: REGION
-    reference_form: null
+    reference_forms: []
     depth: 1
     sub_unit_types:
     - 3
@@ -78,7 +78,7 @@
     created_at: 2022-09-13 13:13:01.221285+00:00
     updated_at: 2022-09-13 13:16:39.603683+00:00
     category: DISTRICT
-    reference_form: null
+    reference_forms: []
     depth: 2
     sub_unit_types:
     - 4
@@ -93,7 +93,7 @@
     created_at: 2022-09-13 13:14:13.166911+00:00
     updated_at: 2022-09-13 13:16:02.321919+00:00
     category: HF
-    reference_form: null
+    reference_forms: []
     depth: 3
     sub_unit_types: []
     projects:
@@ -106,7 +106,7 @@
     created_at: 2022-09-13 13:14:32.506181+00:00
     updated_at: 2022-09-13 13:15:53.812547+00:00
     category: HF
-    reference_form: null
+    reference_forms: []
     depth: 3
     sub_unit_types: []
     projects:
@@ -132,7 +132,7 @@
       4.913351 50.345253, 4.219994 50.343499, 4.394863 50.68188)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:18:36.563283+00:00
@@ -162,7 +162,7 @@
       4.47541 50.672046, 4.522091 50.681622)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:19:00.066115+00:00
@@ -190,7 +190,7 @@
       4.744475 50.430247, 4.843329 50.362818)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:19:25.745156+00:00
@@ -218,7 +218,7 @@
       4.700422 50.363617, 4.744872 50.430061)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:22:37.520358+00:00
@@ -246,7 +246,7 @@
       4.842354 50.362631, 4.744529 50.43028)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:29:16.457966+00:00
@@ -272,7 +272,7 @@
     simplified_geom: null
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:30:33.732270+00:00
@@ -298,7 +298,7 @@
     simplified_geom: null
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: SRID=4326;POINT Z (4.73404988 50.386067 0)
     created_at: 2022-09-13 13:33:12.167913+00:00
@@ -326,7 +326,7 @@
       4.913351 50.345253, 4.219994 50.343499, 4.394863 50.68188)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:18:36.563283+00:00
@@ -354,7 +354,7 @@
       4.913351 50.345253, 4.219994 50.343499, 4.394863 50.68188)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:18:36.563283+00:00
@@ -382,7 +382,7 @@
       4.913351 50.345253, 4.219994 50.343499, 4.394863 50.68188)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:18:36.563283+00:00
@@ -410,7 +410,7 @@
       4.913351 50.345253, 4.219994 50.343499, 4.394863 50.68188)))
     catchment: null
     geom_ref: null
-    reference_instance: null
+    reference_instances: []
     gps_source: null
     location: null
     created_at: 2022-09-13 13:18:36.563283+00:00

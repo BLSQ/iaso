@@ -1,22 +1,23 @@
-import React, { FunctionComponent } from 'react';
-import {
-    Box,
-    Grid,
-    Paper,
-    FormControlLabel,
-    Radio,
-    RadioGroup,
-    makeStyles,
-} from '@material-ui/core';
+import React, { FunctionComponent, useCallback, useState } from 'react';
+import { Box, Paper, makeStyles, Tabs, Tab } from '@material-ui/core';
+import { useSafeIntl, commonStyles } from 'bluesquare-components';
+import { useDispatch } from 'react-redux';
 import { paperElevation } from '../../../shared/constants';
-import InputComponent from '../../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
 import { LqasAfroMap } from './LqasAfroMap';
-import { useOptions } from '../utils';
 import { Router } from '../../../../../../../../../hat/assets/js/apps/Iaso/types/general';
 import MESSAGES from '../../../../../constants/messages';
 import { AfroMapParams, Side } from '../types';
+import { redirectToReplace } from '../../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
+import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';
+import { LqasAfroSelector } from '../LqasAfroSelector';
+import { LqasAfroList } from '../ListView/LqasAfroList';
+import { LqasAfroOverviewContextProvider } from '../Context/LqasAfroOverviewContext';
+
+const LIST = 'list';
+const MAP = 'map';
 
 const useStyles = makeStyles(theme => ({
+    ...commonStyles(theme),
     mapContainer: {
         '& .tile-switch-control': {
             top: 'auto',
@@ -25,6 +26,8 @@ const useStyles = makeStyles(theme => ({
             right: 'auto',
         },
     },
+    // We need to render the map to have bounds. Otherwise the API call for districts will get a 500
+    hidden: { visibility: 'hidden', height: 0 },
 }));
 
 type Props = {
@@ -46,54 +49,72 @@ export const LqasAfroMapWithSelector: FunctionComponent<Props> = ({
     params,
     onDisplayedShapeChange,
 }) => {
-    const options = useOptions();
-    const shapeKey =
-        side === 'left' ? 'displayedShapesLeft' : 'displayedShapesRight';
-    const classes = useStyles();
+    const { formatMessage } = useSafeIntl();
+    const dispatch = useDispatch();
+    const paramTab =
+        side === 'left' ? router.params.leftTab : router.params.rightTab;
+    const classes: Record<string, string> = useStyles();
+    const [tab, setTab] = useState(paramTab ?? MAP);
+
+    // TABS
+    const handleChangeTab = useCallback(
+        newtab => {
+            const tabKey = side === 'left' ? 'leftTab' : 'rightTab';
+            setTab(newtab);
+            const newParams = {
+                ...router.params,
+                [tabKey]: newtab,
+            };
+            dispatch(redirectToReplace(LQAS_AFRO_MAP_URL, newParams));
+        },
+        [router.params, dispatch, side],
+    );
+    // TABS
     return (
-        <Paper elevation={paperElevation}>
-            <Box px={2}>
-                <Grid container spacing={4}>
-                    <Grid item xs={6}>
-                        <InputComponent
-                            type="select"
-                            multi={false}
-                            keyValue="round"
-                            onChange={(_, value) => onRoundChange(value, side)}
-                            value={selectedRound}
-                            options={options}
-                            clearable={false}
-                            label={MESSAGES.round}
-                        />
-                    </Grid>
-                    <Grid item xs={6}>
-                        <Box mt={3} display="flex" justifyContent="center">
-                            <RadioGroup
-                                row
-                                name="displayedShapes"
-                                value={params[shapeKey] || 'country'}
-                                onChange={(_, value) =>
-                                    onDisplayedShapeChange(value, side)
-                                }
-                            >
-                                <FormControlLabel
-                                    value="country"
-                                    control={<Radio color="primary" />}
-                                    label="COUNTRY"
-                                />
-                                <FormControlLabel
-                                    value="district"
-                                    control={<Radio color="primary" />}
-                                    label="DISTRICT"
-                                />
-                            </RadioGroup>
-                        </Box>
-                    </Grid>
-                </Grid>
-            </Box>
-            <Box m={2} pb={2} className={classes.mapContainer}>
-                <LqasAfroMap router={router} side={side} />
-            </Box>
-        </Paper>
+        <LqasAfroOverviewContextProvider>
+            <Paper elevation={paperElevation}>
+                <Tabs
+                    value={tab}
+                    classes={{
+                        root: classes.tabs,
+                    }}
+                    className={classes.marginBottom}
+                    indicatorColor="primary"
+                    onChange={(event, newtab) => handleChangeTab(newtab)}
+                >
+                    <Tab value={MAP} label={formatMessage(MESSAGES.map)} />
+                    <Tab value={LIST} label={formatMessage(MESSAGES.list)} />
+                </Tabs>
+                <Box px={2} mt={2}>
+                    <LqasAfroSelector
+                        selectedRound={selectedRound}
+                        onRoundChange={onRoundChange}
+                        params={params}
+                        onDisplayedShapeChange={onDisplayedShapeChange}
+                        side={side}
+                    />
+                </Box>
+
+                <Box
+                    m={2}
+                    pb={2}
+                    className={
+                        tab === MAP ? classes.mapContainer : classes.hidden
+                    }
+                >
+                    <LqasAfroMap router={router} side={side} />
+                </Box>
+
+                <Box
+                    m={2}
+                    pb={2}
+                    className={
+                        tab === LIST ? classes.mapContainer : classes.hidden
+                    }
+                >
+                    <LqasAfroList router={router} side={side} />{' '}
+                </Box>
+            </Paper>
+        </LqasAfroOverviewContextProvider>
     );
 };

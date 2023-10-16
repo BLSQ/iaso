@@ -315,6 +315,7 @@
     "iaso.polio.label.imResults": "Résultats IM",
     "iaso.polio.label.imWarning": "90%-94%",
     "iaso.polio.label.INITIAL_DATA": "Données initiales",
+    "iaso.polio.label.inScope": "Aucunes données trouvées",
     "iaso.polio.label.internal": "Interne",
     "iaso.polio.label.is_test": "Campagne de test/en pause",
     "iaso.polio.label.keyName": "Clé",

@@ -1,8 +1,8 @@
 import React, {
     FunctionComponent,
-    useState,
     useEffect,
     useCallback,
+    useContext,
 } from 'react';
 import { useMapEvents } from 'react-leaflet';
 import { LoadingSpinner } from 'bluesquare-components';
@@ -21,9 +21,11 @@ import {
     useGetZoomedInShapes,
 } from '../hooks/useAfroMapShapes';
 import { defaultShapeStyle } from '../../../../../utils';
-import { AfroMapParams, RoundSelection, Side } from '../types';
+import { AfroMapParams, Side } from '../types';
 import { LqasAfroTooltip } from './LqasAfroTooltip';
 import { LqasAfroPopup } from './LqasAfroPopUp';
+import { getRound } from '../utils';
+import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -41,26 +43,6 @@ const getBackgroundLayerStyle = () => {
 type Props = {
     params: AfroMapParams;
     side: Side;
-};
-
-const getRound = (rounds: string | undefined, side: Side): RoundSelection => {
-    if (!rounds) {
-        if (side === 'left') return 'penultimate';
-        return 'latest';
-    }
-    const [leftRound, rightRound] = rounds.split(',');
-    if (side === 'left') {
-        const parsedValue = parseInt(leftRound, 10);
-        if (Number.isInteger(parsedValue)) {
-            return parsedValue;
-        }
-        return leftRound as RoundSelection;
-    }
-    const parsedValue = parseInt(rightRound, 10);
-    if (Number.isInteger(parsedValue)) {
-        return parsedValue;
-    }
-    return rightRound as RoundSelection;
 };
 
 export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
@@ -110,7 +92,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
         },
     });
 
-    const [bounds, setBounds] = useState<number>(map.getBounds());
+    const { bounds, setBounds } = useContext(LqasAfroOverviewContext);
     const selectedRound = getRound(params.rounds, side);
 
     const showCountries =
@@ -130,7 +112,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
         useGetZoomedInShapes({
             bounds: JSON.stringify(bounds),
             category: 'lqas',
-            enabled: !showCountries,
+            enabled: !showCountries && Boolean(bounds),
             params,
             selectedRound,
             side,
@@ -141,7 +123,7 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
         isFetching: isLoadingZoominbackground,
     } = useGetZoomedInBackgroundShapes({
         bounds: JSON.stringify(bounds),
-        enabled: !showCountries,
+        enabled: !showCountries && Boolean(bounds),
     });
     const paramsAsString = JSON.stringify(params);
     const isLoading =

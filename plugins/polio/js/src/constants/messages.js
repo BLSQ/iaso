@@ -837,6 +837,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.failed',
         defaultMessage: 'Failed',
     },
+    inScope: {
+        id: 'iaso.polio.label.inScope',
+        defaultMessage: 'No data found',
+    },
     districtsNotFound: {
         id: 'iaso.polio.label.districtsNotFound',
         defaultMessage: 'Districts not found',
@@ -2422,6 +2426,10 @@ const MESSAGES = defineMessages({
     gotoLqasForCountry: {
         id: 'iaso.task.label.gotoLqasForCountry',
         defaultMessage: 'See LQAS page',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
     },
     reasonsForDelay: {
         id: 'iaso.polio.label.reasonsForDelay',

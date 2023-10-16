@@ -1,11 +1,12 @@
 from django import forms
+from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers, viewsets
 
 from hat.menupermissions import models as permission
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from plugins.polio.api.vaccines.vaccine_authorization import CountryForVaccineSerializer
 from plugins.polio.models import VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
-from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 
 
 def validate_rounds_and_campaign(data, current_user=None):
@@ -93,28 +94,50 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "var",
         )
 
+    # comma separated list of all
     def get_po_numbers(self, obj):
-        return [pre_alert.po_number for pre_alert in obj.vaccineprealert_set.all()]
+        pre_alerts = obj.vaccineprealert_set.all()
+        if not pre_alerts:
+            return ""
+        return ", ".join([pre_alert.po_number for pre_alert in pre_alerts])
 
     def get_rounds(self, obj):
         return [round.number for round in obj.rounds.all()]
 
     def get_start_date(self, obj):
-        return obj.rounds.all().first().started_at
+        # most recent (first in future or last in past) round's start date
+        rounds = obj.rounds.all()
+        future_rounds = [round for round in rounds if round.started_at > timezone.now()]
+        if future_rounds:
+            return min(future_rounds, key=lambda round: round.started_at).started_at
+        else:
+            return max(rounds, key=lambda round: round.started_at).started_at
 
     def get_end_date(self, obj):
-        return obj.rounds.all().last().ended_at
+        # most recent (first in future or last in past) round's start date
+        rounds = obj.rounds.all()
+        future_rounds = [round for round in rounds if round.ended_at > timezone.now()]
+        if future_rounds:
+            return min(future_rounds, key=lambda round: round.ended_at).ended_at
+        else:
+            return max(rounds, key=lambda round: round.ended_at).ended_at
 
     def get_doses_shipped(self, obj):
         return obj.total_doses_shipped()
 
-    # Not sure if I should get the first, the last or a comma separated list of all
+    # Comma Separated List of all estimated arrival times
     def get_eta(self, obj):
-        return obj.vaccineprealert_set.all().first().estimated_arrival_time
+        pre_alerts = obj.vaccineprealert_set.all()
+        if not pre_alerts:
+            return ""
+        return ", ".join([str(pre_alert.estimated_arrival_time) for pre_alert in pre_alerts])
 
-    # Not sure if I should get the first, the last or a comma separated list of all
+    # Comma Separated List of all arrival report dates
     def get_var(self, obj):
-        return obj.vaccinearrivalreport_set.all().first().arrival_report_date
+        arrival_reports = obj.vaccinearrivalreport_set.all()
+        if not arrival_reports:
+            return ""
+        return ", ".join([str(report.arrival_report_date) for report in arrival_reports])
 
 
 class VaccineRequestFormViewSet(ModelViewSet):

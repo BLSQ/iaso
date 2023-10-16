@@ -123,7 +123,7 @@ class RoundDateHistoryEntryForRoundSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_reason(obj: RoundDateHistoryEntry):
-        return obj.reason_for_delay.key_name
+        return obj.reason_for_delay.key_name if obj.reason_for_delay else None
 
     def validate(self, data):
         if data.get("reason_for_delay", None) is None:

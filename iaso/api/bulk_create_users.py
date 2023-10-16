@@ -17,6 +17,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from hat.menupermissions import models as permission
+from hat.menupermissions.constants import MODULE_PERMISSIONS
 from iaso.models import BulkCreateUserCsvFile, Profile, OrgUnit, UserRole, Project
 
 BULK_CREATE_USER_COLUMNS_LIST = [
@@ -318,9 +319,11 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                                     )
                     try:
                         user_permissions = row[csv_indexes.index("permissions")].split(value_splitter)
+                        current_account = request.user.iaso_profile.account
+                        module_permissions = self.module_permissions(current_account)
                         for perm in user_permissions:
                             perm = perm[1::] if perm[:1] == " " else perm
-                            if perm:
+                            if perm and perm in module_permissions:
                                 try:
                                     perm = Permission.objects.get(codename=perm)
                                     user.user_permissions.add(perm)
@@ -355,6 +358,19 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
                     csv_indexes = row
         response = {"Accounts created": user_created_count}
         return Response(response)
+
+    @staticmethod
+    def module_permissions(current_account):
+        # Get all modules linked to the current account
+        account_modules = current_account.modules
+        # Get all permissions linked to the modules
+        modules_permissions = []
+        modules = MODULE_PERMISSIONS.keys()
+
+        for module in account_modules:
+            if module in modules:
+                modules_permissions = modules_permissions + MODULE_PERMISSIONS[module]
+        return modules_permissions
 
     @swagger_auto_schema(request_body=no_body)
     @action(detail=False, methods=["get"], url_path="getsample")

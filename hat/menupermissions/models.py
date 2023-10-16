@@ -174,11 +174,12 @@ class CustomPermissionSupport(models.Model):
         )
 
     @staticmethod
-    def filter_permissions(permissions, settings: LazySettings):
+    def filter_permissions(permissions, modules_permissions, settings: LazySettings):
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         permissions = (
             permissions.filter(content_type=content_type)
             .filter(codename__startswith="iaso_")
+            .filter(codename__in=modules_permissions)
             .exclude(codename__contains="datastore")
             .exclude(codename__contains="iaso_beneficiaries")
             .order_by("id")

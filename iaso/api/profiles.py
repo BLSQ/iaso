@@ -293,7 +293,7 @@ class ProfilesViewSet(viewsets.ViewSet):
                 profile.user.first_name,
                 profile.user.last_name,
                 ",".join(str(item.pk) for item in org_units),
-                ",".join(item.source_ref for item in org_units),
+                ",".join(item.source_ref for item in org_units if item.source_ref),
                 profile.language,
                 profile.dhis2_id,
                 ",".join(item.codename for item in profile.user.user_permissions.all()),

@@ -113,7 +113,7 @@ def find_campaign_orgunits(campaign_find_func, campaign, *args):
     if pd.isna(campaign):
         return
     if not campaign_find_func.get(campaign.pk):
-        if not campaign.get_all_districts().count() > 0:
+        if not campaign.get_all_districts_qs().count() > 0:
             campaign_find_func[campaign.pk] = lambda *x: None
         campaign_find_func[campaign.pk] = make_find_orgunit_for_campaign(campaign)
     return campaign_find_func[campaign.pk](*args)
@@ -234,7 +234,7 @@ def get_forma_scope_df(campaigns):
     one_year_ago = datetime.utcnow() - timedelta(weeks=52)
     for campaign in campaigns:
         for round in campaign.rounds.filter(started_at__gte=one_year_ago):
-            districts = campaign.get_districts_for_round(round)
+            districts = campaign.get_districts_for_round_qs(round)
 
             if districts.count() == 0:
                 logger.info(f"skipping {campaign}, no scope")

@@ -2415,6 +2415,43 @@ const MESSAGES = defineMessages({
         id: 'iaso.task.label.EXPORTED',
         defaultMessage: 'Exported',
     },
+    reasonsForDelay: {
+        id: 'iaso.polio.label.reasonsForDelay',
+        defaultMessage: 'Reasons for delay',
+    },
+    name_fr: {
+        id: 'iaso.polio.label.name_fr',
+        defaultMessage: 'French text',
+    },
+    name_en: {
+        id: 'iaso.polio.label.name_en',
+        defaultMessage: 'English text',
+    },
+    keyName: {
+        id: 'iaso.polio.label.keyName',
+        defaultMessage: 'Key',
+    },
+    createReasonForDelay: {
+        id: 'iaso.polio.label.createReasonForDelay',
+        defaultMessage: 'Create reason for delay',
+    },
+    editReasonForDelay: {
+        id: 'iaso.polio.label.editReasonForDelay',
+        defaultMessage: 'Edit reason for delay',
+    },
+    wrongUserAccount: {
+        id: 'iaso.polio.forms.error.wrongUserAccount',
+        defaultMessage: 'Wrong user account',
+    },
+    incorrectFormat: {
+        id: 'iaso.polio.forms.error.incorrectFormat',
+        defaultMessage: 'Incorrect format',
+    },
+    keyNameFormat: {
+        id: 'iaso.polio.forms.error.keyNameFormat',
+        defaultMessage:
+            'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
+    },
 });
 
 export default MESSAGES;

@@ -9,11 +9,7 @@ import { LoadingSpinner } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { redirectToReplace } from '../../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';
-import {
-    COUNTRY,
-    DISTRICT,
-    lqasDistrictColors,
-} from '../../../shared/constants';
+import { COUNTRY, DISTRICT } from '../../../shared/constants';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
 import {
     useAfroMapShapes,
@@ -26,6 +22,7 @@ import { LqasAfroTooltip } from './LqasAfroTooltip';
 import { LqasAfroPopup } from './LqasAfroPopUp';
 import { getRound } from '../utils';
 import { LqasAfroOverviewContext } from '../Context/LqasAfroOverviewContext';
+import { lqasDistrictColors } from '../../constants';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;

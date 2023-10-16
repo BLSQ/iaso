@@ -176,6 +176,14 @@ const routes = [
                 isRequired: false,
                 key: 'rounds',
             },
+            {
+                isRequired: false,
+                key: 'leftTab',
+            },
+            {
+                isRequired: false,
+                key: 'rightTab',
+            },
         ],
     },
     {

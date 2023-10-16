@@ -27,14 +27,14 @@ export const HasLocationIcon: FunctionComponent<Props> = ({ shape }) => {
     const { formatMessage } = useSafeIntl();
     return (
         <>
-            {shape.geo_json && (
+            {(shape?.geo_json || shape?.has_geo_json) && (
                 <Tooltip arrow title={formatMessage(MESSAGES.withShape)}>
                     <Box mt="4px">
                         <ShapeSvg fontSize="small" />
                     </Box>
                 </Tooltip>
             )}
-            {!shape.geo_json && (
+            {!shape?.geo_json && !shape?.has_geo_json && (
                 <Tooltip
                     arrow
                     title={formatMessage(MESSAGES.noGeographicalData)}

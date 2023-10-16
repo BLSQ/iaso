@@ -48,6 +48,7 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
     const labelSize = view === COUNTRY ? 4 : 6;
     const valueSize = view === COUNTRY ? 8 : 6;
     const countryId = view === COUNTRY ? shape.id : shape.country_id;
+    const roundNumber = shape?.data?.round_number ?? 1;
 
     return (
         // ignore classname TS error // @ts-ignore
@@ -128,7 +129,7 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                         <Box mt={2}>
                             <Link
                                 target="_blank"
-                                to={`${LQAS_BASE_URL}/lqas/campaign/${shape.data.campaign}/country/${countryId}/`}
+                                to={`${LQAS_BASE_URL}/lqas/campaign/${shape.data.campaign}/country/${countryId}/rounds/${roundNumber},${roundNumber}/rightTab/list`}
                             >
                                 <Button
                                     className={classes.marginLeft}

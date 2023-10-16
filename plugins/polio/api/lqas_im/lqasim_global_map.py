@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from iaso.models import OrgUnit
 from iaso.models.data_store import JsonDataStore
 from iaso.utils import geojson_queryset
-from plugins.polio.api.common import LQASStatus, RoundSelection, calculate_country_status
+from plugins.polio.api.common import LQASStatus, RoundSelection, calculate_country_status, get_data_for_round
 from plugins.polio.api.lqas_im.base_viewset import LqasAfroViewset
 from plugins.polio.api.lqas_im.lqasim_zoom_in_map import get_latest_active_campaign_and_rounds
 
@@ -91,6 +91,10 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     },
                     "geo_json": shapes,
                     "status": calculate_country_status(stats, scope, round_number),
+                    "lqas_passed": get_data_for_round(stats, round_number).get("lqas_passed", None),
+                    "lqas_failed": get_data_for_round(stats, round_number).get("lqas_failed", None),
+                    "lqas_no_data": get_data_for_round(stats, round_number).get("lqas_no_data", None),
+                    "scope_count": len(scope),
                 }
             else:
                 result = {

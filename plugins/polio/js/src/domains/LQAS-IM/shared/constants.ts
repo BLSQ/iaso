@@ -136,3 +136,6 @@ export const lqasBarColorTresholds = {
 };
 
 export const defaultRounds = [1, 2];
+
+export const DISTRICT = 'district';
+export const COUNTRY = 'country';

@@ -9,7 +9,11 @@ import { LoadingSpinner } from 'bluesquare-components';
 import { useDispatch } from 'react-redux';
 import { redirectToReplace } from '../../../../../../../../../hat/assets/js/apps/Iaso/routing/actions';
 import { LQAS_AFRO_MAP_URL } from '../../../../../constants/routes';
-import { lqasDistrictColors } from '../../../shared/constants';
+import {
+    COUNTRY,
+    DISTRICT,
+    lqasDistrictColors,
+} from '../../../shared/constants';
 import { MapPanes } from '../../../../Campaigns/MapComponent/MapPanes';
 import {
     useAfroMapShapes,
@@ -19,6 +23,7 @@ import {
 import { defaultShapeStyle } from '../../../../../utils';
 import { AfroMapParams, RoundSelection, Side } from '../types';
 import { LqasAfroTooltip } from './LqasAfroTooltip';
+import { LqasAfroPopup } from './LqasAfroPopUp';
 
 const getMainLayerStyle = shape => {
     return lqasDistrictColors[shape.status] ?? defaultShapeStyle;
@@ -163,6 +168,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     mainLayer={mapShapes}
                     getMainLayerStyle={getMainLayerStyle}
                     name={`LQAS-Map-country-view-${paramsAsString}`}
+                    makePopup={shape => {
+                        return <LqasAfroPopup shape={shape} view={COUNTRY} />;
+                    }}
                     customTooltip={shape => (
                         <LqasAfroTooltip
                             shape={shape}
@@ -179,6 +187,9 @@ export const LqasAfroMapPanesContainer: FunctionComponent<Props> = ({
                     getMainLayerStyle={getMainLayerStyle}
                     getBackgroundLayerStyle={getBackgroundLayerStyle}
                     name={`LQAS-Map-zooomin-view-${paramsAsString}`}
+                    makePopup={shape => {
+                        return <LqasAfroPopup shape={shape} view={DISTRICT} />;
+                    }}
                     customTooltip={shape => (
                         <LqasAfroTooltip
                             shape={shape}

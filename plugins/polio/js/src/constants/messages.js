@@ -2387,6 +2387,42 @@ const MESSAGES = defineMessages({
         defaultMessage:
             'The latest campaign is the campaign with the round that started the most recently within the chosen time frame',
     },
+    latestManualRefresh: {
+        id: 'iaso.polio.label.latestManualRefresh',
+        defaultMessage: 'Latest manual refresh',
+    },
+    SUCCESS: {
+        id: 'iaso.task.label.SUCCESS',
+        defaultMessage: 'Success',
+    },
+    ERRORED: {
+        id: 'iaso.task.label.ERRORED',
+        defaultMessage: 'Errored',
+    },
+    RUNNING: {
+        id: 'iaso.task.label.RUNNING',
+        defaultMessage: 'Running',
+    },
+    QUEUED: {
+        id: 'iaso.task.label.QUEUED',
+        defaultMessage: 'Queued',
+    },
+    SKIPPED: {
+        id: 'iaso.task.label.SKIPPED',
+        defaultMessage: 'Skipped',
+    },
+    KILLED: {
+        id: 'iaso.task.label.KILLED',
+        defaultMessage: 'Killed',
+    },
+    EXPORTED: {
+        id: 'iaso.task.label.EXPORTED',
+        defaultMessage: 'Exported',
+    },
+    gotoLqasForCountry: {
+        id: 'iaso.task.label.gotoLqasForCountry',
+        defaultMessage: 'See LQAS page',
+    },
     reasonsForDelay: {
         id: 'iaso.polio.label.reasonsForDelay',
         defaultMessage: 'Reasons for delay',
@@ -2421,40 +2457,7 @@ const MESSAGES = defineMessages({
     },
     keyNameFormat: {
         id: 'iaso.polio.forms.error.keyNameFormat',
-        defaultMessage:
-          'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters'
-    },
-    latestManualRefresh: {
-        id: 'iaso.polio.label.latestManualRefresh',
-        defaultMessage: 'Latest manual refresh',
-    },
-    SUCCESS: {
-        id: 'iaso.task.label.SUCCESS',
-        defaultMessage: 'Success',
-    },
-    ERRORED: {
-        id: 'iaso.task.label.ERRORED',
-        defaultMessage: 'Errored',
-    },
-    RUNNING: {
-        id: 'iaso.task.label.RUNNING',
-        defaultMessage: 'Running',
-    },
-    QUEUED: {
-        id: 'iaso.task.label.QUEUED',
-        defaultMessage: 'Queued',
-    },
-    SKIPPED: {
-        id: 'iaso.task.label.SKIPPED',
-        defaultMessage: 'Skipped',
-    },
-    KILLED: {
-        id: 'iaso.task.label.KILLED',
-        defaultMessage: 'Killed',
-    },
-    EXPORTED: {
-        id: 'iaso.task.label.EXPORTED',
-        defaultMessage: 'Exported',
+        defaultMessage: 'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
     },
 });
 

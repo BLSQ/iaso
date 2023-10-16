@@ -424,6 +424,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 aliases = []
             org_unit.aliases = list(filter(lambda x: x != "", aliases))
 
+        if "extra_fields" in request.data:
+            org_unit.extra_fields = request.data["extra_fields"]
+
         if "org_unit_type_id" in request.data:
             org_unit_type_id = request.data["org_unit_type_id"]
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
@@ -566,6 +569,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         groups = request.data.get("groups", [])
 
         org_unit.aliases = list(filter(lambda x: x != "", request.data.get("aliases", [])))
+        if "extra_fields" in request.data:
+            org_unit.extra_fields = request.data["extra_fields"]
 
         geom = request.data.get("geom")
         if geom:

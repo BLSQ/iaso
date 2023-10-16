@@ -124,12 +124,12 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 continue
             if latest_active_campaign.separate_scopes_per_round:
                 scope = latest_active_campaign.get_districts_for_round_number(round_number)
-
             else:
                 scope = latest_active_campaign.get_all_districts()
             # Visible districts in scope
+            scope_qs = OrgUnit.objects.filter(id__in=[ou.id for ou in scope])
             districts = (
-                scope.filter(org_unit_type__category="DISTRICT")
+                scope_qs.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
                 .exclude(simplified_geom__isnull=True)
                 .filter(simplified_geom__intersects=bounds_as_polygon)

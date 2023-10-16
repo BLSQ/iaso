@@ -94,7 +94,7 @@ class LQASIMGlobalMapViewSet(LqasAfroViewset):
                     "lqas_passed": get_data_for_round(stats, round_number).get("lqas_passed", None),
                     "lqas_failed": get_data_for_round(stats, round_number).get("lqas_failed", None),
                     "lqas_no_data": get_data_for_round(stats, round_number).get("lqas_no_data", None),
-                    "scope_count": scope.count(),
+                    "scope_count": len(scope),
                 }
             else:
                 result = {

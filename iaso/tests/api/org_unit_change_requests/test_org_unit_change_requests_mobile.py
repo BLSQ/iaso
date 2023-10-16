@@ -2,7 +2,7 @@ import time_machine
 
 from django.contrib.gis.geos import Point
 
-from iaso.api.mobile.org_unit_change_requests import MobileOrgUnitChangeRequestListSerializer
+from iaso.api.org_unit_change_requests.serializers import MobileOrgUnitChangeRequestListSerializer
 from iaso.test import TestCase
 from iaso.test import APITestCase
 from iaso import models as m

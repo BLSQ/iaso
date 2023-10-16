@@ -902,6 +902,7 @@
     "iaso.registry.showNames": "Voir les noms",
     "iaso.registry.title": "Registre",
     "iaso.registry.withLocation": "Avec point",
+    "iaso.label.codename": "Nom du code",
     "iaso.registry.withShape": "Avec territoire",
     "iaso.restricted_submissions_by_orgunits": "Vous êtes autorisé(e) à voir uniquement les unités d'organisation suivantes:",
     "iaso.runs.dialog.deleteRunText": "Toutes les correspondances créées seront effacées",

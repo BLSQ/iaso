@@ -9,6 +9,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Name',
         id: 'iaso.label.name',
     },
+    codename: {
+        defaultMessage: 'Code name',
+        id: 'iaso.label.codename',
+    },
     status: {
         defaultMessage: 'Status',
         id: 'iaso.modules.status',

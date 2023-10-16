@@ -39,7 +39,6 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     const initialOrgUnitId = values[name];
     const errors = backendErrors ?? getErrors(touched, formErrors, name);
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
-    console.log('DISABLED?', disabled);
     return (
         <Box position="relative">
             <OrgUnitTreeviewModal

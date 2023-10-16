@@ -125,6 +125,7 @@ const OrgUnitTreeviewPicker = ({
                     selectedItems={value}
                     key={`TruncatedTree${key.toString()}`}
                     label={label}
+                    disabled={disabled}
                     redirect={id =>
                         disabled
                             ? null

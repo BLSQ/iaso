@@ -2238,6 +2238,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.OTHER_VACCINATION_CAMPAIGNS',
         defaultMessage: 'Other vaccination campaigns',
     },
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING: {
+        id: 'iaso.polio.label.PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING',
+        defaultMessage: 'Pending liquidation of previous SIA funding',
+    },
     previousEndDate: {
         id: 'iaso.polio.label.previousEndDate',
         defaultMessage: 'Previous end date',

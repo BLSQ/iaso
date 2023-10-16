@@ -368,6 +368,7 @@
     "iaso.polio.label.passed": "Succès",
     "iaso.polio.label.paymentMode": "Mode de paiement",
     "iaso.polio.label.pending": "En attente",
+    "iaso.polio.label.PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING": "Liquidation des fonds de la SIA précédente en attente",
     "iaso.polio.label.playground": "À la plaine de jeux",
     "iaso.polio.label.poNumbers": "Numéro de PO",
     "iaso.polio.label.PREPAREDNESS_LEVEL_NOT_REACHED": "Niveau de préparation non-atteint",

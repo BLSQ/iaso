@@ -53,7 +53,7 @@ def create_reasons_for_delay(apps, schema_editor):
 
     for polio_account in Account.objects.all():
         for choice_key in DelayReasons.values:
-            ReasonForDelay.objects.create(
+            ReasonForDelay.objects.get_or_create(
                 key_name=choice_key,
                 name_en=TRANSLATIONS[choice_key]["en"],
                 name_fr=TRANSLATIONS[choice_key]["fr"],

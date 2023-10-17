@@ -107,7 +107,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_start_date(self, obj):
         # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.started_at > timezone.now()]
+        future_rounds = [round for round in rounds if round.started_at > timezone.now().date()]
         if future_rounds:
             return min(future_rounds, key=lambda round: round.started_at).started_at
         else:
@@ -116,7 +116,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_end_date(self, obj):
         # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.ended_at > timezone.now()]
+        future_rounds = [round for round in rounds if round.ended_at > timezone.now().date()]
         if future_rounds:
             return min(future_rounds, key=lambda round: round.ended_at).ended_at
         else:

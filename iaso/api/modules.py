@@ -1,5 +1,4 @@
 from rest_framework import permissions, serializers
-from django.db.models import Q
 from django.contrib.auth.models import Permission
 from iaso.models import Account, Profile
 from .common import ModelViewSet, HasPermission

@@ -354,6 +354,7 @@
     "iaso.polio.label.noDataFound": "Aucunes données trouvées",
     "iaso.polio.label.noFile": "Aucun fichier trouvé",
     "iaso.polio.label.non_compliance": "Non-conformité",
+    "iaso.polio.label.noRoundFound": "Aucun round trouvé",
     "iaso.polio.label.noScope": "Pas de périmètre",
     "iaso.polio.label.noScopeFound": "Aucun périmètre encodé pour cette campagne",
     "iaso.polio.label.note": "Note",

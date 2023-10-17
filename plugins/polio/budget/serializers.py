@@ -130,7 +130,7 @@ class CampaignBudgetSerializer(CampaignSerializer, DynamicFieldsModelSerializer)
     @staticmethod
     def get_processes(campaign: Campaign):
         processes = BudgetProcess.objects.filter(rounds__campaign=campaign)
-        return ProcessesForCampaignBudgetSerializer(processes, many=True).data
+        return BudgetProcessSerializer(processes, many=True).data
 
     def get_current_state(self, campaign: Campaign):
         workflow = get_workflow()
@@ -665,9 +665,96 @@ class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):
 
 
 class BudgetProcessSerializer(serializers.ModelSerializer):
+    rounds = RoundSerializerForProcesses(many=True, read_only=True)
+
     class Meta:
         model = BudgetProcess
-        fields = ["id", "created_at", "updated_at", "rounds", "teams"]
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "rounds",
+            "teams",
+            "budget_status",
+            "ra_completed_at_WFEDITABLE",
+            "who_sent_budget_at_WFEDITABLE",
+            "unicef_sent_budget_at_WFEDITABLE",
+            "gpei_consolidated_budgets_at_WFEDITABLE",
+            "submitted_to_rrt_at_WFEDITABLE",
+            "feedback_sent_to_gpei_at_WFEDITABLE",
+            "re_submitted_to_rrt_at_WFEDITABLE",
+            "submitted_to_orpg_operations1_at_WFEDITABLE",
+            "feedback_sent_to_rrt1_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+            "submitted_to_orpg_wider_at_WFEDITABLE",
+            "submitted_to_orpg_operations2_at_WFEDITABLE",
+            "feedback_sent_to_rrt2_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+            "submitted_for_approval_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+            "approved_by_who_at_WFEDITABLE",
+            "approved_by_unicef_at_WFEDITABLE",
+            "approved_at_WFEDITABLE",
+            "approval_confirmed_at_WFEDITABLE",
+            "payment_mode",
+            "budget_responsible",
+            "budget_current_state_key",
+            "budget_current_state_label",
+            "district_count",
+            "no_regret_fund_amount",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+        ]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
+
+
+class BudgetProcessCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BudgetProcess
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "rounds",
+            "teams",
+            "budget_status",
+            "ra_completed_at_WFEDITABLE",
+            "who_sent_budget_at_WFEDITABLE",
+            "unicef_sent_budget_at_WFEDITABLE",
+            "gpei_consolidated_budgets_at_WFEDITABLE",
+            "submitted_to_rrt_at_WFEDITABLE",
+            "feedback_sent_to_gpei_at_WFEDITABLE",
+            "re_submitted_to_rrt_at_WFEDITABLE",
+            "submitted_to_orpg_operations1_at_WFEDITABLE",
+            "feedback_sent_to_rrt1_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+            "submitted_to_orpg_wider_at_WFEDITABLE",
+            "submitted_to_orpg_operations2_at_WFEDITABLE",
+            "feedback_sent_to_rrt2_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+            "submitted_for_approval_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+            "approved_by_who_at_WFEDITABLE",
+            "approved_by_unicef_at_WFEDITABLE",
+            "approved_at_WFEDITABLE",
+            "approval_confirmed_at_WFEDITABLE",
+            "payment_mode",
+            "budget_responsible",
+            "budget_current_state_key",
+            "budget_current_state_label",
+            "district_count",
+            "no_regret_fund_amount",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+        ]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -675,7 +762,7 @@ class BudgetProcessSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
         validated_data["created_by"] = user
-        instance = super(BudgetProcessSerializer, self).create(validated_data)
+        instance = super(BudgetProcessCreateSerializer, self).create(validated_data)
 
         return instance
 

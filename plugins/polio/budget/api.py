@@ -22,6 +22,7 @@ from plugins.polio.budget.serializers import (
     WorkflowSerializer,
     TransitionOverrideSerializer,
     BudgetProcessSerializer,
+    BudgetProcessCreateSerializer,
 )
 from iaso.api.common import CustomFilterBackend
 from plugins.polio.models import Campaign
@@ -234,6 +235,11 @@ class BudgetProcessViewset(ModelViewSet):
     results_key = "results"
     remove_results_key_if_paginated = True
     pagination_class = Paginator
+
+    def get_serializer_class(self):
+        if self.request.method in ["POST", "PATCH", "PUT"]:
+            return BudgetProcessCreateSerializer
+        return self.serializer_class
 
     def get_queryset(self):
         queryset = BudgetProcess.objects.filter(teams__users=self.request.user)

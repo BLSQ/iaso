@@ -1,9 +1,5 @@
-import { Redirect, Route } from 'react-router';
-
-// @ts-ignore
 import { getSort } from 'bluesquare-components';
 
-import { cloneDeep } from 'lodash';
 import React from 'react';
 import { baseUrls } from '../constants/urls';
 import Page404 from '../components/errors/Page404';
@@ -15,7 +11,7 @@ import { getOrgUnitsUrl } from '../domains/orgUnits/utils';
 type Redirection =
     | { path: string; to: any; component: undefined }
     | { path: string; component: React.FC<{ location }>; to: undefined };
-const getRedirections: (
+export const getRedirections: (
     // eslint-disable-next-line no-unused-vars
     hasNoAccount: boolean,
     // eslint-disable-next-line no-unused-vars
@@ -125,24 +121,3 @@ const getRedirections: (
         },
     ];
 };
-const getRoutes = (
-    baseRoutes: JSX.Element[],
-    hasNoAccount: boolean,
-    userHomePage?: string,
-): JSX.Element[] => {
-    return cloneDeep(baseRoutes).concat(
-        getRedirections(hasNoAccount, userHomePage).map(redirection => {
-            if (redirection.component) {
-                return (
-                    <Route
-                        path={redirection.path}
-                        component={redirection.component}
-                    />
-                );
-            }
-            return <Redirect path={redirection.path} to={redirection.to} />;
-        }),
-    );
-};
-
-export { getRoutes };

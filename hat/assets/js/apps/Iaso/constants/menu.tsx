@@ -48,6 +48,7 @@ import { PluginsContext } from '../utils';
 import { getDefaultSourceVersion } from '../domains/dataSources/utils';
 import { useGetBeneficiaryTypesDropdown } from '../domains/entities/hooks/requests';
 import { DropdownOptions } from '../types/utils';
+import { Plugins } from '../domains/app/types';
 
 type MenuItem = {
     label: string;
@@ -63,9 +64,7 @@ type MenuItem = {
     isActive?: (pathname: string) => boolean;
 };
 type MenuItems = MenuItem[];
-type Plugins = {
-    plugins: Record<string, any>[];
-};
+
 // !! remove permission property if the menu has a subMenu !!
 const menuItems = (
     entityTypes: Array<DropdownOptions<number>>,

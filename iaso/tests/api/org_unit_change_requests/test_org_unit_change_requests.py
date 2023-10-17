@@ -41,6 +41,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
             serializer.data,
             {
                 "id": change_request.pk,
+                "uuid": str(change_request.uuid),
                 "org_unit_id": self.org_unit.pk,
                 "org_unit_uuid": self.org_unit.uuid,
                 "org_unit_name": self.org_unit.name,

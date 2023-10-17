@@ -1,5 +1,6 @@
 import operator
 import typing
+import uuid
 from functools import reduce
 
 import django_cte
@@ -571,6 +572,7 @@ class OrgUnitChangeRequest(models.Model):
         REJECTED = "rejected", _("Rejected")
         APPROVED = "approved", _("Approved")
 
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
     org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
     status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
 

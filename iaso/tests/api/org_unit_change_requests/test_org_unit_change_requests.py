@@ -25,7 +25,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
         cls.account = m.Account.objects.create(name="Account")
         cls.user = cls.create_user_with_profile(username="user", account=cls.account)
 
-    def test_list_serializer(self):
+    def test_serialize_change_request(self):
         kwargs = {
             "org_unit": self.org_unit,
             "created_by": self.user,
@@ -112,4 +112,17 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
     def test_list_without_auth(self):
         response = self.client.get("/api/orgunits/changes/")
+        self.assertJSONResponse(response, 403)
+
+    def test_retrieve_ok(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        self.client.force_authenticate(self.user)
+        with self.assertNumQueries(8):
+            response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.data["id"], change_request.pk)
+
+    def test_retrieve_without_auth(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
+        response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
         self.assertJSONResponse(response, 403)

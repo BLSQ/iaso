@@ -11,10 +11,10 @@ import {
 
 import ProtectedRoute from '../../users/components/ProtectedRoute';
 import { baseUrls } from '../../../constants/urls';
-import Home from '../../home';
+// import Home from '../../home';
 import { PluginsContext } from '../../../utils';
 import { Plugins, RouteCustom } from '../types';
-import { useHasNoAccount } from '../../../utils/usersUtils';
+import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
 import { useRedirections } from '../../../routing/useRedirections';
 import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
 
@@ -23,22 +23,72 @@ type Result = {
     isLoadingRoutes: boolean;
 };
 
-const useHomeComponent = (): ElementType => {
+const useHomeOnlineComponent = (): ElementType | undefined => {
     const { plugins }: Plugins = useContext(PluginsContext);
     // using the last plugin override (arbitrary choice)
     return useMemo(
         () =>
             last(
                 plugins
-                    .filter(plugin => plugin.homeComponent)
-                    .map(plugin => plugin.homeComponent),
-            ) || Home,
+                    .filter(plugin => plugin.homeOnline)
+                    .map(plugin => plugin.homeOnline),
+            ),
+        [plugins],
+    );
+};
+export const useHomeOfflineComponent = (): ElementType | undefined => {
+    const { plugins }: Plugins = useContext(PluginsContext);
+    // using the last plugin override (arbitrary choice)
+    return useMemo(
+        () =>
+            last(
+                plugins
+                    .filter(plugin => plugin.homeOffline)
+                    .map(plugin => plugin.homeOffline),
+            ),
         [plugins],
     );
 };
 
-const useHomeRoute = (): RouteCustom[] => {
-    const HomeComponent = useHomeComponent();
+const useHomeUrl = (): string | undefined => {
+    const { plugins }: Plugins = useContext(PluginsContext);
+    // using the last plugin override (arbitrary choice)
+    return useMemo(
+        () =>
+            last(
+                plugins
+                    .filter(plugin => plugin.homeUrl)
+                    .map(plugin => plugin.homeUrl),
+            ),
+        [plugins],
+    );
+};
+
+const useHomeOnlineRoute = (): RouteCustom[] => {
+    const HomeComponent = useHomeOnlineComponent();
+    if (!HomeComponent) {
+        return [];
+    }
+    return [
+        {
+            baseUrl: baseUrls.home,
+            permissions: [],
+            allowAnonymous: false,
+            component: props => <HomeComponent {...props} />,
+            params: [
+                {
+                    isRequired: false,
+                    key: 'accountId',
+                },
+            ],
+        },
+    ];
+};
+export const useHomeOfflineRoute = (): RouteCustom[] => {
+    const HomeComponent = useHomeOfflineComponent();
+    if (!HomeComponent) {
+        return [];
+    }
     return [
         {
             baseUrl: baseUrls.home,
@@ -104,60 +154,86 @@ const useGetProtectedRoutes = (
     );
 };
 
+const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
+    return useMemo(
+        () =>
+            routes.find(route =>
+                window.location.pathname.includes(`/${route.baseUrl}/`),
+            ),
+        [routes],
+    );
+};
+
 const setupRoutes: RouteCustom[] = [setupAccountPath, page404];
+const useGetRoutesConfigs = (): RouteCustom[] => {
+    const currentUser = useCurrentUser();
+    const hasNoAccount = useHasNoAccount();
+    const homeOnlineRoute = useHomeOnlineRoute();
+    const homeOfflineRoute = useHomeOfflineRoute();
+    const pluginRoutes = usePluginsRoutes();
+    if (hasNoAccount) {
+        return setupRoutes;
+    }
+    if (currentUser) {
+        return [...homeOnlineRoute, ...appRoutes, ...pluginRoutes];
+    }
+    return [
+        ...homeOfflineRoute,
+        ...appRoutes.filter(route => route.allowAnonymous),
+        ...pluginRoutes.filter(route => route.allowAnonymous),
+    ];
+};
 
 export const useRoutes = (userHomePage: string | undefined): Result => {
     const hasNoAccount = useHasNoAccount();
-    const pluginRoutes = usePluginsRoutes();
-    const homeRoute = useHomeRoute();
-    const redirections = useRedirections(hasNoAccount, userHomePage);
+    const homeUrl = useHomeUrl();
+    const routesConfigs = useGetRoutesConfigs();
 
-    const allRoutesConfigs: RouteCustom[] = useMemo(
-        () =>
-            hasNoAccount
-                ? setupRoutes
-                : [...homeRoute, ...appRoutes, ...pluginRoutes],
-        [hasNoAccount, homeRoute, pluginRoutes],
+    const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
+    const currentRoute = useCurrentRoute(routesConfigs);
+
+    const { isFetching: isFetchingCurrentUser } = useGetAndStoreCurrentUser(
+        !currentRoute?.allowAnonymous ||
+            currentRoute?.baseUrl === baseUrls.home,
     );
-
-    const protectedRoutes = useGetProtectedRoutes(
-        allRoutesConfigs,
+    const redirections = useRedirections(
         hasNoAccount,
+        isFetchingCurrentUser,
+        userHomePage || homeUrl,
     );
 
-    const currentRoute: RouteCustom | undefined = useMemo(
+    // routes should only change if currentUser has changed
+    const routes: ReactElement[] = useMemo(
         () =>
-            allRoutesConfigs.find(route =>
-                window.location.pathname.includes(`/${route.baseUrl}/`),
-            ),
-        [allRoutesConfigs],
-    );
-
-    const { data: currentUser, isFetching: isFetchingCurrentUser } =
-        useGetAndStoreCurrentUser(
-            !currentRoute?.allowAnonymous ||
-                currentRoute?.baseUrl === baseUrls.home,
-        );
-
-    // routes should only change id currentUser has changed
-    const routes: ReactElement[] = useMemo(() => {
-        if (!currentUser && !currentRoute?.allowAnonymous) {
-            return [];
-        }
-        return [...protectedRoutes, ...redirections];
+            isFetchingCurrentUser ? [] : [...protectedRoutes, ...redirections],
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [currentUser, hasNoAccount]);
-
-    const isLoadingRoutes =
-        ((!currentUser || routes.length === 0) &&
-            !currentRoute?.allowAnonymous) ||
-        (isFetchingCurrentUser && currentRoute?.baseUrl === baseUrls.home);
+        [isFetchingCurrentUser],
+    );
 
     return useMemo(
         () => ({
             routes,
-            isLoadingRoutes,
+            isLoadingRoutes: isFetchingCurrentUser,
         }),
-        [routes, isLoadingRoutes],
+        [routes, isFetchingCurrentUser],
     );
 };
+
+/** ROUTES:
+ * If user:
+ *  if !account => setup account
+ *      else if homeComponent and featureFlag => routes with online home path
+ *          else routes
+ * If not user:
+ *      if home offline plugin => [HomeOfflineRoute, loginRoute, ...anonymousRoutes]
+ *          else [login, ...anonymousRoutes]
+ *
+ * REDIRECTION on load:
+ * If user
+ *    if user home
+ *       else  if plugin default url
+ *          else if home
+ *             else forms
+ *    else if plugin home offline
+ *      else login
+ * */

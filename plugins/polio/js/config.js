@@ -589,5 +589,7 @@ export default {
     routes,
     menu,
     translations,
-    // homeComponent: () => <div>HOME POLIO</div>,
+    homeUrl: DASHBOARD_BASE_URL,
+    // homeOffline: () => <div>OFFLINE</div>,
+    // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

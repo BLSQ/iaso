@@ -29,8 +29,9 @@ export type Plugin = {
     routes: RouteCustom[];
     menu: MenuItem[];
     translations: Record<string, any>;
-    // eslint-disable-next-line no-unused-vars
-    homeComponent: ElementType;
+    homeUrl?: string;
+    homeOnline?: ElementType;
+    homeOffline?: ElementType;
 };
 
 export type Plugins = {

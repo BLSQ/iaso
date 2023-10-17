@@ -164,7 +164,7 @@ class RefreshLQASDataViewset(ModelViewSet):
             active_runs = [
                 run
                 for run in latest_runs["pipeline"]["runs"]["items"]
-                if (run["status"] != "queued" and run["status"] != "success" and run["status"] != "failed")
+                if (run["status"] not in ["queued", "success", "failed"])
                 and run.get("config", {}).get("country_id", None) == country_id
             ]
             # Don't create a task if there's already an ongoing run for the country

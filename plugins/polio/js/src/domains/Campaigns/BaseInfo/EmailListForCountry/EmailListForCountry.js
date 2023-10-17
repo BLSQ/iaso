@@ -2,7 +2,7 @@ import { CircularProgress, Tooltip, Typography } from '@material-ui/core';
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSafeIntl } from 'bluesquare-components';
-import { useCountryUsersGroup } from '../../../CountryNotificationsConfig/requests';
+import { useCountryUsersGroup } from '../../../Config/CountryNotification/requests';
 import MESSAGES from '../../../../constants/messages';
 
 export const EmailListForCountry = ({ countryId }) => {

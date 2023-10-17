@@ -9,6 +9,7 @@ from django.utils.safestring import mark_safe
 from .budget.models import MailTemplate, BudgetStepLink, BudgetStepFile, BudgetStep, WorkflowModel
 from .models import (
     Campaign,
+    ReasonForDelay,
     RoundDateHistoryEntry,
     Round,
     Config,
@@ -128,6 +129,11 @@ class ConfigAdmin(admin.ModelAdmin):
 class VaccineAuthorizationsAdmin(admin.ModelAdmin):
     model = VaccineAuthorization
     raw_id_fields = ("country",)
+
+
+@admin.register(ReasonForDelay)
+class ReasonForDelayAdmin(admin.ModelAdmin):
+    model = ReasonForDelay
 
 
 admin.site.register(Campaign, CampaignAdmin)

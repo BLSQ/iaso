@@ -6,9 +6,9 @@ import InputComponent from 'Iaso/components/forms/InputComponent';
 import { commaSeparatedIdsToArray } from 'Iaso/utils/forms';
 import { useFormState } from 'Iaso/hooks/form';
 import { usePutCountryMutation } from './requests';
-import MESSAGES from '../../constants/messages';
-import { useGetTeamsDropdown } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams';
-import { TeamType } from '../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants';
+import MESSAGES from '../../../constants/messages';
+import { useGetTeamsDropdown } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/hooks/requests/useGetTeams.ts';
+import { TeamType } from '../../../../../../../hat/assets/js/apps/Iaso/domains/teams/constants.ts';
 
 const makeDropDownListItem = user => {
     const userName =

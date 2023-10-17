@@ -1,6 +1,5 @@
 import { IntlFormatMessage } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
-import { LQAS_PASS, LQAS_FAIL } from '../shared/constants';
 import {
     LqasImDistrictDataWithNameAndRegion,
     ConvertedLqasImData,
@@ -14,6 +13,7 @@ import {
     accessDictRound,
     convertStatToPercent,
 } from '../shared/LqasIm';
+import { LQAS_FAIL, LQAS_PASS } from './constants';
 
 export const determineStatusForDistrict = district => {
     if (!district) return null;
@@ -172,4 +172,10 @@ export const makeCaregiversRatio = (
         { childrenChecked: 0, caregiversInformed: 0 },
     );
     return convertStatToPercent(caregiversInformed, childrenChecked);
+};
+
+export const findRegionShape = (shape, regionShapes) => {
+    return regionShapes.filter(
+        regionShape => regionShape.id === shape.parent_id,
+    )[0]?.name;
 };

@@ -22,7 +22,7 @@ export const useGetLatestLQASIMUpdate = (
         queryFn: () => getLatestRefresh(category, countryId),
         options: {
             select: data => data?.task ?? {},
-            refetchInterval: 1000,
+            refetchInterval: 5000,
             keepPreviousData: true,
             enabled: countryId !== undefined,
         },

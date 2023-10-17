@@ -8,7 +8,7 @@ export type RouteParam = {
 
 export type RouteCustom = {
     baseUrl: string;
-    permissions: string[];
+    permissions?: string[];
     params: RouteParam[];
     allowAnonymous?: boolean;
     isRootUrl?: boolean;

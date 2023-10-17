@@ -1,9 +1,9 @@
 import React, { ElementType, useContext, useMemo, ReactElement } from 'react';
-import { Route, Redirect } from 'react-router';
-import { cloneDeep } from 'lodash';
+import { Route } from 'react-router';
+import { last } from 'lodash';
 
 import {
-    routeConfigs,
+    routeConfigs as appRoutes,
     getPath,
     setupAccountPath,
     page404,
@@ -15,7 +15,7 @@ import Home from '../../home';
 import { PluginsContext } from '../../../utils';
 import { Plugins, RouteCustom } from '../types';
 import { useHasNoAccount } from '../../../utils/usersUtils';
-import { getRedirections } from '../../../routing/redirections';
+import { useRedirections } from '../../../routing/useRedirections';
 import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
 
 type Result = {
@@ -23,65 +23,108 @@ type Result = {
     isLoadingRoutes: boolean;
 };
 
+const useHomeComponent = (): ElementType => {
+    const { plugins }: Plugins = useContext(PluginsContext);
+    // using the last plugin override (arbitrary choice)
+    return useMemo(
+        () =>
+            last(
+                plugins
+                    .filter(plugin => plugin.homeComponent)
+                    .map(plugin => plugin.homeComponent),
+            ) || Home,
+        [plugins],
+    );
+};
+
+const useHomeRoute = (): RouteCustom[] => {
+    const HomeComponent = useHomeComponent();
+    return [
+        {
+            baseUrl: baseUrls.home,
+            permissions: [],
+            allowAnonymous: true,
+            component: props => <HomeComponent {...props} />,
+            params: [
+                {
+                    isRequired: false,
+                    key: 'accountId',
+                },
+            ],
+        },
+    ];
+};
+
+const usePluginsRoutes = (): RouteCustom[] => {
+    const { plugins }: Plugins = useContext(PluginsContext);
+    return plugins
+        .map(plugin =>
+            plugin.routes.map(route => {
+                if (route.allowAnonymous) return route;
+                return {
+                    ...route,
+                    params: [
+                        {
+                            isRequired: false,
+                            key: 'accountId',
+                        },
+                        ...route.params,
+                    ],
+                };
+            }),
+        )
+        .flat();
+};
+
+const useGetProtectedRoutes = (
+    routes: RouteCustom[],
+    hasNoAccount: boolean,
+): ReactElement[] => {
+    return useMemo(
+        () =>
+            routes.map(routeConfig => {
+                const { allowAnonymous = false, component } = routeConfig;
+                const renderProtectedComponent = props => (
+                    <ProtectedRoute
+                        // eslint-disable-next-line react/jsx-props-no-spreading
+                        {...props}
+                        routeConfig={routeConfig}
+                        component={routeConfig.component(props)}
+                        allRoutes={routes}
+                        hasNoAccount={hasNoAccount}
+                    />
+                );
+                const page =
+                    allowAnonymous || hasNoAccount
+                        ? component
+                        : renderProtectedComponent;
+                return <Route path={getPath(routeConfig)} component={page} />;
+            }),
+        [hasNoAccount, routes],
+    );
+};
+
+const setupRoutes: RouteCustom[] = [setupAccountPath, page404];
+
 export const useRoutes = (userHomePage: string | undefined): Result => {
     const hasNoAccount = useHasNoAccount();
-    const { plugins }: Plugins = useContext(PluginsContext);
-    // eslint-disable-next-line no-unused-vars
-    const HomeComponent: ElementType = useMemo(() => {
-        const homeComponents = plugins
-            .filter(plugin => plugin.homeComponent)
-            .map(plugin => plugin.homeComponent);
-        // using the last plugin override (arbitrary choice)
-        const component =
-            homeComponents.length > 0
-                ? homeComponents[homeComponents.length - 1]
-                : // or use Iaso Home page
-                  Home;
-        return component;
-    }, [plugins]);
+    const pluginRoutes = usePluginsRoutes();
+    const homeRoute = useHomeRoute();
+    const redirections = useRedirections(hasNoAccount, userHomePage);
 
-    const routesWithAccount: RouteCustom[] = useMemo(
-        () => [
-            {
-                baseUrl: baseUrls.home,
-                permissions: [],
-                allowAnonymous: true,
-                component: props => <HomeComponent {...props} />,
-                params: [
-                    {
-                        isRequired: false,
-                        key: 'accountId',
-                    },
-                ],
-            },
-            ...(routeConfigs as RouteCustom[]),
-            ...plugins
-                .map(plugin =>
-                    plugin.routes.map(route => {
-                        if (route.allowAnonymous) return route;
-                        return {
-                            ...route,
-                            params: [
-                                {
-                                    isRequired: false,
-                                    key: 'accountId',
-                                },
-                                ...route.params,
-                            ],
-                        };
-                    }),
-                )
-                .flat(),
-        ],
-        [HomeComponent, plugins],
-    );
     const allRoutesConfigs: RouteCustom[] = useMemo(
         () =>
             hasNoAccount
-                ? ([setupAccountPath, page404] as RouteCustom[])
-                : routesWithAccount,
-        [hasNoAccount, routesWithAccount],
+                ? setupRoutes
+                : [...homeRoute, ...appRoutes, ...pluginRoutes],
+        [hasNoAccount, homeRoute, pluginRoutes],
     );
+
+    const protectedRoutes = useGetProtectedRoutes(
+        allRoutesConfigs,
+        hasNoAccount,
+    );
+
     const currentRoute: RouteCustom | undefined = useMemo(
         () =>
             allRoutesConfigs.find(route =>
@@ -89,47 +132,19 @@ export const useRoutes = (userHomePage: string | undefined): Result => {
             ),
         [allRoutesConfigs],
     );
+
     const { data: currentUser, isFetching: isFetchingCurrentUser } =
         useGetAndStoreCurrentUser(
             !currentRoute?.allowAnonymous ||
                 currentRoute?.baseUrl === baseUrls.home,
         );
+
     // routes should only change id currentUser has changed
     const routes: ReactElement[] = useMemo(() => {
         if (!currentUser && !currentRoute?.allowAnonymous) {
             return [];
         }
-        const baseRoutes = allRoutesConfigs.map(routeConfig => {
-            const { allowAnonymous = false, component } = routeConfig;
-            const renderProtectedComponent = props => (
-                <ProtectedRoute
-                    // eslint-disable-next-line react/jsx-props-no-spreading
-                    {...props}
-                    routeConfig={routeConfig}
-                    component={routeConfig.component(props)}
-                    allRoutes={allRoutesConfigs}
-                    hasNoAccount={hasNoAccount}
-                />
-            );
-            const page =
-                allowAnonymous || hasNoAccount
-                    ? component
-                    : renderProtectedComponent;
-            return <Route path={getPath(routeConfig)} component={page} />;
-        });
-        return cloneDeep(baseRoutes).concat(
-            getRedirections(hasNoAccount, userHomePage).map(redirection => {
-                if (redirection.component) {
-                    return (
-                        <Route
-                            path={redirection.path}
-                            component={redirection.component}
-                        />
-                    );
-                }
-                return <Redirect path={redirection.path} to={redirection.to} />;
-            }),
-        );
+        return [...protectedRoutes, ...redirections];
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentUser, hasNoAccount]);
 

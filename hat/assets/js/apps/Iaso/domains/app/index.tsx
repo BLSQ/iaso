@@ -1,5 +1,4 @@
-import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
+import React, { FunctionComponent, useEffect } from 'react';
 import { Router, Link } from 'react-router';
 import { SnackbarProvider } from 'notistack';
 import { LinkProvider, LoadingSpinner } from 'bluesquare-components';
@@ -8,10 +7,15 @@ import LocalizedApp from './components/LocalizedAppComponent';
 
 import { baseUrls } from '../../constants/urls';
 import { dispatch } from '../../redux/store';
-import { redirectToReplace } from '../../routing/actions.ts';
-import { useRoutes } from './hooks/useRoutes.tsx';
+import { redirectToReplace } from '../../routing/actions';
+import { useRoutes } from './hooks/useRoutes';
 
-export default function App({ history, userHomePage }) {
+type Props = {
+    history: Record<string, any>;
+    userHomePage?: string;
+};
+
+const App: FunctionComponent<Props> = ({ history, userHomePage }) => {
     const { routes, isLoadingRoutes } = useRoutes(userHomePage);
 
     // Redirect on load if user specify a home url in his profile
@@ -48,12 +52,6 @@ export default function App({ history, userHomePage }) {
             )}
         </>
     );
-}
-App.defaultProps = {
-    userHomePage: undefined,
 };
 
-App.propTypes = {
-    history: PropTypes.object.isRequired,
-    userHomePage: PropTypes.string,
-};
+export default App;

@@ -30,6 +30,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         new_instance = m.Instance.objects.create(form=self.form, org_unit=self.org_unit)
 
         kwargs = {
+            "uuid": "018480e4-b0a7-4be8-96b7-d237f131716e",
             "org_unit": self.org_unit,
             "created_by": self.user,
             "new_parent": new_parent,
@@ -54,6 +55,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         change_request.new_reference_instances.set([new_instance])
         change_request.refresh_from_db()
 
+        self.assertEqual(str(change_request.uuid), kwargs["uuid"])
         self.assertEqual(change_request.org_unit, self.org_unit)
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.new_parent, new_parent)

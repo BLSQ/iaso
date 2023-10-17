@@ -63,6 +63,7 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         model = OrgUnitChangeRequest
         fields = [
             "id",
+            "uuid",
             "org_unit_id",
             "org_unit_uuid",
             "status",
@@ -98,6 +99,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         model = OrgUnitChangeRequest
         fields = [
             "id",
+            "uuid",
             "org_unit_id",
             "org_unit_uuid",
             "org_unit_name",
@@ -136,6 +138,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
         model = OrgUnitChangeRequest
         fields = [
             "id",
+            "uuid",
             "status",
             "created_by",
             "created_at",

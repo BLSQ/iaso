@@ -3,6 +3,9 @@
 from django.db import migrations, models
 
 
+# this is the same migration as 0147 because we modified 147 to include the line
+# ("PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING", "pending_liquidation_of_previous_sia_funding"),
+# too
 class Migration(migrations.Migration):
     dependencies = [
         ("polio", "0150_populate_reasons_for_delay"),

@@ -127,3 +127,50 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="Foo")
         response = self.client.get(f"/api/orgunits/changes/{change_request.pk}/")
         self.assertJSONResponse(response, 403)
+
+    def test_create_ok(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_name": "I want this new name",
+        }
+        response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
+        self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.created_by, self.user)
+
+    def test_create_ok_from_mobile(self):
+        """
+        The mobile adds `?app_id=.bar.baz` in the query params.
+        """
+        self.client.force_authenticate(self.user)
+        data = {
+            "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
+            "org_unit_id": self.org_unit.id,
+            "new_name": "Bar",
+        }
+        response = self.client.post("/api/orgunits/changes/?app_id=foo.bar.baz", data=data, format="json")
+        self.assertEqual(response.status_code, 201)
+        change_request = m.OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
+        self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.created_by, self.user)
+
+    def test_create_without_auth(self):
+        data = {
+            "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
+            "org_unit_id": self.org_unit.id,
+            "new_name": "Foo",
+        }
+        response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        self.assertJSONResponse(response, 403)
+
+    def test_create_without_perm(self):
+        unauthorized_org_unit = m.OrgUnit.objects.create()
+        self.client.force_authenticate(self.user)
+        data = {
+            "org_unit_id": unauthorized_org_unit.id,
+            "new_name": "I want this new name",
+        }
+        response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)

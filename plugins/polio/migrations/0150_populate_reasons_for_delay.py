@@ -50,8 +50,8 @@ TRANSLATIONS = {
 def create_reasons_for_delay(apps, schema_editor):
     ReasonForDelay = apps.get_model("polio", "ReasonForDelay")
     Account = apps.get_model("iaso", "Account")
-    polio_account = Account.objects.filter(pk=1).first()
-    if polio_account:
+
+    for polio_account in Account.objects.all():
         for choice_key in DelayReasons.values:
             ReasonForDelay.objects.create(
                 key_name=choice_key,
@@ -60,9 +60,11 @@ def create_reasons_for_delay(apps, schema_editor):
                 account=polio_account,
             )
         RoundDateHistoryEntry = apps.get_model("polio", "RoundDateHistoryEntry")
-        round_date_history_entries = RoundDateHistoryEntry.objects.all()
+        round_date_history_entries = RoundDateHistoryEntry.objects.filter(round__campaign__account=polio_account)
         for entry in round_date_history_entries:
-            reason_for_delay = ReasonForDelay.objects.filter(key_name=entry.reason).first()
+            reason_for_delay = (
+                ReasonForDelay.objects.filter(key_name=entry.reason).filter(account=polio_account).first()
+            )
             entry.reason_for_delay = reason_for_delay
             entry.save()
 

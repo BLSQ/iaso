@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import { DropdownOptions } from '../../../../../../../../hat/assets/js/apps/Iaso/types/utils';
 import MESSAGES from '../../../../constants/messages';
-import { SelectPeriod } from './types';
+import { RoundSelection, SelectPeriod, Side } from './types';
 import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
 
 export const useOptions = (): DropdownOptions<string>[] => {
@@ -98,4 +98,27 @@ export const useLegendItems = (
             },
         ];
     }, [displayedShape, formatMessage]);
+};
+
+export const getRound = (
+    rounds: string | undefined,
+    side: Side,
+): RoundSelection => {
+    if (!rounds) {
+        if (side === 'left') return 'penultimate';
+        return 'latest';
+    }
+    const [leftRound, rightRound] = rounds.split(',');
+    if (side === 'left') {
+        const parsedValue = parseInt(leftRound, 10);
+        if (Number.isInteger(parsedValue)) {
+            return parsedValue;
+        }
+        return leftRound as RoundSelection;
+    }
+    const parsedValue = parseInt(rightRound, 10);
+    if (Number.isInteger(parsedValue)) {
+        return parsedValue;
+    }
+    return rightRound as RoundSelection;
 };

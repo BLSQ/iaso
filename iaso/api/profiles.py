@@ -421,11 +421,10 @@ class ProfilesViewSet(viewsets.ViewSet):
     @staticmethod
     def module_permissions(current_account):
         # Get all modules linked to the current account
-        account_modules = current_account.modules
-        # Get all permissions linked to the modules
+        account_modules = current_account.modules if current_account.modules else []
         modules_permissions = []
+        # Get all permissions linked to the modules
         modules = MODULE_PERMISSIONS.keys()
-
         for module in account_modules:
             if module in modules:
                 modules_permissions = modules_permissions + MODULE_PERMISSIONS[module]

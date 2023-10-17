@@ -30,7 +30,7 @@ class PermissionsViewSet(viewsets.ViewSet):
             perms = request.user.user_permissions
 
         account = request.user.iaso_profile.account
-        account_modules = account.modules
+        account_modules = account.modules if account.modules else []
 
         # Get all permissions linked to the modules
         modules_permissions = []

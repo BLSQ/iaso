@@ -362,7 +362,7 @@ class BulkCreateUserFromCsvViewSet(ModelViewSet):
     @staticmethod
     def module_permissions(current_account):
         # Get all modules linked to the current account
-        account_modules = current_account.modules
+        account_modules = current_account.modules if current_account.modules else []
         # Get all permissions linked to the modules
         modules_permissions = []
         modules = MODULE_PERMISSIONS.keys()

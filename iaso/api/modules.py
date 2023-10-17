@@ -36,8 +36,9 @@ class ModuleSerializer(serializers.Serializer):
         profile = Profile.objects.filter(user=user)
         if profile:
             account = profile.first().account
+            account_modules = account.modules if account.modules else []
             account_serializer = []
-            if obj["codename"] in account.modules:
+            if obj["codename"] in account_modules:
                 account_serializer = [account]
             else:
                 account_serializer = []

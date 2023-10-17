@@ -432,3 +432,7 @@ export type MapColor = {
     opacity: string; // a number as string: "2"
     zIndex: number;
 };
+
+export type Side = 'left' | 'right';
+
+export const Sides = { left: 'left', right: 'right' };

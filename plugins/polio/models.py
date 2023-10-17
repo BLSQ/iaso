@@ -93,6 +93,9 @@ class DelayReasons(models.TextChoices):
     VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
     FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
     OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING", _(
+        "pending_liquidation_of_previous_sia_funding"
+    )
 
 
 def make_group_round_scope():

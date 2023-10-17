@@ -315,6 +315,7 @@
     "iaso.polio.label.imResults": "IM Results",
     "iaso.polio.label.imWarning": "90%-94%",
     "iaso.polio.label.INITIAL_DATA": "Initial data",
+    "iaso.polio.label.inScope": "No data found",
     "iaso.polio.label.internal": "Internal",
     "iaso.polio.label.is_test": "Test campaign/On hold status",
     "iaso.polio.label.keyName": "Key",
@@ -326,6 +327,7 @@
     "iaso.polio.label.latestCampaignUntil": "Latest campaign until",
     "iaso.polio.label.latestEvent": "Latest event",
     "iaso.polio.label.latestEventDate": "Latest event date",
+    "iaso.polio.label.latestManualRefresh": "Latest manual refresh",
     "iaso.polio.label.legend": "Legend",
     "iaso.polio.label.linksOrFilesRequired": "You need to attach at least a link or a file",
     "iaso.polio.label.lqas": "LQAS",
@@ -368,6 +370,7 @@
     "iaso.polio.label.passed": "Passed",
     "iaso.polio.label.paymentMode": "Payment Mode",
     "iaso.polio.label.pending": "Pending",
+    "iaso.polio.label.PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING": "Pending liquidation of previous SIA funding",
     "iaso.polio.label.playground": "At playground",
     "iaso.polio.label.poNumbers": "PO numbers",
     "iaso.polio.label.PREPAREDNESS_LEVEL_NOT_REACHED": "Preparedness level not reached",
@@ -390,6 +393,7 @@
     "iaso.polio.label.receptionPreAlert": "Pre-alert",
     "iaso.polio.label.receptionVaccineArrivalReport": "Arrival report",
     "iaso.polio.label.refreshedAt": "Refreshed at",
+    "iaso.polio.label.refreshLqasData": "Refresh LQAS data",
     "iaso.polio.label.refreshPage": "Refresh the page",
     "iaso.polio.label.regional": "Regional",
     "iaso.polio.label.regionalToNationalLevel": "Regional to national level",
@@ -542,5 +546,6 @@
     "iaso.polio.validation.futureDateError": "This date should not be in the future",
     "iaso.polio.validation.onsetAfterNotificationError": "Date of onset should be before virus notification",
     "iaso.polio.validation.onsetAfterOutbreakDeclarationError": "Date of onset should be before outbreak declaration",
-    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration"
+    "iaso.polio.validation.virusNotificationAfterOutbreakDeclarationError": "Virus notification should be before outbreak declaration",
+    "iaso.task.label.gotoLqasForCountry": "See LQAS page"
 }

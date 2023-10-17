@@ -1,6 +1,9 @@
+import datetime
+
 import time_machine
 
 from django.contrib.gis.geos import Point
+from django.utils import timezone
 
 from iaso.api.org_unit_change_requests.serializers import OrgUnitChangeRequestListSerializer
 from iaso.test import TestCase
@@ -67,6 +70,8 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
     Test ViewSet.
     """
 
+    DT = datetime.datetime(2023, 10, 17, 17, 0, 0, 0, tzinfo=timezone.utc)
+
     @classmethod
     def setUpTestData(cls):
         data_source = m.DataSource.objects.create(name="Data source")
@@ -86,6 +91,7 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         user.iaso_profile.org_units.set([org_unit])
 
         cls.org_unit = org_unit
+        cls.org_unit_type = org_unit_type
         cls.project = project
         cls.user = user
 
@@ -166,11 +172,106 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     def test_create_without_perm(self):
-        unauthorized_org_unit = m.OrgUnit.objects.create()
         self.client.force_authenticate(self.user)
+
+        unauthorized_org_unit = m.OrgUnit.objects.create()
         data = {
             "org_unit_id": unauthorized_org_unit.id,
             "new_name": "I want this new name",
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
+        self.assertEqual(response.status_code, 403)
+
+    @time_machine.travel(DT, tick=False)
+    def test_update_ok(self):
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_org_unit_type": self.org_unit_type,
+            "new_name": "Baz",
+            "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
+            "approved_fields": ["new_org_unit_type"],
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "new_name": "Foo",
+        }
+        response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.updated_by, self.user)
+        self.assertEqual(change_request.updated_at, self.DT)
+
+    @time_machine.travel(DT, tick=False)
+    def test_update_ok_from_mobile(self):
+        """
+        The mobile adds `?app_id=.bar.baz` in the query params.
+        """
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_org_unit_type": self.org_unit_type,
+            "new_name": "Baz",
+            "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
+            "approved_fields": ["new_org_unit_type"],
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "new_name": "Foo",
+            "org_unit_id": self.org_unit.pk,
+        }
+        response = self.client.put(
+            f"/api/orgunits/changes/{change_request.pk}/?app_id=foo.bar.baz", data=data, format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.updated_by, self.user)
+        self.assertEqual(change_request.updated_at, self.DT)
+
+    def test_update_without_auth(self):
+        kwargs = {
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_org_unit_type": self.org_unit_type,
+            "new_name": "Baz",
+            "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
+            "approved_fields": ["new_org_unit_type"],
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "new_name": "Foo",
+        }
+        response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertJSONResponse(response, 403)
+
+    def test_update_without_perm(self):
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_org_unit_type": self.org_unit_type,
+            "new_name": "Baz",
+            "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
+            "approved_fields": ["new_org_unit_type"],
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        unauthorized_org_unit = m.OrgUnit.objects.create()
+        data = {
+            "org_unit_id": unauthorized_org_unit.id,
+            "new_name": "Baz",
+        }
+        response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)

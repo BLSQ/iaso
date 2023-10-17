@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, makeStyles, Divider, Grid, Typography } from '@material-ui/core';
+import { Box, makeStyles, Divider, Grid } from '@material-ui/core';
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';
 import { LqasImDates } from './LqasImDates';
@@ -20,11 +20,7 @@ type Props = {
     onRoundSelect: (round: number) => void;
 };
 
-const styles = theme => ({
-    lqasImMapHeader: {
-        padding: theme.spacing(2),
-        fontWeight: 'bold',
-    },
+const styles = () => ({
     // setting marginRight to prevent Divider from breaking the grid, marginLeft to prevent misalignment
     verticalDivider: { marginRight: -1, marginLeft: -1 },
 });
@@ -44,37 +40,24 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
             {options.length > 0 && (
                 <Grid container direction="row">
                     <Grid container item xs={6} direction="row">
-                        {options.length <= 2 && (
-                            <Typography
-                                variant="h5"
-                                className={classes.lqasImMapHeader}
-                                color="primary"
-                            >
-                                {`${formatMessage(MESSAGES.round)} ${round}`}
-                            </Typography>
-                        )}
-                        {options.length > 2 && (
-                            <Grid item xs={12}>
-                                <Box ml={2} mr={2}>
-                                    <InputComponent
-                                        type="select"
-                                        keyValue="lqasImHeader"
-                                        options={options.map(o => ({
-                                            ...o,
-                                            value: `${o.value}`,
-                                        }))}
-                                        value={round ? `${round}` : ''}
-                                        onChange={(_keyValue, value) =>
-                                            onRoundSelect(parseInt(value, 10))
-                                        }
-                                        labelString={formatMessage(
-                                            MESSAGES.round,
-                                        )}
-                                        clearable={false}
-                                    />
-                                </Box>
-                            </Grid>
-                        )}
+                        <Grid item xs={12}>
+                            <Box ml={2} mr={2}>
+                                <InputComponent
+                                    type="select"
+                                    keyValue="lqasImHeader"
+                                    options={options.map(o => ({
+                                        ...o,
+                                        value: `${o.value}`,
+                                    }))}
+                                    value={round ? `${round}` : ''}
+                                    onChange={(_keyValue, value) =>
+                                        onRoundSelect(parseInt(value, 10))
+                                    }
+                                    labelString={formatMessage(MESSAGES.round)}
+                                    clearable={false}
+                                />
+                            </Box>
+                        </Grid>
                     </Grid>
                     {startDate && endDate && (
                         <>

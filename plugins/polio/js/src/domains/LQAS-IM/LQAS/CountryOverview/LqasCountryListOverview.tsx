@@ -150,15 +150,6 @@ export const LqasCountryListOverview: FunctionComponent<Props> = ({
                     <MuiTable stickyHeader size="small">
                         <TableHead>
                             <TableRow>
-                                {/* <TableCell
-                                onClick={() => handleSort('COUNTRY')}
-                                variant="head"
-                                style={{ cursor: 'pointer' }}
-                            >
-                                <Typography>
-                                    {formatMessage(MESSAGES.country)}
-                                </Typography>
-                            </TableCell> */}
                                 <TableCell
                                     onClick={() => handleSort('REGION')}
                                     variant="head"
@@ -175,6 +166,11 @@ export const LqasCountryListOverview: FunctionComponent<Props> = ({
                                 >
                                     <Typography>
                                         {formatMessage(MESSAGES.district)}
+                                    </Typography>
+                                </TableCell>
+                                <TableCell variant="head">
+                                    <Typography>
+                                        {formatMessage(MESSAGES.result)}
                                     </Typography>
                                 </TableCell>
                                 <TableCell
@@ -238,6 +234,19 @@ export const LqasCountryListOverview: FunctionComponent<Props> = ({
                                                 <TableText
                                                     text={shape.name || '-'}
                                                 />
+                                            </TableCell>
+                                            <TableCell>
+                                                <Typography variant="body2">
+                                                    {`${
+                                                        shape?.data
+                                                            ?.total_child_fmd ??
+                                                        '--'
+                                                    }/${
+                                                        shape?.data
+                                                            ?.total_child_checked ??
+                                                        '--'
+                                                    }`}
+                                                </Typography>
                                             </TableCell>
                                             <TableCell>
                                                 <Typography

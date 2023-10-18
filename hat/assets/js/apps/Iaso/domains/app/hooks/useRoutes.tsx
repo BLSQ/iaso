@@ -11,12 +11,13 @@ import {
 
 import ProtectedRoute from '../../users/components/ProtectedRoute';
 import { baseUrls } from '../../../constants/urls';
-// import Home from '../../home';
+import { HomeOnline } from '../../home/HomeOnline';
 import { PluginsContext } from '../../../utils';
 import { Plugins, RouteCustom } from '../types';
 import { useCurrentUser, useHasNoAccount } from '../../../utils/usersUtils';
 import { useRedirections } from '../../../routing/useRedirections';
 import { useGetAndStoreCurrentUser } from '../../home/hooks/useGetAndStoreCurrentUser';
+import { SHOW_HOME_ONLINE, hasFeatureFlag } from '../../../utils/featureFlags';
 
 type Result = {
     routes: ReactElement[];
@@ -25,15 +26,17 @@ type Result = {
 
 const useHomeOnlineComponent = (): ElementType | undefined => {
     const { plugins }: Plugins = useContext(PluginsContext);
+    const currentUser = useCurrentUser();
+    const canShowHome = hasFeatureFlag(currentUser, SHOW_HOME_ONLINE);
+    const PluginHome = last(
+        plugins
+            .filter(plugin => plugin.homeOnline)
+            .map(plugin => plugin.homeOnline),
+    );
     // using the last plugin override (arbitrary choice)
     return useMemo(
-        () =>
-            last(
-                plugins
-                    .filter(plugin => plugin.homeOnline)
-                    .map(plugin => plugin.homeOnline),
-            ),
-        [plugins],
+        () => (canShowHome ? PluginHome || HomeOnline : undefined),
+        [PluginHome, canShowHome],
     );
 };
 export const useHomeOfflineComponent = (): ElementType | undefined => {
@@ -218,22 +221,3 @@ export const useRoutes = (userHomePage: string | undefined): Result => {
         [routes, isFetchingCurrentUser],
     );
 };
-
-/** ROUTES:
- * If user:
- *  if !account => setup account
- *      else if homeComponent and featureFlag => routes with online home path
- *          else routes
- * If not user:
- *      if home offline plugin => [HomeOfflineRoute, loginRoute, ...anonymousRoutes]
- *          else [login, ...anonymousRoutes]
- *
- * REDIRECTION on load:
- * If user
- *    if user home
- *       else  if plugin default url
- *          else if home
- *             else forms
- *    else if plugin home offline
- *      else login
- * */

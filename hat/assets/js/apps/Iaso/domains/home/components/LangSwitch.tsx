@@ -1,9 +1,11 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useCallback } from 'react';
 import { makeStyles, Box } from '@material-ui/core';
 import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
 import { switchLocale } from '../../app/actions';
 import { APP_LOCALES } from '../../app/constants';
+import { useHasNoAccount } from '../../../utils/usersUtils';
+import { saveCurrentUserProFile } from '../../users/actions';
 
 const useStyles = makeStyles(theme => ({
     languageSwitch: {
@@ -20,10 +22,25 @@ const useStyles = makeStyles(theme => ({
 export const LangSwitch: FunctionComponent = () => {
     const dispatch = useDispatch();
     const classes: Record<string, string> = useStyles();
+
+    const hasNoAccount = useHasNoAccount();
     const activeLocale = useSelector(
         (state: { app: { locale: { code: string } } }) => state.app.locale,
     );
-
+    const handleClick = useCallback(
+        localeCode => {
+            if (hasNoAccount) {
+                dispatch(switchLocale(localeCode));
+            } else {
+                dispatch(
+                    saveCurrentUserProFile({
+                        language: localeCode,
+                    }),
+                );
+            }
+        },
+        [dispatch, hasNoAccount],
+    );
     return (
         <>
             {APP_LOCALES.map((locale, index) => (
@@ -34,7 +51,7 @@ export const LangSwitch: FunctionComponent = () => {
                             locale.code === activeLocale.code &&
                                 classes.languageSwitchActive,
                         )}
-                        onClick={() => dispatch(switchLocale(locale.code))}
+                        onClick={() => handleClick(locale.code)}
                     >
                         {locale.code}
                     </Box>

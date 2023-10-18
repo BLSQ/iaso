@@ -17,7 +17,7 @@ export type RouteCustom = {
 };
 
 export type MenuItem = {
-    label: IntlMessage;
+    label: IntlMessage | string;
     key: string;
     permissions: string[];
     subMenu?: MenuItem[];

@@ -623,23 +623,14 @@ class OrgUnitChangeRequest(models.Model):
     def __str__(self) -> str:
         return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"
 
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     def clean(self, *args, **kwargs):
         super().clean()
-        self.clean_approved_fields()
-
-    def clean_approved_fields(self) -> None:
-        approved_fields = list(set(self.approved_fields))
-        for name in approved_fields:
-            if name not in self.new_fields:
-                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
-        self.approved_fields = approved_fields
-
-    @cached_property
-    def new_fields(self) -> typing.List[str]:
-        """
-        Returns the list of fields names which can store a change request.
-        """
-        return [field.name for field in OrgUnitChangeRequest._meta.get_fields() if field.name.startswith("new_")]
+        self.approved_fields = list(set(self.approved_fields))
+        self.clean_approved_fields(self.approved_fields)
 
     @property
     def requested_fields(self) -> typing.List[str]:
@@ -648,10 +639,56 @@ class OrgUnitChangeRequest(models.Model):
         `prefetch_related` of m2m are required when used in bulk.
         """
         requested = []
-        for name in self.new_fields:
+        for name in self.get_new_fields():
             field = getattr(self, name)
             is_m2m = field.__class__.__name__ == "ManyRelatedManager"
             is_requested = field.exists() if is_m2m else field
             if is_requested:
                 requested.append(name)
         return requested
+
+    def approve(self, user: User, approved_fields: typing.List[str]) -> None:
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = user
+        self.status = self.Statuses.APPROVED
+        self.approved_fields = approved_fields
+
+        for field_name in self.approved_fields:
+            if field_name == "new_location_accuracy":
+                continue
+            elif field_name == "new_groups":
+                # TODO: Handle groups m2m.
+                continue
+            elif field_name == "new_reference_instances":
+                # TODO: Handle reference instances m2m.
+                continue
+            else:
+                new_value = getattr(self, field_name)
+                org_unit_field_name = field_name.replace("new_", "")
+                setattr(self.org_unit, org_unit_field_name, new_value)
+                self.org_unit.save()
+
+        # TODO: log changes.
+        # TODO: change org unit status to `VALIDATION_VALID`.
+
+        self.save()
+
+    def reject(self, user: User, rejection_comment: str) -> None:
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = user
+        self.status = self.Statuses.REJECTED
+        self.rejection_comment = rejection_comment
+        self.save()
+
+    @classmethod
+    def get_new_fields(cls) -> typing.List[str]:
+        """
+        Returns the list of fields names which can store a change request.
+        """
+        return [field.name for field in cls._meta.get_fields() if field.name.startswith("new_")]
+
+    @classmethod
+    def clean_approved_fields(cls, approved_fields):
+        for name in approved_fields:
+            if name not in cls.get_new_fields():
+                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})

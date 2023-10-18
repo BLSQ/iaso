@@ -2,6 +2,7 @@ import time_machine
 import uuid
 
 from django.contrib.gis.geos import Point
+from rest_framework.exceptions import ValidationError
 
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequest,
@@ -9,6 +10,7 @@ from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestWriteSerializer,
     OrgUnitForChangeRequest,
+    OrgUnitChangeRequestReviewSerializer,
 )
 from iaso.models import OrgUnitChangeRequest
 from iaso.test import TestCase
@@ -295,3 +297,70 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         new_reference_instances = change_request.new_reference_instances.all()
         self.assertIn(instance1, new_reference_instances)
         self.assertIn(instance2, new_reference_instances)
+
+
+class OrgUnitChangeRequestApprovalSerializerTestCase(TestCase):
+    """
+    Test `OrgUnitChangeRequestReviewSerializer`.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.org_unit = m.OrgUnit.objects.create()
+        cls.change_request = m.OrgUnitChangeRequest.objects.create(org_unit=cls.org_unit, new_name="Foo")
+
+    def test_serialize_ok(self):
+        data = {
+            "status": self.change_request.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+        data = {
+            "status": self.change_request.Statuses.REJECTED,
+            "rejection_comment": "Not good enough",
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_validate_status(self):
+        data = {
+            "status": OrgUnitChangeRequest.Statuses.NEW,
+            "approved_fields": ["new_name"],
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(error.exception.detail["status"][0], "Must be `approved` or `rejected`.")
+
+    def test_validate_approved_fields(self):
+        data = {
+            "status": OrgUnitChangeRequest.Statuses.APPROVED,
+            "approved_fields": ["new_name", "foo"],
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(error.exception.detail["approved_fields"][0], "Value foo is not a valid choice.")
+
+    def test_validate(self):
+        data = {
+            "status": OrgUnitChangeRequest.Statuses.REJECTED,
+            "rejection_comment": "",
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(error.exception.detail["non_field_errors"][0], "A `rejection_comment` must be provided.")
+
+        data = {
+            "status": OrgUnitChangeRequest.Statuses.APPROVED,
+            "approved_fields": [],
+        }
+        serializer = OrgUnitChangeRequestReviewSerializer(data=data)
+        with self.assertRaises(ValidationError) as error:
+            serializer.is_valid(raise_exception=True)
+        self.assertEqual(
+            error.exception.detail["non_field_errors"][0], "At least one `approved_fields` must be provided."
+        )

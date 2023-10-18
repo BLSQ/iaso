@@ -1,7 +1,12 @@
+import datetime
 from decimal import Decimal
+
+import time_machine
+
 
 from django.contrib.gis.geos import Point
 from django.core.exceptions import ValidationError
+from django.utils import timezone
 
 from iaso import models as m
 from iaso.test import TestCase
@@ -11,6 +16,8 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
     """
     Test OrgUnitChangeRequest model.
     """
+
+    DT = datetime.datetime(2023, 10, 18, 17, 0, 0, 0, tzinfo=timezone.utc)
 
     @classmethod
     def setUpTestData(cls):
@@ -70,25 +77,11 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertCountEqual(change_request.approved_fields, kwargs["approved_fields"])
 
     def test_clean_approved_fields(self):
-        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
-
-        # It should remove duplicates.
-        change_request.approved_fields = ["new_name", "new_name"]
-        change_request.clean_approved_fields()
-        self.assertEqual(change_request.approved_fields, ["new_name"])
-
-        # It should raise for an invalid value.
-        change_request.approved_fields = ["new_name", "foo"]
         with self.assertRaises(ValidationError) as error:
-            change_request.clean_approved_fields()
+            m.OrgUnitChangeRequest.clean_approved_fields(["new_name", "foo"])
         self.assertIn("Value foo is not a valid choice.", error.exception.messages)
 
-        # `clean()` should call `clean_approved_fields()`.
-        change_request.approved_fields = ["new_parent", "new_parent"]
-        change_request.clean()
-        self.assertEqual(change_request.approved_fields, ["new_parent"])
-
-    def test_new_fields(self):
+    def test_get_new_fields(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit)
         expected_fields = [
             "new_parent",
@@ -99,7 +92,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_location_accuracy",
             "new_reference_instances",
         ]
-        self.assertCountEqual(change_request.new_fields, expected_fields)
+        self.assertCountEqual(change_request.get_new_fields(), expected_fields)
 
     def test_requested_fields(self):
         change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
@@ -109,3 +102,38 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         change_request.new_groups.add(m.Group.objects.create(name="new group"))
         change_request.save()
         self.assertCountEqual(change_request.requested_fields, ["new_name", "new_org_unit_type", "new_groups"])
+
+    @time_machine.travel(DT, tick=False)
+    def test_reject(self):
+        change_request = m.OrgUnitChangeRequest.objects.create(org_unit=self.org_unit, new_name="New name")
+        change_request.reject(user=self.user, rejection_comment="Foo Bar Baz.")
+        self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
+        self.assertEqual(change_request.reviewed_at, self.DT)
+        self.assertEqual(change_request.reviewed_by, self.user)
+        self.assertEqual(change_request.rejection_comment, "Foo Bar Baz.")
+
+    @time_machine.travel(DT, tick=False)
+    def test_approve(self):
+        self.org_unit.name = "Old name."
+        self.org_unit.save()
+
+        approved_fields = ["new_name", "new_location_accuracy"]
+        change_request = m.OrgUnitChangeRequest.objects.create(
+            org_unit=self.org_unit,
+            new_name="New name",
+            new_parent=None,
+            new_org_unit_type=None,
+            new_location=None,
+            new_location_accuracy=None,
+        )
+        change_request.approve(user=self.user, approved_fields=approved_fields)
+        # TODO: handle m2m.
+        # new_groups
+        # new_reference_instances
+
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+        self.assertEqual(change_request.reviewed_at, self.DT)
+        self.assertEqual(change_request.reviewed_by, self.user)
+        self.assertCountEqual(change_request.approved_fields, approved_fields)
+
+        self.assertEqual(self.org_unit.name, "New name")

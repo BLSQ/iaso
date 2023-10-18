@@ -460,6 +460,7 @@ class TransitionToSerializer(serializers.Serializer):
             send_budget_mails(step, transition, self.context["request"])
             step.is_email_sent = True
             step.save()
+            # FIXME Must Be saved to BudgetProcess instead of campaign
             with transaction.atomic():
                 field = transition.to_node + "_at_WFEDITABLE"
                 if model_field_exists(campaign, field):
@@ -644,7 +645,6 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     def get_budget_last_updated_at(self, campaign: Annotated[Campaign, LastBudgetAnnotation]):
         if campaign.budget_last_updated_at:
             return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
-
 
 
 class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):

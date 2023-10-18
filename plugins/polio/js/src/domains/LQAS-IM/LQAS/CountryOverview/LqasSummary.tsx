@@ -3,12 +3,12 @@ import { Box, Typography, Grid, Divider } from '@material-ui/core';
 import { makeStyles } from '@material-ui/styles';
 import React, { FunctionComponent, useMemo } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { ConvertedLqasImData } from '../../../constants/types';
+import { ConvertedLqasImData } from '../../../../constants/types';
 
-import { FAIL_COLOR, OK_COLOR } from '../../../styles/constants';
-import { getLqasStatsForRound, makeCaregiversRatio } from '../LQAS/utils';
-import { accessArrayRound, convertStatToPercent } from './LqasIm';
-import MESSAGES from '../../../constants/messages';
+import { FAIL_COLOR, OK_COLOR } from '../../../../styles/constants';
+import { getLqasStatsForRound, makeCaregiversRatio } from '../utils';
+import { accessArrayRound, convertStatToPercent } from '../../shared/LqasIm';
+import MESSAGES from '../../../../constants/messages';
 
 type Props = {
     campaign?: string;

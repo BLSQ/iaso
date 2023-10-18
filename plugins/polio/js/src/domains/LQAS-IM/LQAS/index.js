@@ -19,8 +19,8 @@ import { DistrictsNotFound } from '../shared/DistrictsNotFound.tsx';
 import { DatesIgnored } from '../shared/DatesIgnored.tsx';
 import { HorizontalDivider } from '../../../components/HorizontalDivider.tsx';
 import { LqasImVerticalChart } from '../shared/LqasImVerticalChart.tsx';
-import { MapContainer } from '../shared/MapContainer.tsx';
 import { useLqasData } from './hooks/useLqasData.ts';
+import { LqasOverviewContainer } from './CountryOverview/LqasOverviewContainer.tsx';
 import MESSAGES from '../../../constants/messages';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
 import { makeDropdownOptions } from '../shared/LqasIm.tsx';
@@ -28,6 +28,7 @@ import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/rou
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
 import { defaultRounds, paperElevation } from '../shared/constants.ts';
 import { useLqasIm } from '../shared/requests.ts';
+import { Sides } from '../../../constants/types.ts';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -95,7 +96,7 @@ export const Lqas = ({ router }) => {
                 <Grid container spacing={2} direction="row">
                     {selectedRounds.map((rnd, index) => (
                         <Grid item xs={6} key={`round_${rnd}_${index}`}>
-                            <MapContainer
+                            <LqasOverviewContainer
                                 round={parseInt(rnd, 10)} // parsing the rnd because it will be a string when coming from params
                                 campaign={campaign}
                                 campaigns={campaigns}
@@ -104,9 +105,10 @@ export const Lqas = ({ router }) => {
                                 isFetching={isFetching}
                                 debugData={debugData}
                                 paperElevation={paperElevation}
-                                type="lqas"
                                 onRoundChange={onRoundChange(index)}
                                 options={dropDownOptions}
+                                side={index === 0 ? Sides.left : Sides.right}
+                                router={router}
                             />
                         </Grid>
                     ))}

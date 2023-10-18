@@ -12,12 +12,14 @@ from django.db.models import Count, Q
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
-
+from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
+from iaso.models.base import Account
 from iaso.models.microplanning import Team
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.preparedness.parser import open_sheet_by_url
 from plugins.polio.preparedness.spread_cache import CachedSpread
+from translated_fields import TranslatedField
 
 # noinspection PyUnresolvedReferences
 # from .budget.models import BudgetStep, BudgetStepFile
@@ -91,6 +93,9 @@ class DelayReasons(models.TextChoices):
     VRF_NOT_SIGNED = "VRF_NOT_SIGNED", _("vrf_not_signed")
     FOUR_WEEKS_GAP_BETWEEN_ROUNDS = "FOUR_WEEKS_GAP_BETWEEN_ROUNDS", _("four_weeks_gap_betwenn_rounds")
     OTHER_VACCINATION_CAMPAIGNS = "OTHER_VACCINATION_CAMPAIGNS", _("other_vaccination_campaigns")
+    PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING = "PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING", _(
+        "pending_liquidation_of_previous_sia_funding"
+    )
 
 
 def make_group_round_scope():
@@ -174,10 +179,32 @@ class RoundDateHistoryEntry(models.Model):
     previous_ended_at = models.DateField(null=True, blank=True)
     started_at = models.DateField(null=True, blank=True)
     ended_at = models.DateField(null=True, blank=True)
+    # Deprecated. Cannot be deleted until the PowerBI dashboards are updated to use reason_for_delay instead
     reason = models.CharField(null=True, blank=True, choices=DelayReasons.choices, max_length=200)
+    reason_for_delay = models.ForeignKey(
+        "ReasonForDelay", on_delete=models.PROTECT, null=True, blank=True, related_name="round_history_entries"
+    )
     round = models.ForeignKey("Round", on_delete=models.CASCADE, related_name="datelogs", null=True, blank=True)
     modified_by = models.ForeignKey("auth.User", on_delete=models.PROTECT, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ReasonForDelay(SoftDeletableModel):
+    name = TranslatedField(models.CharField(_("name"), max_length=200), {"fr": {"blank": True}})
+    # key_name is necessary for the current implementation of powerBi dashboards
+    # and for the front-end to be able to prevent users from selecting "INITIAL_DATA"
+    # when updating round dates
+    key_name = models.CharField(blank=True, max_length=200, validators=[RegexValidator(r"^[A-Z_]+$")])
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    account = models.ForeignKey(Account, models.CASCADE, related_name="reasons_for_delay")
+
+    class Meta:
+        # This will prevent sharing reasons across accounts, but it can be annoying if 2 accounts need INITIAL_DATA
+        unique_together = ["key_name", "account"]
+
+    def __str__(self):
+        return self.name
 
 
 class Round(models.Model):

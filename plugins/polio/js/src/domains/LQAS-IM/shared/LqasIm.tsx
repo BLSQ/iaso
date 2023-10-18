@@ -13,9 +13,10 @@ import {
 } from '../../../constants/types';
 import { sumChildrenCheckedLqas } from '../LQAS/utils';
 import MESSAGES from '../../../constants/messages';
-import { imNfmKeys, lqasNfmKeys, lqasRfaKeys, imRfaKeys } from './constants';
+import { imNfmKeys, imRfaKeys } from './constants';
 import { sumChildrenCheckedIm } from '../IM/utils';
 import { DropdownOptions } from '../../../../../../../hat/assets/js/apps/Iaso/types/utils';
+import { lqasNfmKeys, lqasRfaKeys } from '../LQAS/constants';
 
 const accessFullRoundData = (
     data: LqasImCampaign,

@@ -236,6 +236,7 @@
     "iaso.forms.error.fieldRequired": "This field is required",
     "iaso.forms.form_id": "Form id",
     "iaso.forms.geom": "Coordinates",
+    "iaso.forms.geom_ref": "Reference coordinates",
     "iaso.forms.gps_source": "GPS source",
     "iaso.forms.hasInstances": "Form submissions",
     "iaso.forms.instance_updated_at": "Latest submission",

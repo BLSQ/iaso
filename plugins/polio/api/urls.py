@@ -23,9 +23,7 @@ from plugins.polio.api.vaccines.vaccine_authorization import VaccineAuthorizatio
 from plugins.polio.api.dashboards.vaccine_stocks import VaccineStocksViewSet
 from plugins.polio.budget.api import BudgetCampaignViewSet, BudgetStepViewSet, WorkflowViewSet
 from plugins.polio.tasks.api.create_refresh_preparedness_data import RefreshPreparednessLaucherViewSet
-from plugins.polio.api.vaccines.supply_chain.arrival_report import VaccineArrivalReportViewSet
-from plugins.polio.api.vaccines.supply_chain.pre_alert import VaccinePreAlertViewSet
-from plugins.polio.api.vaccines.supply_chain.request_form import VaccineRequestFormViewSet
+from plugins.polio.api.vaccines.supply_chain import VaccineRequestFormViewSet
 
 
 router = routers.SimpleRouter()
@@ -56,5 +54,3 @@ router.register(r"tasks/create/refreshpreparedness", RefreshPreparednessLaucherV
 router.register(r"polio/rounds", RoundViewset, basename="rounds")
 router.register(r"polio/tasks/refreshlqas", RefreshLQASDataViewset, basename="refreshlqas")
 router.register(r"polio/vaccine/request_forms", VaccineRequestFormViewSet, basename="vaccine_request_forms")
-router.register(r"polio/vaccine/pre_alerts", VaccinePreAlertViewSet, basename="vaccine_pre_alerts")
-router.register(r"polio/vaccine/arrival_reports", VaccineArrivalReportViewSet, basename="vaccine_arrival_reports")

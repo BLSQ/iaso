@@ -3,12 +3,13 @@ from django.db.models import Sum
 from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, serializers
+from rest_framework import filters, serializers, status
+from rest_framework.response import Response
 
-from iaso.api.common import ModelViewSet
-from plugins.polio.api.vaccines.supply_chain.shared import VaccineSupplyChainReadWritePerm
+from hat.menupermissions import models as permission
+from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from plugins.polio.api.vaccines.vaccine_authorization import CountryForVaccineSerializer
-from plugins.polio.models import VaccineRequestForm
+from plugins.polio.models import VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
 
 
 def validate_rounds_and_campaign(data, current_user=None):
@@ -32,7 +33,27 @@ def validate_rounds_and_campaign(data, current_user=None):
     return data
 
 
+class VaccineSupplyChainReadWritePerm(GenericReadWritePerm):
+    read_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_READ
+    write_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE
+
+
+class NestedVaccinePreAlertSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VaccinePreAlert
+        fields = "__all__"
+
+
+class NestedVaccineArrivalReportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = VaccineArrivalReport
+        fields = "__all__"
+
+
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
+    pre_alerts = NestedVaccinePreAlertSerializer(many=True)
+    arrival_reports = NestedVaccineArrivalReportSerializer(many=True)
+
     class Meta:
         model = VaccineRequestForm
         fields = [
@@ -51,6 +72,8 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "date_vrf_submitted_to_dg",
             "quantities_approved_by_dg_in_doses",
             "comment",
+            "pre_alerts",
+            "arrival_reports",
         ]
 
     def validate(self, data):
@@ -60,6 +83,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
         user = self.context["request"].user
         assert "campaign" in validated_data and validated_data["campaign"].account == user.iaso_profile.account
         validated_data["country"] = validated_data["campaign"].country
+
         return super().create(validated_data)
 
 
@@ -172,7 +196,11 @@ class VaccineRequestFormViewSet(ModelViewSet):
     - obr_name
     - doses_shipped
 
+    DELETE /api/polio/vaccine/request_forms/{id}/
+    Deletes the request_form with the given id and all its arrival_reports and pre_alerts.
+
     POST /api/polio/vaccine/request_forms/
+    Include one or many arrival_reports and/or pre_alerts
     """
 
     permission_classes = [VaccineSupplyChainReadWritePerm]
@@ -185,6 +213,15 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
     def get_queryset(self):
         return VaccineRequestForm.objects.filter(campaign__account=self.request.user.iaso_profile.account)
+
+    # override the destroy action to delete all the related arrival reports and pre alerts
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        instance.vaccinearrivalreport_set.all().delete()
+        instance.vaccineprealert_set.all().delete()
+        instance.delete()
+
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     def get_serializer_class(self):
         if self.action == "list":

@@ -25,7 +25,7 @@ from .models import (
     VaccineRequestForm,
 )
 
-from plugins.polio.api.vaccines.supply_chain.request_form import validate_rounds_and_campaign
+from plugins.polio.api.vaccines.supply_chain import validate_rounds_and_campaign
 
 
 class CampaignAdmin(admin.ModelAdmin):

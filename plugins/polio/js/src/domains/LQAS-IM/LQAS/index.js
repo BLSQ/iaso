@@ -25,7 +25,7 @@ import MESSAGES from '../../../constants/messages';
 import { BadRoundNumbers } from '../shared/BadRoundNumber.tsx';
 import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing.ts';
 import { commaSeparatedIdsToArray } from '../../../../../../../hat/assets/js/apps/Iaso/utils/forms';
-import { paperElevation } from '../shared/constants.ts';
+import { LIST, paperElevation } from '../shared/constants.ts';
 import { useLqasIm } from '../shared/requests.ts';
 import { Sides } from '../../../constants/types.ts';
 
@@ -96,6 +96,14 @@ export const Lqas = ({ router }) => {
                     dropDownOptions[0].value,
                     dropDownOptions[0].value,
                 ]);
+                const url = genUrl(router, {
+                    rounds: [
+                        dropDownOptions[0].value,
+                        dropDownOptions[0].value,
+                    ],
+                    rightTab: LIST,
+                });
+                dispatch(push(url));
             }
             if (dropDownOptions.length > 1) {
                 setSelectedRounds([
@@ -104,7 +112,7 @@ export const Lqas = ({ router }) => {
                 ]);
             }
         }
-    }, [dropDownOptions, campaign, rounds]);
+    }, [dropDownOptions, campaign, rounds, router, dispatch]);
 
     return (
         <>

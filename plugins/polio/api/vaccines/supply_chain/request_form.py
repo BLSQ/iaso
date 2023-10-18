@@ -1,12 +1,12 @@
 from django import forms
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
-from rest_framework import filters, serializers, viewsets
+from rest_framework import filters, serializers
 
-from hat.menupermissions import models as permission
-from iaso.api.common import GenericReadWritePerm, ModelViewSet
+from iaso.api.common import ModelViewSet
+from plugins.polio.api.vaccines.supply_chain.shared import VaccineSupplyChainReadWritePerm
 from plugins.polio.api.vaccines.vaccine_authorization import CountryForVaccineSerializer
-from plugins.polio.models import VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm
+from plugins.polio.models import VaccineRequestForm
 
 
 def validate_rounds_and_campaign(data, current_user=None):
@@ -28,11 +28,6 @@ def validate_rounds_and_campaign(data, current_user=None):
             raise forms.ValidationError("The selected account must be the same as the user's account.")
 
     return data
-
-
-class VaccineRequestReadWritePerm(GenericReadWritePerm):
-    read_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_READ
-    write_perm = permission.POLIO_VACCINE_SUPPLY_CHAIN_WRITE
 
 
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
@@ -147,7 +142,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     POST /api/polio/vaccine/request_forms/
     """
 
-    permission_classes = [VaccineRequestReadWritePerm]
+    permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete"]
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
     filterset_fields = ["campaign", "country", "vaccine_type", "rounds__started_at"]
@@ -160,34 +155,3 @@ class VaccineRequestFormViewSet(ModelViewSet):
             return VaccineRequestFormListSerializer
         else:
             return VaccineRequestFormPostSerializer
-
-
-class VaccinePreAlertSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VaccinePreAlert
-        fields = "__all__"
-
-
-class VaccineArrivalReportSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = VaccineArrivalReport
-        fields = "__all__"
-
-
-class VaccinePreAlertViewSet(ModelViewSet):
-    permission_classes = [VaccineRequestReadWritePerm]
-    serializer_class = VaccinePreAlertSerializer
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
-
-    def get_queryset(self):
-        return VaccinePreAlert.objects.filter(request_form__campaign__account=self.request.user.iaso_profile.account)
-
-
-class VaccineArrivalReportViewSet(ModelViewSet):
-    permission_classes = [VaccineRequestReadWritePerm]
-    serializer_class = VaccineArrivalReportSerializer
-
-    def get_queryset(self):
-        return VaccineArrivalReport.objects.filter(
-            request_form__campaign__account=self.request.user.iaso_profile.account
-        )

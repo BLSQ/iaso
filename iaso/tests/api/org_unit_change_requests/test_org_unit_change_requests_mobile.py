@@ -65,7 +65,7 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                     "longitude": -2.4747713,
                     "altitude": 10.0,
                 },
-                "new_accuracy": None,
+                "new_location_accuracy": None,
                 "new_reference_instances": [new_instance.pk],
             },
         )

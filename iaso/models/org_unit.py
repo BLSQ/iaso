@@ -603,7 +603,7 @@ class OrgUnitChangeRequest(models.Model):
     new_location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     # `accuracy` is only used to help decision-making during validation: is the accuracy good
     # enough to change the location? The field doesn't exist on `OrgUnit`.
-    new_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
     # Stores approved fields (only a subset can be approved).

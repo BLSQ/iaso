@@ -154,7 +154,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
                 "longitude": -2.4747713,
                 "altitude": 10.0,
             },
-            "new_accuracy": 4.0,
+            "new_location_accuracy": 4.0,
             "new_reference_instances": [instance1.id, instance2.id],
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
@@ -171,7 +171,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertIn(group1, new_groups)
         self.assertIn(group2, new_groups)
         self.assertEqual(change_request.new_location, Point(-2.4747713, 47.3358576, 10.0, srid=4326))
-        self.assertEqual(change_request.new_accuracy, 4.0)
+        self.assertEqual(change_request.new_location_accuracy, 4.0)
         new_reference_instances = change_request.new_reference_instances.all()
         self.assertIn(instance1, new_reference_instances)
         self.assertIn(instance2, new_reference_instances)

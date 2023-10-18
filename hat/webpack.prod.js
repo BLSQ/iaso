@@ -6,13 +6,12 @@ const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 // remember to switch in webpack.dev.js and
 // django settings as well
 const LOCALE = 'fr';
-
 module.exports = {
     // fail the entire build on 'module not found'
     bail: true,
     context: __dirname,
     mode: 'production',
-    target: ['web', 'es2020'],
+    target: ['web', 'es2015'],
     entry: {
         common: ['react', 'react-dom', 'react-intl', 'typescript'],
         styles: './assets/css/index.scss',
@@ -71,22 +70,42 @@ module.exports = {
         // runtimeChunk: true,
         // concatenateModules: true // old ModuleConcatenationPlugin
     },
-
     module: {
         rules: [
             {
                 test: /\.js?$/,
-                exclude: /node_modules/,
+                include: [
+                    path.resolve(__dirname, '../node_modules/react-leaflet'),
+                    path.resolve(__dirname, '../node_modules/@react-leaflet'),
+                    path.resolve(__dirname, '../node_modules/@dnd-kit'),
+                    path.resolve(__dirname, '../plugins'),
+                    path.resolve(__dirname, 'assets'),
+                ],
                 use: [
                     {
                         loader: 'babel-loader',
                         options: {
                             presets: [
-                                '@babel/preset-env',
+                                [
+                                    '@babel/preset-env',
+                                    {
+                                        targets: {
+                                            node: '12',
+                                            chrome: '55',
+                                            ie: '11',
+                                        },
+                                        include: [
+                                            '@babel/plugin-proposal-optional-chaining',
+                                            '@babel/plugin-proposal-nullish-coalescing-operator',
+                                            '@babel/plugin-proposal-numeric-separator',
+                                            '@babel/plugin-proposal-logical-assignment-operators',
+                                            '@babel/plugin-transform-destructuring',
+                                        ],
+                                    },
+                                ],
                                 '@babel/preset-react',
                             ],
                             plugins: [
-                                ['@babel/transform-runtime'],
                                 [
                                     'formatjs',
                                     {
@@ -112,7 +131,20 @@ module.exports = {
                             presets: [
                                 [
                                     '@babel/preset-env',
-                                    { targets: { node: '14' } },
+                                    {
+                                        targets: {
+                                            node: '12',
+                                            chrome: '55',
+                                            ie: '11',
+                                        },
+                                        include: [
+                                            '@babel/plugin-proposal-optional-chaining',
+                                            '@babel/plugin-proposal-nullish-coalescing-operator',
+                                            '@babel/plugin-proposal-numeric-separator',
+                                            '@babel/plugin-proposal-logical-assignment-operators',
+                                            '@babel/plugin-transform-destructuring',
+                                        ],
+                                    },
                                 ],
                                 [
                                     '@babel/preset-typescript',
@@ -121,7 +153,6 @@ module.exports = {
                                 '@babel/preset-react',
                             ],
                             plugins: [
-                                ['@babel/transform-runtime'],
                                 [
                                     'formatjs',
                                     {

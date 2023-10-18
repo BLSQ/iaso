@@ -126,7 +126,20 @@ module.exports = {
                             presets: [
                                 [
                                     '@babel/preset-env',
-                                    { targets: { node: '14' } },
+                                    {
+                                        targets: {
+                                            node: '12',
+                                            chrome: '55',
+                                            ie: '11',
+                                        },
+                                        include: [
+                                            '@babel/plugin-proposal-optional-chaining',
+                                            '@babel/plugin-proposal-nullish-coalescing-operator',
+                                            '@babel/plugin-proposal-numeric-separator',
+                                            '@babel/plugin-proposal-logical-assignment-operators',
+                                            '@babel/plugin-transform-destructuring',
+                                        ],
+                                    },
                                 ],
                                 '@babel/preset-react',
                                 [
@@ -142,13 +155,35 @@ module.exports = {
             },
             {
                 test: /\.js?$/,
-                exclude: /node_modules/,
+                include: [
+                    path.resolve(__dirname, '../node_modules/react-leaflet'),
+                    path.resolve(__dirname, '../node_modules/@react-leaflet'),
+                    path.resolve(__dirname, '../node_modules/@dnd-kit'),
+                    path.resolve(__dirname, '../plugins'),
+                    path.resolve(__dirname, 'assets'),
+                ],
                 use: [
                     {
                         loader: 'babel-loader',
                         options: {
                             presets: [
-                                '@babel/preset-env',
+                                [
+                                    '@babel/preset-env',
+                                    {
+                                        targets: {
+                                            node: '12',
+                                            chrome: '55',
+                                            ie: '11',
+                                        },
+                                        include: [
+                                            '@babel/plugin-proposal-optional-chaining',
+                                            '@babel/plugin-proposal-nullish-coalescing-operator',
+                                            '@babel/plugin-proposal-numeric-separator',
+                                            '@babel/plugin-proposal-logical-assignment-operators',
+                                            '@babel/plugin-transform-destructuring',
+                                        ],
+                                    },
+                                ],
                                 '@babel/preset-react',
                             ],
                             plugins: ['@babel/transform-runtime', 'formatjs'],

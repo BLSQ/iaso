@@ -2465,7 +2465,12 @@ const MESSAGES = defineMessages({
     },
     keyNameFormat: {
         id: 'iaso.polio.forms.error.keyNameFormat',
-        defaultMessage: 'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
+        defaultMessage:
+            'Unique identifier. Use all caps letters separated by an underscore. No numbers or special characters',
+    },
+    result: {
+        id: 'iaso.polio.label.result',
+        defaultMessage: 'Result',
     },
 });
 

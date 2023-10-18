@@ -10,7 +10,7 @@ import {
     getSort,
 } from 'bluesquare-components';
 
-import { TableCell, TableSortLabel } from '@material-ui/core';
+import { TableCell, TableSortLabel, Box } from '@material-ui/core';
 
 import { replace } from 'react-router-redux';
 import { withRouter } from 'react-router';
@@ -76,32 +76,34 @@ const HeadStaticFieldsCells = ({ orders, router, isPdf }) => {
                     minWidth: f.width || defaultStaticColWidth,
                 }}
             >
-                {f.sortKey && (
-                    <span
-                        onClick={() => handleSort(f, sort)}
-                        role="button"
-                        tabIndex={0}
-                        className={classnames(
-                            classes.tableCellSpan,
-                            classes.tableCellSpanTitle,
-                        )}
-                    >
-                        <TableSortLabel
-                            active={sortActive}
-                            direction={direction}
-                            title={formatMessage(title)}
-                            classes={{
-                                root: classes.sortLabel,
-                                icon: classes.icon,
-                            }}
+                <Box position="relative" width="100%" height="100%">
+                    {f.sortKey && (
+                        <span
+                            onClick={() => handleSort(f, sort)}
+                            role="button"
+                            tabIndex={0}
+                            className={classnames(
+                                classes.tableCellSpan,
+                                classes.tableCellSpanTitle,
+                            )}
                         >
-                            {formatMessage(MESSAGES[f.key])}
-                        </TableSortLabel>
-                    </span>
-                )}
-                {!f.sortKey &&
-                    !f.hideHeadTitle &&
-                    formatMessage(MESSAGES[f.key])}
+                            <TableSortLabel
+                                active={sortActive}
+                                direction={direction}
+                                title={formatMessage(title)}
+                                classes={{
+                                    root: classes.sortLabel,
+                                    icon: classes.icon,
+                                }}
+                            >
+                                {formatMessage(MESSAGES[f.key])}
+                            </TableSortLabel>
+                        </span>
+                    )}
+                    {!f.sortKey &&
+                        !f.hideHeadTitle &&
+                        formatMessage(MESSAGES[f.key])}
+                </Box>
             </TableCell>
         );
     });

@@ -32,7 +32,9 @@ export const LqasAfroMapFilters: FunctionComponent<Props> = ({ params }) => {
         setFilters,
     } = useFilterState({ baseUrl, params, withPagination: false });
     const periodOptions = usePeriodOptions();
-    const [chooseDates, setChooseDates] = useState<boolean>(false);
+    const [chooseDates, setChooseDates] = useState<boolean>(
+        Boolean(params.startDate) || Boolean(params.endDate),
+    );
 
     const onSwitchChange = useCallback(() => {
         setFilters({

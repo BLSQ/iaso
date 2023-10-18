@@ -37,7 +37,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_name": "New name",
             "new_org_unit_type": new_org_unit_type,
             "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
-            "new_accuracy": "0.11",
+            "new_location_accuracy": "0.11",
             "approved_fields": [
                 "new_parent",
                 "new_name",
@@ -62,7 +62,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertEqual(change_request.new_name, "New name")
         self.assertEqual(change_request.new_org_unit_type, new_org_unit_type)
         self.assertCountEqual(change_request.new_location, kwargs["new_location"])
-        self.assertEqual(change_request.new_accuracy, Decimal("0.11"))
+        self.assertEqual(change_request.new_location_accuracy, Decimal("0.11"))
         self.assertEqual(change_request.new_groups.count(), 1)
         self.assertEqual(change_request.new_groups.first(), new_group)
         self.assertEqual(change_request.new_reference_instances.count(), 1)
@@ -96,7 +96,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_org_unit_type",
             "new_groups",
             "new_location",
-            "new_accuracy",
+            "new_location_accuracy",
             "new_reference_instances",
         ]
         self.assertCountEqual(change_request.new_fields, expected_fields)

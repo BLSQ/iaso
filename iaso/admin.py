@@ -639,7 +639,7 @@ class OrgUnitChangeRequestAdmin(admin.ModelAdmin):
                     "new_org_unit_type",
                     "new_groups",
                     "new_location",
-                    "new_accuracy",
+                    "new_location_accuracy",
                     "new_reference_instances",
                 )
             },

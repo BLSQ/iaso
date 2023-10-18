@@ -33,7 +33,7 @@ from iaso.api.common import (
     CSVExportMixin,
     CustomFilterBackend,
     DeletionFilterBackend,
-    ModelViewSet,
+    ModelViewSet, TimestampField,
 )
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
@@ -46,6 +46,7 @@ from plugins.polio.api.shared_serializers import (
     RoundDateHistoryEntrySerializer,
     RoundVaccineSerializer,
 )
+from plugins.polio.budget.models import BudgetProcess
 from plugins.polio.export_utils import generate_xlsx_campaigns_calendar, xlsx_file_name
 from plugins.polio.models import (
     Campaign,
@@ -303,8 +304,8 @@ class CampaignSerializer(serializers.ModelSerializer):
 
 
 class ListCampaignSerializer(CampaignSerializer):
-    "This serializer contains juste enough data for the List view in the web ui"
-
+    # This serializer contains juste enough data for the List view in the web ui
+    print("yeeee")
     class NestedListRoundSerializer(RoundSerializer):
         class Meta:
             model = Round
@@ -465,6 +466,62 @@ class SmallCampaignSerializer(CampaignSerializer):
             "outbreak_declaration_date",
         ]
         read_only_fields = fields
+
+
+
+class RoundSerializerForProcesses(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ["id", "number"]
+
+
+class BudgetProcessSerializer(serializers.ModelSerializer):
+    rounds = RoundSerializerForProcesses(many=True, read_only=True)
+
+    class Meta:
+        model = BudgetProcess
+        fields = [
+            "id",
+            "created_at",
+            "updated_at",
+            "rounds",
+            "teams",
+            "budget_status",
+            "ra_completed_at_WFEDITABLE",
+            "who_sent_budget_at_WFEDITABLE",
+            "unicef_sent_budget_at_WFEDITABLE",
+            "gpei_consolidated_budgets_at_WFEDITABLE",
+            "submitted_to_rrt_at_WFEDITABLE",
+            "feedback_sent_to_gpei_at_WFEDITABLE",
+            "re_submitted_to_rrt_at_WFEDITABLE",
+            "submitted_to_orpg_operations1_at_WFEDITABLE",
+            "feedback_sent_to_rrt1_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations1_at_WFEDITABLE",
+            "submitted_to_orpg_wider_at_WFEDITABLE",
+            "submitted_to_orpg_operations2_at_WFEDITABLE",
+            "feedback_sent_to_rrt2_at_WFEDITABLE",
+            "re_submitted_to_orpg_operations2_at_WFEDITABLE",
+            "submitted_for_approval_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE",
+            "feedback_sent_to_orpg_operations_who_at_WFEDITABLE",
+            "approved_by_who_at_WFEDITABLE",
+            "approved_by_unicef_at_WFEDITABLE",
+            "approved_at_WFEDITABLE",
+            "approval_confirmed_at_WFEDITABLE",
+            "payment_mode",
+            "budget_responsible",
+            "budget_current_state_key",
+            "budget_current_state_label",
+            "district_count",
+            "no_regret_fund_amount",
+            "who_disbursed_to_co_at",
+            "who_disbursed_to_moh_at",
+            "unicef_disbursed_to_co_at",
+            "unicef_disbursed_to_moh_at",
+        ]
+
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
 
 class CalendarCampaignSerializer(CampaignSerializer):
@@ -774,6 +831,7 @@ class CampaignPreparednessSpreadsheetSerializer(serializers.Serializer):
 
 
 class CampaignViewSet(ModelViewSet, CSVExportMixin):
+    print("yoooooo")
     """Main endpoint for campaign.
 
     GET (Anonymously too)

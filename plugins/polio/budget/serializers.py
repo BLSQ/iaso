@@ -646,11 +646,6 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
             return campaign.budget_last_updated_at.strftime("%Y-%m-%d")
 
 
-class RoundSerializerForProcesses(serializers.ModelSerializer):
-    class Meta:
-        model = Round
-        fields = ["id", "number"]
-
 
 class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):
     rounds = serializers.SerializerMethodField()
@@ -662,6 +657,12 @@ class ProcessesForCampaignBudgetSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_rounds(obj):
         return [c_round.number for c_round in obj.rounds.all()]
+
+
+class RoundSerializerForProcesses(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ["id", "number"]
 
 
 class BudgetProcessSerializer(serializers.ModelSerializer):

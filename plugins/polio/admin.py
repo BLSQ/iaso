@@ -135,10 +135,15 @@ class BudgetProcessesAdmin(admin.ModelAdmin):
     raw_id_fields = ("rounds", "teams")
 
 
+class RoundAdmin(admin.ModelAdmin):
+    mode = Round
+    list_display = ["id", "started_at", "ended_at"]
+
+
 admin.site.register(Campaign, CampaignAdmin)
 admin.site.register(CampaignGroup, CampaignGroupAdmin)
 admin.site.register(Config, ConfigAdmin)
-admin.site.register(Round)
+admin.site.register(Round, RoundAdmin)
 admin.site.register(RoundDateHistoryEntry)
 admin.site.register(CountryUsersGroup)
 admin.site.register(URLCache)

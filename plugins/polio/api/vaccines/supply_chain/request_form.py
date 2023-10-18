@@ -1,4 +1,6 @@
 from django import forms
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
 from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers
@@ -102,7 +104,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_start_date(self, obj):
         # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.started_at > timezone.now().date()]
+        future_rounds = [round for round in rounds if round.started_at and round.started_at > timezone.now().date()]
         if future_rounds:
             return min(future_rounds, key=lambda round: round.started_at).started_at
         else:
@@ -111,7 +113,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     def get_end_date(self, obj):
         # most recent (first in future or last in past) round's start date
         rounds = obj.rounds.all()
-        future_rounds = [round for round in rounds if round.ended_at > timezone.now().date()]
+        future_rounds = [round for round in rounds if round.ended_at and round.ended_at > timezone.now().date()]
         if future_rounds:
             return min(future_rounds, key=lambda round: round.ended_at).ended_at
         else:
@@ -135,17 +137,51 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         return ", ".join([str(report.arrival_report_date) for report in arrival_reports])
 
 
+class VRFCustomOrderingFilter(filters.BaseFilterBackend):
+    def filter_queryset(self, request, queryset, view):
+        current_order = request.GET.get("order")
+
+        if current_order == "doses_shipped":
+            queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
+                "doses_shipped"
+            )
+        elif current_order == "-doses_shipped":
+            queryset = queryset.annotate(doses_shipped=Coalesce(Sum("vaccineprealert__doses_shipped"), 0)).order_by(
+                "-doses_shipped"
+            )
+        elif current_order == "obr_name":
+            queryset = queryset.order_by("campaign__obr_name")
+        elif current_order == "-obr_name":
+            queryset = queryset.order_by("-campaign__obr_name")
+
+        return queryset
+
+
 class VaccineRequestFormViewSet(ModelViewSet):
     """
     GET /api/polio/vaccine/request_forms/ to get the list of all request_forms
+    Available filters:
+    - campaign : Use campaign id
+    - country : Use country id
+    - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
+    - rounds__started_at : Use a date in the format YYYY-MM-DD
+
+    Available ordering:
+    - country
+    - vaccine_type
+    - obr_name
+    - doses_shipped
 
     POST /api/polio/vaccine/request_forms/
     """
 
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete"]
-    filter_backends = [filters.OrderingFilter, DjangoFilterBackend]
+    filter_backends = [filters.OrderingFilter, DjangoFilterBackend, VRFCustomOrderingFilter]
     filterset_fields = ["campaign", "country", "vaccine_type", "rounds__started_at"]
+    ordering_fields = ["country", "vaccine_type"]
+
+    model = VaccineRequestForm
 
     def get_queryset(self):
         return VaccineRequestForm.objects.filter(campaign__account=self.request.user.iaso_profile.account)

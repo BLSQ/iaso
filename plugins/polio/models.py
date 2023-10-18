@@ -6,11 +6,11 @@ from uuid import uuid4
 
 import django.db.models.manager
 from django.contrib.auth.models import AnonymousUser, User
-from django.core.exceptions import ValidationError
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Q, Sum
 from django.db.models.expressions import RawSQL
+from django.db.models.functions import Coalesce
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
 
@@ -939,7 +939,9 @@ class VaccineRequestForm(models.Model):
         return self.vaccinearrivalreport_set.count()
 
     def total_doses_shipped(self):
-        return sum([pre_alert.doses_shipped for pre_alert in self.vaccineprealert_set.all()])
+        return self.vaccineprealert_set.all().aggregate(total_doses_shipped=Coalesce(Sum("doses_shipped"), 0))[
+            "total_doses_shipped"
+        ]
 
     def __str__(self):
         return f"VFR for {self.country} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"

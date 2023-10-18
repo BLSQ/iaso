@@ -10,6 +10,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 @shared_task()
 def generate_random_data():
     """Insert random data in the database for 2000 beneficiaries"""

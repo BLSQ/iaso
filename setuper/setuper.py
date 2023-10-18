@@ -148,7 +148,7 @@ def setup_instances(account_name):
     for org_unit_id in org_unit_ids:
         the_uuid = str(uuid.uuid4())
         file_name = "example_%s.xml" % the_uuid
-        variables = {"uuid": the_uuid}
+        variables = {"uuid": the_uuid}  # TO DO: we should update the version of the form here too
 
         instance_xml = xml.format(**variables)
 

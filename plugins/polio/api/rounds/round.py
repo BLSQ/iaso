@@ -4,6 +4,7 @@ from drf_yasg.utils import swagger_auto_schema
 from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from hat.audit.audit_mixin import AuditMixin
 
 from hat.menupermissions import models as permission
 from iaso.api.common import HasPermission, ModelViewSet, UserSerializer
@@ -238,7 +239,7 @@ class LqasDistrictsUpdateSerializer(serializers.Serializer):
 
 
 @swagger_auto_schema(tags=["rounds"], request_body=LqasDistrictsUpdateSerializer)
-class RoundViewSet(ModelViewSet):
+class RoundViewSet(AuditMixin, ModelViewSet):
     # Patch should be in the list to allow updatelqasfields to work
     http_method_names = ["patch"]
     permission_classes = [HasPermission(permission.POLIO, permission.POLIO_CONFIG)]  # type: ignore

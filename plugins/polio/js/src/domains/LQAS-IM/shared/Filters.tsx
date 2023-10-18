@@ -63,7 +63,8 @@ const Filters: FunctionComponent<Props> = ({
     const onChange = (key, value) => {
         const newFilters = {
             ...filters,
-            rounds: '1,2',
+            rounds: undefined, // This
+            // rounds: '1,2', // This
             [key]: value,
         };
         if (key === 'country') {

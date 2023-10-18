@@ -19,6 +19,8 @@ type Props = {
     options: DropdownOptions<number>[];
     // eslint-disable-next-line no-unused-vars
     onRoundSelect: (round: number) => void;
+    campaignObrName?: string;
+    isFetching: boolean;
 };
 
 const styles = theme => ({
@@ -50,9 +52,12 @@ export const LqasImMapHeader: FunctionComponent<Props> = ({
     endDate,
     options,
     onRoundSelect,
+    campaignObrName,
+    isFetching,
 }) => {
     const classes = useStyles();
     const { formatMessage } = useSafeIntl();
+    if (!campaignObrName || isFetching) return null;
     return (
         <Box>
             <Grid container direction="row">

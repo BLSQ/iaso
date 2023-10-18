@@ -5,7 +5,7 @@ import React, {
     useState,
 } from 'react';
 
-import { Paper, Divider, Box, Tab, Tabs, makeStyles } from '@material-ui/core';
+import { Paper, Divider, Tab, Tabs, makeStyles } from '@material-ui/core';
 
 import { useDispatch } from 'react-redux';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -82,16 +82,6 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     const campaignObject = campaigns.filter(
         (c: Record<string, unknown>) => c.obr_name === campaign,
     )[0] as Campaign;
-    const optionsFromCampaign = useMemo(() => {
-        return campaignObject?.rounds
-            .sort((a, b) => a.number - b.number)
-            .map(r => {
-                return {
-                    label: `Round ${r.number}`,
-                    value: r.number,
-                };
-            });
-    }, [campaignObject]);
     const countryId = parseInt(country, 10);
     const { data: shapes = defaultShapes, isFetching: isFetchingGeoJson } =
         useGetGeoJson(countryId, 'DISTRICT');
@@ -140,15 +130,15 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     const scopeCount = computeScopeCounts(campaignObject, round);
     return (
         <Paper elevation={paperElevation}>
-            {/* <Box pb={2}> */}
             <LqasImMapHeader
                 round={round}
                 startDate={startDate}
                 endDate={endDate}
-                options={optionsFromCampaign ?? []}
+                options={options ?? []}
                 onRoundSelect={onRoundChange}
+                campaignObrName={campaign}
+                isFetching={isFetching}
             />
-            {/* </Box> */}
             <Divider />
             <LqasSummary
                 round={round}

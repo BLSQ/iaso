@@ -3,13 +3,12 @@ from iaso.models import *
 from datetime import timedelta
 import random
 from celery import shared_task
-from plugins.wfp.models import *
-from itertools import groupby
-from operator import itemgetter
 import datetime
+from .management.commands.wfp_etl_Under5 import Under5
+from .management.commands.wfp_etl_pbwg import PBWG
 import logging
-from plugins.wfp.management.commands.wfp_etl import Under5,PBWG
 
+logger = logging.getLogger(__name__)
 
 @shared_task()
 def generate_random_data():
@@ -80,5 +79,6 @@ def generate_random_data():
 @shared_task()
 def etl():
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
+    logger.info("Starting ETL")
     Under5().run()
     PBWG().run

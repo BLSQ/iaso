@@ -1,8 +1,11 @@
-from wfp.models import *
+from ...models import *
 from django.core.management.base import BaseCommand
 from itertools import groupby
 from operator import itemgetter
-from wfp.common import ETL
+from ...common import ETL
+import logging
+
+logger = logging.getLogger(__name__)
 
 class Under5:
     def compute_gained_weight(self, initial_weight, current_weight):
@@ -122,15 +125,14 @@ class Under5:
         return journey
 
     def run(self):
-        print("Starting ETL")
         beneficiaries = ETL("Child Under 5").retrieve_entities()
-        print(f"Instances linked to Child Under 5 program: {beneficiaries.count()}")
+        logger.info(f"Instances linked to Child Under 5 program: {beneficiaries.count()}")
         entities = sorted(list(beneficiaries), key=itemgetter("entity_id"))
         existing_beneficiaries = ETL().existing_beneficiaries()
         instances = self.group_visit_by_entity(entities)
 
         for index, instance in enumerate(instances):
-            print(
+            logger.info(
                 f"---------------------------------------- Beneficiary N° {(index+1)} -----------------------------------"
             )
             beneficiary = Beneficiary()
@@ -139,11 +141,11 @@ class Under5:
                 beneficiary.birth_date = instance["birth_date"]
                 beneficiary.entity_id = instance["entity_id"]
                 beneficiary.save()
-                print(f"Created new beneficiary")
+                logger.info(f"Created new beneficiary")
             else:
                 beneficiary = Beneficiary.objects.get(entity_id=instance["entity_id"])
             instance["journey"] = self.journeyMapper(instance["visits"])
-            print("Retrieving journey linked to beneficiary")
+            logger.info("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
                 if (
@@ -152,7 +154,7 @@ class Under5:
                 ):
                     journey = self.save_journey(beneficiary, journey_instance)
                     visits = ETL().save_visit(journey_instance["visits"], journey)
-                    print(f"Inserted {len(visits)} Visits")
+                    logger.info(f"Inserted {len(visits)} Visits")
                     grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
                     admission_step = grouped_steps[0]
 
@@ -161,9 +163,9 @@ class Under5:
                     )
 
                     steps = ETL().save_steps(visits, followUpVisits)
-                    print(f"Inserted {len(steps)} Steps")
+                    logger.info(f"Inserted {len(steps)} Steps")
                 else:
-                    print("No new journey")
-            print(
+                    logger.info("No new journey")
+            logger.info(
                 f"---------------------------------------------------------------------------------------------\n\n"
             )

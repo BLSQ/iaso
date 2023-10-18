@@ -288,7 +288,7 @@ class ETL:
             visit.number = visit_number
             visit.journey = journey
             orgUnit = OrgUnit.objects.get(id=current_visit["org_unit_id"])
-            visit.org_unit = orgUnit.id
+            visit.org_unit = orgUnit
             visit.instance_id = current_visit.get("instance_id", None)
             saved_visits.append(visit)
             visit.save()

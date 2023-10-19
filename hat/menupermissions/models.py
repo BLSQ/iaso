@@ -184,6 +184,8 @@ class CustomPermissionSupport(models.Model):
             .filter(codename__startswith="iaso_")
             .exclude(codename__contains="datastore")
             .exclude(codename__contains="iaso_beneficiaries")
+            # Wait for the web UI to be ready before displaying `org_unit_change_request` perms.
+            .exclude(codename__contains="org_unit_change_request")
             .order_by("id")
         )
         #  in future filter this on a feature flags, so we can disable it by account

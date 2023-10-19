@@ -42,6 +42,12 @@ class NestedRoundSerializer(serializers.ModelSerializer):
         fields = ["number", "id"]
 
 
+class NestedRoundPostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Round
+        fields = ["id"]
+
+
 class NestedVaccinePreAlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = VaccinePreAlert
@@ -71,7 +77,7 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     pre_alerts = NestedVaccinePreAlertSerializer(many=True)
     arrival_reports = NestedVaccineArrivalReportSerializer(many=True)
-    rounds = NestedRoundSerializer(many=True)
+    rounds = NestedRoundPostSerializer(many=True)
 
     class Meta:
         model = VaccineRequestForm
@@ -255,6 +261,9 @@ class VaccineRequestFormViewSet(ModelViewSet):
     Deletes the request_form with the given id and all its arrival_reports and pre_alerts.
 
     POST /api/polio/vaccine/request_forms/
+    Include one or many arrival_reports and/or pre_alerts
+
+    PATCH /api/polio/vaccine/request_forms/{id}/
     Include one or many arrival_reports and/or pre_alerts
     """
 

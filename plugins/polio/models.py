@@ -946,7 +946,7 @@ class VaccineRequestForm(models.Model):
         ]
 
     def __str__(self):
-        return f"VFR for {self.country} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
+        return f"VFR for {self.get_country()} {self.campaign} {self.vaccine_type} #VPA {self.count_pre_alerts()} #VAR {self.count_arrival_reports()}"
 
 
 class VaccinePreAlert(models.Model):

@@ -246,14 +246,28 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertTrue(serializer.is_valid())
         self.assertTrue(isinstance(serializer.validated_data["uuid"], uuid.UUID))
 
-    def test_deserialize_change_request_missing_new_fields(self):
+    def test_deserialize_change_request_validate(self):
         data = {
             "org_unit_id": self.org_unit.id,
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertFalse(serializer.is_valid())
-        self.assertIn("non_field_errors", serializer.errors)
         self.assertIn("You must provide at least one of the following fields", serializer.errors["non_field_errors"][0])
+
+    def test_deserialize_change_request_validate_new_reference_instances(self):
+        form = m.Form.objects.create(name="Vaccine form 1")
+        instance1 = m.Instance.objects.create(form=form, org_unit=self.org_unit)
+        instance2 = m.Instance.objects.create(form=form, org_unit=self.org_unit)
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_reference_instances": [instance1.id, instance2.id],
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "Only one reference instance can exist by org_unit/form pair.",
+            serializer.errors["new_reference_instances"][0],
+        )
 
     def test_deserialize_change_request_full(self):
         group1 = m.Group.objects.create(name="Group 1")

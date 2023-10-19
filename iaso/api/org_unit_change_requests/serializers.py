@@ -203,6 +203,15 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_reference_instances",
         ]
 
+    def validate_new_reference_instances(self, value):
+        seen = []
+        for instance in value:
+            unique_org_unit_form = f"{instance.form_id}-{instance.org_unit_id}"
+            if unique_org_unit_form in seen:
+                raise serializers.ValidationError("Only one reference instance can exist by org_unit/form pair.")
+            seen.append(unique_org_unit_form)
+        return value
+
     def validate(self, attrs):
         new_fields = [
             "new_parent_id",

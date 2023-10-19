@@ -152,11 +152,13 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         ]
         change_request.approve(user=self.user, approved_fields=approved_fields)
 
+        # Change request.
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
         self.assertEqual(change_request.reviewed_at, self.DT)
         self.assertEqual(change_request.reviewed_by, self.user)
         self.assertCountEqual(change_request.approved_fields, approved_fields)
 
+        # Org Unit.
         self.assertEqual(self.org_unit.validation_status, self.org_unit.VALIDATION_VALID)
         self.assertEqual(self.org_unit.name, "New name given in a change request")
         self.assertEqual(self.org_unit.parent, self.new_parent)
@@ -165,6 +167,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertCountEqual(self.org_unit.groups.all(), [self.new_group1, self.new_group2])
         self.assertCountEqual(self.org_unit.reference_instances.all(), [self.new_instance1, self.new_instance2])
 
+        # Logs.
         modification = Modification.objects.get(object_id=self.org_unit.pk)
         diff = modification.field_diffs()
         self.assertIn("name", diff["modified"])

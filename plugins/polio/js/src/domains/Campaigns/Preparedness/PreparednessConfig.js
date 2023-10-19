@@ -1,3 +1,4 @@
+/* eslint-disable camelcase */
 import {
     Button,
     CircularProgress,
@@ -15,6 +16,8 @@ import OpenInNewIcon from '@material-ui/icons/OpenInNew';
 import PropTypes from 'prop-types';
 
 import { TextInput } from '../../../components/Inputs';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils.ts';
+import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import { useStyles } from '../../../styles/theme';
 import {
     useGeneratePreparednessSheet,
@@ -29,6 +32,8 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
     const { formatMessage } = useSafeIntl();
     const { values, setFieldValue, dirty } = useFormikContext();
     const { rounds = [], id: campaignId } = values;
+    const currentUser = useCurrentUser();
+    const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
     const currentRound = rounds.find(r => r.number === roundNumber);
     const roundIndex = rounds.findIndex(r => r.number === roundNumber);
     const roundStartDate = currentRound?.started_at;
@@ -97,7 +102,8 @@ export const PreparednessConfig = ({ roundNumber, campaignName }) => {
                             disabled={
                                 previewMutation.isLoading ||
                                 isGeneratingSpreadsheet ||
-                                isLockedForEdition
+                                isLockedForEdition ||
+                                !isUserAdmin
                             }
                             className={classes.input}
                         />

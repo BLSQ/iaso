@@ -58,42 +58,41 @@ const useStyles = makeStyles(theme => ({
         top: 0,
         left: 0,
     },
+    container: {
+        width: '70%',
+        marginTop: theme.spacing(2),
+    },
     logoButton: {
-        display: 'flex',
         color: theme.palette.primary.main,
-        width: '33%',
         textDecoration: 'none !important',
-        '& div': {
-            width: '100%',
-            margin: theme.spacing(1),
-            padding: theme.spacing(2),
-            border: `2px solid ${theme.palette.primary.main}`,
-            borderRadius: theme.spacing(2),
+        width: '100%',
+        padding: theme.spacing(2),
+        border: `2px solid ${theme.palette.primary.main}`,
+        borderRadius: theme.spacing(2),
+        display: 'flex',
+        flexDirection: 'column',
+        cursor: 'pointer',
+        alignItems: 'center',
+        transition: 'transform .2s ease, background-color .2s ease',
+        filter: 'drop-shadow(2px 5px 5px rgba(0, 0, 0, 0.24));',
+        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+        '&:hover': {
+            transform: 'scale(1.07, 1.07)',
+            backgroundColor: 'rgba(255, 255, 255, 1)',
+        },
+        '& svg': {
+            fontSize: 60,
+        },
+        '& span': {
+            fontSize: 15,
+            textTransform: 'uppercase',
             display: 'flex',
-            flexDirection: 'column',
-            cursor: 'pointer',
+            marginTop: theme.spacing(1),
+            width: '100%',
+            textAlign: 'center',
             alignItems: 'center',
-            transition: 'transform .2s ease, background-color .2s ease',
-            filter: 'drop-shadow(2px 5px 5px rgba(0, 0, 0, 0.24));',
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
-            '&:hover': {
-                transform: 'scale(1.07, 1.07)',
-                backgroundColor: 'rgba(255, 255, 255, 1)',
-            },
-            '& svg': {
-                fontSize: 60,
-            },
-            '& span': {
-                fontSize: 15,
-                textTransform: 'uppercase',
-                display: 'flex',
-                marginTop: theme.spacing(1),
-                width: '100%',
-                textAlign: 'center',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: 30,
-            },
+            justifyContent: 'center',
+            height: 30,
         },
     },
 }));
@@ -156,26 +155,21 @@ export const HomeOnline: FunctionComponent = () => {
                     </Box>
                 </Box>
 
-                <Container maxWidth="sm">
-                    <Box
-                        mt={2}
-                        display="flex"
-                        justifyContent="center"
-                        flexWrap="wrap"
-                    >
+                <Container className={classes.container} maxWidth="sm">
+                    <Grid container spacing={2} justifyContent="center">
                         {homeButtons.map(button => (
-                            <Link
-                                className={classes.logoButton}
-                                key={button.label}
-                                to={button.url}
-                            >
-                                <div>
+                            <Grid item xs={12} sm={6} md={4} key={button.label}>
+                                <Link
+                                    className={classes.logoButton}
+                                    key={button.label}
+                                    to={button.url}
+                                >
                                     {button.Icon}
                                     <span>{button.label}</span>
-                                </div>
-                            </Link>
+                                </Link>
+                            </Grid>
                         ))}
-                    </Box>
+                    </Grid>
                 </Container>
             </Container>
         </Box>

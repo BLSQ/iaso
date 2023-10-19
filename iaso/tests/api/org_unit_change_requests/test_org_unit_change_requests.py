@@ -262,3 +262,21 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
 
         change_request.refresh_from_db()
         self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+
+    def test_partial_update_approve_fail_wrong_status(self):
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
+            "org_unit": self.org_unit,
+            "approved_fields": ["new_name"],
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Status must be `new` but current status is `approved`.", response.content.decode())

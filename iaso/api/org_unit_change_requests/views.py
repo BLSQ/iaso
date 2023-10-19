@@ -49,7 +49,7 @@ class OrgUnitChangeRequestViewSet(
         )
         return org_units_change_requests.filter(org_unit__in=org_units)
 
-    def validate_org_unit_to_change(self, org_unit_to_change: OrgUnit) -> None:
+    def has_org_unit_permission(self, org_unit_to_change: OrgUnit) -> None:
         # The mobile adds `?app_id=.bar.baz` in the query params.
         app_id_serializer = AppIdSerializer(data=self.request.query_params)
         app_id_serializer.is_valid()
@@ -60,32 +60,34 @@ class OrgUnitChangeRequestViewSet(
 
     def perform_create(self, serializer):
         """
-        POST can be used by both the web and the mobile to create an `OrgUnitChangeRequest`.
+        POST to create an `OrgUnitChangeRequest`.
         """
         org_unit_to_change = serializer.validated_data["org_unit"]
-        self.validate_org_unit_to_change(org_unit_to_change)
+        self.has_org_unit_permission(org_unit_to_change)
         serializer.validated_data["created_by"] = self.request.user
         serializer.save()
 
     def perform_update(self, serializer):
         """
-        PUT can be used by both the web and the mobile to update an `OrgUnitChangeRequest`.
+        PUT to update an `OrgUnitChangeRequest`.
         """
         org_unit_to_change = serializer.validated_data.get("org_unit")
         if org_unit_to_change:
-            self.validate_org_unit_to_change(org_unit_to_change)
+            self.has_org_unit_permission(org_unit_to_change)
         serializer.validated_data["updated_by"] = self.request.user
         serializer.validated_data["updated_at"] = timezone.now()
         serializer.save()
 
     def partial_update(self, request, *args, **kwargs):
         """
-        PATCH is used to approve or reject an `OrgUnitChangeRequest`.
+        PATCH to approve or reject an `OrgUnitChangeRequest`.
         """
         change_request = self.get_object()
-        self.validate_org_unit_to_change(change_request.org_unit)
+        self.has_org_unit_permission(change_request.org_unit)
         if change_request.status != change_request.Statuses.NEW:
-            raise ValidationError(f"Status of the change to be patched is not `{change_request.Statuses.NEW}`.")
+            raise ValidationError(
+                f"Status must be `{change_request.Statuses.NEW}` but current status is `{change_request.status}`."
+            )
 
         serializer = self.get_serializer(change_request, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

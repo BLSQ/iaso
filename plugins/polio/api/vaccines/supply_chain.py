@@ -7,6 +7,7 @@ from rest_framework import filters, serializers, status
 from rest_framework.response import Response
 
 from hat.menupermissions import models as permission
+from iaso.models import OrgUnit
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
 from plugins.polio.api.vaccines.vaccine_authorization import CountryForVaccineSerializer
 from plugins.polio.models import VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm, Round
@@ -22,9 +23,6 @@ def validate_rounds_and_campaign(data, current_user=None):
     for round in rounds.all():
         if round.campaign != campaign:
             raise forms.ValidationError("Each round's campaign must be the same as the form's campaign.")
-
-    if data.get("country").org_unit_type.category != "COUNTRY":
-        raise forms.ValidationError("The selected OrgUnit must be of type 'Country'.")
 
     if current_user:
         if not current_user.iaso_profile.account == data.get("campaign").account:
@@ -64,6 +62,12 @@ class NestedVaccineArrivalReportSerializer(serializers.ModelSerializer):
         fields = ["arrival_report_date", "doses_received"]
 
 
+class NestedCountrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrgUnit
+        fields = ["name", "id"]
+
+
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     pre_alerts = NestedVaccinePreAlertSerializer(many=True)
     arrival_reports = NestedVaccineArrivalReportSerializer(many=True)
@@ -72,7 +76,6 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
     class Meta:
         model = VaccineRequestForm
         fields = [
-            "country",
             "campaign",
             "vaccine_type",
             "rounds",
@@ -100,7 +103,6 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
         user = self.context["request"].user
         assert "campaign" in validated_data and validated_data["campaign"].account == user.iaso_profile.account
-        validated_data["country"] = validated_data["campaign"].country
 
         # create a new instance of VaccineRequestForm
         request_form = VaccineRequestForm.objects.create(**validated_data["campaign"])
@@ -140,7 +142,7 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
 
 class VaccineRequestFormListSerializer(serializers.ModelSerializer):
-    country = CountryForVaccineSerializer()
+    country = NestedCountrySerializer(source="campaign.country")
     vaccine = serializers.CharField(source="vaccine_type")
     obr_name = serializers.CharField(source="campaign.obr_name")
     po_numbers = serializers.SerializerMethodField()
@@ -226,6 +228,10 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("campaign__obr_name")
         elif current_order == "-obr_name":
             queryset = queryset.order_by("-campaign__obr_name")
+        elif current_order == "country":
+            queryset = queryset.order_by("campaign__country__name")
+        elif current_order == "-country":
+            queryset = queryset.order_by("-campaign__country__name")
 
         return queryset
 
@@ -235,7 +241,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     GET /api/polio/vaccine/request_forms/ to get the list of all request_forms
     Available filters:
     - campaign : Use campaign id
-    - country : Use country id
+    - campaign__country : Use country id
     - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
     - rounds__started_at : Use a date in the format YYYY-MM-DD
 
@@ -256,8 +262,8 @@ class VaccineRequestFormViewSet(ModelViewSet):
     http_method_names = ["get", "post", "delete", "patch"]
 
     filter_backends = [filters.OrderingFilter, DjangoFilterBackend, VRFCustomOrderingFilter]
-    filterset_fields = ["campaign", "country", "vaccine_type", "rounds__started_at"]
-    ordering_fields = ["country", "vaccine_type"]
+    filterset_fields = ["campaign", "campaign__country", "vaccine_type", "rounds__started_at"]
+    ordering_fields = ["vaccine_type"]
 
     model = VaccineRequestForm
 

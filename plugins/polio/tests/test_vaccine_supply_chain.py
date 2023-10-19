@@ -158,7 +158,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         )
 
         cls.vaccine_request_form_rdc_1 = pm.VaccineRequestForm.objects.create(
-            country=cls.org_unit_DRC,
             campaign=cls.campaign_rdc_1,
             vaccine_type=pm.VACCINES[0][0],
             date_vrf_reception=cls.now - datetime.timedelta(days=30),
@@ -169,7 +168,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         cls.vaccine_request_form_rdc_1.rounds.set([cls.campaign_rdc_1_round_1, cls.campaign_rdc_1_round_2])
 
         cls.vaccine_request_form_rdc_2 = pm.VaccineRequestForm.objects.create(
-            country=cls.org_unit_DRC,
             campaign=cls.campaign_rdc_1,
             vaccine_type=pm.VACCINES[0][0],
             date_vrf_reception=cls.now - datetime.timedelta(days=1),
@@ -180,7 +178,6 @@ class VaccineSupplyChainAPITestCase(APITestCase):
         cls.vaccine_request_form_rdc_2.rounds.set([cls.campaign_rdc_1_round_3])
 
         cls.vaccine_request_form_be_1 = pm.VaccineRequestForm.objects.create(
-            country=cls.org_unit_BE,
             campaign=cls.campaign_be_1,
             vaccine_type=pm.VACCINES[0][0],
             date_vrf_reception=cls.now - datetime.timedelta(days=1),

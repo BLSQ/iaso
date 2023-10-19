@@ -284,6 +284,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Teams',
         id: 'iaso.label.teams',
     },
+    iaso_org_unit_change_request: {
+        id: 'iaso.permissions.iaso_org_unit_change_request',
+        defaultMessage: 'Org unit change request - Read and Write',
+    },
+    iaso_org_unit_change_request_approve: {
+        id: 'iaso.permissions.iaso_org_unit_change_request_approve',
+        defaultMessage: 'Org unit change request - Approve',
+    },
 });
 
 export default MESSAGES;

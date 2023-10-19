@@ -15,6 +15,7 @@ import {
     mapOrgUnitByLocation,
     getleafletGeoJson,
     orderOrgUnitTypeByDepth,
+    isValidCoordinate,
 } from '../../../../../utils/map/mapUtils';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
@@ -249,7 +250,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const hasMarker =
-        Boolean(currentOrgUnit.latitude) && Boolean(currentOrgUnit.longitude);
+        !Number.isNaN(currentOrgUnit.latitude) &&
+        !Number.isNaN(currentOrgUnit.longitude);
 
     if (map.current) {
         map.current.options.maxZoom = currentTile.maxZoom;
@@ -385,7 +387,14 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <OrgunitOptionSaveComponent
                         orgUnit={currentOrgUnit}
                         resetOrgUnit={() => handleReset()}
-                        saveDisabled={actionBusy || !orgUnitLocationModified}
+                        saveDisabled={
+                            actionBusy ||
+                            !orgUnitLocationModified ||
+                            !isValidCoordinate(
+                                currentOrgUnit.latitude,
+                                currentOrgUnit.longitude,
+                            )
+                        }
                         saveOrgUnit={saveOrgUnit}
                     />
                 }
@@ -408,7 +417,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}
                         />
-                        {userHasPermission(Permission.SUBMISSIONS, currentUser) && (
+                        {userHasPermission(
+                            Permission.SUBMISSIONS,
+                            currentUser,
+                        ) && (
                             <FormsFilterComponent
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}

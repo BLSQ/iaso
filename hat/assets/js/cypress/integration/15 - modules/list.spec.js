@@ -2,6 +2,7 @@
 
 import listFixture from '../../fixtures/modules/list.json';
 import superUser from '../../fixtures/profiles/me/superuser.json';
+import entityTypes from '../../fixtures/entityTypes/list.json';
 
 import { testPermission } from '../../support/testPermission';
 import { testTablerender } from '../../support/testTableRender';
@@ -19,6 +20,7 @@ const mockPage = (fakeUser = superUser, fixture = listFixture) => {
     cy.login();
     interceptFlag = false;
     cy.intercept('GET', '/sockjs-node/**');
+    cy.intercept('GET', '/api/entitytypes/?order=name', entityTypes);
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     cy.intercept('GET', '/api/modules/**/*', req => {
         interceptFlag = true;

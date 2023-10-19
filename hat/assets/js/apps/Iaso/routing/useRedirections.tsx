@@ -106,14 +106,16 @@ const baseRedirections = [
     },
 ];
 
-export const useRedirections: (
+type RedirectionsMethod = (
     // eslint-disable-next-line no-unused-vars
     hasNoAccount: boolean,
     // eslint-disable-next-line no-unused-vars
     isFetchingCurrentUser: boolean,
     // eslint-disable-next-line no-unused-vars
-    homeUrl?: string,
-) => ReactElement[] = (
+    homeUrl,
+) => ReactElement[];
+
+export const useRedirections: RedirectionsMethod = (
     hasNoAccount,
     isFetchingCurrentUser,
     homeUrl = baseUrls.forms,

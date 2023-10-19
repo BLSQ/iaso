@@ -131,8 +131,9 @@ const useGetProtectedRoutes = (
     return useMemo(
         () =>
             routes.map(routeConfig => {
-                const { allowAnonymous = false, component } = routeConfig;
-                const renderProtectedComponent = props => (
+                const { allowAnonymous = false, component: Component } =
+                    routeConfig;
+                const ProtectedComponent = props => (
                     <ProtectedRoute
                         // eslint-disable-next-line react/jsx-props-no-spreading
                         {...props}
@@ -144,8 +145,8 @@ const useGetProtectedRoutes = (
                 );
                 const page =
                     allowAnonymous || hasNoAccount
-                        ? component
-                        : renderProtectedComponent;
+                        ? Component
+                        : ProtectedComponent;
                 return <Route path={getPath(routeConfig)} component={page} />;
             }),
         [hasNoAccount, routes],

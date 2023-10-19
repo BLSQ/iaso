@@ -131,7 +131,7 @@ export const useRedirections: (
         redirections = [
             {
                 path: '/home',
-                component: () => window.location.replace('../login'),
+                component: () => window.location.replace('/login'),
             },
         ];
     } else {

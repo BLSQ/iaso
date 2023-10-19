@@ -11,6 +11,7 @@ from iaso.api.org_unit_change_requests.serializers import (
     OrgUnitChangeRequestWriteSerializer,
     OrgUnitForChangeRequest,
     OrgUnitChangeRequestReviewSerializer,
+    OrgUnitChangeRequestRetrieveSerializer,
 )
 from iaso.models import OrgUnitChangeRequest
 from iaso.test import TestCase
@@ -19,7 +20,7 @@ from iaso import models as m
 
 class InstanceForChangeRequestTestCase(TestCase):
     """
-    Test `InstanceForChangeRequest`.
+    Test nested Instance serializer.
     """
 
     @classmethod
@@ -50,20 +51,24 @@ class InstanceForChangeRequestTestCase(TestCase):
 
 class OrgUnitForChangeRequestTestCase(TestCase):
     """
-    Test `OrgUnitForChangeRequest`.
+    Test nested OrgUnit serializer.
     """
 
     @classmethod
     def setUpTestData(cls):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, location=Point(-2.4747713, 47.3358576, 10.0))
-        org_unit.groups.set([m.Group.objects.create(name="Group 1"), m.Group.objects.create(name="Group 2")])
+        group1 = m.Group.objects.create(name="Group 1")
+        group2 = m.Group.objects.create(name="Group 2")
+        org_unit.groups.set([group1, group2])
         form = m.Form.objects.create(name="Vaccine form")
         instance = m.Instance.objects.create(form=form, org_unit=org_unit, json={"key1": "value1", "key2": "value2"})
         # Mark `instance` as a reference instance of `form` for `org_unit`.
         m.OrgUnitReferenceInstance.objects.create(org_unit=org_unit, instance=instance, form=form)
 
         cls.form = form
+        cls.group1 = group1
+        cls.group2 = group2
         cls.instance = instance
         cls.org_unit = org_unit
         cls.org_unit_type = org_unit_type
@@ -78,7 +83,10 @@ class OrgUnitForChangeRequestTestCase(TestCase):
                 "name": "",
                 "org_unit_type_id": self.org_unit_type.pk,
                 "org_unit_type_name": "Org unit type",
-                "groups": ["Group 1", "Group 2"],
+                "groups": [
+                    {"id": self.group1.id, "name": "Group 1"},
+                    {"id": self.group2.id, "name": "Group 2"},
+                ],
                 "location": {
                     "latitude": 47.3358576,
                     "longitude": -2.4747713,
@@ -102,13 +110,16 @@ class OrgUnitForChangeRequestTestCase(TestCase):
 @time_machine.travel("2023-10-09T13:00:00.000Z", tick=False)
 class OrgUnitChangeRequestListSerializerTestCase(TestCase):
     """
-    Test `OrgUnitChangeRequestListSerializer`.
+    Test list for web serializer.
     """
 
     @classmethod
     def setUpTestData(cls):
         cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
         cls.org_unit = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+
+        cls.group = m.Group.objects.create(name="Group")
+        cls.org_unit.groups.set([cls.group])
 
         cls.form = m.Form.objects.create(name="Vaccine form")
         cls.instance = m.Instance.objects.create(form=cls.form, org_unit=cls.org_unit)
@@ -139,7 +150,9 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "org_unit_type_id": self.org_unit.org_unit_type.pk,
                 "org_unit_type_name": self.org_unit.org_unit_type.name,
                 "status": change_request.status.value,
-                "groups": [],
+                "groups": [
+                    {"id": self.group.id, "name": "Group"},
+                ],
                 "requested_fields": serializer.data["requested_fields"],
                 "approved_fields": serializer.data["approved_fields"],
                 "rejection_comment": "",
@@ -156,7 +169,7 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
 @time_machine.travel("2023-10-13T13:00:00.000Z", tick=False)
 class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
     """
-    Test `MobileOrgUnitChangeRequestListSerializer`.
+    Test list for mobile serializer.
     """
 
     @classmethod
@@ -216,9 +229,78 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
         )
 
 
+@time_machine.travel("2023-10-19T17:00:00.000Z", tick=False)
+class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
+    """
+    Test retrieve serializer.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
+
+        form = m.Form.objects.create(name="Vaccine form")
+        account = m.Account.objects.create(name="Account")
+        user = cls.create_user_with_profile(username="user", account=account)
+
+        cls.form = form
+        cls.org_unit = org_unit
+        cls.org_unit_type = org_unit_type
+        cls.user = user
+
+    def test_serialize_ok(self):
+        kwargs = {
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_org_unit_type": self.org_unit_type,
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+        new_group = m.Group.objects.create(name="new group")
+        change_request.new_groups.set([new_group])
+
+        serializer = OrgUnitChangeRequestRetrieveSerializer(change_request)
+
+        self.assertEqual(
+            serializer.data,
+            {
+                "id": change_request.pk,
+                "uuid": str(change_request.uuid),
+                "status": "new",
+                "created_by": "user",
+                "created_at": "2023-10-19T17:00:00Z",
+                "updated_by": "",
+                "updated_at": None,
+                "requested_fields": ["new_org_unit_type", "new_groups"],
+                "approved_fields": [],
+                "rejection_comment": "",
+                "org_unit": {
+                    "id": self.org_unit.pk,
+                    "parent": "",
+                    "name": "",
+                    "org_unit_type_id": self.org_unit_type.pk,
+                    "org_unit_type_name": self.org_unit_type.name,
+                    "groups": [],
+                    "location": None,
+                    "reference_instances": [],
+                },
+                "new_parent": "",
+                "new_name": "",
+                "new_org_unit_type_id": self.org_unit_type.pk,
+                "new_org_unit_type_name": "Org unit type",
+                "new_groups": [
+                    {"id": new_group.pk, "name": "new group"},
+                ],
+                "new_location": None,
+                "new_location_accuracy": None,
+                "new_reference_instances": [],
+            },
+        )
+
+
 class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
     """
-    Test `OrgUnitChangeRequestWriteSerializer`.
+    Test write serializer.
     """
 
     @classmethod
@@ -313,9 +395,9 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertIn(instance2, new_reference_instances)
 
 
-class OrgUnitChangeRequestApprovalSerializerTestCase(TestCase):
+class OrgUnitChangeRequestReviewSerializerTestCase(TestCase):
     """
-    Test `OrgUnitChangeRequestReviewSerializer`.
+    Test review serializer.
     """
 
     @classmethod

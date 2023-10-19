@@ -50,7 +50,7 @@ class OrgUnitForChangeRequest(serializers.ModelSerializer):
         ]
 
     def get_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.groups.all()]
 
 
 class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
@@ -120,7 +120,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         ]
 
     def get_current_org_unit_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.org_unit.groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
 
 
 class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
@@ -162,7 +162,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
         ]
 
     def get_new_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.new_groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.new_groups.all()]
 
 
 class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):

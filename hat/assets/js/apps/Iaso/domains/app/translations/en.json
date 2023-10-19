@@ -820,6 +820,8 @@
     "iaso.permissions.entities": "Entities",
     "iaso.permissions.forms": "Forms management",
     "iaso.permissions.iaso_dhis2_link": "Link with DHIS2",
+    "iaso.permissions.iaso_org_unit_change_request": "Org unit change request - Read and Write",
+    "iaso.permissions.iaso_org_unit_change_request_approve": "Org unit change request - Approve",
     "iaso.permissions.iaso_entity_duplicates_read": "Entity duplicates - Read only",
     "iaso.permissions.iaso_entity_duplicates_write": "Entity duplicates - Read and Write",
     "iaso.permissions.iaso_entity_type_write": "Entity types",

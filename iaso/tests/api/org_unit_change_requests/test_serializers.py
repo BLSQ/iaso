@@ -115,17 +115,19 @@ class OrgUnitChangeRequestListSerializerTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        cls.org_unit = m.OrgUnit.objects.create(org_unit_type=cls.org_unit_type)
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type)
 
-        cls.group = m.Group.objects.create(name="Group")
-        cls.org_unit.groups.set([cls.group])
+        group = m.Group.objects.create(name="Group")
+        org_unit.groups.set([group])
 
-        cls.form = m.Form.objects.create(name="Vaccine form")
-        cls.instance = m.Instance.objects.create(form=cls.form, org_unit=cls.org_unit)
+        account = m.Account.objects.create(name="Account")
+        user = cls.create_user_with_profile(username="user", account=account)
 
-        cls.account = m.Account.objects.create(name="Account")
-        cls.user = cls.create_user_with_profile(username="user", account=cls.account)
+        cls.group = group
+        cls.org_unit = org_unit
+        cls.org_unit_type = org_unit_type
+        cls.user = user
 
     def test_serialize_change_request(self):
         kwargs = {
@@ -289,7 +291,10 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "new_org_unit_type_id": self.org_unit_type.pk,
                 "new_org_unit_type_name": "Org unit type",
                 "new_groups": [
-                    {"id": new_group.pk, "name": "new group"},
+                    {
+                        "id": new_group.pk,
+                        "name": "new group",
+                    },
                 ],
                 "new_location": None,
                 "new_location_accuracy": None,

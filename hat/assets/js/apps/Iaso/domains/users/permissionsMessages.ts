@@ -297,6 +297,14 @@ const PERMISSIONS_MESSAGES = defineMessages({
         id: 'iaso.permissions.polio_vaccine_authorizations_read_only',
         defaultMessage: 'Polio Vaccine Authorizations: Read Only',
     },
+    iaso_org_unit_change_request: {
+        id: 'iaso.permissions.iaso_org_unit_change_request',
+        defaultMessage: 'Org unit change request - Read and Write',
+    },
+    iaso_org_unit_change_request_approve: {
+        id: 'iaso.permissions.iaso_org_unit_change_request_approve',
+        defaultMessage: 'Org unit change request - Approve',
+    },
 });
 
 export default PERMISSIONS_MESSAGES;

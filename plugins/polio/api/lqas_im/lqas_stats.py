@@ -59,6 +59,7 @@ def add_nfm_stats_for_rounds(campaign_stats, nfm_stats, kind: str):
     return campaign_stats
 
 
+# Deprecated
 class LQASStatsViewSet(viewsets.ViewSet):
     """
     Endpoint used to transform IM (independent monitoring) data from existing ODK forms stored in ONA.

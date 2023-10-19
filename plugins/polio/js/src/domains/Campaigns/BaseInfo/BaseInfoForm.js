@@ -42,6 +42,7 @@ export const BaseInfoForm = () => {
 
     const { formatMessage } = useSafeIntl();
     const currentUser = useCurrentUser();
+    const isUserAdmin = userHasPermission('iaso_polio_config', currentUser);
     const { data: groupedCampaigns } = useGetGroupedCampaigns();
     const groupedCampaignsOptions = useMemo(
         () =>
@@ -79,6 +80,7 @@ export const BaseInfoForm = () => {
                             component={TextInput}
                             className={classes.input}
                             required
+                            disabled={!isUserAdmin}
                         />
                         <Field
                             label={formatMessage(MESSAGES.groupedCampaigns)}
@@ -126,17 +128,20 @@ export const BaseInfoForm = () => {
                             component={OrgUnitsLevels}
                             clearable={false}
                             required
+                            disabled={!isUserAdmin}
                         />
                     </Box>
                 </Grid>
                 <Grid item xs={6} md={6}>
-                    <Field
-                        className={classes.input}
-                        label={formatMessage(MESSAGES.preventive)}
-                        name="is_preventive"
-                        component={BooleanInput}
-                    />
-                    {userHasPermission('iaso_polio_config', currentUser) && (
+                    {isUserAdmin && (
+                        <Field
+                            className={classes.input}
+                            label={formatMessage(MESSAGES.preventive)}
+                            name="is_preventive"
+                            component={BooleanInput}
+                        />
+                    )}
+                    {isUserAdmin && (
                         <Field
                             className={classes.input}
                             label={formatMessage(MESSAGES.testCampaign)}
@@ -144,14 +149,22 @@ export const BaseInfoForm = () => {
                             component={BooleanInput}
                         />
                     )}
-                    <SendEmailButton />
-                    <Field
-                        className={classes.input}
-                        label={formatMessage(MESSAGES.enable_send_weekly_email)}
-                        name="enable_send_weekly_email"
-                        component={BooleanInput}
-                    />
-                    <EmailListForCountry countryId={top_level_org_unit_id} />
+                    {isUserAdmin && (
+                        <>
+                            <SendEmailButton />
+                            <Field
+                                className={classes.input}
+                                label={formatMessage(
+                                    MESSAGES.enable_send_weekly_email,
+                                )}
+                                name="enable_send_weekly_email"
+                                component={BooleanInput}
+                            />
+                            <EmailListForCountry
+                                countryId={top_level_org_unit_id}
+                            />
+                        </>
+                    )}
                 </Grid>
                 <Grid container item spacing={2}>
                     <Grid item xs={12} md={6}>

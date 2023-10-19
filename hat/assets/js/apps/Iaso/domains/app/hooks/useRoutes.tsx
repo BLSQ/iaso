@@ -67,9 +67,9 @@ const useHomeUrl = (): string | undefined => {
     );
 };
 
-const useHomeOnlineRoute = (): RouteCustom[] => {
+const useHomeOnlineRoute = (userHomePage?: string): RouteCustom[] => {
     const HomeComponent = useHomeOnlineComponent();
-    if (!HomeComponent) {
+    if (!HomeComponent || userHomePage) {
         return [];
     }
     return [
@@ -98,12 +98,7 @@ export const useHomeOfflineRoute = (): RouteCustom[] => {
             permissions: [],
             allowAnonymous: true,
             component: props => <HomeComponent {...props} />,
-            params: [
-                {
-                    isRequired: false,
-                    key: 'accountId',
-                },
-            ],
+            params: [],
         },
     ];
 };
@@ -168,10 +163,10 @@ const useCurrentRoute = (routes: RouteCustom[]): RouteCustom | undefined => {
 };
 
 const setupRoutes: RouteCustom[] = [setupAccountPath, page404];
-const useGetRoutesConfigs = (): RouteCustom[] => {
+const useGetRoutesConfigs = (userHomePage?: string): RouteCustom[] => {
     const currentUser = useCurrentUser();
     const hasNoAccount = useHasNoAccount();
-    const homeOnlineRoute = useHomeOnlineRoute();
+    const homeOnlineRoute = useHomeOnlineRoute(userHomePage);
     const homeOfflineRoute = useHomeOfflineRoute();
     const pluginRoutes = usePluginsRoutes();
     if (hasNoAccount) {
@@ -187,10 +182,10 @@ const useGetRoutesConfigs = (): RouteCustom[] => {
     ];
 };
 
-export const useRoutes = (userHomePage: string | undefined): Result => {
+export const useRoutes = (userHomePage?: string): Result => {
     const hasNoAccount = useHasNoAccount();
     const homeUrl = useHomeUrl();
-    const routesConfigs = useGetRoutesConfigs();
+    const routesConfigs = useGetRoutesConfigs(userHomePage);
 
     const protectedRoutes = useGetProtectedRoutes(routesConfigs, hasNoAccount);
     const currentRoute = useCurrentRoute(routesConfigs);

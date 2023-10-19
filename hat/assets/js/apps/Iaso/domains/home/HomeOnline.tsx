@@ -17,6 +17,7 @@ import { LangSwitch } from './components/LangSwitch';
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import SidebarMenuComponent from '../app/components/SidebarMenuComponent';
 import { useHomeButtons } from './hooks/useHomeButtons';
+import { LogoutButton } from '../../components/nav/LogoutButton';
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -124,8 +125,11 @@ export const HomeOnline: FunctionComponent = () => {
                     </Box>
                 </Grid>
                 <Grid container item xs={6} justifyContent="flex-end">
-                    <Box p={4} display="flex">
+                    <Box p={4} display="flex" alignItems="center">
                         <LangSwitch />
+                        <Box pl={2}>
+                            <LogoutButton color="primary" />
+                        </Box>
                     </Box>
                 </Grid>
             </Grid>

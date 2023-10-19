@@ -35,6 +35,7 @@ import {
     LQAS_AFRO_MAP_URL,
     NOPV2_AUTH,
     NOPV2_AUTH_DETAILS,
+    VACCINE_SUPPLY_CHAIN,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -47,6 +48,7 @@ import { BudgetList } from './src/domains/Budget/index.tsx';
 import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/LqasAfroOverview.tsx';
 import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
+import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
 
 const campaignsFilters = [
     {
@@ -389,23 +391,35 @@ const routes = [
         ],
     },
     {
+        baseUrl: VACCINE_SUPPLY_CHAIN,
+        component: props => <VaccineSupplyChain {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            ...paginationPathParams,
+
+            {
+                isRequired: false,
+                key: 'search',
+            },
+            {
+                isRequired: false,
+                key: 'country',
+            },
+            {
+                isRequired: false,
+                key: 'vaccineType',
+            },
+            {
+                isRequired: false,
+                key: 'roundStartDate',
+            },
+        ],
+    },
+    {
         baseUrl: CONFIG_BASE_URL,
         component: () => <CountryNotificationsConfig />,
         permissions: ['iaso_polio_config'],
-        params: [
-            {
-                isRequired: false,
-                key: 'order',
-            },
-            {
-                isRequired: false,
-                key: 'page',
-            },
-            {
-                isRequired: false,
-                key: 'pageSize',
-            },
-        ],
+        params: [...paginationPathParams],
     },
     {
         allowAnonymous: true,
@@ -513,6 +527,12 @@ const menu = [
                     {
                         label: MESSAGES.nopv2Auth,
                         key: 'nopv2authorisation',
+                        permissions: ['iaso_polio'],
+                        icon: props => <MenuBookIcon {...props} />,
+                    },
+                    {
+                        label: MESSAGES.vaccineSupplyChain,
+                        key: 'supplychain',
                         permissions: ['iaso_polio'],
                         icon: props => <MenuBookIcon {...props} />,
                     },

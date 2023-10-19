@@ -1,0 +1,81 @@
+import React, { FunctionComponent } from 'react';
+import { Box, Grid } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
+import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
+import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
+import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
+import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/components/forms/InputComponent';
+import MESSAGES from '../messages';
+import { useGetCountriesOptions } from '../hooks/api';
+import { polioVaccines } from '../../../../constants/virus';
+
+const baseUrl = VACCINE_SUPPLY_CHAIN;
+type Props = { params: any };
+
+export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
+    params,
+}) => {
+    const { formatMessage } = useSafeIntl();
+    const { filters, handleSearch, handleChange, filtersUpdated } =
+        useFilterState({ baseUrl, params });
+    const { data: countries, isFetching } = useGetCountriesOptions();
+    return (
+        <Grid container spacing={2}>
+            <Grid item xs={6} md={3} lg={3}>
+                <InputComponent
+                    type="search"
+                    clearable
+                    keyValue="search"
+                    value={filters.search}
+                    onChange={handleChange}
+                    loading={false}
+                    labelString={formatMessage(MESSAGES.search)}
+                />
+            </Grid>
+            <Grid item xs={6} md={3} lg={3}>
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
+                    keyValue="country"
+                    value={filters.country}
+                    onChange={handleChange}
+                    loading={isFetching}
+                    options={countries}
+                    labelString={formatMessage(MESSAGES.country)}
+                />
+            </Grid>
+            <Grid item xs={6} md={3} lg={3}>
+                <InputComponent
+                    type="select"
+                    multi
+                    clearable
+                    keyValue="vaccineType"
+                    value={filters.vaccineType}
+                    onChange={handleChange}
+                    options={polioVaccines.map(vaccine => ({
+                        label: vaccine.label,
+                        value: vaccine.value,
+                    }))}
+                    labelString={formatMessage(MESSAGES.vaccine)}
+                />
+            </Grid>
+            <Grid container item xs={12} md={3} lg={3}>
+                <Box
+                    display="flex"
+                    justifyContent="flex-end"
+                    alignItems="end"
+                    flexDirection="column"
+                    width="100%"
+                >
+                    <Box mt={2}>
+                        <FilterButton
+                            disabled={!filtersUpdated}
+                            onFilter={handleSearch}
+                        />
+                    </Box>
+                </Box>
+            </Grid>
+        </Grid>
+    );
+};

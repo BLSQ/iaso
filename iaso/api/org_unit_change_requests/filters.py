@@ -7,6 +7,14 @@ from django.db.models.query import QuerySet
 from iaso.models import OrgUnitChangeRequest
 
 
+class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
+    last_sync = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr="gte")
+
+    class Meta:
+        model = OrgUnitChangeRequest
+        fields = []
+
+
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     org_unit_id = django_filters.NumberFilter(field_name="org_unit_id")
     org_unit_type_id = django_filters.NumberFilter(method="filter_org_unit_type_id")
@@ -32,11 +40,3 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
         if not groups_ids:
             raise ValidationError({name: ["Invalid value."]})
         return queryset.filter(Q(org_unit__groups__in=groups_ids) | Q(new_groups__in=groups_ids))
-
-
-class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
-    last_sync = django_filters.IsoDateTimeFilter(field_name="updated_at", lookup_expr="gte")
-
-    class Meta:
-        model = OrgUnitChangeRequest
-        fields = []

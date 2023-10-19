@@ -59,11 +59,11 @@ from iaso.api.mobile.metadata.last_updates import LastUpdatesViewSet
 from .api.microplanning import TeamViewSet, PlanningViewSet, AssignmentViewSet, MobilePlanningViewSet
 from .api.mobile.entity import MobileEntityViewSet
 from .api.mobile.entity_type import MobileEntityTypesViewSet
-from .api.mobile.org_unit_change_requests import MobileOrgUnitChangeRequestViewSet
 from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.mobile.reports import MobileReportsViewSet
 from .api.mobile.storage import MobileStoragePasswordViewSet
-from .api.org_unit_change_requests import OrgUnitChangeRequestViewSet
+from .api.org_unit_change_requests.views import OrgUnitChangeRequestViewSet
+from .api.org_unit_change_requests.views_mobile import MobileOrgUnitChangeRequestViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.org_unit_types.viewsets import OrgUnitTypeViewSetV2
 from .api.org_units import OrgUnitViewSet

@@ -1,9 +1,14 @@
-from rest_framework import viewsets, permissions, serializers
 from rest_framework.mixins import ListModelMixin
-from rest_framework.viewsets import GenericViewSet
+from rest_framework import viewsets, permissions, serializers
 
-from iaso.filters.org_unit_change_requests import OrgUnitChangeRequestListFilter
-from iaso.models import OrgUnitChangeRequest
+from hat.menupermissions import models as iaso_permission
+from iaso.api_filters.org_unit_change_requests import OrgUnitChangeRequestListFilter
+from iaso.models import OrgUnitChangeRequest, OrgUnit
+
+
+class HasOrgUnitsChangeRequestPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return request.user.is_authenticated and request.user.has_perm(iaso_permission.ORG_UNITS_CHANGE_REQUEST)
 
 
 class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
@@ -40,14 +45,15 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         return [group.name for group in obj.org_unit.groups.all()]
 
 
-class OrgUnitChangeRequestViewSet(ListModelMixin, GenericViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+class OrgUnitChangeRequestViewSet(ListModelMixin, viewsets.GenericViewSet):
+    permission_classes = [HasOrgUnitsChangeRequestPermission]
     filterset_class = OrgUnitChangeRequestListFilter
     serializer_class = OrgUnitChangeRequestListSerializer
 
     def get_queryset(self):
+        org_units = OrgUnit.objects.filter_for_user(self.request.user)
         return (
-            OrgUnitChangeRequest.objects.all()
+            OrgUnitChangeRequest.objects.filter(org_unit__in=org_units)
             .select_related(
                 "org_unit__parent",
                 "org_unit__org_unit_type",

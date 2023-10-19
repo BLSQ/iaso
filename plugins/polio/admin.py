@@ -159,9 +159,8 @@ class VaccineRequestFormForm(forms.ModelForm):
 class VaccineRequestFormAdmin(admin.ModelAdmin):
     model = VaccineRequestForm
     form = VaccineRequestFormForm
-    raw_id_fields = ("country",)
     inlines = [VaccinePreAlertAdminInline, VaccineArrivalReportAdminInline]
-    list_display = ["campaign", "country", "count_pre_alerts", "count_arrival_reports"]
+    list_display = ["campaign", "get_country", "count_pre_alerts", "count_arrival_reports"]
 
 
 class RoundAdmin(admin.ModelAdmin):

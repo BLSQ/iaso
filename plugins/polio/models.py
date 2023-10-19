@@ -914,7 +914,6 @@ class VaccineAuthorization(SoftDeletableModel):
 
 
 class VaccineRequestForm(models.Model):
-    country = models.ForeignKey(OrgUnit, on_delete=models.CASCADE)
     campaign = models.ForeignKey(Campaign, on_delete=models.CASCADE)
     vaccine_type = models.CharField(max_length=5, choices=VACCINES)
     rounds = models.ManyToManyField(Round)
@@ -931,6 +930,9 @@ class VaccineRequestForm(models.Model):
     date_vrf_submitted_to_dg = models.DateField(null=True, blank=True)
     quantities_approved_by_dg_in_doses = models.PositiveIntegerField(null=True, blank=True)
     comment = models.TextField(blank=True, null=True)
+
+    def get_country(self):
+        return self.campaign.country
 
     def count_pre_alerts(self):
         return self.vaccineprealert_set.count()

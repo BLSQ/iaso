@@ -11,6 +11,7 @@ type Props = {
     label: string;
     required?: boolean;
     clearable?: boolean;
+    disabled?: boolean;
     errors?: string[];
 };
 
@@ -24,6 +25,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     label,
     required = false,
     clearable = true,
+    disabled = false,
     errors: backendErrors = undefined,
 }) => {
     const { name } = field;
@@ -37,7 +39,6 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
     const initialOrgUnitId = values[name];
     const errors = backendErrors ?? getErrors(touched, formErrors, name);
     const { data: initialOrgUnit, isLoading } = useGetOrgUnit(initialOrgUnitId);
-
     return (
         <Box position="relative">
             <OrgUnitTreeviewModal
@@ -53,6 +54,7 @@ export const OrgUnitsLevels: FunctionComponent<Props> = ({
                 errors={errors}
                 required={required}
                 clearable={clearable}
+                disabled={disabled}
             />
             {isLoading && (
                 <Box

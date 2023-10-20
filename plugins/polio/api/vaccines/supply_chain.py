@@ -261,6 +261,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
     - campaign__country : Use country id
     - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
     - rounds__started_at : Use a date in the format YYYY-MM-DD
+    - rounds__ended_at : Use a date in the format YYYY-MM-DD
 
     Available ordering:
     - country
@@ -282,7 +283,13 @@ class VaccineRequestFormViewSet(ModelViewSet):
     http_method_names = ["get", "post", "delete", "patch"]
 
     filter_backends = [NoFormDjangoFilterBackend, VRFCustomOrderingFilter]
-    filterset_fields = ["campaign__obr_name", "campaign__country", "vaccine_type", "rounds__started_at"]
+    filterset_fields = [
+        "campaign__obr_name",
+        "campaign__country",
+        "vaccine_type",
+        "rounds__started_at",
+        "rounds__ended_at",
+    ]
 
     model = VaccineRequestForm
 

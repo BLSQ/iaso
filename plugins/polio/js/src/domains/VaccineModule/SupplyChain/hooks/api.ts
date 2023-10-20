@@ -12,14 +12,18 @@ import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/ho
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 
 const listUrl = '/api/polio/vaccine/request_forms/';
-
+const defaults = {
+    order: 'country',
+    pageSize: 20,
+    page: 1,
+};
 const getVrfList = params => {
     const queryString = new URLSearchParams(params).toString();
     return getRequest(`${listUrl}?${queryString}`);
 };
 
 export const useGetVrfList = params => {
-    const safeParams = useUrlParams(params);
+    const safeParams = useUrlParams(params, defaults);
     const apiParams = useApiParams(safeParams);
     return useSnackQuery({
         queryKey: [

@@ -14,6 +14,7 @@ export const VaccineSupplyChainTable: FunctionComponent<Props> = ({
     const { data: vrfList, isFetching } = useGetVrfList(params);
     const columns = useVaccineSupplyChainTableColumns();
     return (
+        // @ts-ignore
         <TableWithDeepLink
             data={vrfList?.results ?? []}
             count={vrfList?.count}

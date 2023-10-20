@@ -46,12 +46,13 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.startDate),
                 accessor: 'start_date',
+                sortable: false,
                 Cell: DateCell,
             },
             {
                 Header: formatMessage(MESSAGES.endDate),
                 accessor: 'end_date',
-                // sortable: true,
+                sortable: false,
                 Cell: DateCell,
             },
             {

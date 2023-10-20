@@ -138,7 +138,6 @@ const OrgUnitDetail = ({ params, router }) => {
         data: validationStatusOptions,
         isLoading: isLoadingValidationStatusOptions,
     } = useGetValidationStatus(true, tab === 'children');
-
     const title = useMemo(() => {
         if (isNewOrgunit) {
             return formatMessage(MESSAGES.newOrgUnit);
@@ -213,26 +212,15 @@ const OrgUnitDetail = ({ params, router }) => {
         },
         [currentOrgUnit],
     );
-
     const handleChangeLocation = useCallback(
         location => {
-            // TODO not sure why, perhaps to remove decimals
-            const convert = pos =>
-                pos !== null ? parseFloat(pos.toFixed(8)) : null;
-            const newPos = {
-                altitude: location.alt ? convert(location.alt) : 0,
-            };
-            // only update dimensions that are presents
-            if (location.lng !== undefined) {
-                newPos.longitude = convert(location.lng);
-            }
-            if (location.lat !== undefined) {
-                newPos.latitude = convert(location.lat);
-            }
             setOrgUnitLocationModified(true);
+            const { latitude, longitude, altitude } = location;
             setCurrentOrgUnit({
                 ...currentOrgUnit,
-                ...newPos,
+                altitude,
+                longitude,
+                latitude,
             });
         },
         [currentOrgUnit],

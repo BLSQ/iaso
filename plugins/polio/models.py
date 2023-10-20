@@ -578,7 +578,7 @@ class Campaign(SoftDeletableModel):
                 .filter(groups__roundScope__round__campaign=self)
                 .distinct()
             )
-        return self.get_campaign_scope_districts()
+        return self.get_campaign_scope_districts_qs()
 
     def get_districts_for_round(self, round):
         districts = []

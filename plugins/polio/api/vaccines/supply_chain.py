@@ -9,7 +9,6 @@ from rest_framework.response import Response
 from hat.menupermissions import models as permission
 from iaso.models import OrgUnit
 from iaso.api.common import GenericReadWritePerm, ModelViewSet
-from plugins.polio.api.vaccines.vaccine_authorization import CountryForVaccineSerializer
 from plugins.polio.models import VaccineArrivalReport, VaccinePreAlert, VaccineRequestForm, Round
 
 
@@ -149,7 +148,6 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
 
 class VaccineRequestFormListSerializer(serializers.ModelSerializer):
     country = NestedCountrySerializer(source="campaign.country")
-    vaccine = serializers.CharField(source="vaccine_type")
     obr_name = serializers.CharField(source="campaign.obr_name")
     po_numbers = serializers.SerializerMethodField()
     rounds = NestedRoundSerializer(many=True)
@@ -164,7 +162,7 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "country",
-            "vaccine",
+            "vaccine_type",
             "obr_name",
             "po_numbers",
             "rounds",
@@ -238,6 +236,10 @@ class VRFCustomOrderingFilter(filters.BaseFilterBackend):
             queryset = queryset.order_by("campaign__country__name")
         elif current_order == "-country":
             queryset = queryset.order_by("-campaign__country__name")
+        elif current_order == "vaccine_type":
+            queryset = queryset.order_by("vaccine_type")
+        elif current_order == "-vaccine_type":
+            queryset = queryset.order_by("-vaccine_type")
 
         return queryset
 
@@ -255,10 +257,11 @@ class VaccineRequestFormViewSet(ModelViewSet):
     """
     GET /api/polio/vaccine/request_forms/ to get the list of all request_forms
     Available filters:
-    - campaign : Use campaign id
+    - campaign__obr_name : Use campaign obr_name
     - campaign__country : Use country id
     - vaccine_type : Use on of the VACCINES : mOPV2, nOPV2, bOPV
     - rounds__started_at : Use a date in the format YYYY-MM-DD
+    - rounds__ended_at : Use a date in the format YYYY-MM-DD
 
     Available ordering:
     - country
@@ -279,9 +282,14 @@ class VaccineRequestFormViewSet(ModelViewSet):
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
 
-    filter_backends = [filters.OrderingFilter, NoFormDjangoFilterBackend, VRFCustomOrderingFilter]
-    filterset_fields = ["campaign", "campaign__country", "vaccine_type", "rounds__started_at"]
-    ordering_fields = ["vaccine_type"]
+    filter_backends = [NoFormDjangoFilterBackend, VRFCustomOrderingFilter]
+    filterset_fields = {
+        "campaign__obr_name": ["exact"],
+        "campaign__country": ["exact"],
+        "vaccine_type": ["exact"],
+        "rounds__started_at": ["exact", "gte", "lte", "range"],
+        "rounds__ended_at": ["exact", "gte", "lte", "range"],
+    }
 
     model = VaccineRequestForm
 

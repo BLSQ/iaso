@@ -48,6 +48,8 @@ class PointFieldWithAccuracy(serializers.Serializer):
     def to_representation(self, instance):
         if hasattr(instance, self.point_field) & hasattr(instance, self.accuracy_field):
             value = getattr(instance, self.point_field)
+            if value is None:
+                return None
             return {
                 "latitude": value.y,
                 "longitude": value.x,

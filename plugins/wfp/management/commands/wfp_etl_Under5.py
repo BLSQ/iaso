@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class Under5:
     def compute_gained_weight(self, initial_weight, current_weight):
         weight_gain = 0
@@ -41,9 +42,7 @@ class Under5:
                         instances[i]["last_name"] = current_record.get("last_name", "")
 
                     if current_record.get("first_name") is not None:
-                        instances[i]["first_name"] = current_record.get(
-                            "first_name", ""
-                        )
+                        instances[i]["first_name"] = current_record.get("first_name", "")
 
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
@@ -53,13 +52,9 @@ class Under5:
                         initial_weight = current_weight
                         instances[i]["initial_weight"] = initial_weight
 
-                    current_record["weight_gain"] = self.compute_gained_weight(
-                        initial_weight, current_weight
-                    )
+                    current_record["weight_gain"] = self.compute_gained_weight(initial_weight, current_weight)
                     if visit.get("updated_at"):
-                        current_record["date"] = visit.get("updated_at").strftime(
-                            "%Y-%m-%d"
-                        )
+                        current_record["date"] = visit.get("updated_at").strftime("%Y-%m-%d")
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id
@@ -68,9 +63,7 @@ class Under5:
             i = i + 1
         return list(
             filter(
-                lambda instance: (
-                    instance.get("visits") and len(instance.get("visits")) > 0
-                )
+                lambda instance: (instance.get("visits") and len(instance.get("visits")) > 0)
                 and instance.get("gender") is not None
                 and instance.get("birth_date") is not None
                 and instance.get("birth_date") != ""
@@ -85,10 +78,7 @@ class Under5:
 
         for visit in visits:
             if visit:
-                if (
-                    visit.get("weight_gain", None) is not None
-                    and visit.get("weight_gain", None) > 0
-                ):
+                if visit.get("weight_gain", None) is not None and visit.get("weight_gain", None) > 0:
                     current_journey["weight_gain"] = visit.get("weight_gain")
 
                 if visit["form_id"] == "Anthropometric visit child":
@@ -146,19 +136,14 @@ class Under5:
             logger.info("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
-                if (
-                    len(journey_instance["visits"]) > 0
-                    and journey_instance.get("nutrition_programme") is not None
-                ):
+                if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
                     journey = self.save_journey(beneficiary, journey_instance)
                     visits = ETL().save_visit(journey_instance["visits"], journey)
                     logger.info(f"Inserted {len(visits)} Visits")
                     grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
                     admission_step = grouped_steps[0]
 
-                    followUpVisits = ETL().group_followup_steps(
-                        grouped_steps, admission_step
-                    )
+                    followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
 
                     steps = ETL().save_steps(visits, followUpVisits)
                     logger.info(f"Inserted {len(steps)} Steps")

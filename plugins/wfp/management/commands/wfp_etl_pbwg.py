@@ -7,6 +7,7 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+
 class PBWG:
     def run(self):
         beneficiaries = ETL("Test PBWG").retrieve_entities()
@@ -34,22 +35,15 @@ class PBWG:
             logger.info("Retrieving journey linked to beneficiary")
 
             for journey_instance in instance["journey"]:
-                if (
-                    len(journey_instance["visits"]) > 0
-                    and journey_instance.get("nutrition_programme") is not None
-                ):
+                if len(journey_instance["visits"]) > 0 and journey_instance.get("nutrition_programme") is not None:
                     if journey_instance.get("admission_criteria") is not None:
                         journey = self.save_journey(beneficiary, journey_instance)
                         visits = ETL().save_visit(journey_instance["visits"], journey)
                         logger.info(f"Inserted {len(visits)} Visits")
 
-                        grouped_steps = ETL().get_admission_steps(
-                            journey_instance["steps"]
-                        )
+                        grouped_steps = ETL().get_admission_steps(journey_instance["steps"])
                         admission_step = grouped_steps[0]
-                        followUpVisits = ETL().group_followup_steps(
-                            grouped_steps, admission_step
-                        )
+                        followUpVisits = ETL().group_followup_steps(grouped_steps, admission_step)
 
                         steps = ETL().save_steps(visits, followUpVisits)
                         logger.info(f"Inserted {len(steps)} Steps")
@@ -79,9 +73,7 @@ class PBWG:
         for visit in visits:
             if visit:
                 if visit["form_id"] == "wfp_coda_pbwg_registration":
-                    current_journey["nutrition_programme"] = visit.get(
-                        "physiology_status", None
-                    )
+                    current_journey["nutrition_programme"] = visit.get("physiology_status", None)
 
                 current_journey = ETL().journey_Formatter(
                     visit,
@@ -120,17 +112,13 @@ class PBWG:
                         instances[i]["last_name"] = current_record.get("last_name", "")
 
                     if current_record.get("first_name") is not None:
-                        instances[i]["first_name"] = current_record.get(
-                            "first_name", ""
-                        )
+                        instances[i]["first_name"] = current_record.get("first_name", "")
 
                     form_id = visit.get("form__form_id")
                     current_record["org_unit_id"] = visit.get("org_unit_id", None)
 
                     if visit.get("updated_at"):
-                        current_record["date"] = visit.get("updated_at").strftime(
-                            "%Y-%m-%d"
-                        )
+                        current_record["date"] = visit.get("updated_at").strftime("%Y-%m-%d")
 
                     current_record["instance_id"] = visit["id"]
                     current_record["form_id"] = form_id

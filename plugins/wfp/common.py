@@ -4,12 +4,12 @@ import datetime
 
 
 class ETL:
-    def __init__(self, type=None): 
+    def __init__(self, type=None):
         self.type = type
 
     def retrieve_entities(self):
         steps_id = ETL().steps_to_exclude()
-        updated_at = datetime.date(2023,7,10)
+        updated_at = datetime.date(2023, 7, 10)
         beneficiaries = (
             Instance.objects.filter(entity__entity_type__name=self.type)
             .filter(json__isnull=False)
@@ -30,12 +30,9 @@ class ETL:
             .order_by("entity_id", "created_at")
         )
         return beneficiaries
-    
 
     def existing_beneficiaries(self):
-        existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values(
-            "entity_id"
-        )
+        existing_beneficiaries = Beneficiary.objects.exclude(entity_id=None).values("entity_id")
         return list(map(lambda x: x["entity_id"], existing_beneficiaries))
 
     def instances_to_exclude(self):
@@ -44,32 +41,16 @@ class ETL:
 
     def visits_to_exclude(self):
         instances_id = self.instances_to_exclude()
-        visits = (
-            Visit.objects.values("instance_id")
-            .distinct()
-            .exclude(instance_id__in=instances_id)
-        )
+        visits = Visit.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
         visits_id = list(map(lambda x: x["instance_id"], visits))
-        [
-            instances_id.append(visit_id)
-            for visit_id in visits_id
-            if visit_id not in instances_id
-        ]
+        [instances_id.append(visit_id) for visit_id in visits_id if visit_id not in instances_id]
         return instances_id
 
     def steps_to_exclude(self):
         instances_id = self.visits_to_exclude()
-        steps = (
-            Step.objects.values("instance_id")
-            .distinct()
-            .exclude(instance_id__in=instances_id)
-        )
+        steps = Step.objects.values("instance_id").distinct().exclude(instance_id__in=instances_id)
         steps_id = list(map(lambda x: x["instance_id"], steps))
-        [
-            instances_id.append(step_id)
-            for step_id in steps_id
-            if step_id not in instances_id
-        ]
+        [instances_id.append(step_id) for step_id in steps_id if step_id not in instances_id]
         return instances_id
 
     def program_mapper(self, visit):
@@ -117,25 +98,13 @@ class ETL:
 
     def exit_type(self, visit):
         exit_type = None
-        if (
-            visit.get("reasons_not_continuing") is not None
-            and visit.get("reasons_not_continuing") != ""
-        ):
+        if visit.get("reasons_not_continuing") is not None and visit.get("reasons_not_continuing") != "":
             exit_type = visit.get("reasons_not_continuing")
-        if (
-            visit.get("reason_for_not_continuing") is not None
-            and visit.get("reason_for_not_continuing") != ""
-        ):
+        if visit.get("reason_for_not_continuing") is not None and visit.get("reason_for_not_continuing") != "":
             exit_type = visit.get("reason_for_not_continuing")
-        elif (
-            visit.get("non_respondent") is not None
-            and visit.get("non_respondent") == "1"
-        ):
+        elif visit.get("non_respondent") is not None and visit.get("non_respondent") == "1":
             exit_type = "non_respondent"
-        elif (
-            visit.get("discharge_note") is not None
-            and visit.get("discharge_note") == "yes"
-        ):
+        elif visit.get("discharge_note") is not None and visit.get("discharge_note") == "yes":
             exit_type = "cured"
         return exit_type
 
@@ -156,7 +125,7 @@ class ETL:
             followUp_steps.append(followUpVisits[i : i + 3])
         followUp_steps.insert(0, admission)
         return followUp_steps
-    
+
     def journey_Formatter(self, visit, anthropometric_visit_form, followup_forms, current_journey):
         current_journey["instance_id"] = visit.get("instance_id", None)
         if visit["form_id"] == anthropometric_visit_form:
@@ -174,15 +143,14 @@ class ETL:
             current_journey["visits"].append(visit)
 
         return current_journey
-    
+
     def assistance_to_step(self, assistance, visit, instance_id):
         current_step = Step()
-        current_step.assistance_type = assistance.get("type", '')
+        current_step.assistance_type = assistance.get("type", "")
         current_step.quantity_given = assistance.get("quantity", 0)
         current_step.visit = visit
         current_step.instance_id = instance_id
         return current_step
-
 
     def map_assistance_step(self, step, given_assistance):
         assistance = {"type": None, "quantity": 1}
@@ -223,22 +191,16 @@ class ETL:
 
         if step.get("ration_type_tsfp") is not None:
             quantity = 0
-            if (
-                step.get("_total_number_of_sachets") is not None
-                and step.get("_total_number_of_sachets") != ""
-            ):
+            if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets")
             assistance = {
                 "type": step.get("ration_type_tsfp"),
                 "quantity": quantity,
             }
-        
+
         elif step.get("ration_type_otp") is not None:
             quantity = 0
-            if (
-                step.get("_total_number_of_sachets") is not None
-                and step.get("_total_number_of_sachets") != ""
-            ):
+            if step.get("_total_number_of_sachets") is not None and step.get("_total_number_of_sachets") != "":
                 quantity = step.get("_total_number_of_sachets")
 
             assistance = {
@@ -250,13 +212,10 @@ class ETL:
 
         return list(
             filter(
-                lambda assistance: (
-                    assistance.get("type") and assistance.get("type") != ""
-                ),
+                lambda assistance: (assistance.get("type") and assistance.get("type") != ""),
                 given_assistance,
             )
         )
-    
 
     def save_steps(self, visits, steps):
         all_steps = []
@@ -265,9 +224,7 @@ class ETL:
                 given_assistance = []
                 for sub_step in step:
                     current_step = None
-                    given_assistance = ETL().map_assistance_step(
-                        sub_step, given_assistance
-                    )
+                    given_assistance = ETL().map_assistance_step(sub_step, given_assistance)
 
                     for assistance in given_assistance:
                         current_step = ETL().assistance_to_step(
@@ -294,4 +251,3 @@ class ETL:
             visit.save()
             visit_number += 1
         return saved_visits
-    

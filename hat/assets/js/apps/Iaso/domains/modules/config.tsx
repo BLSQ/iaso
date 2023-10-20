@@ -10,15 +10,7 @@ export const useGetModulesColumns = (): Column[] => {
     const { formatMessage }: { formatMessage: IntlFormatMessage } =
         useSafeIntl();
     return useMemo(() => {
-        const columns: Column[] = [
-            {
-                Header: formatMessage(MESSAGES.codename),
-                accessor: 'codename',
-                id: 'codename',
-                Cell: settings => {
-                    return settings.row.original.codename;
-                },
-            },
+        return [
             {
                 Header: formatMessage(MESSAGES.name),
                 accessor: 'name',
@@ -42,6 +34,5 @@ export const useGetModulesColumns = (): Column[] => {
                 },
             },
         ];
-        return columns;
     }, [formatMessage]);
 };

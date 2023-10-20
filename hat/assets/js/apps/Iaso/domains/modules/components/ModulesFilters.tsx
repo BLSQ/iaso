@@ -17,7 +17,7 @@ export const ModulesFilters: FunctionComponent<Props> = ({ params }) => {
         useFilterState({ baseUrl, params });
     const [textSearchError, setTextSearchError] = useState<boolean>(false);
     return (
-        <Grid container spacing={0}>
+        <Grid container spacing={8} justifyContent="flex-end">
             <Grid item xs={12} sm={6} md={3}>
                 <InputComponent
                     keyValue="search"
@@ -31,15 +31,7 @@ export const ModulesFilters: FunctionComponent<Props> = ({ params }) => {
                 />
             </Grid>
 
-            <Grid
-                container
-                item
-                xs={12}
-                sm={6}
-                md={9}
-                justifyContent="flex-end"
-                spacing={0}
-            >
+            <Grid item xs={12} sm={6} md={9}>
                 <Box mt={2} mb={2}>
                     <FilterButton
                         disabled={textSearchError || !filtersUpdated}

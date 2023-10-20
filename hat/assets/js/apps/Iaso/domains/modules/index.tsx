@@ -45,6 +45,7 @@ export const Modules: FunctionComponent<Props> = ({ params }) => {
                     params={params}
                     extraProps={{ loading: isFetching }}
                     onTableParamsChange={p => dispatch(redirectTo(baseUrl, p))}
+                    columnSelectorEnabled={false}
                 />
             </Box>
         </>

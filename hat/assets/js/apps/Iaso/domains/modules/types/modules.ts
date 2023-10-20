@@ -17,9 +17,3 @@ export type ModuleParams = UrlParams &
             data: Array<Module>,
         ) => Array<any>;
     };
-
-export type Permission = {
-    id: number;
-    name: string;
-    codename: string;
-};

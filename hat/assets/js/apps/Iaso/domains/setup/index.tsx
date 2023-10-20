@@ -23,6 +23,7 @@ import { switchLocale } from '../app/actions';
 import { APP_LOCALES } from '../app/constants';
 import { useGetModulesDropDown } from './hooks/useGetModulesDropDown';
 import { SaveAccountQuery } from './types/account';
+import { commaSeparatedIdsToStringArray } from '../../utils/forms';
 
 const useStyles = makeStyles(theme => ({
     paper: {
@@ -106,7 +107,7 @@ export const SetupAccount: FunctionComponent = () => {
     const onChange = (keyValue, value) => {
         setFieldTouched(keyValue, true);
         if (keyValue === 'modules' && value) {
-            setFieldValue(keyValue, value.split(','));
+            setFieldValue(keyValue, commaSeparatedIdsToStringArray(value));
         } else {
             setFieldValue(keyValue, value);
         }

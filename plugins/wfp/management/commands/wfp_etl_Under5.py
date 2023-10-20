@@ -31,13 +31,11 @@ class Under5:
                         birth_date = current_record.get("actual_birthday__date__", None)
                         instances[i]["birth_date"] = birth_date[:10]
                     if current_record.get("gender") is not None:
-                        gender = None
+                        gender = current_record.get("gender", "")
                         if current_record.get("gender") == "F":
                             gender = "Female"
                         elif current_record.get("gender") == "M":
                             gender = "Male"
-                        else:
-                            gender = current_record.get("gender")
                         instances[i]["gender"] = gender
                     if current_record.get("last_name") is not None:
                         instances[i]["last_name"] = current_record.get("last_name", "")

@@ -1384,6 +1384,7 @@ class FeatureFlag(models.Model):
     REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
     FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
     LIMIT_OU_DOWNLOAD_TO_ROOTS = "LIMIT_OU_DOWNLOAD_TO_ROOTS"
+    HOME_OFFLINE = "HOME_OFFLINE"
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
@@ -1399,19 +1400,19 @@ class FeatureFlag(models.Model):
             _("Require authentication on mobile"),
         ),
         (
-            FORMS_AUTO_UPLOAD,
-            "",
-            False,
-            _(
-                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
-            ),
-        ),
-        (
             LIMIT_OU_DOWNLOAD_TO_ROOTS,
             False,
             "Mobile: Limit download of orgunit to what the user has access to",
             _(
                 "Mobile: Limit download of orgunit to what the user has access to",
+            ),
+        ),
+        (
+            FORMS_AUTO_UPLOAD,
+            "",
+            False,
+            _(
+                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
             ),
         ),
     }

@@ -585,11 +585,11 @@ const translations = {
     en,
 };
 
-const overrideLanding = DASHBOARD_BASE_URL;
-
 export default {
     routes,
     menu,
     translations,
-    overrideLanding,
+    homeUrl: DASHBOARD_BASE_URL,
+    // homeOffline: () => <div>OFFLINE</div>,
+    // homeOnline: () => <div>CONNECTED HOME POLIO</div>,
 };

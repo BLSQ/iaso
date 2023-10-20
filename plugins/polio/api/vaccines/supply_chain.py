@@ -283,13 +283,13 @@ class VaccineRequestFormViewSet(ModelViewSet):
     http_method_names = ["get", "post", "delete", "patch"]
 
     filter_backends = [NoFormDjangoFilterBackend, VRFCustomOrderingFilter]
-    filterset_fields = [
-        "campaign__obr_name",
-        "campaign__country",
-        "vaccine_type",
-        "rounds__started_at",
-        "rounds__ended_at",
-    ]
+    filterset_fields = {
+        "campaign__obr_name": ["exact"],
+        "campaign__country": ["exact"],
+        "vaccine_type": ["exact"],
+        "rounds__started_at": ["exact", "gte", "lte", "range"],
+        "rounds__ended_at": ["exact", "gte", "lte", "range"],
+    }
 
     model = VaccineRequestForm
 

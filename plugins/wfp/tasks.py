@@ -81,4 +81,4 @@ def etl():
     """Extract beneficiary data from Iaso tables and store them in the format expected by existing tableau dashboards"""
     logger.info("Starting ETL")
     Under5().run()
-    PBWG().run
+    PBWG().run()

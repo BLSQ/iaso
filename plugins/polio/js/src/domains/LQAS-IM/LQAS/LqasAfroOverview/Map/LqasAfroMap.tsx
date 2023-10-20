@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState, useMemo, useContext } from 'react';
 import { MapContainer } from 'react-leaflet';
 
-// import { Bounds } from '../../../../../../../../../hat/assets/js/apps/Iaso/utils/map/mapUtils';
 import { CustomZoomControl } from '../../../../../../../../../hat/assets/js/apps/Iaso/components/maps/tools/CustomZoomControl';
 import TILES from '../../../../../../../../../hat/assets/js/apps/Iaso/constants/mapTiles';
 

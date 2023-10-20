@@ -16,11 +16,13 @@ const styles = theme => ({
         fontWeight: 'bold',
         marginLeft: theme.spacing(2),
         fontSize: '1rem',
+        paddingBottom: theme.spacing(2),
     },
     labelEnd: {
         fontWeight: 'bold',
         marginLeft: theme.spacing(2),
         fontSize: '1rem',
+        paddingBottom: theme.spacing(2),
     },
     infoIcon: {
         fontSize: 14,
@@ -45,6 +47,7 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
     const { formatMessage } = useSafeIntl();
     const label = type === 'start' ? MESSAGES.startDate : MESSAGES.endDate;
     const displayedDate = date?.date ?? formatMessage(MESSAGES.noDateFound);
+    const isDateOk = date && !date?.isDefault;
     return (
         <>
             <Grid
@@ -59,9 +62,7 @@ export const LqasImDates: FunctionComponent<Props> = ({ type, date }) => {
             <Grid
                 item
                 className={
-                    date?.isDefault
-                        ? classes.dateTextDefault
-                        : classes.dateTextOK
+                    isDateOk ? classes.dateTextOK : classes.dateTextDefault
                 }
             >
                 {`${displayedDate}`}

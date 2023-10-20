@@ -61,6 +61,8 @@ export const MapContainer: FunctionComponent<Props> = ({
                     endDate={endDate}
                     options={options}
                     onRoundSelect={onRoundChange}
+                    campaignObrName={campaign}
+                    isFetching={isFetching}
                 />
             </Box>
             <Divider />

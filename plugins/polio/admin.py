@@ -160,7 +160,8 @@ class VaccineRequestFormAdmin(admin.ModelAdmin):
     model = VaccineRequestForm
     form = VaccineRequestFormForm
     inlines = [VaccinePreAlertAdminInline, VaccineArrivalReportAdminInline]
-    list_display = ["campaign", "get_country", "count_pre_alerts", "count_arrival_reports"]
+    readonly_fields = ["created_at", "updated_at"]
+    list_display = ["campaign", "get_country", "count_pre_alerts", "count_arrival_reports", "created_at"]
 
 
 class RoundAdmin(admin.ModelAdmin):

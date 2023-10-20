@@ -1,6 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Box, Grid } from '@material-ui/core';
-import { useSafeIntl } from 'bluesquare-components';
+import { DatePicker, useSafeIntl } from 'bluesquare-components';
 import { FilterButton } from '../../../../../../../../hat/assets/js/apps/Iaso/components/FilterButton';
 import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
 import { useFilterState } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useFilterState';
@@ -8,6 +8,7 @@ import InputComponent from '../../../../../../../../hat/assets/js/apps/Iaso/comp
 import MESSAGES from '../messages';
 import { useGetCountriesOptions } from '../hooks/api';
 import { polioVaccines } from '../../../../constants/virus';
+import { apiDateFormat } from '../../../../../../../../hat/assets/js/apps/Iaso/utils/dates';
 
 const baseUrl = VACCINE_SUPPLY_CHAIN;
 type Props = { params: any };
@@ -31,27 +32,55 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
                     loading={false}
                     labelString={formatMessage(MESSAGES.search)}
                 />
+                <Box mt={2}>
+                    <DatePicker
+                        label={formatMessage(MESSAGES.RoundStartFrom)}
+                        onChange={date =>
+                            handleChange(
+                                'rounds__started_at__gte',
+                                date ? date.format(apiDateFormat) : null,
+                            )
+                        }
+                        currentDate={filters.rounds__started_at__gte}
+                        clearable
+                        clearMessage={MESSAGES.clear}
+                    />
+                </Box>
             </Grid>
             <Grid item xs={6} md={3} lg={3}>
                 <InputComponent
                     type="select"
                     multi
                     clearable
-                    keyValue="country"
-                    value={filters.country}
+                    keyValue="campaign__country"
+                    value={filters.campaign__country}
                     onChange={handleChange}
                     loading={isFetching}
                     options={countries}
                     labelString={formatMessage(MESSAGES.country)}
                 />
+                <Box mt={2}>
+                    <DatePicker
+                        label={formatMessage(MESSAGES.RoundStartTo)}
+                        onChange={date =>
+                            handleChange(
+                                'rounds__started_at__lte',
+                                date ? date.format(apiDateFormat) : null,
+                            )
+                        }
+                        currentDate={filters.rounds__started_at__lte}
+                        clearable
+                        clearMessage={MESSAGES.clear}
+                    />
+                </Box>
             </Grid>
             <Grid item xs={6} md={3} lg={3}>
                 <InputComponent
                     type="select"
                     multi
                     clearable
-                    keyValue="vaccineType"
-                    value={filters.vaccineType}
+                    keyValue="vaccine_type"
+                    value={filters.vaccine_type}
                     onChange={handleChange}
                     options={polioVaccines.map(vaccine => ({
                         label: vaccine.label,

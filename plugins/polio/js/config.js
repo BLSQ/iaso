@@ -403,15 +403,19 @@ const routes = [
             },
             {
                 isRequired: false,
-                key: 'country',
+                key: 'campaign__country',
             },
             {
                 isRequired: false,
-                key: 'vaccineType',
+                key: 'vaccine_type',
             },
             {
                 isRequired: false,
-                key: 'roundStartDate',
+                key: 'rounds__started_at__gte',
+            },
+            {
+                isRequired: false,
+                key: 'rounds__started_at__lte',
             },
         ],
     },

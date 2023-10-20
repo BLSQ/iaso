@@ -57,6 +57,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.search',
     },
+    RoundStartFrom: {
+        id: 'iaso.polio.label.RoundStartFrom',
+        defaultMessage: 'Round start date from',
+    },
+    RoundStartTo: {
+        id: 'iaso.polio.label.RoundStartTo',
+        defaultMessage: 'Round start date to',
+    },
+    clear: {
+        id: 'iaso.label.clear',
+        defaultMessage: 'Clear',
+    },
 });
 
 export default MESSAGES;

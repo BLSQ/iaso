@@ -2,7 +2,7 @@ from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 from django.core.cache import cache
 
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
-from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource, FeatureFlag
+from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource, FeatureFlag, Group
 from iaso.test import APITestCase
 
 BASE_URL = "/api/mobile/orgunits/"
@@ -18,9 +18,14 @@ class MobileOrgUnitAPITestCase(APITestCase):
         cls.user = user = cls.create_user_with_profile(username="user", account=account, permissions=["iaso_org_units"])
         cls.sw_source = sw_source = DataSource.objects.create(name="Vegeta Planet")
         sw_source.projects.add(project)
-        cls.sw_version = sw_version = SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_1 = sw_version_1 = SourceVersion.objects.create(data_source=sw_source, number=1)
+        cls.sw_version_2 = sw_version_2 = SourceVersion.objects.create(data_source=sw_source, number=2)
+        sw_version = sw_version_2
         account.default_version = sw_version
         account.save()
+
+        cls.group_1 = Group.objects.create(name="Old parent", source_version=sw_version_1)
+        cls.group_2 = group_2 = Group.objects.create(name="Parent", source_version=sw_version_2)
 
         cls.warriors = warriors = OrgUnitType.objects.create(name="Warriors")
         warriors.projects.add(project)
@@ -82,6 +87,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
             location=Point(-4, -5, 0),
         )
 
+        group_2.org_units.set([bardock, goku])
         user.iaso_profile.org_units.set([raditz, goku])
 
     def test_org_unit_have_correct_parent_id_without_limit(self):
@@ -96,12 +102,17 @@ class MobileOrgUnitAPITestCase(APITestCase):
         self.assertEqual(len(response.json()["orgUnits"]), 4)
         self.assertEqual(response.json()["orgUnits"][0]["name"], "Bardock")
         self.assertEqual(response.json()["orgUnits"][0]["parent_id"], None)
+        self.assertEqual(1, len(response.json()["orgUnits"][0]["groups"]))
+        self.assertEqual(response.json()["orgUnits"][0]["groups"][0], self.group_2.id)
         self.assertEqual(response.json()["orgUnits"][1]["name"], "Raditz")
         self.assertEqual(response.json()["orgUnits"][1]["parent_id"], self.bardock.id)
+        self.assertEqual(0, len(response.json()["orgUnits"][1]["groups"]))
         self.assertEqual(response.json()["orgUnits"][2]["name"], "Son Gohan")
         self.assertEqual(response.json()["orgUnits"][2]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][2]["groups"]))
         self.assertEqual(response.json()["orgUnits"][3]["name"], "Son Goten")
         self.assertEqual(response.json()["orgUnits"][3]["parent_id"], None)
+        self.assertEqual(0, len(response.json()["orgUnits"][3]["groups"]))
 
     def test_org_unit_have_correct_parent_id_with_limit(self):
         self.client.force_authenticate(self.user)

@@ -235,6 +235,14 @@ module.exports = {
                     mimetype: 'image/png',
                 },
             },
+            {
+                test: /\.jpg(\?v=\d+\.\d+\.\d+)?$/,
+                loader: 'url-loader',
+                options: {
+                    limit: 10000,
+                    mimetype: 'image/jpg',
+                },
+            },
         ],
         noParse: [require.resolve('typescript/lib/typescript.js')], // remove warning: https://github.com/microsoft/TypeScript/issues/39436
     },

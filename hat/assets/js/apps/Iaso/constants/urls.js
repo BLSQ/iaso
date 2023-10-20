@@ -1,5 +1,6 @@
 export const baseUrls = {
     setupAccount: 'setupAccount',
+    home: 'home',
     forms: 'forms/list',
     formDetail: 'forms/detail',
     mappings: 'forms/mappings',
@@ -47,4 +48,5 @@ export const baseUrls = {
     error404: '404',
     error500: '500',
     modules: 'settings/modules',
+    login: 'login',
 };

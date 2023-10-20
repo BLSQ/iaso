@@ -59,11 +59,47 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                 "new_name": "",
                 "new_org_unit_type_id": self.org_unit_type.pk,
                 "new_groups": [new_group.pk],
-                "new_location": "SRID=4326;POINT Z (-2.4747713 47.3358576 1.3358576)",
-                "new_accuracy": None,
+                "new_location": {
+                    "latitude": 47.3358576,
+                    "longitude": -2.4747713,
+                    "altitude": 1.3358576,
+                    "accuracy": None,
+                },
                 "new_reference_instances": [new_instance.pk],
             },
         )
+
+    def test_list_deserializer(self):
+        new_group = m.Group.objects.create(name="new group")
+        new_instance = m.Instance.objects.create(form=self.form, org_unit=self.org_unit)
+
+        serializer = MobileOrgUnitChangeRequestListSerializer(
+            data={
+                "org_unit_id": self.org_unit.pk,
+                "org_unit_uuid": self.org_unit.uuid,
+                "status": "new",
+                "approved_fields": ["new_org_unit_type"],
+                "rejection_comment": "",
+                "created_at": "2023-10-13T13:00:00Z",
+                "updated_at": None,
+                "new_parent_id": None,
+                "new_name": "",
+                "new_org_unit_type_id": self.org_unit_type.pk,
+                "new_groups": [new_group.pk],
+                "new_location": {
+                    "latitude": 47.3358576,
+                    "longitude": -2.4747713,
+                    "altitude": 1.3358576,
+                    "accuracy": 1.23,
+                },
+                "new_reference_instances": [new_instance.pk],
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        self.assertEqual(data["new_location"].__str__(), Point(-2.4747713, 47.3358576, 1.3358576, srid=4326).__str__())
+        self.assertEqual(data["new_accuracy"], 1.23)
 
 
 class MobileOrgUnitChangeRequestAPITestCase(APITestCase):

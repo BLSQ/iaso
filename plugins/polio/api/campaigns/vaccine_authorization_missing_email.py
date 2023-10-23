@@ -9,7 +9,7 @@ def missing_vaccine_authorization_for_campaign_email_alert(obr_name, org_unit):
     users = [user for user in Team.objects.get(name=NOPV2_VACCINE_TEAM_NAME).users.all()]
     recipient_list = [user.email for user in users]
     subject = f"Vaccine Authorization missing for campaign OBR Name {obr_name}"
-    from_email = settings.DEFAULT_FROM_EMAIL,
+    from_email = (settings.DEFAULT_FROM_EMAIL,)
     message = f"""
 Dear team,
 

@@ -31,6 +31,7 @@ class Migration(migrations.Migration):
                     ("VRF_NOT_SIGNED", "vrf_not_signed"),
                     ("FOUR_WEEKS_GAP_BETWEEN_ROUNDS", "four_weeks_gap_betwenn_rounds"),
                     ("OTHER_VACCINATION_CAMPAIGNS", "other_vaccination_campaigns"),
+                    ("PENDING_LIQUIDATION_OF_PREVIOUS_SIA_FUNDING", "pending_liquidation_of_previous_sia_funding"),
                 ],
                 max_length=200,
                 null=True,

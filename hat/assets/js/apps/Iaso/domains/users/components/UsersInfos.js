@@ -3,12 +3,14 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import isEmpty from 'lodash/isEmpty';
 import { Grid } from '@material-ui/core';
+import { useSafeIntl } from 'bluesquare-components';
 import InputComponent from '../../../components/forms/InputComponent';
 import { APP_LOCALES } from '../../app/constants';
 
 import { useGetProjectsDropdownOptions } from '../../projects/hooks/requests.ts';
 
 import MESSAGES from '../messages';
+import { InputWithInfos } from '../../../components/InputWithInfos.tsx';
 
 const UsersInfos = ({
     setFieldValue,
@@ -16,6 +18,7 @@ const UsersInfos = ({
     initialData,
     allowSendEmailInvitation,
 }) => {
+    const { formatMessage } = useSafeIntl();
     const isEmailAdressExist = isEmpty(currentUser.email.value);
     const sendUserEmailInvitation = !!isEmailAdressExist;
     const sendUserIEmailnvitationLabel = isEmailAdressExist
@@ -103,14 +106,18 @@ const UsersInfos = ({
                         type="text"
                         label={MESSAGES.dhis2_id}
                     />
-                    <InputComponent
-                        keyValue="home_page"
-                        onChange={(key, value) => setFieldValue(key, value)}
-                        value={currentUser.home_page.value}
-                        errors={currentUser.home_page.errors}
-                        type="text"
-                        label={MESSAGES.homePage}
-                    />
+                    <InputWithInfos
+                        infos={formatMessage(MESSAGES.homePageInfos)}
+                    >
+                        <InputComponent
+                            keyValue="home_page"
+                            onChange={(key, value) => setFieldValue(key, value)}
+                            value={currentUser.home_page.value}
+                            errors={currentUser.home_page.errors}
+                            type="text"
+                            label={MESSAGES.homePage}
+                        />
+                    </InputWithInfos>
                     <InputComponent
                         keyValue="projects"
                         onChange={(key, value) =>

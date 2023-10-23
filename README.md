@@ -580,6 +580,12 @@ sequenceDiagram
     Browser ->> IASO: Use iaso normally as logged user.
 ```
 
+Old browsers support
+-------------------
+
+You can launch frontend dev server with `OLD_BROWSER=true npm run dev`
+Webpack will compile the frontend for old browsers as it is in prod
+
 
 Live Bluesquare components
 --------------------------

@@ -17,6 +17,16 @@ class TimestampSerializerMixin:
 
 
 class AppIdSerializer(serializers.Serializer):
+    """
+    Serializer for `Project.app_id` when passed in query_params.
+
+    Used to handle parsing and errors:
+
+        serializer = AppIdSerializer(data=self.request.query_params)
+        serializer.is_valid(raise_exception=True)
+        app_id = serializer.validated_data["app_id"]
+    """
+
     app_id = serializers.CharField(allow_blank=False)
 
 

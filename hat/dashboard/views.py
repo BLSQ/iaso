@@ -38,3 +38,10 @@ def embeddable_iaso(request: HttpRequest) -> HttpResponse:
     response = _base_iaso(request)
     response["X-Frame-Options"] = "ALLOW"
     return response
+
+
+@require_http_methods(["GET"])
+def home_iaso(request: HttpRequest) -> HttpResponse:
+    """Iaso home page without login requirement"""
+    response = _base_iaso(request)
+    return response

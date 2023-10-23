@@ -6,7 +6,7 @@ from typing import Any, List, Union
 from django.conf import settings
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.db.models import Max, Min, Q
+from django.db.models import Max, Min, Q, Prefetch
 from django.db.models.expressions import RawSQL
 from django.db.models.query import QuerySet
 from django.db.transaction import atomic
@@ -24,6 +24,7 @@ from rest_framework.fields import Field
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.validators import UniqueValidator
+
 
 from hat.api.export_utils import Echo, iter_items
 from iaso.api.common import (
@@ -120,18 +121,16 @@ class CampaignSerializer(serializers.ModelSerializer):
     round_two = serializers.SerializerMethodField(read_only=True)
 
     def get_round_one(self, campaign):
-        try:
-            round = campaign.rounds.get(number=1)
-            return RoundSerializer(round).data
-        except Round.DoesNotExist:
-            return None
+        for round in campaign.rounds.all():
+            if round.number == 1:
+                return RoundSerializer(round).data
+        return None
 
     def get_round_two(self, campaign):
-        try:
-            round = campaign.rounds.get(number=2)
-            return RoundSerializer(round).data
-        except Round.DoesNotExist:
-            return None
+        for round in campaign.rounds.all():
+            if round.number == 2:
+                return RoundSerializer(round).data
+        return None
 
     rounds = RoundSerializer(many=True, required=False)
     org_unit: Field = OrgUnitSerializer(source="initial_org_unit", read_only=True)
@@ -157,7 +156,9 @@ class CampaignSerializer(serializers.ModelSerializer):
 
     def get_general_status(self, campaign):
         now_utc = timezone.now().date()
-        for round in campaign.rounds.all().order_by("-number"):
+        ordered_rounds = list(campaign.rounds.all())
+        ordered_rounds.sort(key=lambda x: x.number, reverse=True)
+        for round in ordered_rounds:
             if round.ended_at and now_utc > round.ended_at:
                 return _("Round {} ended").format(round.number)
             elif round.started_at and now_utc >= round.started_at:
@@ -298,10 +299,22 @@ class CampaignSerializer(serializers.ModelSerializer):
             # we pop the campaign since we use the set afterward which will also remove the deleted one
             round_data.pop("campaign", None)
             scopes = round_data.pop("scopes", [])
+
+            # Replace ReasonForDelay instance with key_name to avoid type error when calling is_valid
+            # Because the serializer is nested, and data is converted at every level of nesting
+            # datelog["reason_for_delay"] is the ReasonForDelay instance, and not the  key_name that was passed by the front-end
+            # So we have to extract the key_name from the instance and re-pass it to the serializer, otherwise we get an error
+            round_datelogs = round_data.pop("datelogs", [])
+            datelogs_with_pk = [
+                {**datelog, "reason_for_delay": datelog["reason_for_delay"].key_name} for datelog in round_datelogs
+            ]
+            round_data["datelogs"] = datelogs_with_pk
+
             round_serializer = RoundSerializer(instance=round, data=round_data, context=self.context)
             round_serializer.is_valid(raise_exception=True)
             round_instance = round_serializer.save()
             round_instances.append(round_instance)
+            round_datelogs = []
             for scope in scopes:
                 vaccine = scope.get("vaccine")
                 org_units = scope.get("group", {}).get("org_units")
@@ -380,18 +393,16 @@ class AnonymousCampaignSerializer(CampaignSerializer):
     round_two = serializers.SerializerMethodField(read_only=True)
 
     def get_round_one(self, campaign):
-        try:
-            round = campaign.rounds.get(number=1)
-            return RoundAnonymousSerializer(round).data
-        except Round.DoesNotExist:
-            return None
+        for round in campaign.rounds.all():
+            if round.number == 1:
+                return RoundAnonymousSerializer(round).data
+        return None
 
     def get_round_two(self, campaign):
-        try:
-            round = campaign.rounds.get(number=2)
-            return RoundAnonymousSerializer(round).data
-        except Round.DoesNotExist:
-            return None
+        for round in campaign.rounds.all():
+            if round.number == 2:
+                return RoundAnonymousSerializer(round).data
+        return None
 
     class Meta:
         model = Campaign
@@ -617,8 +628,10 @@ class ExportCampaignSerializer(CampaignSerializer):
                     "started_at",
                     "ended_at",
                     "reason",
+                    "reason_for_delay",
                     "modified_by",
                     "created_at",
+                    "reason_for_delay",
                 ]
 
         class Meta:
@@ -668,6 +681,7 @@ class ExportCampaignSerializer(CampaignSerializer):
         vaccines = NestedRoundVaccineSerializer(many=True, required=False)
         shipments = NestedShipmentSerializer(many=True, required=False)
         destructions = NestedDestructionSerializer(many=True, required=False)
+        # TODO check this is the right serializer to use
         datelogs = RoundDateHistoryEntrySerializer(many=True, required=False)
 
     class ExportCampaignScopeSerializer(CampaignScopeSerializer):
@@ -901,7 +915,28 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             campaigns = campaigns.filter(grouped_campaigns__in=campaign_groups.split(","))
         if org_unit_groups:
             campaigns = campaigns.filter(country__groups__in=org_unit_groups.split(","))
-
+        org_units_id_only_qs = OrgUnit.objects.only("id", "name")
+        country_prefetch = Prefetch("country", queryset=org_units_id_only_qs)
+        scopes_group_org_units_prefetch = Prefetch("scopes__group__org_units", queryset=org_units_id_only_qs)
+        rounds_scopes_group_org_units_prefetch = Prefetch(
+            "rounds__scopes__group__org_units", queryset=org_units_id_only_qs
+        )
+        campaigns = (
+            campaigns.prefetch_related(country_prefetch)
+            .prefetch_related("grouped_campaigns")
+            .prefetch_related("scopes")
+            .prefetch_related("scopes__group")
+            .prefetch_related(scopes_group_org_units_prefetch)
+            .prefetch_related("rounds")
+            .prefetch_related("rounds__datelogs")
+            .prefetch_related("rounds__datelogs__modified_by")
+            .prefetch_related("rounds__shipments")
+            .prefetch_related("rounds__destructions")
+            .prefetch_related("rounds__vaccines")
+            .prefetch_related("rounds__scopes")
+            .prefetch_related("rounds__scopes__group")
+            .prefetch_related(rounds_scopes_group_org_units_prefetch)
+        )
         return campaigns.distinct()
 
     def get_queryset(self):
@@ -1019,7 +1054,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
             current_date = current_date.date()
             return current_date.year
         else:
-            today = datetime.date.today()
+            today = datetime.today()
             return today.year
 
     def get_calendar_data(self: "CampaignViewSet", year: int, params: Any) -> Any:
@@ -1105,7 +1140,7 @@ class CampaignViewSet(ModelViewSet, CSVExportMixin):
         # count all districts in the country
         country_districts_count = country.descendants().filter(org_unit_type__category="DISTRICT").count()
         # count disticts related to the round
-        round_districts_count = campaign.get_districts_for_round_number(round_number).count() if round_number else 0
+        round_districts_count = len(campaign.get_districts_for_round_number(round_number)) if round_number else 0
         districts_exists = country_districts_count > 0 and round_districts_count > 0
         # check if country districts is equal to round districts
         if districts_exists:

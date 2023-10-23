@@ -271,6 +271,11 @@ const MESSAGES = defineMessages({
         id: 'iaso.permissions.iaso_write_sources',
         defaultMessage: 'Geo data sources - Read and Write',
     },
+    iaso_write_sources_tooltip: {
+        id: 'iaso.permissions.tooltip.iaso_write_sources',
+        defaultMessage:
+            'Manage multiple geo data sources: create or edit sources (name, description, project(s), default version, DHIS2 links)',
+    },
     iaso_page_write: {
         id: 'iaso.permissions.iaso_page_write',
         defaultMessage: 'Web pages management - Read and Write',
@@ -278,6 +283,18 @@ const MESSAGES = defineMessages({
     teams: {
         defaultMessage: 'Teams',
         id: 'iaso.label.teams',
+    },
+    homePageInfos: {
+        defaultMessage: 'Copy/paste the url after "dashboard/"',
+        id: 'iaso.users.homePageInfos',
+    },
+    iaso_org_unit_change_request: {
+        id: 'iaso.permissions.iaso_org_unit_change_request',
+        defaultMessage: 'Org unit change request - Read and Write',
+    },
+    iaso_org_unit_change_request_approve: {
+        id: 'iaso.permissions.iaso_org_unit_change_request_approve',
+        defaultMessage: 'Org unit change request - Approve',
     },
 });
 

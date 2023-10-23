@@ -124,15 +124,19 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                 continue
             if latest_active_campaign.separate_scopes_per_round:
                 scope = latest_active_campaign.get_districts_for_round_number(round_number)
-
             else:
                 scope = latest_active_campaign.get_all_districts()
             # Visible districts in scope
+            scope_qs = OrgUnit.objects.filter(id__in=[ou.id for ou in scope])
+            # Visible districts in scope
+            # Either distrcits with a shape that intersects the bounds or districts without shape (these will appear in the list view in the front-end)
+            filter_query = (Q(simplified_geom__isnull=False) & Q(simplified_geom__intersects=bounds_as_polygon)) | Q(
+                simplified_geom__isnull=True
+            )
             districts = (
-                scope.filter(org_unit_type__category="DISTRICT")
+                scope_qs.filter(org_unit_type__category="DISTRICT")
                 .filter(parent__parent=org_unit.id)
-                .exclude(simplified_geom__isnull=True)
-                .filter(simplified_geom__intersects=bounds_as_polygon)
+                .filter(filter_query)
             )
             data_for_country = data_store.content
             stats = data_for_country.get("stats", None)
@@ -174,14 +178,22 @@ class LQASIMZoominMapViewSet(LqasAfroViewset):
                         },
                         "geo_json": shapes,
                         "status": determine_status_for_district(district_stats),
+                        "country_id": country_id,
+                        "country_name": org_unit.name,
                     }
 
                 else:
                     result = {
                         "id": district.id,
-                        "data": {"campaign": latest_active_campaign.obr_name, "district_name": district.name},
+                        "data": {
+                            "campaign": latest_active_campaign.obr_name,
+                            "district_name": district.name,
+                            "region_name": district.parent.name,
+                        },
                         "geo_json": shapes,
                         "status": LQASStatus.InScope,
+                        "country_id": country_id,
+                        "country_name": org_unit.name,
                     }
                 results.append(result)
         return Response({"results": results})

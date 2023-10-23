@@ -5,11 +5,11 @@ import {
 } from 'bluesquare-components';
 import { object } from 'prop-types';
 import { withRouter } from 'react-router';
-import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink';
+import { TableWithDeepLink } from 'Iaso/components/tables/TableWithDeepLink.tsx';
 import { useGetCountryUsersGroup, useGetProfiles } from '../requests';
-import MESSAGES from '../../../constants/messages';
+import MESSAGES from '../../../../constants/messages';
 import { CountryNotificationsConfigModal } from '../CountryNotificationsConfigModal';
-import { CONFIG_BASE_URL } from '../../../constants/routes';
+import { CONFIG_BASE_URL } from '../../../../constants/routes';
 
 const makeUserNameToDisplay = user => {
     if (user.email) return ` ${user.email}`;

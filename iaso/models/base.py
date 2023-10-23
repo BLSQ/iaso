@@ -224,6 +224,7 @@ class Task(models.Model):
     queue_answer = models.JSONField(null=True, blank=True)
     progress_message = models.TextField(null=True, blank=True)
     should_be_killed = models.BooleanField(default=False)
+    external = models.BooleanField(default=False)
 
     class Meta:
         ordering = ["-created_at"]
@@ -256,11 +257,7 @@ class Task(models.Model):
             "should_be_killed": self.should_be_killed,
         }
 
-    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
-        """Save progress and check if we have been killed
-        We use a separate transaction, so we can report the progress even from a transaction, see services.py
-        """
-        logger.info(f"Task {self} reported {progress_message}")
+    def stop_if_killed(self):
         self.refresh_from_db()
         if self.should_be_killed:
             logger.warning(f"Stopping Task {self} as it as been marked for kill")
@@ -268,6 +265,15 @@ class Task(models.Model):
             self.ended_at = timezone.now()
             self.result = {"result": KILLED, "message": "Killed"}
             self.save()
+
+    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
+        """Save progress and check if we have been killed
+        We use a separate transaction, so we can report the progress even from a transaction, see services.py
+        """
+        logger.info(f"Task {self} reported {progress_message}")
+        self.refresh_from_db()
+        if self.should_be_killed:
+            self.stop_if_killed()
             raise KilledException("Killed by user")
 
         if progress_value:
@@ -1378,6 +1384,7 @@ class FeatureFlag(models.Model):
     REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
     FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
     LIMIT_OU_DOWNLOAD_TO_ROOTS = "LIMIT_OU_DOWNLOAD_TO_ROOTS"
+    HOME_OFFLINE = "HOME_OFFLINE"
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
@@ -1393,19 +1400,19 @@ class FeatureFlag(models.Model):
             _("Require authentication on mobile"),
         ),
         (
-            FORMS_AUTO_UPLOAD,
-            "",
-            False,
-            _(
-                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
-            ),
-        ),
-        (
             LIMIT_OU_DOWNLOAD_TO_ROOTS,
             False,
             "Mobile: Limit download of orgunit to what the user has access to",
             _(
                 "Mobile: Limit download of orgunit to what the user has access to",
+            ),
+        ),
+        (
+            FORMS_AUTO_UPLOAD,
+            "",
+            False,
+            _(
+                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
             ),
         ),
     }

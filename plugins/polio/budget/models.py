@@ -39,6 +39,87 @@ def model_field_exists(campaign, field):
     return True if field in campaign_fields else False
 
 
+class BudgetProcess(SoftDeletableModel):
+    class Meta:
+        ordering = ["-updated_at"]
+        verbose_name_plural = "Budget Processes"
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
+    updated_at = models.DateTimeField(auto_now=True)
+    # Keep trace of the Team the user was acting on behalf of in case they get remove from it.
+    created_by_team = models.ForeignKey("iaso.Team", on_delete=models.PROTECT, blank=True, null=True)
+    rounds = models.ManyToManyField(Round, related_name="budget_process_rounds", blank=False)
+    teams = models.ManyToManyField("iaso.Team", related_name="budget_process_teams", blank=True)
+    budget_status = models.CharField(max_length=100, null=True, blank=True)
+
+    # Budget tab
+    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
+    payment_mode = models.CharField(max_length=30, choices=PAYMENT, null=True, blank=True)
+    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
+
+    # For budget workflow
+    budget_current_state_key = models.CharField(max_length=100, default="-")
+    budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
+
+    # Additional fields
+    district_count = models.IntegerField(null=True, blank=True)
+    no_regret_fund_amount = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+    )
+
+    # Fund release part of the budget form. Will be migrated to workflow fields later.
+    who_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (WHO)"),
+    )
+
+    who_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (WHO)"),
+    )
+
+    unicef_disbursed_to_co_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to CO (UNICEF)"),
+    )
+
+    unicef_disbursed_to_moh_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name=_("Disbursed to MOH (UNICEF)"),
+    )
+
+    def __str__(self):
+        return f"{self.rounds}-{self.created_at}"
+
+
 class BudgetStep(SoftDeletableModel):
     class Meta:
         ordering = ["-updated_at"]
@@ -58,6 +139,9 @@ class BudgetStep(SoftDeletableModel):
     is_email_sent = models.BooleanField(default=False)
     node_key_from = models.CharField(max_length=100, blank=True, null=True)
     node_key_to = models.CharField(max_length=100, blank=True, null=True)
+    budget_process = models.ForeignKey(
+        BudgetProcess, blank=True, null=True, on_delete=models.PROTECT, related_name="budget_process"
+    )
 
     def __str__(self):
         return f"{self.campaign}, {self.transition_key}"
@@ -281,84 +365,3 @@ def get_workflow():
     nodes = [Node(**node_def) for node_def in node_defs]
     categories = [Category(**categories_def) for categories_def in categories_defs]
     return Workflow(transitions, nodes, categories)
-
-
-class BudgetProcess(SoftDeletableModel):
-    class Meta:
-        ordering = ["-updated_at"]
-        verbose_name_plural = "Budget Processes"
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey("auth.User", on_delete=models.PROTECT)
-    updated_at = models.DateTimeField(auto_now=True)
-    # Keep trace of the Team the user was acting on behalf of in case they get remove from it.
-    created_by_team = models.ForeignKey("iaso.Team", on_delete=models.PROTECT, blank=True, null=True)
-    rounds = models.ManyToManyField(Round, related_name="budget_process_rounds", blank=False)
-    teams = models.ManyToManyField("iaso.Team", related_name="budget_process_teams", blank=True)
-    budget_status = models.CharField(max_length=100, null=True, blank=True)
-
-    # Budget tab
-    ra_completed_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    who_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    unicef_sent_budget_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    gpei_consolidated_budgets_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_gpei_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_rrt_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_operations1_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_wider_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_rrt2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    re_submitted_to_orpg_operations2_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    submitted_for_approval_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_orpg_operations_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    feedback_sent_to_orpg_operations_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approved_by_who_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approved_by_unicef_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approved_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    approval_confirmed_at_WFEDITABLE = models.DateField(null=True, blank=True)
-    payment_mode = models.CharField(max_length=30, choices=PAYMENT, null=True, blank=True)
-    budget_responsible = models.CharField(max_length=10, choices=RESPONSIBLES, null=True, blank=True)
-
-    # For budget workflow
-    budget_current_state_key = models.CharField(max_length=100, default="-")
-    budget_current_state_label = models.CharField(max_length=100, null=True, blank=True)
-
-    # Additional fields
-    district_count = models.IntegerField(null=True, blank=True)
-    no_regret_fund_amount = models.DecimalField(
-        max_digits=10,
-        decimal_places=2,
-        null=True,
-        blank=True,
-    )
-
-    # Fund release part of the budget form. Will be migrated to workflow fields later.
-    who_disbursed_to_co_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("Disbursed to CO (WHO)"),
-    )
-
-    who_disbursed_to_moh_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("Disbursed to MOH (WHO)"),
-    )
-
-    unicef_disbursed_to_co_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("Disbursed to CO (UNICEF)"),
-    )
-
-    unicef_disbursed_to_moh_at = models.DateField(
-        null=True,
-        blank=True,
-        verbose_name=_("Disbursed to MOH (UNICEF)"),
-    )
-
-    def __str__(self):
-        return f"{self.rounds}-{self.created_at}"

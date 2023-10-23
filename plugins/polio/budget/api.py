@@ -22,10 +22,10 @@ from plugins.polio.budget.serializers import (
     WorkflowSerializer,
     TransitionOverrideSerializer,
     BudgetProcessSerializer,
-    BudgetProcessCreateSerializer,
+    BudgetProcessCreateSerializer, BudgetProcessForBudgetSerializer,
 )
 from iaso.api.common import CustomFilterBackend
-from plugins.polio.models import Campaign
+from plugins.polio.models import Campaign, Round
 from hat.menupermissions import models as permission
 
 
@@ -39,7 +39,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     You can request specific field by using the ?fields parameter
     """
 
-    serializer_class = CampaignBudgetSerializer
+    serializer_class = BudgetProcessForBudgetSerializer
     exporter_serializer_class = ExportCampaignBudgetSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
@@ -63,7 +63,10 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
         # Filter the campaigns based on the user and the subquery
         campaigns = Campaign.objects.filter_for_user(user).filter(pk__in=campaigns_with_budget_process)
         campaigns = campaigns.annotate(budget_last_updated_at=Max("budget_steps__created_at"))
-        return campaigns
+        rounds = Round.objects.filter(campaign__pk__in=[campaign.pk for campaign in campaigns])
+        # get the processes of the campaigns
+        processes = BudgetProcess.objects.filter(rounds__in=rounds)
+        return processes
 
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
@@ -74,56 +77,56 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
 
         return queryset
 
-    ordering_fields = [
-        "obr_name",
-        "cvdpv2_notified_at",
-        "detection_status",
-        "first_round_started_at",
-        "last_round_started_at",
-        "country__name",
-        "last_budget_event__created_at",
-        "last_budget_event__type",
-        "last_budget_event__status",
-        "budget_current_state_key",
-    ]
-    filterset_fields = {
-        "last_budget_event__status": ["exact"],
-        "country__name": ["exact"],
-        "country__id": ["in"],
-        "grouped_campaigns__id": ["in", "exact"],
-        "obr_name": ["exact", "contains"],
-        "cvdpv2_notified_at": ["gte", "lte", "range"],
-        "created_at": ["gte", "lte", "range"],
-        "rounds__started_at": ["gte", "lte", "range"],
-        "budget_current_state_key": ["exact", "in"],
-    }
+    # ordering_fields = [
+    #     "obr_name",
+    #     "cvdpv2_notified_at",
+    #     "detection_status",
+    #     "first_round_started_at",
+    #     "last_round_started_at",
+    #     "country__name",
+    #     "last_budget_event__created_at",
+    #     "last_budget_event__type",
+    #     "last_budget_event__status",
+    #     "budget_current_state_key",
+    # ]
+    # filterset_fields = {
+    #     "last_budget_event__status": ["exact"],
+    #     "country__name": ["exact"],
+    #     "country__id": ["in"],
+    #     "grouped_campaigns__id": ["in", "exact"],
+    #     "obr_name": ["exact", "contains"],
+    #     "cvdpv2_notified_at": ["gte", "lte", "range"],
+    #     "created_at": ["gte", "lte", "range"],
+    #     "rounds__started_at": ["gte", "lte", "range"],
+    #     "budget_current_state_key": ["exact", "in"],
+    # }
 
-    @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
-    def transition_to(self, request):
-        "Transition campaign to next state. Use multipart/form-data to send files"
-        # data = request.data.dict()
-        # data['links'] = request.data.getlist('links')
-        data = request.data
-        serializer = TransitionToSerializer(data=data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        budget_step = serializer.save()
-
-        return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
-
-    @action(
-        detail=False,
-        methods=["POST"],
-        serializer_class=TransitionOverrideSerializer,
-        permission_classes=[HasPermission("iaso_polio_budget_admin")],
-    )
-    def override(self, request):
-        "Transition campaign to next state. Use multipart/form-data to send files"
-        data = request.data
-        serializer = TransitionOverrideSerializer(data=data, context={"request": request})
-        serializer.is_valid(raise_exception=True)
-        budget_step = serializer.save()
-
-        return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
+    # @action(detail=False, methods=["POST"], serializer_class=TransitionToSerializer)
+    # def transition_to(self, request):
+    #     "Transition campaign to next state. Use multipart/form-data to send files"
+    #     # data = request.data.dict()
+    #     # data['links'] = request.data.getlist('links')
+    #     data = request.data
+    #     serializer = TransitionToSerializer(data=data, context={"request": request})
+    #     serializer.is_valid(raise_exception=True)
+    #     budget_step = serializer.save()
+    #
+    #     return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
+    #
+    # @action(
+    #     detail=False,
+    #     methods=["POST"],
+    #     serializer_class=TransitionOverrideSerializer,
+    #     permission_classes=[HasPermission("iaso_polio_budget_admin")],
+    # )
+    # def override(self, request):
+    #     "Transition campaign to next state. Use multipart/form-data to send files"
+    #     data = request.data
+    #     serializer = TransitionOverrideSerializer(data=data, context={"request": request})
+    #     serializer.is_valid(raise_exception=True)
+    #     budget_step = serializer.save()
+    #
+    #     return Response({"result": "success", "id": budget_step.id}, status=status.HTTP_201_CREATED)
 
 
 @swagger_auto_schema(tags=["budget"])

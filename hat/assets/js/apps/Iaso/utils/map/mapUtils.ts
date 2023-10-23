@@ -28,7 +28,7 @@ export const isValidCoordinate = (
         latitude === undefined ||
         longitude === undefined ||
         latitude === null ||
-        longitude === undefined ||
+        longitude === null ||
         Number.isNaN(latitude) ||
         Number.isNaN(longitude) ||
         latitude > 90 ||

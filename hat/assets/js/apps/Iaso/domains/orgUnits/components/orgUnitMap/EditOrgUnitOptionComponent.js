@@ -35,9 +35,7 @@ const EditOrgUnitOptionComponent = ({
     isCreatingMarker,
 }) => {
     const classes = useStyles();
-    const hasMarker =
-        Boolean(orgUnit.latitude !== null) &&
-        Boolean(orgUnit.longitude !== null);
+    const hasMarker = orgUnit.latitude !== null || orgUnit.longitude !== null;
     return (
         <Box
             display="flex"

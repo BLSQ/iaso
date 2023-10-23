@@ -235,11 +235,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const updateOrgUnitLocation = useCallback(
         newOrgUnit => {
-            if (newOrgUnit.latitude && newOrgUnit.longitude) {
+            const { latitude, longitude, altitude } = newOrgUnit;
+            if (isValidCoordinate(latitude, longitude)) {
                 onChangeLocation({
-                    lat: newOrgUnit.latitude,
-                    lng: newOrgUnit.longitude,
-                    alt: newOrgUnit.altitude,
+                    latitude,
+                    longitude,
+                    altitude,
                 });
             } else if (newOrgUnit.has_geo_json) {
                 setOrgUnitLocationModified(false); // What's the right value, the initial code passed nothing
@@ -375,6 +376,15 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.catchmentGroup.value,
         state.locationGroup.value,
     ]);
+
+    const { latitude, longitude } = currentOrgUnit;
+    // one has a value and the other not or both have a value but are impossible
+    const isInvalidCoordonate =
+        (latitude === null && longitude !== null) ||
+        (longitude === null && latitude !== null) ||
+        (latitude !== null &&
+            longitude !== null &&
+            !isValidCoordinate(latitude, longitude));
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -390,10 +400,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         saveDisabled={
                             actionBusy ||
                             !orgUnitLocationModified ||
-                            !isValidCoordinate(
-                                currentOrgUnit.latitude,
-                                currentOrgUnit.longitude,
-                            )
+                            isInvalidCoordonate
                         }
                         saveOrgUnit={saveOrgUnit}
                     />

@@ -651,6 +651,7 @@ class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
 class BudgetProcessForBudgetSerializer(serializers.ModelSerializer):
     rounds = RoundSerializerForProcesses(many=True, read_only=True)
     campaign = serializers.SerializerMethodField()
+
     class Meta:
         model = BudgetProcess
         fields = [
@@ -691,8 +692,9 @@ class BudgetProcessForBudgetSerializer(serializers.ModelSerializer):
             "who_disbursed_to_moh_at",
             "unicef_disbursed_to_co_at",
             "unicef_disbursed_to_moh_at",
-            "campaign"
+            "campaign",
         ]
+
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 

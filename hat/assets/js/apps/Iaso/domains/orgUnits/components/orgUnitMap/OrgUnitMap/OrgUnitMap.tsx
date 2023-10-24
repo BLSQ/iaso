@@ -379,7 +379,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const { latitude, longitude } = currentOrgUnit;
     // one has a value and the other not or both have a value but are impossible
-    const isInvalidCoordonate =
+    const isInvalidCoordinate =
         (latitude === null && longitude !== null) ||
         (longitude === null && latitude !== null) ||
         (latitude !== null &&
@@ -400,7 +400,7 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                         saveDisabled={
                             actionBusy ||
                             !orgUnitLocationModified ||
-                            isInvalidCoordonate
+                            isInvalidCoordinate
                         }
                         saveOrgUnit={saveOrgUnit}
                     />

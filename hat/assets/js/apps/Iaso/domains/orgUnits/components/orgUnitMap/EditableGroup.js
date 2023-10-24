@@ -71,10 +71,10 @@ class EditableGroup {
             if (e.layerType === 'marker') {
                 // Set a default altitude for the newly created location
                 e.layer.setLatLng({ alt: 0, ...e.layer.getLatLng() });
-                const coordonates = e.layer.getLatLng();
+                const coordinates = e.layer.getLatLng();
                 this.onChangeLocation({
-                    latitude: coordonates.lat,
-                    longitude: coordonates.lng,
+                    latitude: coordinates.lat,
+                    longitude: coordinates.lng,
                     altitude: 0,
                 });
                 this.toggleDrawMarker(false);

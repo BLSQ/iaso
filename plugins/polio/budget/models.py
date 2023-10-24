@@ -16,7 +16,7 @@ from hat.api.token_authentication import generate_auto_authentication_link
 from iaso.utils.models.soft_deletable import SoftDeletableModel
 from plugins.polio.budget import workflow
 from plugins.polio.budget.workflow import next_transitions, can_user_transition, Transition, Node, Workflow, Category
-from plugins.polio.models import Round, PAYMENT, RESPONSIBLES
+from plugins.polio.models import Round, PAYMENT, RESPONSIBLES, Campaign
 from plugins.polio.time_cache import time_cache
 
 
@@ -50,6 +50,9 @@ class BudgetProcess(SoftDeletableModel):
     # Keep trace of the Team the user was acting on behalf of in case they get remove from it.
     created_by_team = models.ForeignKey("iaso.Team", on_delete=models.PROTECT, blank=True, null=True)
     rounds = models.ManyToManyField(Round, related_name="budget_process_rounds", blank=False)
+    campaign = models.ForeignKey(
+        Campaign, related_name="budget_process_campaign", blank=True, null=True, on_delete=models.DO_NOTHING
+    )
     teams = models.ManyToManyField("iaso.Team", related_name="budget_process_teams", blank=True)
     budget_status = models.CharField(max_length=100, null=True, blank=True)
 

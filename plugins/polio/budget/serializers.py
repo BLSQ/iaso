@@ -624,6 +624,7 @@ class LastBudgetAnnotation(TypedDict):
     budget_last_updated_at: datetime
 
 
+# TODO: TO DELETE REPLACE BY ExportBudgetProcessSerializer
 # noinspection PyMethodMayBeStatic
 class ExportCampaignBudgetSerializer(CampaignBudgetSerializer):
     class Meta:
@@ -819,3 +820,32 @@ class BudgetProcessCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("A BudgetProcess with the same Round(s) already exists.")
 
         return value
+
+
+class ExportBudgetProcessSerializer(CampaignBudgetSerializer):
+    class Meta:
+        model = BudgetProcess
+        fields = ["obr_name", "budget_current_state_label", "country", "cvdpv2_notified_at", "budget_last_updated_at"]
+        labels = {
+            "obr_name": "OBR name",
+            "budget_last_updated_at": "Last update",
+            "cvdpv2_notified_at": "Notification date",
+            "country": "Country",
+            "budget_current_state_label": "Budget state",
+        }
+
+    @staticmethod
+    def get_obr_name(obj: BudgetProcess) -> str:
+        return obj.campaign.obr_name
+
+    @staticmethod
+    def get_country(obj: BudgetProcess) -> str:
+        return obj.campaign.country
+
+    @staticmethod
+    def get_cvdpv2_notified_at(obj: BudgetProcess) -> date:
+        return obj.campaign.cvdpv2_notified_at
+
+    @staticmethod
+    def get_budget_last_update_at(obj: BudgetProcess) -> date:
+        return obj.updated_at

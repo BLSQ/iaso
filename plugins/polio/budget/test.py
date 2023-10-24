@@ -1,3 +1,4 @@
+import datetime
 import json
 from io import StringIO
 from typing import List, Dict
@@ -7,13 +8,17 @@ from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.http import HttpResponse
 from django.template import Engine, Context
+from django.utils.timezone import now
 from rest_framework import status
 
 from iaso.models import Team, Account
 from iaso.test import APITestCase
 from plugins.polio.budget.models import BudgetStep, MailTemplate, BudgetProcess
+from plugins.polio.budget.serializers import ExportBudgetProcessSerializer
 from plugins.polio.budget.workflow import Transition, Node, Workflow
 from plugins.polio.models import Campaign, Round
+
+from iaso import models as m
 
 # Hardcoded workflow for testing.
 
@@ -565,3 +570,99 @@ class BudgetProcessAPITestCase(APITestCase):
 
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.data["rounds"][0], "A BudgetProcess with the same Round(s) already exists.")
+
+
+class ExportBudgetProcessSerializerTest(APITestCase):
+    data_source: m.DataSource
+    source_version_1: m.SourceVersion
+    org_unit: m.OrgUnit
+    child_org_unit: m.OrgUnit
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.data_source = m.DataSource.objects.create(name="Default source")
+        cls.now = now()
+        cls.source_version_1 = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.account = polio_account = Account.objects.create(name="polio", default_version=cls.source_version_1)
+        cls.user_polio = cls.create_user_with_profile(
+            username="user_polio", account=polio_account, permissions=["iaso_forms"]
+        )
+        cls.project = m.Project.objects.create(name="test project", account=cls.account)
+        cls.team_budget = Team.objects.create(
+            name="budget_team", project=cls.project, manager=cls.user_polio, type="TEAM_OF_USERS"
+        )
+
+        cls.org_unit = m.OrgUnit.objects.create(
+            org_unit_type=m.OrgUnitType.objects.create(name="COUNTRY", short_name="CTR"),
+            version=cls.source_version_1,
+            name="RDC",
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+
+        cls.child_org_unit = m.OrgUnit.objects.create(
+            org_unit_type=m.OrgUnitType.objects.create(name="REGION", short_name="RGN"),
+            version=cls.source_version_1,
+            name="Buta",
+            parent_id=cls.org_unit.id,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr",
+        )
+
+        cls.user_polio_2 = cls.create_user_with_profile(
+            username="user_polio_2", account=polio_account, permissions=["iaso_forms"], org_units=[cls.child_org_unit]
+        )
+
+        cls.campaign_A = Campaign.objects.create(
+            account=cls.account,
+            obr_name="obr_name_A",
+            detection_status="ONGOING",
+            cvdpv2_notified_at=datetime.date.today(),
+        )
+
+        round_1 = Round.objects.create(
+            number=1, started_at="2023-01-01", ended_at="2023-01-20", campaign=cls.campaign_A
+        )
+        round_2 = Round.objects.create(
+            number=1, started_at="2023-02-01", ended_at="2023-02-20", campaign=cls.campaign_A
+        )
+
+        # Create a sample BudgetProcess object for testing
+        cls.budget_processsample_data = {
+            "budget_current_state_label": "Approved",
+            "campaign": cls.campaign_A,
+            "created_by": cls.user_polio,
+        }
+        cls.budget_process = BudgetProcess.objects.create(**cls.budget_processsample_data)
+
+        cls.budget_process.teams.set([cls.team_budget.pk])
+        cls.budget_process.rounds.set([round_1.pk, round_2.pk])
+
+    def test_serializer_valid_data(self):
+        serializer = ExportBudgetProcessSerializer(instance=self.budget_process)
+        self.assertTrue(serializer.is_valid())
+        data = serializer.data
+
+        # Check if the serialized data matches the expected data
+        self.assertEqual(data["obr_name"], self.budget_processsample_data["obr_name"])
+        self.assertEqual(
+            data["budget_current_state_label"], self.budget_processsample_data["budget_current_state_label"]
+        )
+        self.assertEqual(data["country"], self.budget_processsample_data["country"])
+        self.assertEqual(data["cvdpv2_notified_at"], self.budget_processsample_data["cvdpv2_notified_at"])
+        self.assertEqual(data["budget_last_updated_at"], self.budget_processsample_data["budget_last_updated_at"])
+
+    # def test_serializer_invalid_data(self):
+    #     # Test with invalid data (missing required fields)
+    #     invalid_data = {
+    #         "obr_name": "Invalid OBR",
+    #     }
+    #     serializer = ExportBudgetProcessSerializer(data=invalid_data)
+    #     self.assertFalse(serializer.is_valid())
+    #
+    #     # You can also check for specific errors if needed
+    #     self.assertIn("budget_current_state_label", serializer.errors)
+    #
+    # def test_get_obr_name_method(self):
+    #     obr_name = ExportBudgetProcessSerializer.get_obr_name(self.budget_process)
+    #     self.assertEqual(obr_name, self.budget_process.campaign.obr_name)

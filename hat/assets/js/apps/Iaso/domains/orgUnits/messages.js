@@ -535,6 +535,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.MultiReferenceInstancesLabel',
         defaultMessage: 'Reference submissions',
     },
+    openingDate: {
+        id: 'iaso.orgUnits.openingDate',
+        defaultMessage: 'Opening date',
+    },
+    closedDate: {
+        id: 'iaso.orgUnits.closedDate',
+        defaultMessage: 'Closed date',
+    },
 });
 
 export default MESSAGES;

@@ -14,12 +14,17 @@ import {
     QueryFunction,
 } from 'react-query';
 import { defineMessages } from 'react-intl';
-import { IntlMessage } from 'bluesquare-components';
+import { IntlMessage, useSafeIntl } from 'bluesquare-components';
 import { isArray } from 'lodash';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../constants/snackBars';
 
 const MESSAGES = defineMessages({
+    permissionError: {
+        id: 'iaso.snackBar.permissionError',
+        defaultMessage:
+            "You don't have permission to perform this action: {detail}",
+    },
     defaultMutationApiError: {
         id: 'iaso.snackBar.error',
         defaultMessage: 'An error occurred while saving',
@@ -116,6 +121,7 @@ const useBaseSnackMutation = <
 ): UseMutationResult<Data, Error, Variables, Context> => {
     const dispatch = useDispatch();
     const queryClient = useQueryClient();
+    const { formatMessage } = useSafeIntl();
     const newOptions: Omit<
         UseMutationOptions<any, any, any, any>,
         'mutationFn'
@@ -123,10 +129,16 @@ const useBaseSnackMutation = <
         ...options,
         onError: (error, variables, context) => {
             if (!ignoreErrorCodes.includes(error.status)) {
+                let errorMsg = snackErrorMsg;
+                if (error.status === 403) {
+                    if (error.details.detail) {
+                        errorMsg = error.details.detail;
+                    } else if (!errorMsg) {
+                        errorMsg = formatMessage(MESSAGES.permissionError);
+                    }
+                }
                 dispatch(
-                    enqueueSnackbar(
-                        errorSnackBar(undefined, snackErrorMsg, error),
-                    ),
+                    enqueueSnackbar(errorSnackBar(undefined, errorMsg, error)),
                 );
             }
             if (options.onError) {

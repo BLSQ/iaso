@@ -58,7 +58,10 @@ const MarkerInputs = ({
                             keyValue="latitude"
                             onChange={(_, newlatitude) =>
                                 onChangeLocation({
-                                    latitude: newlatitude,
+                                    latitude:
+                                        newlatitude === undefined
+                                            ? null
+                                            : newlatitude,
                                     longitude,
                                     altitude,
                                 })
@@ -78,7 +81,10 @@ const MarkerInputs = ({
                             onChange={(_, newLongitude) =>
                                 onChangeLocation({
                                     latitude,
-                                    longitude: newLongitude,
+                                    longitude:
+                                        newLongitude === undefined
+                                            ? null
+                                            : newLongitude,
                                     altitude,
                                 })
                             }
@@ -102,7 +108,10 @@ const MarkerInputs = ({
                             }}
                             onChange={(_, newAltitude) =>
                                 onChangeLocation({
-                                    altitude: newAltitude,
+                                    altitude:
+                                        newAltitude === undefined
+                                            ? null
+                                            : newAltitude,
                                     longitude,
                                     latitude,
                                 })
@@ -116,9 +125,9 @@ const MarkerInputs = ({
                                 className={classes.button}
                                 onClick={() =>
                                     onChangeLocation({
-                                        lat: null,
-                                        lng: null,
-                                        alt: null,
+                                        latitude: null,
+                                        longitude: null,
+                                        altitude: null,
                                     })
                                 }
                             >

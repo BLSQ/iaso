@@ -631,7 +631,7 @@ class OrgUnitChangeRequest(models.Model):
     def clean(self, *args, **kwargs):
         super().clean()
         self.approved_fields = list(set(self.approved_fields))
-        self.clean_approved_fields(self.approved_fields)
+        self.clean_approved_fields()
 
     @property
     def requested_fields(self) -> typing.List[str]:
@@ -647,6 +647,11 @@ class OrgUnitChangeRequest(models.Model):
             if is_requested:
                 requested.append(name)
         return requested
+
+    def clean_approved_fields(self) -> None:
+        for name in self.approved_fields:
+            if name not in self.get_new_fields():
+                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
 
     def reject(self, user: User, rejection_comment: str) -> None:
         self.reviewed_at = timezone.now()
@@ -705,9 +710,3 @@ class OrgUnitChangeRequest(models.Model):
         Returns the list of fields names which can store a change request.
         """
         return [field.name for field in cls._meta.get_fields() if field.name.startswith("new_")]
-
-    @classmethod
-    def clean_approved_fields(cls, approved_fields):
-        for name in approved_fields:
-            if name not in cls.get_new_fields():
-                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})

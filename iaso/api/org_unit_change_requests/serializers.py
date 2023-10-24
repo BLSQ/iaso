@@ -1,6 +1,5 @@
 import uuid
 
-from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
@@ -212,23 +211,23 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             seen.append(unique_org_unit_form)
         return value
 
-    def validate(self, data_as_internal_value):
+    def validate(self, validated_data):
         # Fields names are different between API and model,
         # e.g. `new_parent_id` VS `new_parent`.
         api_new_fields = [name for name in self.Meta.fields if name.startswith("new_")]
         model_new_fields = OrgUnitChangeRequest.get_new_fields()
-        if not any([data_as_internal_value.get(field) for field in model_new_fields]):
+        if not any([validated_data.get(field) for field in model_new_fields]):
             raise serializers.ValidationError(
                 f"You must provide at least one of the following fields: {', '.join(api_new_fields)}."
             )
 
-        org_unit = data_as_internal_value.get("org_unit")
-        new_parent = data_as_internal_value.get("new_parent")
+        org_unit = validated_data.get("org_unit")
+        new_parent = validated_data.get("new_parent")
         if org_unit and new_parent:
             if new_parent.version_id != org_unit.version_id:
                 raise serializers.ValidationError("`new_parent` and `org_unit` must have the same version.")
 
-        return data_as_internal_value
+        return validated_data
 
 
 class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
@@ -251,17 +250,13 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
         return value
 
-    def validate_approved_fields(self, value):
-        try:
-            OrgUnitChangeRequest.clean_approved_fields(value)
-        except ValidationError as e:
-            raise serializers.ValidationError(e.messages[0]) from e
-        return value
+    def validate(self, validated_data):
+        instance = OrgUnitChangeRequest(**validated_data)
+        instance.clean()
 
-    def validate(self, attrs):
-        status = attrs.get("status")
-        approved_fields = attrs.get("approved_fields")
-        rejection_comment = attrs.get("rejection_comment")
+        status = validated_data.get("status")
+        approved_fields = validated_data.get("approved_fields")
+        rejection_comment = validated_data.get("rejection_comment")
 
         if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
             raise serializers.ValidationError("A `rejection_comment` must be provided.")
@@ -269,4 +264,4 @@ class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
         if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
             raise serializers.ValidationError("At least one `approved_fields` must be provided.")
 
-        return attrs
+        return validated_data

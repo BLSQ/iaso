@@ -133,7 +133,10 @@ export const useRedirections: RedirectionsMethod = (
         redirections = [
             {
                 path: '/home',
-                component: () => window.location.replace('/login'),
+                component: () => {
+                    window.location.replace('/login');
+                    return <></>;
+                },
             },
         ];
     } else {

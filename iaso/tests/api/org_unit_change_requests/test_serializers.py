@@ -315,7 +315,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             org_unit_type=cls.org_unit_type, location=Point(-2.4747713, 47.3358576, 10.0)
         )
 
-    def test_deserialize_change_request(self):
+    def test_deserialize_ok(self):
         data = {
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
             "org_unit_id": self.org_unit.id,
@@ -324,7 +324,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertTrue(serializer.is_valid())
 
-    def test_deserialize_change_request_generate_uuid_if_not_provided(self):
+    def test_generate_uuid_if_not_provided(self):
         data = {
             "org_unit_id": self.org_unit.id,
             "new_name": "Foo",
@@ -333,7 +333,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertTrue(serializer.is_valid())
         self.assertTrue(isinstance(serializer.validated_data["uuid"], uuid.UUID))
 
-    def test_deserialize_change_request_validate(self):
+    def test_validate(self):
         data = {
             "org_unit_id": self.org_unit.id,
         }
@@ -341,7 +341,24 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertFalse(serializer.is_valid())
         self.assertIn("You must provide at least one of the following fields", serializer.errors["non_field_errors"][0])
 
-    def test_deserialize_change_request_validate_new_reference_instances(self):
+    def test_validate_new_parent_version(self):
+        data_source = m.DataSource.objects.create(name="Data source")
+        version1 = m.SourceVersion.objects.create(number=1, data_source=data_source)
+        version2 = m.SourceVersion.objects.create(number=2, data_source=data_source)
+        parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type, version=version2)
+        self.org_unit.version = version1
+        self.org_unit.save()
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_parent_id": parent_org_unit.id,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "`new_parent` and `org_unit` must have the same version.", serializer.errors["non_field_errors"][0]
+        )
+
+    def test_validate_new_reference_instances(self):
         form = m.Form.objects.create(name="Vaccine form 1")
         instance1 = m.Instance.objects.create(form=form, org_unit=self.org_unit)
         instance2 = m.Instance.objects.create(form=form, org_unit=self.org_unit)
@@ -356,7 +373,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             serializer.errors["new_reference_instances"][0],
         )
 
-    def test_deserialize_change_request_full(self):
+    def test_deserialize_ok_with_all_data(self):
         group1 = m.Group.objects.create(name="Group 1")
         group2 = m.Group.objects.create(name="Group 2")
 

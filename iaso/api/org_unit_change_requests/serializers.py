@@ -212,20 +212,23 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             seen.append(unique_org_unit_form)
         return value
 
-    def validate(self, attrs):
-        new_fields = [
-            "new_parent_id",
-            "new_name",
-            "new_org_unit_type_id",
-            "new_groups",
-            "new_location",
-            "new_reference_instances",
-        ]
-        if not any([attrs.get(field) for field in new_fields]):
+    def validate(self, data_as_internal_value):
+        # Fields names are different between API and model,
+        # e.g. `new_parent_id` VS `new_parent`.
+        api_new_fields = [name for name in self.Meta.fields if name.startswith("new_")]
+        model_new_fields = OrgUnitChangeRequest.get_new_fields()
+        if not any([data_as_internal_value.get(field) for field in model_new_fields]):
             raise serializers.ValidationError(
-                f"You must provide at least one of the following fields: {', '.join(new_fields)}."
+                f"You must provide at least one of the following fields: {', '.join(api_new_fields)}."
             )
-        return attrs
+
+        org_unit = data_as_internal_value.get("org_unit")
+        new_parent = data_as_internal_value.get("new_parent")
+        if org_unit and new_parent:
+            if new_parent.version_id != org_unit.version_id:
+                raise serializers.ValidationError("`new_parent` and `org_unit` must have the same version.")
+
+        return data_as_internal_value
 
 
 class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):

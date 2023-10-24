@@ -40,7 +40,6 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
     const classes: Record<string, string> = useStyle();
     const { formatMessage } = useSafeIntl();
     const ref = useRef();
-    if (shape.status === 'inScope') return null;
     const title =
         view === COUNTRY ? shape.data?.country_name : shape.data?.district_name;
 
@@ -90,13 +89,15 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                             valueSize={valueSize}
                         />
                     )}
-                    <PopupItemComponent
-                        label={formatMessage(MESSAGES.round)}
-                        value={shape.data.round_number}
-                        labelSize={labelSize}
-                        valueSize={valueSize}
-                    />
-                    {view === COUNTRY && (
+                    {shape.status !== 'inScope' && (
+                        <PopupItemComponent
+                            label={formatMessage(MESSAGES.round)}
+                            value={shape.data.round_number}
+                            labelSize={labelSize}
+                            valueSize={valueSize}
+                        />
+                    )}
+                    {view === COUNTRY && shape.status !== 'inScope' && (
                         <PopupItemComponent
                             label={formatMessage(MESSAGES.passing)}
                             value={`${shape.lqas_passed}/${shape.scope_count}`}
@@ -104,7 +105,7 @@ export const LqasAfroPopup: FunctionComponent<Props> = ({
                             valueSize={valueSize}
                         />
                     )}
-                    {view === DISTRICT && (
+                    {view === DISTRICT && shape.status !== 'inScope' && (
                         <>
                             <PopupItemComponent
                                 label={formatMessage(MESSAGES.childrenChecked)}

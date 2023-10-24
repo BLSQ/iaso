@@ -225,8 +225,14 @@ class LqasDistrictsUpdateSerializer(serializers.Serializer):
     obr_name = serializers.CharField(required=True)
 
     def update(self, instance, validated_data):
-        instance.lqas_district_passing = validated_data["lqas_district_passing"]
-        instance.lqas_district_failing = validated_data["lqas_district_failing"]
+        # We save None i.o 0 to avoid breaking powerBi dashboards
+        instance.lqas_district_passing = (
+            validated_data["lqas_district_passing"] if validated_data["lqas_district_passing"] > 0 else None
+        )
+        # We save None i.o 0 to avoid breaking powerBi dashboards
+        instance.lqas_district_failing = (
+            validated_data["lqas_district_failing"] if validated_data["lqas_district_failing"] > 0 else None
+        )
         instance.save()
         return instance
 

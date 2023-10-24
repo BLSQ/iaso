@@ -30,13 +30,14 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         new_instance = m.Instance.objects.create(form=self.form, org_unit=self.org_unit)
 
         kwargs = {
+            "uuid": "018480e4-b0a7-4be8-96b7-d237f131716e",
             "org_unit": self.org_unit,
             "created_by": self.user,
             "new_parent": new_parent,
             "new_name": "New name",
             "new_org_unit_type": new_org_unit_type,
             "new_location": Point(-2.4747713, 47.3358576, 1.3358576),
-            "new_accuracy": "0.11",
+            "new_location_accuracy": "0.11",
             "approved_fields": [
                 "new_parent",
                 "new_name",
@@ -54,13 +55,14 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         change_request.new_reference_instances.set([new_instance])
         change_request.refresh_from_db()
 
+        self.assertEqual(str(change_request.uuid), kwargs["uuid"])
         self.assertEqual(change_request.org_unit, self.org_unit)
         self.assertEqual(change_request.created_by, self.user)
         self.assertEqual(change_request.new_parent, new_parent)
         self.assertEqual(change_request.new_name, "New name")
         self.assertEqual(change_request.new_org_unit_type, new_org_unit_type)
         self.assertCountEqual(change_request.new_location, kwargs["new_location"])
-        self.assertEqual(change_request.new_accuracy, Decimal("0.11"))
+        self.assertEqual(change_request.new_location_accuracy, Decimal("0.11"))
         self.assertEqual(change_request.new_groups.count(), 1)
         self.assertEqual(change_request.new_groups.first(), new_group)
         self.assertEqual(change_request.new_reference_instances.count(), 1)
@@ -94,7 +96,7 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
             "new_org_unit_type",
             "new_groups",
             "new_location",
-            "new_accuracy",
+            "new_location_accuracy",
             "new_reference_instances",
         ]
         self.assertCountEqual(change_request.new_fields, expected_fields)

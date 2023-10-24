@@ -19,6 +19,7 @@ import {
 
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import PropTypes from 'prop-types';
+import { Link } from 'react-router';
 
 import { injectIntl, commonStyles } from 'bluesquare-components';
 import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
@@ -34,6 +35,7 @@ import MESSAGES from './messages';
 
 import { getDefaultSourceVersion } from '../../dataSources/utils';
 import { useCurrentUser } from '../../../utils/usersUtils.ts';
+import { baseUrls } from '../../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -77,6 +79,12 @@ const styles = theme => ({
         fontSize: 23,
         marginLeft: theme.spacing(2),
     },
+    homeLink: {
+        textDecoration: 'none !important',
+        color: 'inherit',
+        display: 'flex',
+        alignItems: 'center',
+    },
 });
 
 const localizedManualUrl = (locale, account) => {
@@ -113,7 +121,9 @@ const SidebarMenu = ({
     return (
         <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
             <div className={classes.toolbar}>
-                <Logo />
+                <Link className={classes.homeLink} to={baseUrls.home}>
+                    <Logo />
+                </Link>
                 <IconButton
                     className={classes.menuButton}
                     color="inherit"

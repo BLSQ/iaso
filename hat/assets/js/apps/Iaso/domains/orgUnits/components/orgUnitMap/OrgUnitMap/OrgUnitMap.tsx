@@ -15,6 +15,7 @@ import {
     mapOrgUnitByLocation,
     getleafletGeoJson,
     orderOrgUnitTypeByDepth,
+    isValidCoordinate,
 } from '../../../../../utils/map/mapUtils';
 import EditOrgUnitOptionComponent from '../EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from '../../OrgunitOptionSaveComponent';
@@ -234,11 +235,12 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
 
     const updateOrgUnitLocation = useCallback(
         newOrgUnit => {
-            if (newOrgUnit.latitude && newOrgUnit.longitude) {
+            const { latitude, longitude, altitude } = newOrgUnit;
+            if (isValidCoordinate(latitude, longitude)) {
                 onChangeLocation({
-                    lat: newOrgUnit.latitude,
-                    lng: newOrgUnit.longitude,
-                    alt: newOrgUnit.altitude,
+                    latitude,
+                    longitude,
+                    altitude,
                 });
             } else if (newOrgUnit.has_geo_json) {
                 setOrgUnitLocationModified(false); // What's the right value, the initial code passed nothing
@@ -249,7 +251,8 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
     );
 
     const hasMarker =
-        Boolean(currentOrgUnit.latitude) && Boolean(currentOrgUnit.longitude);
+        !Number.isNaN(currentOrgUnit.latitude) &&
+        !Number.isNaN(currentOrgUnit.longitude);
 
     if (map.current) {
         map.current.options.maxZoom = currentTile.maxZoom;
@@ -373,6 +376,15 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
         state.catchmentGroup.value,
         state.locationGroup.value,
     ]);
+
+    const { latitude, longitude } = currentOrgUnit;
+    // one has a value and the other not or both have a value but are impossible
+    const isInvalidCoordinate =
+        (latitude === null && longitude !== null) ||
+        (longitude === null && latitude !== null) ||
+        (latitude !== null &&
+            longitude !== null &&
+            !isValidCoordinate(latitude, longitude));
     return (
         <Grid container spacing={0}>
             <InnerDrawer
@@ -385,7 +397,11 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                     <OrgunitOptionSaveComponent
                         orgUnit={currentOrgUnit}
                         resetOrgUnit={() => handleReset()}
-                        saveDisabled={actionBusy || !orgUnitLocationModified}
+                        saveDisabled={
+                            actionBusy ||
+                            !orgUnitLocationModified ||
+                            isInvalidCoordinate
+                        }
                         saveOrgUnit={saveOrgUnit}
                     />
                 }
@@ -408,7 +424,10 @@ export const OrgUnitMap: FunctionComponent<Props> = ({
                                 setStateField('orgUnitTypesSelected', outypes);
                             }}
                         />
-                        {userHasPermission(Permission.SUBMISSIONS, currentUser) && (
+                        {userHasPermission(
+                            Permission.SUBMISSIONS,
+                            currentUser,
+                        ) && (
                             <FormsFilterComponent
                                 currentOrgUnit={currentOrgUnit}
                                 formsSelected={state.formsSelected.value}

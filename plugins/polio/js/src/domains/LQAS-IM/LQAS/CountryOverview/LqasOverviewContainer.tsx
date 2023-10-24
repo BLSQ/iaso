@@ -5,7 +5,7 @@ import React, {
     useState,
 } from 'react';
 
-import { Paper, Divider, Box, Tab, Tabs, makeStyles } from '@material-ui/core';
+import { Paper, Divider, Tab, Tabs, makeStyles } from '@material-ui/core';
 
 import { useDispatch } from 'react-redux';
 import { commonStyles, useSafeIntl } from 'bluesquare-components';
@@ -130,15 +130,15 @@ export const LqasOverviewContainer: FunctionComponent<Props> = ({
     const scopeCount = computeScopeCounts(campaignObject, round);
     return (
         <Paper elevation={paperElevation}>
-            <Box mb={2}>
-                <LqasImMapHeader
-                    round={round}
-                    startDate={startDate}
-                    endDate={endDate}
-                    options={options}
-                    onRoundSelect={onRoundChange}
-                />
-            </Box>
+            <LqasImMapHeader
+                round={round}
+                startDate={startDate}
+                endDate={endDate}
+                options={options ?? []}
+                onRoundSelect={onRoundChange}
+                campaignObrName={campaign}
+                isFetching={isFetching}
+            />
             <Divider />
             <LqasSummary
                 round={round}

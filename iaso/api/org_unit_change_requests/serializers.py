@@ -78,7 +78,7 @@ class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
             "new_org_unit_type_id",
             "new_groups",
             "new_location",
-            "new_accuracy",
+            "new_location_accuracy",
             "new_reference_instances",
         ]
 
@@ -156,7 +156,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
             "new_org_unit_type_name",
             "new_groups",
             "new_location",
-            "new_accuracy",
+            "new_location_accuracy",
             "new_reference_instances",
         ]
 
@@ -198,7 +198,7 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_org_unit_type_id",
             "new_groups",
             "new_location",
-            "new_accuracy",
+            "new_location_accuracy",
             "new_reference_instances",
         ]
         extra_kwargs = {"created_by": {"default": serializers.CurrentUserDefault()}}

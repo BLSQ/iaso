@@ -1,5 +1,6 @@
 import uuid
 
+from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
 from iaso.models import Instance, OrgUnit, OrgUnitChangeRequest, OrgUnitType
@@ -49,7 +50,7 @@ class OrgUnitForChangeRequest(serializers.ModelSerializer):
         ]
 
     def get_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.groups.all()]
 
 
 class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
@@ -119,7 +120,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         ]
 
     def get_current_org_unit_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.org_unit.groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
 
 
 class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
@@ -161,7 +162,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
         ]
 
     def get_new_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.new_groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.new_groups.all()]
 
 
 class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
@@ -201,10 +202,17 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_location_accuracy",
             "new_reference_instances",
         ]
-        extra_kwargs = {"created_by": {"default": serializers.CurrentUserDefault()}}
+
+    def validate_new_reference_instances(self, value):
+        seen = []
+        for instance in value:
+            unique_org_unit_form = f"{instance.form_id}-{instance.org_unit_id}"
+            if unique_org_unit_form in seen:
+                raise serializers.ValidationError("Only one reference instance can exist by org_unit/form pair.")
+            seen.append(unique_org_unit_form)
+        return value
 
     def validate(self, attrs):
-        validated_data = super().validate(attrs)
         new_fields = [
             "new_parent_id",
             "new_name",
@@ -213,8 +221,49 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_location",
             "new_reference_instances",
         ]
-        if not any([validated_data.get(field) for field in new_fields]):
+        if not any([attrs.get(field) for field in new_fields]):
             raise serializers.ValidationError(
                 f"You must provide at least one of the following fields: {', '.join(new_fields)}."
             )
-        return validated_data
+        return attrs
+
+
+class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
+    """
+    Used to approve or reject one `OrgUnitChangeRequest`.
+    """
+
+    class Meta:
+        model = OrgUnitChangeRequest
+        fields = [
+            "status",
+            "approved_fields",
+            "rejection_comment",
+        ]
+
+    def validate_status(self, value):
+        approved = OrgUnitChangeRequest.Statuses.APPROVED
+        rejected = OrgUnitChangeRequest.Statuses.REJECTED
+        if value not in [approved, rejected]:
+            raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
+        return value
+
+    def validate_approved_fields(self, value):
+        try:
+            OrgUnitChangeRequest.clean_approved_fields(value)
+        except ValidationError as e:
+            raise serializers.ValidationError(e.messages[0]) from e
+        return value
+
+    def validate(self, attrs):
+        status = attrs.get("status")
+        approved_fields = attrs.get("approved_fields")
+        rejection_comment = attrs.get("rejection_comment")
+
+        if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
+            raise serializers.ValidationError("A `rejection_comment` must be provided.")
+
+        if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
+            raise serializers.ValidationError("At least one `approved_fields` must be provided.")
+
+        return attrs

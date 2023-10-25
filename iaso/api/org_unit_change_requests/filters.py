@@ -3,6 +3,7 @@ from rest_framework.exceptions import ValidationError
 
 from django.db.models import Q
 from django.db.models.query import QuerySet
+from django.utils.translation import gettext_lazy as _
 
 from iaso.models import OrgUnitChangeRequest
 
@@ -16,11 +17,11 @@ class MobileOrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterS
 
 
 class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
-    org_unit_id = django_filters.NumberFilter(field_name="org_unit_id")
-    org_unit_type_id = django_filters.NumberFilter(method="filter_org_unit_type_id")
-    parent_id = django_filters.NumberFilter(method="filter_parent_id")
-    groups = django_filters.CharFilter(method="filter_groups")
-    project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects")
+    org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
+    org_unit_type_id = django_filters.NumberFilter(method="filter_org_unit_type_id", label=_("Org unit type ID"))
+    parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
+    groups = django_filters.CharFilter(method="filter_groups", label=_("Groups"))
+    project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects", label=_("Project"))
 
     class Meta:
         model = OrgUnitChangeRequest

@@ -23,7 +23,7 @@ from plugins.polio.budget.serializers import (
     TransitionOverrideSerializer,
     BudgetProcessSerializer,
     BudgetProcessCreateSerializer,
-    BudgetProcessForBudgetSerializer,
+    BudgetProcessForBudgetSerializer, ExportBudgetProcessSerializer,
 )
 from iaso.api.common import CustomFilterBackend
 from plugins.polio.models import Campaign, Round
@@ -41,7 +41,7 @@ class BudgetCampaignViewSet(ModelViewSet, CSVExportMixin):
     """
 
     serializer_class = BudgetProcessForBudgetSerializer
-    exporter_serializer_class = ExportCampaignBudgetSerializer
+    exporter_serializer_class = ExportBudgetProcessSerializer
     export_filename = "campaigns_budget_list_{date}.csv"
     permission_classes = [HasPermission(permission.POLIO_BUDGET)]  # type: ignore
     use_field_order = True

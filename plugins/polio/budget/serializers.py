@@ -699,10 +699,9 @@ class BudgetProcessForBudgetSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
-    @staticmethod
-    def get_campaign(budget_process: BudgetProcess) -> str:
+    def get_campaign(self, budget_process: BudgetProcess) -> str:
         campaign = Campaign.objects.filter(pk=budget_process.rounds.all()[0].campaign.pk)
-        serializer = CampaignBudgetSerializer(campaign, many=True).data
+        serializer = CampaignBudgetSerializer(data=campaign, many=True, context=self.context)
         serializer.is_valid()
         return serializer.data
 

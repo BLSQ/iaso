@@ -640,7 +640,7 @@ class BudgetProcessSerializerTest(APITestCase):
         cls.budget_process.teams.set([cls.team_budget.pk])
         cls.budget_process.rounds.set([round_1.pk, round_2.pk])
 
-    def test_serializer_valid_data(self):
+    def test_export_budget_serializer_valid_data(self):
         # As this serializer only purpose is to represent data, no more tests are required.
         serializer = ExportBudgetProcessSerializer(instance=self.budget_process)
         data = serializer.data

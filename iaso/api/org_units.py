@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.dateparse import parse_date
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
@@ -482,6 +483,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     continue
                 new_groups.append(temp_group)
 
+        if "opening_date" not in request.data:
+            errors.append(
+                {"errorKey": "opening_date", "errorMessage": _("You cannot create an Org Unit without an opening date")}
+            )
+        else:
+            org_unit.opening_date = self.get_date(self, request.data.get("opening_date"))
+
+        if "closed_date" in request.data:
+            org_unit.closed_date = self.get_date(self, request.data.get("closed_date"))
+
         if not errors:
             org_unit.save()
             if new_groups is not None:
@@ -503,6 +514,20 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             return Response(errors, status=400)
+
+    @staticmethod
+    def check_date_format(date, format):
+        try:
+            return bool(datetime.strptime(date, format))
+        except ValueError:
+            return False
+
+    @staticmethod
+    def get_date(self, date):
+        if self.check_date_format(date, "%d-%m-%Y"):
+            return datetime.strptime(date, "%d-%m-%Y").date()
+        else:
+            return datetime.strptime(date, "%d/%m/%Y").date()
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):

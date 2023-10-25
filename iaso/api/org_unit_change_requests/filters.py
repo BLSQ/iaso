@@ -20,8 +20,8 @@ class OrgUnitChangeRequestListFilter(django_filters.rest_framework.FilterSet):
     org_unit_id = django_filters.NumberFilter(field_name="org_unit_id", label=_("Org unit ID"))
     org_unit_type_id = django_filters.NumberFilter(method="filter_org_unit_type_id", label=_("Org unit type ID"))
     parent_id = django_filters.NumberFilter(method="filter_parent_id", label=_("Parent ID"))
-    groups = django_filters.CharFilter(method="filter_groups", label=_("Groups"))
-    project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects", label=_("Project"))
+    groups = django_filters.CharFilter(method="filter_groups", label=_("Groups IDs (comma-separated)"))
+    project = django_filters.NumberFilter(field_name="org_unit__org_unit_type__projects", label=_("Project ID"))
 
     class Meta:
         model = OrgUnitChangeRequest

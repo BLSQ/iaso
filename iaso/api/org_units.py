@@ -492,6 +492,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if "closed_date" in request.data:
             org_unit.closed_date = self.get_date(self, request.data.get("closed_date"))
+        else:
+            org_unit.closed_date = None
 
         if not errors:
             org_unit.save()

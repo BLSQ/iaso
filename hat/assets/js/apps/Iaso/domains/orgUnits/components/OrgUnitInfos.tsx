@@ -21,6 +21,7 @@ import { OrgunitType } from '../types/orgunitTypes';
 import { Instance } from '../../instances/types/instance';
 import { useGetValidationStatus } from '../../forms/hooks/useGetValidationStatus';
 import { OrgUnitMultiReferenceInstances } from './OrgUnitMultiReferenceInstances';
+import DatesRange from '../../../components/filters/DatesRange';
 
 const useStyles = makeStyles(theme => ({
     speedDialTop: {
@@ -188,7 +189,16 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                         resetTrigger={resetTrigger}
                     />
                 </FormControlComponent>
-
+                <DatesRange
+                    keyDateFrom="opening_date"
+                    keyDateTo="closed_date"
+                    onChangeDate={onChangeInfo}
+                    dateFrom={orgUnitState.opening_date.value}
+                    dateTo={orgUnitState.closed_date.value}
+                    labelFrom={MESSAGES.openingDate}
+                    labelTo={MESSAGES.closedDate}
+                    marginTop={0}
+                />
                 <Grid
                     container
                     item

@@ -1,6 +1,7 @@
 import json
 from copy import deepcopy
 from time import gmtime, strftime
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -551,6 +552,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
+
+        opening_date = request.data.get("opening_date")
+        closed_date = request.data.get("closed_date", None)
+
+        if not opening_date:
+            errors.append(
+                {"errorKey": "opening_date", "errorMessage": _("You cannot create an Org Unit without an opening date")}
+            )
+        else:
+            org_unit.opening_date = datetime.strptime(opening_date, "%d-%m-%Y").date()
+
+        if closed_date:
+            org_unit.closed_date = datetime.strptime(closed_date, "%d-%m-%Y").date()
 
         validation_status = request.data.get("validation_status", None)
         if validation_status is None:

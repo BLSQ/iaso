@@ -279,8 +279,8 @@ class OrgUnit(TreeModel):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    opening_date = models.DateTimeField(blank=False, null=True)  # Start date of activities of the organisation unit
-    closed_date = models.DateTimeField(blank=True, null=True)  # End date of activities of the organisation unit
+    opening_date = models.DateField(blank=False, null=True)  # Start date of activities of the organisation unit
+    closed_date = models.DateField(blank=True, null=True)  # End date of activities of the organisation unit
 
     objects = OrgUnitManager()  # type: ignore
 
@@ -407,6 +407,8 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
 
         if hasattr(self, "search_index"):
@@ -439,6 +441,8 @@ class OrgUnit(TreeModel):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "creator": get_creator_name(self.creator),
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
         if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
@@ -466,6 +470,8 @@ class OrgUnit(TreeModel):
             "source_ref": self.source_ref,
             "parent": self.parent.as_small_dict() if self.parent else None,
             "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
+            "opening_date": self.opening_date.strftime("%d/%m/%Y") if self.opening_date else None,
+            "closed_date": self.closed_date.strftime("%d/%m/%Y") if self.closed_date else None,
         }
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index

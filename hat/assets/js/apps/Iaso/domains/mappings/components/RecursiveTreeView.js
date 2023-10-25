@@ -1,9 +1,8 @@
 import React from 'react';
 import { makeStyles } from '@mui/styles';
-import TreeView from '@mui/lab/TreeView';
+import { TreeItem, TreeView } from '@mui/x-tree-view';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import TreeItem from '@mui/lab/TreeItem';
 import _ from 'lodash';
 import Descriptor from '../descriptor';
 

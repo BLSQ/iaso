@@ -6,7 +6,7 @@ import React, { FunctionComponent } from 'react';
 
 export const useDownloadButtonStyles = makeStyles(theme => ({
     button: {
-        marginLeft: theme.spacing(2),
+        marginLeft: `${theme.spacing(2)} !important`,
         '& svg, & i': {
             marginRight: theme.spacing(1),
         },

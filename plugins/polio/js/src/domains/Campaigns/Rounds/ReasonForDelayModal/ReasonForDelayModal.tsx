@@ -6,8 +6,9 @@ import {
 } from 'bluesquare-components';
 import { Divider } from '@material-ui/core';
 import { Field, useFormikContext } from 'formik';
+import { useSelector } from 'react-redux';
 import MESSAGES from '../../../../constants/messages';
-import { useReasonsForDateChangeOptions } from './hooks/reasons';
+import { useReasonsDelayOptions } from './hooks/reasons';
 import { ReasonsForDelayButton } from './ReasonsForDelayButton';
 import { DateInput } from '../../../../components/Inputs/DateInput';
 import { SingleSelect } from '../../../../components/Inputs/SingleSelect';
@@ -26,7 +27,10 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
 }) => {
     const { formatMessage } = useSafeIntl();
     const { handleSubmit, resetForm } = useFormikContext();
-    const options = useReasonsForDateChangeOptions();
+    // @ts-ignore
+    const activeLocale = useSelector(state => state.app.locale);
+    const { code: locale } = activeLocale;
+    const { data: reasonsForDelayOptions } = useReasonsDelayOptions(locale);
     return (
         <ConfirmCancelModal
             id="reasonForDelay-Modal"
@@ -58,12 +62,12 @@ const ReasonForDelayModal: FunctionComponent<Props> = ({
             />
             <Field
                 label={formatMessage(MESSAGES.reasonForDateChange)}
-                name="reason"
+                name="reason_for_delay"
                 component={SingleSelect}
                 fullWidth
                 required
                 clearable={false}
-                options={options}
+                options={reasonsForDelayOptions ?? []}
             />
         </ConfirmCancelModal>
     );

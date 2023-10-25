@@ -1,16 +1,19 @@
 import operator
 import typing
+import uuid
 from functools import reduce
 
 import django_cte
+from django.core.exceptions import ValidationError
 from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.postgres.indexes import GistIndex
-from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
+from django.utils.functional import cached_property
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
@@ -552,3 +555,103 @@ class OrgUnitReferenceInstance(models.Model):
     class Meta:
         # Only one `instance` by pair of org_unit/form.
         unique_together = ("org_unit", "form")
+
+
+class OrgUnitChangeRequest(models.Model):
+    """
+    A request to change an OrgUnit.
+
+    It can also be a request to create an OrgUnit. In this case the OrgUnit
+    already exists in DB with `OrgUnit.validation_status == VALIDATION_NEW`.
+    The change request will change `validation_status` to either
+    `VALIDATION_REJECTED` or `VALIDATION_VALID`.
+    """
+
+    class Statuses(models.TextChoices):
+        NEW = "new", _("New")
+        REJECTED = "rejected", _("Rejected")
+        APPROVED = "approved", _("Approved")
+
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False)
+    org_unit = models.ForeignKey("OrgUnit", on_delete=models.CASCADE)
+    status = models.CharField(choices=Statuses.choices, default=Statuses.NEW, max_length=40)
+
+    # Metadata.
+
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_updated_set"
+    )
+    reviewed_at = models.DateTimeField(blank=True, null=True)
+    reviewed_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="org_unit_change_reviewed_set"
+    )
+    rejection_comment = models.TextField(blank=True)
+
+    # Fields for which a change can be requested.
+
+    new_parent = models.ForeignKey(
+        "OrgUnit", null=True, blank=True, on_delete=models.CASCADE, related_name="org_unit_change_parents_set"
+    )
+    new_name = models.CharField(max_length=255, blank=True)
+    new_org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
+    new_groups = models.ManyToManyField("Group", blank=True)
+    new_location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
+    # `accuracy` is only used to help decision-making during validation: is the accuracy good
+    # enough to change the location? The field doesn't exist on `OrgUnit`.
+    new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
+    new_reference_instances = models.ManyToManyField("Instance", blank=True)
+
+    # Stores approved fields (only a subset can be approved).
+    approved_fields = ArrayField(
+        models.CharField(max_length=30, blank=True),
+        default=list,
+        blank=True,
+    )
+
+    class Meta:
+        verbose_name = _("Org unit change request")
+        indexes = [
+            models.Index(fields=["created_at"]),
+            models.Index(fields=["updated_at"]),
+        ]
+
+    def __str__(self) -> str:
+        return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"
+
+    def clean(self, *args, **kwargs):
+        super().clean()
+        self.clean_approved_fields()
+
+    def clean_approved_fields(self) -> None:
+        approved_fields = list(set(self.approved_fields))
+        for name in approved_fields:
+            if name not in self.new_fields:
+                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
+        self.approved_fields = approved_fields
+
+    @cached_property
+    def new_fields(self) -> typing.List[str]:
+        """
+        Returns the list of fields names which can store a change request.
+        """
+        return [field.name for field in OrgUnitChangeRequest._meta.get_fields() if field.name.startswith("new_")]
+
+    @property
+    def requested_fields(self) -> typing.List[str]:
+        """
+        Returns the list of fields names for which a change was requested.
+        `prefetch_related` of m2m are required when used in bulk.
+        """
+        requested = []
+        for name in self.new_fields:
+            field = getattr(self, name)
+            is_m2m = field.__class__.__name__ == "ManyRelatedManager"
+            is_requested = field.exists() if is_m2m else field
+            if is_requested:
+                requested.append(name)
+        return requested

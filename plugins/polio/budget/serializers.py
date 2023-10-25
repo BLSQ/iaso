@@ -822,7 +822,12 @@ class BudgetProcessCreateSerializer(serializers.ModelSerializer):
         return value
 
 
-class ExportBudgetProcessSerializer(CampaignBudgetSerializer):
+class ExportBudgetProcessSerializer(serializers.ModelSerializer):
+    obr_name = serializers.SerializerMethodField()
+    country = serializers.SerializerMethodField()
+    cvdpv2_notified_at = serializers.SerializerMethodField()
+    budget_last_updated_at = serializers.SerializerMethodField()
+
     class Meta:
         model = BudgetProcess
         fields = ["obr_name", "budget_current_state_label", "country", "cvdpv2_notified_at", "budget_last_updated_at"]
@@ -833,6 +838,9 @@ class ExportBudgetProcessSerializer(CampaignBudgetSerializer):
             "country": "Country",
             "budget_current_state_label": "Budget state",
         }
+
+        cvdpv2_notified_at = TimestampField(read_only=True)
+        budget_last_updated_at = TimestampField(read_only=True)
 
     @staticmethod
     def get_obr_name(obj: BudgetProcess) -> str:
@@ -847,5 +855,5 @@ class ExportBudgetProcessSerializer(CampaignBudgetSerializer):
         return obj.campaign.cvdpv2_notified_at
 
     @staticmethod
-    def get_budget_last_update_at(obj: BudgetProcess) -> date:
+    def get_budget_last_updated_at(obj: BudgetProcess) -> date:
         return obj.updated_at

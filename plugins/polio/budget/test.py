@@ -618,6 +618,8 @@ class ExportBudgetProcessSerializerTest(APITestCase):
             obr_name="obr_name_A",
             detection_status="ONGOING",
             cvdpv2_notified_at=datetime.date.today(),
+            initial_org_unit=cls.org_unit,
+            country=cls.org_unit
         )
 
         round_1 = Round.objects.create(
@@ -640,17 +642,17 @@ class ExportBudgetProcessSerializerTest(APITestCase):
 
     def test_serializer_valid_data(self):
         serializer = ExportBudgetProcessSerializer(instance=self.budget_process)
-        self.assertTrue(serializer.is_valid())
         data = serializer.data
+        print("DATA: ", data)
 
         # Check if the serialized data matches the expected data
-        self.assertEqual(data["obr_name"], self.budget_processsample_data["obr_name"])
+        self.assertEqual(data["obr_name"], self.campaign_A.obr_name)
         self.assertEqual(
-            data["budget_current_state_label"], self.budget_processsample_data["budget_current_state_label"]
+            data["budget_current_state_label"], self.budget_process.budget_current_state_label
         )
-        self.assertEqual(data["country"], self.budget_processsample_data["country"])
-        self.assertEqual(data["cvdpv2_notified_at"], self.budget_processsample_data["cvdpv2_notified_at"])
-        self.assertEqual(data["budget_last_updated_at"], self.budget_processsample_data["budget_last_updated_at"])
+        self.assertEqual(data["country"], self.budget_process.campaign.country)
+        self.assertEqual(data["cvdpv2_notified_at"], self.campaign_A.cvdpv2_notified_at)
+        self.assertEqual(data["budget_last_updated_at"], self.budget_process.updated_at)
 
     # def test_serializer_invalid_data(self):
     #     # Test with invalid data (missing required fields)

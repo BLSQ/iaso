@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { LoadingSpinner } from 'bluesquare-components';
 
-import { Table, TableContainer, Box } from '@material-ui/core';
+import { Table, TableContainer, Box } from '@mui/material';
 
 import { useStyles } from './Styles';
 

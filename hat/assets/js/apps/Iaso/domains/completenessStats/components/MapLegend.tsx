@@ -1,5 +1,6 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, makeStyles, Box, useTheme } from '@material-ui/core';
+import { Paper, Box, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { scaleThreshold } from '@visx/scale';
 import { LegendThreshold, LegendItem, LegendLabel } from '@visx/legend';
 import { useSafeIntl } from 'bluesquare-components';

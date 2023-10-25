@@ -7,7 +7,8 @@ import React, {
 } from 'react';
 import { useDispatch } from 'react-redux';
 import { useSafeIntl, commonStyles } from 'bluesquare-components';
-import { Box, Grid, makeStyles, useTheme, Tabs, Tab } from '@material-ui/core';
+import { Box, Grid, useTheme, Tabs, Tab } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import Color from 'color';
 
 import { Router } from 'react-router';

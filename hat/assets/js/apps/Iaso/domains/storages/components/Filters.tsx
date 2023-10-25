@@ -1,4 +1,4 @@
-import { Box, Grid, useTheme, useMediaQuery } from '@material-ui/core';
+import { Box, Grid, useTheme, useMediaQuery } from '@mui/material';
 import React, { FunctionComponent, useState } from 'react';
 
 import { FilterButton } from '../../../components/FilterButton';

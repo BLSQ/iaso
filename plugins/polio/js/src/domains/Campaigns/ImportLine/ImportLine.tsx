@@ -6,7 +6,7 @@ import {
     SimpleModal,
     LoadingSpinner,
 } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { useFormik } from 'formik';
 
 import { useQueryClient } from 'react-query';

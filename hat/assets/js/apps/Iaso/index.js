@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { MuiThemeProvider } from '@material-ui/core/styles';
-import CssBaseline from '@material-ui/core/CssBaseline';
+import { ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
 import { theme } from 'bluesquare-components';
 import { QueryClient, QueryClientProvider } from 'react-query';
 
@@ -33,7 +33,7 @@ export default function iasoApp(
         <QueryClientProvider client={queryClient}>
             <PluginsContext.Provider value={{ plugins }}>
                 <ThemeConfigContext.Provider value={themeConfig}>
-                    <MuiThemeProvider
+                    <ThemeProvider
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
                         <CssBaseline />
@@ -43,7 +43,7 @@ export default function iasoApp(
                                 userHomePage={userHomePage}
                             />
                         </Provider>
-                    </MuiThemeProvider>
+                    </ThemeProvider>
                 </ThemeConfigContext.Provider>
             </PluginsContext.Provider>
         </QueryClientProvider>,

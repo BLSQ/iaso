@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState, useMemo } from 'react';
 import { MapContainer, Pane, ScaleControl } from 'react-leaflet';
-import { Box, useTheme, makeStyles } from '@material-ui/core';
+import { Box, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { LoadingSpinner, commonStyles } from 'bluesquare-components';
 import { Tile } from '../../../components/maps/tools/TilesSwitchControl';

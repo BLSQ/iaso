@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Paper, Box } from '@material-ui/core';
+import { Paper, Box } from '@mui/material';
 
 import {
     // @ts-ignore

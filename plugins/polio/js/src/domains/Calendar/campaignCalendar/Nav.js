@@ -9,13 +9,15 @@ import {
     Popper,
     ClickAwayListener,
     Tooltip,
-} from '@material-ui/core';
-import ChevronLeft from '@material-ui/icons/ChevronLeft';
-import ArrowForward from '@material-ui/icons/ArrowForward';
-import { KeyboardDatePicker } from '@material-ui/pickers';
-import ChevronRight from '@material-ui/icons/ChevronRight';
-import ArrowBack from '@material-ui/icons/ArrowBack';
-import Today from '@material-ui/icons/Today';
+    TextField,
+} from '@mui/material';
+
+import ChevronLeft from '@mui/icons-material/ChevronLeft';
+import ArrowForward from '@mui/icons-material/ArrowForward';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import ChevronRight from '@mui/icons-material/ChevronRight';
+import ArrowBack from '@mui/icons-material/ArrowBack';
+import Today from '@mui/icons-material/Today';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { Link, withRouter } from 'react-router';
@@ -97,13 +99,14 @@ const Nav = ({ currentMonday, router, currentDate }) => {
                         placement="bottom"
                         className={classes.popper}
                     >
-                        <KeyboardDatePicker
+                        <DatePicker
                             autoOk
                             disableToolbar
                             variant="static"
                             format={dateFormat}
                             label=""
                             helperText=""
+                            renderInput={props => <TextField {...props} />}
                             value={currentDate.format(dateFormat)}
                             onChange={date =>
                                 handleDateChange(date.format(dateFormat))

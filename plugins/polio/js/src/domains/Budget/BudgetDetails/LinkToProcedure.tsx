@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router';
 import { useSafeIntl } from 'bluesquare-components';
-import { Tooltip, makeStyles } from '@material-ui/core';
-import HelpIcon from '@material-ui/icons/Help';
+import { Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import HelpIcon from '@mui/icons-material/Help';
 import { BUDGET_PROCEDURE_SCHEMA } from '../constants';
 import MESSAGES from '../../../constants/messages';
 

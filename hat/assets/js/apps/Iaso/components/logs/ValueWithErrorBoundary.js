@@ -1,7 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'bluesquare-components';
-import { Typography, Box, withStyles } from '@material-ui/core';
+import { Typography, Box } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import { LogValue } from './LogValue.tsx';
 import MESSAGES from './messages';

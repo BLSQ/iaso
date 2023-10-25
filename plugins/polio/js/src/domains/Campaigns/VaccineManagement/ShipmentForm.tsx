@@ -2,7 +2,7 @@
 import React, { FunctionComponent, useEffect, useMemo } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Grid } from '@material-ui/core';
+import { Grid } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import MESSAGES from '../../../constants/messages';
 import { useStyles } from '../../../styles/theme';

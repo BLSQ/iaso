@@ -1,5 +1,6 @@
 import React from 'react';
-import { Button, Tooltip, makeStyles } from '@material-ui/core';
+import { Button, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 import { useDispatch } from 'react-redux';

@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Divider, Typography } from '@material-ui/core';
+import { Box, Divider, Typography } from '@mui/material';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
 import MESSAGES from '../../../constants/messages';

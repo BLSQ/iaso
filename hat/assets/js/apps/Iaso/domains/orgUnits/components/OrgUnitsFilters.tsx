@@ -6,7 +6,8 @@ import React, {
     useMemo,
     useState,
 } from 'react';
-import { Box, Divider, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Divider, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     commonStyles,
     IntlFormatMessage,

@@ -1,5 +1,5 @@
-import { makeStyles } from '@material-ui/core';
-import red from '@material-ui/core/colors/red';
+import { makeStyles } from '@mui/styles';
+import red from '@mui/material/colors/red';
 
 const cellHeight = 50;
 const smallCellHeight = 20;

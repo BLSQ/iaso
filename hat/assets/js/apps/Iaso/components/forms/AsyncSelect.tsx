@@ -1,15 +1,15 @@
 import React, { FunctionComponent, useEffect, useMemo, useState } from 'react';
 import { defineMessages } from 'react-intl';
 import { debounce } from '@mui/material/utils';
-import { Autocomplete } from '@material-ui/lab';
+import Autocomplete from '@mui/material/Autocomplete';
 import {
     IntlMessage,
     renderTags as defaultRenderTags,
     useSafeIntl,
 } from 'bluesquare-components';
-import { Box, TextField } from '@material-ui/core';
+import { Box, TextField } from '@mui/material';
 import { isArray } from 'lodash';
-import { AutocompleteGetTagProps } from '@material-ui/lab/Autocomplete/Autocomplete';
+import { AutocompleteGetTagProps } from '@mui/material/Autocomplete/Autocomplete';
 
 const MESSAGES = defineMessages({
     noOptionsText: {
@@ -170,7 +170,7 @@ export const AsyncSelect: FunctionComponent<Props> = ({
                 onInputChange={(event, newInputValue) => {
                     setInputValue(newInputValue);
                 }}
-                getOptionSelected={getOptionSelected}
+                isOptionEqualToValue={getOptionSelected}
             />
         </Box>
     );

@@ -1,8 +1,9 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import RemoveCircleIcon from '@material-ui/icons/RemoveCircle';
-import { PlaylistAdd } from '@material-ui/icons';
-import { Tooltip, makeStyles } from '@material-ui/core';
+import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import { PlaylistAdd } from '@mui/icons-material';
+import { Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import classNames from 'classnames';
 import { useDeleteRestoreBudgetStep } from '../hooks/api/useGetBudgetDetails';
 import MESSAGES from '../../../constants/messages';

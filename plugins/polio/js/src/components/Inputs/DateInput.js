@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import { DatePicker } from 'bluesquare-components';
 import { get } from 'lodash';
 import { apiDateFormat } from 'Iaso/utils/dates.ts';

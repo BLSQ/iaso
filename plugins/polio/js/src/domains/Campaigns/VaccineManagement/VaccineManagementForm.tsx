@@ -1,13 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
-import {
-    Box,
-    Divider,
-    Grid,
-    makeStyles,
-    Tab,
-    Tabs,
-    Typography,
-} from '@material-ui/core';
+import { Box, Divider, Grid, Tab, Tabs, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { Field, useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';

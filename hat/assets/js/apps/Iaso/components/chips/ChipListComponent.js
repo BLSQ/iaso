@@ -1,8 +1,9 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { Chip, withStyles } from '@material-ui/core';
-import Add from '@material-ui/icons/Add';
-import Cancel from '@material-ui/icons/Cancel';
+import { Chip } from '@mui/material';
+import { withStyles } from '@mui/styles';
+import Add from '@mui/icons-material/Add';
+import Cancel from '@mui/icons-material/Cancel';
 
 import {
     translateOptions,

@@ -1,19 +1,13 @@
 import React, { useCallback, useContext } from 'react';
 import { useDispatch } from 'react-redux';
-import {
-    IconButton,
-    makeStyles,
-    Grid,
-    useMediaQuery,
-    useTheme,
-    Box,
-} from '@material-ui/core';
-import AppBar from '@material-ui/core/AppBar';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
+import { IconButton, Grid, useMediaQuery, useTheme, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 
-import MenuIcon from '@material-ui/icons/Menu';
-import ArrowBackIcon from '@material-ui/icons/ArrowBack';
+import MenuIcon from '@mui/icons-material/Menu';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 import PropTypes from 'prop-types';
 

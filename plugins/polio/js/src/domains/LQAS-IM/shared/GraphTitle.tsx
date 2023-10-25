@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Typography } from '@material-ui/core';
+import { Typography } from '@mui/material';
 
 type Props = {
     text: string;

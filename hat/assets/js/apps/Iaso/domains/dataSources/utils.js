@@ -1,10 +1,10 @@
 import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import { Chip } from '@material-ui/core';
+import { Chip } from '@mui/material';
 import {
     HighlightOffOutlined as NotCheckedIcon,
     CheckCircleOutlineOutlined as CheckedIcon,
-} from '@material-ui/icons';
+} from '@mui/icons-material';
 import MESSAGES from './messages';
 
 /**

@@ -1,6 +1,7 @@
 /* eslint-disable camelcase */
-import { Box, Grid, makeStyles, Tab, Tabs } from '@material-ui/core';
-import { alpha } from '@material-ui/core/styles/colorManipulator';
+import { Box, Grid, Tab, Tabs } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { alpha } from '@mui/material/styles';
 import {
     commonStyles,
     LoadingSpinner,

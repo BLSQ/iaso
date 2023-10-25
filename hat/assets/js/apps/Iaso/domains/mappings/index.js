@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { withStyles, Box } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { withStyles } from '@mui/styles';
 import PropTypes from 'prop-types';
-import Grid from '@material-ui/core/Grid';
+import Grid from '@mui/material/Grid';
 import isEqual from 'lodash/isEqual';
 
 import { bindActionCreators } from 'redux';

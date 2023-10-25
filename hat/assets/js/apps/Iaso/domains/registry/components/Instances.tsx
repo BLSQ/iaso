@@ -4,7 +4,7 @@ import React, {
     useMemo,
     useCallback,
 } from 'react';
-import { Box, Tabs, Tab, Grid } from '@material-ui/core';
+import { Box, Tabs, Tab, Grid } from '@mui/material';
 import { useDispatch } from 'react-redux';
 
 import { Column } from 'bluesquare-components';

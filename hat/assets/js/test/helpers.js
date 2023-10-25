@@ -39,7 +39,7 @@ chai.use(require('sinon-chai'));
 
 const mock = require('mock-require');
 
-mock('@material-ui/core/Dialog', ({ children }) => <>{children}</>);
+mock('@mui/material/Dialog', ({ children }) => <>{children}</>);
 // Don't load svg strings into tests
 require.extensions['.svg'] = obj => {
     // eslint-disable-next-line no-param-reassign

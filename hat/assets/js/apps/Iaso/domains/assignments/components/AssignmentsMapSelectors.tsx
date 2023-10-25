@@ -1,4 +1,4 @@
-import { Grid, FormControlLabel, Switch, Box } from '@material-ui/core';
+import { Grid, FormControlLabel, Switch, Box } from '@mui/material';
 import { useDispatch } from 'react-redux';
 import React, { FunctionComponent, useEffect } from 'react';
 import {

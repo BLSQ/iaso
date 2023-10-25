@@ -1,5 +1,5 @@
-import { Tooltip, Box } from '@material-ui/core';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import { Tooltip, Box } from '@mui/material';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import PERMISSIONS_MESSAGES from '../permissionsMessages';

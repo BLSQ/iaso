@@ -1,8 +1,8 @@
 import React, { FunctionComponent, useCallback } from 'react';
 import moment from 'moment';
-import { Button, Box, Tooltip } from '@material-ui/core';
-import Autorenew from '@material-ui/icons/Autorenew';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import { Button, Box, Tooltip } from '@mui/material';
+import Autorenew from '@mui/icons-material/Autorenew';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { useStartAnalyse } from '../hooks/api/analyzes';

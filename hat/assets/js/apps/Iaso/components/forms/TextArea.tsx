@@ -9,7 +9,8 @@ import {
     useSkipEffectOnMount,
 } from 'bluesquare-components';
 import classnames from 'classnames';
-import { makeStyles, InputLabel, FormHelperText } from '@material-ui/core';
+import { InputLabel, FormHelperText } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDebounce } from 'use-debounce';
 import { Optional } from '../../types/utils';
 

@@ -11,7 +11,8 @@ import {
 } from 'bluesquare-components';
 import { useSelector, useDispatch } from 'react-redux';
 
-import { Box, Grid, makeStyles, Theme, Typography } from '@material-ui/core';
+import { Box, Grid, Theme, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import { CampaignLogDetail } from './CampaignLogDetail';
 

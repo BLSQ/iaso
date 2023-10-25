@@ -1,6 +1,7 @@
 /* eslint-disable react/no-array-index-key */
-import { Box, makeStyles, Button, AppBar } from '@material-ui/core';
-import Add from '@material-ui/icons/Add';
+import { Box, Button, AppBar } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import Add from '@mui/icons-material/Add';
 import { useDispatch } from 'react-redux';
 import {
     commonStyles,

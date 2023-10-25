@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Grid, Paper, Box, Typography, makeStyles } from '@material-ui/core';
+import { Grid, Paper, Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import {
     unSelectedColor,

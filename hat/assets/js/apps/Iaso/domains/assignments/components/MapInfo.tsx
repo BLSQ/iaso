@@ -3,8 +3,9 @@ import {
     // @ts-ignore
     useSafeIntl,
 } from 'bluesquare-components';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import { Tooltip, Paper, makeStyles } from '@material-ui/core';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { Tooltip, Paper } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 
 import MESSAGES from '../messages';
 

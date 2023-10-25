@@ -1,14 +1,14 @@
 import React from 'react';
-import { MuiThemeProvider } from '@material-ui/core/styles';
-import { MuiPickersUtilsProvider } from '@material-ui/pickers';
-import MomentUtils from '@date-io/moment';
+import { ThemeProvider } from '@mui/material/styles';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 
 import { theme } from 'bluesquare-components';
 
 export const renderWithMuiTheme = component => (
-    <MuiThemeProvider theme={theme}>
-        <MuiPickersUtilsProvider utils={MomentUtils}>
+    <ThemeProvider theme={theme}>
+        <LocalizationProvider adapterLocale={AdapterDayjs}>
             {component}
-        </MuiPickersUtilsProvider>
-    </MuiThemeProvider>
+        </LocalizationProvider>
+    </ThemeProvider>
 );

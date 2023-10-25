@@ -1,4 +1,4 @@
-import { Box, Grid } from '@material-ui/core';
+import { Box, Grid } from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import React, { FunctionComponent, useMemo } from 'react';
 // @ts-ignore

@@ -10,7 +10,8 @@ import {
     LoadingSpinner,
     Table,
 } from 'bluesquare-components';
-import { Box, Grid, Typography, makeStyles } from '@material-ui/core';
+import { Box, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import TopBar from '../../components/nav/TopBarComponent';
 import MESSAGES from './messages';

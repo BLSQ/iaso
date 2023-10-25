@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 import WidgetPaper from '../../../../components/papers/WidgetPaperComponent';
 import ErrorPaperComponent from '../../../../components/papers/ErrorPaperComponent';

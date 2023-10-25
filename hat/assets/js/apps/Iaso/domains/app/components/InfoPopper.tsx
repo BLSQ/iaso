@@ -4,16 +4,17 @@ import React, {
     MouseEvent,
     ReactNode,
 } from 'react';
-import { makeStyles, Theme } from '@material-ui/core/styles';
+import { Theme } from '@mui/material/styles';
+import { makeStyles } from '@mui/styles';
 import {
     Popper,
     Box,
     IconButton,
     Paper,
     PopperPlacementType,
-} from '@material-ui/core';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
-import CancelOutlinedIcon from '@material-ui/icons/CancelOutlined';
+} from '@mui/material';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import CancelOutlinedIcon from '@mui/icons-material/CancelOutlined';
 
 const useStyles = makeStyles((theme: Theme) => ({
     popper: {

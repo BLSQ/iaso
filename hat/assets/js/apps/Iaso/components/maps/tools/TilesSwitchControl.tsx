@@ -1,7 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Box, makeStyles, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { IconButton, useSafeIntl } from 'bluesquare-components';
-import Layers from '@material-ui/icons/Layers';
+import Layers from '@mui/icons-material/Layers';
 import classNames from 'classnames';
 
 import TileSwitch from './TileSwitchComponent';

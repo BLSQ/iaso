@@ -12,7 +12,7 @@ import {
     injectIntl,
     Select,
 } from 'bluesquare-components';
-import { Box } from '@material-ui/core';
+import { Box } from '@mui/material';
 import MESSAGES from '../../domains/forms/messages';
 
 class InputComponent extends Component {

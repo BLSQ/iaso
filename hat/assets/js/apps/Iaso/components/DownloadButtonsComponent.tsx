@@ -1,5 +1,6 @@
-import { Button, makeStyles } from '@material-ui/core';
-import PublicIcon from '@material-ui/icons/Public';
+import { Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import PublicIcon from '@mui/icons-material/Public';
 import { ExcellSvg, CsvSvg } from 'bluesquare-components';
 import React, { FunctionComponent } from 'react';
 

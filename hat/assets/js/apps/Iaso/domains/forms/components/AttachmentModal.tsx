@@ -7,7 +7,7 @@ import {
     FilesUpload,
 } from 'bluesquare-components';
 
-import { Box, Typography } from '@material-ui/core';
+import { Box, Typography } from '@mui/material';
 import { AttachmentModalButton } from './AttachmentModalButton';
 
 import MESSAGES from '../messages';

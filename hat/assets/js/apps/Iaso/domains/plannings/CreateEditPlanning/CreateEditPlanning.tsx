@@ -5,10 +5,10 @@ import {
     IconButton,
     IntlFormatMessage,
 } from 'bluesquare-components';
-import FileCopyIcon from '@material-ui/icons/FileCopy';
+import FileCopyIcon from '@mui/icons-material/FileCopy';
 import { useFormik, FormikProvider, Field } from 'formik';
 import { isEqual } from 'lodash';
-import { Grid, Box } from '@material-ui/core';
+import { Grid, Box } from '@mui/material';
 import InputComponent from '../../../components/forms/InputComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 

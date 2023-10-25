@@ -1,6 +1,7 @@
 import React, { useCallback, useRef, useEffect, useState } from 'react';
 import { string, number, object, arrayOf, func } from 'prop-types';
-import { Grid, Box, Divider, Typography, makeStyles } from '@material-ui/core';
+import { Grid, Box, Divider, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';

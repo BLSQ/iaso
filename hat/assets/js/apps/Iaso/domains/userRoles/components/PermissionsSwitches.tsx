@@ -1,16 +1,10 @@
 import React, { useCallback, useMemo } from 'react';
-import {
-    Box,
-    FormControlLabel,
-    Switch,
-    Tooltip,
-    makeStyles,
-    Grid,
-} from '@material-ui/core';
+import { Box, FormControlLabel, Switch, Tooltip, Grid } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 // @ts-ignore
 import { useSafeIntl, LoadingSpinner } from 'bluesquare-components';
 
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
 import MESSAGES from '../messages';
 import { useSnackQuery } from '../../../libs/apiHooks';
 import { getRequest } from '../../../libs/Api';

@@ -1,7 +1,8 @@
 import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import { withStyles, Button } from '@material-ui/core';
+import { Button } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 

@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
-import { withStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
+import { Box, Grid, Tabs, Tab } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 

@@ -1,17 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import CheckBox from '@material-ui/icons/CheckBox';
-import CheckBoxOutlineBlank from '@material-ui/icons/CheckBoxOutlineBlank';
-import grey from '@material-ui/core/colors/grey';
+import CheckBox from '@mui/icons-material/CheckBox';
+import CheckBoxOutlineBlank from '@mui/icons-material/CheckBoxOutlineBlank';
+import grey from '@mui/material/colors/grey';
 
-import {
-    withStyles,
-    Container,
-    Grid,
-    Divider,
-    Button,
-} from '@material-ui/core';
+import { Container, Grid, Divider, Button } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 

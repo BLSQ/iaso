@@ -3,8 +3,9 @@ import React, { useMemo, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 import classnames from 'classnames';
-import { Box, makeStyles, Grid, Button, Typography } from '@material-ui/core';
-import PictureAsPdfIcon from '@material-ui/icons/PictureAsPdf';
+import { Box, Grid, Button, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import {
     commonStyles,
     useSafeIntl,
@@ -24,10 +25,7 @@ import {
     getCalendarData,
 } from './campaignCalendar/utils';
 
-import {
-    dateFormat,
-    defaultOrder,
-} from './campaignCalendar/constants';
+import { dateFormat, defaultOrder } from './campaignCalendar/constants';
 import { useGetCampaigns } from '../Campaigns/hooks/api/useGetCampaigns.ts';
 import MESSAGES from '../../constants/messages';
 import { Filters } from './campaignCalendar/Filters';

@@ -9,8 +9,8 @@ import {
     arrayOf,
 } from 'prop-types';
 import classnames from 'classnames';
-import { Paper, InputLabel, Box } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Paper, InputLabel, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     FormControl,
     IconButton,

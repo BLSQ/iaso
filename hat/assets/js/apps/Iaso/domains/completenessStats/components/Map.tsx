@@ -5,8 +5,9 @@ import React, {
     useCallback,
 } from 'react';
 import { GeoJSON, MapContainer, Pane, ScaleControl } from 'react-leaflet';
-import { Box, makeStyles, useTheme } from '@material-ui/core';
-import { ArrowUpwardOutlined } from '@material-ui/icons';
+import { Box, useTheme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import { ArrowUpwardOutlined } from '@mui/icons-material';
 import {
     commonStyles,
     LoadingSpinner,

@@ -1,8 +1,9 @@
 import React, { FunctionComponent, useState } from 'react';
-import { makeStyles, Paper, Typography, Box, Button } from '@material-ui/core';
-import ContactSupportIcon from '@material-ui/icons/ContactSupport';
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
-import ExitIcon from '@material-ui/icons/ExitToApp';
+import { Paper, Typography, Box, Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import ContactSupportIcon from '@mui/icons-material/ContactSupport';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
+import ExitIcon from '@mui/icons-material/ExitToApp';
 
 import { useSafeIntl } from 'bluesquare-components';
 import { useFormik } from 'formik';

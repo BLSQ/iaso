@@ -1,7 +1,7 @@
 import React, { FunctionComponent, useEffect, useState, useMemo } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Box, Grid, Theme } from '@material-ui/core';
-import { makeStyles } from '@material-ui/core/styles';
+import { Box, Grid, Theme } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import {
     useSafeIntl,
     commonStyles,

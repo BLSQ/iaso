@@ -1,7 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import { Grid, withStyles } from '@material-ui/core';
+import { Grid } from '@mui/material';
+import { withStyles } from '@mui/styles';
 
 import PropTypes from 'prop-types';
 

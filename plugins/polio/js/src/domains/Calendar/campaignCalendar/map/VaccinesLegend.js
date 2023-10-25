@@ -1,6 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
-import { Grid, Paper, Box, Typography } from '@material-ui/core';
+import { Grid, Paper, Box, Typography } from '@mui/material';
 import { useStyles } from '../Styles';
 
 import MESSAGES from '../../../../constants/messages';

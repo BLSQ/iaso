@@ -6,7 +6,8 @@ import {
     commonStyles,
     useSkipEffectOnMount,
 } from 'bluesquare-components';
-import { Grid, Box, makeStyles, Paper } from '@material-ui/core';
+import { Grid, Box, Paper } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { DisplayIfUserHasPerm } from 'Iaso/components/DisplayIfUserHasPerm';
 import TopBar from 'Iaso/components/nav/TopBarComponent';
 import { useDispatch } from 'react-redux';

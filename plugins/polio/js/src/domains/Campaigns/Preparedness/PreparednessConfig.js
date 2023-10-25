@@ -7,12 +7,12 @@ import {
     Tooltip,
     Box,
     Typography,
-} from '@material-ui/core';
+} from '@mui/material';
 import { Field, useFormikContext } from 'formik';
 import React from 'react';
 import { useSafeIntl } from 'bluesquare-components';
 import moment from 'moment';
-import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PropTypes from 'prop-types';
 
 import { TextInput } from '../../../components/Inputs';

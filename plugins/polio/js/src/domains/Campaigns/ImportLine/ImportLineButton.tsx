@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import CloudUploadIcon from '@material-ui/icons/CloudUpload';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { useSafeIntl } from 'bluesquare-components';
 import { PageAction } from '../../../components/Buttons/PageAction';
 import MESSAGES from '../../../constants/messages';

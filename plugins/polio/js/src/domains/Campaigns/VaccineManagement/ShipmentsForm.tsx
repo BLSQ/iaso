@@ -7,7 +7,7 @@ import React, {
 } from 'react';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Box, Button, Grid } from '@material-ui/core';
+import { Box, Button, Grid } from '@mui/material';
 import { shipmentFieldNames, ShipmentForm } from './ShipmentForm';
 import MESSAGES from '../../../constants/messages';
 

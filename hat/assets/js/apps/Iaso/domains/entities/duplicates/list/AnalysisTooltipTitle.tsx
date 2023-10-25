@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useMemo } from 'react';
 import moment from 'moment';
-import { Grid, Box } from '@material-ui/core';
+import { Grid, Box } from '@mui/material';
 import { useSafeIntl } from 'bluesquare-components';
 
 import { Analysis } from '../types';

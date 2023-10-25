@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react';
-import { makeStyles } from '@material-ui/core';
+import { makeStyles } from '@mui/styles';
 // ts complaints about the import of moment for some reason
 // @ts-ignore
 import moment from 'moment';

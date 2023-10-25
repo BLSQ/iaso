@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useCallback } from 'react';
-import { makeStyles, Box } from '@material-ui/core';
+import { Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useDispatch, useSelector } from 'react-redux';
 import classNames from 'classnames';
 import { switchLocale } from '../../app/actions';

@@ -6,8 +6,9 @@ import React, {
 } from 'react';
 import { useDispatch } from 'react-redux';
 
-import { Grid, Button, makeStyles, Box } from '@material-ui/core';
-import SearchIcon from '@material-ui/icons/Search';
+import { Grid, Button, Box } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import SearchIcon from '@mui/icons-material/Search';
 
 import {
     // @ts-ignore

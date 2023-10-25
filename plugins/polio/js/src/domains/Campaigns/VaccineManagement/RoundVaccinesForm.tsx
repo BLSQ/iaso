@@ -9,7 +9,7 @@ import React, {
 import { useFormikContext } from 'formik';
 // @ts-ignore
 import { useSafeIntl } from 'bluesquare-components';
-import { Box, Button, Grid } from '@material-ui/core';
+import { Box, Button, Grid } from '@mui/material';
 import { RoundVaccineForm } from './RoundVaccineForm';
 import MESSAGES from '../../../constants/messages';
 import { polioVaccines } from '../../../constants/virus';

@@ -1,12 +1,13 @@
 // To stay consistent with the naming convention, this component is named FormForm such as OrgUnitForm ...
 
 import React, { useState } from 'react';
-import { Box, Grid, makeStyles, Typography } from '@material-ui/core';
+import { Box, Grid, Typography } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import { useSafeIntl } from 'bluesquare-components';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
-import { History } from '@material-ui/icons';
-import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
+import { History } from '@mui/icons-material';
+import FormatListBulleted from '@mui/icons-material/FormatListBulleted';
 import { baseUrls } from '../../../constants/urls';
 import InputComponent from '../../../components/forms/InputComponent';
 import {

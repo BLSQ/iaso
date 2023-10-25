@@ -1,7 +1,8 @@
-import { makeStyles, Grid, Tooltip } from '@material-ui/core';
+import { Grid, Tooltip } from '@mui/material';
+import { makeStyles } from '@mui/styles';
 import React, { FunctionComponent } from 'react';
 import { useSafeIntl } from 'bluesquare-components';
-import InfoOutlinedIcon from '@material-ui/icons/InfoOutlined';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import MESSAGES from '../../../constants/messages';
 import { OK_COLOR, FAIL_COLOR } from '../../../styles/constants';
 import { LqasImRefDate } from './LqasImMapHeader';

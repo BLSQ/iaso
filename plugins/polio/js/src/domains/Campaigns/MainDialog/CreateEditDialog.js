@@ -15,7 +15,7 @@ import {
     Grid,
     Typography,
     Box,
-} from '@material-ui/core';
+} from '@mui/material';
 
 import {
     useSafeIntl,

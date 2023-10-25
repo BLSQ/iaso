@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
-import { Button, makeStyles } from '@material-ui/core';
-import Autorenew from '@material-ui/icons/Autorenew';
+import { Button } from '@mui/material';
+import { makeStyles } from '@mui/styles';
+import Autorenew from '@mui/icons-material/Autorenew';
 
 import PropTypes from 'prop-types';
 

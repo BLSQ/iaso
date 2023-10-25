@@ -15,7 +15,7 @@ import {
     brown,
     grey,
     blueGrey,
-} from '@material-ui/core/colors';
+} from '@mui/material/colors';
 
 export const chipColors = [
     deepOrange[600],

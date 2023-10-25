@@ -355,8 +355,19 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertFalse(serializer.is_valid())
         self.assertIn(
-            "`new_parent` and `org_unit` must have the same version.", serializer.errors["non_field_errors"][0]
+            "`new_parent_id` and `org_unit_id` must have the same version.", serializer.errors["non_field_errors"][0]
         )
+
+    def test_validate_new_parent_hierarchy(self):
+        child_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type, parent=self.org_unit)
+        self.org_unit.save()
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_parent_id": child_org_unit.id,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn("`new_parent_id` is already a child of `org_unit_id`.", serializer.errors["non_field_errors"][0])
 
     def test_validate_new_reference_instances(self):
         form = m.Form.objects.create(name="Vaccine form 1")
@@ -382,10 +393,12 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         form2 = m.Form.objects.create(name="Vaccine form 2")
         instance2 = m.Instance.objects.create(form=form2, org_unit=self.org_unit)
 
+        parent_org_unit = m.OrgUnit.objects.create(org_unit_type=self.org_unit_type)
+
         data = {
             "uuid": "e05933f4-8370-4329-8cf5-197941785a24",
             "org_unit_id": self.org_unit.id,
-            "new_parent_id": self.org_unit.id,
+            "new_parent_id": parent_org_unit.id,
             "new_name": "Foo",
             "new_org_unit_type_id": self.org_unit_type.id,
             "new_groups": [group1.id, group2.id],
@@ -404,7 +417,7 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
 
         change_request = OrgUnitChangeRequest.objects.get(uuid=data["uuid"])
         self.assertEqual(change_request.org_unit, self.org_unit)
-        self.assertEqual(change_request.new_parent, self.org_unit)
+        self.assertEqual(change_request.new_parent, parent_org_unit)
         self.assertEqual(change_request.new_name, "Foo")
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         new_groups = change_request.new_groups.all()

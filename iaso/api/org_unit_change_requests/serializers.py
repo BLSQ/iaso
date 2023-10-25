@@ -223,9 +223,13 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
 
         org_unit = validated_data.get("org_unit")
         new_parent = validated_data.get("new_parent")
+
         if org_unit and new_parent:
             if new_parent.version_id != org_unit.version_id:
-                raise serializers.ValidationError("`new_parent` and `org_unit` must have the same version.")
+                raise serializers.ValidationError("`new_parent_id` and `org_unit_id` must have the same version.")
+
+            if OrgUnit.objects.hierarchy(org_unit).filter(pk=new_parent.pk).exists():
+                raise serializers.ValidationError("`new_parent_id` is already a child of `org_unit_id`.")
 
         return validated_data
 

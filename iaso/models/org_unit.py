@@ -680,17 +680,11 @@ class OrgUnitChangeRequest(models.Model):
                 # Delete old ones.
                 self.org_unit.reference_instances.clear()
                 for instance in self.new_reference_instances.all():
-                    # The inner atomic block creates a savepoint in case
-                    # of a rollback caused by `IntegrityError`.
-                    with transaction.atomic():
-                        try:
-                            OrgUnitReferenceInstance.objects.create(
-                                org_unit=self.org_unit,
-                                form=instance.form,
-                                instance=instance,
-                            )
-                        except IntegrityError:
-                            pass
+                    OrgUnitReferenceInstance.objects.create(
+                        org_unit=self.org_unit,
+                        form=instance.form,
+                        instance=instance,
+                    )
             # Handle non m2m fields.
             else:
                 new_value = getattr(self, field_name)

@@ -3,6 +3,7 @@ import uuid
 
 from django.contrib.gis.geos import Point
 from rest_framework.exceptions import ValidationError
+from rest_framework.test import APIRequestFactory
 
 from iaso.api.org_unit_change_requests.serializers import (
     InstanceForChangeRequest,
@@ -368,6 +369,31 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
         self.assertFalse(serializer.is_valid())
         self.assertIn("`new_parent_id` is already a child of `org_unit_id`.", serializer.errors["non_field_errors"][0])
+
+    def test_validate_new_org_unit_type_id(self):
+        data_source = m.DataSource.objects.create(name="Data source")
+        version = m.SourceVersion.objects.create(number=1, data_source=data_source)
+        account = m.Account.objects.create(name="Account", default_version=version)
+        project = m.Project.objects.create(name="Project", account=account, app_id="foo.bar.baz")
+        org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
+        data_source.projects.set([project])
+        org_unit_type.projects.set([project])
+
+        other_account = m.Account.objects.create(name="Other account")
+        user = self.create_user_with_profile(username="user", account=other_account)
+
+        request = APIRequestFactory().get("/")
+        request.user = user
+
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_org_unit_type_id": org_unit_type.id,
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data, context={"request": request})
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "`new_org_unit_type_id` is not part of the user account.", serializer.errors["new_org_unit_type_id"][0]
+        )
 
     def test_validate_new_reference_instances(self):
         form = m.Form.objects.create(name="Vaccine form 1")

@@ -202,23 +202,29 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_reference_instances",
         ]
 
-    def validate_new_reference_instances(self, value):
+    def validate_new_reference_instances(self, new_reference_instances):
         seen = []
-        for instance in value:
+        for instance in new_reference_instances:
             unique_org_unit_form = f"{instance.form_id}-{instance.org_unit_id}"
             if unique_org_unit_form in seen:
                 raise serializers.ValidationError("Only one reference instance can exist by org_unit/form pair.")
             seen.append(unique_org_unit_form)
-        return value
+        return new_reference_instances
+
+    def validate_new_org_unit_type_id(self, new_org_unit_type):
+        request = self.context.get("request")
+        if request and not new_org_unit_type.projects.filter(account=request.user.iaso_profile.account).exists():
+            raise serializers.ValidationError("`new_org_unit_type_id` is not part of the user account.")
+        return new_org_unit_type
 
     def validate(self, validated_data):
-        # Fields names are different between API and model,
-        # e.g. `new_parent_id` VS `new_parent`.
-        api_new_fields = [name for name in self.Meta.fields if name.startswith("new_")]
-        model_new_fields = OrgUnitChangeRequest.get_new_fields()
-        if not any([validated_data.get(field) for field in model_new_fields]):
+        # Fields names are different between API and model, e.g. `new_parent_id` VS `new_parent`.
+        new_fields_api = [name for name in self.Meta.fields if name.startswith("new_")]
+        new_fields_model = OrgUnitChangeRequest.get_new_fields()
+
+        if not any([validated_data.get(field) for field in new_fields_model]):
             raise serializers.ValidationError(
-                f"You must provide at least one of the following fields: {', '.join(api_new_fields)}."
+                f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
             )
 
         org_unit = validated_data.get("org_unit")

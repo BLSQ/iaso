@@ -572,7 +572,8 @@ class BudgetProcessAPITestCase(APITestCase):
         self.assertEqual(response.data["rounds"][0], "A BudgetProcess with the same Round(s) already exists.")
 
 
-class ExportBudgetProcessSerializerTest(APITestCase):
+class BudgetProcessSerializerTest(APITestCase):
+    """ Test all the BudgetProcess related serializers """
     data_source: m.DataSource
     source_version_1: m.SourceVersion
     org_unit: m.OrgUnit
@@ -629,7 +630,6 @@ class ExportBudgetProcessSerializerTest(APITestCase):
             number=1, started_at="2023-02-01", ended_at="2023-02-20", campaign=cls.campaign_A
         )
 
-        # Create a sample BudgetProcess object for testing
         cls.budget_processsample_data = {
             "budget_current_state_label": "Approved",
             "campaign": cls.campaign_A,
@@ -641,6 +641,7 @@ class ExportBudgetProcessSerializerTest(APITestCase):
         cls.budget_process.rounds.set([round_1.pk, round_2.pk])
 
     def test_serializer_valid_data(self):
+        # As this serializer only purpose is to represent data, no more tests are required.
         serializer = ExportBudgetProcessSerializer(instance=self.budget_process)
         data = serializer.data
 
@@ -650,17 +651,3 @@ class ExportBudgetProcessSerializerTest(APITestCase):
         self.assertEqual(data["country"], self.budget_process.campaign.country)
         self.assertEqual(data["cvdpv2_notified_at"], self.campaign_A.cvdpv2_notified_at)
         self.assertEqual(data["budget_last_updated_at"], self.budget_process.updated_at)
-
-    # def test_serializer_invalid_data(self):
-    #     # Test with invalid data (missing required fields)
-    #     invalid_data = {
-    #         "obr_name": "Invalid OBR",
-    #     }
-    #     serializer = ExportBudgetProcessSerializer(data=invalid_data)
-    #     self.assertFalse(serializer.is_valid())
-
-    #     self.assertIn("budget_current_state_label", serializer.errors)
-    #
-    # def test_get_obr_name_method(self):
-    #     obr_name = ExportBudgetProcessSerializer.get_obr_name(self.budget_process)
-    #     self.assertEqual(obr_name, self.budget_process.campaign.obr_name)

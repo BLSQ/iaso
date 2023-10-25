@@ -823,6 +823,9 @@ class BudgetProcessCreateSerializer(serializers.ModelSerializer):
 
 
 class ExportBudgetProcessSerializer(serializers.ModelSerializer):
+
+    """This serializer is for data representation only, therefore all fields are ready_only"""
+
     obr_name = serializers.SerializerMethodField()
     country = serializers.SerializerMethodField()
     cvdpv2_notified_at = serializers.SerializerMethodField()
@@ -838,6 +841,13 @@ class ExportBudgetProcessSerializer(serializers.ModelSerializer):
             "country": "Country",
             "budget_current_state_label": "Budget state",
         }
+        read_only_fields = [
+            "obr_name",
+            "budget_current_state_label",
+            "country",
+            "cvdpv2_notified_at",
+            "budget_last_updated_at",
+        ]
 
         cvdpv2_notified_at = TimestampField(read_only=True)
         budget_last_updated_at = TimestampField(read_only=True)

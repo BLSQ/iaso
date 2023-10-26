@@ -34,14 +34,12 @@ export const Modules: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             />
             <Box className={classes.containerFullHeightNoTabPadded}>
-                <Grid container spacing={1} justifyContent="flex-start">
-                    <Grid item>
+                <Grid container alignContent="stretch" spacing={1}>
+                    <Grid>
                         <HelpOutlineIcon />
                     </Grid>
-                    <Grid>
-                        <Typography variant="subtitle1">
-                            {formatMessage(MESSAGES.modulesInformation)}
-                        </Typography>
+                    <Grid item>
+                        {formatMessage(MESSAGES.modulesInformation)}
                     </Grid>
                 </Grid>
 

@@ -21,7 +21,7 @@ const PermissionTooltip: React.FunctionComponent<Props> = ({ codename }) => {
                 <Box style={{ cursor: 'pointer' }}>
                     <Tooltip
                         title={title}
-                        interactive
+                        disableInteractive={false}
                         leaveDelay={500}
                         placement="left-start"
                         arrow

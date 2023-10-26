@@ -251,7 +251,6 @@ export const OrgUnits: FunctionComponent<Props> = ({ params }) => {
                     counts={(!isLoading && orgUnitsData?.counts) || []}
                     setDeletedTab={setDeletedTab}
                 />
-
                 {tab === 'list' &&
                     orgUnitsData &&
                     orgUnitsData?.orgunits?.length > 0 && (

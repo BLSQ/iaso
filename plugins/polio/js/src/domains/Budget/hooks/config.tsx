@@ -136,7 +136,7 @@ export const useBudgetDetailsColumns = (
                     return (
                         <Tooltip
                             title={formattedComment}
-                            interactive
+                            disableInteractive={false}
                             leaveDelay={500}
                             placement="right-start"
                             arrow

@@ -42,7 +42,7 @@ export const InstancesTopBar: FunctionComponent<Props> = ({
             <Grid container spacing={0}>
                 <Grid xs={10} item>
                     <Tabs
-                        textColor="secondary"
+                        textColor="inherit"
                         indicatorColor="secondary"
                         value={tab}
                         classes={{
@@ -52,6 +52,7 @@ export const InstancesTopBar: FunctionComponent<Props> = ({
                     >
                         <Tab
                             value="list"
+                            className={classes.tab}
                             label={formatMessage(MESSAGES.list)}
                         />
                         <Tab value="map" label={formatMessage(MESSAGES.map)} />

@@ -94,4 +94,10 @@ export const getGlobalOverrides = theme => ({
         WebkitBoxAlign: 'center',
         whiteSpace: 'break-spaces !important',
     },
+    '& .MuiTablePagination-selectLabel': {
+        display: 'none !important',
+    },
+    '& .MuiTablePagination-root .MuiTablePagination-selectLabel + div': {
+        display: 'none !important',
+    },
 });

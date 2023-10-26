@@ -400,6 +400,8 @@ const OrgUnitDetail = ({ params, router }) => {
             >
                 {!isNewOrgunit && (
                     <Tabs
+                        textColor="inherit"
+                        indicatorColor="secondary"
                         value={tab}
                         classes={{
                             root: classes.tabs,

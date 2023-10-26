@@ -27,7 +27,7 @@ const useStyles = makeStyles(theme => ({
         top: theme.spacing(12.5),
     },
     marginLeft: {
-        marginLeft: '8px',
+        marginLeft: `${theme.spacing(2)} !important`,
     },
 }));
 

@@ -13,7 +13,7 @@ import MESSAGES from '../messages';
 type Props = {
     workflowVersion: WorkflowVersionDetail;
 };
-
+// @ts-ignore
 const useStyles = makeStyles(theme => ({
     root: {
         position: 'relative',
@@ -22,7 +22,7 @@ const useStyles = makeStyles(theme => ({
         },
     },
     button: {
-        position: 'absolute',
+        position: 'absolute !important',
         right: theme.spacing(3),
         top: 26,
     },

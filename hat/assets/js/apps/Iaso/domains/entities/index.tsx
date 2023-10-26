@@ -118,6 +118,8 @@ export const Beneficiaries: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             >
                 <Tabs
+                    textColor="inherit"
+                    indicatorColor="secondary"
                     value={tab}
                     classes={{
                         root: classes.tabs,

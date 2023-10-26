@@ -251,6 +251,8 @@ export const Assignments: FunctionComponent<Props> = ({ params }) => {
                 displayBackButton={false}
             >
                 <Tabs
+                    textColor="inherit"
+                    indicatorColor="secondary"
                     value={tab}
                     classes={{
                         root: classes.tabs,

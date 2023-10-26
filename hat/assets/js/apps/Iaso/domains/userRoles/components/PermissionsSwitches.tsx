@@ -74,7 +74,7 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
             return (
                 <Tooltip
                     title={title}
-                    interactive
+                    disableInteractive={false}
                     leaveDelay={500}
                     placement="right-start"
                     arrow
@@ -105,9 +105,9 @@ export const PermissionsSwitches: React.FunctionComponent<Props> = ({
                     ),
                 )
                 .map(p => (
-                    <Grid container direction="row" spacing={2}>
+                    <Grid container direction="row" spacing={2} key={p.id}>
                         <Grid item xs={8}>
-                            <div key={p.id}>
+                            <div>
                                 <FormControlLabel
                                     control={
                                         <Switch

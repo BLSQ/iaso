@@ -23,6 +23,7 @@ import AssignmentIcon from '@material-ui/icons/Assignment';
 import StorageIcon from '@material-ui/icons/Storage';
 import MenuBookIcon from '@material-ui/icons/MenuBook';
 import FileCopyIcon from '@material-ui/icons/FileCopy';
+import ViewModuleIcon from '@material-ui/icons/ViewModule';
 
 import { IntlFormatMessage, useSafeIntl } from 'bluesquare-components';
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
@@ -262,6 +263,12 @@ const menuItems = (
                     key: 'projects',
                     permissions: paths.projectsPath.permissions,
                     icon: props => <PhonelinkSetupIcon {...props} />,
+                },
+                {
+                    label: formatMessage(MESSAGES.modules),
+                    key: 'modules',
+                    permissions: paths.modulesPath.permissions,
+                    icon: props => <ViewModuleIcon {...props} />,
                 },
                 {
                     label: formatMessage(MESSAGES.users),

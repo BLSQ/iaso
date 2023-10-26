@@ -190,6 +190,7 @@ export const OrgUnitInfos: FunctionComponent<Props> = ({
                     />
                 </FormControlComponent>
                 <DatesRange
+                    dateFromRequired
                     keyDateFrom="opening_date"
                     keyDateTo="closed_date"
                     onChangeDate={onChangeInfo}

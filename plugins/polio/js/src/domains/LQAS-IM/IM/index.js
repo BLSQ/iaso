@@ -100,7 +100,7 @@ export const ImStats = ({ imType, router }) => {
                                 campaigns={campaigns}
                                 country={country}
                                 data={convertedData}
-                                isFetching={isFetching}
+                                isFetching={isFetching || campaignsFetching}
                                 debugData={debugData}
                                 paperElevation={paperElevation}
                                 type={imType}

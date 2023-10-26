@@ -8,6 +8,8 @@ import { replace } from 'react-router-redux';
 import { Box, Grid, IconButton } from '@material-ui/core';
 
 import OpenInNewIcon from '@material-ui/icons/OpenInNew';
+import { useCurrentUser } from '../../../../../../../hat/assets/js/apps/Iaso/utils/usersUtils';
+import { userHasPermission } from '../../../../../../../hat/assets/js/apps/Iaso/domains/users/utils';
 import MESSAGES from '../../../constants/messages';
 import { makeCampaignsDropDown } from '../../../utils/index';
 import { genUrl } from '../../../../../../../hat/assets/js/apps/Iaso/routing/routing';
@@ -50,6 +52,7 @@ const Filters: FunctionComponent<Props> = ({
         country: params.country ? parseInt(params.country, 10) : undefined,
     });
     const { campaign, country } = filters;
+    const currentUser = useCurrentUser();
 
     const { data: countriesOptions, isFetching: countriesLoading } =
         useGetLqasImCountriesOptions(category);
@@ -63,7 +66,8 @@ const Filters: FunctionComponent<Props> = ({
     const onChange = (key, value) => {
         const newFilters = {
             ...filters,
-            rounds: '1,2',
+            rounds: undefined, // This
+            // rounds: '1,2', // This
             [key]: value,
         };
         if (key === 'country') {
@@ -119,14 +123,15 @@ const Filters: FunctionComponent<Props> = ({
                     </Grid>
                 )}
                 {/* remove condition when IM pipeline is ready */}
-                {category === 'lqas' && (
-                    <Grid item md={campaignLink ? 3 : 4}>
-                        <RefreshLqasData
-                            category={category}
-                            countryId={country}
-                        />
-                    </Grid>
-                )}
+                {category === 'lqas' &&
+                    userHasPermission('iaso_polio_config', currentUser) && (
+                        <Grid item md={campaignLink ? 3 : 4}>
+                            <RefreshLqasData
+                                category={category}
+                                countryId={country}
+                            />
+                        </Grid>
+                    )}
             </Grid>
         </Box>
     );

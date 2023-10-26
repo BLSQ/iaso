@@ -2472,6 +2472,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.polio.label.result',
         defaultMessage: 'Result',
     },
+    noRoundFound: {
+        id: 'iaso.polio.label.noRoundFound',
+        defaultMessage: 'No round found',
+    },
 });
 
 export default MESSAGES;

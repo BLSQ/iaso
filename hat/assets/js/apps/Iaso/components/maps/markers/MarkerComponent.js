@@ -23,13 +23,7 @@ const MarkerComponent = props => {
         tooltipProps,
         onContextmenu,
     } = props;
-    if (
-        !item ||
-        !item.latitude ||
-        !item.longitude ||
-        !isValidCoordinate(item.latitude, item.longitude)
-    )
-        return null;
+    if (!item || !isValidCoordinate(item.latitude, item.longitude)) return null;
     return (
         <Marker
             draggable={draggable}

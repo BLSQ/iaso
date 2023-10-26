@@ -93,8 +93,10 @@ class OrgUnitChangeRequestModelTestCase(TestCase):
         self.assertCountEqual(change_request.approved_fields, kwargs["approved_fields"])
 
     def test_clean_approved_fields(self):
+        approved_fields = ["new_name", "foo"]
+        change_request = m.OrgUnitChangeRequest(org_unit=self.org_unit, approved_fields=approved_fields)
         with self.assertRaises(ValidationError) as error:
-            m.OrgUnitChangeRequest.clean_approved_fields(["new_name", "foo"])
+            change_request.clean_approved_fields()
         self.assertIn("Value foo is not a valid choice.", error.exception.messages)
 
     def test_get_new_fields(self):

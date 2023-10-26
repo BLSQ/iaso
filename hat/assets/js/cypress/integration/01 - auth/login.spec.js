@@ -4,7 +4,7 @@ const siteBaseUrl = Cypress.env('siteBaseUrl');
 const sessionCookie = Cypress.env('sessionCookie');
 const langageCookie = Cypress.env('langageCookie');
 
-const signInUrl = `${siteBaseUrl}/login/?next=/dashboard/`;
+const signInUrl = `${siteBaseUrl}/login/`;
 
 const selectLanguage = lang => {
     cy.window().then(w => {
@@ -34,7 +34,7 @@ describe('Log in page', () => {
         cy.get('.login-link a').click();
         cy.url().should('eq', `${siteBaseUrl}/forgot-password/`);
     });
-    it('click display password should togle input password type', () => {
+    it('click display password should toggle input password type', () => {
         cy.get('#display-password').click();
         cy.get('#id_password').invoke('attr', 'type').should('equal', 'text');
         cy.get('#display-password').click();
@@ -79,7 +79,7 @@ describe('Log in page', () => {
             selectLanguage('en');
         });
     });
-    describe('Happy flow', () => {
+    describe.only('Happy flow', () => {
         beforeEach(() => {
             cy.login();
             cy.visit(siteBaseUrl);

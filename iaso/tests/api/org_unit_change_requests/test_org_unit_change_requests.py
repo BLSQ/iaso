@@ -83,11 +83,13 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         data = {
             "org_unit_id": self.org_unit.id,
             "new_name": "I want this new name",
+            "new_org_unit_type_id": self.org_unit_type.pk,
         }
         response = self.client.post("/api/orgunits/changes/", data=data, format="json")
         self.assertEqual(response.status_code, 201)
         change_request = m.OrgUnitChangeRequest.objects.get(new_name=data["new_name"])
         self.assertEqual(change_request.new_name, data["new_name"])
+        self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
         self.assertEqual(change_request.created_by, self.user)
 
     def test_create_ok_from_mobile(self):
@@ -219,3 +221,64 @@ class OrgUnitChangeRequestAPITestCase(APITestCase):
         }
         response = self.client.put(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
         self.assertEqual(response.status_code, 403)
+
+    @time_machine.travel(DT, tick=False)
+    def test_partial_update_reject(self):
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "status": m.OrgUnitChangeRequest.Statuses.NEW,
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_name": "Foo",
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "status": change_request.Statuses.REJECTED,
+            "rejection_comment": "Not good enough.",
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.status, change_request.Statuses.REJECTED)
+
+    @time_machine.travel(DT, tick=False)
+    def test_partial_update_approve(self):
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "org_unit": self.org_unit,
+            "created_by": self.user,
+            "new_name": "Foo",
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 200)
+
+        change_request.refresh_from_db()
+        self.assertEqual(change_request.status, change_request.Statuses.APPROVED)
+
+    def test_partial_update_approve_fail_wrong_status(self):
+        self.client.force_authenticate(self.user)
+
+        kwargs = {
+            "status": m.OrgUnitChangeRequest.Statuses.APPROVED,
+            "org_unit": self.org_unit,
+            "approved_fields": ["new_name"],
+        }
+        change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
+
+        data = {
+            "status": change_request.Statuses.APPROVED,
+            "approved_fields": ["new_name"],
+        }
+        response = self.client.patch(f"/api/orgunits/changes/{change_request.pk}/", data=data, format="json")
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("Status must be `new` but current status is `approved`.", response.content.decode())

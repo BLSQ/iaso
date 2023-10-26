@@ -1,8 +1,22 @@
+import time_machine
+
 from django.contrib.gis.geos import Polygon, MultiPolygon, Point
 from django.core.cache import cache
 
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
-from iaso.models import Account, OrgUnit, OrgUnitType, Project, SourceVersion, DataSource, FeatureFlag, Group
+from iaso.models import (
+    Account,
+    DataSource,
+    FeatureFlag,
+    Form,
+    Group,
+    Instance,
+    OrgUnit,
+    OrgUnitReferenceInstance,
+    OrgUnitType,
+    Project,
+    SourceVersion,
+)
 from iaso.test import APITestCase
 
 BASE_URL = "/api/mobile/orgunits/"
@@ -39,6 +53,7 @@ class MobileOrgUnitAPITestCase(APITestCase):
         super_saiyans.sub_unit_types.add(on_earth)
 
         cls.raditz = raditz = OrgUnit.objects.create(
+            uuid="702dbae8-0f47-4065-ad0c-b2557f31cc96",
             org_unit_type=super_saiyans,
             version=sw_version,
             name="Raditz",
@@ -222,3 +237,45 @@ class MobileOrgUnitAPITestCase(APITestCase):
         # set limit on user
         bbox = j["results"][0]
         self.assertEqual(bbox, {"east": -5.024, "northern": -4.024, "south": -3.976, "west": -4.976})
+
+    @time_machine.travel("2023-10-26T09:00:00.000Z", tick=False)
+    def test_reference_instances(self):
+        form1 = Form.objects.create(name="Form 1")
+        form2 = Form.objects.create(name="Form 2")
+        instance1 = Instance.objects.create(form=form1, org_unit=self.raditz, json={"key": "foo"})
+        instance2 = Instance.objects.create(form=form2, org_unit=self.raditz, json={"key": "bar"})
+        # Mark instances as reference instances.
+        OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance1, form=form1)
+        OrgUnitReferenceInstance.objects.create(org_unit=self.raditz, instance=instance2, form=form2)
+
+        self.client.force_authenticate(self.user)
+        response = self.client.get(f"{BASE_URL}{self.raditz.pk}/reference_instances/", data={APP_ID: BASE_APP_ID})
+        self.assertJSONResponse(response, 200)
+
+        self.assertEqual(
+            response.data,
+            {
+                "org_unit_id": self.raditz.pk,
+                "org_unit_uuid": "702dbae8-0f47-4065-ad0c-b2557f31cc96",
+                "reference_instances": [
+                    {
+                        "id": instance1.pk,
+                        "uuid": None,
+                        "form_id": form1.id,
+                        "form_version_id": None,
+                        "created_at": "2023-10-26T09:00:00Z",
+                        "updated_at": "2023-10-26T09:00:00Z",
+                        "json": {"key": "foo"},
+                    },
+                    {
+                        "id": instance2.pk,
+                        "uuid": None,
+                        "form_id": form2.id,
+                        "form_version_id": None,
+                        "created_at": "2023-10-26T09:00:00Z",
+                        "updated_at": "2023-10-26T09:00:00Z",
+                        "json": {"key": "bar"},
+                    },
+                ],
+            },
+        )

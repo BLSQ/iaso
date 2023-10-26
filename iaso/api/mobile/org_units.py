@@ -9,17 +9,17 @@ from django.core.cache import cache
 from django.db.models.expressions import RawSQL
 from django.db.models.functions import Cast
 from rest_framework import permissions
-from rest_framework.decorators import action
 from rest_framework.fields import SerializerMethodField
 from rest_framework.response import Response
-from rest_framework.serializers import ModelSerializer, JSONField
+from rest_framework.decorators import action
+from rest_framework import serializers
 
 from hat.api.export_utils import timestamp_to_utc_datetime
-from hat.menupermissions import models as permission
 from iaso.api.common import get_timestamp, TimestampField, ModelViewSet, Paginator, safe_api_import
 from iaso.api.query_params import APP_ID, LIMIT, PAGE
 from iaso.api.serializers import AppIdSerializer
-from iaso.models import OrgUnit, Project, FeatureFlag
+from iaso.models import Instance, OrgUnit, Project, FeatureFlag
+from hat.menupermissions import models as permission
 
 
 class MobileOrgUnitsSetPagination(Paginator):
@@ -31,7 +31,7 @@ class MobileOrgUnitsSetPagination(Paginator):
         return int(request.query_params.get(self.page_query_param, 1))
 
 
-class MobileOrgUnitSerializer(ModelSerializer):
+class MobileOrgUnitSerializer(serializers.ModelSerializer):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # Do not include the geo_json if not requested
@@ -66,7 +66,7 @@ class MobileOrgUnitSerializer(ModelSerializer):
     latitude = SerializerMethodField()
     longitude = SerializerMethodField()
     altitude = SerializerMethodField()
-    geo_json = JSONField()
+    geo_json = serializers.JSONField()
 
     @staticmethod
     def get_org_unit_type_name(org_unit: OrgUnit):
@@ -91,6 +91,34 @@ class MobileOrgUnitSerializer(ModelSerializer):
     @staticmethod
     def get_altitude(org_unit: OrgUnit):
         return org_unit.location.z if org_unit.location else None
+
+
+class MobileReferenceInstanceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Instance
+        fields = [
+            "id",
+            "uuid",
+            "form_id",
+            "form_version_id",
+            "created_at",
+            "updated_at",
+            "json",
+        ]
+
+
+class MobileOrgUnitWithReferenceInstancesSerializer(serializers.ModelSerializer):
+    org_unit_id = serializers.IntegerField(source="id")
+    org_unit_uuid = serializers.UUIDField(source="uuid")
+    reference_instances = MobileReferenceInstanceSerializer(many=True)
+
+    class Meta:
+        model = OrgUnit
+        fields = [
+            "org_unit_id",
+            "org_unit_uuid",
+            "reference_instances",
+        ]
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -147,6 +175,10 @@ class MobileOrgUnitViewSet(ModelViewSet):
     You can also request the Geo Shape by adding the `shapes=1` to your query parameters.
 
     GET /api/mobile/orgunits?shapes=1
+
+    You can also list the reference instances of a given `OrgUnit` ID.
+
+    GET /api/mobile/orgunits/ID/reference_instances/?app_id={APP_ID}
     """
 
     permission_classes = [HasOrgUnitPermission]
@@ -245,6 +277,15 @@ class MobileOrgUnitViewSet(ModelViewSet):
             )
         # merge the bbox
         return Response(data={"results": results})
+
+    @action(detail=True, methods=["get"])
+    def reference_instances(self, request, pk=None):
+        """
+        List the reference instances of the given `OrgUnit` pk.
+        """
+        org_unit = self.get_object()
+        serializer = MobileOrgUnitWithReferenceInstancesSerializer(org_unit)
+        return Response(serializer.data)
 
 
 def bbox_merge(a: Optional[tuple], b: Optional[tuple]) -> Optional[tuple]:

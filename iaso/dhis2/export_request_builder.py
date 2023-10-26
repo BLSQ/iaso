@@ -70,7 +70,7 @@ class ExportRequestBuilder:
         export_request.save()
         # make paginator deterministic
         instances = instances.order_by("id")
-        paginator = Paginator(instances, 200)
+        paginator = Paginator(instances, 100)
 
         for page in range(1, paginator.num_pages + 1):
             export_statuses = []

@@ -488,10 +488,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"errorKey": "opening_date", "errorMessage": _("You cannot create an Org Unit without an opening date")}
             )
         else:
-            org_unit.opening_date = self.get_date(self, request.data.get("opening_date"))
+            opening_date = request.data.get("opening_date")
+            org_unit.opening_date = None if not opening_date else self.get_date(self, request.data.get("opening_date"))
 
         if "closed_date" in request.data:
-            org_unit.closed_date = self.get_date(self, request.data.get("closed_date"))
+            closed_date = request.data.get("closed_date")
+            org_unit.closed_date = None if not closed_date else self.get_date(self, request.data.get("closed_date"))
         else:
             org_unit.closed_date = None
 

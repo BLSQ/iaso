@@ -21,8 +21,8 @@ import { LogoutButton } from './LogoutButton.tsx';
 const styles = theme => ({
     menuButton: {
         [theme.breakpoints.up('md')]: {
-            marginRight: theme.spacing(2),
-            marginLeft: theme.spacing(1),
+            marginRight: `${theme.spacing(2)} !important`,
+            marginLeft: `${theme.spacing(1)} !important`,
         },
     },
     version: {

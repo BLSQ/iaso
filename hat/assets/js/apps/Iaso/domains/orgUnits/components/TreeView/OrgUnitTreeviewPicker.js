@@ -38,9 +38,9 @@ const styles = theme => ({
     paper: {
         display: 'flex',
         alignItems: 'center',
-        border: '1px solid rgba(0,0,0,0.23)', // aligning with AutoSelect
-        paddingTop: 12,
-        paddingBottom: 12,
+        border: '1px solid rgba(0,0,0,0.23) !important', // aligning with AutoSelect
+        paddingTop: 10,
+        paddingBottom: 10,
         paddingRight: theme.spacing(2),
     },
     inputLabel: {

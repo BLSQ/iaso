@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { IntlProvider } from 'react-intl';
 import { useSelector } from 'react-redux';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 
 // the intl paths get rewritten by webpack depending on the locale
 import fr from '__intl/messages/fr'; // eslint-disable-line
@@ -35,7 +35,7 @@ export default function LocalizedAppComponent({ children }) {
             messages={messages[activeLocale.code]}
         >
             <LocalizationProvider
-                dateAdapter={AdapterDayjs}
+                dateAdapter={AdapterMoment}
                 adapterLocale={activeLocale.code}
             >
                 {children}

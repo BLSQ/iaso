@@ -8,10 +8,11 @@ import { QueryClient, QueryClientProvider } from 'react-query';
 
 import './libs/polyfills.ts';
 
-import App from './domains/app';
+import { GlobalStyles } from '@mui/material';
+import App from './domains/app/index.tsx';
 import { store, history } from './redux/store';
 import { getPlugins, PluginsContext } from './utils';
-import { getOverriddenTheme } from './styles';
+import { getOverriddenTheme, getGlobalOverrides } from './styles';
 import { ThemeConfigContext } from './domains/app/contexts/ThemeConfigContext.tsx';
 
 const queryClient = new QueryClient({
@@ -37,6 +38,7 @@ export default function iasoApp(
                         theme={getOverriddenTheme(theme, themeConfig)}
                     >
                         <CssBaseline />
+                        <GlobalStyles styles={getGlobalOverrides(theme)} />
                         <Provider store={store}>
                             <App
                                 history={history}

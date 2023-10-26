@@ -42,6 +42,8 @@ export const InstancesTopBar: FunctionComponent<Props> = ({
             <Grid container spacing={0}>
                 <Grid xs={10} item>
                     <Tabs
+                        textColor="secondary"
+                        indicatorColor="secondary"
                         value={tab}
                         classes={{
                             root: classes.tabs,

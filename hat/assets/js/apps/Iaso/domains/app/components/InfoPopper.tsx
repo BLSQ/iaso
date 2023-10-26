@@ -56,11 +56,11 @@ export const InfoPopper: FunctionComponent<Props> = ({
             </IconButton>
             <Popper
                 popperOptions={{
-                    modifiers: {
-                        offset: {
+                    modifiers: [
+                        {
                             offset: '5,5',
                         },
-                    },
+                    ],
                 }}
                 className={classes.popper}
                 open={open}

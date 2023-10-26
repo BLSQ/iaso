@@ -1,6 +1,6 @@
 import React from 'react';
 import { act } from 'react-dom/test-utils';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 
 import { expect } from 'chai';
@@ -36,7 +36,10 @@ const awaitUseEffect = async wrapper => {
 const getConnectedWrapper = () =>
     mount(
         renderWithStore(
-            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="en">
+            <LocalizationProvider
+                dateAdapter={AdapterMoment}
+                adapterLocale="en"
+            >
                 <FormVersionsDialog
                     formId={formId}
                     formVersion={fakeFormVersion}

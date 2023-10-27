@@ -213,6 +213,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Type", "width": 15},
                 {"title": "Latitude", "width": 15},
                 {"title": "Longitude", "width": 15},
+                {"title": "Date d'ouverture", "width": 20},
+                {"title": "Date de fermeture", "width": 20},
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
                 {"title": "Source", "width": 20},
@@ -253,6 +255,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 *parent_field_names,
                 *counts_by_forms,
                 "instances_count",
+                "opening_date",
+                "closed_date",
             )
 
             user_account_name = profile.account.name if profile else ""
@@ -268,6 +272,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("org_unit_type__name"),
                     location.y if location else None,
                     location.x if location else None,
+                    org_unit.get("opening_date").strftime("%Y-%m-%d")
+                    if org_unit.get("opening_date") is not None
+                    else None,
+                    org_unit.get("closed_date").strftime("%Y-%m-%d") if org_unit.get("closed_date") else None,
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("version__data_source__name"),

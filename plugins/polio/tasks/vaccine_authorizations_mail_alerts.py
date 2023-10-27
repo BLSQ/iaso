@@ -4,12 +4,13 @@ from datetime import timedelta
 
 from django.contrib.auth.models import User
 from django.contrib.sites.models import Site
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 
 from beanstalk_worker import task_decorator
 from hat import settings
-from iaso.models import Team
+from iaso.models import Team, Profile
 from plugins.polio.models import VaccineAuthorization
 from logging import getLogger
 
@@ -73,6 +74,8 @@ def vaccine_authorizations_60_days_expiration_email_alert(vaccine_auths, mailing
 
 @task_decorator(task_name="vaccine_authorizations_60_days_expiration_email_alert")
 def send_email_vaccine_authorizations_60_days_expiration_alert(task=None):
+    # NOTE: If any change is made to the mailing list building it should be replicated in the corresponding test too.
+    # Test Name:  test_send_email_vaccine_authorizations_mailing_list_builder
     future_date = dt.date.today() + timedelta(days=60)
     vaccine_auths = VaccineAuthorization.objects.filter(expiration_date=future_date)
     total = vaccine_auths.count()
@@ -83,6 +86,11 @@ def send_email_vaccine_authorizations_60_days_expiration_alert(task=None):
     email_sent = 0
 
     for i, vacc_auth in enumerate(vaccine_auths):
+        try:
+            gpei_coordinator = Profile.objects.get(user__username__istartswith="gpei", org_units=vacc_auth.country)
+            mailing_list.append(gpei_coordinator.user.email)
+        except ObjectDoesNotExist:
+            pass
         task.report_progress_and_stop_if_killed(
             progress_value=i,
             end_value=total,
@@ -159,6 +167,11 @@ def send_email_expired_vaccine_authorizations_alert(task=None):
     email_sent = 0
 
     for i, vacc_auth in enumerate(vaccine_auths):
+        try:
+            gpei_coordinator = Profile.objects.get(user__username__istartswith="gpei", org_units=vacc_auth.country)
+            mailing_list.append(gpei_coordinator.user.email)
+        except ObjectDoesNotExist:
+            pass
         task.report_progress_and_stop_if_killed(
             progress_value=i,
             end_value=total,

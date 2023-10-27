@@ -7,6 +7,7 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from iaso import models as m
 from iaso.models import Profile, BulkCreateUserCsvFile, UserRole
 from iaso.test import APITestCase
+from hat.menupermissions.constants import MODULES
 
 BASE_URL = "/api/bulkcreateuser/"
 
@@ -32,7 +33,7 @@ class BulkCreateCsvTestCase(APITestCase):
         cls.source = m.DataSource.objects.create(name="Source")
         version1 = m.SourceVersion.objects.create(data_source=cls.source, number=1)
         version2 = m.SourceVersion.objects.create(data_source=cls.source, number=2)
-
+        cls.MODULES = [module["codename"] for module in MODULES]
         account1 = m.Account.objects.create(name="Account 1")
         cls.project = m.Project.objects.create(name="Project name", app_id="project.id", account=account1)
         account1.default_version = version1
@@ -90,6 +91,10 @@ class BulkCreateCsvTestCase(APITestCase):
         iaso_forms = Permission.objects.get(codename="iaso_forms")
         iaso_submissions = Permission.objects.get(codename="iaso_submissions")
 
+        self.account1.modules = self.MODULES
+        self.account1.save()
+
+        self.account1.refresh_from_db()
         with open("iaso/tests/fixtures/test_user_bulk_create_valid_with_perm.csv") as csv_users:
             response = self.client.post(f"{BASE_URL}", {"file": csv_users})
 

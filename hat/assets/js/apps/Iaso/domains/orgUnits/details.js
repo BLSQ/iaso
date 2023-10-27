@@ -480,9 +480,9 @@ const OrgUnitDetail = ({ params, router }) => {
                                             saveOrgUnit={() =>
                                                 handleSaveOrgUnit()
                                             }
-                                            onChangeLocation={location => {
-                                                handleChangeLocation(location);
-                                            }}
+                                            onChangeLocation={
+                                                handleChangeLocation
+                                            }
                                             onChangeShape={(key, geoJson) =>
                                                 handleChangeShape(geoJson, key)
                                             }

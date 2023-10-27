@@ -613,9 +613,7 @@ class VaccineAuthorizationAPITestCase(APITestCase):
         for i, vacc_auth in enumerate(vaccine_auths):
             try:
                 gpei_coordinator = Profile.objects.get(user__username__istartswith="gpei", org_units=vacc_auth.country)
-                print("GPEI: ", gpei_coordinator)
                 mailing_list.append(gpei_coordinator.user.email)
-                print("MAILING LIST: ", mailing_list)
             except ObjectDoesNotExist:
                 pass
 

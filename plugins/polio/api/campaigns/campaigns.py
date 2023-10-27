@@ -176,17 +176,18 @@ class CampaignSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         grouped_campaigns = validated_data.pop("grouped_campaigns", [])
         rounds = validated_data.pop("rounds", [])
-        initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
+        initial_org_unit = validated_data.get("initial_org_unit")
         obr_name = validated_data["obr_name"]
 
-        # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
+        # Check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
+        if initial_org_unit and type(initial_org_unit) is str:
+            initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit)
+            vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
 
-        if not vaccine_authorization:
-            missing_vaccine_authorization_for_campaign_email_alert(obr_name, validated_data["initial_org_unit"])
-
-        if vaccine_authorization:
-            check_total_doses_requested(vaccine_authorization[0], rounds)
+            if vaccine_authorization:
+                check_total_doses_requested(vaccine_authorization[0], rounds)
+            else:
+                missing_vaccine_authorization_for_campaign_email_alert(obr_name, validated_data["initial_org_unit"])
 
         campaign_scopes = validated_data.pop("scopes", [])
         campaign = Campaign.objects.create(
@@ -254,12 +255,14 @@ class CampaignSerializer(serializers.ModelSerializer):
         old_campaign_dump = serialize_campaign(instance)
         campaign_scopes = validated_data.pop("scopes", [])
         rounds = validated_data.pop("rounds", [])
-        initial_org_unit = OrgUnit.objects.get(pk=validated_data["initial_org_unit"].pk)
+        initial_org_unit = validated_data.get("initial_org_unit")
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
-        if vaccine_authorization:
-            check_total_doses_requested(vaccine_authorization[0], rounds)
+        if initial_org_unit and type(initial_org_unit) is str:
+            initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit)
+            vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
+            if vaccine_authorization:
+                check_total_doses_requested(vaccine_authorization[0], rounds)
 
         for scope in campaign_scopes:
             vaccine = scope.get("vaccine")

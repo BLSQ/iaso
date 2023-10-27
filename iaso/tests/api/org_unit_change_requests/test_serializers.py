@@ -6,11 +6,11 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.test import APIRequestFactory
 
 from iaso.api.org_unit_change_requests.serializers import (
-    InstanceForChangeRequest,
+    InstanceForChangeRequestSerializer,
     MobileOrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestListSerializer,
     OrgUnitChangeRequestWriteSerializer,
-    OrgUnitForChangeRequest,
+    OrgUnitForChangeRequestSerializer,
     OrgUnitChangeRequestReviewSerializer,
     OrgUnitChangeRequestRetrieveSerializer,
 )
@@ -19,7 +19,7 @@ from iaso.test import TestCase
 from iaso import models as m
 
 
-class InstanceForChangeRequestTestCase(TestCase):
+class InstanceForChangeRequestSerializerTestCase(TestCase):
     """
     Test nested Instance serializer.
     """
@@ -35,7 +35,7 @@ class InstanceForChangeRequestTestCase(TestCase):
         cls.instance = instance
 
     def test_serialize_instance(self):
-        serializer = InstanceForChangeRequest(self.instance)
+        serializer = InstanceForChangeRequestSerializer(self.instance)
         self.assertEqual(
             serializer.data,
             {
@@ -50,7 +50,7 @@ class InstanceForChangeRequestTestCase(TestCase):
         )
 
 
-class OrgUnitForChangeRequestTestCase(TestCase):
+class OrgUnitForChangeRequestSerializerTestCase(TestCase):
     """
     Test nested OrgUnit serializer.
     """
@@ -75,7 +75,7 @@ class OrgUnitForChangeRequestTestCase(TestCase):
         cls.org_unit_type = org_unit_type
 
     def test_serialize_org_unit(self):
-        serializer = OrgUnitForChangeRequest(self.org_unit)
+        serializer = OrgUnitForChangeRequestSerializer(self.org_unit)
         self.assertEqual(
             serializer.data,
             {

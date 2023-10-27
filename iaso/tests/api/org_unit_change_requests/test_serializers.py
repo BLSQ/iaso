@@ -1,3 +1,4 @@
+import datetime
 import time_machine
 import uuid
 
@@ -58,7 +59,12 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
     @classmethod
     def setUpTestData(cls):
         org_unit_type = m.OrgUnitType.objects.create(name="Org unit type")
-        org_unit = m.OrgUnit.objects.create(org_unit_type=org_unit_type, location=Point(-2.4747713, 47.3358576, 10.0))
+        org_unit = m.OrgUnit.objects.create(
+            org_unit_type=org_unit_type,
+            location=Point(-2.4747713, 47.3358576, 10.0),
+            opening_date=datetime.date(2023, 10, 27),
+            closed_date=datetime.date(2025, 10, 27),
+        )
         group1 = m.Group.objects.create(name="Group 1")
         group2 = m.Group.objects.create(name="Group 2")
         org_unit.groups.set([group1, group2])
@@ -93,6 +99,8 @@ class OrgUnitForChangeRequestSerializerTestCase(TestCase):
                     "longitude": -2.4747713,
                     "altitude": 10.0,
                 },
+                "opening_date": "2023-10-27",
+                "closed_date": "2025-10-27",
                 "reference_instances": [
                     {
                         "id": self.instance.pk,
@@ -285,6 +293,8 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                     "org_unit_type_name": self.org_unit_type.name,
                     "groups": [],
                     "location": None,
+                    "opening_date": None,
+                    "closed_date": None,
                     "reference_instances": [],
                 },
                 "new_parent": "",

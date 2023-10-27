@@ -212,6 +212,8 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_groups",
             "new_location",
             "new_location_accuracy",
+            "new_opening_date",
+            "new_closed_date",
             "new_reference_instances",
         ]
 
@@ -239,6 +241,12 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
             )
+
+        new_opening_date = validated_data.get("new_opening_date")
+        new_closed_date = validated_data.get("new_closed_date")
+
+        if (new_opening_date and new_closed_date) and (new_closed_date <= new_opening_date):
+            raise serializers.ValidationError("`new_closed_date` must be later than `new_opening_date`.")
 
         org_unit = validated_data.get("org_unit")
         new_parent = validated_data.get("new_parent")

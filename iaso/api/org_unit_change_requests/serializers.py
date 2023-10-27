@@ -167,6 +167,8 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
             "new_groups",
             "new_location",
             "new_location_accuracy",
+            "new_opening_date",
+            "new_closed_date",
             "new_reference_instances",
         ]
 

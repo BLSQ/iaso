@@ -269,6 +269,8 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
             "org_unit": self.org_unit,
             "created_by": self.user,
             "new_org_unit_type": self.org_unit_type,
+            "new_opening_date": datetime.date(2022, 10, 27),
+            "new_closed_date": datetime.date(2024, 10, 27),
         }
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
         new_group = m.Group.objects.create(name="new group")
@@ -286,7 +288,7 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 "created_at": 1697734800.0,
                 "updated_by": "",
                 "updated_at": None,
-                "requested_fields": ["new_org_unit_type", "new_groups"],
+                "requested_fields": ["new_org_unit_type", "new_opening_date", "new_closed_date", "new_groups"],
                 "approved_fields": [],
                 "rejection_comment": "",
                 "org_unit": {
@@ -313,6 +315,8 @@ class OrgUnitChangeRequestRetrieveSerializerTestCase(TestCase):
                 ],
                 "new_location": None,
                 "new_location_accuracy": None,
+                "new_opening_date": "2022-10-27",
+                "new_closed_date": "2024-10-27",
                 "new_reference_instances": [],
             },
         )

@@ -197,12 +197,14 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
         cls.org_unit_type = org_unit_type
         cls.user = user
 
-    def test_serialize_change_request_for_mobile(self):
+    def test_serialize_ok(self):
         kwargs = {
             "org_unit": self.org_unit,
             "created_by": self.user,
             "new_org_unit_type": self.org_unit_type,
             "new_location": Point(-2.4747713, 47.3358576, 10.0),
+            "new_opening_date": datetime.date(2022, 10, 27),
+            "new_closed_date": datetime.date(2024, 10, 27),
             "approved_fields": ["new_org_unit_type"],
         }
         change_request = m.OrgUnitChangeRequest.objects.create(**kwargs)
@@ -235,6 +237,8 @@ class MobileOrgUnitChangeRequestListSerializerTestCase(TestCase):
                     "altitude": 10.0,
                 },
                 "new_location_accuracy": None,
+                "new_opening_date": "2022-10-27",
+                "new_closed_date": "2024-10-27",
                 "new_reference_instances": [new_instance.pk],
             },
         )

@@ -413,6 +413,18 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
             "`new_org_unit_type_id` is not part of the user account.", serializer.errors["new_org_unit_type_id"][0]
         )
 
+    def test_validate_new_dates(self):
+        data = {
+            "org_unit_id": self.org_unit.id,
+            "new_opening_date": "2024-10-27",
+            "new_closed_date": "2022-10-27",
+        }
+        serializer = OrgUnitChangeRequestWriteSerializer(data=data)
+        self.assertFalse(serializer.is_valid())
+        self.assertIn(
+            "`new_closed_date` must be later than `new_opening_date`.", serializer.errors["non_field_errors"][0]
+        )
+
     def test_validate_new_reference_instances(self):
         form = m.Form.objects.create(name="Vaccine form 1")
         instance1 = m.Instance.objects.create(form=form, org_unit=self.org_unit)
@@ -452,6 +464,8 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
                 "altitude": 10.0,
             },
             "new_location_accuracy": 4.0,
+            "new_opening_date": "2022-10-27",
+            "new_closed_date": "2024-10-27",
             "new_reference_instances": [instance1.id, instance2.id],
         }
         serializer = OrgUnitChangeRequestWriteSerializer(data=data)
@@ -464,6 +478,8 @@ class OrgUnitChangeRequestWriteSerializerTestCase(TestCase):
         self.assertEqual(change_request.new_parent, parent_org_unit)
         self.assertEqual(change_request.new_name, "Foo")
         self.assertEqual(change_request.new_org_unit_type, self.org_unit_type)
+        self.assertEqual(change_request.new_opening_date, datetime.date(2022, 10, 27))
+        self.assertEqual(change_request.new_closed_date, datetime.date(2024, 10, 27))
         new_groups = change_request.new_groups.all()
         self.assertIn(group1, new_groups)
         self.assertIn(group2, new_groups)

@@ -8,7 +8,7 @@ from iaso.utils.serializer.three_dim_point_field import ThreeDimPointField
 from iaso.api.common import TimestampField
 
 
-class InstanceForChangeRequest(serializers.ModelSerializer):
+class InstanceForChangeRequestSerializer(serializers.ModelSerializer):
     """
     Used for nesting `Instance` instances.
     """
@@ -26,7 +26,7 @@ class InstanceForChangeRequest(serializers.ModelSerializer):
         ]
 
 
-class OrgUnitForChangeRequest(serializers.ModelSerializer):
+class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):
     """
     Used for nesting `OrgUnit` instances.
     """
@@ -35,7 +35,7 @@ class OrgUnitForChangeRequest(serializers.ModelSerializer):
     org_unit_type_name = serializers.CharField(source="org_unit_type.name")
     groups = serializers.SerializerMethodField(method_name="get_groups")
     location = ThreeDimPointField()
-    reference_instances = InstanceForChangeRequest(many=True)
+    reference_instances = InstanceForChangeRequestSerializer(many=True)
 
     class Meta:
         model = OrgUnit
@@ -133,16 +133,14 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
     Used to show one `OrgUnitChangeRequest` instance.
     """
 
-    org_unit = OrgUnitForChangeRequest()
+    org_unit = OrgUnitForChangeRequestSerializer()
     created_by = serializers.CharField(source="created_by.username", default="")
     updated_by = serializers.CharField(source="updated_by.username", default="")
     new_parent = serializers.CharField(source="new_parent.name", default="")
     new_org_unit_type_name = serializers.CharField(source="new_org_unit_type.name", default="")
     new_groups = serializers.SerializerMethodField(method_name="get_new_groups")
     new_location = ThreeDimPointField()
-    new_reference_instances = InstanceForChangeRequest(many=True)
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    new_reference_instances = InstanceForChangeRequestSerializer(many=True)
 
     class Meta:
         model = OrgUnitChangeRequest

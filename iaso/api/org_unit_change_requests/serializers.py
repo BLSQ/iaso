@@ -45,6 +45,8 @@ class OrgUnitForChangeRequestSerializer(serializers.ModelSerializer):
             "org_unit_type_name",
             "groups",
             "location",
+            "opening_date",
+            "closed_date",
             "reference_instances",
         ]
 

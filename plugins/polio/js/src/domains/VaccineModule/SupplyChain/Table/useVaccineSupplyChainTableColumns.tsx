@@ -1,7 +1,11 @@
 import React, { useMemo } from 'react';
 import { Column, IconButton, useSafeIntl } from 'bluesquare-components';
 // import { VACCINE_SUPPLY_CHAIN } from '../../../../constants/routes';
-import { DateCell } from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
+import {
+    DateCell,
+    MultiDateCell,
+    MultiDateTimeCellRfc,
+} from '../../../../../../../../hat/assets/js/apps/Iaso/components/Cells/DateTimeCell';
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { useDeleteVrf } from '../hooks/api';
@@ -34,6 +38,17 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.poNumbers),
                 accessor: 'po_numbers',
+                Cell: settings => {
+                    const poNumbers = settings.row.original?.po_numbers ?? '';
+                    const poNumbersList = poNumbers.split(',');
+                    return (
+                        <>
+                            {poNumbersList.map(poNumber => (
+                                <div key={poNumber}>{poNumber}</div>
+                            ))}
+                        </>
+                    );
+                },
             },
             {
                 Header: formatMessage(MESSAGES.rounds),
@@ -62,10 +77,12 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             {
                 Header: formatMessage(MESSAGES.estimatedDateOfArrival),
                 accessor: 'eta',
+                Cell: MultiDateTimeCellRfc,
             },
             {
                 Header: 'VAR',
                 accessor: 'var',
+                Cell: MultiDateCell,
             },
             {
                 Header: formatMessage(MESSAGES.actions),

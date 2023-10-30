@@ -180,8 +180,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         obr_name = validated_data["obr_name"]
 
         # Check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        if initial_org_unit and type(initial_org_unit) is str:
-            initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit)
+        if initial_org_unit:
+            initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
             vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
 
             if vaccine_authorization:
@@ -258,8 +258,8 @@ class CampaignSerializer(serializers.ModelSerializer):
         initial_org_unit = validated_data.get("initial_org_unit")
 
         # check if the quantity of the vaccines requested is not superior to the authorized vaccine quantity
-        if initial_org_unit and type(initial_org_unit) is str:
-            initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit)
+        if initial_org_unit:
+            initial_org_unit = OrgUnit.objects.get(pk=initial_org_unit.pk)
             vaccine_authorization = VaccineAuthorization.objects.filter(country=initial_org_unit, status="VALIDATED")
             if vaccine_authorization:
                 check_total_doses_requested(vaccine_authorization[0], rounds)

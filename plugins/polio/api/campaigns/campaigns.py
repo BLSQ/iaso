@@ -33,7 +33,8 @@ from iaso.api.common import (
     CSVExportMixin,
     CustomFilterBackend,
     DeletionFilterBackend,
-    ModelViewSet, Custom403Exception,
+    ModelViewSet,
+    Custom403Exception,
 )
 from iaso.models import Group, OrgUnit
 from plugins.polio.api.campaigns.campaigns_log import log_campaign_modification, serialize_campaign
@@ -109,7 +110,9 @@ def check_total_doses_requested(vaccine_authorization, rounds):
             total_doses_requested += c_round.get("doses_requested", 0)
 
         if total_doses_requested > vaccine_authorization.quantity:
-            raise Custom403Exception(f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}.")
+            raise Custom403Exception(
+                f"The total of doses requested {total_doses_requested} is superior to the autorized doses for this campaign {vaccine_authorization.quantity}."
+            )
 
 
 class CampaignSerializer(serializers.ModelSerializer):

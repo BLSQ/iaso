@@ -21,8 +21,8 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
             },
             {
                 Header: formatMessage(MESSAGES.vaccine),
-                accessor: 'vaccine',
-                id: 'vaccine',
+                accessor: 'vaccine_type',
+                id: 'vaccine_type',
                 sortable: true,
             },
             {

@@ -50,7 +50,6 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
             <Grid item xs={6} md={3} lg={3}>
                 <InputComponent
                     type="select"
-                    multi
                     clearable
                     keyValue="campaign__country"
                     value={filters.campaign__country}
@@ -77,7 +76,6 @@ export const VaccineSupplyChainFilters: FunctionComponent<Props> = ({
             <Grid item xs={6} md={3} lg={3}>
                 <InputComponent
                     type="select"
-                    multi
                     clearable
                     keyValue="vaccine_type"
                     value={filters.vaccine_type}

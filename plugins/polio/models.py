@@ -922,6 +922,9 @@ class VaccineRequestForm(models.Model):
     date_dg_approval = models.DateField()
     quantities_ordered_in_doses = models.PositiveIntegerField()
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     # optional fields
     wastage_rate_used_on_vrf = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     date_vrf_submission_to_orpg = models.DateField(null=True, blank=True)
@@ -959,6 +962,9 @@ class VaccinePreAlert(models.Model):
     doses_shipped = models.PositiveIntegerField()
     doses_received = models.PositiveIntegerField()
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
     def get_doses_per_vial(self):
         return DOSES_PER_VIAL[self.request_form.vaccine_type]
 
@@ -967,3 +973,6 @@ class VaccineArrivalReport(models.Model):
     request_form = models.ForeignKey(VaccineRequestForm, on_delete=models.CASCADE)
     arrival_report_date = models.DateField()  # prepolutated from pre_alert.estimated_arrival_time
     doses_received = models.PositiveIntegerField()  # prepolulated from pre_alert.doses_received
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)

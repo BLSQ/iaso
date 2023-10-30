@@ -5,6 +5,7 @@ from django.utils import timezone
 from django_filters.rest_framework import DjangoFilterBackend  # type: ignore
 from rest_framework import filters, serializers, status
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from hat.menupermissions import models as permission
 from iaso.models import OrgUnit
@@ -47,7 +48,14 @@ class NestedRoundPostSerializer(serializers.ModelSerializer):
         fields = ["id"]
 
 
-class NestedVaccinePreAlertSerializer(serializers.ModelSerializer):
+class WithRequestFormSerializer(serializers.ModelSerializer):
+    def save(self, **kwargs):
+        vaccine_request_form = kwargs.pop("vaccine_request_form")
+        self.validated_data["request_form"] = vaccine_request_form
+        return super().save(**kwargs)
+
+
+class NestedVaccinePreAlertSerializerForPost(WithRequestFormSerializer):
     class Meta:
         model = VaccinePreAlert
         fields = [
@@ -61,10 +69,114 @@ class NestedVaccinePreAlertSerializer(serializers.ModelSerializer):
         ]
 
 
-class NestedVaccineArrivalReportSerializer(serializers.ModelSerializer):
+class NestedVaccinePreAlertSerializerForPatch(NestedVaccinePreAlertSerializerForPost):
+    id = serializers.IntegerField(required=True, read_only=False)
+
+    class Meta(NestedVaccinePreAlertSerializerForPost.Meta):
+        fields = NestedVaccinePreAlertSerializerForPost.Meta.fields + ["id"]
+
+
+class NestedVaccineArrivalReportSerializerForPost(WithRequestFormSerializer):
     class Meta:
         model = VaccineArrivalReport
         fields = ["arrival_report_date", "doses_received"]
+
+
+class NestedVaccineArrivalReportSerializerForPatch(NestedVaccineArrivalReportSerializerForPost):
+    id = serializers.IntegerField(required=True, read_only=False)
+
+    class Meta(NestedVaccineArrivalReportSerializerForPost.Meta):
+        fields = NestedVaccineArrivalReportSerializerForPost.Meta.fields + ["id"]
+
+
+class PostPreAlertSerializer(serializers.Serializer):
+    pre_alerts = NestedVaccinePreAlertSerializerForPost(
+        many=True,
+    )
+
+    def create(self, validated_data, **kwargs):
+        vaccine_request_form = kwargs.get("vaccine_request_form")
+        pre_alerts = []
+
+        for item in self.validated_data["pre_alerts"]:
+            pre_alert = NestedVaccinePreAlertSerializerForPost(data=item)
+            if pre_alert.is_valid():
+                pre_alert.save(vaccine_request_form=vaccine_request_form)
+                pre_alerts.append(pre_alert.instance)
+
+        return pre_alerts
+
+    def save(self, **kwargs):
+        vaccine_request_form = kwargs.get("vaccine_request_form")
+        pre_alerts = []
+
+        for item in self.validated_data["pre_alerts"]:
+            pre_alert = NestedVaccinePreAlertSerializerForPost(data=item)
+            if pre_alert.is_valid():
+                pre_alert.save(vaccine_request_form=vaccine_request_form)
+                pre_alerts.append(pre_alert.instance)
+
+        return pre_alerts
+
+
+class PatchPreAlertSerializer(serializers.Serializer):
+    pre_alerts = NestedVaccinePreAlertSerializerForPatch(many=True)
+
+    def create(self, validated_data, **kwargs):
+        vaccine_request_form = kwargs.get("vaccine_request_form")
+        pre_alerts = []
+
+        for item in self.validated_data["pre_alerts"]:
+            pre_alert = NestedVaccinePreAlertSerializerForPatch(data=item)
+            if pre_alert.is_valid():
+                pre_alert.save(vaccine_request_form=vaccine_request_form)
+                pre_alerts.append(pre_alert.instance)
+
+        return pre_alerts
+
+    def save(self, **kwargs):
+        vaccine_request_form = kwargs.get("vaccine_request_form")
+        pre_alerts = []
+
+        for item in self.validated_data["pre_alerts"]:
+            pre_alert = NestedVaccinePreAlertSerializerForPatch(data=item)
+            if pre_alert.is_valid():
+                pre_alert.save(vaccine_request_form=vaccine_request_form)
+                pre_alerts.append(pre_alert.instance)
+
+        return pre_alerts
+
+
+class PostArrivalReportSerializer(serializers.Serializer):
+    arrival_reports = NestedVaccineArrivalReportSerializerForPost(many=True)
+
+    def create(self, validated_data, **kwargs):
+        vaccine_request_form = kwargs.get("vaccine_request_form")
+        arrival_reports = []
+
+        for item in self.validated_data["arrival_reports"]:
+            arrival_report = NestedVaccineArrivalReportSerializerForPost(data=item)
+            if arrival_report.is_valid():
+                arrival_report.save(vaccine_request_form=vaccine_request_form)
+                arrival_reports.append(arrival_report.instance)
+
+        return arrival_reports
+
+    def save(self, **kwargs):
+        vaccine_request_form = kwargs.get("vaccine_request_form")
+        arrival_reports = []
+
+        for item in self.validated_data["arrival_reports"]:
+            arrival_report = NestedVaccineArrivalReportSerializerForPost(data=item)
+            if arrival_report.is_valid():
+                arrival_report.save(vaccine_request_form=vaccine_request_form)
+                arrival_reports.append(arrival_report.instance)
+
+        return arrival_reports
+
+
+class PatchArrivalReportSerializer(serializers.Serializer):
+    arrival_reports = NestedVaccineArrivalReportSerializerForPatch(many=True)
 
 
 class NestedCountrySerializer(serializers.ModelSerializer):
@@ -74,8 +186,6 @@ class NestedCountrySerializer(serializers.ModelSerializer):
 
 
 class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
-    pre_alerts = NestedVaccinePreAlertSerializer(many=True)
-    arrival_reports = NestedVaccineArrivalReportSerializer(many=True)
     rounds = NestedRoundPostSerializer(many=True)
 
     class Meta:
@@ -95,9 +205,9 @@ class VaccineRequestFormPostSerializer(serializers.ModelSerializer):
             "date_vrf_submitted_to_dg",
             "quantities_approved_by_dg_in_doses",
             "comment",
-            "pre_alerts",
-            "arrival_reports",
         ]
+
+        read_only_fields = ["created_at", "updated_at"]
 
     def validate(self, data):
         return validate_rounds_and_campaign(data, self.context["request"].user)
@@ -171,6 +281,8 @@ class VaccineRequestFormListSerializer(serializers.ModelSerializer):
             "doses_shipped",
             "eta",
             "var",
+            "created_at",
+            "updated_at",
         ]
 
     # comma separated list of all
@@ -268,21 +380,36 @@ class VaccineRequestFormViewSet(ModelViewSet):
     - vaccine_type
     - obr_name
     - doses_shipped
+    - created_at
+    - updated_at
 
     DELETE /api/polio/vaccine/request_forms/{id}/
     Deletes the request_form with the given id and all its arrival_reports and pre_alerts.
 
     POST /api/polio/vaccine/request_forms/
-    Include one or many arrival_reports and/or pre_alerts
+    To create a new request_form
 
     PATCH /api/polio/vaccine/request_forms/{id}/
-    Include one or many arrival_reports and/or pre_alerts
+    To modify an existing request_form
+
+    POST /api/polio/vaccine/request_forms/{id}/add_pre_alerts/
+    To add new pre_alert(s) to an existing request_form
+
+    PATCH /api/polio/vaccine/request_forms/{id}/update_pre_alerts/
+    To modify existing pre_alert(s) of an existing request_form
+
+    POST /api/polio/vaccine/request_forms/{id}/add_arrival_reports/
+    To add new arrival_report(s) to an existing request_form
+
+    PATCH /api/polio/vaccine/request_forms/{id}/update_arrival_reports/
+    To modify existing arrival_report(s) of an existing request_form
+
     """
 
     permission_classes = [VaccineSupplyChainReadWritePerm]
     http_method_names = ["get", "post", "delete", "patch"]
 
-    filter_backends = [NoFormDjangoFilterBackend, VRFCustomOrderingFilter]
+    filter_backends = [NoFormDjangoFilterBackend, VRFCustomOrderingFilter, filters.OrderingFilter]
     filterset_fields = {
         "campaign__obr_name": ["exact"],
         "campaign__country": ["exact"],
@@ -290,6 +417,7 @@ class VaccineRequestFormViewSet(ModelViewSet):
         "rounds__started_at": ["exact", "gte", "lte", "range"],
         "rounds__ended_at": ["exact", "gte", "lte", "range"],
     }
+    ordering_fields = ["created_at", "updated_at"]
 
     model = VaccineRequestForm
 
@@ -307,8 +435,45 @@ class VaccineRequestFormViewSet(ModelViewSet):
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def _do_generic(self, request, pk, serializer_class, set_attr_name):
+        instance = self.get_object()
+        serializer = serializer_class(data=request.data)
+        if serializer.is_valid():
+            pre_alerts = serializer.save(vaccine_request_form=instance)
+            the_set = getattr(instance, set_attr_name)
+            the_set.add(*pre_alerts)
+            instance.save()
+            return Response(status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=True, methods=["post"])
+    def add_pre_alerts(self, request, pk=None):
+        return self._do_generic(request, pk, PostPreAlertSerializer, "vaccineprealert_set")
+
+    @action(detail=True, methods=["patch"])
+    def update_pre_alerts(self, request, pk=None):
+        return self._do_generic(request, pk, PatchPreAlertSerializer, "vaccineprealert_set")
+
+    @action(detail=True, methods=["post"])
+    def add_arrival_reports(self, request, pk=None):
+        return self._do_generic(request, pk, PostArrivalReportSerializer, "vaccinearrivalreport_set")
+
+    @action(detail=True, methods=["patch"])
+    def update_arrival_reports(self, request, pk=None):
+        return self._do_generic(request, pk, PatchArrivalReportSerializer, "vaccinearrivalreport_set")
+
     def get_serializer_class(self):
         if self.action == "list" or self.action == "retrieve":
             return VaccineRequestFormListSerializer
+        elif self.action == "add_pre_alerts":
+            return PostPreAlertSerializer
+        elif self.action == "update_pre_alerts":
+            return PatchPreAlertSerializer
+        elif self.action == "add_arrival_reports":
+            return PostArrivalReportSerializer
+        elif self.action == "update_arrival_reports":
+            return PatchArrivalReportSerializer
+
         else:
             return VaccineRequestFormPostSerializer

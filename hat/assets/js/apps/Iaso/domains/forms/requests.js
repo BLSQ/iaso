@@ -15,8 +15,3 @@ export const useGetForm = formId =>
             enabled: formId && formId !== '0',
         },
     );
-
-export const useRefreshForm = formId => {
-    const queryClient = useQueryClient();
-    return data => queryClient.setQueryData(['forms', formId], data);
-};

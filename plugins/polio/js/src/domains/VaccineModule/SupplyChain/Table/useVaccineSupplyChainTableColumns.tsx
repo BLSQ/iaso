@@ -9,8 +9,7 @@ import {
 import MESSAGES from '../messages';
 import DeleteDialog from '../../../../../../../../hat/assets/js/apps/Iaso/components/dialogs/DeleteDialogComponent';
 import { useDeleteVrf } from '../hooks/api';
-
-// const baseUrl = VACCINE_SUPPLY_CHAIN;
+import { VACCINE_SUPPLY_CHAIN_DETAILS } from '../../../../constants/routes';
 
 export const useVaccineSupplyChainTableColumns = (): Column[] => {
     const { formatMessage } = useSafeIntl();
@@ -94,8 +93,7 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                             <IconButton
                                 icon="edit"
                                 tooltipMessage={MESSAGES.edit}
-                                // disabled
-                                onClick={() => null}
+                                url={`${VACCINE_SUPPLY_CHAIN_DETAILS}/id/${settings.row.original.id}`}
                             />
                             {/* TODO make better DeleteDialog */}
                             <DeleteDialog
@@ -110,5 +108,5 @@ export const useVaccineSupplyChainTableColumns = (): Column[] => {
                 },
             },
         ];
-    }, [formatMessage]);
+    }, [deleteVrf, formatMessage]);
 };

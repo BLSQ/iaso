@@ -160,6 +160,12 @@ class Command(BaseCommand):
                 print("Instance delete", Instance.objects.filter(project=project).delete())
                 print("InstanceFile delete", InstanceFile.objects.filter(instance__form__in=forms).delete())
                 print("Instance delete", Instance.objects.filter(form__in=forms).delete())
+                print(
+                    "Instance remove planning",
+                    Instance.objects.filter(planning__in=Planning.objects.filter(project=project)).update(
+                        planning=None
+                    ),
+                )
                 print("Mapping", Mapping.objects.filter(form__in=forms).delete())
                 print("Forms", [f.name for f in forms])
                 for f in forms:
@@ -173,12 +179,6 @@ class Command(BaseCommand):
                 print(
                     "Assignment",
                     Assignment.objects.filter(team__in=Team.objects.filter(project=project)).delete(),
-                )
-                print(
-                    "Instance remove planning",
-                    Instance.objects.filter(planning__in=Planning.objects.filter(project=project)).update(
-                        planning=None
-                    ),
                 )
                 print("Planning", Planning.objects.filter(project=project).delete())
                 print("Teams with parents")

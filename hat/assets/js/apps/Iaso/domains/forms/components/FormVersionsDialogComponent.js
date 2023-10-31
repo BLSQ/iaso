@@ -6,7 +6,7 @@ import { Grid, Typography, Box } from '@material-ui/core';
 import { LoadingSpinner, useSafeIntl } from 'bluesquare-components';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import PeriodPicker from '../../periods/components/PeriodPicker';
+import PeriodPicker from '../../periods/components/PeriodPicker.tsx';
 
 import MESSAGES from '../messages';
 import { createFormVersion, updateFormVersion } from '../../../utils/requests';
@@ -62,39 +62,41 @@ const FormVersionsDialogComponent = ({
 
     const onConfirm = useCallback(
         async closeDialog => {
-            setIsLoading(true);
-            let savePromise;
-            const data = {
-                form_id: formId,
-            };
-            if (formState.start_period.value) {
-                data.start_period = formState.start_period.value;
-            }
-            if (formState.end_period.value) {
-                data.end_period = formState.end_period.value;
-            }
-            if (!formVersion.id) {
-                savePromise = createFormVersion({
-                    xls_file: formState.xls_file.value,
-                    data,
-                });
-            } else {
-                data.id = formVersion.id;
-                savePromise = updateFormVersion(data);
-            }
-            try {
-                await savePromise;
-                setIsLoading(false);
-                closeDialog();
-                setFormState(emptyVersion(formVersion.id));
-                onConfirmed();
-                dispatch(enqueueSnackbar(succesfullSnackBar()));
-            } catch (error) {
-                setIsLoading(false);
-                if (error.status === 400) {
-                    Object.entries(error.details).forEach(entry =>
-                        setFieldErrors(entry[0], entry[1]),
-                    );
+            if (!isLoading) {
+                setIsLoading(true);
+                let savePromise;
+                const data = {
+                    form_id: formId,
+                };
+                if (formState.start_period.value) {
+                    data.start_period = formState.start_period.value;
+                }
+                if (formState.end_period.value) {
+                    data.end_period = formState.end_period.value;
+                }
+                if (!formVersion.id) {
+                    savePromise = createFormVersion({
+                        xls_file: formState.xls_file.value,
+                        data,
+                    });
+                } else {
+                    data.id = formVersion.id;
+                    savePromise = updateFormVersion(data);
+                }
+                try {
+                    await savePromise;
+                    closeDialog();
+                    setIsLoading(false);
+                    setFormState(emptyVersion(formVersion.id));
+                    onConfirmed();
+                    dispatch(enqueueSnackbar(succesfullSnackBar()));
+                } catch (error) {
+                    setIsLoading(false);
+                    if (error.status === 400) {
+                        Object.entries(error.details).forEach(entry =>
+                            setFieldErrors(entry[0], entry[1]),
+                        );
+                    }
                 }
             }
         },
@@ -106,6 +108,7 @@ const FormVersionsDialogComponent = ({
             formVersion.id,
             onConfirmed,
             setFormState,
+            isLoading,
         ],
     );
 

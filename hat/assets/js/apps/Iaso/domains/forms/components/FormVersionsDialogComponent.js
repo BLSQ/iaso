@@ -123,7 +123,8 @@ const FormVersionsDialogComponent = ({
     };
     const allowConfirm = () => {
         return Boolean(
-            !periodsErrors.start &&
+            !isLoading &&
+                !periodsErrors.start &&
                 !periodsErrors.end &&
                 ((!formState.id.value && formState.xls_file.value) ||
                     formState.id.value),

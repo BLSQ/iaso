@@ -174,6 +174,12 @@ class Command(BaseCommand):
                     "Assignment",
                     Assignment.objects.filter(team__in=Team.objects.filter(project=project)).delete(),
                 )
+                print(
+                    "Instance remove planning",
+                    Instance.objects.filter(planning__in=Planning.objects.filter(project=project)).update(
+                        planning=None
+                    ),
+                )
                 print("Planning", Planning.objects.filter(project=project).delete())
                 print("Teams with parents")
 

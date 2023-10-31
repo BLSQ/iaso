@@ -12,6 +12,7 @@ from django.db.models import Count, Q
 from django.db.models.expressions import RawSQL
 from django.utils.translation import gettext as _
 from gspread.utils import extract_id_from_url  # type: ignore
+from django.utils import timezone
 from django.core.validators import RegexValidator
 from iaso.models import Group, OrgUnit
 from iaso.models.base import Account
@@ -961,3 +962,82 @@ class VaccineAuthorization(SoftDeletableModel):
 
     def __str__(self):
         return f"{self.country}-{self.expiration_date}"
+
+
+class Notification(models.Model):
+    """
+    List of notifications of polio virus outbreaks.
+    I.e.: we found a case in this place on this day.
+
+    Also called "line list": a table that summarizes key
+    information about each case in an outbreak.
+    """
+
+    class VdpvCategories(models.TextChoices):
+        """
+        Vaccine-Derived PolioVirus categories.
+        """
+
+        AVDPV = "avdpv", _("aVDPV")
+        CVDPV1 = "cvdpv1", _("cVDPV1")
+        CVDPV2 = "cvdpv2", _("cVDPV2")
+        NOPV2 = "nopv2", _("nOPV2")
+        SABIN = "sabin", _("Sabin")
+        SABIN1 = "sabin1", _("SABIN 1")
+        SABIN2 = "sabin2", _("SABIN 2")
+        SABIN3 = "sabin3", _("SABIN 3")
+        VDPV = "vdpv", _("VDPV")
+        VDPV1 = "vdpv1", _("VDPV1")
+        VDPV2 = "vdpv2", _("VDPV2")
+        VDPV3 = "vdpv3", _("VDPV3")
+        VPV2 = "vpv2", _("VPV2")
+        WPV1 = "wpv1", _("WPV1")
+
+    class Sources(models.TextChoices):
+        """
+        Sources for polio virus outbreaks.
+        """
+
+        AFP = "afp", _("Accute Flaccid Paralysis")  # A case of someone who got paralyzed because of polio.
+        COMMUNITY = "community", _("Community")
+        CONTACT = "contact", _("Contact")
+        ENV = "env", _("Environmental")  # They found a virus in the environment.
+        HC = "hc", _("HC")
+        OTHER = "other", _("Other")
+
+    # EPID number = epidemiological number = unique identifier of a case per disease.
+    # Format = [country code]-[region code]-[district code]-[year]-[case series number]
+    # E.g. ANG-LNO-CAM-19-001
+    epid_number = models.CharField(max_length=50, unique=True)
+
+    vdpv_category = models.CharField(max_length=20, choices=VdpvCategories.choices, default=VdpvCategories.AVDPV)
+    source = models.CharField(max_length=50, choices=Sources.choices, default=Sources.AFP)
+    vdpv_nucleotide_diff_sabin2 = models.CharField(max_length=10)
+    # Lineage possible values: NIE-ZAS-1, RDC-MAN-3, Ambiguous, etc.
+    lineage = models.CharField(max_length=50, blank=True)
+    closest_match_vdpv2 = models.CharField(max_length=50, blank=True)
+    date_of_onset = models.DateField(null=True, blank=True)
+    date_results_received = models.DateField(null=True, blank=True)
+
+    # Country / province / district are modelized as a hierarchy of OrgUnits.
+    org_unit = models.ForeignKey(
+        "iaso.orgunit", null=True, blank=True, on_delete=models.SET_NULL, related_name="notifications"
+    )
+    # site_name/geocode
+    site_name = models.CharField(max_length=255, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+    created_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications_created_set"
+    )
+    updated_at = models.DateTimeField(blank=True, null=True)
+    updated_by = models.ForeignKey(
+        User, null=True, blank=True, on_delete=models.SET_NULL, related_name="polio_notifications_updated_set"
+    )
+    import_raw_data = models.JSONField()
+
+    class Meta:
+        verbose_name = _("Notification")
+
+    def __str__(self) -> str:
+        return f"{self.epid_number}"

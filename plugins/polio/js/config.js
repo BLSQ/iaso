@@ -36,6 +36,7 @@ import {
     NOPV2_AUTH,
     NOPV2_AUTH_DETAILS,
     VACCINE_SUPPLY_CHAIN,
+    VACCINE_SUPPLY_CHAIN_DETAILS,
 } from './src/constants/routes';
 import fr from './src/constants/translations/fr.json';
 import en from './src/constants/translations/en.json';
@@ -49,6 +50,7 @@ import { LqasAfroOverview } from './src/domains/LQAS-IM/LQAS/LqasAfroOverview/Lq
 import { Nopv2Authorisations } from './src/domains/VaccineModule/Nopv2Authorisations/Nopv2Authorisations.tsx';
 import { Nopv2AuthorisationsDetails } from './src/domains/VaccineModule/Nopv2Authorisations/Details/Nopv2AuthorisationsDetails.tsx';
 import { VaccineSupplyChain } from './src/domains/VaccineModule/SupplyChain/VaccineSupplyChain.tsx';
+import { VaccineSupplyChainDetails } from './src/domains/VaccineModule/SupplyChain/Details/VaccineSupplyChainDetails.tsx';
 
 const campaignsFilters = [
     {
@@ -417,6 +419,15 @@ const routes = [
                 isRequired: false,
                 key: 'rounds__started_at__lte',
             },
+        ],
+    },
+    {
+        baseUrl: VACCINE_SUPPLY_CHAIN_DETAILS,
+        component: props => <VaccineSupplyChainDetails {...props} />,
+        permissions: ['iaso_polio'],
+        params: [
+            { isRequired: false, key: 'id' },
+            { isRequired: false, key: 'tab' },
         ],
     },
     {

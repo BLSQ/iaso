@@ -69,6 +69,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.clear',
         defaultMessage: 'Clear',
     },
+    supplyChainStatus: {
+        id: 'iaso.polio.label.supplyChainStatus',
+        defaultMessage: 'Supply chain status',
+    },
 });
 
 export default MESSAGES;

@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import { UseQueryResult } from 'react-query';
+import { waitFor } from '../../../../../../../../hat/assets/js/apps/Iaso/utils';
 import {
     useSnackMutation,
     useSnackQuery,
@@ -11,7 +13,7 @@ import { useUrlParams } from '../../../../../../../../hat/assets/js/apps/Iaso/ho
 import { useApiParams } from '../../../../../../../../hat/assets/js/apps/Iaso/hooks/useApiParams';
 import { useGetCountries } from '../../../../hooks/useGetCountries';
 
-const listUrl = '/api/polio/vaccine/request_forms/';
+const apiUrl = '/api/polio/vaccine/request_forms/';
 const defaults = {
     order: 'country',
     pageSize: 20,
@@ -19,7 +21,7 @@ const defaults = {
 };
 const getVrfList = params => {
     const queryString = new URLSearchParams(params).toString();
-    return getRequest(`${listUrl}?${queryString}`);
+    return getRequest(`${apiUrl}?${queryString}`);
 };
 
 export const useGetVrfList = params => {
@@ -47,7 +49,7 @@ export const useGetVrfList = params => {
 };
 
 const deleteVrf = id => {
-    return deleteRequest(`${listUrl}${id}`);
+    return deleteRequest(`${apiUrl}${id}`);
 };
 
 export const useDeleteVrf = () => {
@@ -70,4 +72,41 @@ export const useGetCountriesOptions = () => {
             : [];
         return { data: options, isFetching };
     }, [countries, isFetching]);
+};
+
+const saveSupplyChainForm = async supplyChainData => {
+    if (supplyChainData.all === true) {
+        // update all tabs
+    } else {
+        // update active tab: supplyChainData.activeTab
+    }
+    waitFor(100);
+    return null;
+};
+
+export const useSaveVaccineSupplyChainForm = () => {
+    // use queryClient.setQueryData to overwrite the cache. see optimistic updates in react query
+    return useSnackMutation({
+        mutationFn: data => saveSupplyChainForm(data),
+        invalidateQueryKey: ['getVrfList'],
+        showSucessSnackBar: false,
+        ignoreErrorCodes: [400],
+    });
+};
+
+const getVrfDetails = (id?: string) => {
+    return getRequest(`${apiUrl}${id}`);
+};
+
+export const useGetVrfDetails = (id?: string): UseQueryResult => {
+    return useSnackQuery({
+        queryKey: ['getVrfDetails', id],
+        queryFn: () => getVrfDetails(id),
+        options: {
+            keepPreviousData: true,
+            staleTime: 1000 * 60 * 15, // in MS
+            cacheTime: 1000 * 60 * 5,
+            enabled: Boolean(id),
+        },
+    });
 };

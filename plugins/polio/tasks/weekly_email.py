@@ -94,10 +94,8 @@ Ci-dessous un résumé des informations de la campagne {c.obr_name} disponibles 
 * Prep. régional                 : {prep_regional}
 * Prep. district                 : {prep_district}
 
-
-Pour des conseils sur la mise à jour : contactez l'équipe RRT Carolyne gathenjic@who.int et Myk Mwanza mwanza@who.int
-
-Message automatisé du suivi chronologique.
+Pour toute question, contacter l'équipe RRT.
+Ceci est un message automatique.
     """
     # Portuguese
     elif lang == "pt":
@@ -117,9 +115,8 @@ Segue em baixo um resumo das informações da campanha {c.obr_name} disponíveis
 * Prep. regional: {prep_regional}
 * Prep. distrital: {prep_district}
 
-Para orientações sobre atualizações: entre em contato com a equipe RRT, Carolyne gathenjic@who.int e Myk Mwanza mwanza@who.int
-
-Mensagem automatizada do rastreador de cronograma.
+Por favor, em caso de qualquer dúvida entre em contato com a equipa RRT.
+Esta é uma mensagem automática.
     """
     # English
     else:
@@ -140,8 +137,7 @@ If there are missing data or dates; visit {url} to update
 * Prep. regional                 : {prep_regional}
 * Prep. district                 : {prep_district}
 
-For guidance on updating: contact RRT team Carolyne gathenjic@who.int and Myk Mwanza mwanza@who.int
-
+For guidance on updating: contact RRT team
 Timeline tracker Automated message.
     """
 

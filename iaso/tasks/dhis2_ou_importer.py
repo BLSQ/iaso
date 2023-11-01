@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 import time
@@ -50,6 +51,8 @@ class DhisOrgunit(TypedDict):
     organisationUnitGroups: List[DhisGroup]
     path: str  # e.g. "/ImspTQPwCqd/at6UHUQatSo/qtr8GGlm4gg/Rp268JB6Ne4"
     level: int  # e.g 4
+    openingDate: str
+    closedDate: str
 
 
 def get_api(options_or_url, login=None, password=None):
@@ -65,7 +68,9 @@ def fetch_orgunits(api: Api) -> List[DhisOrgunit]:
     for page in api.get_paged(
         "organisationUnits",
         page_size=500,
-        params={"fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level"},
+        params={
+            "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name],level,openingDate,closedDate"
+        },
     ):
         orgunits.extend(page["organisationUnits"])
         logger.info(
@@ -120,6 +125,14 @@ def orgunit_from_row(
     org_unit.org_unit_type = find_org_unit_type(
         row["organisationUnitGroups"], group_type_dict, row["level"], level_to_type
     )
+
+    # Add opening date and closed on org_unit while importing from dhis2
+    row_keys = row.keys()
+    if "openingDate" in row_keys:
+        org_unit.opening_date = datetime.strptime(row["openingDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
+    if "closedDate" in row_keys:
+        org_unit.closed_date = datetime.strptime(row["closedDate"], "%Y-%m-%dT%H:%M:%S.%f").date()
+
     if not org_unit.org_unit_type:
         org_unit.org_unit_type = unknown_unit_type
         if group_type_dict:

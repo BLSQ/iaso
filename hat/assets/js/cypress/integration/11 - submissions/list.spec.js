@@ -98,7 +98,7 @@ const goToPage = (
     cy.intercept('GET', '/api/profiles/me/**', fakeUser);
     cy.intercept('GET', '/api/v2/orgunittypes/', {
         fixture: 'orgunittypes/list.json',
-    });
+    }).as('getOrgunittypes');
     cy.intercept(
         'GET',
         '/api/forms/?all=true&order=name&fields=name%2Cperiod_type%2Clabel_keys%2Cid%2Clatest_form_version',
@@ -378,7 +378,7 @@ describe('Submissions', () => {
             fixture: 'orgunits/details.json',
         });
         goToPage();
-        cy.wait('@getSubmissions').then(() => {
+        cy.wait(['@getSubmissions', '@getOrgunittypes']).then(() => {
             interceptFlag = false;
             cy.intercept(
                 {
@@ -478,7 +478,7 @@ describe('Submissions', () => {
 
     it('advanced settings should filter correctly', () => {
         goToPage();
-        cy.get('[data-test="advanced-settings"]').click();
+        cy.get('[data-test="advanced-settings"]').click({ force: true });
         cy.get('[data-test="modificationDate"]')
             .find('[data-test="start-date"]')
             .find('input.MuiInputBase-input')

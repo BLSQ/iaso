@@ -191,12 +191,16 @@ export const DuplicatesFilters: FunctionComponent<Props> = ({ params }) => {
                         onChange={handleChange}
                         label={MESSAGES.similarity}
                         options={similarityDropdown}
-                        renderOption={option => (
-                            <FullStarsSvg
-                                // @ts-ignore
-                                score={parseInt(option.label as string, 10)}
-                            />
-                        )}
+                        renderOption={(props, option) => {
+                            const label = props.label || option.label;
+                            return (
+                                <div {...props}>
+                                    <FullStarsSvg
+                                        score={parseInt(label as string, 10)}
+                                    />
+                                </div>
+                            );
+                        }}
                     />
                 </Grid>
             </Grid>

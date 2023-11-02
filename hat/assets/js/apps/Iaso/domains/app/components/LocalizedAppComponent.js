@@ -44,5 +44,5 @@ export default function LocalizedAppComponent({ children }) {
     );
 }
 LocalizedAppComponent.propTypes = {
-    children: PropTypes.node.isRequired,
+    children: PropTypes.any.isRequired,
 };

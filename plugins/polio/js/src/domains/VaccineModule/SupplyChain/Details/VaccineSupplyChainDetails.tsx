@@ -8,6 +8,7 @@ import TopBar from '../../../../../../../../hat/assets/js/apps/Iaso/components/n
 import { useGoBack } from '../../../../../../../../hat/assets/js/apps/Iaso/routing/useGoBack';
 import { useGetVrfDetails } from '../hooks/api';
 import { useTopBarTitle } from '../hooks/utils';
+import { VaccineRequestForm } from './VaccineRequestForm/VaccineRequestForm';
 
 const VRF = 'VRF';
 const VAR = 'VAR';
@@ -16,7 +17,7 @@ type Props = { router: Router };
 type TabValue = 'VRF' | 'VAR' | 'PREALERT';
 
 const useStyles = makeStyles(theme => {
-    return { ...commonStyles(theme) };
+    return { ...commonStyles(theme), inactiveTab: { display: 'none' } };
 });
 
 export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
@@ -53,7 +54,7 @@ export const VaccineSupplyChainDetails: FunctionComponent<Props> = ({
                     <Tab key={VAR} value={VAR} label={VAR} />
                 </Tabs>
             </TopBar>
-            <marquee>VaccineSupplyChainDetails</marquee>
+            <VaccineRequestForm class />
         </>
     );
 };

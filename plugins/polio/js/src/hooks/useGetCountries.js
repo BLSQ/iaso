@@ -2,9 +2,9 @@ import { getRequest } from 'Iaso/libs/Api';
 import { useSnackQuery } from 'Iaso/libs/apiHooks.ts';
 import { appId } from '../constants/app.ts';
 
-export const useGetCountries = () => {
+export const useGetCountries = (status = 'all') => {
     const params = {
-        validation_status: 'all',
+        validation_status: status,
         order: 'name',
         orgUnitTypeCategory: 'country',
         app_id: appId,

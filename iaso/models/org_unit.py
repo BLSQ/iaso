@@ -1,6 +1,7 @@
 import operator
 import typing
 import uuid
+from copy import deepcopy
 from functools import reduce
 
 import django_cte
@@ -9,15 +10,15 @@ from django.contrib.auth.models import User, AnonymousUser
 from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.postgres.indexes import GistIndex
-from django.db import models, transaction
+from django.db import models, transaction, IntegrityError
 from django.db.models import QuerySet
 from django.db.models.expressions import RawSQL
-from django.utils.functional import cached_property
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django_ltree.fields import PathField  # type: ignore
 from django_ltree.models import TreeModel  # type: ignore
 
+from hat.audit.models import log_modification, ORG_UNIT_CHANGE_REQUEST
 from iaso.models.data_source import SourceVersion
 from .project import Project
 from ..utils.expressions import ArraySubquery
@@ -601,8 +602,8 @@ class OrgUnitChangeRequest(models.Model):
     new_org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
     new_groups = models.ManyToManyField("Group", blank=True)
     new_location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
-    # `accuracy` is only used to help decision-making during validation: is the accuracy good
-    # enough to change the location? The field doesn't exist on `OrgUnit`.
+    # `new_location_accuracy` is only used to help decision-making during validation: is the accuracy
+    # good enough to change the location? The field doesn't exist on `OrgUnit`.
     new_location_accuracy = models.DecimalField(decimal_places=2, max_digits=7, blank=True, null=True)
     new_reference_instances = models.ManyToManyField("Instance", blank=True)
 
@@ -623,23 +624,14 @@ class OrgUnitChangeRequest(models.Model):
     def __str__(self) -> str:
         return f"ID #{self.id} - Org unit #{self.org_unit_id} - {self.get_status_display()}"
 
+    def save(self, *args, **kwargs):
+        self.clean()
+        super().save(*args, **kwargs)
+
     def clean(self, *args, **kwargs):
         super().clean()
+        self.approved_fields = list(set(self.approved_fields))
         self.clean_approved_fields()
-
-    def clean_approved_fields(self) -> None:
-        approved_fields = list(set(self.approved_fields))
-        for name in approved_fields:
-            if name not in self.new_fields:
-                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
-        self.approved_fields = approved_fields
-
-    @cached_property
-    def new_fields(self) -> typing.List[str]:
-        """
-        Returns the list of fields names which can store a change request.
-        """
-        return [field.name for field in OrgUnitChangeRequest._meta.get_fields() if field.name.startswith("new_")]
 
     @property
     def requested_fields(self) -> typing.List[str]:
@@ -648,10 +640,67 @@ class OrgUnitChangeRequest(models.Model):
         `prefetch_related` of m2m are required when used in bulk.
         """
         requested = []
-        for name in self.new_fields:
+        for name in self.get_new_fields():
             field = getattr(self, name)
             is_m2m = field.__class__.__name__ == "ManyRelatedManager"
             is_requested = field.exists() if is_m2m else field
             if is_requested:
                 requested.append(name)
         return requested
+
+    def clean_approved_fields(self) -> None:
+        for name in self.approved_fields:
+            if name not in self.get_new_fields():
+                raise ValidationError({"approved_fields": f"Value {name} is not a valid choice."})
+
+    def reject(self, user: User, rejection_comment: str) -> None:
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = user
+        self.status = self.Statuses.REJECTED
+        self.rejection_comment = rejection_comment
+        self.save()
+
+    def approve(self, user: User, approved_fields: typing.List[str]) -> None:
+        self.__apply_changes(user, approved_fields)
+        self.reviewed_at = timezone.now()
+        self.reviewed_by = user
+        self.status = self.Statuses.APPROVED
+        self.approved_fields = approved_fields
+        self.save()
+
+    def __apply_changes(self, user: User, approved_fields: typing.List[str]) -> None:
+        initial_org_unit = deepcopy(self.org_unit)
+
+        for field_name in approved_fields:
+            if field_name == "new_location_accuracy":
+                continue
+            elif field_name == "new_groups":
+                self.org_unit.groups.set(self.new_groups.all())
+            elif field_name == "new_reference_instances":
+                # Delete old ones.
+                self.org_unit.reference_instances.clear()
+                for instance in self.new_reference_instances.all():
+                    OrgUnitReferenceInstance.objects.create(
+                        org_unit=self.org_unit,
+                        form=instance.form,
+                        instance=instance,
+                    )
+            # Handle non m2m fields.
+            else:
+                new_value = getattr(self, field_name)
+                org_unit_field_name = field_name.replace("new_", "")
+                setattr(self.org_unit, org_unit_field_name, new_value)
+
+        if self.org_unit.validation_status == self.org_unit.VALIDATION_NEW:
+            self.org_unit.validation_status = self.org_unit.VALIDATION_VALID
+
+        self.org_unit.save()
+
+        log_modification(initial_org_unit, self.org_unit, source=ORG_UNIT_CHANGE_REQUEST, user=user)
+
+    @classmethod
+    def get_new_fields(cls) -> typing.List[str]:
+        """
+        Returns the list of fields names which can store a change request.
+        """
+        return [field.name for field in cls._meta.get_fields() if field.name.startswith("new_")]

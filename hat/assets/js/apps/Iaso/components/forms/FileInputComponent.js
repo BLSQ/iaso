@@ -36,7 +36,7 @@ function FileInputComponent({
                 error={hasErrors}
             />
             <OutlinedInput
-                size="small"
+                // size="small"
                 disabled={disabled}
                 id={`input-text-${keyValue}`}
                 type="file"

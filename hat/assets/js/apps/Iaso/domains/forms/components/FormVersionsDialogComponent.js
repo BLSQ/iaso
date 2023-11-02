@@ -148,14 +148,16 @@ const FormVersionsDialogComponent = ({
                 <Grid container spacing={4} justifyContent="flex-start">
                     <Grid xs={12} item>
                         {!formState.id.value && (
-                            <FileInputComponent
-                                keyValue="xls_file"
-                                onChange={setFieldValue}
-                                value={formState.xls_file.value}
-                                label={MESSAGES.xls_form_file}
-                                errors={formState.xls_file.errors}
-                                required
-                            />
+                            <Box mt={1} mb="4px">
+                                <FileInputComponent
+                                    keyValue="xls_file"
+                                    onChange={setFieldValue}
+                                    value={formState.xls_file.value}
+                                    label={MESSAGES.xls_form_file}
+                                    errors={formState.xls_file.errors}
+                                    required
+                                />
+                            </Box>
                         )}
                         {!formState.id.value && (
                             <span>

@@ -1,4 +1,4 @@
-import { object, string, ObjectSchema } from 'yup';
+import { object, string, ObjectSchema, array } from 'yup';
 import { useMemo } from 'react';
 import { ValidationError } from '../../types/utils';
 import { SaveAccountQuery } from './hooks/useSaveAccount';
@@ -26,6 +26,7 @@ export const useAccountValidation = (
             user_first_name: string().nullable().required('requiredField'),
             user_last_name: string().nullable().required('requiredField'),
             password: string().nullable().required('requiredField'),
+            modules: array().of(string()).nullable().required('requiredField'),
         });
     }, [apiValidator]);
     return schema;

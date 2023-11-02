@@ -49,7 +49,7 @@ class OrgUnitForChangeRequest(serializers.ModelSerializer):
         ]
 
     def get_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.groups.all()]
 
 
 class MobileOrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
@@ -119,7 +119,7 @@ class OrgUnitChangeRequestListSerializer(serializers.ModelSerializer):
         ]
 
     def get_current_org_unit_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.org_unit.groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.org_unit.groups.all()]
 
 
 class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
@@ -161,7 +161,7 @@ class OrgUnitChangeRequestRetrieveSerializer(serializers.ModelSerializer):
         ]
 
     def get_new_groups(self, obj: OrgUnitChangeRequest):
-        return [group.name for group in obj.new_groups.all()]
+        return [{"id": group.id, "name": group.name} for group in obj.new_groups.all()]
 
 
 class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
@@ -201,20 +201,77 @@ class OrgUnitChangeRequestWriteSerializer(serializers.ModelSerializer):
             "new_location_accuracy",
             "new_reference_instances",
         ]
-        extra_kwargs = {"created_by": {"default": serializers.CurrentUserDefault()}}
 
-    def validate(self, attrs):
-        validated_data = super().validate(attrs)
-        new_fields = [
-            "new_parent_id",
-            "new_name",
-            "new_org_unit_type_id",
-            "new_groups",
-            "new_location",
-            "new_reference_instances",
-        ]
-        if not any([validated_data.get(field) for field in new_fields]):
+    def validate_new_reference_instances(self, new_reference_instances):
+        seen = []
+        for instance in new_reference_instances:
+            unique_org_unit_form = f"{instance.form_id}-{instance.org_unit_id}"
+            if unique_org_unit_form in seen:
+                raise serializers.ValidationError("Only one reference instance can exist by org_unit/form pair.")
+            seen.append(unique_org_unit_form)
+        return new_reference_instances
+
+    def validate_new_org_unit_type_id(self, new_org_unit_type):
+        request = self.context.get("request")
+        if request and not new_org_unit_type.projects.filter(account=request.user.iaso_profile.account).exists():
+            raise serializers.ValidationError("`new_org_unit_type_id` is not part of the user account.")
+        return new_org_unit_type
+
+    def validate(self, validated_data):
+        # Fields names are different between API and model, e.g. `new_parent_id` VS `new_parent`.
+        new_fields_api = [name for name in self.Meta.fields if name.startswith("new_")]
+        new_fields_model = OrgUnitChangeRequest.get_new_fields()
+
+        if not any([validated_data.get(field) for field in new_fields_model]):
             raise serializers.ValidationError(
-                f"You must provide at least one of the following fields: {', '.join(new_fields)}."
+                f"You must provide at least one of the following fields: {', '.join(new_fields_api)}."
             )
+
+        org_unit = validated_data.get("org_unit")
+        new_parent = validated_data.get("new_parent")
+
+        if org_unit and new_parent:
+            if new_parent.version_id != org_unit.version_id:
+                raise serializers.ValidationError("`new_parent_id` and `org_unit_id` must have the same version.")
+
+            if OrgUnit.objects.hierarchy(org_unit).filter(pk=new_parent.pk).exists():
+                raise serializers.ValidationError("`new_parent_id` is already a child of `org_unit_id`.")
+
+        return validated_data
+
+
+class OrgUnitChangeRequestReviewSerializer(serializers.ModelSerializer):
+    """
+    Used to approve or reject one `OrgUnitChangeRequest`.
+    """
+
+    class Meta:
+        model = OrgUnitChangeRequest
+        fields = [
+            "status",
+            "approved_fields",
+            "rejection_comment",
+        ]
+
+    def validate_status(self, value):
+        approved = OrgUnitChangeRequest.Statuses.APPROVED
+        rejected = OrgUnitChangeRequest.Statuses.REJECTED
+        if value not in [approved, rejected]:
+            raise serializers.ValidationError(f"Must be `{approved}` or `{rejected}`.")
+        return value
+
+    def validate(self, validated_data):
+        instance = OrgUnitChangeRequest(**validated_data)
+        instance.clean()
+
+        status = validated_data.get("status")
+        approved_fields = validated_data.get("approved_fields")
+        rejection_comment = validated_data.get("rejection_comment")
+
+        if status == OrgUnitChangeRequest.Statuses.REJECTED and not rejection_comment:
+            raise serializers.ValidationError("A `rejection_comment` must be provided.")
+
+        if status == OrgUnitChangeRequest.Statuses.APPROVED and not approved_fields:
+            raise serializers.ValidationError("At least one `approved_fields` must be provided.")
+
         return validated_data

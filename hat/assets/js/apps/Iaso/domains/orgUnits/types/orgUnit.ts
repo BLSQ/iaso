@@ -32,8 +32,8 @@ export type OrgunitInititialState = {
     parent?: OrgUnit;
     source_ref?: string;
     reference_instance_id?: Nullable<number>;
-    opening_date?: number;
-    closed_date?: number;
+    opening_date?: Date;
+    closed_date?: Date;
 };
 
 export type OrgUnitStatus = 'VALID' | 'NEW' | 'REJECTED';
@@ -72,8 +72,8 @@ export type OrgUnit = {
     reference_instances: Instance[];
     catchment?: Shape;
     reference_instance_action?: string;
-    opening_date?: number;
-    closed_date?: number;
+    opening_date?: Date;
+    closed_date?: Date;
 };
 export interface PaginatedOrgUnits extends Pagination {
     orgunits: OrgUnit[];

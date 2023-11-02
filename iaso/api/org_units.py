@@ -2,6 +2,7 @@ import json
 from copy import deepcopy
 from time import gmtime, strftime
 from datetime import datetime
+import typing
 
 from django.conf import settings
 from django.contrib.gis.geos import Point
@@ -11,7 +12,6 @@ from django.core.paginator import Paginator
 from django.db.models import Q, IntegerField, Value, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils.dateparse import parse_date
 from django.utils.translation import gettext as _
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
@@ -497,11 +497,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
         else:
             opening_date = request.data.get("opening_date")
-            org_unit.opening_date = None if not opening_date else self.get_date(self, request.data.get("opening_date"))
+            org_unit.opening_date = None if not opening_date else self.get_date(opening_date)
 
         if "closed_date" in request.data:
             closed_date = request.data.get("closed_date")
-            org_unit.closed_date = None if not closed_date else self.get_date(self, request.data.get("closed_date"))
+            org_unit.closed_date = None if not closed_date else self.get_date(closed_date)
         else:
             org_unit.closed_date = None
 
@@ -527,19 +527,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             return Response(errors, status=400)
 
-    @staticmethod
-    def check_date_format(date, format):
-        try:
-            return bool(datetime.strptime(date, format))
-        except ValueError:
-            return False
-
-    @staticmethod
-    def get_date(self, date):
-        if self.check_date_format(date, "%d-%m-%Y"):
-            return datetime.strptime(date, "%d-%m-%Y").date()
-        else:
-            return datetime.strptime(date, "%d/%m/%Y").date()
+    def get_date(self, date: str) -> typing.Union[datetime.date, None]:
+        date_input_formats = ["%d-%m-%Y", "%d/%m/%Y"]
+        for date_input_format in date_input_formats:
+            try:
+                return datetime.strptime(date, date_input_format).date()
+            except ValueError:
+                pass
+        return None
 
     @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):
@@ -602,6 +597,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if closed_date:
             org_unit.closed_date = datetime.strptime(closed_date, "%d-%m-%Y").date()
+            if org_unit.opening_date > org_unit.closed_date:
+                errors.append(
+                    {"errorKey": "closed_date", "errorMessage": _("Opening date must be anterior to closed date")}
+                )
 
         validation_status = request.data.get("validation_status", None)
         if validation_status is None:

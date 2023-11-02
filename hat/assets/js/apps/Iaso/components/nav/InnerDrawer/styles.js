@@ -1,4 +1,4 @@
-import grey from '@mui/material/colors/grey';
+import { grey } from '@mui/material/colors';
 
 export const menuHeight = 112;
 export const tabsHeight = 68;

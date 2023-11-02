@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import CheckBox from '@mui/icons-material/CheckBox';
 import CheckBoxOutlineBlank from '@mui/icons-material/CheckBoxOutlineBlank';
-import grey from '@mui/material/colors/grey';
+import { grey } from '@mui/material/colors';
 
 import { Container, Grid, Divider, Button } from '@mui/material';
 import { withStyles } from '@mui/styles';

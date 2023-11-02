@@ -3,7 +3,7 @@ import isEqual from 'lodash/isEqual';
 
 import { Grid } from '@mui/material';
 import { withStyles } from '@mui/styles';
-import grey from '@mui/material/colors/grey';
+import { grey } from '@mui/material/colors';
 
 import PropTypes from 'prop-types';
 

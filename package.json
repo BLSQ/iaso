@@ -52,6 +52,8 @@
         "@babel/plugin-transform-nullish-coalescing-operator": "^7.22.11",
         "@babel/runtime": "^7.12.1",
         "@date-io/moment": "1.x",
+        "@emotion/react": "^11.11.1",
+        "@emotion/styled": "^11.11.0",
         "@mui/icons-material": "^5.14.15",
         "@mui/lab": "^5.0.0-alpha.150",
         "@mui/material": "^5.14.15",

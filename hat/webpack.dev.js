@@ -216,7 +216,7 @@ module.exports = {
             __LOCALE: JSON.stringify(LOCALE),
         }),
         // XLSX
-        new webpack.IgnorePlugin(/cptable/),
+        new webpack.IgnorePlugin({ resourceRegExp: /cptable/ }),
         new webpack.WatchIgnorePlugin({
             paths: [/\.d\.ts$/],
         }),

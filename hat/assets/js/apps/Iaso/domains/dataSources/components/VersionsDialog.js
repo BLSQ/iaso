@@ -20,7 +20,7 @@ import {
     Table,
     useSafeIntl,
 } from 'bluesquare-components';
-import 'react-table';
+// import 'react-table';
 import { CopySourceVersion } from './CopySourceVersion/CopySourceVersion.tsx';
 
 import DialogComponent from '../../../components/dialogs/DialogComponent';
